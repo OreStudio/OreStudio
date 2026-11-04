@@ -2215,8 +2215,10 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  *
  * The party named by the publish parameters, which must be an active party of
  * the target tenant, else the tenant's root party: the one with no parent that
- * is not the system party. Null when no party is named and the tenant holds no
- * root party, as while a tenant is provisioned before its party exists.
+ * is not the system party. The system tenant has no root party of its own, so
+ * a publish into it that finds none writes for its system party. Null when no
+ * party is named and any other tenant holds no root party, as while a tenant is
+ * provisioned before its party exists.
  */
 create or replace function ores_refdata_publish_target_party_fn(
     p_target_tenant_id uuid,
@@ -2236,6 +2238,10 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
         order by id
         limit 1;
+        if v_party_id is null and p_target_tenant_id = ores_utility_system_tenant_id_fn() then
+            select s.id into v_party_id
+            from ores_refdata_read_system_party_fn(p_target_tenant_id) s;
+        end if;
         return v_party_id;
     end if;
 

@@ -47,18 +47,22 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'assets.system_avatars', 4);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'iso.countries', 5);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'iso.currencies', 6);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'fpml.asset_class', 7);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.asset_class', 8);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.market_data_providers', 9);
+    -- The currencies ISO 4217 does not code, such as CNH, which the feeds below
+    -- quote. Without them the feeds publish only while the currency table is still
+    -- empty, which its check lets through.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'fpml.non_iso_currency', 7);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'fpml.asset_class', 8);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.asset_class', 9);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.market_data_providers', 10);
 
     -- The provider feeds: system collections, one for each provider that has feeds of a
     -- kind the platform simulates. They publish after the provider catalogue they name,
     -- into the system tenant under its system party, and run there once.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.lseg', 10);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.ice', 11);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.tradeweb', 12);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.bloomberg', 13);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.uniform_demo', 15);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.lseg', 11);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.ice', 12);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.tradeweb', 13);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.bloomberg', 14);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.uniform_demo', 16);
 
     -- The ORE parameter documentation. The system tenant's rows are what the
     -- validators of the configuration parameters read, and each tenant's rows
@@ -67,15 +71,21 @@ BEGIN
     -- Two copies of one dataset is a stopgap: the capture "One source for
     -- reference data that the system and each tenant read" tracks the choice
     -- of one source and the rewrite of the readers that follows.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameter_value_domains', 16);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameters', 17);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameter_value_domains', 17);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.parameters', 18);
 
     -- The adapter and supplier catalogues. Like the providers, they are
     -- installation data: the system tenant owns them, every tenant reads them,
     -- and nobody adds a row from a screen. A session configures one adapter at
     -- one supplier, so the two publish before anything that names them.
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'marketdata.adapters', 18);
-    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'marketdata.suppliers', 19);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'marketdata.adapters', 19);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'marketdata.suppliers', 20);
+
+    -- The instrument conventions, for the derived source of FX volatility quotes:
+    -- it runs in the system tenant, where the feeds run, and reads the FX option
+    -- convention of each pair it quotes from there. Each party of a tenant gets
+    -- its own copy through party_essentials; this one is the system party's.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'ore.conventions', 21);
 
     -- =============================================================================
     -- Base System Bundle Members

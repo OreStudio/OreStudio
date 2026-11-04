@@ -38,6 +38,7 @@ Loading the public rates is an ordered, recorded and retryable act, not a side e
 - A run of the step on a fresh installation completes only after each accepted source's fixings are stored, and its result names each source and its count.
 - A second run of the step stores nothing new and completes.
 - A source whose terms are not accepted is reported as skipped, not as a failure.
+- After the step, the derived source of FX volatility quotes logs the history it kept for each of its pairs, from the stored ECB fixings.
 
 * Plan
 

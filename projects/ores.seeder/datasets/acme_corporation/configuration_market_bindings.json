@@ -31,10 +31,40 @@
   },
   {
     "company_code": "acme_group",
+    "id": "28648a0a-be25-5074-a820-fbda1147d250",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "894cbd37-b2da-55b2-af2e-569e0b9c7ba9",
+    "role": "pricing",
+    "market_configuration_name": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
     "id": "dfcd9ba3-b98e-56ad-8642-fe9024660cd4",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "configuration_id": "66b39725-e6ab-59b3-ba4a-05e2934d4757",
+    "role": "pricing",
+    "market_configuration_name": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "id": "89b6dc38-c278-5357-a5fc-b74ccb54ea36",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "fec3d334-f78b-54a6-9c44-61cfe29c7842",
+    "role": "pricing",
+    "market_configuration_name": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_group",
+    "id": "4cc967c2-9875-566c-a4c1-1d29978030a9",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "276dc552-e2e8-5682-90dd-3227f03bfb49",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1
@@ -281,6 +311,16 @@
   },
   {
     "company_code": "acme_us",
+    "id": "9d81b8c2-f35f-558d-959d-48758aadf938",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "28d48885-40a7-5735-a7df-6e26888b6916",
+    "role": "pricing",
+    "market_configuration_name": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_us",
     "id": "0dc4bf6b-c279-58d4-ab57-a7dc3170a35e",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -425,6 +465,16 @@
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
     "configuration_id": "b9630f4c-9157-5d3b-a8e4-09e64792258c",
+    "role": "pricing",
+    "market_configuration_name": "default",
+    "position": 1
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "270e338c-6193-5c78-be17-455be79cd103",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "8a775a9a-bd2c-5cc3-9113-e837a6226f09",
     "role": "pricing",
     "market_configuration_name": "default",
     "position": 1

@@ -52,6 +52,9 @@ struct vanilla_swap_instrument_write {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
     std::optional<int> settlement_lag;
+    std::optional<std::string> settlement;
+    std::optional<bool> round_netted_floating_legs;
+    std::optional<int> netting_precision;
 
     friend bool operator==(const vanilla_swap_instrument_write&,
                            const vanilla_swap_instrument_write&) = default;
@@ -389,6 +392,11 @@ inline constexpr std::string_view deleted = "trading.v1.vanilla_swap_instruments
         utility::codec::field{"trade_activity_id",
                               &vanilla_swap_instrument_write::trade_activity_id},
         utility::codec::field{"settlement_lag", &vanilla_swap_instrument_write::settlement_lag},
+        utility::codec::field{"settlement", &vanilla_swap_instrument_write::settlement},
+        utility::codec::field{"round_netted_floating_legs",
+                              &vanilla_swap_instrument_write::round_netted_floating_legs},
+        utility::codec::field{"netting_precision",
+                              &vanilla_swap_instrument_write::netting_precision},
     };
 }
 

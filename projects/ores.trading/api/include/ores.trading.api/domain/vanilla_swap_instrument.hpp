@@ -79,6 +79,23 @@ struct vanilla_swap_instrument final {
     std::optional<int> settlement_lag;
 
     /**
+     * @brief How the swap settles, as Settlement states it: Cash for a non-deliverable swap,
+     * Physical otherwise.
+     */
+    std::optional<std::string> settlement;
+
+    /**
+     * @brief Whether the swap rounds its netted floating legs, as RoundNettedFloatingLegs states
+     * it.
+     */
+    std::optional<bool> round_netted_floating_legs;
+
+    /**
+     * @brief The precision the netted floating legs are rounded to, as NettingPrecision states it.
+     */
+    std::optional<int> netting_precision;
+
+    /**
      * @brief Username of the person who last modified this vanilla swap instrument.
      */
     std::string modified_by;
@@ -132,6 +149,9 @@ struct vanilla_swap_instrument final {
  */
 inline constexpr std::string_view vanilla_swap_instrument_economic_fields[] = {
     "settlement_lag",
+    "settlement",
+    "round_netted_floating_legs",
+    "netting_precision",
 };
 
 /**

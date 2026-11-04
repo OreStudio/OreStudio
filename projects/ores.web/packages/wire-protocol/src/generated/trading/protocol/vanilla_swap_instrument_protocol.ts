@@ -36,6 +36,9 @@ export interface VanillaSwapInstrumentWrite {
     trade_id: string;
     trade_activity_id: string;
     settlement_lag: number | null;
+    settlement: string | null;
+    round_netted_floating_legs: boolean | null;
+    netting_precision: number | null;
 }
 
 export interface VanillaSwapInstrumentChange {

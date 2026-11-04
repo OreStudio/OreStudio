@@ -106,6 +106,9 @@ vanilla_swap_instrument_to_domain(const messaging::vanilla_swap_instrument_write
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
     v.settlement_lag = write.settlement_lag;
+    v.settlement = write.settlement;
+    v.round_netted_floating_legs = write.round_netted_floating_legs;
+    v.netting_precision = write.netting_precision;
     return v;
 }
 

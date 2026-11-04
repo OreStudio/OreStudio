@@ -72,6 +72,36 @@ Optional settlement lag in business days.
 
 Number of business days between execution and effective date.
 
+** settlement
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How the swap settles, as =Settlement= states it: =Cash= for a non-deliverable swap, =Physical= otherwise.
+
+** round_netted_floating_legs
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether the swap rounds its netted floating legs, as =RoundNettedFloatingLegs= states it.
+
+** netting_precision
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:economic: true
+:END:
+
+The precision the netted floating legs are rounded to, as =NettingPrecision= states it.
+
 * Foreign keys
 
 ** trade_id

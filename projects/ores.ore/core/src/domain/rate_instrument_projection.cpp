@@ -236,6 +236,12 @@ auto read_swap(const record_reader& trade, std::string_view trade_type) -> swap_
     if (!data)
         return result;
 
+    auto& facts = std::get<vanilla_swap_instrument>(result.facts);
+    facts.settlement = data->spelling("Settlement");
+    if (const auto round = data->text("RoundNettedFloatingLegs"))
+        facts.round_netted_floating_legs = option_block::is_flag_on(*round);
+    if (const auto precision = data->integer("NettingPrecision"))
+        facts.netting_precision = static_cast<int>(*precision);
     read_header_dates(result, *data);
     leg_block::append_legs(result, *data);
     return result;
@@ -606,6 +612,15 @@ void write_swap(record_writer& trade, std::string_view trade_type, const swap_in
     // so the product type the row states decides which one carries the legs.
     auto data =
         trade.child(trade_type == "CrossCurrencySwap" ? "CrossCurrencySwapData" : "SwapData");
+    if (const auto* facts = std::get_if<vanilla_swap_instrument>(&v.facts)) {
+        if (facts->round_netted_floating_legs)
+            data.set_text("RoundNettedFloatingLegs",
+                          option_block::flag_text(*facts->round_netted_floating_legs));
+        if (facts->netting_precision)
+            data.set_integer("NettingPrecision", *facts->netting_precision);
+        if (facts->settlement)
+            data.set_spelling("Settlement", *facts->settlement, "settlement type");
+    }
     leg_block::write_legs(data, v.header.start_date, v.header.maturity_date, v);
 }
 

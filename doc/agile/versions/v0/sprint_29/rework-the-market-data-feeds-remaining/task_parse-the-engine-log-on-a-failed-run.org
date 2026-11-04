@@ -85,3 +85,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A failed run's errors are now the parsed rows, not a transcript. Two defects
+were fixed in series: the compute wrapper uploaded its log only on success, so
+the reporting read a 404; and the failure path recorded the platform's raw
+message first, which the write-once recorder then protected, so the parsed rows
+could never land. The wrapper now writes its rows for every job that reached
+the engine (the structured log first, the text log otherwise), and the failure
+path records the log before it refuses; the run's message is one sentence that
+names the count and points at Errors.
+
+Verified live on the rebuilt services: the Headline Position run
+=cd8082af-7f06-4365-a87e-3afc94a7a34d= failed and its errors read 40 rows, 39
+trade failures plus the run's pointer line, each with its trade id and the
+engine's message; the run's message reads "The run's compute job failed with
+outcome 3: Engine exited with code 255. Its log records 39 errors; the rows are
+in Errors."
+
+=ores.reporting.core.tests= 267 cases / 1499 assertions pass; =compass lint=
+passes; =check_component_drift= reports no drift for reporting or compute-cpp.
+A successful run remains unproven: the demo's package lacks
+=Input/simulation.xml=, so the engine aborts before it prices, which is the
+report-inputs task.

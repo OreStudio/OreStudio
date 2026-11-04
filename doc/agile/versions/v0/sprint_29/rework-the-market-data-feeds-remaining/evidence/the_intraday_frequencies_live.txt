@@ -1,0 +1,291 @@
+The intraday cadences on the live environment — 2026-11-04
+
+Environment: eager_maxwell (database ores_dev_eager_maxwell, NATS 21405)
+Worktree: build/worktrees/point-one, branch feature/set-the-intraday-frequencies
+Commit at the time of the run: ecb1a8db83 ([doc] State the cadences the seed
+schedules); the evidence scripts are uncommitted.
+
+================================================================================
+1. What was applied, and in what order
+================================================================================
+
+The seeds state the new cadences, and a development environment is provisioned
+once and stays up, so the change reached the database in three steps.
+
+(a) Stage and publish the catalogue. The four ACME definition datasets and the
+    Northwind one are staged, and each ACME party is published:
+
+        ./compass.sh sql -- -v ON_ERROR_STOP=1 \
+            -f .../evidence/apply_the_intraday_frequencies.sql
+
+    The script prints what the publish did:
+
+        dataset           | action  | record_count
+        ------------------+---------+--------------
+         group definitions | updated |            1
+         uk definitions    | updated |            4
+         us definitions    | updated |            4
+         hk definitions    | updated |            3
+
+    Twelve rows moved, one for each definition whose schedule or description the
+    seed changed. The publish writes a new version of the row the party already
+    holds and leaves every row whose statement did not move alone: the
+    skipped counts are the other definitions of each dataset.
+
+    Northwind's artefacts are staged and not published, because this environment
+    holds no Northwind tenant.
+
+(b) The job carries its own copy of the expression. A job is not a view over the
+    definition, so the publish does not move a schedule that the scheduler is
+    already holding. The UK triple vol spot ladder was the one affected
+    definition that held a job, and the reporting service's reconciliation run
+    had already closed it, because the job carried no run grant. That is why the
+    unschedule step below reports nothing to unschedule.
+
+(c) Schedule the affected definitions as the tenant's administrator, one party
+    at a time, which is the operation that writes the job and asks IAM for the
+    run grant the runs act under:
+
+        ./compass.sh shell --no-login -l \
+            .../evidence/schedule_the_intraday_frequencies.ores
+
+    The session's answers, per party (the long token field is removed):
+
+        > account_operations switch-party cae3d94d-...
+        {"success":true,"message":"Party switched",...,"party_name":"Acme Corporation Plc"}
+        > report_operations unschedule-report-definitions 64f14a65-...
+        {"success":true,"message":"","unscheduled_count":0,"failed_ids":[]}
+        > report_operations schedule-report-definitions 64f14a65-...
+        {"success":true,"message":"","scheduled_count":1,"failed_ids":[]}
+
+        > account_operations switch-party 5b21df84-...
+        {"success":true,"message":"Party switched",...,"party_name":"ACME Corporation UK plc"}
+        > report_operations unschedule-report-definitions 1a810093-...,11629885-...,dde7d3fb-...,64da60ab-...
+        {"success":true,"message":"","unscheduled_count":0,"failed_ids":[]}
+        > report_operations schedule-report-definitions 1a810093-...,11629885-...,dde7d3fb-...,64da60ab-...
+        {"success":true,"message":"","scheduled_count":4,"failed_ids":[]}
+
+        > account_operations switch-party 6ec95a8a-...
+        {"success":true,"message":"Party switched",...,"party_name":"ACME Corporation US Inc"}
+        > report_operations unschedule-report-definitions cab6a352-...,95e1338e-...,a1842062-...
+        {"success":true,"message":"","unscheduled_count":0,"failed_ids":[]}
+        > report_operations schedule-report-definitions cab6a352-...,95e1338e-...,a1842062-...
+        {"success":true,"message":"","scheduled_count":3,"failed_ids":[]}
+
+        > account_operations switch-party 59c9eee6-...
+        {"success":true,"message":"Party switched",...,"party_name":"ACME Corporation HK Ltd"}
+        > report_operations unschedule-report-definitions e7adecf5-...,4c6918c8-...,44cb553a-...
+        {"success":true,"message":"","unscheduled_count":0,"failed_ids":[]}
+        > report_operations schedule-report-definitions e7adecf5-...,4c6918c8-...,44cb553a-...
+        {"success":true,"message":"","scheduled_count":3,"failed_ids":[]}
+
+    Eleven definitions scheduled, none refused. No scheduler job row was written
+    by hand: the shell's two operations did all of it, and each job names the
+    definition as its owner.
+
+================================================================================
+2. The scheduler rows, with the new crons
+================================================================================
+
+    ./compass.sh sql -- -c "select p.short_code as party, d.name,
+        d.schedule_expression as def_expr, j.schedule_expression as job_expr,
+        j.is_active, j.action_type, (j.id = d.scheduler_job_id) as job_is_the_definitions
+      from ores_reporting_report_definitions_tbl d
+      join (select distinct id, short_code from ores_refdata_parties_tbl
+            where short_code in ('ACMCOR','ACCOUK','ACCOUS','ACCOHK')
+              and valid_to = ores_utility_infinity_timestamp_fn()) p on p.id = d.party_id
+      join ores_scheduler_job_definitions_tbl j on j.id = d.scheduler_job_id
+                       and j.valid_to = ores_utility_infinity_timestamp_fn()
+      where d.valid_to = ores_utility_infinity_timestamp_fn()
+        and d.name in ('Triple Vol Spot Ladder','Bump and Reprice Surface Vega Ladder',
+                       'Spot Ladder','Trades Since Last In')
+      order by p.short_code, d.name"
+
+     party  |                 name                 |     def_expr      |     job_expr      | is_active | action_type  | job_is_the_definitions
+    --------+--------------------------------------+-------------------+-------------------+-----------+--------------+------------------------
+     ACCOHK | Bump and Reprice Surface Vega Ladder | 0 * * * *         | 0 * * * *         | t         | nats_publish | t
+     ACCOHK | Spot Ladder                          | */30 8-17 * * 1-5 | */30 8-17 * * 1-5 | t         | nats_publish | t
+     ACCOHK | Trades Since Last In                 | */15 8-17 * * 1-5 | */15 8-17 * * 1-5 | t         | nats_publish | t
+     ACCOUK | Bump and Reprice Surface Vega Ladder | 0 * * * *         | 0 * * * *         | t         | nats_publish | t
+     ACCOUK | Spot Ladder                          | */30 8-17 * * 1-5 | */30 8-17 * * 1-5 | t         | nats_publish | t
+     ACCOUK | Trades Since Last In                 | */15 8-17 * * 1-5 | */15 8-17 * * 1-5 | t         | nats_publish | t
+     ACCOUK | Triple Vol Spot Ladder               | 0 * * * *         | 0 * * * *         | t         | nats_publish | t
+     ACCOUS | Bump and Reprice Surface Vega Ladder | 0 * * * *         | 0 * * * *         | t         | nats_publish | t
+     ACCOUS | Spot Ladder                          | */30 8-17 * * 1-5 | */30 8-17 * * 1-5 | t         | nats_publish | t
+     ACCOUS | Trades Since Last In                 | */15 8-17 * * 1-5 | */15 8-17 * * 1-5 | t         | nats_publish | t
+     ACMCOR | Bump and Reprice Surface Vega Ladder | 0 * * * *         | 0 * * * *         | t         | nats_publish | t
+
+Every definition and its job state the same expression, every job is active,
+and every job is the one the definition names. The reports that kept their
+cadence kept their jobs untouched: the intraday risk monitor, the intraday change
+and the headline position fire on the expressions they fired on before, the maps
+hold no job at all, and the three ATM, risk-reversal and butterfly vega ladders
+hold no job either. The spot greeks that fires every fifteen minutes is the row
+the older catalogue named "Bump and Reprice Spot Greeks", not the row this
+catalogue states as "Spot Greeks"; section 5 says what that means.
+
+================================================================================
+3. The fires
+================================================================================
+
+The first firing after the schedule, at the top of the hour:
+
+    ./compass.sh sql -- -c "select p.short_code as party, d.name, count(distinct i.id) as runs,
+        to_char(min(i.started_at),'HH24:MI:SS') as first_start
+      from ores_reporting_report_instances_tbl i
+      join ores_reporting_report_definitions_tbl d
+        on d.id = i.definition_id and d.valid_to = ores_utility_infinity_timestamp_fn()
+      join (select distinct id, short_code from ores_refdata_parties_tbl
+            where valid_to = ores_utility_infinity_timestamp_fn()) p on p.id = i.party_id
+      where i.started_at >= '2026-11-04 15:00:00+00' and i.started_at < '2026-11-04 15:10:00+00'
+        and d.name in ('Triple Vol Spot Ladder','Bump and Reprice Surface Vega Ladder',
+                       'Spot Ladder','Trades Since Last In')
+      group by 1,2 order by 1,2"
+
+     party  |                 name                 | runs | first_start
+    --------+--------------------------------------+------+-------------
+     ACCOHK | Bump and Reprice Surface Vega Ladder |    1 | 15:00:04
+     ACCOHK | Spot Ladder                          |    1 | 15:00:03
+     ACCOHK | Trades Since Last In                 |    1 | 15:00:02
+     ACCOUK | Bump and Reprice Surface Vega Ladder |    1 | 15:00:01
+     ACCOUK | Spot Ladder                          |    1 | 15:00:01
+     ACCOUK | Trades Since Last In                 |    1 | 15:00:01
+     ACCOUK | Triple Vol Spot Ladder               |    1 | 15:00:00
+     ACCOUS | Bump and Reprice Surface Vega Ladder |    1 | 15:00:01
+     ACCOUS | Spot Ladder                          |    1 | 15:00:02
+     ACCOUS | Trades Since Last In                 |    1 | 15:00:02
+     ACMCOR | Bump and Reprice Surface Vega Ladder |    1 | 15:00:03
+
+Every one of the eleven definitions fired once, within four seconds of the hour,
+with no person acting. The triple vol spot ladder and the three surface ladders
+fired on the hourly expression, and the spot ladders and trades since last in
+fired on their half-hour and quarter-hour expressions, all three of which name
+the top of the hour.
+
+What each run came to, read about three minutes later:
+
+    ./compass.sh sql -- -c "select distinct d.name, s.name as state,
+        to_char(i.started_at,'HH24:MI:SS') as started,
+        to_char(i.completed_at,'HH24:MI:SS') as done,
+        left(i.output_message, 80) as output
+      from ores_reporting_report_instances_tbl i
+      join ores_reporting_report_definitions_tbl d
+        on d.id = i.definition_id and d.valid_to = ores_utility_infinity_timestamp_fn()
+      left join ores_dq_fsm_states_tbl s on s.id = i.fsm_state_id
+      where i.started_at >= '2026-11-04 15:00:00+00'
+        and d.name in ('Triple Vol Spot Ladder','Spot Ladder','Trades Since Last In')
+        and i.valid_to = ores_utility_infinity_timestamp_fn() order by 1"
+
+              name           |   state   | started  |   done   |                output
+    -------------------------+-----------+----------+----------+--------------------------------------
+     Spot Ladder             | completed | 15:00:01 | 15:02:44 | Report execution completed.
+     Spot Ladder             | completed | 15:00:02 | 15:03:15 | Report execution completed.
+     Spot Ladder             | completed | 15:00:03 | 15:03:27 | Report execution completed.
+     Trades Since Last In    | completed | 15:00:01 | 15:02:53 | Report execution completed.
+     Trades Since Last In    | completed | 15:00:02 | 15:02:53 | Report execution completed.
+     Trades Since Last In    | completed | 15:00:02 | 15:03:26 | Report execution completed.
+     Triple Vol Spot Ladder  | failed    | 15:00:00 | 15:02:41 | The run's compute job failed with
+                                                            outcome 3: Engine exited with code 255.
+                                                            Its log records 235 errors; the rows
+                                                            are in Errors.
+
+The spot ladder and trades since last in ran every phase and completed. The
+triple vol spot ladder ran every phase and the engine refused the book it was
+handed, which is the failure its page states: the dataset holds no volatility
+market data, so a surface has nothing to shift. A cadence is not a figure, and
+this is the cadence working.
+
+================================================================================
+4. The quarter hour, which is the cadence the trades report states
+================================================================================
+
+The reporting service's own log shows the run the scheduler started, from the
+gather of the trades onward:
+
+    journalctl --user -u ores.reporting.service-eager_maxwell.service \
+        --since "2026-11-04 14:59"
+
+    15:00:43 [INFO] gather_trades complete | instance=81b75b12-...
+        trades=503 books=24
+    15:00:43 [INFO] gather_market_data asking marketdata to export |
+        instance=af2a7749-... valuation_date=2026-11-04
+        storage_key=reporting/runs/af2a7749-.../market_data.txt
+
+The same report fired again at a quarter past and at half past, which is what
+the table below counts.
+
+    ./compass.sh sql -- -c "select d.name, to_char(i.started_at,'HH24:MI') as minute,
+        count(distinct i.party_id) as parties, count(distinct i.id) as runs
+      from ores_reporting_report_instances_tbl i
+      join ores_reporting_report_definitions_tbl d
+        on d.id = i.definition_id and d.valid_to = ores_utility_infinity_timestamp_fn()
+      where i.started_at >= '2026-11-04 15:00:00+00'
+        and i.valid_to = ores_utility_infinity_timestamp_fn()
+        and d.name in ('Trades Since Last In','Triple Vol Spot Ladder',
+                       'Bump and Reprice Triple Vol Spot Ladder','Spot Ladder',
+                       'Bump and Reprice Surface Vega Ladder')
+      group by 1,2 order by 2,1"
+
+                      name                   | minute | parties | runs
+    -----------------------------------------+--------+---------+------
+     Bump and Reprice Surface Vega Ladder    | 15:00  |       4 |    4
+     Bump and Reprice Triple Vol Spot Ladder | 15:00  |       1 |    1
+     Spot Ladder                             | 15:00  |       3 |    3
+     Trades Since Last In                    | 15:00  |       3 |    3
+     Triple Vol Spot Ladder                  | 15:00  |       1 |    1
+     Bump and Reprice Triple Vol Spot Ladder | 15:15  |       1 |    1
+     Trades Since Last In                    | 15:15  |       3 |    3
+     Spot Ladder                             | 15:30  |       3 |    3
+     Trades Since Last In                    | 15:30  |       3 |    3
+
+Trades since last in fired three times in half an hour, at the hour, at a quarter
+past and at half past, in all three parties. The spot ladder fired at the hour and
+at half past, in all three parties, and not at a quarter past. Neither triple
+fired after the hour: an hourly expression fires once in the half hour this
+window covers.
+
+================================================================================
+5. The definition the environment carried from the 2026-11-03 publish
+================================================================================
+
+The fifteen o'clock pass showed a second triple, under the name the catalogue
+used before the ladder family was renamed: "Bump and Reprice Triple Vol Spot
+Ladder", which the party still held with a job at the old fifteen-minute
+expression. It fired at 15:15 and the catalogue's own triple did not, which is
+the two schedules in one environment disagreeing.
+
+That definition is the older statement of the same report, and its job is the
+one firing the triple every fifteen minutes, so the job was ended:
+
+    ./compass.sh shell --no-login -l .../evidence/unschedule_the_legacy_triple.ores
+
+    > account_operations switch-party 5b21df84-...
+    > report_operations unschedule-report-definitions 0ac857b2-...
+    {"success":true,"message":"","unscheduled_count":1,"failed_ids":[]}
+
+The definition itself is left in place with no job, because a definition a person
+may run is what the row is, and deleting another catalogue's row is not this
+task's to do. The half past pass confirms the result: no triple fired at 15:30.
+
+The same older publish left seven more jobs on three definitions the catalogue
+now states under other names: "Bump and Reprice Spot Greeks" in three parties,
+its "(EOD)" twin in three parties, and "Bump and Reprice Triple Vol Spot Ladder
+(EOD)" in London. Their expressions match the cadences the agreed table states
+for the same reports, so they do not contradict it; they do mean that the spot
+greeks and the close triple run twice for each firing. That duplication is the
+older catalogue's and is left for the work that retires it, and the notes of this
+task say so.
+
+================================================================================
+6. What this proves, and what it does not
+================================================================================
+
+The catalogue states the agreed cadence, each party's definitions state it, and
+the scheduler holds a job for each definition with the same expression. The
+scheduler fired every definition at the cadence its expression states, with no
+person acting, and a reader can see the quarter-hour and the hour come apart.
+
+The reports still meet the engine on inputs the environment does not hold: the
+triple's run records the engine's refusal with 235 errors, which is the failure
+its page states. The spot ladder and trades since last in ran every phase and
+completed. A figure is not what this task set, and the pages say so.

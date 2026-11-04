@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:reporting:ore:
 #+created: 2026-05-25
-#+updated: 2026-05-25
+#+updated: 2026-11-04
 
 This document covers market risk and trading desk reporting in
 [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]: the reports used by traders, risk managers, and quantitative
@@ -245,7 +245,7 @@ P&L.
 ** Spot Ladder
 
 | Cycle       | intraday      |
-| Frequency   | on-demand     |
+| Frequency   | on-demand · scheduled |
 | Audience    | trading-desk  |
 | Scope       | book          |
 | Methodology | audit-derived |
@@ -498,7 +498,7 @@ scaled risk (IPV risk number = Greek × IPV market data move).
 ** Trades Since Last In Report
 
 | Cycle       | intraday                      |
-| Frequency   | on-demand                     |
+| Frequency   | on-demand · scheduled         |
 | Audience    | trading-desk · middle-office  |
 | Scope       | book · portfolio              |
 | Methodology | audit-derived                 |

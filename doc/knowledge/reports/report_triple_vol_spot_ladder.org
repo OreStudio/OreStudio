@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :report:trading-desk:greeks:volatility:intraday:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-04
 #+report_code: triple_vol_spot_ladder
 #+startup: inlineimages
 
@@ -15,11 +15,11 @@ This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
 Bump and Reprice Triple Vol Spot Ladder. It puts the three volatility Greeks of a book against
 every curve tenor at each spot shift level, so a desk reads vol and skew risk
 against a moving spot in one table. The trading desk reads it and the market risk
-function reads it, on the book scope. It runs every fifteen minutes through the
-London trading day on weekdays, from the live cut, and a person may ask for one
-at any time. It leaves the engine's own output archive behind and records the cut
-its run minted. The result store that would carry the rows is not built, so a
-reader opens the CSV files in the archive.
+function reads it, on the book scope. It runs every hour, at every hour of every
+day, from the live cut, and a person may ask for one at any time. It leaves the
+engine's own output archive behind and records the cut its run minted. The result
+store that would carry the rows is not built, so a reader opens the CSV files in
+the archive.
 
 * Purpose
 
@@ -47,10 +47,16 @@ produces natively and which a reader must derive.
 
 * Frequency
 
-Cycle =intraday=. The definition is seeded with the expression
-=*/15 8-17 * * 1-5=, which fires it every fifteen minutes through the London
-trading day on weekdays, and a person may ask for one at any time. It is not a
-member of an ordered batch.
+Cycle =intraday=. The definition is seeded with the expression =0 * * * *=, which
+fires it at the first minute of every hour, around the clock and on every day of
+the week, and a person may ask for one at any time. The product owner set that
+cadence on 2026-11-04, because the report costs a full sensitivity run and a desk
+reads its shape between the closes rather than inside them. It is not a member of
+an ordered batch.
+
+The close twin, [[file:./report_triple_vol_spot_ladder_eod.org][Bump and Reprice
+Triple Vol Spot Ladder (EOD)]], keeps its own expression, =0 18 * * 1-5=, which
+fires it at 18:00 on weekdays.
 
 The concurrency policy is =skip=. A firing that arrives while a run of the same
 definition is in flight is dropped.

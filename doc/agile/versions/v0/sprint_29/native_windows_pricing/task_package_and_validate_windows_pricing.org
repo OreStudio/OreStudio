@@ -8,7 +8,7 @@
 #+filetags: :build:compute:native_windows_pricing:sprint_29:v0:
 #+owner: alexhock
 #+branch: fix/windows-upstream-sync
-#+pr:
+#+pr: 4461
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -70,7 +70,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4461][#4461]] | [build,compute] Add native Windows services and ORE pricing |
 
 * Review
 

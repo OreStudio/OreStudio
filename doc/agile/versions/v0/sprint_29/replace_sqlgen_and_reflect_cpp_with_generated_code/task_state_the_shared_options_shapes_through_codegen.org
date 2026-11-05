@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :codegen:serialisation:replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/state-the-shared-options-shapes-through-codegen
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Every options type a service is built from states its wire shape through codegen
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-05                               |
 
 * Acceptance
@@ -40,9 +40,12 @@ Every options type a service is built from states its wire shape through codegen
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One archetype in the field-group facet, =options_header=, writes an options
+struct where its library keeps it, from a field group model that names its
+header. A converter read each hand-written header into its model, and a
+comparison requires the generated header to hold the same code as main's.
+Components outside the drift registry join it with their component model
+excluded, so only the options models regenerate.
 
 * Measurements
 
@@ -56,9 +59,16 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Options headers generated | 10 | =compare_headers.py origin/main= | 63f13cd30b |
+| Headers whose code differs from main | 0, beyond two include guards | =compare_headers.py origin/main= | 63f13cd30b |
+| Codegen suite | 1714 passed | =pytest projects/ores.codegen/tests= | 63f13cd30b |
 
 * Notes
+
+=context_factory::configuration= in ores.database keeps its hand-written
+shape. It is a struct nested in a class, the configuration a context is made
+from, and no options type: moving it out of the class would change every
+caller for no gain in what the wire carries.
 
 * Test Scenarios
 
@@ -84,3 +94,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All ten options types state their shapes through codegen: logging, nats,
+database, telemetry and the HTTP server's, and the options of the compute
+wrapper, the HTTP server, the official market data adapter and the shell's
+two. The new =options_header= archetype writes each from a field group model,
+with =:secret:= keeping a value out of the shape, an optional printer and a
+paste point for declarations such as =to_connection_options=. logging, nats
+and database joined the drift registry with their component models excluded.
+The generated headers hold the same code as main's.

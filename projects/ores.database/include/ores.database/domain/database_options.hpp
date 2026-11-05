@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DATABASE_DATABASE_OPTIONS_HPP
-#define ORES_DATABASE_DATABASE_OPTIONS_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_options_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_DATABASE_DOMAIN_DATABASE_OPTIONS_HPP
+#define ORES_DATABASE_DOMAIN_DATABASE_OPTIONS_HPP
 
 #include "ores.database/export.hpp"
 #include "ores.database/pq/connection.hpp"
@@ -90,7 +95,6 @@ static_assert(::ores::utility::codec::names_every_member<database_options>(1),
               "database_options has a member its wire shape does not name");
 
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_options& v);
-
 /**
  * @brief The libpq connection options of database_options.
  *

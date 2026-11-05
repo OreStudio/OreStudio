@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_options_header.hpp.mustache
+ * To modify, update the template and regenerate.
  */
 #ifndef ORES_HTTP_SERVER_CONFIG_OPTIONS_HPP
 #define ORES_HTTP_SERVER_CONFIG_OPTIONS_HPP
@@ -41,22 +46,18 @@ struct options final {
      * @brief Configuration options related to logging, if any.
      */
     std::optional<ores::logging::logging_options> logging;
-
     /**
      * @brief Configuration related to HTTP server operations.
      */
     http::net::http_server_options server;
-
     /**
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
-
     /**
      * @brief Configuration related to NATS messaging.
      */
     ores::nats::config::nats_options nats;
-
     /**
      * @brief Root directory for object storage (all buckets live under this path).
      *
@@ -64,26 +65,23 @@ struct options final {
      * bucket of its own: it creates one on the first write to it, so the
      * callers' bucket and key protocol decides what appears here.
      */
-    std::string storage_dir{"/var/ores/http-server/storage"};
-
+    std::string storage_dir = "/var/ores/http-server/storage";
     /**
      * @brief The name the session cookie is issued under.
      *
      * Carries this deployment's environment, so two deployments on one host cannot
-     * overwrite each other's session. Over TLS the server adds the =__Host-= prefix a
+     * overwrite each other's session. Over TLS the server adds the __Host- prefix a
      * Secure cookie requires.
      */
-    std::string web_session_name{"ores_web_session"};
-
+    std::string web_session_name = "ores_web_session";
     /**
      * @brief The built browser bundle this server answers for, when there is one.
      *
-     * The directory a build wrote: =index.html=, the =assets/= it names, and the
+     * The directory a build wrote: index.html, the assets/ it names, and the
      * prebuilt copies beside them. Empty means the server serves no bundle, and a
      * directory that is not there is logged and skipped rather than served empty.
      */
-    std::string web_dir{"/var/ores/http-server/web"};
-
+    std::string web_dir = "/var/ores/http-server/web";
     /**
      * @brief Override for the HTTP base URL advertised via NATS service discovery.
      *

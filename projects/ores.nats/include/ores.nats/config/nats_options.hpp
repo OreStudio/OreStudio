@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_options_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_NATS_CONFIG_NATS_OPTIONS_HPP
 #define ORES_NATS_CONFIG_NATS_OPTIONS_HPP
 
@@ -38,7 +43,6 @@ struct nats_options final {
      *        "tls+tcp://localhost:4222" for TLS).
      */
     std::string url = "nats://localhost:4222";
-
     /**
      * @brief Subject prefix applied to every outbound subject.
      *
@@ -49,7 +53,6 @@ struct nats_options final {
      * externally).
      */
     std::string subject_prefix;
-
     /**
      * @brief Mutual TLS settings.
      *
@@ -64,7 +67,6 @@ struct nats_options final {
     std::string tls_ca_cert;
     std::string tls_client_cert;
     std::string tls_client_key;
-
     /**
      * @brief Wire format used to serialize every NATS message body this
      * process sends and decode every one it receives, decided once at
@@ -97,6 +99,7 @@ struct nats_options final {
 
 static_assert(::ores::utility::codec::names_every_member<nats_options>(),
               "nats_options has a member its wire shape does not name");
+
 
 }
 

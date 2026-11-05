@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HTTP_NET_HTTP_SERVER_OPTIONS_HPP
-#define ORES_HTTP_NET_HTTP_SERVER_OPTIONS_HPP
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_options_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_HTTP_API_NET_HTTP_SERVER_OPTIONS_HPP
+#define ORES_HTTP_API_NET_HTTP_SERVER_OPTIONS_HPP
 
 #include "ores.http.api/export.hpp"
 #include "ores.utility/codec/member_count.hpp"
@@ -39,22 +44,18 @@ struct http_server_options final {
      * @brief Address to bind to (default: 0.0.0.0).
      */
     std::string address = "0.0.0.0";
-
     /**
      * @brief Port to listen on.
      */
     std::uint16_t port = 8080;
-
     /**
      * @brief Maximum number of concurrent connections.
      */
     std::uint32_t max_connections = 100;
-
     /**
      * @brief Request timeout duration.
      */
-    std::chrono::seconds request_timeout{30};
-
+    std::chrono::seconds request_timeout = 30;
     /**
      * @brief The body limit a route gets when it states none.
      *
@@ -63,7 +64,6 @@ struct http_server_options final {
      * rather than reading it.
      */
     std::uint64_t default_max_body_size = 1024 * 1024;
-
     /**
      * @brief Maximum accepted request body size, in bytes.
      *
@@ -72,7 +72,6 @@ struct http_server_options final {
      * (tens of MB) -- storage_routes' PUT handler needs this raised.
      */
     std::uint64_t max_body_size = 256 * 1024 * 1024;
-
     /**
      * @brief How much of a streamed body is read at a time, in bytes.
      *
@@ -80,7 +79,6 @@ struct http_server_options final {
      * one of these, hands it on, and reads the next.
      */
     std::size_t body_chunk_size = 64 * 1024;
-
     /**
      * @brief How much of a streamed response is written at a time, in bytes.
      *
@@ -88,7 +86,6 @@ struct http_server_options final {
      * written one of these at a time, never held whole.
      */
     std::size_t response_chunk_size = 64 * 1024;
-
     /**
      * @brief Maximum accepted size of the request headers, in bytes.
      *
@@ -99,7 +96,6 @@ struct http_server_options final {
      * read, and it stays bounded so a header cannot grow without limit.
      */
     std::uint32_t max_header_size = 64 * 1024;
-
     /**
      * @brief Threads that run a route handler.
      *
@@ -109,7 +105,6 @@ struct http_server_options final {
      * stays on its own executor. Zero selects the default of eight.
      */
     std::size_t worker_threads = 0;
-
     /**
      * @brief Handlers the pool accepts at once.
      *
@@ -118,48 +113,40 @@ struct http_server_options final {
      * share. Zero removes the cap, which is only appropriate for a test.
      */
     std::size_t max_inflight_requests = 1024;
-
     /**
      * @brief How often a session's byte totals are written.
      *
      * The totals are kept in memory and written once per interval, from a
      * worker, so a request never waits on the database for a counter.
      */
-    std::chrono::seconds bytes_flush_interval{5};
-
+    std::chrono::seconds bytes_flush_interval = 5;
     /**
      * @brief How long a quiet session keeps its totals in memory.
      *
      * Bounds what a long-lived process holds. A session that comes back after
      * this window starts its total again from that point.
      */
-    std::chrono::seconds bytes_retain{3600};
-
+    std::chrono::seconds bytes_retain = 3600;
     /**
      * @brief Whether to enable SSL/TLS.
      */
     bool enable_ssl = false;
-
     /**
      * @brief Path to SSL certificate file.
      */
     std::string certificate_file;
-
     /**
      * @brief Path to SSL private key file.
      */
     std::string private_key_file;
-
     /**
      * @brief Enable CORS support.
      */
     bool enable_cors = true;
-
     /**
      * @brief Allowed origins for CORS (empty = all).
      */
     std::string cors_allowed_origins = "*";
-
     /**
      * @brief Server identifier for responses.
      */

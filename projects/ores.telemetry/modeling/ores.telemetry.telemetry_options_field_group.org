@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 38F764EE-C731-4A0C-ABB6-A2581A11F664
+:ores.cpp.field-group.field_group_header.enabled: nil
+:ores.cpp.field-group.options_header.enabled: true
+:ores.ts.enabled: nil
+:END:
+#+title: ores.telemetry.telemetry_options
+#+description: Options related to telemetry export.
+#+type: ores.codegen.field_group
+#+component: telemetry
+#+subcomponent: core
+#+entity_singular: telemetry_options
+#+namespace: ores::telemetry::exporting
+#+brief: Options related to telemetry export.
+#+header: exporting/telemetry_options.hpp
+#+export_macro: ORES_TELEMETRY_CORE_EXPORT
+#+filetags: :model:field_group:options:telemetry:
+#+created: 2026-11-05
+#+updated: 2026-11-05
+
+
+These options control the export of log records to external systems for
+centralized log aggregation and analysis. When enabled, all log records
+are captured by a telemetry sink and exported to the configured destination.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.telemetry.core/export.hpp"
+#include <chrono>
+#include <cstdint>
+#include <filesystem>
+#include <string>
+#+end_src
+
+* Fields
+
+** service_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Name of the service producing telemetry.
+
+This is used to identify the service in exported log records and follows
+OpenTelemetry semantic conventions for service.name.
+
+** service_version
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Version of the service producing telemetry.
+
+This is used for service.version in the resource attributes.
+
+** output_file
+:PROPERTIES:
+:cpp_type: std::filesystem::path
+:END:
+
+Path to the output file for telemetry export.
+
+Log records are written in JSON Lines format (.jsonl). Each record is
+a single JSON object on its own line.
+
+** output_directory
+:PROPERTIES:
+:cpp_type: std::filesystem::path
+:END:
+
+Directory in which to place the telemetry output file.
+
+If output_file is a relative path, it is resolved relative to this
+directory. If empty, the current working directory is used.
+
+** streaming_enabled
+:PROPERTIES:
+:cpp_type: bool
+:default_value: false
+:END:
+
+Enable streaming of log records to the server.
+
+When enabled, log records are batched and sent to the server in addition
+to being written to the local file. If the connection is not available,
+records are buffered locally and sent when the connection is restored.
+
+Default: false (file-only export).
+
+** batch_size
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default_value: 50
+:END:
+
+Number of records to batch before sending to the server.
+
+Records are accumulated until this threshold is reached, at which point
+they are sent as a single batch. Larger batch sizes improve network
+efficiency at the cost of higher memory usage and potential data loss
+on crash.
+
+Default: 50 records.
+
+** flush_interval
+:PROPERTIES:
+:cpp_type: std::chrono::seconds
+:default_value: 5
+:END:
+
+Maximum time to wait before flushing a partial batch.
+
+Even if batch_size hasn't been reached, records will be sent after this
+interval to ensure timely delivery. This balances network efficiency
+with latency requirements.
+
+Default: 5 seconds.
+

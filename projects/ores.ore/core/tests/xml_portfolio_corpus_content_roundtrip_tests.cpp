@@ -62,18 +62,7 @@ using namespace ores::ore::xml;
  * rather than a licence to keep it.
  */
 const std::set<std::string>& known_losses() {
-    static const std::set<std::string> losses = {
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Identifier",
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Quantity",
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Underlying[1]/IdentifierType",
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Underlying[1]/Name",
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Underlying[1]/Type",
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Underlying[1]/Weight",
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Underlying[2]/IdentifierType",
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Underlying[2]/Name",
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Underlying[2]/Type",
-        "TotalReturnSwap lost Trade/TotalReturnSwapData/UnderlyingData/SubTrade/BondBasketData/Underlying[2]/Weight",
-    };
+    static const std::set<std::string> losses = {};
     return losses;
 }
 

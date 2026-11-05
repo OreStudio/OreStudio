@@ -139,16 +139,16 @@ void bond_instrument_commands::register_commands(cli::Menu& root_menu, nats_clie
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_type_code> <trade_activity_id> <issue_id> <notional> <reason> "
-        "<commentary>");
+        "add <trade_id> <trade_type_code> <trade_activity_id> <issue_id> <position_identifier> "
+        "<notional> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_type_code> <trade_activity_id> <issue_id> <notional> <reason> "
-        "<commentary> [--version <n>]");
+        "set <trade_id> <trade_type_code> <trade_activity_id> <issue_id> <position_identifier> "
+        "<notional> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -156,7 +156,7 @@ void bond_instrument_commands::register_commands(cli::Menu& root_menu, nats_clie
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <issue_id> "
-        "<notional> <reason> <commentary>");
+        "<position_identifier> <notional> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -357,8 +357,8 @@ void bond_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -370,6 +370,9 @@ void bond_instrument_commands::process_add(std::ostream& out,
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         bond_instrument_read_token(
             req.change.write.issue_id, parsed->positionals[next++], "issue_id");
+        bond_instrument_read_token(req.change.write.position_identifier,
+                                   parsed->positionals[next++],
+                                   "position_identifier");
         bond_instrument_read_token(
             req.change.write.notional, parsed->positionals[next++], "notional");
         req.intent.reason_code = parsed->positionals[next++];
@@ -416,8 +419,8 @@ void bond_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -429,6 +432,9 @@ void bond_instrument_commands::process_set(std::ostream& out,
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         bond_instrument_read_token(
             req.change.write.issue_id, parsed->positionals[next++], "issue_id");
+        bond_instrument_read_token(req.change.write.position_identifier,
+                                   parsed->positionals[next++],
+                                   "position_identifier");
         bond_instrument_read_token(
             req.change.write.notional, parsed->positionals[next++], "notional");
         req.intent.reason_code = parsed->positionals[next++];
@@ -487,8 +493,8 @@ void bond_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -502,6 +508,9 @@ void bond_instrument_commands::process_put_many(std::ostream& out,
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             bond_instrument_read_token(
                 change.write.issue_id, parsed->positionals[next++], "issue_id");
+            bond_instrument_read_token(change.write.position_identifier,
+                                       parsed->positionals[next++],
+                                       "position_identifier");
             bond_instrument_read_token(
                 change.write.notional, parsed->positionals[next++], "notional");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

@@ -38,6 +38,7 @@
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/bond_document_ops.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include "ores.trading.api/messaging/instrument_underlying_protocol.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_notional_protocol.hpp"
@@ -1822,6 +1823,49 @@ std::string save_bond_instrument(
     auto instrument = data.instrument;
     auto issue = data.issue;
 
+    // A bond position on a basket names no issue: its bonds are underlying
+    // rows, written after the instrument they belong to.
+    if (instrument.identity.trade_type_code == "BondPosition" &&
+        instrument.issue_id == boost::uuids::uuid{}) {
+        put_bond_instrument_request position_req;
+        position_req.change.write.trade_id = instrument.identity.trade_id;
+        position_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
+        position_req.change.write.trade_type_code = instrument.identity.trade_type_code;
+        position_req.change.write.issue_id = instrument.issue_id;
+        position_req.change.write.notional = instrument.notional;
+        position_req.change.write.position_identifier = instrument.position_identifier;
+        auto position_resp = nats_call(nats, position_req, error);
+        if (!position_resp || position_resp->result.outcome != ores::utility::domain::outcome::ok)
+            return error.empty() ? "save_bond_instrument failed" : error;
+        for (const auto& row : data.instrument_underlyings) {
+            ores::trading::messaging::put_instrument_underlying_request underlying_req;
+            auto& w = underlying_req.change.write;
+            w.trade_id = instrument.identity.trade_id;
+            w.trade_activity_id = instrument.identity.trade_activity_id;
+            w.underlying_role = row.underlying_role;
+            w.sequence_number = row.sequence_number;
+            w.underlying_type = row.underlying_type;
+            w.name = row.name;
+            w.identifier_type = row.identifier_type;
+            w.currency = row.currency;
+            w.exchange = row.exchange;
+            w.weight = row.weight;
+            w.price_type = row.price_type;
+            w.future_month_offset = row.future_month_offset;
+            w.delivery_roll_days = row.delivery_roll_days;
+            w.delivery_roll_calendar = row.delivery_roll_calendar;
+            w.future_expiry_date = row.future_expiry_date;
+            w.future_contract_month = row.future_contract_month;
+            w.interpolation = row.interpolation;
+            w.bid_ask_adjustment = row.bid_ask_adjustment;
+            auto underlying_resp = nats_call(nats, underlying_req, error);
+            if (!underlying_resp ||
+                underlying_resp->result.outcome != ores::utility::domain::outcome::ok)
+                return error.empty() ? "save_instrument_underlying failed" : error;
+        }
+        return {};
+    }
+
     // A package the system writes names a security by its issue's id. The
     // issue the tenant holds under that id keeps its own security id.
     if (const auto id = uuid_named(issue.security_id)) {
@@ -1899,6 +1943,7 @@ std::string save_bond_instrument(
     instrument_req.change.write.trade_type_code = instrument.identity.trade_type_code;
     instrument_req.change.write.issue_id = instrument.issue_id;
     instrument_req.change.write.notional = instrument.notional;
+    instrument_req.change.write.position_identifier = instrument.position_identifier;
     auto resp = nats_call(nats, instrument_req, error);
     if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
         return error.empty() ? "save_bond_instrument failed" : error;

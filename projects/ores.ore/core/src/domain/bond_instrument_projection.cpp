@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -86,7 +87,8 @@ constexpr std::string_view change_commentary = "Imported from ORE XML";
 constexpr bool is_bond_trade_type(std::string_view type) {
     return type == "Bond" || type == "ForwardBond" || type == "CallableBond" ||
            type == "ConvertibleBond" || type == "BondOption" || type == "BondTRS" ||
-           type == "BondRepo" || type == "BondFuture" || type == "Ascot";
+           type == "BondRepo" || type == "BondFuture" || type == "BondPosition" ||
+           type == "Ascot";
 }
 
 template <typename Row>
@@ -1630,6 +1632,29 @@ void write_ascot(record_writer trade,
 
 }
 
+/// A bond position on a basket: its quantity, the name it gives the basket
+/// and its bonds, which are underlying rows because no single issue holds them.
+auto read_bond_position(const record_reader& trade) -> bond_instrument_data {
+    auto result = make_base("BondPosition");
+    const auto data = trade.child("BondBasketData");
+    if (!data)
+        return result;
+    result.instrument.notional = data->decimal("Quantity");
+    if (data->has("Identifier"))
+        result.instrument.position_identifier = data->text("Identifier");
+    underlying_block::read_underlyings(result, *data, "Underlying", "underlying");
+    return result;
+}
+
+void write_bond_position(record_writer trade, const bond_instrument_data& data) {
+    auto d = trade.child("BondBasketData");
+    if (data.instrument.notional)
+        d.set_decimal("Quantity", *data.instrument.notional);
+    if (data.instrument.position_identifier)
+        d.set_text("Identifier", *data.instrument.position_identifier);
+    underlying_block::write_underlyings(d, "Underlying", data, "underlying");
+}
+
 auto read_bond_instrument(xml::record_reader trade, std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument> {
     if (!is_bond_trade_type(trade_type))
@@ -1651,6 +1676,8 @@ auto read_bond_instrument(xml::record_reader trade, std::string_view trade_type)
         return trading::domain::trade_instrument{read_bond_repo(trade)};
     if (trade_type == "BondFuture")
         return trading::domain::trade_instrument{read_bond_future(trade)};
+    if (trade_type == "BondPosition")
+        return trading::domain::trade_instrument{read_bond_position(trade)};
     return trading::domain::trade_instrument{read_ascot(trade)};
 }
 
@@ -1679,6 +1706,8 @@ auto write_bond_instrument(xml::record_writer& trade,
         write_bond_repo(trade, *data, reference_curve);
     else if (trade_type == "BondFuture")
         write_bond_future(trade, *data, reference_curve);
+    else if (trade_type == "BondPosition")
+        write_bond_position(trade, *data);
     else
         write_ascot(trade, *data, reference_curve);
     return true;

@@ -45,6 +45,8 @@ render_bond_instrument_fields(const domain::bond_instrument& v) {
                       .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Issue ID", .value = boost::uuids::to_string(v.issue_id)});
     fields.push_back(
+        {.name = "Position Identifier", .value = v.position_identifier.value_or(std::string{})});
+    fields.push_back(
         {.name = "Notional", .value = v.notional ? v.notional->to_string() : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

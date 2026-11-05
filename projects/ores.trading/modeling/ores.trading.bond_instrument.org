@@ -112,21 +112,34 @@ The activity that wrote this version.
 :PROPERTIES:
 :type:     uuid
 :cpp_type: boost::uuids::uuid
-:nullable: false
+:nullable: true
 :economic: false
 :END:
 
 UUID of the bond issue this instrument trades (FK to
 =ores_trading_bond_issues_tbl=).
 
-NOT NULL: a bond product row with no issue is not a bond product. The
-issue holds the bond's terms; the instrument row reads them through a
+A bond product row states its issue: a row with no issue is not a bond
+product. The one exception is a bond position on a basket, which holds
+several bonds and states them as instrument_underlying rows, so it names
+no single issue. The issue holds the bond's terms; the instrument row reads them through a
 temporal join on this key, so an amended term reads as of the
 instrument row's own validity.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
 #+end_src
+
+** position_identifier
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The name a bond position gives its basket, as =BondBasketData/Identifier=
+states it.
 
 ** notional
 :PROPERTIES:
@@ -199,7 +212,7 @@ is immutable.
 :PROPERTIES:
 :table:          ores_trading_bond_issues_tbl
 :target_column:  issue_id
-:nullable:       false
+:nullable:       true
 :error_message:  Invalid issue_id: %. The bond issue must exist for tenant.
 :cascade_orphan: true
 :END:
@@ -253,6 +266,12 @@ closes them when the last instrument of the issue is deleted.
 ** instrument_schedule_dates
 :PROPERTIES:
 :table:  ores_trading_instrument_schedule_dates_tbl
+:column: trade_id
+:END:
+
+** instrument_underlyings
+:PROPERTIES:
+:table:  ores_trading_instrument_underlyings_tbl
 :column: trade_id
 :END:
 
@@ -337,6 +356,12 @@ closes them when the last instrument of the issue is deleted.
 |------------+---------------------+--------+--------------+----------------------|
 | party      | tenant_id, party_id | false  | true         |                      |
 | trade_type | tenant_id, trade_type_code | false | true    |                      |
+
+** Checks
+
+| expression |
+|---|
+| "issue_id" is not null or "trade_type_code" = 'BondPosition' |
 * C++
 
 The C++ domain class nests the scaffolding columns and the columns

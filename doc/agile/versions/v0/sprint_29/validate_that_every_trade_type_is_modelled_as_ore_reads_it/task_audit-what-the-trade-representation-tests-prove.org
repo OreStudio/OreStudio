@@ -170,6 +170,13 @@ Agreed with the product owner on 2026-11-04.
   commodity future terms), keyed by trade, role and ordinal. A product's
   fact row keeps the first name as its summary. A product stored before
   the rows were kept writes that name.
+- A bond position on a basket names no single issue. Agreed with the
+  product owner on 2026-11-05: =bond_instrument.issue_id= is optional for
+  a =BondPosition= only, and the basket's bonds are =instrument_underlying=
+  rows with the basket's name in =position_identifier=. A single-bond
+  position, which the synthetic generator writes, keeps its issue.
+- An empty element states no value to the corpus differ, because ORE reads
+  =<FirstDate/>= as it reads no =FirstDate=.
 - Scripted trades model every parameter. ORE reads any scripted trade,
   generic or named, as named parameters of five kinds (Event, Number,
   Index, Currency, Daycounter), each a scalar, a list of values or, for an

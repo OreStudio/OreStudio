@@ -80,7 +80,7 @@ struct telemetry_options final {
      *
      * Default: false (file-only export).
      */
-    bool streaming_enabled = false;
+    bool streaming_enabled{false};
     /**
      * @brief Number of records to batch before sending to the server.
      *
@@ -91,7 +91,7 @@ struct telemetry_options final {
      *
      * Default: 50 records.
      */
-    std::uint32_t batch_size = 50;
+    std::uint32_t batch_size{50};
     /**
      * @brief Maximum time to wait before flushing a partial batch.
      *
@@ -101,7 +101,7 @@ struct telemetry_options final {
      *
      * Default: 5 seconds.
      */
-    std::chrono::seconds flush_interval = 5;
+    std::chrono::seconds flush_interval{5};
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<telemetry_options>) {
@@ -120,6 +120,7 @@ static_assert(::ores::utility::codec::names_every_member<telemetry_options>(),
               "telemetry_options has a member its wire shape does not name");
 
 ORES_TELEMETRY_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const telemetry_options& v);
+
 
 }
 

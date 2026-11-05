@@ -51,7 +51,7 @@ struct logging_options final {
     /**
      * @brief If true, dumps the log into the console.
      */
-    bool output_to_console = false;
+    bool output_to_console{false};
     /**
      * @brief Directory in which to place the output.
      */
@@ -62,7 +62,7 @@ struct logging_options final {
      * When enabled, the filename is modified to include the PID before the
      * extension. For example: "app.log" becomes "app.12345.log".
      */
-    bool include_pid = false;
+    bool include_pid{false};
     /**
      * @brief If set, embeds the replica index in the log filename before the
      * extension (and before the PID if include_pid is also set).
@@ -93,6 +93,7 @@ static_assert(::ores::utility::codec::names_every_member<logging_options>(),
               "logging_options has a member its wire shape does not name");
 
 ORES_LOGGING_EXPORT std::ostream& operator<<(std::ostream& s, const logging_options& v);
+
 
 }
 

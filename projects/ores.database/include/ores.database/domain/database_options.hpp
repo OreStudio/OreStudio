@@ -50,7 +50,7 @@ struct database_options final {
     /**
      * @brief Host to connect to.
      */
-    std::string host = "localhost";
+    std::string host{"localhost"};
     /**
      * @brief Database to connect to.
      */
@@ -58,7 +58,7 @@ struct database_options final {
     /**
      * @brief Port the database is listening on.
      */
-    int port = 5432;
+    int port{5432};
     /**
      * @brief Tenant code or ID for multi-tenant isolation.
      *
@@ -69,14 +69,14 @@ struct database_options final {
     /**
      * @brief Number of connections in this service's connection pool.
      */
-    int pool_size = 2;
+    int pool_size{2};
     /**
      * @brief Backoff strategy for pool acquisition retries.
      *
      * "exponential" (the default) doubles the wait between attempts;
      * "linear" waits a fixed interval per attempt.
      */
-    std::string pool_backoff = "exponential";
+    std::string pool_backoff{"exponential"};
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<database_options>) {
@@ -95,6 +95,7 @@ static_assert(::ores::utility::codec::names_every_member<database_options>(1),
               "database_options has a member its wire shape does not name");
 
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_options& v);
+
 /**
  * @brief The libpq connection options of database_options.
  *

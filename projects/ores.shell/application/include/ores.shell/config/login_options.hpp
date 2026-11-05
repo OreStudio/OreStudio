@@ -58,6 +58,7 @@ static_assert(::ores::utility::codec::names_every_member<login_options>(1),
 
 std::ostream& operator<<(std::ostream& s, const login_options& v);
 
+
 }
 
 #endif

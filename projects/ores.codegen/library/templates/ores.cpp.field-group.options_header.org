@@ -58,7 +58,7 @@ struct {{field_group.entity_singular}} final {
 {{/doc_lines}}
      */
 {{/has_doc}}
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{{cpp_type}}} {{name}}{{#default_value}}{ {{{default_value}}} }{{/default_value}};
 {{/field_group.options_fields}}
 };
 
@@ -77,6 +77,7 @@ static_assert(::ores::utility::codec::names_every_member<{{field_group.entity_si
 
 {{#field_group.has_printer}}
 {{field_group.export_macro}} std::ostream& operator<<(std::ostream& s, const {{field_group.entity_singular}}& v);
+
 {{/field_group.has_printer}}
 <<paste:CE396148-1E64-4D37-8D78-6430915C0F9F>>
 

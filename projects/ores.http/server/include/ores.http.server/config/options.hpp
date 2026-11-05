@@ -65,7 +65,7 @@ struct options final {
      * bucket of its own: it creates one on the first write to it, so the
      * callers' bucket and key protocol decides what appears here.
      */
-    std::string storage_dir = "/var/ores/http-server/storage";
+    std::string storage_dir{"/var/ores/http-server/storage"};
     /**
      * @brief The name the session cookie is issued under.
      *
@@ -73,7 +73,7 @@ struct options final {
      * overwrite each other's session. Over TLS the server adds the __Host- prefix a
      * Secure cookie requires.
      */
-    std::string web_session_name = "ores_web_session";
+    std::string web_session_name{"ores_web_session"};
     /**
      * @brief The built browser bundle this server answers for, when there is one.
      *
@@ -81,7 +81,7 @@ struct options final {
      * prebuilt copies beside them. Empty means the server serves no bundle, and a
      * directory that is not there is logged and skipped rather than served empty.
      */
-    std::string web_dir = "/var/ores/http-server/web";
+    std::string web_dir{"/var/ores/http-server/web"};
     /**
      * @brief Override for the HTTP base URL advertised via NATS service discovery.
      *
@@ -107,6 +107,7 @@ static_assert(::ores::utility::codec::names_every_member<options>(),
               "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
+
 
 }
 

@@ -42,7 +42,7 @@ struct nats_options final {
      * @brief NATS server URL (e.g. "nats://localhost:4222" or
      *        "tls+tcp://localhost:4222" for TLS).
      */
-    std::string url = "nats://localhost:4222";
+    std::string url{"nats://localhost:4222"};
     /**
      * @brief Subject prefix applied to every outbound subject.
      *
@@ -83,7 +83,7 @@ struct nats_options final {
      * no-op for any caller that didn't deliberately override format,
      * instead of a footgun that resets the global on every reconnect.
      */
-    ores::nats::wire_format format = ores::nats::default_wire_codec().format();
+    ores::nats::wire_format format{ores::nats::default_wire_codec().format()};
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<nats_options>) {

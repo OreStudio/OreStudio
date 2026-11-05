@@ -83,6 +83,7 @@ static_assert(::ores::utility::codec::names_every_member<options>(),
 
 std::ostream& operator<<(std::ostream& s, const options& v);
 
+
 }
 
 #endif

@@ -8,6 +8,7 @@ field, its command-line declaration and its assignment from that list. A
 service whose application is hand-written turns ores.cpp.service-app off and
 its five config addresses on, and gets the config files and nothing else.
 """
+import re
 import sys
 from pathlib import Path
 
@@ -257,3 +258,32 @@ def test_an_options_struct_declares_its_printer_unless_told_not_to(tmp_path):
     assert "ORES_DEMO_EXPORT std::ostream& operator<<" in with_printer
     assert "operator<<" not in without
     assert "<iosfwd>" not in without
+
+
+def test_a_default_is_brace_initialised_so_an_explicit_constructor_compiles(tmp_path):
+    """std::chrono::seconds has an explicit constructor: '= 30' does not compile."""
+    chrono = OPTIONS_STRUCT.replace("** password", """** timeout
+:PROPERTIES:
+:cpp_type: std::chrono::seconds
+:default_value: 30
+:END:
+
+** password""")
+    model = tmp_path / "projects/ores.demo/modeling/ores.demo.demo_options_field_group.org"
+    model.parent.mkdir(parents=True, exist_ok=True)
+    model.write_text(chrono.format(printer=""), encoding="utf-8")
+    out = tmp_path / "out"
+    generate_from_model(str(model), DATA_DIR, TEMPLATES_DIR, out, is_processing_batch=True,
+                        target_template="cpp_options_header.hpp.mustache",
+                        target_output="rendered")
+    header = (out / "rendered").read_text(encoding="utf-8")
+
+    assert re.search(r"std::chrono::seconds timeout\{\s*30\s*\};", header)
+    assert "= 30" not in header
+
+
+def test_a_service_option_initialiser_is_brace_initialised(tmp_path):
+    options = POSITIVE.replace(":default: 4\n", ":default: 4\n:initial: 4\n")
+    header = _render(tmp_path, "cpp_service_config_options.hpp.mustache", options)
+
+    assert re.search(r"std::uint32_t workers\{\s*4\s*\};", header)

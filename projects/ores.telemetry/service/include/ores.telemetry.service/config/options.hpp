@@ -60,11 +60,11 @@ struct options final {
      * Defaults to localhost on the standard NATS monitoring port.
      * Set to empty to disable NATS metrics collection.
      */
-    std::string nats_monitor_url = "http://localhost:8222";
+    std::string nats_monitor_url{"http://localhost:8222"};
     /**
      * @brief How often to poll the NATS monitoring endpoint, in seconds.
      */
-    std::uint32_t nats_monitor_interval_seconds = 30;
+    std::uint32_t nats_monitor_interval_seconds{30};
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {

@@ -56,11 +56,11 @@ struct options final {
     /**
      * @brief The days a source sends when a currency is first demanded.
      */
-    std::uint32_t backfill_days = 400;
+    std::uint32_t backfill_days{400};
     /**
      * @brief The minutes between two reads of a source once its demand is served.
      */
-    std::uint32_t poll_minutes = 60;
+    std::uint32_t poll_minutes{60};
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
@@ -78,6 +78,7 @@ static_assert(::ores::utility::codec::names_every_member<options>(),
               "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
+
 /**
  * @brief Reads one source as =<source name>:<provider code>:<Frankfurter key>=, such as
  * =ecb-frankfurter:ecb:ECB=.

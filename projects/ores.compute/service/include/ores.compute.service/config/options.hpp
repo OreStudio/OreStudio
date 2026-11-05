@@ -59,7 +59,7 @@ struct options final {
      *
      * Set to 0 to disable the grid poller entirely.
      */
-    std::uint32_t telemetry_interval_seconds = 30;
+    std::uint32_t telemetry_interval_seconds{30};
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {

@@ -1201,6 +1201,7 @@ def _substitute_paste_markers(text, data):
     case-insensitive -- a case mismatch between the two must not silently
     drop an author's paste block, which a case-sensitive dict lookup would
     do without any error or warning."""
+    # One model renders at a time, so at most one of these keys is set.
     de = (data.get("domain_entity") or data.get("junction")
           or data.get("component") or data.get("field_group") or {})
     impls = de.get("implementations") or {}

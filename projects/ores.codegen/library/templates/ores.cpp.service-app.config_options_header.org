@@ -82,7 +82,7 @@ struct options final {
      *{{#.}} {{{.}}}{{/.}}
 {{/doc_lines}}
      */
-    {{{cpp_type}}} {{name}}{{#initial}} = {{{initial}}}{{/initial}};
+    {{{cpp_type}}} {{name}}{{#initial}}{ {{{initial}}} }{{/initial}};
 {{/service_options}}
 <<paste:0B222F2C-B8B6-41AE-AF03-C61D76AF6833>>
 };

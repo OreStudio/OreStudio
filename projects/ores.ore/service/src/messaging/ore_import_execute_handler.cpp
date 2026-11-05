@@ -651,12 +651,14 @@ std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
     const auto join = [&](const boost::uuids::uuid& trade_id,
                           const boost::uuids::uuid& structure_id,
                           const std::string& role,
-                          int sequence_number) -> std::string {
+                          int sequence_number,
+                          const std::optional<std::string>& label) -> std::string {
         ores::trading::messaging::put_structure_member_request req;
         req.change.write.trade_id = trade_id;
         req.change.write.structure_id = structure_id;
         req.change.write.role = role;
         req.change.write.sequence_number = sequence_number;
+        req.change.write.member_label = label;
         req.intent = intent;
         std::string error;
         auto resp = nats_call(nats, req, error);
@@ -706,7 +708,7 @@ std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
                 continue;
             }
             if (auto error =
-                    join(composite.anchor.id, structure_id, std::string(joined->parent_role), 1);
+                    join(composite.anchor.id, structure_id, std::string(joined->parent_role), 1, std::nullopt);
                 !error.empty()) {
                 failed(error);
                 continue;
@@ -715,7 +717,8 @@ std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
         if (auto error = join(item.anchor.id,
                               structure_id,
                               item.membership->role,
-                              item.membership->sequence_number);
+                              item.membership->sequence_number,
+                              item.membership->label);
             !error.empty())
             failed(error);
     }

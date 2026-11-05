@@ -357,6 +357,12 @@ auto read_commodity_average_price_option(const record_reader& trade) -> commodit
     return r;
 }
 
+/// The two sides of an option strip: the strike role each keeps and its element.
+constexpr std::pair<std::string_view, std::string_view> option_strip_sides[] = {
+    {"call", "Calls"},
+    {"put", "Puts"},
+};
+
 auto read_commodity_option_strip(const record_reader& trade) -> commodity_instrument_data {
     commodity_instrument_data result{make_row("CommodityOptionStrip"), {}};
     auto& r = result.instrument;
@@ -379,6 +385,27 @@ auto read_commodity_option_strip(const record_reader& trade) -> commodity_instru
             r.strip_frequency_code =
                 commodity_instrument_projection_text_of(rules.front(), "Tenor");
     }
+    for (const auto& [role, element] : option_strip_sides) {
+        const auto side = data->child(element);
+        if (!side)
+            continue;
+        const auto positions = side->child("LongShorts") ?
+                                   side->child("LongShorts")->spellings("LongShort") :
+                                   std::vector<std::string>{};
+        const auto strikes = side->child("Strikes") ? side->child("Strikes")->decimals("Strike") :
+                                                      std::vector<decimal>{};
+        for (std::size_t i = 0; i < strikes.size(); ++i) {
+            trading::domain::instrument_strike row;
+            row.strike_role = std::string(role);
+            row.sequence_number = static_cast<int>(i) + 1;
+            row.bare_value = strikes[i];
+            if (i < positions.size())
+                row.long_short = positions[i];
+            option_block::stamp_row(row);
+            result.strikes.push_back(std::move(row));
+        }
+    }
+    option_block::read_premiums(result, *data);
     return result;
 }
 
@@ -560,7 +587,7 @@ void write_commodity_average_price_option(record_writer& trade, const commodity_
     data.set_text("Name", v.commodity_code);
     data.set_spelling("Currency", v.currency, "currency");
     set_decimal_from_double(data, "Quantity", v.quantity);
-    set_decimal_from_double(data, "Strike", v.strike_price.value_or(decimal{}).to_double());
+    data.set_decimal("Strike", v.strike_price.value_or(decimal{}));
     data.set_spelling("PriceType", "FutureSettlement", "price type");
     data.set_text("StartDate", commodity_instrument_projection_to_ore_date(v.averaging_start_date));
     data.set_text("EndDate", commodity_instrument_projection_to_ore_date(v.averaging_end_date));
@@ -574,6 +601,26 @@ void write_commodity_option_strip(record_writer& trade, const commodity_instrume
     const auto& v = carrier.instrument;
     auto data = trade.child("CommodityOptionStripData");
     auto leg = data.child("LegData");
+    for (const auto& [role, element] : option_strip_sides) {
+        std::vector<const trading::domain::instrument_strike*> side;
+        for (const auto& row : carrier.strikes)
+            if (row.strike_role == role)
+                side.push_back(&row);
+        if (side.empty())
+            continue;
+        std::sort(side.begin(), side.end(), [](const auto* a, const auto* b) {
+            return a->sequence_number < b->sequence_number;
+        });
+        auto holder = data.child(element);
+        auto positions = holder.child("LongShorts");
+        auto strikes = holder.child("Strikes");
+        for (const auto* row : side) {
+            if (row->long_short)
+                positions.append_spelling("LongShort", *row->long_short, "long short");
+            strikes.append_decimal("Strike", row->bare_value.value_or(decimal{}));
+        }
+    }
+    option_block::write_premiums(data, carrier);
     if (!carrier.legs.empty()) {
         leg_block::write_leg(leg, v.start_date, v.maturity_date, carrier.legs.front(), carrier);
         return;
@@ -596,7 +643,7 @@ void write_commodity_basket_option(record_writer& trade,
     data.set_spelling("Currency", v.currency, "currency");
     set_decimal_from_double(data, "Notional", v.quantity);
     if (v.strike_price)
-        set_decimal_from_double(data, "Strike", v.strike_price->to_double());
+        data.set_decimal("Strike", *v.strike_price);
     write_option_terms(data.child("OptionData"), v);
 
     std::vector<const commodity_basket_constituent*> ordered;

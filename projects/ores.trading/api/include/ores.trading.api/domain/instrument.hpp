@@ -217,6 +217,10 @@ struct commodity_instrument_data {
      * @brief The product's Underlying blocks, one row per block.
      */
     std::vector<instrument_underlying> instrument_underlyings;
+    /**
+     * @brief An option strip's call and put strikes, each with its position.
+     */
+    std::vector<instrument_strike> strikes;
 };
 
 // A credit trade states its legs as rows of the shared leg tables, and an index
@@ -757,6 +761,7 @@ inline void stamp_ids(commodity_instrument_data& data,
     stamp_one(data.option_payment_dates);
     stamp_one(data.option_exercise_prices);
     stamp_one(data.instrument_underlyings);
+    stamp_one(data.strikes);
 }
 
 inline void stamp_ids(credit_instrument_data& data,

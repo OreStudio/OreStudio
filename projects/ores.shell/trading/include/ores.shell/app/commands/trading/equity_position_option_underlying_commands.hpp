@@ -88,7 +88,8 @@ public:
 
     /**
      * @brief add <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike>
-     * <weight> <long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary>
+     * <weight> <long_short> <option_type> <exercise_type> <settlement_type> <identifier_type>
+     * <exercise_date> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,8 +97,8 @@ public:
 
     /**
      * @brief set <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike>
-     * <weight> <long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary>
-     * [--version <n>]
+     * <weight> <long_short> <option_type> <exercise_type> <settlement_type> <identifier_type>
+     * <exercise_date> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,7 +107,7 @@ public:
     /**
      * @brief put-many --count <n> <trade_id> <sequence_number> <trade_activity_id>
      * <underlying_name> <strike> <weight> <long_short> <option_type> <exercise_type>
-     * <settlement_type> <reason> <commentary>
+     * <settlement_type> <identifier_type> <exercise_date> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

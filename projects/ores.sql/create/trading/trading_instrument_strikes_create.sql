@@ -48,6 +48,7 @@ create table if not exists "ores_trading_instrument_strikes_tbl" (
     "yield_compounding" text null,
     "bare_value" numeric(38, 12) null,
     "bare_currency" text null,
+    "long_short" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -65,7 +66,7 @@ create table if not exists "ores_trading_instrument_strikes_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("strike_role" <> ''),
-    check ("strike_role" in ('cap', 'floor', 'single')),
+    check ("strike_role" in ('cap', 'floor', 'single', 'call', 'put')),
     check ("sequence_number" >= 1)
 );
 

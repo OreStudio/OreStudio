@@ -121,6 +121,22 @@ struct fx_forward_instrument final {
     std::optional<std::string> settlement_payment_convention;
 
     /**
+     * @brief An FX swap's far leg date, as FarDate states it. The row's own date and amounts are
+     * the near leg.
+     */
+    std::optional<std::chrono::year_month_day> far_date;
+
+    /**
+     * @brief An FX swap's far leg bought amount, as FarBoughtAmount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> far_bought_amount;
+
+    /**
+     * @brief An FX swap's far leg sold amount, as FarSoldAmount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> far_sold_amount;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -157,6 +173,9 @@ inline constexpr std::string_view fx_forward_instrument_economic_fields[] = {
     "settlement_payment_lag",
     "settlement_payment_calendar",
     "settlement_payment_convention",
+    "far_date",
+    "far_bought_amount",
+    "far_sold_amount",
 };
 
 /**

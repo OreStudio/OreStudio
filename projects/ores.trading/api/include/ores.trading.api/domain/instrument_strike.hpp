@@ -68,7 +68,8 @@ struct instrument_strike final {
 
     /**
      * @brief Which arm of the document stated this strike: cap or floor for a cap/floor, single for
-     * the one strike a bond, a swaption or an index option states.
+     * the one strike a bond, a swaption or an index option states, and call or put for a commodity
+     * option strip's calls and puts.
      *
      * strike_role is data, not a table: the closed set is fixed, and a collar states both arms in
      * one document, so the arm belongs to the strike rather than to the product.
@@ -114,6 +115,12 @@ struct instrument_strike final {
      * @brief Currency the bare strike is stated in.
      */
     std::optional<std::string> bare_currency;
+
+    /**
+     * @brief The position held at this strike, as a commodity option strip's LongShorts/LongShort
+     * states it beside its Strikes/Strike.
+     */
+    std::optional<std::string> long_short;
 
     /**
      * @brief Username of the person who last modified this instrument strike.
@@ -173,6 +180,7 @@ inline constexpr std::string_view instrument_strike_economic_fields[] = {
     "yield_compounding",
     "bare_value",
     "bare_currency",
+    "long_short",
 };
 
 /**

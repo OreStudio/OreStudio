@@ -45,6 +45,7 @@ export interface InstrumentStrikeWrite {
     yield_compounding: string | null;
     bare_value: string | null;
     bare_currency: string | null;
+    long_short: string | null;
 }
 
 export interface InstrumentStrikeChange {

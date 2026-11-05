@@ -135,6 +135,33 @@ struct fx_barrier_option_instrument final {
     std::optional<std::string> barrier_fixing_index;
 
     /**
+     * @brief A generic barrier option's quantity, as Quantity states it.
+     */
+    std::optional<ores::utility::decimal::decimal> quantity;
+
+    /**
+     * @brief A generic barrier option's strike, as Strike states it.
+     */
+    std::optional<ores::utility::decimal::decimal> strike;
+
+    /**
+     * @brief A cash-or-nothing generic barrier option's amount, as Amount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> amount;
+
+    /**
+     * @brief A generic barrier option's settlement date, as SettlementDate states it.
+     */
+    std::optional<std::chrono::year_month_day> settlement_date;
+
+    /**
+     * @brief How a generic barrier option's knock-in and knock-out barriers combine, as
+     * Barriers/KikoType states it. Its monitoring schedule is the product schedule under the role
+     * barrier_schedule.
+     */
+    std::optional<std::string> kiko_type;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -160,20 +187,11 @@ struct fx_barrier_option_instrument final {
  * Declared by the model's :economic: property on each column.
  */
 inline constexpr std::string_view fx_barrier_option_instrument_economic_fields[] = {
-    "bought_currency",
-    "bought_amount",
-    "sold_currency",
-    "sold_amount",
-    "option_type",
-    "expiry_date",
-    "settlement",
-    "barrier_type",
-    "lower_barrier",
-    "upper_barrier",
-    "underlying_code",
-    "barrier_start_date",
-    "barrier_calendar",
-    "barrier_fixing_index",
+    "bought_currency",  "bought_amount",        "sold_currency",   "sold_amount",
+    "option_type",      "expiry_date",          "settlement",      "barrier_type",
+    "lower_barrier",    "upper_barrier",        "underlying_code", "barrier_start_date",
+    "barrier_calendar", "barrier_fixing_index", "quantity",        "strike",
+    "amount",           "settlement_date",      "kiko_type",
 };
 
 /**

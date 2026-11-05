@@ -65,6 +65,8 @@ create table if not exists "ores_trading_equity_position_option_underlyings_tbl"
     "option_type" text null,
     "exercise_type" text null,
     "settlement_type" text null,
+    "identifier_type" text null,
+    "exercise_date" date null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

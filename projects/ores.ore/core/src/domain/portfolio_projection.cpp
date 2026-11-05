@@ -321,10 +321,14 @@ void map_embedded(const xml::record_reader& trade,
         auto item = map_trade(embedded, list.type_field, origin);
         item.membership =
             xml::trade_membership{parent_ore_id, std::string(list.role), sequence_number};
-        // A Derivative's Id names the underlying within the swap, so it is
-        // the ORE id the trade is booked under, before any id of its own.
-        if (wrapper_id && !wrapper_id->empty())
-            item.ore_id = *wrapper_id;
+        // A Derivative's Id names the underlying within the swap. The trade
+        // keeps an id of its own when it states one, and is booked under the
+        // Derivative's Id when it does not.
+        if (wrapper_id && !wrapper_id->empty()) {
+            item.membership->label = *wrapper_id;
+            if (item.ore_id.empty())
+                item.ore_id = *wrapper_id;
+        }
         if (item.ore_id.empty())
             item.ore_id = derived_component_id(parent_ore_id, list.role, sequence_number);
         out.push_back(std::move(item));
@@ -495,11 +499,16 @@ portfolio_projection::reverse(const std::vector<trading::messaging::trade_export
             if (child == nullptr)
                 continue;
             auto wrapper = holder_of().append("Derivative");
-            if (!child->ore_id.empty() &&
-                child->ore_id != derived(*list, member->sequence_number))
+            if (member->member_label) {
+                wrapper.set_text("Id", *member->member_label);
+            } else if (!child->ore_id.empty() &&
+                       child->ore_id != derived(*list, member->sequence_number)) {
                 wrapper.set_text("Id", child->ore_id);
+            }
             auto writer = wrapper.child(list->element);
-            write_embedded_trade(writer, *list, *child, false);
+            const bool states_own_id = member->member_label && !child->ore_id.empty() &&
+                                       child->ore_id != *member->member_label;
+            write_embedded_trade(writer, *list, *child, states_own_id);
         }
     };
 

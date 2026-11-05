@@ -249,9 +249,22 @@ inline void stamp_schedule_dates(instrument_schedule& row, const record_reader& 
     stamp_row(row);
 }
 
-// One schedule of one owner, as rows: each rule block and each date block
+inline void stamp_schedule_derived(instrument_schedule& row, const record_reader& block) {
+    row.schedule_kind = "derived";
+    if (block.has("BaseSchedule"))
+        row.base_schedule = text_of(block, "BaseSchedule");
+    if (block.has("Shift"))
+        row.shift = text_of(block, "Shift");
+    if (block.has("Calendar"))
+        row.calendar = text_of(block, "Calendar");
+    if (block.has("Convention"))
+        row.convention = spelling_of(block, "Convention");
+    stamp_row(row);
+}
+
+// One schedule of one owner, as rows: each rule, date and derived block
 // becomes a schedule row and a date block's dates become rows of their own.
-// The ordinals run across both arms, in document order.
+// The ordinals run across the arms, in document order.
 template <typename Data>
 void read_schedule(Data& result,
                    const record_reader& schedule,
@@ -293,6 +306,17 @@ void read_schedule(Data& result,
             stamp_row(date_row);
             result.schedule_dates.push_back(std::move(date_row));
         }
+    }
+    if (!schedule.declares("DerivedSchedule"))
+        return;
+    for (const auto& block : schedule.children("DerivedSchedule")) {
+        instrument_schedule row;
+        row.owner_role = std::string(owner_role);
+        row.owner_number = owner_number;
+        row.schedule_role = std::string(schedule_role);
+        row.sequence_number = ++sequence_number;
+        stamp_schedule_derived(row, block);
+        result.schedules.push_back(std::move(row));
     }
 }
 
@@ -573,6 +597,19 @@ bool write_stored_schedule(record_writer schedule,
                 rule.set_text("RemoveFirstDate", flag_text(*row->remove_first_date));
             if (row->remove_last_date)
                 rule.set_text("RemoveLastDate", flag_text(*row->remove_last_date));
+            continue;
+        }
+        if (row->schedule_kind == "derived") {
+            auto derived = schedule.append("DerivedSchedule");
+            if (row->base_schedule)
+                derived.set_text("BaseSchedule", *row->base_schedule);
+            if (row->shift)
+                derived.set_text("Shift", *row->shift);
+            if (row->calendar)
+                derived.set_text("Calendar", *row->calendar);
+            if (row->convention)
+                set_spelling_or(
+                    derived, "Convention", *row->convention, "MF", "business day convention");
             continue;
         }
 

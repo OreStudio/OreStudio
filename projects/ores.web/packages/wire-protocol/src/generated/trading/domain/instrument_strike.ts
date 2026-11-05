@@ -43,6 +43,7 @@ export interface InstrumentStrike {
     yield_compounding: string | null;
     bare_value: string | null;
     bare_currency: string | null;
+    long_short: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

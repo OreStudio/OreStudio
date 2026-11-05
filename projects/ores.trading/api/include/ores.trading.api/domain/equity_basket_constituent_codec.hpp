@@ -53,6 +53,7 @@ namespace ores::trading::domain {
         utility::codec::field{"sequence_number", &equity_basket_constituent::sequence_number},
         utility::codec::field{"trade_activity_id", &equity_basket_constituent::trade_activity_id},
         utility::codec::field{"underlying_name", &equity_basket_constituent::underlying_name},
+        utility::codec::field{"identifier_type", &equity_basket_constituent::identifier_type},
         utility::codec::field{"underlying_kind", &equity_basket_constituent::underlying_kind},
         utility::codec::field{"weight", &equity_basket_constituent::weight},
         utility::codec::field{"initial_price", &equity_basket_constituent::initial_price},

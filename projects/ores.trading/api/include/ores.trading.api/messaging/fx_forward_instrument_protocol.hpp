@@ -64,6 +64,9 @@ struct fx_forward_instrument_write {
     std::optional<std::string> settlement_payment_lag;
     std::optional<std::string> settlement_payment_calendar;
     std::optional<std::string> settlement_payment_convention;
+    std::optional<std::chrono::year_month_day> far_date;
+    std::optional<ores::utility::decimal::decimal> far_bought_amount;
+    std::optional<ores::utility::decimal::decimal> far_sold_amount;
     std::string description;
 
     friend bool operator==(const fx_forward_instrument_write&,
@@ -418,6 +421,9 @@ inline constexpr std::string_view deleted = "trading.v1.fx_forward_instruments_e
                               &fx_forward_instrument_write::settlement_payment_calendar},
         utility::codec::field{"settlement_payment_convention",
                               &fx_forward_instrument_write::settlement_payment_convention},
+        utility::codec::field{"far_date", &fx_forward_instrument_write::far_date},
+        utility::codec::field{"far_bought_amount", &fx_forward_instrument_write::far_bought_amount},
+        utility::codec::field{"far_sold_amount", &fx_forward_instrument_write::far_sold_amount},
         utility::codec::field{"description", &fx_forward_instrument_write::description},
     };
 }

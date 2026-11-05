@@ -57,6 +57,7 @@ struct equity_basket_constituent_entity {
     int version = 0;
     boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
+    std::optional<std::string> identifier_type;
     std::string underlying_kind;
     std::optional<double> weight;
     std::optional<ores::utility::decimal::decimal> initial_price;
@@ -79,6 +80,7 @@ struct equity_basket_constituent_entity {
                query_builder::bind("version", &e::version) |
                query_builder::bind("trade_activity_id", &e::trade_activity_id) |
                query_builder::bind("underlying_name", &e::underlying_name) |
+               query_builder::bind("identifier_type", &e::identifier_type) |
                query_builder::bind("underlying_kind", &e::underlying_kind) |
                query_builder::bind("weight", &e::weight) |
                query_builder::bind("initial_price", &e::initial_price) |

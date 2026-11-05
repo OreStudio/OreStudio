@@ -139,23 +139,23 @@ void structure_member_commands::register_commands(cli::Menu& root_menu, nats_cli
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <structure_id> <role> <sequence_number> <reason> <commentary>");
+        "add <structure_id> <role> <sequence_number> <member_label> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <structure_id> <role> <sequence_number> <reason> <commentary> [--version "
-        "<n>]");
+        "set <trade_id> <structure_id> <role> <sequence_number> <member_label> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <trade_id> <structure_id> <role> <sequence_number> <reason> "
-        "<commentary>");
+        "put-many --count <n> <trade_id> <structure_id> <role> <sequence_number> <member_label> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -356,8 +356,8 @@ void structure_member_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 3 + 2) {
-            fail(out) << "Expected " << (3 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 4 + 2) {
+            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -367,6 +367,8 @@ void structure_member_commands::process_add(std::ostream& out,
         structure_member_read_token(req.change.write.role, parsed->positionals[next++], "role");
         structure_member_read_token(
             req.change.write.sequence_number, parsed->positionals[next++], "sequence_number");
+        structure_member_read_token(
+            req.change.write.member_label, parsed->positionals[next++], "member_label");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -411,8 +413,8 @@ void structure_member_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -423,6 +425,8 @@ void structure_member_commands::process_set(std::ostream& out,
         structure_member_read_token(req.change.write.role, parsed->positionals[next++], "role");
         structure_member_read_token(
             req.change.write.sequence_number, parsed->positionals[next++], "sequence_number");
+        structure_member_read_token(
+            req.change.write.member_label, parsed->positionals[next++], "member_label");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -479,8 +483,8 @@ void structure_member_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 5 + 2) {
+            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -493,6 +497,8 @@ void structure_member_commands::process_put_many(std::ostream& out,
             structure_member_read_token(change.write.role, parsed->positionals[next++], "role");
             structure_member_read_token(
                 change.write.sequence_number, parsed->positionals[next++], "sequence_number");
+            structure_member_read_token(
+                change.write.member_label, parsed->positionals[next++], "member_label");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

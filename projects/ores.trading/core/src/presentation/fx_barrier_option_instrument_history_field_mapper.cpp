@@ -66,6 +66,15 @@ render_fx_barrier_option_instrument_fields(const domain::fx_barrier_option_instr
         {.name = "Barrier Calendar", .value = v.barrier_calendar.value_or(std::string{})});
     fields.push_back(
         {.name = "Barrier Fixing Index", .value = v.barrier_fixing_index.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Quantity", .value = v.quantity ? v.quantity->to_string() : std::string{}});
+    fields.push_back({.name = "Strike", .value = v.strike ? v.strike->to_string() : std::string{}});
+    fields.push_back({.name = "Amount", .value = v.amount ? v.amount->to_string() : std::string{}});
+    fields.push_back({.name = "Settlement Date",
+                      .value = v.settlement_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                       *v.settlement_date) :
+                                                   std::string{}});
+    fields.push_back({.name = "Kiko Type", .value = v.kiko_type.value_or(std::string{})});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

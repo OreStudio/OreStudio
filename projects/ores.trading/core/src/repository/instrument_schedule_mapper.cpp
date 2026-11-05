@@ -71,6 +71,8 @@ domain::instrument_schedule instrument_schedule_mapper::map(const instrument_sch
     r.remove_first_date = v.remove_first_date;
     r.remove_last_date = v.remove_last_date;
     r.include_duplicate_dates = v.include_duplicate_dates;
+    r.base_schedule = v.base_schedule;
+    r.shift = v.shift;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -109,6 +111,8 @@ instrument_schedule_entity instrument_schedule_mapper::map(const domain::instrum
     r.remove_first_date = v.remove_first_date;
     r.remove_last_date = v.remove_last_date;
     r.include_duplicate_dates = v.include_duplicate_dates;
+    r.base_schedule = v.base_schedule;
+    r.shift = v.shift;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -60,6 +60,8 @@ struct equity_position_option_underlying_write {
     std::string option_type;
     std::string exercise_type;
     std::string settlement_type;
+    std::optional<std::string> identifier_type;
+    std::optional<std::chrono::year_month_day> exercise_date;
 
     friend bool operator==(const equity_position_option_underlying_write&,
                            const equity_position_option_underlying_write&) = default;
@@ -462,6 +464,10 @@ inline constexpr std::string_view deleted =
                               &equity_position_option_underlying_write::exercise_type},
         utility::codec::field{"settlement_type",
                               &equity_position_option_underlying_write::settlement_type},
+        utility::codec::field{"identifier_type",
+                              &equity_position_option_underlying_write::identifier_type},
+        utility::codec::field{"exercise_date",
+                              &equity_position_option_underlying_write::exercise_date},
     };
 }
 

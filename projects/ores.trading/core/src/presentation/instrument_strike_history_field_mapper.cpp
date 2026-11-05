@@ -51,6 +51,7 @@ render_instrument_strike_fields(const domain::instrument_strike& v) {
     fields.push_back(
         {.name = "Bare Value", .value = v.bare_value ? v.bare_value->to_string() : std::string{}});
     fields.push_back({.name = "Bare Currency", .value = v.bare_currency.value_or(std::string{})});
+    fields.push_back({.name = "Long Short", .value = v.long_short.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

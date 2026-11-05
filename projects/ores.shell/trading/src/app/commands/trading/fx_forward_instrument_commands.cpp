@@ -142,8 +142,8 @@ void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu, nat
         "add <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount> "
         "<sold_currency> <sold_amount> <value_date> <settlement> <settlement_currency> "
         "<settlement_fx_index> <settlement_date> <settlement_payment_lag> "
-        "<settlement_payment_calendar> <settlement_payment_convention> <description> <reason> "
-        "<commentary>");
+        "<settlement_payment_calendar> <settlement_payment_convention> <far_date> "
+        "<far_bought_amount> <far_sold_amount> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,8 +153,9 @@ void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu, nat
         "set <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount> "
         "<sold_currency> <sold_amount> <value_date> <settlement> <settlement_currency> "
         "<settlement_fx_index> <settlement_date> <settlement_payment_lag> "
-        "<settlement_payment_calendar> <settlement_payment_convention> <description> <reason> "
-        "<commentary> [--version <n>]");
+        "<settlement_payment_calendar> <settlement_payment_convention> <far_date> "
+        "<far_bought_amount> <far_sold_amount> <description> <reason> <commentary> [--version "
+        "<n>]");
 
     menu->Insert(
         "put-many",
@@ -164,8 +165,8 @@ void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu, nat
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> "
         "<bought_amount> <sold_currency> <sold_amount> <value_date> <settlement> "
         "<settlement_currency> <settlement_fx_index> <settlement_date> <settlement_payment_lag> "
-        "<settlement_payment_calendar> <settlement_payment_convention> <description> <reason> "
-        "<commentary>");
+        "<settlement_payment_calendar> <settlement_payment_convention> <far_date> "
+        "<far_bought_amount> <far_sold_amount> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -366,8 +367,8 @@ void fx_forward_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 19 + 2) {
+            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -406,6 +407,12 @@ void fx_forward_instrument_commands::process_add(std::ostream& out,
         fx_forward_instrument_read_token(req.change.write.settlement_payment_convention,
                                          parsed->positionals[next++],
                                          "settlement_payment_convention");
+        fx_forward_instrument_read_token(
+            req.change.write.far_date, parsed->positionals[next++], "far_date");
+        fx_forward_instrument_read_token(
+            req.change.write.far_bought_amount, parsed->positionals[next++], "far_bought_amount");
+        fx_forward_instrument_read_token(
+            req.change.write.far_sold_amount, parsed->positionals[next++], "far_sold_amount");
         fx_forward_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -452,8 +459,8 @@ void fx_forward_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 19 + 2) {
+            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -492,6 +499,12 @@ void fx_forward_instrument_commands::process_set(std::ostream& out,
         fx_forward_instrument_read_token(req.change.write.settlement_payment_convention,
                                          parsed->positionals[next++],
                                          "settlement_payment_convention");
+        fx_forward_instrument_read_token(
+            req.change.write.far_date, parsed->positionals[next++], "far_date");
+        fx_forward_instrument_read_token(
+            req.change.write.far_bought_amount, parsed->positionals[next++], "far_bought_amount");
+        fx_forward_instrument_read_token(
+            req.change.write.far_sold_amount, parsed->positionals[next++], "far_sold_amount");
         fx_forward_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -550,8 +563,8 @@ void fx_forward_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 16 + 2) {
-            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 19 + 2) {
+            fail(out) << "Expected " << (change_count * 19 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -592,6 +605,12 @@ void fx_forward_instrument_commands::process_put_many(std::ostream& out,
             fx_forward_instrument_read_token(change.write.settlement_payment_convention,
                                              parsed->positionals[next++],
                                              "settlement_payment_convention");
+            fx_forward_instrument_read_token(
+                change.write.far_date, parsed->positionals[next++], "far_date");
+            fx_forward_instrument_read_token(
+                change.write.far_bought_amount, parsed->positionals[next++], "far_bought_amount");
+            fx_forward_instrument_read_token(
+                change.write.far_sold_amount, parsed->positionals[next++], "far_sold_amount");
             fx_forward_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

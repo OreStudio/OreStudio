@@ -50,6 +50,11 @@ export interface FxBarrierOptionInstrumentWrite {
     barrier_start_date: string | null;
     barrier_calendar: string | null;
     barrier_fixing_index: string | null;
+    quantity: string | null;
+    strike: string | null;
+    amount: string | null;
+    settlement_date: string | null;
+    kiko_type: string | null;
     description: string;
 }
 

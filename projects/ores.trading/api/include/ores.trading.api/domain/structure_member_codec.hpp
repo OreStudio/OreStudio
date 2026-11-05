@@ -53,6 +53,7 @@ namespace ores::trading::domain {
         utility::codec::field{"structure_id", &structure_member::structure_id},
         utility::codec::field{"role", &structure_member::role},
         utility::codec::field{"sequence_number", &structure_member::sequence_number},
+        utility::codec::field{"member_label", &structure_member::member_label},
         utility::codec::field{"modified_by", &structure_member::modified_by},
         utility::codec::field{"performed_by", &structure_member::performed_by},
         utility::codec::field{"change_reason_code", &structure_member::change_reason_code},

@@ -194,12 +194,14 @@ portfolio_roundtrip roundtrip_portfolio(std::string_view text, std::string_view 
             position_of.emplace(items[i].ore_id, i);
     std::unordered_map<std::string, boost::uuids::uuid> structure_of;
     const auto join = [&](std::size_t i, const std::string& role, int sequence_number,
-                          const boost::uuids::uuid& structure_id) {
+                          const boost::uuids::uuid& structure_id,
+                          const std::optional<std::string>& label) {
         trading::domain::structure_member member;
         member.trade_id = export_items[i].anchor.id;
         member.structure_id = structure_id;
         member.role = role;
         member.sequence_number = sequence_number;
+        member.member_label = label;
         instruments.structure_members.push_back(std::move(member));
     };
     for (std::size_t i = 0; i < items.size(); ++i) {
@@ -216,9 +218,11 @@ portfolio_roundtrip roundtrip_portfolio(std::string_view text, std::string_view 
         auto [structure, created] = structure_of.try_emplace(membership->parent_ore_id);
         if (created) {
             structure->second = uuid_gen();
-            join(parent->second, std::string(joined->parent_role), 1, structure->second);
+            join(parent->second, std::string(joined->parent_role), 1, structure->second,
+                 std::nullopt);
         }
-        join(i, membership->role, membership->sequence_number, structure->second);
+        join(i, membership->role, membership->sequence_number, structure->second,
+             membership->label);
     }
 
     result.xml = exporter::export_portfolio(export_items, instruments);

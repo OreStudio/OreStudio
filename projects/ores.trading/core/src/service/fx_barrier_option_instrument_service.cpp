@@ -120,6 +120,11 @@ fx_barrier_option_instrument_to_domain(const messaging::fx_barrier_option_instru
     v.barrier_start_date = write.barrier_start_date;
     v.barrier_calendar = write.barrier_calendar;
     v.barrier_fixing_index = write.barrier_fixing_index;
+    v.quantity = write.quantity;
+    v.strike = write.strike;
+    v.amount = write.amount;
+    v.settlement_date = write.settlement_date;
+    v.kiko_type = write.kiko_type;
     v.description = write.description;
     return v;
 }

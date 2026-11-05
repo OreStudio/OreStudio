@@ -71,6 +71,11 @@ struct fx_barrier_option_instrument_entity {
     std::optional<std::chrono::year_month_day> barrier_start_date;
     std::optional<std::string> barrier_calendar;
     std::optional<std::string> barrier_fixing_index;
+    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<ores::utility::decimal::decimal> strike;
+    std::optional<ores::utility::decimal::decimal> amount;
+    std::optional<std::chrono::year_month_day> settlement_date;
+    std::optional<std::string> kiko_type;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -105,6 +110,11 @@ struct fx_barrier_option_instrument_entity {
                query_builder::bind("barrier_start_date", &e::barrier_start_date) |
                query_builder::bind("barrier_calendar", &e::barrier_calendar) |
                query_builder::bind("barrier_fixing_index", &e::barrier_fixing_index) |
+               query_builder::bind("quantity", &e::quantity) |
+               query_builder::bind("strike", &e::strike) |
+               query_builder::bind("amount", &e::amount) |
+               query_builder::bind("settlement_date", &e::settlement_date) |
+               query_builder::bind("kiko_type", &e::kiko_type) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

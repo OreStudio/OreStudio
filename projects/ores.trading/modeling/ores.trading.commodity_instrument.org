@@ -608,6 +608,12 @@ with the instrument and the legs do not outlive it.
 :column: trade_id
 :END:
 
+** instrument_strikes
+:PROPERTIES:
+:table:  ores_trading_instrument_strikes_tbl
+:column: trade_id
+:END:
+
 ** instrument_schedules
 :PROPERTIES:
 :table:  ores_trading_instrument_schedules_tbl

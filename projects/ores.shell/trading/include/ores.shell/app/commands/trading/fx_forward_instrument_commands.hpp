@@ -90,8 +90,8 @@ public:
      * @brief add <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount>
      * <sold_currency> <sold_amount> <value_date> <settlement> <settlement_currency>
      * <settlement_fx_index> <settlement_date> <settlement_payment_lag>
-     * <settlement_payment_calendar> <settlement_payment_convention> <description> <reason>
-     * <commentary>
+     * <settlement_payment_calendar> <settlement_payment_convention> <far_date> <far_bought_amount>
+     * <far_sold_amount> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -101,8 +101,8 @@ public:
      * @brief set <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount>
      * <sold_currency> <sold_amount> <value_date> <settlement> <settlement_currency>
      * <settlement_fx_index> <settlement_date> <settlement_payment_lag>
-     * <settlement_payment_calendar> <settlement_payment_convention> <description> <reason>
-     * <commentary> [--version <n>]
+     * <settlement_payment_calendar> <settlement_payment_convention> <far_date> <far_bought_amount>
+     * <far_sold_amount> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -112,8 +112,8 @@ public:
      * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id>
      * <bought_currency> <bought_amount> <sold_currency> <sold_amount> <value_date> <settlement>
      * <settlement_currency> <settlement_fx_index> <settlement_date> <settlement_payment_lag>
-     * <settlement_payment_calendar> <settlement_payment_convention> <description> <reason>
-     * <commentary>
+     * <settlement_payment_calendar> <settlement_payment_convention> <far_date> <far_bought_amount>
+     * <far_sold_amount> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

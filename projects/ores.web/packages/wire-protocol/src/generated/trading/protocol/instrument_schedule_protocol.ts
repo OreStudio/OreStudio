@@ -60,6 +60,8 @@ export interface InstrumentScheduleWrite {
     remove_first_date: boolean | null;
     remove_last_date: boolean | null;
     include_duplicate_dates: string | null;
+    base_schedule: string | null;
+    shift: string | null;
 }
 
 export interface InstrumentScheduleChange {

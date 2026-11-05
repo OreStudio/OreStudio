@@ -45,6 +45,7 @@ create table if not exists "ores_trading_structure_members_tbl" (
     "structure_id" uuid not null,
     "role" text not null,
     "sequence_number" integer not null,
+    "member_label" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

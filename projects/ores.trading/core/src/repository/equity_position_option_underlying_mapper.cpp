@@ -25,6 +25,7 @@
 #include "ores.trading.core/repository/equity_position_option_underlying_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/equity_position_option_underlying_entity.hpp"
@@ -33,6 +34,7 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -59,6 +61,8 @@ equity_position_option_underlying_mapper::map(const equity_position_option_under
     r.option_type = v.option_type.value_or("");
     r.exercise_type = v.exercise_type.value_or("");
     r.settlement_type = v.settlement_type.value_or("");
+    r.identifier_type = v.identifier_type;
+    r.exercise_date = v.exercise_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -86,6 +90,8 @@ equity_position_option_underlying_mapper::map(const domain::equity_position_opti
     r.option_type = v.option_type.empty() ? std::nullopt : std::optional(v.option_type);
     r.exercise_type = v.exercise_type.empty() ? std::nullopt : std::optional(v.exercise_type);
     r.settlement_type = v.settlement_type.empty() ? std::nullopt : std::optional(v.settlement_type);
+    r.identifier_type = v.identifier_type;
+    r.exercise_date = v.exercise_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

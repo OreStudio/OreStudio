@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
@@ -639,10 +640,18 @@ auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
         if (const auto d = trade.child("PerformanceOption01Data")) {
             std::vector<std::string> names;
             std::vector<std::string> types;
+            std::string underlying_terms;
             if (const auto underlyings = d->child("Underlyings"))
                 for (const auto& u : underlyings->children("Underlying")) {
+                    const auto index = std::to_string(names.size() + 1);
                     names.push_back(u.text("Name").value_or(""));
                     types.push_back(u.text("Type").value_or(""));
+                    if (const auto weight = u.decimal("Weight"))
+                        underlying_terms +=
+                            ",\"UnderlyingWeight" + index + "\":\"" + weight->to_string() + "\"";
+                    if (const auto price_type = u.text("PriceType"))
+                        underlying_terms +=
+                            ",\"UnderlyingPriceType" + index + "\":\"" + *price_type + "\"";
                 }
             r.underlyings_json = json_array(names);
 
@@ -666,10 +675,12 @@ auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
                 }
             }
             params += ",\"StrikePrices\":\"" + joined + "\"";
+            if (const auto included = scalar_terms::read_text(*d, "StrikeIncluded"); included && d->has("StrikeIncluded"))
+                params += ",\"StrikeIncluded\":\"" + *included + "\"";
             for (std::size_t i = 0; i < types.size(); ++i)
                 if (!types[i].empty())
                     params += ",\"" + underlying_type_key(i) + "\":\"" + types[i] + "\"";
-            r.parameters_json = params + "}";
+            r.parameters_json = params + underlying_terms + "}";
         }
         return r;
     }
@@ -791,6 +802,10 @@ auto write_scripted_instrument(xml::record_writer& trade,
                 d.set_spelling("PayCcy", value, "currency");
             else if (key == "ValuationDate" || key == "SettlementDate")
                 d.set_text(key, value);
+            else if (key == "StrikeIncluded")
+                scalar_terms::write_text(d, key, value);
+            else if (key.starts_with("UnderlyingWeight") || key.starts_with("UnderlyingPriceType"))
+                continue;
             else if (key == "StrikePrices") {
                 std::size_t start = 0;
                 while (start < value.size()) {
@@ -824,6 +839,15 @@ auto write_scripted_instrument(xml::record_writer& trade,
                 auto underlying = underlyings.append("Underlying");
                 underlying.set_text("Name", names[i]);
                 set_underlying_type(underlying, types, i);
+                const auto index = std::to_string(i + 1);
+                for (const auto& [key, value] : params) {
+                    if (key == "UnderlyingWeight" + index) {
+                        if (const auto parsed = ores::utility::decimal::decimal::from_string(value))
+                            underlying.set_decimal("Weight", *parsed);
+                    } else if (key == "UnderlyingPriceType" + index) {
+                        scalar_terms::write_text(underlying, "PriceType", value);
+                    }
+                }
             }
         }
         return true;

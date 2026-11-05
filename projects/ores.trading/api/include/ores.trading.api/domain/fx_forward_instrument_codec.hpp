@@ -63,6 +63,9 @@ namespace ores::trading::domain {
                               &fx_forward_instrument::settlement_payment_calendar},
         utility::codec::field{"settlement_payment_convention",
                               &fx_forward_instrument::settlement_payment_convention},
+        utility::codec::field{"far_date", &fx_forward_instrument::far_date},
+        utility::codec::field{"far_bought_amount", &fx_forward_instrument::far_bought_amount},
+        utility::codec::field{"far_sold_amount", &fx_forward_instrument::far_sold_amount},
         utility::codec::field{"description", &fx_forward_instrument::description},
         utility::codec::field{"audit", &fx_forward_instrument::audit},
     };

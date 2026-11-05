@@ -157,8 +157,8 @@ stated.
 :economic: true
 :END:
 
-Which arm of the schema's choice the document stated: =rules= or
-=dates=.
+Which arm of the schema's choice the document stated: =rules=, =dates=
+or =derived=, a schedule shifted from another the product states.
 
 The arm decides which members are meaningful. A =rules= row carries
 the rule block's scalars and its dates are derived, so it has no child
@@ -364,7 +364,31 @@ list.
 The schema types this member as its own bool, so the column holds the
 spelling.
 
+
+** base_schedule
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The element name of the schedule a =derived= row shifts, as
+=DerivedSchedule/BaseSchedule= states it.
+
+** shift
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The period a =derived= row shifts its base schedule by, as
+=DerivedSchedule/Shift= states it.
+
 * Foreign keys
+
 
 ** trade_id
 :PROPERTIES:
@@ -429,7 +453,7 @@ is immutable.
 
 | expression                                                                     |
 |--------------------------------------------------------------------------------|
-| "schedule_kind" in ('rules', 'dates')                                          |
+| "schedule_kind" in ('rules', 'dates', 'derived')                               |
 | "owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap', 'tranches', 'scripted')  |
 | "owner_number" > 0                                                             |
 | "sequence_number" > 0                                                          |

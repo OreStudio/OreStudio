@@ -269,13 +269,16 @@ auto read_fx_swap(const record_reader& trade) -> fx_forward_instrument {
     const auto data = trade.child("FxSwapData");
     if (!data)
         return r;
-    // Near leg only; the far leg is the mapper's documented coverage gap.
     r.value_date = fx_instrument_projection_to_domain_date(
         fx_instrument_projection_text_of(*data, "NearDate"));
     r.bought_currency = fx_instrument_projection_spelling_of(*data, "NearBoughtCurrency");
     r.bought_amount = fx_instrument_projection_decimal_of(*data, "NearBoughtAmount");
     r.sold_currency = fx_instrument_projection_spelling_of(*data, "NearSoldCurrency");
     r.sold_amount = fx_instrument_projection_decimal_of(*data, "NearSoldAmount");
+    if (const auto far = data->text("FarDate"))
+        r.far_date = fx_instrument_projection_to_optional_domain_date(*far);
+    r.far_bought_amount = data->decimal("FarBoughtAmount");
+    r.far_sold_amount = data->decimal("FarSoldAmount");
     r.settlement = fx_instrument_projection_spelling_of(*data, "Settlement");
     return r;
 }
@@ -607,11 +610,12 @@ void write_fx_swap(record_writer& trade, const fx_forward_instrument& v) {
     data.set_decimal("NearBoughtAmount", v.bought_amount);
     data.set_spelling("NearSoldCurrency", v.sold_currency, "currency");
     data.set_decimal("NearSoldAmount", v.sold_amount);
-    // The far leg is the mapper's documented coverage gap: the schema requires
-    // it, so it round-trips as an empty date and two zero amounts.
-    data.set_text("FarDate", std::string{});
-    data.set_decimal("FarBoughtAmount", decimal{});
-    data.set_decimal("FarSoldAmount", decimal{});
+    // The schema requires the far leg, so a swap stored before its far leg
+    // was kept states an empty date and two zero amounts.
+    data.set_text("FarDate",
+                  v.far_date ? fx_instrument_projection_to_ore_date(*v.far_date) : std::string{});
+    data.set_decimal("FarBoughtAmount", v.far_bought_amount.value_or(decimal{}));
+    data.set_decimal("FarSoldAmount", v.far_sold_amount.value_or(decimal{}));
     write_settlement(data, v.settlement);
 }
 
@@ -672,6 +676,13 @@ void write_fx_generic_barrier_option(record_writer& trade,
         data.child("OptionData"), v.option_type, v.expiry_date);
     if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier"))
         write_barrier_pair(data, v);
+    if (v.kiko_type || option_block::has_product_schedule(carrier, "barrier_schedule")) {
+        auto barriers = data.child("Barriers");
+        if (v.kiko_type)
+            scalar_terms::write_text(barriers, "KikoType", *v.kiko_type);
+        option_block::write_product_schedule(
+            barriers, carrier, "ScheduleData", "barrier_schedule");
+    }
     barrier_block::write_kept_barriers(data, "TransatlanticBarrier", carrier, "transatlantic");
 }
 
@@ -862,6 +873,13 @@ constexpr scalar_terms::term<fx_variance_swap_instrument> fx_variance_swap_terms
     {"AddPastDividends", &fx_variance_swap_instrument::add_past_dividends},
 };
 
+constexpr scalar_terms::term<fx_barrier_option_instrument> fx_barrier_option_terms[] = {
+    {"Quantity", &fx_barrier_option_instrument::quantity},
+    {"Strike", &fx_barrier_option_instrument::strike},
+    {"Amount", &fx_barrier_option_instrument::amount},
+    {"SettlementDate", &fx_barrier_option_instrument::settlement_date},
+};
+
 constexpr scalar_terms::term<fx_asian_forward_instrument> fx_asian_forward_terms[] = {
     {"FixedPayer", &fx_asian_forward_instrument::fixed_payer},
 };
@@ -872,6 +890,8 @@ void with_fx_terms(Fn&& fn) {
         fn(fx_variance_swap_terms);
     else if constexpr (std::is_same_v<Row, fx_asian_forward_instrument>)
         fn(fx_asian_forward_terms);
+    else if constexpr (std::is_same_v<Row, fx_barrier_option_instrument>)
+        fn(fx_barrier_option_terms);
 }
 
 constexpr barrier_block::barrier_holder fx_barrier_holders[] = {
@@ -974,8 +994,18 @@ auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
     underlying_block::read_product_underlyings(data, trade, trade_type, fx_underlying_holders);
     const auto element = std::string(trade_type) + "Data";
     if (const auto product = trade.declares(element) ? trade.child(element) : std::nullopt) {
-        for (auto& row : data.barrier_options)
+        for (auto& row : data.barrier_options) {
             barrier_block::read_monitoring(row, *product, "FXIndex");
+            scalar_terms::read_terms(row, *product, fx_barrier_option_terms);
+        }
+        if (trade_type == "FxGenericBarrierOption")
+            if (const auto barriers = product->child("Barriers")) {
+                if (barriers->has("KikoType"))
+                    for (auto& row : data.barrier_options)
+                        row.kiko_type = scalar_terms::read_text(*barriers, "KikoType");
+                if (const auto schedule = barriers->child("ScheduleData"))
+                    option_block::read_schedule(data, *schedule, "option", 1, "barrier_schedule");
+            }
         for (auto& row : data.digital_options)
             barrier_block::read_monitoring(row, *product, "FXIndex");
         for (auto& row : data.variance_swaps)

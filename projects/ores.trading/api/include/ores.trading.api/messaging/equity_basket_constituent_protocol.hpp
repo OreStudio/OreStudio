@@ -54,6 +54,7 @@ struct equity_basket_constituent_write {
     int sequence_number;
     boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
+    std::optional<std::string> identifier_type;
     std::string underlying_kind;
     std::optional<double> weight;
     std::optional<ores::utility::decimal::decimal> initial_price;
@@ -390,6 +391,7 @@ inline constexpr std::string_view deleted = "trading.v1.equity_basket_constituen
         utility::codec::field{"trade_activity_id",
                               &equity_basket_constituent_write::trade_activity_id},
         utility::codec::field{"underlying_name", &equity_basket_constituent_write::underlying_name},
+        utility::codec::field{"identifier_type", &equity_basket_constituent_write::identifier_type},
         utility::codec::field{"underlying_kind", &equity_basket_constituent_write::underlying_kind},
         utility::codec::field{"weight", &equity_basket_constituent_write::weight},
         utility::codec::field{"initial_price", &equity_basket_constituent_write::initial_price},

@@ -48,6 +48,9 @@ struct trade_membership {
     std::string role;
     /// 1-based place of this trade in the parent's list.
     int sequence_number = 0;
+    /// The name the parent states this trade by, when it states one apart
+    /// from the trade's own id, as a total return swap's Derivative Id is.
+    std::optional<std::string> label;
 };
 
 /**

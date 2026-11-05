@@ -64,6 +64,11 @@ namespace ores::trading::domain {
         utility::codec::field{"barrier_calendar", &fx_barrier_option_instrument::barrier_calendar},
         utility::codec::field{"barrier_fixing_index",
                               &fx_barrier_option_instrument::barrier_fixing_index},
+        utility::codec::field{"quantity", &fx_barrier_option_instrument::quantity},
+        utility::codec::field{"strike", &fx_barrier_option_instrument::strike},
+        utility::codec::field{"amount", &fx_barrier_option_instrument::amount},
+        utility::codec::field{"settlement_date", &fx_barrier_option_instrument::settlement_date},
+        utility::codec::field{"kiko_type", &fx_barrier_option_instrument::kiko_type},
         utility::codec::field{"description", &fx_barrier_option_instrument::description},
         utility::codec::field{"audit", &fx_barrier_option_instrument::audit},
     };

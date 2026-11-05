@@ -554,6 +554,8 @@ auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_inst
             row.sequence_number = static_cast<int>(ordinal++);
             row.underlying_name = equity_instrument_projection_text_of(underlying, "Name");
             row.underlying_kind = equity_instrument_projection_text_of(underlying, "Type");
+            if (underlying.has("IdentifierType"))
+                row.identifier_type = underlying.text("IdentifierType");
             constituents.push_back(std::move(row));
         }
     }
@@ -618,6 +620,8 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
             if (const auto underlying = entry.child("Underlying")) {
                 row.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
                 row.weight = decimal_as_double(*underlying, "Weight");
+                if (underlying->has("IdentifierType"))
+                    row.identifier_type = underlying->text("IdentifierType");
             }
             row.strike = equity_instrument_projection_decimal_of(entry, "Strike");
             if (const auto option = entry.child("OptionData")) {
@@ -626,6 +630,11 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
                 row.exercise_type = equity_instrument_projection_exercise_style_of(option);
                 row.settlement_type =
                     equity_instrument_projection_spelling_of(*option, "Settlement");
+                if (const auto dates = option->child("ExerciseDates")) {
+                    const auto values = dates->values("ExerciseDate");
+                    if (!values.empty())
+                        row.exercise_date = equity_instrument_projection_to_domain_date(values.front());
+                }
             }
             equity_instrument_projection_stamp_columns(row);
             underlyings.push_back(std::move(row));
@@ -847,6 +856,8 @@ void write_equity_digital_option(record_writer& trade,
     write_option_entry(data.child("OptionData"), v);
     write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_decimal("Strike", v.strike.value_or(decimal{}));
+    if (!v.currency.empty())
+        data.set_spelling("PayoffCurrency", v.currency, "currency");
     data.set_decimal("PayoffAmount", v.notional);
     // The schema requires a quantity and the row keeps the payoff amount alone,
     // which the export states as the payout of one unit.
@@ -1007,24 +1018,27 @@ void write_equity_worst_of_basket_swap(record_writer& trade,
     struct named_constituent {
         std::string name;
         std::string kind;
+        std::optional<std::string> identifier_type;
     };
     std::vector<named_constituent> members;
     std::vector<decimal> prices;
     for (const auto& row : ordered_rows) {
         if (row.underlying_name.empty())
             continue;
-        members.push_back({row.underlying_name, row.underlying_kind});
+        members.push_back({row.underlying_name, row.underlying_kind, row.identifier_type});
         if (row.initial_price.has_value())
             prices.push_back(*row.initial_price);
     }
     if (members.empty() && !v.underlying_name.empty())
-        members.push_back({v.underlying_name, "Equity"});
+        members.push_back({v.underlying_name, "Equity", std::nullopt});
     if (!members.empty()) {
         auto underlyings = data.child("Underlyings");
         for (const auto& member : members) {
             auto underlying = underlyings.append("Underlying");
             underlying.set_text("Name", member.name);
             underlying.set_text("Type", member.kind);
+            if (member.identifier_type)
+                underlying.set_text("IdentifierType", *member.identifier_type);
         }
     }
 
@@ -1035,6 +1049,8 @@ void write_equity_worst_of_basket_swap(record_writer& trade,
     if (!option_block::write_product_schedule(
             data, carrier, "FloatingPayDates", "floating_pay_schedule"))
         write_schedule_rule(data.child("FloatingPayDates"), "", "6M");
+    option_block::write_product_schedule(
+        data, carrier, "FloatingFixingSchedule", "floating_fixing_schedule");
 
     write_levels(data, "InitialPrices", "InitialPrice", prices);
 
@@ -1086,9 +1102,15 @@ void write_equity_option_position(record_writer& trade,
         auto underlying = entry.child("Underlying");
         underlying.set_text("Type", "Equity");
         underlying.set_text("Name", row->underlying_name);
+        if (row->identifier_type)
+            underlying.set_text("IdentifierType", *row->identifier_type);
         if (row->weight)
             set_decimal_from_double(underlying, "Weight", *row->weight);
         auto option = entry.child("OptionData");
+        if (row->exercise_date)
+            option.child("ExerciseDates")
+                .append_value("ExerciseDate",
+                              equity_instrument_projection_to_ore_date(*row->exercise_date));
         option.set_text("LongShort", row->long_short);
         if (!row->option_type.empty())
             option.set_text("OptionType", row->option_type);
@@ -1136,6 +1158,18 @@ constexpr scalar_terms::term<equity_option_instrument> equity_option_terms[] = {
     {"KnockOutPrice", &equity_option_instrument::knock_out_price},
 };
 
+constexpr scalar_terms::term<equity_swap_instrument> equity_swap_terms[] = {
+    {"FixedRate", &equity_swap_instrument::fixed_rate},
+    {"FloatingIndex", &equity_swap_instrument::floating_index},
+    {"FloatingSpread", &equity_swap_instrument::floating_spread},
+    {"FloatingDayCountFraction", &equity_swap_instrument::floating_day_count_fraction},
+    {"InitialFixedRate", &equity_swap_instrument::initial_fixed_rate},
+    {"KnockInLevel", &equity_swap_instrument::knock_in_level},
+    {"BermudanKnockIn", &equity_swap_instrument::bermudan_knock_in},
+    {"AccruingFixedCoupons", &equity_swap_instrument::accruing_fixed_coupons},
+    {"AccumulatingFixedCoupons", &equity_swap_instrument::accumulating_fixed_coupons},
+};
+
 constexpr scalar_terms::term<equity_asian_option_instrument> equity_asian_option_terms[] = {
     {"Settlement", &equity_asian_option_instrument::settlement},
 };
@@ -1155,6 +1189,8 @@ void with_equity_terms(Fn&& fn) {
         fn(equity_option_terms);
     else if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
         fn(equity_asian_option_terms);
+    else if constexpr (std::is_same_v<Row, equity_swap_instrument>)
+        fn(equity_swap_terms);
     else if constexpr (std::is_same_v<Row, equity_digital_option_instrument>)
         fn(equity_digital_option_terms);
 }
@@ -1195,6 +1231,7 @@ constexpr option_block::product_schedule equity_product_schedules[] = {
     {"EquityCliquetOption", "ScheduleData", "product_schedule"},
     {"EquityWorstOfBasketSwap", "FloatingPeriodSchedule", "floating_period_schedule"},
     {"EquityWorstOfBasketSwap", "FloatingPayDates", "floating_pay_schedule"},
+    {"EquityWorstOfBasketSwap", "FloatingFixingSchedule", "floating_fixing_schedule"},
 };
 
 std::optional<std::string> equity_option_data_element(std::string_view trade_type) {

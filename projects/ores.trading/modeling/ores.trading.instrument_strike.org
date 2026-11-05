@@ -56,7 +56,8 @@ The trade whose document stated this strike.
 :END:
 
 Which arm of the document stated this strike: =cap= or =floor= for a cap/floor,
-=single= for the one strike a bond, a swaption or an index option states.
+=single= for the one strike a bond, a swaption or an index option states, and
+=call= or =put= for a commodity option strip's calls and puts.
 
 =strike_role= is data, not a table: the closed set is fixed, and a collar
 states both arms in one document, so the arm belongs to the strike rather than
@@ -154,6 +155,17 @@ fact row.
 
 Currency the bare strike is stated in.
 
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The position held at this strike, as a commodity option strip's
+=LongShorts/LongShort= states it beside its =Strikes/Strike=.
+
 * Foreign keys
 
 ** trade_id
@@ -218,7 +230,7 @@ is immutable.
 
 | expression |
 |------------|
-| "strike_role" in ('cap', 'floor', 'single') |
+| "strike_role" in ('cap', 'floor', 'single', 'call', 'put') |
 | "sequence_number" >= 1 |
 
 * C++

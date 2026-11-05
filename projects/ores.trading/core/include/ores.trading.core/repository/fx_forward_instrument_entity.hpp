@@ -69,6 +69,9 @@ struct fx_forward_instrument_entity {
     std::optional<std::string> settlement_payment_lag;
     std::optional<std::string> settlement_payment_calendar;
     std::optional<std::string> settlement_payment_convention;
+    std::optional<std::chrono::year_month_day> far_date;
+    std::optional<ores::utility::decimal::decimal> far_bought_amount;
+    std::optional<ores::utility::decimal::decimal> far_sold_amount;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -102,6 +105,9 @@ struct fx_forward_instrument_entity {
                query_builder::bind("settlement_payment_calendar", &e::settlement_payment_calendar) |
                query_builder::bind("settlement_payment_convention",
                                    &e::settlement_payment_convention) |
+               query_builder::bind("far_date", &e::far_date) |
+               query_builder::bind("far_bought_amount", &e::far_bought_amount) |
+               query_builder::bind("far_sold_amount", &e::far_sold_amount) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

@@ -20,7 +20,7 @@
 #include "ores.marketdata.service/app/billing.hpp"
 #include <algorithm>
 #if defined(_MSC_VER) && !defined(__clang__)
-#include <boost/multiprecision/cpp_int.hpp>
+#    include <boost/multiprecision/cpp_int.hpp>
 #endif
 #include <map>
 #include <numeric>
@@ -201,8 +201,9 @@ source_bill rate_source(const domain::feed& source,
             line.quantity = static_cast<std::int64_t>(c.subscribers.size());
         } else if (component.driver == "per_licence") {
             const auto licence_holders = c.holders.find(component.licence_right);
-            line.quantity =
-                licence_holders == c.holders.end() ? 0 : static_cast<std::int64_t>(licence_holders->second.size());
+            line.quantity = licence_holders == c.holders.end() ?
+                                0 :
+                                static_cast<std::int64_t>(licence_holders->second.size());
         } else if (component.driver == "per_thousand_ticks") {
             line.quantity = c.total_ticks;
             line.total_micros = per_thousand(c.total_ticks, component.charge_micros);

@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <boost/numeric/conversion/cast.hpp>
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/numeric/conversion/cast.hpp>
 #include <algorithm>
 #include <chrono>
 #include <cstdint>

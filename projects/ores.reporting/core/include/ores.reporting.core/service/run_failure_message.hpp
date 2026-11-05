@@ -59,9 +59,7 @@ struct run_problems {
  * @param recorded The problems the run now holds.
  */
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT std::string
-run_failure_message(int outcome,
-                    const std::string& engine_reason,
-                    const run_problems& recorded);
+run_failure_message(int outcome, const std::string& engine_reason, const run_problems& recorded);
 
 }
 

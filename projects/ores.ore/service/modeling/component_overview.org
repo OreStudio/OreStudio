@@ -1,6 +1,11 @@
 :PROPERTIES:
 :ID: EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7
 :ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :END:
 #+title: ores.ore.service
 #+description: The runnable host for the ORE integration — configuration, the import worklist, execute and rollback handlers, and the report package handler.
@@ -12,7 +17,7 @@
 #+updated: 2026-09-26
 #+name: ore.service
 #+full_name: ores.ore.service
-#+brief: ORE import service
+#+brief: ORE import microservice
 
 * Diagram
 
@@ -69,6 +74,39 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
+* Options
+:PROPERTIES:
+:group: Storage
+:END:
+
+The options this service takes beyond logging, NATS and the database. Codegen
+writes the member, its wire field, its command-line declaration and its
+assignment from each entry.
+
+** http_base_url
+:PROPERTIES:
+:cpp_type: std::string
+:default: "http://localhost:8080"
+:help: Base URL of the storage HTTP API
+:END:
+
+Base URL of the storage HTTP API, e.g. "http://localhost:8080".
+
+Used by storage_transfer to download ORE import tarballs.
+
+** work_dir
+:PROPERTIES:
+:cpp_type: std::string
+:default: "../var/ore-service/work"
+:initial: "../var/ore-service/work"
+:help: Root directory for per-import working directories
+:END:
+
+Root directory for per-import working directories.
+
+Each import unpacks its tarball into work_dir/{request_id}/.
+Default: ../var/ore-service/work (relative to the binary directory,
+resolves to publish/var/ore-service/work/ in the build tree).
 
 * See also
 
@@ -80,7 +118,6 @@ into its generated file after the profile's baseline.
 * Test dependencies
 
 The suites link what the profile cannot know about.
-
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}

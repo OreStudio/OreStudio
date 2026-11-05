@@ -92,6 +92,23 @@ def test_disable_facet_removes_only_that_facet(graph):
     assert "ores.cpp.domain" in s
 
 
+def test_specificity_archetype_override_keeps_a_disabled_facet(graph):
+    """A facet turned off with one archetype turned on is kept for that archetype."""
+    s = compute_supported_set(
+        {"ores.cpp.presentation.enabled": "nil",
+         "ores.cpp.presentation.history_field_mapper.enabled": "true"},
+        graph, "domain_entity")
+    assert "ores.cpp.presentation" in s
+
+
+def test_an_archetype_turned_off_does_not_keep_a_disabled_facet(graph):
+    s = compute_supported_set(
+        {"ores.cpp.presentation.enabled": "nil",
+         "ores.cpp.presentation.history_field_mapper.enabled": "nil"},
+        graph, "domain_entity")
+    assert "ores.cpp.presentation" not in s
+
+
 def test_specificity_facet_override_beats_technical_space(graph):
     """ores.cpp off + ores.cpp.presentation on => it is kept, other cpp facets dropped."""
     s = compute_supported_set(

@@ -200,7 +200,10 @@ def compute_supported_set(properties: dict[str, Any], graph: Graph,
     """Facets entity *e* can generate: model-type-admissible, minus disables.
 
     A facet whose ``#+default:`` is disabled is excluded unless an ``ores.*``
-    override re-enables it (opt-in facets, e.g. ores.sql.populate)."""
+    override re-enables it (opt-in facets, e.g. ores.sql.populate). A model
+    that turns a facet off but turns one of its archetypes on keeps the facet,
+    because the most specific key decides; the archetype loop then renders only
+    the addresses enabled."""
     overrides = _enabled_overrides(properties or {})
     supported = set()
     for facet, mts in graph.facet_model_types.items():
@@ -208,7 +211,9 @@ def compute_supported_set(properties: dict[str, Any], graph: Graph,
             continue
         ts = graph.facet_ts.get(facet, "")
         default = graph.facet_default.get(facet, True)
-        if is_enabled(facet, facet, ts, overrides, default):
+        named = any(overrides.get(arch["address"])
+                    for arch in graph.facet_archetypes.get(facet, []))
+        if named or is_enabled(facet, facet, ts, overrides, default):
             supported.add(facet)
     return frozenset(supported)
 

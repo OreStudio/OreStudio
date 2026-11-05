@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_parser.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.synthetic.service/config/parser.hpp"
 #include "ores.service/config/standard_service_options.hpp"
 #include "ores.synthetic.service/config/parser_exception.hpp"
@@ -24,7 +29,6 @@
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include <cmath>
-#include <cstdint>
 #include <ostream>
 
 namespace {
@@ -65,14 +69,17 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    auto od(standard_service_options::make_options_description("ores.synthetic.service.log"));
-    od.add_options()("run-seed",
-                     boost::program_options::value<std::uint64_t>()->default_value(42),
-                     "Seed every random stream of the run is keyed by. One seed reproduces a "
-                     "run.")("market-speed",
-                             boost::program_options::value<double>()->default_value(1440.0),
-                             "Simulated seconds one unit of market time spans: how fast the "
-                             "simulated world runs. Every feed's prices step by it.");
+    options_description own("Market simulation");
+    own.add_options()(
+        "run-seed",
+        boost::program_options::value<std::uint64_t>()->default_value(42),
+        "Seed every random stream of the run is keyed by. One seed reproduces a run.")(
+        "market-speed",
+        boost::program_options::value<double>()->default_value(1440.0),
+        "Simulated seconds one unit of market time spans: how fast the simulated world runs. Every "
+        "feed's prices step by it.");
+    const auto od(
+        standard_service_options::make_options_description("ores.synthetic.service.log", own));
     const auto vm(standard_service_options::parse(od, arguments, "SYNTHETIC_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {
@@ -92,9 +99,8 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.database = std_opts.database;
     r.run_seed = vm["run-seed"].as<std::uint64_t>();
     r.market_speed = vm["market-speed"].as<double>();
-    if (!std::isfinite(r.market_speed) || r.market_speed <= 0.0)
-        BOOST_THROW_EXCEPTION(
-            parser_exception("--market-speed must be a positive number of simulated seconds."));
+    if (!std::isfinite(r.market_speed) || r.market_speed <= 0)
+        BOOST_THROW_EXCEPTION(parser_exception("--market-speed must be a positive number."));
     return r;
 }
 

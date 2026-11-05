@@ -30,8 +30,10 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <string>
 #include <tuple>
 
 namespace ores::storage::service::config {

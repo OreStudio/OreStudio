@@ -85,7 +85,7 @@ via its "Verifies task" field.
 | 3 | PR #4458, @claude 3: the valgrind check relies on LD_PRELOAD | running_under_valgrind.hpp | Accept | The comment now says it is a heuristic. valgrind.h is not on every platform the tests build on. |
 | 4 | PR #4458, @claude 4: the early submit may duplicate the CDash build | CTest.cmake | No change | Submits share the build stamp, so CDash adds parts to one build. The first memcheck night confirms it. The 5400 s cap is per suite under a parallel ctest, not a sum against the job limit. |
 | 5 | PR #4458, @claude 5: .gitattributes only fixes new checkouts | .gitattributes | No change | The Windows runners check out fresh each run. |
-| 6 | PR #4458, @claude 6: a dropped runner result skips the service | service runners | Accept | [[nodiscard]] on run() and run_signing(). |
+| 6 | PR #4458, @claude 6: a dropped runner result skips the service | service runners | Accept | =[[nodiscard]]= on =run()= and =run_signing()=. |
 | 7 | PR #4458, @claude 7 and minor: coverage, member order, comment placement | various | No change | Coverage is stated in the PR. gcc compiles the loop's initialiser list with no -Wreorder. The wrapper comment explains the namespace split it sits in. |
 
 * Result

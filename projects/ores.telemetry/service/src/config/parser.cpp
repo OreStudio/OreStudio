@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_parser.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.telemetry.service/config/parser.hpp"
 #include "ores.service/config/standard_service_options.hpp"
 #include "ores.telemetry.service/config/parser_exception.hpp"
@@ -32,25 +37,10 @@ const std::string product_version("ores.telemetry.service v" ORES_VERSION);
 const std::string build_info(ores::utility::version::build_info());
 const std::string usage_error_msg("Usage error: ");
 
-using boost::program_options::value;
 using boost::program_options::options_description;
 
 using ores::telemetry::service::config::options;
 using ores::telemetry::service::config::parser_exception;
-
-options_description make_options_description() {
-    options_description monitor_opts("NATS monitoring options");
-    monitor_opts.add_options()("nats-monitor-url",
-                               value<std::string>()->default_value("http://localhost:8222"),
-                               "NATS HTTP monitoring endpoint URL")(
-        "nats-monitor-interval",
-        value<std::uint32_t>()->default_value(30),
-        "NATS monitoring poll interval in seconds");
-
-    using ores::service::config::standard_service_options;
-    return standard_service_options::make_options_description("ores.telemetry.service.log",
-                                                              monitor_opts);
-}
 
 void print_help(const options_description& od, std::ostream& info) {
     info << "Telemetry and metrics streaming service" << std::endl
@@ -78,7 +68,16 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    const auto od(make_options_description());
+    options_description own("NATS monitoring options");
+    own.add_options()(
+        "nats-monitor-url",
+        boost::program_options::value<std::string>()->default_value("http://localhost:8222"),
+        "NATS HTTP monitoring endpoint URL")(
+        "nats-monitor-interval",
+        boost::program_options::value<std::uint32_t>()->default_value(30),
+        "NATS monitoring poll interval in seconds");
+    const auto od(
+        standard_service_options::make_options_description("ores.telemetry.service.log", own));
     const auto vm(standard_service_options::parse(od, arguments, "TELEMETRY_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {

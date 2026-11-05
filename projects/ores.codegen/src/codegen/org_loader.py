@@ -7469,7 +7469,71 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     implementations = _collect_implementations(doc.root)
     if implementations:
         c["implementations"] = implementations
+    c.update(service_options(Path(path).name, _section(doc.root, "Options")))
     return {"component": c}
+
+
+def _cpp_string(text: str) -> str:
+    return text.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _option_flag(owner: str, option: str, props: dict[str, Any], key: str) -> bool:
+    """A yes-or-no property of one option, refusing a value that is neither.
+
+    A misspelt :secret: must not read as "not secret": the value would then
+    reach the wire shape and the startup dump.
+    """
+    value = str(props.get(key, "")).strip().lower()
+    if value in ("", "nil", "false", "no"):
+        return False
+    if value in ("t", "true", "yes"):
+        return True
+    raise ValueError(f"{owner}: option '{option}' sets :{key}: to {value!r}. Write t or nil.")
+
+
+def service_options(owner: str, section: OrgNode | None) -> dict[str, Any]:
+    """The options a service declares beyond the standard set, for the templates.
+
+    Each heading under ``* Options`` is one member of the service's options
+    struct. The member, its wire field, its command-line declaration and its
+    assignment are all written from this one list, so none of them can drift
+    from the others. A ``:secret:`` member stays out of the wire shape, so the
+    startup dump of the options never prints it.
+    """
+    if section is None or not section.children:
+        return {"has_service_options": False, "service_options": []}
+    group = {k.lower(): v for k, v in section.properties.items()}.get("group", "")
+    if not group:
+        raise ValueError(f"{owner}: * Options needs a :group: property, the title "
+                         f"its --help section prints")
+    options: list[dict[str, Any]] = []
+    for node in section.children:
+        props = {k.lower(): v for k, v in node.properties.items()}
+        missing = [k for k in ("cpp_type", "default", "help") if not props.get(k)]
+        if missing:
+            raise ValueError(f"{owner}: option '{node.title}' needs {missing}")
+        doc = [line.rstrip() for line in _strip_body(node).splitlines()] or [node.title]
+        doc[0] = "@brief " + doc[0]
+        options.append({
+            "name": node.title,
+            "cpp_type": props["cpp_type"],
+            "option": props.get("option") or node.title.replace("_", "-"),
+            "default": props["default"],
+            "initial": props.get("initial", ""),
+            "help": _cpp_string(" ".join(str(props["help"]).split())),
+            "secret": _option_flag(owner, node.title, props, "secret"),
+            "positive": _option_flag(owner, node.title, props, "positive"),
+            "doc_lines": doc,
+        })
+    secrets = sum(1 for o in options if o["secret"])
+    return {
+        "has_service_options": True,
+        "service_options": options,
+        "service_options_group": _cpp_string(group),
+        "service_secret_count": secrets,
+        "has_service_secrets": bool(secrets),
+        "has_positive_options": any(o["positive"] for o in options),
+    }
 
 
 # The coarse outcome a catalogue entry may declare. Mirrors

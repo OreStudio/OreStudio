@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_options.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_COMPUTE_SERVICE_CONFIG_OPTIONS_HPP
 #define ORES_COMPUTE_SERVICE_CONFIG_OPTIONS_HPP
 
@@ -28,6 +33,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <string>
 #include <tuple>
 
 namespace ores::compute::service::config {
@@ -53,7 +59,7 @@ struct options final {
      *
      * Set to 0 to disable the grid poller entirely.
      */
-    std::uint32_t telemetry_interval_seconds{30};
+    std::uint32_t telemetry_interval_seconds = 30;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {

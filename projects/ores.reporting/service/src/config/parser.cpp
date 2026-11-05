@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_parser.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.reporting.service/config/parser.hpp"
 #include "ores.reporting.service/config/parser_exception.hpp"
 #include "ores.service/config/standard_service_options.hpp"
@@ -31,24 +36,11 @@ const std::string more_information("Try '--help' for more information.");
 const std::string product_version("ores.reporting.service v" ORES_VERSION);
 const std::string build_info(ores::utility::version::build_info());
 const std::string usage_error_msg("Usage error: ");
-const std::string http_base_url_arg("http-base-url");
 
-using boost::program_options::value;
 using boost::program_options::options_description;
 
 using ores::reporting::service::config::options;
 using ores::reporting::service::config::parser_exception;
-
-options_description make_options_description() {
-    options_description storage("Storage");
-    storage.add_options()(http_base_url_arg.c_str(),
-                          value<std::string>()->default_value("http://localhost:8080"),
-                          "Base URL of the storage HTTP API");
-
-    using ores::service::config::standard_service_options;
-    return standard_service_options::make_options_description("ores.reporting.service.log",
-                                                              storage);
-}
 
 void print_help(const options_description& od, std::ostream& info) {
     info << "Reporting service" << std::endl
@@ -76,7 +68,13 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    const auto od(make_options_description());
+    options_description own("Storage");
+    own.add_options()(
+        "http-base-url",
+        boost::program_options::value<std::string>()->default_value("http://localhost:8080"),
+        "Base URL of the storage HTTP API");
+    const auto od(
+        standard_service_options::make_options_description("ores.reporting.service.log", own));
     const auto vm(standard_service_options::parse(od, arguments, "REPORTING_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {
@@ -94,7 +92,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.logging = std_opts.logging;
     r.nats = std_opts.nats;
     r.database = std_opts.database;
-    r.http_base_url = vm[http_base_url_arg].as<std::string>();
+    r.http_base_url = vm["http-base-url"].as<std::string>();
     return r;
 }
 

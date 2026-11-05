@@ -3851,6 +3851,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             SERVICE_APP_RUN_BODY_PASTE_KIND.lower() in pasted)
         component['has_app_config_decl'] = (
             SERVICE_APP_CONFIG_DECL_PASTE_KIND.lower() in pasted)
+        if component.get('has_service_options') and component['has_app_config_decl']:
+            raise ValueError(
+                f"{component.get('full_name')}: states its options in * Options and "
+                f"also pastes an options declaration; the list writes the declaration, "
+                f"so keep only one")
 
         data['component'] = component
 

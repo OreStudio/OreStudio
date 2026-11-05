@@ -1,6 +1,11 @@
 :PROPERTIES:
 :ID: 70F2D886-BB3F-4FE0-929C-45509E1CE967
 :ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :END:
 #+title: ores.iam.service
 #+description: NATS service entrypoint for the IAM domain — wires handlers, repositories, and configuration.
@@ -60,6 +65,28 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
+* Options
+:PROPERTIES:
+:group: IAM options
+:END:
+
+The options this service takes beyond logging, NATS and the database. Codegen
+writes the member, its wire field, its command-line declaration and its
+assignment from each entry.
+
+** jwt_private_key
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:help: RSA private key PEM for JWT signing (RS256). Also read from ORES_IAM_SERVICE_JWT_PRIVATE_KEY.
+:secret: t
+:END:
+
+RSA private key PEM for signing JWT tokens (RS256).
+
+Read from ORES_IAM_SERVICE_JWT_PRIVATE_KEY environment variable
+or --jwt-private-key command-line option. Must be a valid RSA
+private key in PEM format.
 
 * See also
 
@@ -70,7 +97,6 @@ into its generated file after the profile's baseline.
 * Test dependencies
 
 The suites link what the profile cannot know about.
-
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}

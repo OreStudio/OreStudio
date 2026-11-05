@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_options.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TELEMETRY_SERVICE_CONFIG_OPTIONS_HPP
 #define ORES_TELEMETRY_SERVICE_CONFIG_OPTIONS_HPP
 
@@ -55,11 +60,11 @@ struct options final {
      * Defaults to localhost on the standard NATS monitoring port.
      * Set to empty to disable NATS metrics collection.
      */
-    std::string nats_monitor_url{"http://localhost:8222"};
+    std::string nats_monitor_url = "http://localhost:8222";
     /**
      * @brief How often to poll the NATS monitoring endpoint, in seconds.
      */
-    std::uint32_t nats_monitor_interval_seconds{30};
+    std::uint32_t nats_monitor_interval_seconds = 30;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {

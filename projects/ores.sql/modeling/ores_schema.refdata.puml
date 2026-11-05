@@ -388,6 +388,7 @@ package "refdata" #FFF3E0 {
         * book_purpose_type : text
         * ledger_feed_type : text
         * is_sweepable : boolean
+        * restricts_product_types : boolean
         * rates_centre_code : text
           sandbox_id : uuid <<FK>>
         * modified_by : text

@@ -880,7 +880,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         component = fg.get('component', 'unknown')
         subcomponent = fg.get('subcomponent', '')
         if subcomponent:
-            component_include = f"{component}.{subcomponent}"
+            component_include = fg.get('component_include') or f"{component}.{subcomponent}"
             component_dir = f"ores.{component}/{subcomponent}"
         else:
             component_include = fg.get('component_include', component)
@@ -891,6 +891,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{component_dir}', component_dir)
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component}', component)
+        result = result.replace('{header}', fg.get('header', ''))
         result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
 
@@ -1200,8 +1201,9 @@ def _substitute_paste_markers(text, data):
     case-insensitive -- a case mismatch between the two must not silently
     drop an author's paste block, which a case-sensitive dict lookup would
     do without any error or warning."""
+    # One model renders at a time, so at most one of these keys is set.
     de = (data.get("domain_entity") or data.get("junction")
-          or data.get("component") or {})
+          or data.get("component") or data.get("field_group") or {})
     impls = de.get("implementations") or {}
     impls_lower = {k.lower(): v for k, v in impls.items()}
 

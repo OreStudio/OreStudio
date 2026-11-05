@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 289E8AED-0BF2-4B98-808F-5439D2307AEE
+:ores.cpp.field-group.field_group_header.enabled: nil
+:ores.cpp.field-group.options_header.enabled: true
+:ores.ts.enabled: nil
+:END:
+#+title: ores.shell.login_options
+#+description: Options for logging in to the server.
+#+type: ores.codegen.field_group
+#+component: shell
+#+subcomponent: application
+#+component_include: shell
+#+entity_singular: login_options
+#+namespace: ores::shell::config
+#+brief: Options for logging in to the server.
+#+header: config/login_options.hpp
+#+filetags: :model:field_group:options:shell:
+#+created: 2026-11-05
+#+updated: 2026-11-05
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+* Fields
+
+** username
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Username to use for login.
+
+** password
+:PROPERTIES:
+:cpp_type: std::string
+:secret: t
+:END:
+
+Password to use for login.
+

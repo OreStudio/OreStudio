@@ -2529,7 +2529,7 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     fm = doc.frontmatter
 
     fg: dict[str, Any] = {}
-    for key in ("product", "component", "subcomponent",
+    for key in ("product", "component", "subcomponent", "component_include",
                 "entity_singular", "brief"):
         if key in fm:
             fg[key] = fm[key]
@@ -2572,6 +2572,10 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     fg["has_economic_fields"] = bool(economic)
     fg["canonical_members"] = economic
     fg["has_canonical_members"] = bool(economic)
+    fg.update(options_struct(Path(path).name, fm, fields))
+    implementations = _collect_implementations(doc.root)
+    if implementations:
+        fg["implementations"] = implementations
 
     return {"field_group": fg}
 
@@ -7471,6 +7475,36 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
         c["implementations"] = implementations
     c.update(service_options(Path(path).name, _section(doc.root, "Options")))
     return {"component": c}
+
+
+def options_struct(owner: str, fm: dict[str, Any], fields: list[dict[str, Any]]) -> dict[str, Any]:
+    """What the options header needs of a field group that names its header.
+
+    A model that states ``#+header:`` is an options struct: its header lives
+    where its library keeps it, its guard comes from that path, and a
+    ``:secret:`` field stays out of the wire shape.
+    """
+    header = str(fm.get("header", "")).strip()
+    if not header:
+        return {}
+    include = str(fm.get("component_include") or fm.get("component", ""))
+    if fm.get("subcomponent") and not fm.get("component_include"):
+        include = f"{fm.get('component')}.{fm['subcomponent']}"
+    guard = re.sub(r"[^A-Za-z0-9]", "_", f"ores.{include}/{header}").upper()
+    options = []
+    for field in fields:
+        doc = [line.rstrip() for line in str(field.get("description", "")).splitlines()]
+        if doc:
+            doc[0] = "@brief " + doc[0]
+        options.append({**field, "doc_lines": doc, "has_doc": bool(doc),
+                        "secret": _option_flag(owner, field["name"],
+                                               {k: str(v) for k, v in field.items()}, "secret")})
+    secrets = sum(1 for o in options if o["secret"])
+    return {"header": header, "header_guard": guard,
+            "export_macro": str(fm.get("export_macro", "")).strip(),
+            "has_printer": str(fm.get("printer", "")).strip().lower() != "none",
+            "options_fields": options, "options_secret_count": secrets,
+            "has_options_secrets": bool(secrets)}
 
 
 def _cpp_string(text: str) -> str:

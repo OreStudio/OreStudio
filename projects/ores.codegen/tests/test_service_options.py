@@ -8,6 +8,7 @@ field, its command-line declaration and its assignment from that list. A
 service whose application is hand-written turns ores.cpp.service-app off and
 its five config addresses on, and gets the config files and nothing else.
 """
+import re
 import sys
 from pathlib import Path
 
@@ -187,3 +188,102 @@ def test_a_misspelt_secret_is_refused(tmp_path):
 def test_the_group_key_is_read_in_any_case(tmp_path):
     assert _component(tmp_path, OPTIONS.replace(":group:", ":GROUP:"))[
         "service_options_group"] == "Demo"
+
+
+OPTIONS_STRUCT = """\
+:PROPERTIES:
+:ID: 00000000-0000-0000-0000-0000000000cf
+:ores.cpp.field-group.field_group_header.enabled: nil
+:ores.cpp.field-group.options_header.enabled: true
+:ores.ts.enabled: nil
+:END:
+#+title: ores.demo.demo_options
+#+type: ores.codegen.field_group
+#+component: demo
+#+entity_singular: demo_options
+#+namespace: ores::demo
+#+brief: Options of the demo.
+#+header: config/demo_options.hpp
+{printer}
+* Fields
+
+** url
+:PROPERTIES:
+:cpp_type: std::string
+:default_value: "nats://localhost:4222"
+:END:
+
+The server.
+
+** password
+:PROPERTIES:
+:cpp_type: std::string
+:secret: t
+:END:
+"""
+
+
+def _options_header(tmp_path, printer="#+export_macro: ORES_DEMO_EXPORT"):
+    model = tmp_path / "projects/ores.demo/modeling/ores.demo.demo_options_field_group.org"
+    model.parent.mkdir(parents=True, exist_ok=True)
+    model.write_text(OPTIONS_STRUCT.format(printer=printer), encoding="utf-8")
+    units, _, _ = resolve_targets(model, CODEGEN_BASE, address="ores.cpp.field-group")
+    outputs = [u["output"] for u in units]
+    out = tmp_path / "out"
+    generate_from_model(str(model), DATA_DIR, TEMPLATES_DIR, out, is_processing_batch=True,
+                        target_template="cpp_options_header.hpp.mustache",
+                        target_output="rendered")
+    return outputs, (out / "rendered").read_text(encoding="utf-8")
+
+
+def test_an_options_struct_is_written_where_its_model_names_it(tmp_path):
+    outputs, _ = _options_header(tmp_path)
+
+    assert outputs == ["projects/ores.demo/include/ores.demo/config/demo_options.hpp"]
+
+
+def test_an_options_struct_leaves_its_secret_out_of_the_shape(tmp_path):
+    _, header = _options_header(tmp_path)
+
+    assert "std::string password;" in header
+    assert '"password"' not in header
+    assert "names_every_member<demo_options>(1)" in header
+    assert "#ifndef ORES_DEMO_CONFIG_DEMO_OPTIONS_HPP" in header
+
+
+def test_an_options_struct_declares_its_printer_unless_told_not_to(tmp_path):
+    _, with_printer = _options_header(tmp_path)
+    _, without = _options_header(tmp_path, printer="#+printer: none")
+
+    assert "ORES_DEMO_EXPORT std::ostream& operator<<" in with_printer
+    assert "operator<<" not in without
+    assert "<iosfwd>" not in without
+
+
+def test_a_default_is_brace_initialised_so_an_explicit_constructor_compiles(tmp_path):
+    """std::chrono::seconds has an explicit constructor: '= 30' does not compile."""
+    chrono = OPTIONS_STRUCT.replace("** password", """** timeout
+:PROPERTIES:
+:cpp_type: std::chrono::seconds
+:default_value: 30
+:END:
+
+** password""")
+    model = tmp_path / "projects/ores.demo/modeling/ores.demo.demo_options_field_group.org"
+    model.parent.mkdir(parents=True, exist_ok=True)
+    model.write_text(chrono.format(printer=""), encoding="utf-8")
+    out = tmp_path / "out"
+    generate_from_model(str(model), DATA_DIR, TEMPLATES_DIR, out, is_processing_batch=True,
+                        target_template="cpp_options_header.hpp.mustache",
+                        target_output="rendered")
+    header = (out / "rendered").read_text(encoding="utf-8")
+
+    assert re.search(r"std::chrono::seconds timeout\{\s*30\s*\};", header)
+    assert "= 30" not in header
+
+
+def test_a_service_option_initialiser_is_brace_initialised(tmp_path):
+    options = POSITIVE.replace(":default: 4\n", ":default: 4\n:initial: 4\n")
+    header = _render(tmp_path, "cpp_service_config_options.hpp.mustache", options)
+
+    assert re.search(r"std::uint32_t workers\{\s*4\s*\};", header)

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_options_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_MARKETDATA_OFFICIAL_CONFIG_OPTIONS_HPP
 #define ORES_MARKETDATA_OFFICIAL_CONFIG_OPTIONS_HPP
 
@@ -34,16 +39,27 @@
 
 namespace ores::marketdata::official::config {
 
+/**
+ * @brief options
+ */
 struct options final {
     std::optional<ores::logging::logging_options> logging;
     ores::nats::config::nats_options nats;
-    /// The address of Frankfurter: the hosted service, or a team's own.
+    /**
+     * @brief The address of Frankfurter: the hosted service, or a team's own.
+     */
     std::string frankfurter_url;
-    /// The sources the adapter hosts.
+    /**
+     * @brief The sources the adapter hosts.
+     */
     std::vector<domain::hosted_source> sources;
-    /// The days a source sends when a currency is first demanded.
+    /**
+     * @brief The days a source sends when a currency is first demanded.
+     */
     std::uint32_t backfill_days{400};
-    /// The minutes between two reads of a source once its demand is served.
+    /**
+     * @brief The minutes between two reads of a source once its demand is served.
+     */
     std::uint32_t poll_minutes{60};
 };
 

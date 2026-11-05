@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_options_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_COMPUTE_WRAPPER_CONFIG_OPTIONS_HPP
 #define ORES_COMPUTE_WRAPPER_CONFIG_OPTIONS_HPP
 
@@ -40,27 +45,22 @@ struct options final {
      * @brief Configuration options related to logging, if any.
      */
     std::optional<ores::logging::logging_options> logging;
-
     /**
      * @brief Configuration related to NATS transport.
      */
     ores::nats::config::nats_options nats;
-
     /**
      * @brief UUID of this node's host record in the compute service.
      */
     std::string host_id;
-
     /**
      * @brief Tenant identifier; determines which JetStream work queue to subscribe to.
      */
     std::string tenant_id;
-
     /**
      * @brief Directory used for package cache and per-job scratch space.
      */
     std::string work_dir;
-
     /**
      * @brief Directory for the engine package cache.
      *
@@ -69,12 +69,10 @@ struct options final {
      * package and the rest wait for it.
      */
     std::string package_dir;
-
     /**
      * @brief Interval in seconds between heartbeat messages while a job is running.
      */
     std::uint32_t heartbeat_interval_seconds{30};
-
     /**
      * @brief Seconds between requests for work while the node is idle and hears no notice.
      *
@@ -82,14 +80,12 @@ struct options final {
      * poll is the fallback for a notice that was lost, and it is spread by jitter.
      */
     std::uint32_t claim_poll_seconds{5};
-
     /**
      * @brief Interval in seconds between telemetry node-sample publishes.
      *
      * Set to 0 to disable telemetry publishing entirely.
      */
     std::uint32_t telemetry_interval_seconds{30};
-
     /**
      * @brief Base URL of the HTTP server for file transfers (e.g. http://localhost:8080).
      *
@@ -120,6 +116,7 @@ static_assert(::ores::utility::codec::names_every_member<options>(),
               "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);
+
 
 }
 

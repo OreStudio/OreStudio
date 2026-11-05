@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_options_header.hpp.mustache
+ * To modify, update the template and regenerate.
  */
 #ifndef ORES_TELEMETRY_CORE_EXPORTING_TELEMETRY_OPTIONS_HPP
 #define ORES_TELEMETRY_CORE_EXPORTING_TELEMETRY_OPTIONS_HPP
@@ -34,7 +39,6 @@ namespace ores::telemetry::exporting {
 
 /**
  * @brief Options related to telemetry export.
- *
  * These options control the export of log records to external systems for
  * centralized log aggregation and analysis. When enabled, all log records
  * are captured by a telemetry sink and exported to the configured destination.
@@ -47,14 +51,12 @@ struct telemetry_options final {
      * OpenTelemetry semantic conventions for service.name.
      */
     std::string service_name;
-
     /**
      * @brief Version of the service producing telemetry.
      *
      * This is used for service.version in the resource attributes.
      */
     std::string service_version;
-
     /**
      * @brief Path to the output file for telemetry export.
      *
@@ -62,7 +64,6 @@ struct telemetry_options final {
      * a single JSON object on its own line.
      */
     std::filesystem::path output_file;
-
     /**
      * @brief Directory in which to place the telemetry output file.
      *
@@ -70,7 +71,6 @@ struct telemetry_options final {
      * directory. If empty, the current working directory is used.
      */
     std::filesystem::path output_directory;
-
     /**
      * @brief Enable streaming of log records to the server.
      *
@@ -80,8 +80,7 @@ struct telemetry_options final {
      *
      * Default: false (file-only export).
      */
-    bool streaming_enabled = false;
-
+    bool streaming_enabled{false};
     /**
      * @brief Number of records to batch before sending to the server.
      *
@@ -92,8 +91,7 @@ struct telemetry_options final {
      *
      * Default: 50 records.
      */
-    std::uint32_t batch_size = 50;
-
+    std::uint32_t batch_size{50};
     /**
      * @brief Maximum time to wait before flushing a partial batch.
      *
@@ -122,6 +120,7 @@ static_assert(::ores::utility::codec::names_every_member<telemetry_options>(),
               "telemetry_options has a member its wire shape does not name");
 
 ORES_TELEMETRY_CORE_EXPORT std::ostream& operator<<(std::ostream& s, const telemetry_options& v);
+
 
 }
 

@@ -67,7 +67,7 @@ struct options final {
      * Default: ../var/ore-service/work (relative to the binary directory,
      * resolves to publish/var/ore-service/work/ in the build tree).
      */
-    std::string work_dir = "../var/ore-service/work";
+    std::string work_dir{"../var/ore-service/work"};
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {

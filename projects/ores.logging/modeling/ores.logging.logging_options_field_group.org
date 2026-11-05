@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 4ED18621-D903-4962-84DC-88F52B570695
+:ores.cpp.field-group.field_group_header.enabled: nil
+:ores.cpp.field-group.options_header.enabled: true
+:ores.ts.enabled: nil
+:END:
+#+title: ores.logging.logging_options
+#+description: Options related to logging.
+#+type: ores.codegen.field_group
+#+component: logging
+#+entity_singular: logging_options
+#+namespace: ores::logging
+#+brief: Options related to logging.
+#+header: logging_options.hpp
+#+export_macro: ORES_LOGGING_EXPORT
+#+filetags: :model:field_group:options:logging:
+#+created: 2026-11-05
+#+updated: 2026-11-05
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.logging/export.hpp"
+#include <filesystem>
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** severity
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Level at which to log.
+
+** filename
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Name of the file to log into. If empty, file logging is disabled.
+
+** output_to_console
+:PROPERTIES:
+:cpp_type: bool
+:default_value: false
+:END:
+
+If true, dumps the log into the console.
+
+** output_directory
+:PROPERTIES:
+:cpp_type: std::filesystem::path
+:END:
+
+Directory in which to place the output.
+
+** include_pid
+:PROPERTIES:
+:cpp_type: bool
+:default_value: false
+:END:
+
+If true, includes the process ID in the log filename.
+
+When enabled, the filename is modified to include the PID before the
+extension. For example: "app.log" becomes "app.12345.log".
+
+** replica_index
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+
+If set, embeds the replica index in the log filename before the
+extension (and before the PID if include_pid is also set).
+
+For example: "app.log" with replica_index=0 becomes "app.0.log".
+
+** tag
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Tag to filter the logging. If supplied, only messages with this
+tag will be logged.
+

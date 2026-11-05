@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -16,6 +16,11 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_options_header.hpp.mustache
+ * To modify, update the template and regenerate.
  */
 #ifndef ORES_LOGGING_LOGGING_OPTIONS_HPP
 #define ORES_LOGGING_LOGGING_OPTIONS_HPP
@@ -46,7 +51,7 @@ struct logging_options final {
     /**
      * @brief If true, dumps the log into the console.
      */
-    bool output_to_console = false;
+    bool output_to_console{false};
     /**
      * @brief Directory in which to place the output.
      */
@@ -57,7 +62,7 @@ struct logging_options final {
      * When enabled, the filename is modified to include the PID before the
      * extension. For example: "app.log" becomes "app.12345.log".
      */
-    bool include_pid = false;
+    bool include_pid{false};
     /**
      * @brief If set, embeds the replica index in the log filename before the
      * extension (and before the PID if include_pid is also set).
@@ -88,6 +93,7 @@ static_assert(::ores::utility::codec::names_every_member<logging_options>(),
               "logging_options has a member its wire shape does not name");
 
 ORES_LOGGING_EXPORT std::ostream& operator<<(std::ostream& s, const logging_options& v);
+
 
 }
 

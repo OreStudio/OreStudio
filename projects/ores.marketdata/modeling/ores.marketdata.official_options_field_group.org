@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: C580167E-85F6-46F1-9799-8DA1668E9C6D
+:ores.cpp.field-group.field_group_header.enabled: nil
+:ores.cpp.field-group.options_header.enabled: true
+:ores.ts.enabled: nil
+:END:
+#+title: ores.marketdata.options
+#+description: options
+#+type: ores.codegen.field_group
+#+component: marketdata
+#+subcomponent: official
+#+entity_singular: options
+#+namespace: ores::marketdata::official::config
+#+brief: options
+#+header: config/options.hpp
+#+filetags: :model:field_group:options:marketdata:
+#+created: 2026-11-05
+#+updated: 2026-11-05
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.logging/logging_options.hpp"
+#include "ores.marketdata.official/domain/source_feed.hpp"
+#include "ores.nats/config/nats_options.hpp"
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Fields
+
+** logging
+:PROPERTIES:
+:cpp_type: std::optional<ores::logging::logging_options>
+:END:
+
+
+** nats
+:PROPERTIES:
+:cpp_type: ores::nats::config::nats_options
+:END:
+
+
+** frankfurter_url
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The address of Frankfurter: the hosted service, or a team's own.
+
+** sources
+:PROPERTIES:
+:cpp_type: std::vector<domain::hosted_source>
+:END:
+
+The sources the adapter hosts.
+
+** backfill_days
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default_value: 400
+:END:
+
+The days a source sends when a currency is first demanded.
+
+** poll_minutes
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default_value: 60
+:END:
+
+The minutes between two reads of a source once its demand is served.
+
+* Declarations
+
+What the struct needs beside it, after its printer.
+
+#+begin_src cpp :name options_declarations :implements CE396148-1E64-4D37-8D78-6430915C0F9F
+/**
+ * @brief Reads one source as =<source name>:<provider code>:<Frankfurter key>=, such as
+ * =ecb-frankfurter:ecb:ECB=.
+ */
+std::optional<domain::hosted_source> parse_source(const std::string& text);
+#+end_src
+

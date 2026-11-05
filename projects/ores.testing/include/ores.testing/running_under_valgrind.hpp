@@ -36,7 +36,8 @@ namespace ores::testing {
  */
 inline bool running_under_valgrind() {
     const char* preload = std::getenv("LD_PRELOAD");
-    return preload != nullptr && std::string_view(preload).find("vgpreload") != std::string_view::npos;
+    return preload != nullptr &&
+           std::string_view(preload).find("vgpreload") != std::string_view::npos;
 }
 
 }

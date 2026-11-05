@@ -44,7 +44,7 @@ namespace ores::utility::codec {
 template <typename T, typename Member>
 struct field {
     std::string_view name;
-    Member T::* member;
+    Member T::*member;
 };
 
 /**

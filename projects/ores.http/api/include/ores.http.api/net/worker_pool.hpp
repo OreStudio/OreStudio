@@ -119,7 +119,8 @@ private:
      * refuses under -Wsubobject-linkage.
      */
     template <typename Result>
-    boost::asio::awaitable<Result> run_erased(std::function<boost::asio::awaitable<Result>()> invoke) {
+    boost::asio::awaitable<Result>
+    run_erased(std::function<boost::asio::awaitable<Result>()> invoke) {
         inflight_.fetch_add(1, std::memory_order_relaxed);
         inflight_guard guard{inflight_};
 

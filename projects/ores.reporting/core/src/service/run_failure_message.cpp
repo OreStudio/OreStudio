@@ -44,9 +44,8 @@ std::string counted(std::size_t count, std::string_view singular) {
 /// The problems the run holds, named by severity.
 std::string problems_stated(const run_problems& recorded) {
     if (recorded.errors > 0 && recorded.warnings > 0)
-        return std::format("{} and {}",
-                           counted(recorded.errors, "error"),
-                           counted(recorded.warnings, "warning"));
+        return std::format(
+            "{} and {}", counted(recorded.errors, "error"), counted(recorded.warnings, "warning"));
     if (recorded.errors > 0)
         return counted(recorded.errors, "error");
     return counted(recorded.warnings, "warning");
@@ -54,13 +53,13 @@ std::string problems_stated(const run_problems& recorded) {
 
 }
 
-std::string run_failure_message(int outcome,
-                                const std::string& engine_reason,
-                                const run_problems& recorded) {
+std::string
+run_failure_message(int outcome, const std::string& engine_reason, const run_problems& recorded) {
     if (recorded.empty()) {
         if (engine_reason.empty())
             return std::format("The run's compute job failed with outcome {}.", outcome);
-        return std::format("The run's compute job failed with outcome {}: {}", outcome, engine_reason);
+        return std::format(
+            "The run's compute job failed with outcome {}: {}", outcome, engine_reason);
     }
 
     const auto stated = first_statement_of(engine_reason);

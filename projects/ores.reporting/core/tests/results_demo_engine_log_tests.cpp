@@ -106,7 +106,8 @@ TEST_CASE("an engine that writes only a text log still states a row for each fai
     // same messages, embedded in the level-timed lines of its text log.
     const std::string text_log =
         "ALERT    [2026-Nov-03 22:40:07.022192]          (OREData/ored/utilities/log.cpp:214) : "
-        "StructuredMessage { \"category\": \"Error\", \"group\": \"Trade\", \"message\": \"XML Node "
+        "StructuredMessage { \"category\": \"Error\", \"group\": \"Trade\", \"message\": \"XML "
+        "Node "
         "is NULL (expected OptionData)\", \"sub_fields\": [ { \"name\": \"exceptionType\", "
         "\"value\": \"Error parsing Trade XML\" }, { \"name\": \"tradeId\", \"value\": "
         "\"00cf3e0f-29e1-53f9-9e85-eac72dcff6ca\" }, { \"name\": \"tradeType\", \"value\": "

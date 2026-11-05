@@ -1,6 +1,11 @@
 :PROPERTIES:
 :ID: DF0CAAB9-9DDB-4FEA-82D3-71FAC2177EEF
 :ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :END:
 #+title: ores.telemetry.service
 #+description: NATS service entrypoint for the telemetry domain — receives and persists log records.
@@ -56,6 +61,38 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
+* Options
+:PROPERTIES:
+:group: NATS monitoring options
+:END:
+
+The options this service takes beyond logging, NATS and the database. Codegen
+writes the member, its wire field, its command-line declaration and its
+assignment from each entry.
+
+** nats_monitor_url
+:PROPERTIES:
+:cpp_type: std::string
+:default: "http://localhost:8222"
+:initial: "http://localhost:8222"
+:help: NATS HTTP monitoring endpoint URL
+:END:
+
+HTTP base URL of the NATS monitoring endpoint.
+
+Defaults to localhost on the standard NATS monitoring port.
+Set to empty to disable NATS metrics collection.
+
+** nats_monitor_interval_seconds
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:option: nats-monitor-interval
+:default: 30
+:initial: 30
+:help: NATS monitoring poll interval in seconds
+:END:
+
+How often to poll the NATS monitoring endpoint, in seconds.
 
 * See also
 
@@ -67,7 +104,6 @@ into its generated file after the profile's baseline.
 * Test dependencies
 
 The suites link what the profile cannot know about.
-
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_parser.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.marketdata.service/config/parser.hpp"
 #include "ores.marketdata.service/config/parser_exception.hpp"
 #include "ores.service/config/standard_service_options.hpp"
@@ -31,32 +36,11 @@ const std::string more_information("Try '--help' for more information.");
 const std::string product_version("ores.marketdata.service v" ORES_VERSION);
 const std::string build_info(ores::utility::version::build_info());
 const std::string usage_error_msg("Usage error: ");
-const std::string http_base_url_arg("http-base-url");
-const std::string writer_db_user_arg("writer-db-user");
-const std::string writer_db_password_arg("writer-db-password");
 
-using boost::program_options::value;
 using boost::program_options::options_description;
 
 using ores::marketdata::service::config::options;
 using ores::marketdata::service::config::parser_exception;
-
-options_description make_options_description() {
-    options_description storage("Storage");
-    storage.add_options()(http_base_url_arg.c_str(),
-                          value<std::string>()->default_value("http://localhost:8080"),
-                          "Base URL of the storage HTTP API");
-    storage.add_options()(writer_db_user_arg.c_str(),
-                          value<std::string>()->default_value(""),
-                          "Role that copies ticks to the tick table; empty copies none");
-    storage.add_options()(writer_db_password_arg.c_str(),
-                          value<std::string>()->default_value(""),
-                          "Password of the tick writer role");
-
-    using ores::service::config::standard_service_options;
-    return standard_service_options::make_options_description("ores.marketdata.service.log",
-                                                              storage);
-}
 
 void print_help(const options_description& od, std::ostream& info) {
     info << "Market data ingestion and query service" << std::endl
@@ -84,7 +68,19 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    const auto od(make_options_description());
+    options_description own("Storage");
+    own.add_options()(
+        "http-base-url",
+        boost::program_options::value<std::string>()->default_value("http://localhost:8080"),
+        "Base URL of the storage HTTP API")(
+        "writer-db-user",
+        boost::program_options::value<std::string>()->default_value(""),
+        "Role that copies ticks to the tick table; empty copies none")(
+        "writer-db-password",
+        boost::program_options::value<std::string>()->default_value(""),
+        "Password of the tick writer role");
+    const auto od(
+        standard_service_options::make_options_description("ores.marketdata.service.log", own));
     const auto vm(standard_service_options::parse(od, arguments, "MARKETDATA_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {
@@ -102,9 +98,9 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.logging = std_opts.logging;
     r.nats = std_opts.nats;
     r.database = std_opts.database;
-    r.http_base_url = vm[http_base_url_arg].as<std::string>();
-    r.tick_writer_user = vm[writer_db_user_arg].as<std::string>();
-    r.tick_writer_password = vm[writer_db_password_arg].as<std::string>();
+    r.http_base_url = vm["http-base-url"].as<std::string>();
+    r.tick_writer_user = vm["writer-db-user"].as<std::string>();
+    r.tick_writer_password = vm["writer-db-password"].as<std::string>();
     return r;
 }
 

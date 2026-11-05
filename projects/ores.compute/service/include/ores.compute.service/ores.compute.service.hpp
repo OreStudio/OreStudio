@@ -26,7 +26,7 @@
 #define ORES_COMPUTE_SERVICE_HPP
 
 /**
- * @brief Compute orchestrator service entrypoint
+ * @brief Compute service
  *
  * NATS service entrypoint for the compute domain.
  */

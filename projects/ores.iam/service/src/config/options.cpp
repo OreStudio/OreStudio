@@ -17,24 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_options.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.service/config/options.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 
 namespace ores::iam::service::config {
 
-/**
- * The signing key is not written out.
- *
- * This operator is what the startup "Configuration:" log line at debug level
- * uses, and the key signs every token this service issues: anyone who reads it
- * out of a log file can mint a session for any account. The rest of the
- * configuration stays, because a dump that omits the settings it is there to
- * record is not worth having.
- */
 std::ostream& operator<<(std::ostream& s, const options& v) {
-    auto redacted(v);
-    redacted.jwt_private_key = "***";
-    s << ores::utility::codec::json::write(redacted);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

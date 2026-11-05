@@ -7469,7 +7469,57 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     implementations = _collect_implementations(doc.root)
     if implementations:
         c["implementations"] = implementations
+    c.update(service_options(Path(path).name, _section(doc.root, "Options")))
     return {"component": c}
+
+
+def _cpp_string(text: str) -> str:
+    return text.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def service_options(owner: str, section: OrgNode | None) -> dict[str, Any]:
+    """The options a service declares beyond the standard set, for the templates.
+
+    Each heading under ``* Options`` is one member of the service's options
+    struct. The member, its wire field, its command-line declaration and its
+    assignment are all written from this one list, so none of them can drift
+    from the others. A ``:secret:`` member stays out of the wire shape, so the
+    startup dump of the options never prints it.
+    """
+    if section is None or not section.children:
+        return {"has_service_options": False, "service_options": []}
+    group = section.properties.get("group", "")
+    if not group:
+        raise ValueError(f"{owner}: * Options needs a :group: property, the title "
+                         f"its --help section prints")
+    options: list[dict[str, Any]] = []
+    for node in section.children:
+        props = {k.lower(): v for k, v in node.properties.items()}
+        missing = [k for k in ("cpp_type", "default", "help") if not props.get(k)]
+        if missing:
+            raise ValueError(f"{owner}: option '{node.title}' needs {missing}")
+        doc = [line.rstrip() for line in _strip_body(node).splitlines()] or [node.title]
+        doc[0] = "@brief " + doc[0]
+        options.append({
+            "name": node.title,
+            "cpp_type": props["cpp_type"],
+            "option": props.get("option") or node.title.replace("_", "-"),
+            "default": props["default"],
+            "initial": props.get("initial", ""),
+            "help": _cpp_string(" ".join(str(props["help"]).split())),
+            "secret": str(props.get("secret", "")).lower() in ("t", "true", "yes"),
+            "positive": str(props.get("positive", "")).lower() in ("t", "true", "yes"),
+            "doc_lines": doc,
+        })
+    secrets = sum(1 for o in options if o["secret"])
+    return {
+        "has_service_options": True,
+        "service_options": options,
+        "service_options_group": _cpp_string(group),
+        "service_secret_count": secrets,
+        "has_service_secrets": bool(secrets),
+        "has_positive_options": any(o["positive"] for o in options),
+    }
 
 
 # The coarse outcome a catalogue entry may declare. Mirrors

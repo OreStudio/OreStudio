@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_parser.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.inbox.service/config/parser.hpp"
 #include "ores.inbox.service/config/parser_exception.hpp"
 #include "ores.service/config/standard_service_options.hpp"
@@ -63,12 +68,6 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    // Add any app-specific options here and pass them as the second
-    // argument to make_options_description, e.g.:
-    //   options_description my_opts("My options");
-    //   my_opts.add_options()(...);
-    //   const auto od(standard_service_options::make_options_description(
-    //       "ores.inbox.service.log", my_opts));
     const auto od(standard_service_options::make_options_description("ores.inbox.service.log"));
     const auto vm(standard_service_options::parse(od, arguments, "INBOX_SERVICE"));
 

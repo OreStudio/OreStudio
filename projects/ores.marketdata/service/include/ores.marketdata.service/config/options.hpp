@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_options.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_MARKETDATA_SERVICE_CONFIG_OPTIONS_HPP
 #define ORES_MARKETDATA_SERVICE_CONFIG_OPTIONS_HPP
 
@@ -25,6 +30,7 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include <cstdint>
 #include <iosfwd>
 #include <optional>
 #include <string>

@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_options.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_SYNTHETIC_SERVICE_CONFIG_OPTIONS_HPP
 #define ORES_SYNTHETIC_SERVICE_CONFIG_OPTIONS_HPP
 
@@ -28,6 +33,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <string>
 #include <tuple>
 
 namespace ores::synthetic::service::config {
@@ -48,14 +54,12 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
-
     /**
      * @brief The seed every random stream of the run is keyed by.
      *
      * One seed reproduces a run: the same feeds tick at the same times.
      */
     std::uint64_t run_seed = 42;
-
     /**
      * @brief The simulated seconds one unit of market time spans.
      *

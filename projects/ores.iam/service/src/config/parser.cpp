@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_parser.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.iam.service/config/parser.hpp"
 #include "ores.iam.service/config/parser_exception.hpp"
 #include "ores.service/config/standard_service_options.hpp"
@@ -32,22 +37,10 @@ const std::string product_version("ores.iam.service v" ORES_VERSION);
 const std::string build_info(ores::utility::version::build_info());
 const std::string usage_error_msg("Usage error: ");
 
-using boost::program_options::value;
 using boost::program_options::options_description;
 
 using ores::iam::service::config::options;
 using ores::iam::service::config::parser_exception;
-
-options_description make_options_description() {
-    options_description iam_opts("IAM options");
-    iam_opts.add_options()("jwt-private-key",
-                           value<std::string>()->default_value(""),
-                           "RSA private key PEM for JWT signing (RS256). "
-                           "Also read from ORES_IAM_SERVICE_JWT_PRIVATE_KEY.");
-
-    using ores::service::config::standard_service_options;
-    return standard_service_options::make_options_description("ores.iam.service.log", iam_opts);
-}
 
 void print_help(const options_description& od, std::ostream& info) {
     info << "Identity and access management service" << std::endl
@@ -75,7 +68,12 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    const auto od(make_options_description());
+    options_description own("IAM options");
+    own.add_options()("jwt-private-key",
+                      boost::program_options::value<std::string>()->default_value(""),
+                      "RSA private key PEM for JWT signing (RS256). Also read from "
+                      "ORES_IAM_SERVICE_JWT_PRIVATE_KEY.");
+    const auto od(standard_service_options::make_options_description("ores.iam.service.log", own));
     const auto vm(standard_service_options::parse(od, arguments, "IAM_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {

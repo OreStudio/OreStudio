@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_options.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ORE_SERVICE_CONFIG_OPTIONS_HPP
 #define ORES_ORE_SERVICE_CONFIG_OPTIONS_HPP
 
@@ -25,6 +30,7 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include <cstdint>
 #include <iosfwd>
 #include <optional>
 #include <string>
@@ -33,20 +39,27 @@
 namespace ores::ore::service::config {
 
 /**
- * @brief All configuration options required by ores.ore.service.
+ * @brief All of the configuration options required by the service.
  */
 struct options final {
+    /**
+     * @brief Configuration options related to logging, if any.
+     */
     std::optional<ores::logging::logging_options> logging;
+    /**
+     * @brief Configuration related to NATS transport.
+     */
     ores::nats::config::nats_options nats;
+    /**
+     * @brief Configuration related to database operations.
+     */
     ores::database::database_options database;
-
     /**
      * @brief Base URL of the storage HTTP API, e.g. "http://localhost:8080".
      *
      * Used by storage_transfer to download ORE import tarballs.
      */
     std::string http_base_url;
-
     /**
      * @brief Root directory for per-import working directories.
      *

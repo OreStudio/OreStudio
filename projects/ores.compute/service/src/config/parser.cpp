@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_parser.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.compute.service/config/parser.hpp"
 #include "ores.compute.service/config/parser_exception.hpp"
 #include "ores.service/config/standard_service_options.hpp"
@@ -32,24 +37,10 @@ const std::string product_version("ores.compute.service v" ORES_VERSION);
 const std::string build_info(ores::utility::version::build_info());
 const std::string usage_error_msg("Usage error: ");
 
-using boost::program_options::value;
 using boost::program_options::options_description;
 
 using ores::compute::service::config::options;
 using ores::compute::service::config::parser_exception;
-
-const std::string telemetry_interval_arg("telemetry-interval");
-
-options_description make_options_description() {
-    options_description telemetry("Telemetry Options");
-    telemetry.add_options()(telemetry_interval_arg.c_str(),
-                            value<std::uint32_t>()->default_value(30),
-                            "Compute grid telemetry sample interval in seconds (0 = disabled)");
-
-    using ores::service::config::standard_service_options;
-    return standard_service_options::make_options_description("ores.compute.service.log",
-                                                              telemetry);
-}
 
 void print_help(const options_description& od, std::ostream& info) {
     info << "Compute service" << std::endl
@@ -77,7 +68,12 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    const auto od(make_options_description());
+    options_description own("Telemetry Options");
+    own.add_options()("telemetry-interval",
+                      boost::program_options::value<std::uint32_t>()->default_value(30),
+                      "Compute grid telemetry sample interval in seconds (0 = disabled)");
+    const auto od(
+        standard_service_options::make_options_description("ores.compute.service.log", own));
     const auto vm(standard_service_options::parse(od, arguments, "COMPUTE_SERVICE"));
 
     if (standard_service_options::wants_help(vm)) {
@@ -95,8 +91,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.logging = std_opts.logging;
     r.nats = std_opts.nats;
     r.database = std_opts.database;
-    if (vm.count(telemetry_interval_arg))
-        r.telemetry_interval_seconds = vm[telemetry_interval_arg].as<std::uint32_t>();
+    r.telemetry_interval_seconds = vm["telemetry-interval"].as<std::uint32_t>();
     return r;
 }
 

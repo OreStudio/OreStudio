@@ -7,6 +7,10 @@
 #include <iosfwd>
 #include <optional>
 #include <tuple>
+{{#has_service_options}}
+#include <cstdint>
+#include <string>
+{{/has_service_options}}
 #include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
@@ -31,6 +35,14 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+{{#service_options}}
+    /**
+{{#doc_lines}}
+     *{{#.}} {{{.}}}{{/.}}
+{{/doc_lines}}
+     */
+    {{{cpp_type}}} {{name}}{{#initial}} = {{{initial}}}{{/initial}};
+{{/service_options}}
 <<paste:0B222F2C-B8B6-41AE-AF03-C61D76AF6833>>
 };
 
@@ -39,11 +51,16 @@ struct options final {
         ::ores::utility::codec::field{"logging", &options::logging},
         ::ores::utility::codec::field{"nats", &options::nats},
         ::ores::utility::codec::field{"database", &options::database},
+{{#service_options}}
+{{^secret}}
+        ::ores::utility::codec::field{"{{name}}", &options::{{name}}},
+{{/secret}}
+{{/service_options}}
 <<paste:656876C4-82D2-4D19-928C-681CAF5C115C>>
     };
 }
 
-static_assert(::ores::utility::codec::names_every_member<options>(),
+static_assert(::ores::utility::codec::names_every_member<options>({{#has_service_secrets}}{{service_secret_count}}{{/has_service_secrets}}),
               "options has a member its wire shape does not name");
 
 std::ostream& operator<<(std::ostream& s, const options& v);

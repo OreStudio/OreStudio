@@ -1,6 +1,11 @@
 :PROPERTIES:
 :ID: E5952F27-53BD-4C4D-85CD-556B6421B768
 :ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :END:
 #+title: ores.analytics.service
 #+description: NATS service entrypoint for the analytics domain.
@@ -12,7 +17,7 @@
 #+updated: 2026-05-19
 #+name: analytics.service
 #+full_name: ores.analytics.service
-#+brief: ORE Studio analytics service binary.
+#+brief: Analytics pricing service
 
 * Diagram
 
@@ -57,7 +62,6 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-
 * See also
 
 - [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.
@@ -67,7 +71,6 @@ into its generated file after the profile's baseline.
 * Test dependencies
 
 The suites link what the profile cannot know about.
-
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}

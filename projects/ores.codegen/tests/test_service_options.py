@@ -16,10 +16,13 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
+from codegen.core import generate_from_model  # noqa: E402
 from codegen.generate import resolve_targets  # noqa: E402
 from codegen.org_loader import load_org_component_overview_model  # noqa: E402
 
 CODEGEN_BASE = REPO_ROOT / "projects" / "ores.codegen"
+DATA_DIR = CODEGEN_BASE / "library" / "data"
+TEMPLATES_DIR = CODEGEN_BASE / "library" / "templates"
 
 CONFIG = ("config_options_header", "config_options_impl", "config_parser_header",
           "config_parser_impl", "config_parser_exception")
@@ -128,3 +131,59 @@ def test_a_hand_written_service_gets_its_config_and_nothing_else(tmp_path):
     outputs = sorted(u["output"] for u in units)
     assert outputs and all("/config/" in o for o in outputs), outputs
     assert len(outputs) == len(CONFIG)
+
+
+POSITIVE = OPTIONS + """
+** workers
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 4
+:help: Worker threads
+:positive: t
+:END:
+
+The worker threads.
+"""
+
+
+def _render(tmp_path, template, options=POSITIVE):
+    model = _model(tmp_path, options)
+    out = tmp_path / "out"
+    generate_from_model(str(model), DATA_DIR, TEMPLATES_DIR, out, is_processing_batch=True,
+                        target_template=template, target_output="rendered")
+    return (out / "rendered").read_text(encoding="utf-8")
+
+
+def test_the_parser_checks_a_positive_integral_option(tmp_path):
+    parser = _render(tmp_path, "cpp_service_config_parser.cpp.mustache")
+
+    assert 'r.workers = vm["workers"].as<std::uint32_t>();' in parser
+    assert "if (!std::isfinite(r.workers) || r.workers <= 0)" in parser
+    assert '"--workers must be a positive number."' in parser
+    assert "#include <cmath>" in parser
+
+
+def test_the_parser_declares_every_option_under_its_flag(tmp_path):
+    parser = _render(tmp_path, "cpp_service_config_parser.cpp.mustache")
+
+    assert 'options_description own("Demo");' in parser
+    assert '"writer-db-password"' in parser
+    assert 'r.writer_password = vm["writer-db-password"].as<std::string>();' in parser
+
+
+def test_a_secret_is_a_member_but_not_in_the_wire_shape(tmp_path):
+    header = _render(tmp_path, "cpp_service_config_options.hpp.mustache")
+
+    assert "std::string writer_password;" in header
+    assert '"writer_password"' not in header
+    assert "names_every_member<options>(1)" in header
+
+
+def test_a_misspelt_secret_is_refused(tmp_path):
+    with pytest.raises(ValueError, match="Write t or nil"):
+        _component(tmp_path, OPTIONS.replace(":secret: t", ":secret: tru"))
+
+
+def test_the_group_key_is_read_in_any_case(tmp_path):
+    assert _component(tmp_path, OPTIONS.replace(":group:", ":GROUP:"))[
+        "service_options_group"] == "Demo"

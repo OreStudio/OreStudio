@@ -7477,6 +7477,20 @@ def _cpp_string(text: str) -> str:
     return text.replace("\\", "\\\\").replace('"', '\\"')
 
 
+def _option_flag(owner: str, option: str, props: dict[str, Any], key: str) -> bool:
+    """A yes-or-no property of one option, refusing a value that is neither.
+
+    A misspelt :secret: must not read as "not secret": the value would then
+    reach the wire shape and the startup dump.
+    """
+    value = str(props.get(key, "")).strip().lower()
+    if value in ("", "nil", "false", "no"):
+        return False
+    if value in ("t", "true", "yes"):
+        return True
+    raise ValueError(f"{owner}: option '{option}' sets :{key}: to {value!r}. Write t or nil.")
+
+
 def service_options(owner: str, section: OrgNode | None) -> dict[str, Any]:
     """The options a service declares beyond the standard set, for the templates.
 
@@ -7488,7 +7502,7 @@ def service_options(owner: str, section: OrgNode | None) -> dict[str, Any]:
     """
     if section is None or not section.children:
         return {"has_service_options": False, "service_options": []}
-    group = section.properties.get("group", "")
+    group = {k.lower(): v for k, v in section.properties.items()}.get("group", "")
     if not group:
         raise ValueError(f"{owner}: * Options needs a :group: property, the title "
                          f"its --help section prints")
@@ -7507,8 +7521,8 @@ def service_options(owner: str, section: OrgNode | None) -> dict[str, Any]:
             "default": props["default"],
             "initial": props.get("initial", ""),
             "help": _cpp_string(" ".join(str(props["help"]).split())),
-            "secret": str(props.get("secret", "")).lower() in ("t", "true", "yes"),
-            "positive": str(props.get("positive", "")).lower() in ("t", "true", "yes"),
+            "secret": _option_flag(owner, node.title, props, "secret"),
+            "positive": _option_flag(owner, node.title, props, "positive"),
             "doc_lines": doc,
         })
     secrets = sum(1 for o in options if o["secret"])

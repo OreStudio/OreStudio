@@ -23,10 +23,10 @@ Every trade type states how well it is modelled as a level we measure, from a co
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | The audit task is done: the corpus roundtrip compares content and loses nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Audit the tests we have: what each one proves about a trade type, and what it lets through. |
-| Last touched  | 2026-11-03                               |
+| Next          | Plan the contract per trade type from ORE's reader, and the modelling level each type states. |
+| Last touched  | 2026-11-06                               |
 
 * Acceptance
 
@@ -150,9 +150,25 @@ build checks on top of that honest base.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8CCC7800-12A8-4E66-829D-E02303C6CA70][Audit what the trade representation tests prove]] | STARTED | 2026-11-03 | | List every test that claims something about how a trade is represented, state what each asserts, and prove it with planted defects: which defects each test catches and which it lets through. |
+| [[id:8CCC7800-12A8-4E66-829D-E02303C6CA70][Audit what the trade representation tests prove]] | DONE | 2026-11-03 | 2026-11-06 | List every test that claims something about how a trade is represented, state what each asserts, and prove it with planted defects: which defects each test catches and which it lets through. |
 
 * Decisions
+
+- A roundtrip is checked by content: a differ on the value fingerprint
+  names every difference, numbers compared as decimals, sibling order
+  ignored and an empty element read as absent, as ORE reads it.
+- The corpus roundtrip keeps a known list of losses asserted exactly; it is
+  empty, so a loss fails the test.
+- Shapes ORE repeats across products are shared rows: barriers and their
+  levels, underlyings, schedules (rules, dates and derived), option blocks,
+  strikes and range bounds. A product's single-valued terms are nullable
+  columns read and written by one table of element and member.
+- An embedded trade (a total return swap's, a composite's, a contract for
+  difference's) is a trade of its own, joined to its parent by a structure;
+  the name the parent gives it is the member's label.
+- A bond position on a basket names no issue: its bonds are underlying rows.
+- A table check that refuses a valid ORE trade is relaxed to the products
+  that state the value, or to the case where it is stated.
 
 * Out of scope
 

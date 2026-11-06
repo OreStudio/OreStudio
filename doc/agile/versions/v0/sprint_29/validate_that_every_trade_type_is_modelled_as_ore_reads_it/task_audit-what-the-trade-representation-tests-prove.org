@@ -26,12 +26,12 @@ A table of every trade representation test, the claim it makes, and the planted 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-03                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-06                               |
 
 * Acceptance
 
@@ -115,7 +115,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Corpus roundtrip known losses, first run | 1432 | =ores.ore.core.tests "every trade in the ORE example corpus comes back as it was read"= | 828145efb2 |
+| Corpus roundtrip known losses, last run | 0 (132 portfolios, 182 trades) | the same test | 1a7a944dff |
+| pgTAP on an unprovisioned database | 792 of 792 | =projects/ores.sql/test/run_tests.sh= | 1a7a944dff |
 
 * Notes
 
@@ -210,3 +212,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The audit found the trade representation tests passed because none compared
+what a roundtrip writes with what it read. The task built that comparison
+and drove what it found to nothing.
+
+- A differ on the value fingerprint names every difference between two
+  documents, trade by trade, with numbers compared as the decimals they
+  mean, sibling order ignored and an empty element read as an absent one.
+- The corpus roundtrip compares each of the 182 trades in ORE's 132 example
+  portfolios with what the model writes back, and fails on any difference
+  not on its known list. That list went from 1432 entries to none, so a
+  loss from now on fails the test.
+- Closing it modelled what the model dropped: barriers, underlyings,
+  scripted parameters, embedded trades joined by structures, leg payloads,
+  schedules, settlement and monitoring terms, and a table of single-valued
+  product terms, each with its rows in the database.
+- A roundtrip through the database, run on the example trades of each
+  batch, found defects the in-memory test cannot see: seed data short of
+  ORE's spellings and indices, and table checks that refused valid ORE
+  trades. Those are fixed; the issues it found and this task leaves open
+  are captured in the product backlog.
+- A minimal Acme starting point provisions what that roundtrip needs.
+
+Acceptance: the first criterion is met in the Notes, and the third named
+the FX option test and the corpus test's own claim, both now corrected. The
+second, planted defects, was not done: the Plan moved that proof to the
+story's later tasks, a property-based test and mutation testing.

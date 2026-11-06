@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-serve-one-screen-from-the-new-server
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
 #+updated: 2026-11-06
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve one screen from the new server]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A signed-in person uses one screen served end to end by the C++ server, and the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve one screen from the new server]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,37 @@ A signed-in person uses one screen served end to end by the C++ server, and the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*The browser talks to one origin, and a prefix decides which server answers.* The
+transport issues same-origin requests to relative paths, and the dev server already
+proxies =/api= to the BFF. So a screen on the new server is a prefix, not an origin:
+the proxy routes =/cpp= to the C++ server and strips the prefix, and the one screen's
+module asks for =/cpp/api/v1/...= while every other module asks for =/api/v1/...=.
+That is the design's own wording, "behind a flag or a prefix", and it needs no change
+to the C++ server's routes.
+
+*The flag picks the prefix, and it is read once.* One module resolves the base for
+the screen from a build-time or start-up value, so the same bundle serves both
+arrangements and turning the flag off returns the screen to the BFF with no rebuild
+of the C++ side.
+
+*The cookie's path is the prefix.* The door sets a session cookie, and the BFF sets
+one with the same deployment name, so a cookie at =Path=/= from the C++ server and one
+from the BFF would overwrite each other. The C++ server must set the cookie's path to
+its prefix, which makes the two sessions independent: the screen's calls carry the
+C++ cookie and everything else carries the BFF's.
+
+*Slices, each one verifiable.* First the prefix and the proxy, proved with =curl= on
+the C++ server's own list route. Then the screen's list on the prefix with the flag
+on, proved in a browser. Then sign in on the prefix, so the screen's session is the
+C++ one. Then the change stream on the prefix, so the list follows its rows. Sign in
+first would make every later slice need a working browser session, and a failure
+would have three possible causes instead of one.
+
+*What this needs running.* The prefix slices need only the C++ server and the dev
+server. The sign-in slice needs the fleet, because the door asks IAM, and the change
+stream slice needs NATS. This checkout's database was reported out of sync with the
+tree, so the first browser proof will need =compass services start= and a database
+that matches.
 
 * Measurements
 
@@ -61,6 +89,12 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The dev server proxies =/api= to =ORES_WEB_PORT= (8080 by default) and the C++
+  server listens on =ORES_HTTP_PORT= (21601), so the two are separate origins today
+  and the prefix is what puts one screen on the second.
+- A cookie at =Path=/= and a second cookie with the same name overwrite each other,
+  which is why the prefix is also the cookie's path rather than a cosmetic detail.
 
 * Test Scenarios
 

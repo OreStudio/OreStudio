@@ -26,11 +26,11 @@ Any component can parse and write an oresmd address without the marketdata core,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-06                               |
 
 * Acceptance
@@ -55,9 +55,27 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.marketdata.api.tests | 4532 assertions in 921 cases pass; market_reference 24 in 4 | =ores.marketdata.api.tests= | 2ee37ac5ee |
+| ores.marketdata.core.tests | 21725 assertions in 375 cases pass | =ores.marketdata.core.tests= | 2ee37ac5ee |
+| ores.marketdata.service.tests | 2189 assertions in 206 cases pass, with the tick services stopped | =ores.marketdata.service.tests= | 2ee37ac5ee |
+| ores.synthetic.api.tests, ores.shell.application.tests | 3764 in 862 cases; 236 in 63 cases pass | the two suites | 2ee37ac5ee |
 
 * Notes
+
+- The move was scripted (moves with git, renames the export macro and guards,
+  rewrites the includes): 15 files moved, includes rewritten in 43.
+- In the API the moved sources share a unity group with the API's own datum
+  sources. Five helpers collided: =upper=, =lower= and =all_digits= were the
+  same and are shared in =shared_helpers.hpp=; the index codec's =split= (on
+  =-=) and =is_period= (by the term parser) were not, and are renamed
+  =split_on_dash= and =is_period_term=.
+- The codec tests stay in the core suite: their catalogue helper reads ORE's
+  catalogue files and the core's URI service test shares it.
+- Two feed ingest loop tests in =ores.marketdata.service.tests= fail while
+  the environment's own marketdata, official and synthetic services run:
+  those write ticks to the same database and subjects. With the three
+  stopped, the suite passes. A test that counts rows in a shared database is
+  fragile; worth a capture.
 
 * Test Scenarios
 
@@ -83,3 +101,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The oresmd URI codec and the ORE index and key codecs are in
+=ores.marketdata.api=, with Boost.URL, and the core keeps no copy, so any
+component can parse and write an address without the core. =market_reference=
+is the one form a market reference takes in code: an index or a datum, got by
+parsing or from its index or datum, spelt by the codec's writer and compared
+by that spelling. Its tests parse a fixing and a quote address, refuse
+malformed ones with the codec's own reason, and show a reference made from
+an index equals the one its address parses to. All acceptance criteria are
+met; the suites of every component that includes the codecs pass.

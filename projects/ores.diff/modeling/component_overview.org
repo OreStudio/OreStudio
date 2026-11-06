@@ -73,7 +73,6 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.logging.lib
         ores.platform.lib
-    PRIVATE
         ores.utility.lib)
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)

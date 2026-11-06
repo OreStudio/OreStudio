@@ -20,8 +20,12 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "diff_entry_codec_roundtrip_tests.cpp"
+    "diff_result_codec_roundtrip_tests.cpp"
+    "diff_span_codec_roundtrip_tests.cpp"
     "domain_serialisation_tests.cpp"
     "engine_compare_tests.cpp"
     "engine_diff_span_tests.cpp"
+    "field_value_codec_roundtrip_tests.cpp"
     "main.cpp"
 )

@@ -20,15 +20,23 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "domain/diff_entry_codec.cpp"
+    "domain/diff_result_codec.cpp"
+    "domain/diff_span_codec.cpp"
+    "domain/field_value_codec.cpp"
     "engine/compare.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/domain/diff_entry.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/domain/diff_entry_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/domain/diff_result.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/domain/diff_result_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/domain/diff_span.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/domain/diff_span_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/domain/field_value.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/domain/field_value_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/engine/compare.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.diff/ores.diff.hpp"

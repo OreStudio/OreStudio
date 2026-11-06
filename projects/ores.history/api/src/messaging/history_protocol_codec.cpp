@@ -22,8 +22,8 @@
  * Template: cpp_protocol_codec.cpp.mustache
  * To modify, update the template and regenerate.
  */
-#include "ores.diff.api/domain/diff_result.hpp"
-#include "ores.diff.api/domain/field_value.hpp"
+#include "ores.diff/domain/diff_result_codec.hpp"
+#include "ores.diff/domain/field_value_codec.hpp"
 #include "ores.history.api/messaging/history_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/domain/protocol_codec.hpp"

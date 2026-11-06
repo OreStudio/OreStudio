@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="9a5f3fc2-d4ad-52dd-b2e2-9b9aa35c2185">
+    <TradeType>CommodityOptionStrip</TradeType>
+    <CommodityOptionStripData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>CommodityFloating</LegType>
+        <Currency>EUR</Currency>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-09-02</StartDate>
+            <Tenor>1M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <CommodityFloatingLegData>
+          <Name>NYMEX:CL</Name>
+          <PriceType>FutureSettlement</PriceType>
+          <Quantities>
+            <Quantity>51967.39</Quantity>
+          </Quantities>
+        </CommodityFloatingLegData>
+      </LegData>
+    </CommodityOptionStripData>
+  </Trade>
+  <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
+    <TradeType>CommodityOptionStrip</TradeType>
+    <CommodityOptionStripData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>CommodityFloating</LegType>
+        <Currency>EUR</Currency>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-08-02</StartDate>
+            <Tenor>1M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <CommodityFloatingLegData>
+          <Name>NYMEX:NG</Name>
+          <PriceType>FutureSettlement</PriceType>
+          <Quantities>
+            <Quantity>14157.62</Quantity>
+          </Quantities>
+        </CommodityFloatingLegData>
+      </LegData>
+    </CommodityOptionStripData>
+  </Trade>
+</Portfolio>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
+    <TradeType>FxDigitalOption</TradeType>
+    <FxDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2028-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Strike>0.5325</Strike>
+      <PayoffAmount>6765247.42</PayoffAmount>
+      <ForeignCurrency>EUR</ForeignCurrency>
+      <DomesticCurrency>USD</DomesticCurrency>
+    </FxDigitalOptionData>
+  </Trade>
+  <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
+    <TradeType>FxDigitalOption</TradeType>
+    <FxDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2026-12-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Strike>0.763</Strike>
+      <PayoffAmount>4191327.35</PayoffAmount>
+      <ForeignCurrency>EUR</ForeignCurrency>
+      <DomesticCurrency>USD</DomesticCurrency>
+    </FxDigitalOptionData>
+  </Trade>
+</Portfolio>

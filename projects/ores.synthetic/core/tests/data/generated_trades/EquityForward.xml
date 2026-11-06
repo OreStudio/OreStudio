@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
+    <TradeType>EquityForward</TradeType>
+    <EquityForwardData>
+      <LongShort>Long</LongShort>
+      <Maturity>2032-12-02</Maturity>
+      <Name>GB0005405286</Name>
+      <Currency>GBP</Currency>
+      <Strike>2002.58</Strike>
+      <Quantity>5817155.05</Quantity>
+    </EquityForwardData>
+  </Trade>
+  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+    <TradeType>EquityForward</TradeType>
+    <EquityForwardData>
+      <LongShort>Long</LongShort>
+      <Maturity>2027-08-02</Maturity>
+      <Name>GB0005405286</Name>
+      <Currency>GBP</Currency>
+      <Strike>4829.91</Strike>
+      <Quantity>674201.2</Quantity>
+    </EquityForwardData>
+  </Trade>
+</Portfolio>

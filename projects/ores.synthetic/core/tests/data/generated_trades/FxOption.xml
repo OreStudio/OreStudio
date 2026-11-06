@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="0940644b-3f20-5bc6-851f-fc7dccd3579f">
+    <TradeType>FxOption</TradeType>
+    <FxOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2027-11-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>4069109.38</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>5375309.62</SoldAmount>
+    </FxOptionData>
+  </Trade>
+  <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
+    <TradeType>FxOption</TradeType>
+    <FxOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2028-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>5326187.24</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>4118292.15</SoldAmount>
+    </FxOptionData>
+  </Trade>
+</Portfolio>

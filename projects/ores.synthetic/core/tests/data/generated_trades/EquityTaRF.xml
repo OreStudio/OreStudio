@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
+    <TradeType>EquityTaRF</TradeType>
+    <EquityTaRFData>
+      <Currency>USD</Currency>
+      <FixingAmount>3895254.25</FixingAmount>
+      <TargetAmount>7790508.5</TargetAmount>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.SPX</Name>
+      </Underlying>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1Y</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ScheduleData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>FixingCap</Type>
+          <Levels>
+            <Level>5147.21</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </EquityTaRFData>
+  </Trade>
+  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
+    <TradeType>EquityTaRF</TradeType>
+    <EquityTaRFData>
+      <Currency>USD</Currency>
+      <FixingAmount>4801709.49</FixingAmount>
+      <TargetAmount>9603418.98</TargetAmount>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.SPX</Name>
+      </Underlying>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1Y</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ScheduleData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>FixingCap</Type>
+          <Levels>
+            <Level>2687.29</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </EquityTaRFData>
+  </Trade>
+</Portfolio>

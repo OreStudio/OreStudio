@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="24f52bd9-ca98-5bf4-b995-457c86123722">
+    <TradeType>EquityVarianceSwap</TradeType>
+    <EquityVarianceSwapData>
+      <StartDate>2025-11-02</StartDate>
+      <EndDate>2027-11-02</EndDate>
+      <Currency>EUR</Currency>
+      <Name>.STOXX50E</Name>
+      <LongShort>Long</LongShort>
+      <Strike>0.04</Strike>
+      <Notional>6103286.3</Notional>
+      <Calendar>USD</Calendar>
+    </EquityVarianceSwapData>
+  </Trade>
+  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
+    <TradeType>EquityVarianceSwap</TradeType>
+    <EquityVarianceSwapData>
+      <StartDate>2026-01-02</StartDate>
+      <EndDate>2029-01-02</EndDate>
+      <Currency>EUR</Currency>
+      <Name>.STOXX50E</Name>
+      <LongShort>Long</LongShort>
+      <Strike>0.04</Strike>
+      <Notional>7492174.07</Notional>
+      <Calendar>USD</Calendar>
+    </EquityVarianceSwapData>
+  </Trade>
+</Portfolio>

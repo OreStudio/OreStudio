@@ -1,0 +1,434 @@
+:PROPERTIES:
+:ID: 63FF92C8-3E18-49BB-93FA-B0862B5FD4B2
+:END:
+#+title: Task: Test that every generated trade builds in ORE
+#+description: A test generates trades of every type the generator books, writes them as ORE XML and asks ORE to build them, so a generated trade ORE refuses fails a test rather than a report.
+#+type: task
+#+level: s1
+#+filetags: :trading:ore:synthetic:test:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
+#+owner: marco
+#+branch: feature/test-that-every-generated-trade-builds-in-ore
+#+pr: 4474
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A generated trade that ORE cannot read or build fails a test that names its
+type and what is wrong, so the reports only fail for market data.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-06                               |
+
+* Acceptance
+
+- A test plans a population of every trade type each planner routes, builds
+  the booking request of each slot and exports its instruments as ORE XML,
+  in memory, with no database or service.
+- The test fails, naming the trade type, when the writer refuses a trade,
+  when a trade is written with no product data, or when a generated trade
+  leaves out or empties a path that every ORE sample of its type states.
+- A second check runs the ORE engine on that portfolio and fails on any error
+  ORE raises reading or building a trade, unless a known list, asserted
+  exactly as the corpus losses are, names the type and the error.
+- A run of the Acme reports after provisioning records no Trade errors, only
+  market data errors; the numbers are in Measurements.
+
+* Plan
+
+The corpus roundtrip proves that ORE's example XML survives our model. It
+says nothing about the trades the generator books, which reach XML on a path
+the samples never take: planner, booking request, instrument rows, export.
+That path is where the reports fail.
+
+1. *Export a generated population in memory.* The planners state a
+   population as slots (=trade_population_planner.hpp=), and
+   =trading_trade_population_writer::book_request_for= builds the booking
+   request of a slot without a session. Its =instrument_batch= is what the
+   exporter (=ores.ore.core/xml/exporter.hpp=) takes. So the test plans one
+   population per asset class, long enough to reach every code the planner
+   routes (=code_count=), builds each request and exports the trades. This
+   needs no database, no NATS and no ORE.
+2. *Judge without ORE, in the unit suite.* Three checks, each naming the
+   trade type:
+   - The writer refuses no trade (the XSD's required elements).
+   - No trade is a passthrough: each has its product's data node.
+   - Each path every ORE sample of the type states, from
+     =Example_Trades=, is stated and not empty in each generated trade of
+     the type. This is the story's suggestion 4. It catches a missing
+     =OptionData=, =Rates=, =RangeBounds=, =Underlyings= or =Tranche=
+     without knowing ORE's rules.
+   A known list of accepted gaps, asserted for equality, starts from the
+   first run and can only shrink.
+3. *Let ORE judge, as a tagged test.* Write the portfolio and run the ORE
+   engine from the vendor package on it, with the example configuration in
+   =Products/Input=. Read the structured log with the parser the reporting
+   service uses, and fail on a Trade error that a read or build of the trade
+   raised (=node not found=, =not recognized=, =no builder found=). A Trade
+   error whose cause is a missing curve or quote is market data and is
+   counted apart. This catches values ORE refuses, such as a barrier type
+   of =KnockOut=, which no path check sees.
+4. *Fix what the checks find*, type by type, in the generator or the
+   projection, each fix taking its entry off the known list.
+5. *Prove it on the reports.* Recreate, provision Acme and let the reports
+   tick; record the error counts by scope before and after.
+
+** Revised on 2026-11-06: recorded trades and trade builders
+
+Agreed with the product owner. Steps 1 and 2 above became a recorded set:
+the generated trades of each type are written to
+=projects/ores.synthetic/core/tests/data/generated_trades=, one portfolio per
+type, and a test fails when the generator moves until the files are written
+again (=ORES_UPDATE_GENERATED_TRADES=1=). The structure checks judge those
+files against known lists asserted exactly.
+
+The first run showed the cause of most report errors: the trade
+constructors let a trade be built without its product. The credit
+constructors take the terms every credit product shares and return the
+header alone, so a CreditDefaultSwap has no CDS row and no premium leg; a
+callable swap's terms hold no call option. The fix is trade builders, one
+per trade type, usable outside the generator:
+
+1. *A builder returns the trade the system uses*, a member of
+   =trade_instrument=, not loose batch rows.
+2. *Economic terms in, the rest from conventions*, as ORE's own
+   =TradeGenerator= does (=OREData/ored/portfolio/tradegenerator.cpp=): an
+   index, a notional, a maturity and a rate give a complete swap, the day
+   count, frequency, calendar, adjustment and fixing days taken from the
+   index's convention. A setter overrides any of them.
+3. *Required terms in the constructor, optional terms in setters.* The
+   required terms of a product are the ones its ORE data class reads as
+   mandatory (=getChildValue(..., true)=; 439 reads in =ored/portfolio=),
+   so a forgotten term is a compile error, not an empty string.
+4. *ORE's vocabularies as enums*, taken from its parsers, so a builder cannot
+   state a value ORE refuses, such as a barrier type of =KnockOut=.
+5. *Shared sub-builders* for the shapes ORE repeats: legs, schedules, option
+   blocks, barriers, underlyings, range bounds.
+6. =build()= returns =std::expected= and checks what types cannot: dates in
+   order, a schedule that is not empty. The error names the term.
+7. *A registry* maps each catalogued trade type to its builder; a test fails
+   for a type with none, and each builder's trade must roundtrip through our
+   XML unchanged.
+8. The builders live in =ores.trading.api=, which links =ores.refdata.api=
+   (no cycle: refdata does not link trading). A builder takes a
+   =trade_reference_data= value: maps, keyed by our own codes, of the
+   reference data a trade refers to (currencies, calendars, day count
+   fractions, business day conventions, payment frequencies, floating
+   indices and the conventions). Every code a builder writes is a foreign
+   key it checks against those maps, so an unknown code fails =build()=
+   naming the term, as the database would but earlier. The derived terms
+   come from the same maps. The caller fills them: the generator and the
+   shell from the refdata service, a test from fixtures.
+9. *A gap in the data, not the API:* refdata holds no terms for ORE's
+   built-in indices (=floating_index_type= is a code and a description, and
+   ORE's example conventions state no =IborIndex=). Until those index
+   conventions are seeded, from ORE's =indexparser.cpp=, a floating leg's
+   day count and fixing days cannot be derived for them.
+
+Rollout: the conventions interface and the swap leg builder, proven on Swap;
+then credit, whose every type is broken; then family by family, each
+removing its =construct_*= functions and =*_terms= structs, migrating its
+planner and taking its entries off the known lists.
+
+Later, out of this task: the database leg. A generated trade written to the
+database and exported must give the same XML as the in-memory export; the
+value differ of the corpus test compares the two. That catches a row the
+export reader does not read back.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Report Trade errors after provisioning Acme, first three Headline Position runs | 284 errors over 36 of 85 trade types; 0 market data errors | =select scope_code, count(*) from ores_reporting_report_error_events_tbl group by 1= | 323e33c1bd |
+| Generated trade types recorded | 85, 344 KB | =ORES_UPDATE_GENERATED_TRADES=1 ores.synthetic.core.tests "[generated]"= | a1333d131c |
+| Known refusals, no-product types, missing blocks | 5, 22, 188 | =ores.synthetic.core.tests "[generated]"= | de3c46102b |
+| ores.synthetic.core.tests | 2610 assertions in 112 test cases pass | =ores.synthetic.core.tests= | de3c46102b |
+
+* Notes
+
+** The report run of 2026-11-06
+
+Three Headline Position runs at 20:50 after a fresh provisioning failed with
+ORE exit code 255. Every error is a Trade error; ORE stops at the trades, so
+no market data error is reached. By type, with the trades affected:
+
+| Trade type | Error | Trades |
+|------------+-------+--------|
+| Ascot | XML Node is NULL (expected FixedLegData) | 3 |
+| BalanceGuaranteedSwap | left out: required element 'Tranche' is absent | 45 |
+| BondPosition | No XML Child Node Identifier found | 3 |
+| CallableSwap | XML Node is NULL (expected OptionData) | 45 |
+| Commodity types (15) | the product's data node not found | 1 or 2 each |
+| CommodityPairwiseVarianceSwap | no builder found | 2 |
+| CreditDefaultSwap | No CreditDefaultSwapData Node | 11 |
+| CreditLinkedSwap | looking for child CreditCurveId | 11 |
+| DoubleDigitalOption | XML Node is NULL | 9 |
+| EquityAsianOption | ScheduleData::fromXML(): no node given | 7 |
+| EquityCliquetOption | XML Node is NULL | 7 |
+| EquityOptionPosition | left out: required element 'Underlying' is absent | 7 |
+| EquitySwap | XML Node is NULL (expected FloatingLegData) | 7 |
+| EquityTaRF | either RangeBounds or RangeBoundSet nodes required | 7 |
+| EquityWorstOfBasketSwap | left out: required element 'Underlyings' is absent | 7 |
+| FxTaRF | either RangeBounds or RangeBoundSet nodes required | 9 |
+| FxTouchOption | Barrier type "KnockOut" not recognized | 12 |
+| IndexCreditDefaultSwap | No IndexCreditDefaultSwapData Node | 11 |
+| IndexCreditDefaultSwapOption | Expected IndexCreditDefaultSwapOptionData node | 11 |
+| InflationSwap | No XML Node Rates found | 28 |
+| IntradayPowerForward | looking for child Position | 1 |
+| RiskParticipationAgreement | RiskParticipationAgreementData not found | 12 |
+
+The credit and rate trades have their instrument rows in the database, so
+the data is stored and the export or the generator leaves it out. The likely
+cause is that the generator fills the summary fields a product had before the
+corpus work, while the export now writes the new rows (underlyings, payloads,
+range bounds, structures) that the generator does not fill.
+
+** Design: oresmd references, resolvers and trade builders
+
+Agreed direction (2026-11-06): every market reference a trade holds is an
+oresmd address; ORE names exist only in ORE documents, converted when we
+read or write one. Trade builders build on that. The design has three
+layers; each depends only on the one below it.
+
+*** Problem
+
+A trade type's constructor takes what its family shares and returns what
+those terms fill: a CreditDefaultSwap with no CDS row, a callable swap with
+no call. Builders fix that, but a builder needs to ask questions about the
+market data a trade refers to ("which convention does this index's swap
+use?"), and today a trade names market data three ways: ORE names (a leg's
+=EUR-EURIBOR-6M=), oresmd URIs (a bond's reference curve) and codes of our
+own. Grounding found:
+
+- About 60 trade columns name market data: indices (=floating_index_code=,
+  =fx_index=, =inflation_index_code=, the funding, repo and stub indices),
+  curves (=reference_curve_id=, =credit_curve_id=, =volatility_curve_id=,
+  =income_curve_id=), underlyings (=underlying_name= in 13 tables,
+  =equity_name=, =spread_commodity_code=, =contract_name=) and entities and
+  securities (=reference_entity_id=, =issuer_id=, =security_id=).
+- The oresmd grammar has two kinds of address: a datum or series (quotes,
+  curves; =market_datum=) and an index (fixings; =market_index=). Both types
+  are in =ores.marketdata.api/datum=; their codecs (=oresmd_uri_codec=, URI
+  text; =ore_index_codec=, ORE index names) are in =ores.marketdata.core= but
+  depend only on the API's types.
+- Refdata conventions already carry an address: =swap_convention.oresmd_uri=
+  is the fixing its floating leg uses, an index convention's is the index it
+  defines. Refdata holds addresses as values and does not link marketdata.
+- Some address-to-ORE-name conversions are fixed (an index and its ORE
+  name); others depend on the market configuration a run reads (a curve URI
+  and the ORE curve name its today's market forwards to; see
+  =reference_curve_names_of= in =run_configuration_operations.cpp=).
+
+*** Layer 1: the address
+
+- The codecs move from =ores.marketdata.core= to =ores.marketdata.api=, so
+  any component can parse and write an address without the core.
+- One value type for a reference, =market_reference=, a variant of the
+  typed addresses the grammar has (=market_index=, =market_datum=, and the
+  kinds still to add, see Open questions). Parsing is the only way to get
+  one, so a column read back is a typed reference or a stated failure.
+- A trade stores the address's canonical text; the codec's writer is the
+  one spelling.
+
+*** Layer 2: the resolvers
+
+Two questions, two contexts, two interfaces; one type would mix a tenant's
+reference data with a run's market configuration.
+
+- =reference_resolver=: what an address means in reference data. By
+  address: the index's convention, the swap convention that uses it, the
+  CDS convention, the equity underlying, the commodity, the currency pair.
+  Answers =std::expected<refdata type, resolve_error>=. Context: a tenant's
+  refdata. Implementations: in memory (tests, generator, shell) and one over
+  the refdata service.
+- =ore_naming=: an address and its ORE name, both ways, under one market
+  configuration. Fixed for indices (=ore_index_codec=), configuration-bound
+  for curves (today's =reference_curve_names_of=, generalised). Context: a
+  run's or an import's market configuration. The exporter writes through it,
+  the importer reads through it.
+
+Both interfaces sit beside the address types, so trading, ORE and the
+services see them without seeing each other.
+
+*** Layer 3: the trade builders
+
+- A builder per trade type, in =ores.trading.api=, returning the
+  =trade_instrument= member (=swap_instrument_data=, ...). Required terms are
+  an aggregate of =required<T>= members, so omitting one does not compile;
+  optional terms and overrides are setters; =build() const= returns
+  =std::expected<T, build_error>= with =build_error{term, message}=.
+- Market references are =market_reference= values, never strings. =build=
+  resolves them through a =reference_resolver= given at construction and
+  derives what conventions fix (a fixed leg's frequency, day count, calendar
+  and adjustment from the swap convention; the floating leg's from the index
+  convention), as ORE's =TradeGenerator= does. An unresolved reference fails
+  naming the term and the address.
+- Shared sub-builders (legs, schedules, option blocks, barriers,
+  underlyings, range bounds) are internal and compose the product builders;
+  every leg gets its schedule row, so a written leg states its calendar and
+  rule.
+- ORE vocabularies the builder owns are enums (=side=, =long_short=,
+  =option_style=, =barrier_type=), spelt for ORE in one place.
+- Registry: each builder states its =trade_type=; one tuple lists the
+  builder types; a test fails when it and the trade type catalogue differ.
+- Builders do not do trade ids, the envelope or booking rows.
+
+*** Usage (caller's view)
+
+#+begin_src cpp
+const auto euribor_6m = market_reference::parse(
+    "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M");
+
+auto swap = vanilla_swap_builder{refdata,          // a reference_resolver
+        {.notional = 10'000'000, .currency = "EUR",
+         .start = 2026y/1/5, .maturity = 2036y/1/5,
+         .fixed_rate = 0.0215, .index = *euribor_6m,
+         .fixed_side = side::pay}}
+    .fixed_day_count("30/360")
+    .build();       // std::expected<swap_instrument_data, build_error>
+
+// Export: the run's market configuration names each address for ORE.
+exporter::export_portfolio(items, batch, ore_naming_for(run));
+#+end_src
+
+*** How the parts hang together
+
+- One language for references (layer 1); every component speaks it.
+- Meaning comes from refdata (=reference_resolver=); ORE spelling comes from
+  the market configuration (=ore_naming=). Neither is in a trade.
+- Builders produce complete trades in that language; the exporter is the
+  only place a trade becomes ORE names, the importer the only place ORE names
+  become a trade.
+- The recorded trades and the ORE check judge the result, as now.
+
+*** Tradeoffs accepted
+
+- We accept losing SQL foreign keys on the reference columns (an address is
+  not a row of one table) in exchange for one language; a reference is
+  checked by parsing at write and by resolving at booking.
+- We accept a class per trade type (about 85) in exchange for each type's
+  required terms being visible where it is built.
+- We accept migrating stored trades in exchange for a model with no ORE
+  names in it.
+
+*** Alternatives considered
+
+- Maps of every reference table given to each builder: builders would know
+  refdata's storage and every foreign key would have two owners.
+- ORE's samples as templates: complete by construction, but no use to a
+  person entering a trade, and no terms beyond the samples'.
+- One resolver for meaning and naming: it would need a tenant's refdata and
+  a run's market configuration at once, which no caller but a run has.
+
+*** Decisions on the open questions
+
+Agreed with the product owner on 2026-11-06.
+
+- *Credit names are oresmd addresses, not LEIs.* The grammar already states
+  a credit name as ORE does: a =cds=, =hazard_rate= or =recovery_rate= series
+  is identified by =underlying_name=, =seniority=, =ccy= and =doc_clause=,
+  ORE's =ReferenceInformation= (entity, tier, currency, doc clause). A CDS
+  refers to its credit curve series' address.
+- *The resolvers live in =ores.marketdata.api=*, beside the address types,
+  because oresmd is a market data concept. The API links =ores.refdata.api=
+  for the convention types (no cycle: refdata does not link marketdata).
+- *A reference is checked against the series catalogue, as a curve is
+  today.* =ores_marketdata_validate_curve_series_fn= refuses a trade naming a
+  curve URI its party's =market_series= does not hold;
+  =market_series_identity= projects each series' parsed URI into columns.
+  Every reference column takes the same soft foreign key, by kind, so a
+  reference keeps a database check and its party scope.
+- *ORE's built-in index conventions are seeded by population*, mined from
+  ORE's =indexparser.cpp=, so every tenant's resolver can answer for them.
+- *The work is broken into tasks* on this story, in the order below; this
+  task closes on the recorded-trades test it built.
+
+*** Tasks
+
+1. Move the oresmd codecs into the marketdata API and add =market_reference=.
+2. Resolve an oresmd reference: =reference_resolver= and =ore_naming=, the
+   second replacing =reference_curve_names=.
+3. Seed ORE's built-in index conventions in population.
+4. Store every market reference a trade holds as an oresmd address, checked
+   against the series catalogue; the importer and exporter convert.
+5. Trade builders: the API (=required<T>=, =build_error=, the registry) and
+   the swap builders.
+6. Build every generated trade type through a builder, family by family,
+   credit first; each family migrates its planner and clears its entries
+   from the known lists.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4474][#4474]] | [synthetic] Record the trades the generator books and judge them |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| L1 | 21 per-family includes unused once the writer copies the whole batch | trading_trade_population_writer.cpp | Accepted | Removed. |
+| L2 | The test's scope setup repeats parts of the population tests' scopes | generated_trade_export_tests.cpp | Declined | A different shape: one book and every catalogue in one scope. |
+| L3 | Three bond types are refused only because the in-memory path has no join of their product rows | generated_trade_export_tests.cpp | Declined | Stated in the known list; the database leg judges bonds. |
+| L4 | The missing-blocks list holds 188 entries, optional elements among them | generated_trades_known_missing_paths.txt | Declined | The baseline the builder tasks shrink. |
+| L5 | The test writes into the source tree | generated_trade_export_tests.cpp | Declined | Only under ORES_UPDATE_GENERATED_TRADES=1: the recorded-file pattern. |
+| L6 | misspell-fixer on the changed files | — | Clean | The repo-wide run reports a hit outside this branch's files. |
+
+* Result
+
+The generated trades are now recorded and judged. A test plans every asset
+class, builds each slot's booking request as the writer does, exports it as
+ORE XML in memory and keeps one portfolio per trade type in
+=projects/ores.synthetic/core/tests/data/generated_trades=. A generator change
+fails the test until the files are written again, so it shows as a diff.
+Three checks judge the files against known lists asserted exactly: 5
+refused types, 22 types written with no product data, and 188 blocks ORE's
+samples state that generated trades leave out. They match the Trade errors
+of the Acme reports.
+
+The writer now books every row a plan states rather than copying named
+arrays per family; no recorded trade changed, because the planners state
+nothing more. The cause the recorded files exposed is upstream: the trade
+constructors let a product be built without its own terms. The fix is
+designed here and broken into five tasks on the story: oresmd references
+and their resolvers, the seeded index conventions, the stored references,
+the trade builders, and every type built through them.
+
+Acceptance: the first two criteria are met by the recorded-trades test. The
+ORE engine check and the clean report run move to the tasks that fix the
+trades, since the engine would only confirm the known lists until then. The
+component audit of =ores.synthetic=: one source file changed, a test and its
+data added, no part or facet changed; =validate_docs.sh= passes.

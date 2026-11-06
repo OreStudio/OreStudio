@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="39b359af-9377-5560-b484-b5f7801ffb67">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
+      <SecurityId>POP7T6LA7DZ23</SecurityId>
+      <SettlementDays>2</SettlementDays>
+      <Calendar>TARGET</Calendar>
+      <IssueDate>2025-07-02</IssueDate>
+      <BondNotional>723174.17</BondNotional>
+      <PriceType>Clean</PriceType>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Notionals>
+          <Notional>1</Notional>
+        </Notionals>
+      </LegData>
+      <SubType>Fixed</SubType>
+    </BondData>
+  </Trade>
+  <Trade id="9a5f3fc2-d4ad-52dd-b2e2-9b9aa35c2185">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
+      <SecurityId>POP218G6DL9X1</SecurityId>
+      <SettlementDays>2</SettlementDays>
+      <Calendar>TARGET</Calendar>
+      <IssueDate>2025-07-02</IssueDate>
+      <BondNotional>1036903.28</BondNotional>
+      <PriceType>Clean</PriceType>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Notionals>
+          <Notional>1</Notional>
+        </Notionals>
+      </LegData>
+      <SubType>Fixed</SubType>
+    </BondData>
+  </Trade>
+</Portfolio>

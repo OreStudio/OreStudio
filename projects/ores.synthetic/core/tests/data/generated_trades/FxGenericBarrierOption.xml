@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
+    <TradeType>FxGenericBarrierOption</TradeType>
+    <FxGenericBarrierOptionData>
+      <PayCurrency>EUR</PayCurrency>
+      <Name>EUR/USD</Name>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2027-11-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>KnockOut</Type>
+          <Levels>
+            <Level>0.9061</Level>
+          </Levels>
+        </BarrierData>
+        <BarrierData>
+          <Type>KnockOut</Type>
+          <Levels>
+            <Level>1.1075</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </FxGenericBarrierOptionData>
+  </Trade>
+  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+    <TradeType>FxGenericBarrierOption</TradeType>
+    <FxGenericBarrierOptionData>
+      <PayCurrency>EUR</PayCurrency>
+      <Name>EUR/USD</Name>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2035-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>KnockOut</Type>
+          <Levels>
+            <Level>0.4859</Level>
+          </Levels>
+        </BarrierData>
+        <BarrierData>
+          <Type>KnockOut</Type>
+          <Levels>
+            <Level>0.5939</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </FxGenericBarrierOptionData>
+  </Trade>
+</Portfolio>

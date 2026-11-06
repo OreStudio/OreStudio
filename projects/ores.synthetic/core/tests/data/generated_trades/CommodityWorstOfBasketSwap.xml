@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
+    <TradeType>CommodityWorstOfBasketSwap</TradeType>
+  </Trade>
+  <Trade id="3cf4c4c1-9289-5ca9-be3b-5fe95c412c93">
+    <TradeType>CommodityWorstOfBasketSwap</TradeType>
+  </Trade>
+</Portfolio>

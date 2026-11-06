@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="39b359af-9377-5560-b484-b5f7801ffb67">
+    <TradeType>EquityAccumulator</TradeType>
+    <EquityAccumulatorData>
+      <Currency>USD</Currency>
+      <FixingAmount>723174.17</FixingAmount>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.SPX</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StartDate>2026-01-02</StartDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2026-01-02</StartDate>
+          <Tenor>1D</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ObservationDates>
+      <RangeBounds>
+        <RangeBound startDate="2026-01-02">
+          <RangeTo>3569.3</RangeTo>
+          <Leverage>1</Leverage>
+        </RangeBound>
+        <RangeBound startDate="2026-01-02">
+          <RangeFrom>3569.3</RangeFrom>
+          <Leverage>2</Leverage>
+        </RangeBound>
+      </RangeBounds>
+    </EquityAccumulatorData>
+  </Trade>
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
+    <TradeType>EquityAccumulator</TradeType>
+    <EquityAccumulatorData>
+      <Currency>USD</Currency>
+      <FixingAmount>9466062.35</FixingAmount>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.SPX</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StartDate>2025-09-02</StartDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2025-09-02</StartDate>
+          <Tenor>1D</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ObservationDates>
+      <RangeBounds>
+        <RangeBound startDate="2025-09-02">
+          <RangeTo>4590.75</RangeTo>
+          <Leverage>1</Leverage>
+        </RangeBound>
+        <RangeBound startDate="2025-09-02">
+          <RangeFrom>4590.75</RangeFrom>
+          <Leverage>2</Leverage>
+        </RangeBound>
+      </RangeBounds>
+    </EquityAccumulatorData>
+  </Trade>
+</Portfolio>

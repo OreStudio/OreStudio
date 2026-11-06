@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 6C6D4D02-DDA2-4721-8B96-40950DC5E86C
+:END:
+#+title: Task: Move the oresmd codecs into the marketdata API
+#+description: The oresmd URI and ORE index codecs move from the marketdata core to its API, and a market_reference value is the only form a market reference takes in code, so every component can parse and write an address.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:oresmd:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Any component can parse and write an oresmd address without the marketdata core, and a market reference in code is a =market_reference= value rather than a string.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-06                               |
+
+* Acceptance
+
+- =oresmd_uri_codec= and =ore_index_codec= are in =ores.marketdata.api= and the core keeps no copy; their callers are moved and their tests pass.
+- =market_reference= is a variant of the address kinds the grammar has (an index, a datum or series), obtained only by parsing, with its canonical text from the codec's writer.
+- A test parses and writes an address of each kind and refuses a malformed one with the codec's reason.
+
+* Plan
+
+The design is in [[id:63FF92C8-3E18-49BB-93FA-B0862B5FD4B2][Test that every generated trade builds in ORE]], section Design: oresmd references, resolvers and trade builders.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

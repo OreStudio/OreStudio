@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="ce40eb75-6d18-5286-86ba-535d3e568c3f">
+    <TradeType>FlexiSwap</TradeType>
+    <FlexiSwapData>
+      <OptionLongShort>Short</OptionLongShort>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-08-02">2962620.02</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2032-08-02</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.0361</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-08-02">2962620.02</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2032-08-02</EndDate>
+            <Tenor>6M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-ESTR</Index>
+          <Spreads>
+            <Spread startDate="2025-08-02">0.0037</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+    </FlexiSwapData>
+  </Trade>
+  <Trade id="24f52bd9-ca98-5bf4-b995-457c86123722">
+    <TradeType>FlexiSwap</TradeType>
+    <FlexiSwapData>
+      <OptionLongShort>Long</OptionLongShort>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-11-02">6103286.3</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.0372</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-11-02">6103286.3</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
+            <Tenor>6M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-ESTR</Index>
+          <Spreads>
+            <Spread startDate="2025-11-02">0.0045</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+    </FlexiSwapData>
+  </Trade>
+</Portfolio>

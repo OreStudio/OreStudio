@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
+    <TradeType>RiskParticipationAgreement</TradeType>
+  </Trade>
+  <Trade id="9e35f78e-0d03-56de-8f90-9b8ad04136e1">
+    <TradeType>RiskParticipationAgreement</TradeType>
+  </Trade>
+</Portfolio>

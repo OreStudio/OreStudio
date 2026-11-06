@@ -28,6 +28,7 @@ export class HttpInference implements Inference {
                 chunks.push(chunk);
             }
             const raw = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+            if (raw.choices?.[0]?.finish_reason === 'length') throw new AppError('generation_limit', 'Model exceeded its response budget; narrow the request.', 422);
             const parsed = messageSchema.parse(raw.choices?.[0]?.message);
             return { ...parsed, content: parsed.content ?? null };
         } catch (error) {

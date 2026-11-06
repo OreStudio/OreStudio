@@ -400,7 +400,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| L1 | 21 per-family includes unused once the writer copies the whole batch | trading_trade_population_writer.cpp | Accepted | Removed. |
+| L2 | The test's scope setup repeats parts of the population tests' scopes | generated_trade_export_tests.cpp | Declined | A different shape: one book and every catalogue in one scope. |
+| L3 | Three bond types are refused only because the in-memory path has no join of their product rows | generated_trade_export_tests.cpp | Declined | Stated in the known list; the database leg judges bonds. |
+| L4 | The missing-blocks list holds 188 entries, optional elements among them | generated_trades_known_missing_paths.txt | Declined | The baseline the builder tasks shrink. |
+| L5 | The test writes into the source tree | generated_trade_export_tests.cpp | Declined | Only under ORES_UPDATE_GENERATED_TRADES=1: the recorded-file pattern. |
+| L6 | misspell-fixer on the changed files | — | Clean | The repo-wide run reports a hit outside this branch's files. |
 
 * Result
 

@@ -81,3 +81,12 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 - Inspection delivered; clean-NPV and populated-IR data readiness remain open. Discovery can proceed; no reporting result acceptance is claimed from fixtures.
 - Existing stopped backend services were restored for inspection. No server rebuild, broker configuration change, database recreation, report trigger or feed import was performed by the probe.
 - Reproduction, concrete record IDs and next actions: =projects/ores.agent/docs/business-baseline.md=. Scope and later stages: =projects/ores.agent/docs/business-use-cases-plan.md=.
+
+* Business use cases: Stage 1
+
+- Implementation: =065e5dc857=; final exact-identity guard =26217842d462e4f5b193b55d4e02ce366adb728d=.
+- =npm test=: 37 passing Windows/Linux tests. =npm run package=: identical artifact =0.1.2-adeb734cfeb9= on both systems.
+- =scripts/smoke-discovery.mjs=: independent MCP, real book membership, FX-forward economics, portfolio hierarchy, counterparty code and CUDA chat/clarification pass. A separate selected-party login cannot read the first party's known trade.
+- Native backend, broker and inference PID sets unchanged across standalone agent deployment. Existing market-data/currency regressions pass; no server/broker configuration changes or business writes were introduced.
+- Scope limits: tenant-wide counterparties have explicit paged name searches; Bond economics expose reference/notional only. No valuation/reporting capability is claimed by this release. See =projects/ores.agent/docs/discovery.md=.
+- Next: Stage 2 stored trade valuation results, with the clean-NPV data gate from Stage 0 still open.

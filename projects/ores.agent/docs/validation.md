@@ -1,6 +1,34 @@
 # Implementation validation
 
-## Current release: 0.1.1 market lookups
+## Current release: 0.1.2 discovery
+
+Validated code: `26217842d462e4f5b193b55d4e02ce366adb728d` (Stage 1 implementation
+starts at `065e5dc857`). Installed artifact: `0.1.2-adeb734cfeb9`, identical on
+Windows and Linux. All **37 tests pass** on both platforms; the pinned Linux
+image and local `build/output/agent-discovery-linux-check.log` reproduce the
+cross-platform check. No Linux GPU or remote CI execution is claimed.
+
+The installed release passed `scripts/smoke-discovery.mjs` using an independent
+MCP client, actual selected-party data and CUDA LFM3 chat. It verified book,
+portfolio and counterparty discovery; 63 trades in Group FX Hedges; precise
+FX-forward economics and booking hierarchy; ambiguous-book clarification; and
+an actual separate login selecting Acme HK that could not read the Plc trade.
+This is second-party coverage, not a claim of least-privilege/cross-tenant proof.
+Final sample times: books 1,009 ms; ambiguous book 903 ms; exact clarification
+328 ms; trade detail 697 ms; counterparty code 484 ms. These are smoke samples.
+
+FX/IR/provider/currency regressions also passed during rollout. Native backend,
+NATS and inference PID sets remained unchanged across agent deployments, and
+the main app returned HTTP 200. Only the agent release changed; no server source,
+CMake build, broker configuration or database migration was required. Existing
+services had been restored during Stage 0; GPU inference was restored for model
+validation. Historical market-data and clean-NPV data gaps remain unchanged.
+
+See [discovery](discovery.md) for scope, limits and examples. Counterparty name
+search is explicitly per-page; Bond economics are issue-reference/notional only.
+Stage 2 reporting is not implemented by this discovery release.
+
+## Previous release: 0.1.1 market lookups
 
 Committed/pushed source: `7cc8511292a2416da54c25fe8bd54530326b37c7`.
 Installed release: `../agent-runtime/app/releases/0.1.1-86a407144a11`.

@@ -66,6 +66,10 @@ passes because a fixture passed while the real deployment has no data.
 
 ## Stage 1 — trade and reference-data discovery
 
+Delivered in 0.1.2; see [implementation and limits](discovery.md) and
+[current release evidence](validation.md). Global counterparty-name search is
+limited to explicit catalogue pages; full Bond issue economics remain unsupported.
+
 Questions: “Show the trades in book X”; “Find this trade”; “Which portfolios
 contain it?”; “Find counterparty Acme.” Proposed tools: `find_trades`,
 `read_trade`, `find_books`, `find_portfolios`, `find_counterparties`.

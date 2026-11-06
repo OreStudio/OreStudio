@@ -8,7 +8,7 @@
 #+filetags: :trading:ore:synthetic:test:validate_that_every_trade_type_is_modelled_as_ore_reads_it:sprint_29:v0:
 #+owner: marco
 #+branch: feature/validate-the-trade-representation
-#+pr:
+#+pr: 4468
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -203,7 +203,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4468][#4468]] | [ore,trading] Model every ORE example trade so the corpus roundtrip loses nothing |
 
 * Review
 

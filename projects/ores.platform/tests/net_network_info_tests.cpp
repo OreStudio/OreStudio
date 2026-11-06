@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.platform/net/network_info.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
@@ -29,10 +30,29 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <unistd.h>
 #include <vector>
 
+#if !defined(_WIN32)
+#    include <unistd.h>
+#endif
+
 namespace {
+
+/**
+ * @brief The host name, read through a source the implementation does not use.
+ *
+ * Windows has no gethostname without Winsock, and the implementation reads
+ * GetComputerNameA there, so the computer name comes from the environment.
+ */
+std::string os_hostname() {
+#if defined(_WIN32)
+    return ores::platform::environment::environment::get_value("COMPUTERNAME")
+        .value_or(std::string());
+#else
+    char buffer[256] = {};
+    return ::gethostname(buffer, sizeof(buffer)) == 0 ? std::string(buffer) : std::string();
+#endif
+}
 
 #if defined(__linux__)
 /**
@@ -86,13 +106,13 @@ using namespace ores::logging;
 TEST_CASE("get_hostname_matches_the_operating_system", "[net]") {
     auto lg(make_logger(test_suite));
 
-    char os_hostname[256] = {};
-    REQUIRE(::gethostname(os_hostname, sizeof(os_hostname)) == 0);
+    const auto expected = os_hostname();
+    REQUIRE(!expected.empty());
 
     const auto hostname = get_hostname();
     BOOST_LOG_SEV(lg, info) << "Hostname: " << hostname;
 
-    CHECK(hostname == os_hostname);
+    CHECK(hostname == expected);
 }
 
 TEST_CASE("get_primary_mac_address_reports_the_first_kernel_address", "[net]") {

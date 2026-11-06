@@ -113,6 +113,9 @@ void publish_and_drain(ores::nats::service::client& nats,
 }
 
 TEST_CASE("a core subscription frees every message it delivers", "[nats][subscription]") {
+#if !defined(__linux__)
+    SKIP("anonymous resident memory is read from /proc, which this platform does not have");
+#endif
     ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
 

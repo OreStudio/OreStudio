@@ -87,7 +87,7 @@ struct report_cashflow_entity {
     std::optional<std::string> flow_type;
     std::optional<std::string> currency;
     std::optional<std::string> qualifiers;
-    double value;
+    double value = 0.0;
     std::string source;
     db_timestamp valid_from = db_timestamp::max();
     db_timestamp valid_to = db_timestamp::max();

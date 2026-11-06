@@ -403,6 +403,19 @@ if(WIN32)
     endif()
 endif()
 
+if(APPLE)
+    # Apple's linker warns when a static library appears twice on one link
+    # line. CMake repeats a static library on purpose, so the dependencies
+    # between static libraries resolve in any order, and the repetition is
+    # correct. The flag is passed only when the linker accepts it, because
+    # linkers before Xcode 15 do not know it.
+    include(CheckLinkerFlag)
+    check_linker_flag(CXX "LINKER:-no_warn_duplicate_libraries" ores_ld_no_warn_duplicates)
+    if(ores_ld_no_warn_duplicates)
+        add_link_options("LINKER:-no_warn_duplicate_libraries")
+    endif()
+endif()
+
 find_package(Boost 1.88 REQUIRED COMPONENTS
     log
     json

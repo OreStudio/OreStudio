@@ -1060,6 +1060,8 @@ TEST_CASE("a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_nex
     const auto options = writer_options();
     if (!options)
         SKIP("The tick writer role is not configured");
+    if (ores::testing::running_under_valgrind())
+        SKIP("its ticks must be stored within a deadline that valgrind is too slow to meet");
     auto writer = std::make_shared<flaky_writer>(*options);
 
     app_feed_ingest_loop_fixture f;

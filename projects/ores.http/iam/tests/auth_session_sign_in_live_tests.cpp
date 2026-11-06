@@ -23,6 +23,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/jwks.hpp"
 #include "ores.nats/service/timeouts.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -42,8 +43,9 @@ namespace {
 
 /// An environment variable, or nothing when the deployment has not set it.
 std::optional<std::string> env(const char* name) {
-    if (const auto* value = std::getenv(name); value != nullptr && *value != '\0')
-        return std::string(value);
+    auto value = ores::platform::environment::environment::get_value(name);
+    if (value && !value->empty())
+        return value;
     return std::nullopt;
 }
 

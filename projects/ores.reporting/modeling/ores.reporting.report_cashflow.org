@@ -208,9 +208,14 @@ strike and the volatility the payment was calculated at all travel here.
 :PROPERTIES:
 :type:         double precision
 :cpp_type:     double
+:default_value: 0.0
 :END:
 
 The figure, as the engine stated it and never formatted.
+
+#+begin_src cpp :name generator
+faker::number::decimal<double>(-1000000.0, 1000000.0)
+#+end_src
 
 ** source
 :PROPERTIES:

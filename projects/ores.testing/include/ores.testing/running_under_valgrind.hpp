@@ -19,8 +19,8 @@
 #ifndef ORES_TESTING_RUNNING_UNDER_VALGRIND_HPP
 #define ORES_TESTING_RUNNING_UNDER_VALGRIND_HPP
 
-#include <cstdlib>
-#include <string_view>
+#include "ores.platform/environment/environment.hpp"
+#include <string>
 
 namespace ores::testing {
 
@@ -35,9 +35,8 @@ namespace ores::testing {
  * which only costs that test its skip.
  */
 inline bool running_under_valgrind() {
-    const char* preload = std::getenv("LD_PRELOAD");
-    return preload != nullptr &&
-           std::string_view(preload).find("vgpreload") != std::string_view::npos;
+    const auto preload = ores::platform::environment::environment::get_value("LD_PRELOAD");
+    return preload && preload->find("vgpreload") != std::string::npos;
 }
 
 }

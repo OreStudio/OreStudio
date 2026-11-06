@@ -25,6 +25,7 @@
 #ifndef ORES_INBOX_API_DOMAIN_NOTIFICATION_DELIVERY_CODEC_HPP
 #define ORES_INBOX_API_DOMAIN_NOTIFICATION_DELIVERY_CODEC_HPP
 
+#include "ores.inbox.api/domain/delivery_outcome.hpp"
 #include "ores.inbox.api/domain/notification_delivery.hpp"
 #include "ores.inbox.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"

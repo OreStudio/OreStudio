@@ -25,6 +25,10 @@
 #ifndef ORES_TRADING_API_DOMAIN_TRADE_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_TRADE_CODEC_HPP
 
+#include "ores.trading.api/domain/booking_nature.hpp"
+#include "ores.trading.api/domain/counterparty_scope.hpp"
+#include "ores.trading.api/domain/entry_channel.hpp"
+#include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"

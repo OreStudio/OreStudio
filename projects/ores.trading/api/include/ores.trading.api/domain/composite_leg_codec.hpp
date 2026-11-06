@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_COMPOSITE_LEG_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_COMPOSITE_LEG_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"

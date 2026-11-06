@@ -26,6 +26,7 @@
 #define ORES_DIFF_DOMAIN_DIFF_ENTRY_CODEC_HPP
 
 #include "ores.diff/domain/diff_entry.hpp"
+#include "ores.diff/domain/diff_span_codec.hpp"
 #include "ores.diff/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"

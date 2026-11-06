@@ -25,7 +25,12 @@
 #ifndef ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_LONG_SHORT_CODEC_HPP
 #define ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_LONG_SHORT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_leg.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short_coupon.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_part_identity.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_short_leg.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"

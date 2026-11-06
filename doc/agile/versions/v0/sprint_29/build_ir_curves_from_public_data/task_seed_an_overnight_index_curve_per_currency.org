@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
 #+owner: marco
 #+branch: feature/seed-an-overnight-index-curve-per-currency
-#+pr:
+#+pr: 4475
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4475][#4475]] | [sql] Seed an overnight-index curve config for nineteen currencies |
 
 * Review
 

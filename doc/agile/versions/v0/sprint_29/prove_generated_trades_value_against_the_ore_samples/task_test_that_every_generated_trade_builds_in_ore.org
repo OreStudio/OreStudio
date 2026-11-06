@@ -124,10 +124,20 @@ per trade type, usable outside the generator:
    for a type with none, and each builder's trade must roundtrip through our
    XML unchanged.
 8. The builders live in =ores.trading.api=, which links =ores.refdata.api=
-   (no cycle: refdata does not link trading), and take the refdata
-   convention types themselves. A small =conventions_source= interface finds
-   a convention by index name; one implementation holds conventions in
-   memory, for tests, the generator and the shell.
+   (no cycle: refdata does not link trading). A builder takes a
+   =trade_reference_data= value: maps, keyed by our own codes, of the
+   reference data a trade refers to (currencies, calendars, day count
+   fractions, business day conventions, payment frequencies, floating
+   indices and the conventions). Every code a builder writes is a foreign
+   key it checks against those maps, so an unknown code fails =build()=
+   naming the term, as the database would but earlier. The derived terms
+   come from the same maps. The caller fills them: the generator and the
+   shell from the refdata service, a test from fixtures.
+9. *A gap in the data, not the API:* refdata holds no terms for ORE's
+   built-in indices (=floating_index_type= is a code and a description, and
+   ORE's example conventions state no =IborIndex=). Until those index
+   conventions are seeded, from ORE's =indexparser.cpp=, a floating leg's
+   day count and fixing days cannot be derived for them.
 
 Rollout: the conventions interface and the swap leg builder, proven on Swap;
 then credit, whose every type is broken; then family by family, each

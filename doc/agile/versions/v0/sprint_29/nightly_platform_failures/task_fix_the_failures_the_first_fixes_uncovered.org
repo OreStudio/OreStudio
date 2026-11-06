@@ -8,7 +8,7 @@
 #+filetags: :ci:hotfix:nightly:nightly_platform_failures:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/nightly-failures-round-two
-#+pr:
+#+pr: 4469
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4469][#4469]] | [ci] Fix the failures the first nightly fixes uncovered |
 
 * Review
 

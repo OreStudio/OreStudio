@@ -95,6 +95,20 @@ task and name that file in the Command column.
   and the prefix is what puts one screen on the second.
 - A cookie at =Path=/= and a second cookie with the same name overwrite each other,
   which is why the prefix is also the cookie's path rather than a cosmetic detail.
+  The path is now a server setting, =--web-session-path=, read into the door's
+  =cookie_settings=.
+- The two sessions cannot yet be one. The BFF keeps the token and hands the browser
+  its own cookie; the C++ door keeps its own store. Neither accepts the other's
+  credential, so a screen on the prefix carries the C++ session and the rest of the
+  application carries the BFF's, and both exist at once because their paths differ.
+  Making them one is a decision for the cutover, not for this task.
+- Which list is not yet settled. The C++ server answers the generated collections,
+  such as =/api/v1/reference-data/currencies=, and the screen that shows currencies
+  asks the BFF for =/api/refdata/currencies=, which is the generic router the
+  classification retires. The two shapes are not the same, so the first moved list
+  needs either an adapter in the screen or the screen rewritten against the
+  generated collection. This task takes the second, because an adapter would be the
+  BFF's route kept alive under a new name.
 
 * Test Scenarios
 

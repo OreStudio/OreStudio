@@ -18,7 +18,7 @@
  *
  */
 #include "datum_catalogue.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>

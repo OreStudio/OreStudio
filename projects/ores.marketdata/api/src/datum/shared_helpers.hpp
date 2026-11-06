@@ -26,11 +26,23 @@
 namespace ores::marketdata::datum {
 
 // ASCII only, so the result does not depend on the program's locale.
+inline std::string lower(std::string_view s) {
+    std::string out(s);
+    std::ranges::transform(
+        out, out.begin(), [](char c) { return c >= 'A' && c <= 'Z' ? char(c - 'A' + 'a') : c; });
+    return out;
+}
+
+// ASCII only, so the result does not depend on the program's locale.
 inline std::string upper(std::string_view s) {
     std::string out(s);
     std::ranges::transform(
         out, out.begin(), [](char c) { return c >= 'a' && c <= 'z' ? char(c - 'a' + 'A') : c; });
     return out;
+}
+
+inline bool all_digits(std::string_view s) {
+    return !s.empty() && std::ranges::all_of(s, [](char c) { return c >= '0' && c <= '9'; });
 }
 
 }

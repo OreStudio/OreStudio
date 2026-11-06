@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.core/datum/ore_index_codec.hpp"
+#include "ores.marketdata.api/datum/ore_index_codec.hpp"
 #include "ores.marketdata.api/datum/value.hpp"
+#include "shared_helpers.hpp"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -41,7 +42,7 @@ namespace {
 using f = index_family;
 using fields = std::vector<market_index::field_text>;
 
-std::vector<std::string_view> split(std::string_view s) {
+std::vector<std::string_view> split_on_dash(std::string_view s) {
     std::vector<std::string_view> parts;
     std::size_t start = 0;
     while (true) {
@@ -61,14 +62,11 @@ bool is_currency(std::string_view t) {
            std::ranges::all_of(t, [](unsigned char c) { return c >= 'A' && c <= 'Z'; });
 }
 
-bool is_period(std::string_view t) {
+bool is_period_term(std::string_view t) {
     const auto parsed = term::parse(t);
     return parsed && parsed->which() == term::kind::period;
 }
 
-bool all_digits(std::string_view t) {
-    return !t.empty() && std::ranges::all_of(t, [](unsigned char c) { return std::isdigit(c); });
-}
 
 /// The number @p t writes; the caller has checked it is all digits.
 unsigned number(std::string_view t) {
@@ -126,7 +124,7 @@ std::expected<market_index, std::string> refuse(std::string_view why) {
 
 // POWER-NAME[-YYYY-MM-DD[-START-END[-DST]]], the name without a hyphen (:883).
 std::expected<market_index, std::string> read_power(std::string_view rest) {
-    const auto t = split(rest);
+    const auto t = split_on_dash(rest);
     if (t.size() == 1)
         return refuse("a power index with no delivery date takes ORE's evaluation date, which the "
                       "name cannot keep");
@@ -147,13 +145,13 @@ std::expected<market_index, std::string> read_power(std::string_view rest) {
 
 // CCY-NAME[-TENOR] (:258) or CCY-CMS[-TAG]-TENOR (:519).
 std::expected<market_index, std::string> read_rate(std::string_view name) {
-    const auto t = split(name);
+    const auto t = split_on_dash(name);
     if (!is_currency(t[0]))
         return refuse("a rate index starts with a three-letter currency");
     if (t.size() >= 2 && t[1] == "CMS") {
         if (t.size() != 3 && t.size() != 4)
             return refuse("a CMS index is CCY-CMS[-TAG]-TENOR");
-        if (!is_period(t.back()))
+        if (!is_period_term(t.back()))
             return refuse("a CMS index ends in a tenor");
         fields fs;
         if (t.size() == 4)
@@ -163,7 +161,7 @@ std::expected<market_index, std::string> read_rate(std::string_view name) {
     }
     if (t.size() != 2 && t.size() != 3)
         return refuse("an IBOR index is CCY-NAME[-TENOR]");
-    if (t.size() == 3 && !is_period(t[2]))
+    if (t.size() == 3 && !is_period_term(t[2]))
         return refuse("an IBOR index's tenor is a period");
     return make(f::ibor,
                 t[0],
@@ -211,7 +209,7 @@ std::expected<market_index, std::string> ore_index_codec::read(std::string_view 
         if (name.starts_with("POWER-"))
             return read_power(name.substr(6));
         if (name.starts_with("FX-")) {
-            const auto t = split(name);
+            const auto t = split_on_dash(name);
             if (t.size() != 4 || !is_currency(t[2]) || !is_currency(t[3]) || t[1].empty())
                 return refuse("an FX index is FX-SOURCE-CCY1-CCY2");
             return make(f::fx, t[2], {{"source", std::string(t[1])}, {"ccy", std::string(t[3])}});
@@ -219,8 +217,8 @@ std::expected<market_index, std::string> ore_index_codec::read(std::string_view 
         if (name.starts_with("GENERIC-"))
             return make(f::generic, name.substr(8));
         if (name.starts_with("CMB-")) {
-            const auto t = split(name);
-            if (t.size() < 3 || !is_period(t.back()))
+            const auto t = split_on_dash(name);
+            if (t.size() < 3 || !is_period_term(t.back()))
                 return refuse("a constant maturity bond index is CMB-FAMILY-TENOR");
             const auto family = name.substr(4, name.size() - 4 - t.back().size() - 1);
             return make(f::cmb, family, {{"tenor", std::string(t.back())}});

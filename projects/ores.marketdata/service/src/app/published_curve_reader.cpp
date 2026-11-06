@@ -22,7 +22,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/datum/value.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>

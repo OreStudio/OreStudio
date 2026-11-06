@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_CORE_DATUM_ORESMD_URI_CODEC_HPP
-#define ORES_MARKETDATA_CORE_DATUM_ORESMD_URI_CODEC_HPP
+#ifndef ORES_MARKETDATA_API_DATUM_ORESMD_URI_CODEC_HPP
+#define ORES_MARKETDATA_API_DATUM_ORESMD_URI_CODEC_HPP
 
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/market_index.hpp"
-#include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.api/export.hpp"
 #include <expected>
 #include <string>
 #include <string_view>
@@ -58,7 +58,7 @@ namespace ores::marketdata::datum {
  * for is a datum like any other. What ORE can and cannot name is the ORE axis
  * codec's question, at the edge where ORE XML is read and written.
  */
-class ORES_MARKETDATA_CORE_EXPORT oresmd_uri_codec final {
+class ORES_MARKETDATA_API_EXPORT oresmd_uri_codec final {
 public:
     /// The datum or series @p uri names, or why the grammar does not admit it.
     [[nodiscard]] static std::expected<market_datum, std::string> read(std::string_view uri);

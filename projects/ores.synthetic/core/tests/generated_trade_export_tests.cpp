@@ -172,6 +172,7 @@ const std::map<std::string, recorded_type>& generated() {
         struct type_trades {
             std::vector<ores::trading::messaging::trade_export_item> items;
             ores::trading::domain::instrument_batch instruments;
+            std::string booking_refused;
         };
         std::map<std::string, type_trades> by_type;
         for (const auto& asset_class : asset_classes) {
@@ -190,6 +191,23 @@ const std::map<std::string, recorded_type>& generated() {
                 }
                 state_keys(request.instruments, slot.trade_id, slot.trade_type_code);
                 auto& trades = by_type[slot.trade_type_code];
+                /*
+                 * The booking service refuses a batch whose arrays the trade
+                 * type does not route, or whose children have no header, so
+                 * such a trade is never stored and never exported.
+                 */
+                auto refusals = ores::trading::service::misrouted_arrays(
+                    request.instruments, slot.trade_type_code);
+                for (auto& orphan : ores::trading::service::orphan_arrays(request.instruments))
+                    refusals.push_back(std::move(orphan));
+                if (!refusals.empty()) {
+                    std::string names;
+                    for (const auto& name : refusals)
+                        names += (names.empty() ? "" : ", ") + name;
+                    trades.booking_refused += boost::uuids::to_string(slot.trade_id) +
+                                              ": booking refuses the arrays " + names + "\n";
+                    continue;
+                }
                 ores::trading::messaging::trade_export_item item;
                 item.anchor = request.anchor;
                 item.ore_id = boost::uuids::to_string(slot.trade_id);
@@ -201,6 +219,11 @@ const std::map<std::string, recorded_type>& generated() {
         std::map<std::string, recorded_type> out;
         for (const auto& [type, trades] : by_type) {
             recorded_type recorded;
+            recorded.refused = trades.booking_refused;
+            if (trades.items.empty()) {
+                out.emplace(type, std::move(recorded));
+                continue;
+            }
             /*
              * A portfolio whose every trade is refused is an error rather than
              * an empty document; the refusal is then what the type records.
@@ -212,7 +235,7 @@ const std::map<std::string, recorded_type>& generated() {
                 for (const auto& refused : written.refused)
                     recorded.refused += refused.trade_id + ": " + refused.message + "\n";
             } catch (const std::exception& e) {
-                recorded.refused = std::string(e.what()) + "\n";
+                recorded.refused += std::string(e.what()) + "\n";
             }
             out.emplace(type, std::move(recorded));
         }

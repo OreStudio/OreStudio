@@ -38,6 +38,7 @@ A synthetic IR curve feed with a public source starts from that source's latest 
 - The IR class has a calibration policy naming the provider order and window for each currency with a source.
 - Each such feed's start record names the calibration it runs and the public rate it started from.
 - A feed with no source keeps a stated fixed level, and the calibration screen says why.
+- The CHF feed is not calibrated from SARON without a SIX Data License, because SIX counts a curve built from SARON as derived data; it keeps a fixed level until that is decided.
 
 * Plan
 

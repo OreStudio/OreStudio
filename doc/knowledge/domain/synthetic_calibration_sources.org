@@ -53,7 +53,7 @@ On 2026-10-23 the pages below were read from the official site. The rows of the 
 | Reserve Bank of New Zealand | the terms page refused the request with 403; a search summary only | not read |
 | The twenty other IR publishers | no page | not read |
 
-A source in the last four rows blocks the storing of its values until its terms page is read and the result is written here.
+A source whose row says not read blocks the storing of its values until its terms page is read and the result is written here.
 
 ** Frankfurter as the access route for FX
 
@@ -120,9 +120,9 @@ A source is usable when its terms allow storing its history and computing from i
 | TWD | TAIBOR | unresolved: TAIBOR is a term rate, and the overnight benchmark was not found | not found | not read | not read | unknown |
 | ZAR | ZARONIA | ZARONIA | South African Reserve Bank | not read | not read | unknown |
 
-Five of the eight are usable now: USD, EUR, GBP, CAD and, for its terms, AUD. JPY waits on the Bank of Japan's view of commercial use, CHF cannot give a curve without a SIX licence, and NZD and AUD need a route that the servers do not refuse.
+Four of the eight are usable now: USD, EUR, GBP and CAD. AUD has usable terms but no open route, because the RBA's server refused a script. JPY waits on the Bank of Japan's view of commercial use, CHF cannot give a curve without a SIX licence, and NZD needs both its terms and a route.
 
-Four feeds quote an index that is not the currency's overnight average. The ILS feed quotes TELBOR, which ceased; the CNH feed quotes HIBOR, a term rate; the HUF feed quotes the BUBOR overnight quote rather than HUFONIA; and the TWD feed quotes TAIBOR, a term rate. The PLN index is unresolved.
+Four feeds quote the wrong index, and one is unresolved. The ILS feed quotes TELBOR, which ceased; the CNH feed quotes HIBOR, a term rate; the HUF feed quotes the BUBOR overnight quote rather than HUFONIA, the overnight average; and the TWD feed quotes TAIBOR, a term rate. The PLN feed is the unresolved one, because the sources conflict on its index.
 
 ** How a generator uses a source
 

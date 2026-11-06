@@ -31,7 +31,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 * Acceptance
 
 - A table names, for each of the 28 currencies, its overnight index, its public source and the state of its terms, its calibration policy, its bootstrap config and its latest published curve.
-- A freshly provisioned environment holds a published curve for each of the eight currencies of the derived FX pairs, with no person acting.
+- A freshly provisioned environment holds a published curve for each of the eight currencies of the derived FX pairs, with no person acting. A currency whose feed has no usable public source, such as CHF without a SIX licence, gets its curve from its synthetic quotes at their fixed level.
 - Each synthetic overnight-index feed with a usable public source starts from the latest public rate, and each without one keeps a stated fixed level with the reason recorded.
 - The development database holds no curve publish that a test wrote.
 

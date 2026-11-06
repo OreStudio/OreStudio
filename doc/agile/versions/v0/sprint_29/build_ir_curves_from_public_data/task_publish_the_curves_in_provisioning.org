@@ -38,6 +38,7 @@ After provisioning, each currency with a bootstrap config has a published curve 
 - A step of the provisioning system run bootstraps and publishes each config, after the IR feeds have published their first quotes.
 - A fresh environment holds a published curve for each of the eight currencies of the derived FX pairs, and the step's result names each curve and its as-of.
 - A curve that fails to bootstrap is named in the result and the log with its reason, and the run completes.
+- A curve is bootstrapped from its currency's synthetic quotes, so a currency whose feed keeps a fixed level, such as CHF without a SIX licence, still gets a published curve at that level.
 
 * Plan
 

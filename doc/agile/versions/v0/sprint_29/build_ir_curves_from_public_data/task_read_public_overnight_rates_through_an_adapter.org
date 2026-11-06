@@ -39,6 +39,7 @@ The public overnight rates the survey finds usable are stored as fixings in the 
 - A fresh environment stores each source's history as fixings within minutes of provisioning, and the log names each source and the count it stored.
 - A source whose terms are not accepted is skipped and reported, not failed.
 - The depth of each source's history is measured and written into the calibration sources note, since the survey did not check it.
+- The Bank of Japan's call rate is not loaded until the task's owner has asked the Bank's Public Relations Department whether this use is commercial and written its answer into the calibration sources note.
 
 * Plan
 

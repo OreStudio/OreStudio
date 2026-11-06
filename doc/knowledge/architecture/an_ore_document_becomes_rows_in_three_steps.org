@@ -1,89 +1,119 @@
 :PROPERTIES:
 :ID: 948DAC44-404D-4B70-A8FC-3E9D4C05F72D
 :END:
-#+title: A stored value is converted at the entity mapper, never in the codec
-#+description: Why an ORE value that has more than one rendering is converted to the stored form by the entity mapper and not by the projection, with the call chain, the files and the two tests that hold the line.
+#+title: A stored value reaches the row in the form the value set names
+#+description: The path one ORE value takes from a document into a row: which boundary converts it for each document family, which file states the mapping, and the tests that hold the line.
 #+type: knowledge
 #+level: cross
 #+filetags: :ore:xml:import:mapping:codec:
 #+created: 2026-10-30
-#+updated: 2026-10-31
+#+updated: 2026-11-03
 
 * Summary
 
 A value that ORE states in more than one rendering, =F= and =Following= for a
-business day convention, reaches the table in one form because the *entity
-mapper* converts it, and it reaches the XML back in one form because the codec
-does not convert anything at all. The codec and the conversion are deliberately
-separate, and a change that moves the conversion into
-=curve_configuration_projection::read= breaks the corpus test by design.
+business day convention, reaches the table in one form because two boundaries
+convert it, and neither is the entity mapper. The codec converts a convention
+document on read, from the tables generated from the mapping file. The database
+guard converts every write the codec did not convert: every curve document, and
+every writer that maps no document at all.
+
+The two boundaries are not duplication. The codec knows only the families it
+reads, and the guard is the one boundary every writer passes.
 
 * The call chain
 
+A conventions document, where the codec knows the family:
+
 #+begin_src text
-curveconfig.xml  <BusinessDayConvention>F</BusinessDayConvention>
-  curve_configuration_projection::read(xml)        XML -> typed record, "F" kept
-  curve_configuration_projection::map(record)      record -> rows, "F" kept
-  curve_configuration_document_service::save(rows) writes through a repository
-  <family>_mapper::map(const domain::X&)           "F" -> "Following"
-  repository insert                                "Following"
+conventions.xml  <FixedConvention>F</FixedConvention>
+  conventions_family_swap.cpp::map_swap        F -> Following, from the tables
+  swap_convention_mapper::map(domain)          rows, Following as it stands
+  repository insert                            Following
+  ores_refdata_validate_convention_terms_fn    the set agrees, or refuses
+#+end_src
+
+A curve configuration document, where it does not:
+
+#+begin_src text
+curveconfig.xml  <BusinessDayConvention>MF</BusinessDayConvention>
+  curve_configuration_projection::read         MF kept
+  curve_configuration_projection::map          rows, MF
+  base_correlation_config_mapper::map(domain)  MF as it stands
+  repository insert                            MF
+  ores_refdata_validate_curve_values_fn        MF -> ModifiedFollowing
 #+end_src
 
 The code, in order:
 
-- =projects/ores.ore/core/src/domain/curve_configuration_projection.cpp:3213=:
-  =read= binds the document with =xml::binder::bind=. It compares no field and
-  converts nothing.
-- =…/curve_configuration_projection.cpp:2825=: =map= builds the refdata rows. It
-  carries the rendering as the document stated it.
-- =projects/ores.refdata/core/src/service/curve_configuration_document_service.cpp=:
-  =save= calls =write_amendment(ctx_, <repo>, rows, reason, commentary)= per
-  family.
-- =projects/ores.refdata/core/src/repository/base_correlation_config_mapper.cpp:93=
-  and the ten siblings: the domain-to-entity =map= is the last code before the
-  SQL. It calls
-  =projects/ores.refdata/core/include/ores.refdata.core/repository/business_day_convention_code.hpp=,
-  whose =stored_business_day_convention= holds the twenty-seven-to-seven table.
-  An unknown rendering is returned unchanged, so the value set refuses it and
-  names the set.
-- =projects/ores.sql/create/refdata/refdata_curve_configuration_columns_validate_create.sql=:
-  =ores_refdata_validate_curve_values_fn= runs as a before-insert trigger and asks
-  =ores_reporting_value_in_set_fn=
-  (=…/reporting/reporting_ore_parameter_value_validate_fn_create.sql=) whether the
-  stored value is one the set states.
+- =projects/ores.sql/utility/ore_renderings.json= states the mapping: for each
+  table, the form a configuration holds and every rendering that means it.
+- =projects/ores.ore/core/src/domain/conventions_renderings.hpp= holds the C++
+  tables, generated from that file by
+  =projects/ores.ore/scripts/generate_renderings_tables.py=. The check fails when
+  the committed header differs from the file, and when a hand-written table
+  appears beside it.
+- =…/conventions_fields.cpp:207=: =code_of= looks a rendering up in a table and
+  raises =Unknown business day convention enum value= when it finds none.
+- =…/conventions_family_swap.cpp:37=: =bdc_of= reads a member through the table.
+  Fifty-four more call sites in nineteen domain units do the same.
+- =…/curve_configuration_projection.cpp:1555=: =required_spelling= keeps the
+  spelling the document wrote. The projection states no rule, so the row carries
+  =MF= until the database sees it.
+- =…/refdata_curve_configuration_columns_validate_create.sql:71= and
+  =…/refdata_convention_terms_validate_create.sql:77=: both guards ask
+  =ores_reporting_value_in_set_fn= whether the value is one the set states, then
+  =ores_reporting_canonical_value_fn= for the form it holds. A value outside the
+  set is refused with the set's name; a rendering is stored as its form.
+- =projects/ores.refdata/core/src/repository/*_mapper.cpp=: the entity mapper
+  assigns the value it was handed. It converts nothing and includes no header for
+  converting, which is what #4431 removed.
 
 [[file:an_ore_document_becomes_rows_in_three_steps.png]]
 
-#+caption: Figure 1. One value's journey. The conversion is a step in the mapper, and the database checks the result against the set.
+#+caption: Figure 1. One value's journey for a curve document: the codec keeps the rendering, and the guard stores the form the set names.
 
-* Why the conversion is not in the codec
+* Why the codec converts where it can
 
-Two tests hold the line, and both assert *where* the conversion sits:
+The form a configuration holds is one of the renderings, and the mapping file is
+the only statement of which. A codec that reads a document without converting
+leaves the mapping to one boundary, the database, and that works. A codec that
+converts reads the same file the value sets read, so the codec and the guard
+cannot disagree about a value: they read one statement.
+
+What the codec may not do is hold a table of its own. That is what made the
+refdata normaliser a second authority, and the generated header is how the copy
+stays a copy.
+
+* Why the guard is still needed
+
+A convention document states the value a row carries, but not every writer maps a
+document. The publisher that imports a tenant's configurations, the seeder, and
+the curve projection all reach a table with a spelling no codec converted. A rule
+only the codec enforced would hold for one caller and leak for the rest, so the
+trigger is the boundary that makes the rule true of the table rather than of a
+path to it.
+
+* The tests that hold it
 
 - =projects/ores.ore/core/tests/xml_curve_configuration_projection_roundtrip_tests.cpp:72=
-  reads the corpus documents through =read=, =map=, =reverse= and =write=, then
-  compares each one to its own text. It passes only because =read= and =write=
-  move no value. Put the conversion in =read= and the comparison fails with
-  ='MF' became 'ModifiedFollowing'=, which is what happened when it was tried.
-- =projects/ores.refdata/core/tests/curve_configuration_database_roundtrip_tests.cpp:262=
-  writes a document to the database and compares what comes back to *the rows the
-  store received*, =as_stored(mapped)=, not to the file, because the rendering is
-  the one thing the store does not keep.
-
-* The consequence for a change
-
-A new ORE rendering becomes a row in the mapper helper today, and it will become
-a row in the value set when the representation story lands. Either way it is one
-row in one place, and it is not the codec. A change to the document's shape
-touches the projection and the two round-trip tests. A rule about which values
-are legal touches the value set only. Keeping the three apart is what makes each
-change small.
+  reads, maps, reverses and writes every curve configuration in the corpus, then
+  reads the result again and compares the two *records*. Both sides pass through
+  =read=, so the case proves the path is a fixed point of the mapping, not that
+  the exported bytes equal the imported ones.
+- =projects/ores.refdata/core/tests/curve_configuration_database_roundtrip_tests.cpp:259=
+  writes a document through the store and states the round trip on what the store
+  returns: the document it holds exports and reads back unchanged. This is the
+  only case that can be right about a value the guard rewrote.
+- =…/test/reporting_ore_parameter_canonical_form_test.sql= asserts what the sets
+  state, and =ores_reporting_canonical_value_violations_fn()= names any live row
+  that holds a rendering instead of its form. Zero today.
 
 * See also
 
 - [[id:7DFE57DE-70C9-4EB6-AF94-DCEC65ADB494][The ORE XML infrastructure]] — the
   structure note that orders this cluster; this page *completes* it by naming the
-  one boundary at which a rendering changes.
+  two boundaries at which a rendering changes.
 - [[id:FB734007-5AB3-41D0-8F94-4A37584FE049][The export writes the stored form,
   so a round trip is not byte-identical]] — *answers* the question this page
   leaves open, which is what the export emits once the rendering is gone.
@@ -94,4 +124,4 @@ change small.
 - [[id:9697F09E-441A-4B51-869E-FC59433EEA1E][One component reads every ORE
   document, and none of them stores XML]] — *contradicts* any reading of this
   page that puts document knowledge in the mapper: the projection owns the shape,
-  the mapper owns only the rendering.
+  the codec owns the rendering.

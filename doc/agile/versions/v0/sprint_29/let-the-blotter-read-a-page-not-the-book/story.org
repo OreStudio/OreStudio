@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :trading:performance:ui:sprint_29:v0:
 #+created: 2026-11-01
-#+updated: 2026-11-01
+#+updated: 2026-11-03
 #+environment: festive-dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -17,34 +17,42 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 A desk opens the blotter and has its rows in well under a second, at any size the tenant has written, and its rail states how many rows sit at each node without reading the book to find out.
 
-The screen asks two questions, and they are different questions: give me one page of rows, and give me a count at each node. Today one request answers both by reading everything.
+The screen asks two questions, and they are different questions: give me one page of rows, and give me a count at each node. Both have their operation on main, and both still read the union view, so a page pays for each row's laterals and sorts the book to take the first hundred rows. That is what the tasks below take away.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Measured and designed; no code written. |
-| Waiting on    | The decision on where the read model lives (see =* Decisions
+| Now           | The rail and the keyset page are on main, merged in #4403. The refactor that makes every row a trade is tasked; no code for it is written. |
+| Waiting on    | Nothing. |
+| Next          | Start [[id:FEDD0DC4-BC71-4348-9032-6A61088B220D][Hold a composite's legs as trades]]. |
 
-- *The contract comes first, the projection behind it.* Two new operations carry the screen: one page of rows, keyed by the sort key and the row id, and one rail of counts. They are implemented over the summary view first, so the screen's answers are correct and measurable at the size we have, and the projection replaces the view behind the same contract when the book outgrows it. Deciding the contract before the store keeps the store replaceable.
+- *The contract comes first, the store behind it.* Two new operations carry the screen: one page of rows, keyed by the sort key and the row id, and one rail of counts. They are implemented over the summary view first, so the screen's answers are correct and measurable at the size we have, and the store behind them changes when the model does. Deciding the contract before the store keeps the store replaceable.
 - *The rail is counted by the store.* A count at each node is one grouped read; the client never counts rows it retrieved to draw a page.
 - *A package is a trade, so there is no projection.* [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] states that a structure is one deal whose legs are themselves trades, and that this tree's =CompositeTrade= is the structure. The blotter row is therefore a trade, with its own booking and state, and the union it was computed from is the defect. The projection table, its rebuild and its alarm are closed: see [[id:7C1F0E52-9A44-4B31-8E6D-2F5C7A1B9D03][The blotter lists trades]].
 - *Search* is left as the summary states it today: the identifiers and the references, concatenated into one column. A trigram index waits until a search is measured to need one.
-- *Flat mode* is a filter on the same rows, not a second model: the projection carries legs and the top list filters them out.
+- *Flat mode* is a filter on the same rows, not a second model: the composite carries its legs and the top list filters them out.
+- *The order is an index.* A page is ordered by a column of a table, compared in the column's own type, so a keyset page is a scan from the key and not a sort of the book.
+- *The refactor runs before the screen is measured again.* Four tasks make a package a trade, and one makes the order indexable. The plan is [[id:7C1F0E52-9A44-4B31-8E6D-2F5C7A1B9D03][The blotter lists trades]].
 - *History*: the blotter reads the current state only, as the summary view already states. As-of would make the projection bitemporal; nothing asks for it.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2BDBD39C-9AE9-434B-BAC6-4C79DEE75915][Answer the rail from one grouped read]] | BACKLOG | | | The rail's figures are counted from every row in the book. Give the store one read that answers the counts at each node of every rail, and the service one operation that returns them. |
-| [[id:D2C3CA5F-E041-42C6-94EB-041EF16E175E][Page the blotter by keyset]] | BACKLOG | | | An offset page re-walks what it skips, so the hundredth page costs more than the first. Page by the sort key and the row id, so every page costs what the first costs. |
-| [[id:02DA08BA-5A95-4F98-9184-DD8F405A4879][Hold the blotter row as a projection]] | BACKLOG | | | The summary view joins four correlated subqueries per row, so neither a page nor a count can be read without them. Project one row per blotter row, write it where the facts are written, and rebuild it from the facts in a test. |
+| [[id:2BDBD39C-9AE9-434B-BAC6-4C79DEE75915][Answer the rail from one grouped read]] | DONE | | 2026-11-03 | The rail's figures are counted from every row in the book. Give the store one read that answers the counts at each node of every rail, and the service one operation that returns them. |
+| [[id:D2C3CA5F-E041-42C6-94EB-041EF16E175E][Page the blotter by keyset]] | DONE | | 2026-11-03 | An offset page re-walks what it skips, so the hundredth page costs more than the first. Page by the sort key and the row id, so every page costs what the first costs. |
+| [[id:02DA08BA-5A95-4F98-9184-DD8F405A4879][Hold the blotter row as a projection]] | ABANDONED | | 2026-11-02 | The summary view joins four correlated subqueries per row, so neither a page nor a count can be read without them. Project one row per blotter row, write it where the facts are written, and rebuild it from the facts in a test. Closed: a package is a trade, so there is no projection to hold. |
+| [[id:FEDD0DC4-BC71-4348-9032-6A61088B220D][Hold a composite's legs as trades]] | BACKLOG | | | A composite leg names its constituent in free text, so the row points at a word and not at a trade. Give the leg a uuid reference to the trade and a role, and give the composite the kind and template the deal states. |
+| [[id:31EA5379-3BAE-4305-ACA8-4955B7FAE54C][Complete a package as a composite trade]] | BACKLOG | | | The completion writes a structure with no book, date or state, so a package cannot be a blotter row. Write the package as a composite trade with its own booking and state, and name its legs as component trades. |
+| [[id:A0AE98E4-DF2E-4D75-9099-FF3E2555B5B1][List a package as the trade it is]] | BACKLOG | | | Every blotter row must be a trade, so the summary view stops unioning structures and reads a composite as one row with its legs beneath. Convert the structures that exist, so nothing is lost when the branch goes. |
+| [[id:2A42890A-63B5-4076-B934-E98685795CF0][Order the page by an indexed key]] | BACKLOG | | | A keyset page compares its sort column as text, so no index can serve the order. Compare in the column own type, read the page keys from the bookings alone, and index that order; then measure the first page at a hundred thousand trades. |
+| [[id:35C7C76B-55EC-4C67-A082-432DD0812586][Delete the structure tables]] | BACKLOG | | | The structure tables, their code and their tests go once nothing reads or writes them, so the tree holds one way to state a package. |
 
 * Out of scope
 
 - Any change to the BFF. It is being replaced by ores.http, and a read model written around it would be thrown away.
 - The screen's layout and interaction, except where the read model forces a change (paging, the rail's source).
-- The other screens that read the summary view; they are separate stories unless they share the projection.
+- The other screens that read the summary view; they are separate stories unless they share the read model.

@@ -216,7 +216,7 @@ struct search_lei_entities_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_entity_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_entity_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"lei", &lei_entity_summary::lei},
         ::ores::utility::codec::field{"entity_legal_name", &lei_entity_summary::entity_legal_name},
@@ -233,7 +233,7 @@ struct search_lei_entities_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_lei_entities_summary_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_entities_summary_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"country_filter",
                                       &get_lei_entities_summary_request::country_filter},
@@ -250,7 +250,7 @@ struct search_lei_entities_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_lei_entities_summary_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_entities_summary_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_lei_entities_summary_response::success},
         ::ores::utility::codec::field{"error_message",
@@ -267,7 +267,7 @@ struct search_lei_entities_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_entity_match&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_entity_match>) {
     return std::tuple{
         ::ores::utility::codec::field{"lei", &lei_entity_match::lei},
         ::ores::utility::codec::field{"entity_legal_name", &lei_entity_match::entity_legal_name},
@@ -285,7 +285,7 @@ struct search_lei_entities_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const search_lei_entities_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<search_lei_entities_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"search", &search_lei_entities_request::search},
         ::ores::utility::codec::field{"country_filter",
@@ -303,7 +303,7 @@ struct search_lei_entities_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const search_lei_entities_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<search_lei_entities_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &search_lei_entities_response::success},
         ::ores::utility::codec::field{"error_message",

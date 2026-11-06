@@ -46,7 +46,7 @@ struct book_apply_workflow_request {
     std::string request_id;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const book_apply_workflow_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_apply_workflow_request>) {
     return std::tuple{
         utility::codec::field{"request_id", &book_apply_workflow_request::request_id}};
 }

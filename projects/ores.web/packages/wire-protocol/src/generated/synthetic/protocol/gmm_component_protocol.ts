@@ -210,7 +210,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.gmm_components_events.created',
-    updated: 'synthetic.v1.gmm_components_events.updated',
-    deleted: 'synthetic.v1.gmm_components_events.deleted',
+    created: 'synthetic.v1.events.gmm_components.created',
+    updated: 'synthetic.v1.events.gmm_components.updated',
+    deleted: 'synthetic.v1.events.gmm_components.deleted',
 } as const;

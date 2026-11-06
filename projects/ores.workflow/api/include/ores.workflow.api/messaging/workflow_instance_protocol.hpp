@@ -361,9 +361,9 @@ struct get_workflow_instance_version_response {
  * of them.
  */
 namespace workflow_instance_event_subjects {
-inline constexpr std::string_view created = "workflow.v1.workflow_instances_events.created";
-inline constexpr std::string_view updated = "workflow.v1.workflow_instances_events.updated";
-inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_events.deleted";
+inline constexpr std::string_view created = "workflow.v1.events.workflow_instances.created";
+inline constexpr std::string_view updated = "workflow.v1.events.workflow_instances.updated";
+inline constexpr std::string_view deleted = "workflow.v1.events.workflow_instances.deleted";
 }
 /**
  * @brief The members of workflow_instance_key, named as the wire names them and in the order
@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_key>) {
     return std::tuple{
         utility::codec::field{"id", &workflow_instance_key::id},
     };
@@ -387,7 +387,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_write>) {
     return std::tuple{
         utility::codec::field{"id", &workflow_instance_write::id},
         utility::codec::field{"type", &workflow_instance_write::type},
@@ -411,7 +411,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_change>) {
     return std::tuple{
         utility::codec::field{"write", &workflow_instance_change::write},
         utility::codec::field{"precondition", &workflow_instance_change::precondition},
@@ -426,7 +426,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_removal>) {
     return std::tuple{
         utility::codec::field{"key", &workflow_instance_removal::key},
         utility::codec::field{"precondition", &workflow_instance_removal::precondition},
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &workflow_instance_lookup::key},
         utility::codec::field{"workflow_instance", &workflow_instance_lookup::workflow_instance},
@@ -456,7 +456,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instances_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instances_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &workflow_instances_filter::id_one_of},
     };
@@ -470,7 +470,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &workflow_instance_event::event_id},
         utility::codec::field{"key", &workflow_instance_event::key},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_version_key>) {
     return std::tuple{
         utility::codec::field{"workflow_instance",
                               &workflow_instance_version_key::workflow_instance},
@@ -505,7 +505,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &workflow_instance_versions_filter::version},
         utility::codec::field{"from_version", &workflow_instance_versions_filter::from_version},
@@ -521,7 +521,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_instances_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workflow_instances_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_workflow_instances_request::offset},
         utility::codec::field{"limit", &list_workflow_instances_request::limit},
@@ -539,7 +539,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_instances_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_workflow_instances_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_workflow_instances_response::result},
         utility::codec::field{"instances", &list_workflow_instances_response::instances},
@@ -555,7 +555,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_instance_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workflow_instance_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_workflow_instance_request::key},
     };
@@ -569,7 +569,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_instance_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_workflow_instance_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_workflow_instance_response::result},
         utility::codec::field{"workflow_instance",
@@ -585,7 +585,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_workflow_instances_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_workflow_instances_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_workflow_instances_request::keys},
     };
@@ -599,7 +599,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_workflow_instances_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_workflow_instances_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_workflow_instances_response::result},
         utility::codec::field{"entries", &get_many_workflow_instances_response::entries},
@@ -614,7 +614,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_workflow_instance_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_workflow_instance_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_workflow_instance_request::change},
         utility::codec::field{"intent", &put_workflow_instance_request::intent},
@@ -629,7 +629,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_workflow_instance_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_workflow_instance_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_workflow_instance_response::result},
         utility::codec::field{"workflow_instance",
@@ -645,7 +645,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_workflow_instances_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_workflow_instances_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_workflow_instances_request::changes},
         utility::codec::field{"intent", &put_many_workflow_instances_request::intent},
@@ -660,7 +660,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_workflow_instances_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_workflow_instances_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_workflow_instances_response::result},
         utility::codec::field{"instances", &put_many_workflow_instances_response::instances},
@@ -675,7 +675,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_workflow_instance_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_workflow_instance_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_workflow_instance_request::removal},
         utility::codec::field{"intent", &delete_workflow_instance_request::intent},
@@ -690,7 +690,7 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_workflow_instance_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_workflow_instance_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_workflow_instance_response::result},
     };
@@ -704,7 +704,8 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_workflow_instances_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_workflow_instances_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_workflow_instances_request::removals},
         utility::codec::field{"intent", &delete_many_workflow_instances_request::intent},
@@ -719,7 +720,8 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_workflow_instances_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_workflow_instances_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_workflow_instances_response::result},
     };
@@ -733,7 +735,8 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_instance_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_workflow_instance_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_workflow_instance_versions_request::key},
         utility::codec::field{"offset", &list_workflow_instance_versions_request::offset},
@@ -751,7 +754,8 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_workflow_instance_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_workflow_instance_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_workflow_instance_versions_response::result},
         utility::codec::field{"versions", &list_workflow_instance_versions_response::versions},
@@ -767,7 +771,8 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_instance_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_workflow_instance_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_workflow_instance_version_request::key},
     };
@@ -781,7 +786,8 @@ inline constexpr std::string_view deleted = "workflow.v1.workflow_instances_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_workflow_instance_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_workflow_instance_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_workflow_instance_version_response::result},
         utility::codec::field{"version", &get_workflow_instance_version_response::version},

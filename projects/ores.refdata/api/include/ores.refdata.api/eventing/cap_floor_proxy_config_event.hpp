@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::refdata::messaging::cap_floor_proxy_config_event> {
-    static constexpr std::string_view subject_prefix = "refdata.v1.cap_floor_proxy_configs_events";
+    static constexpr std::string_view subject_prefix = "refdata.v1.events.cap_floor_proxy_configs";
 
     static ores::refdata::messaging::cap_floor_proxy_config_event
     from_notification(const entity_event_notification& notification) {

@@ -49,7 +49,7 @@ template <>
 struct entity_event_traits<
     ores::trading::messaging::risk_participation_agreement_instrument_event> {
     static constexpr std::string_view subject_prefix =
-        "trading.v1.risk_participation_agreement_instruments_events";
+        "trading.v1.events.risk_participation_agreement_instruments";
 
     static ores::trading::messaging::risk_participation_agreement_instrument_event
     from_notification(const entity_event_notification& notification) {

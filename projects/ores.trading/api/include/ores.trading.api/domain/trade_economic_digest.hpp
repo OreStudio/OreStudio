@@ -49,11 +49,11 @@ namespace ores::trading::domain {
  */
 inline std::string trade_economic_digest(const trade& t,
                                          const std::vector<std::string>& component_digests) {
-    std::string canonical = detail::frame(economic_digest(t));
-    canonical.append(detail::frame(std::to_string(component_digests.size())));
+    std::string canonical = ores::utility::digest::frame(economic_digest(t));
+    canonical.append(ores::utility::digest::frame(std::to_string(component_digests.size())));
     canonical.push_back('{');
     for (const auto& component_digest : component_digests)
-        canonical.append(detail::frame(component_digest));
+        canonical.append(ores::utility::digest::frame(component_digest));
     canonical.push_back('}');
     return ores::utility::crypto::sha256::hex_digest(canonical);
 }

@@ -77,7 +77,7 @@ struct bond_formula_based_leg_data {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_formula_based_leg_data&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_formula_based_leg_data>) {
     return std::tuple{
         utility::codec::field{"index", &bond_formula_based_leg_data::index},
         utility::codec::field{"is_in_arrears", &bond_formula_based_leg_data::is_in_arrears},

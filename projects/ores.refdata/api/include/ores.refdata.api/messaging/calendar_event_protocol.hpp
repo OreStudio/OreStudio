@@ -417,9 +417,9 @@ struct get_calendar_event_version_response {
  * of them.
  */
 namespace calendar_event_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.calendar_events_events.created";
-inline constexpr std::string_view updated = "refdata.v1.calendar_events_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.calendar_events.created";
+inline constexpr std::string_view updated = "refdata.v1.events.calendar_events.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.calendar_events.deleted";
 }
 /**
  * @brief The members of calendar_event_key, named as the wire names them and in the order
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_event_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_event_key>) {
     return std::tuple{
         utility::codec::field{"id", &calendar_event_key::id},
     };
@@ -443,7 +443,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_event_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_event_write>) {
     return std::tuple{
         utility::codec::field{"id", &calendar_event_write::id},
         utility::codec::field{"calendar_code", &calendar_event_write::calendar_code},
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_event_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_event_change>) {
     return std::tuple{
         utility::codec::field{"write", &calendar_event_change::write},
         utility::codec::field{"precondition", &calendar_event_change::precondition},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_event_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_event_removal>) {
     return std::tuple{
         utility::codec::field{"key", &calendar_event_removal::key},
         utility::codec::field{"precondition", &calendar_event_removal::precondition},
@@ -493,7 +493,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_event_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_event_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &calendar_event_lookup::key},
         utility::codec::field{"calendar_event", &calendar_event_lookup::calendar_event},
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_events_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_events_filter>) {
     return std::tuple{
         utility::codec::field{"calendar_code", &calendar_events_filter::calendar_code},
         utility::codec::field{"diary_entry_type", &calendar_events_filter::diary_entry_type},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_event_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_event_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &calendar_event_event::event_id},
         utility::codec::field{"key", &calendar_event_event::key},
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_event_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_event_version_key>) {
     return std::tuple{
         utility::codec::field{"calendar_event", &calendar_event_version_key::calendar_event},
         utility::codec::field{"version", &calendar_event_version_key::version},
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_event_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_event_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &calendar_event_versions_filter::version},
         utility::codec::field{"from_version", &calendar_event_versions_filter::from_version},
@@ -578,7 +578,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calendar_events_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_events_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_calendar_events_request::offset},
         utility::codec::field{"limit", &list_calendar_events_request::limit},
@@ -596,7 +596,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calendar_events_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_events_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_calendar_events_response::result},
         utility::codec::field{"calendar_events", &list_calendar_events_response::calendar_events},
@@ -612,7 +612,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calendar_event_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_event_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_calendar_event_request::key},
     };
@@ -626,7 +626,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calendar_event_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_event_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_calendar_event_response::result},
         utility::codec::field{"calendar_event", &get_calendar_event_response::calendar_event},
@@ -641,7 +641,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_calendar_events_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_calendar_events_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_calendar_events_request::keys},
     };
@@ -655,7 +655,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_calendar_events_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_calendar_events_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_calendar_events_response::result},
         utility::codec::field{"entries", &get_many_calendar_events_response::entries},
@@ -670,7 +670,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_calendar_event_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_calendar_event_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_calendar_event_request::change},
         utility::codec::field{"intent", &put_calendar_event_request::intent},
@@ -685,7 +685,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_calendar_event_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_calendar_event_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_calendar_event_response::result},
         utility::codec::field{"calendar_event", &put_calendar_event_response::calendar_event},
@@ -700,7 +700,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_calendar_events_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_calendar_events_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_calendar_events_request::changes},
         utility::codec::field{"intent", &put_many_calendar_events_request::intent},
@@ -715,7 +715,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_calendar_events_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_calendar_events_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_calendar_events_response::result},
         utility::codec::field{"calendar_events",
@@ -731,7 +731,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_calendar_event_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_calendar_event_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_calendar_event_request::removal},
         utility::codec::field{"intent", &delete_calendar_event_request::intent},
@@ -746,7 +746,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_calendar_event_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_calendar_event_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_calendar_event_response::result},
     };
@@ -760,7 +760,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_calendar_events_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_calendar_events_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_calendar_events_request::removals},
         utility::codec::field{"intent", &delete_many_calendar_events_request::intent},
@@ -775,7 +775,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_calendar_events_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_calendar_events_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_calendar_events_response::result},
     };
@@ -789,7 +789,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_calendar_code_calendar_events_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_calendar_code_calendar_events_request>) {
     return std::tuple{
         utility::codec::field{"calendar_code",
                               &list_by_calendar_code_calendar_events_request::calendar_code},
@@ -809,7 +810,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_calendar_code_calendar_events_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_calendar_code_calendar_events_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_calendar_code_calendar_events_response::result},
         utility::codec::field{"calendar_events",
@@ -826,7 +828,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_diary_entry_type_calendar_events_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_diary_entry_type_calendar_events_request>) {
     return std::tuple{
         utility::codec::field{"diary_entry_type",
                               &list_by_diary_entry_type_calendar_events_request::diary_entry_type},
@@ -846,7 +849,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_diary_entry_type_calendar_events_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_diary_entry_type_calendar_events_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_diary_entry_type_calendar_events_response::result},
         utility::codec::field{"calendar_events",
@@ -863,7 +867,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calendar_event_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_event_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_calendar_event_versions_request::key},
         utility::codec::field{"offset", &list_calendar_event_versions_request::offset},
@@ -881,7 +885,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calendar_event_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_calendar_event_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_calendar_event_versions_response::result},
         utility::codec::field{"versions", &list_calendar_event_versions_response::versions},
@@ -897,7 +902,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calendar_event_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_event_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_calendar_event_version_request::key},
     };
@@ -911,7 +916,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_events_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calendar_event_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_event_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_calendar_event_version_response::result},
         utility::codec::field{"version", &get_calendar_event_version_response::version},

@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::trading::messaging::instrument_schedule_date_event> {
     static constexpr std::string_view subject_prefix =
-        "trading.v1.instrument_schedule_dates_events";
+        "trading.v1.events.instrument_schedule_dates";
 
     static ores::trading::messaging::instrument_schedule_date_event
     from_notification(const entity_event_notification& notification) {

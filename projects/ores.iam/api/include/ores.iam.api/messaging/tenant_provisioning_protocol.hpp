@@ -237,7 +237,7 @@ struct provision_party_command_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const provision_tenant_command&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_command>) {
     return std::tuple{
         ::ores::utility::codec::field{"profile_code", &provision_tenant_command::profile_code},
         ::ores::utility::codec::field{"tenant_code", &provision_tenant_command::tenant_code},
@@ -261,7 +261,7 @@ struct provision_party_command_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const provision_tenant_command_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_command_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &provision_tenant_command_response::success},
         ::ores::utility::codec::field{"message", &provision_tenant_command_response::message},
@@ -280,7 +280,7 @@ struct provision_party_command_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const provision_party_command&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_party_command>) {
     return std::tuple{
         ::ores::utility::codec::field{"party", &provision_party_command::party},
         ::ores::utility::codec::field{"profile_code", &provision_party_command::profile_code},
@@ -296,7 +296,7 @@ struct provision_party_command_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const provision_party_command_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_party_command_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &provision_party_command_response::success},
         ::ores::utility::codec::field{"message", &provision_party_command_response::message},

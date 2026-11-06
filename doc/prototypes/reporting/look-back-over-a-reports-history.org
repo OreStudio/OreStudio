@@ -150,7 +150,7 @@ note on the page says so.
 This is the part the prototype exists for. The pattern is the one the record
 screen standard calls Recency, and the page follows it exactly:
 
-- The change signal is `reporting.v1.report_instances_events.created`, which the
+- The change signal is `reporting.v1.events.report_instances.created`, which the
   screen listens to. It does not poll.
 - When a run arrives, Refresh draws the eye.
 - Rows newer than the previous load are marked for three seconds after a reload.

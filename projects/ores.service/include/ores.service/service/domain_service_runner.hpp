@@ -57,13 +57,14 @@ namespace ores::service::service {
  * @param on_shutdown Optional: called after signal, before nats.drain().
  */
 template <typename RegisterFn>
-boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
-                                 ores::nats::service::client& nats,
-                                 ores::database::context ctx,
-                                 std::string_view name,
-                                 RegisterFn&& register_fn,
-                                 std::function<void(boost::asio::io_context&)> on_started = {},
-                                 std::function<void()> on_shutdown = {});
+[[nodiscard]] boost::asio::awaitable<void>
+run(boost::asio::io_context& io_ctx,
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::string_view name,
+    RegisterFn&& register_fn,
+    std::function<void(boost::asio::io_context&)> on_started = {},
+    std::function<void()> on_shutdown = {});
 
 /**
  * @brief Runs the standard domain service lifecycle without a database context.
@@ -80,12 +81,13 @@ boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
  * @param on_shutdown Optional: called after signal, before nats.drain().
  */
 template <typename RegisterFn>
-boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
-                                 ores::nats::service::client& nats,
-                                 std::string_view name,
-                                 RegisterFn&& register_fn,
-                                 std::function<void(boost::asio::io_context&)> on_started = {},
-                                 std::function<void()> on_shutdown = {});
+[[nodiscard]] boost::asio::awaitable<void>
+run(boost::asio::io_context& io_ctx,
+    ores::nats::service::client& nats,
+    std::string_view name,
+    RegisterFn&& register_fn,
+    std::function<void(boost::asio::io_context&)> on_started = {},
+    std::function<void()> on_shutdown = {});
 
 } // namespace ores::service::service
 

@@ -212,7 +212,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.default_curve_transition_matrices_events.created',
-    updated: 'refdata.v1.default_curve_transition_matrices_events.updated',
-    deleted: 'refdata.v1.default_curve_transition_matrices_events.deleted',
+    created: 'refdata.v1.events.default_curve_transition_matrices.created',
+    updated: 'refdata.v1.events.default_curve_transition_matrices.updated',
+    deleted: 'refdata.v1.events.default_curve_transition_matrices.deleted',
 } as const;

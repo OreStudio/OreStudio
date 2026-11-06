@@ -53,6 +53,40 @@ begin
 end;
 $$ language plpgsql;
 
+-- The number of feeds the seed installs is not stated here: a feed the
+-- catalogue gains is not a fault. What the seed must get right is that every
+-- feed it installs names a publisher the catalogue holds and a session that is
+-- enabled, so a feed nobody can read through cannot be seeded.
+select is(
+    (select count(*)::int from ores_marketdata_feeds_tbl f
+     where f.tenant_id = ores_utility_system_tenant_id_fn()
+       and f.valid_to = ores_utility_infinity_timestamp_fn()
+       and (not exists (
+                select 1 from ores_marketdata_providers_tbl p
+                where p.code = f.publisher_code
+                  and p.valid_to = ores_utility_infinity_timestamp_fn())
+            or not exists (
+                select 1 from ores_marketdata_sessions_tbl s
+                where s.code = f.session_code
+                  and s.tenant_id = f.tenant_id
+                  and s.enabled
+                  and s.valid_to = ores_utility_infinity_timestamp_fn()))),
+    0,
+    'every feed names a catalogued publisher and an enabled session'
+);
+
+select is(
+    (select count(*)::int from ores_marketdata_feeds_tbl f
+     where f.tenant_id = ores_utility_system_tenant_id_fn()
+       and f.publisher_code in ('ecb', 'boc', 'imf', 'tcmb')
+       and f.valid_to = ores_utility_infinity_timestamp_fn()
+       and (f.session_code <> 'frankfurter-eu'
+            or f.service <> 'end_of_day'
+            or f.provider_key = '')),
+    0,
+    'every public publisher reads through the Frankfurter session at end of day'
+);
+
 select is(
     (select count(*)::int from (
         select publisher_code

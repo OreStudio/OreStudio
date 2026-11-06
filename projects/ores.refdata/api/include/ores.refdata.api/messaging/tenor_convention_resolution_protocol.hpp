@@ -325,7 +325,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_convention_resolution_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_key>) {
     return std::tuple{
         utility::codec::field{"convention_code", &tenor_convention_resolution_key::convention_code},
         utility::codec::field{"tenor_code", &tenor_convention_resolution_key::tenor_code},
@@ -340,7 +340,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_convention_resolution_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_write>) {
     return std::tuple{
         utility::codec::field{"convention_code",
                               &tenor_convention_resolution_write::convention_code},
@@ -364,7 +364,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_convention_resolution_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_change>) {
     return std::tuple{
         utility::codec::field{"write", &tenor_convention_resolution_change::write},
         utility::codec::field{"precondition", &tenor_convention_resolution_change::precondition},
@@ -379,7 +379,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_convention_resolution_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_removal>) {
     return std::tuple{
         utility::codec::field{"key", &tenor_convention_resolution_removal::key},
         utility::codec::field{"precondition", &tenor_convention_resolution_removal::precondition},
@@ -394,7 +394,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_convention_resolution_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &tenor_convention_resolution_lookup::key},
         utility::codec::field{"tenor_convention_resolution",
@@ -410,7 +410,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_convention_resolutions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolutions_filter>) {
     return std::tuple{
         utility::codec::field{"convention_code",
                               &tenor_convention_resolutions_filter::convention_code},
@@ -427,7 +427,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_convention_resolution_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_convention_resolution_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &tenor_convention_resolution_event::event_id},
         utility::codec::field{"key", &tenor_convention_resolution_event::key},
@@ -446,7 +446,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tenor_convention_resolutions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_tenor_convention_resolutions_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_tenor_convention_resolutions_request::offset},
         utility::codec::field{"limit", &list_tenor_convention_resolutions_request::limit},
@@ -463,7 +464,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tenor_convention_resolutions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_tenor_convention_resolutions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_tenor_convention_resolutions_response::result},
         utility::codec::field{
@@ -481,7 +483,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_convention_resolution_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_tenor_convention_resolution_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_tenor_convention_resolution_request::key},
     };
@@ -495,7 +498,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_convention_resolution_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_tenor_convention_resolution_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_tenor_convention_resolution_response::result},
         utility::codec::field{
@@ -512,7 +516,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_tenor_convention_resolutions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_tenor_convention_resolutions_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_tenor_convention_resolutions_request::keys},
     };
@@ -526,7 +531,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_tenor_convention_resolutions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_tenor_convention_resolutions_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_tenor_convention_resolutions_response::result},
         utility::codec::field{"entries", &get_many_tenor_convention_resolutions_response::entries},
@@ -541,7 +547,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_tenor_convention_resolution_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_tenor_convention_resolution_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_tenor_convention_resolution_request::change},
         utility::codec::field{"intent", &put_tenor_convention_resolution_request::intent},
@@ -556,7 +563,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_tenor_convention_resolution_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_tenor_convention_resolution_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_tenor_convention_resolution_response::result},
         utility::codec::field{
@@ -573,7 +581,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_tenor_convention_resolutions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_tenor_convention_resolutions_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_tenor_convention_resolutions_request::changes},
         utility::codec::field{"intent", &put_many_tenor_convention_resolutions_request::intent},
@@ -588,7 +597,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_tenor_convention_resolutions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_tenor_convention_resolutions_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_tenor_convention_resolutions_response::result},
         utility::codec::field{
@@ -605,7 +615,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_tenor_convention_resolution_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_tenor_convention_resolution_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_tenor_convention_resolution_request::removal},
         utility::codec::field{"intent", &delete_tenor_convention_resolution_request::intent},
@@ -620,7 +631,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_tenor_convention_resolution_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_tenor_convention_resolution_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_tenor_convention_resolution_response::result},
     };
@@ -634,7 +646,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_tenor_convention_resolutions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_tenor_convention_resolutions_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_tenor_convention_resolutions_request::removals},
@@ -650,7 +663,8 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_tenor_convention_resolutions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_tenor_convention_resolutions_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_tenor_convention_resolutions_response::result},
     };
@@ -665,7 +679,7 @@ struct list_by_convention_code_tenor_convention_resolutions_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_convention_code_tenor_convention_resolutions_request&) {
+wire_fields(std::type_identity<list_by_convention_code_tenor_convention_resolutions_request>) {
     return std::tuple{
         utility::codec::field{
             "convention_code",
@@ -692,7 +706,7 @@ wire_fields(const list_by_convention_code_tenor_convention_resolutions_request&)
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_convention_code_tenor_convention_resolutions_response&) {
+wire_fields(std::type_identity<list_by_convention_code_tenor_convention_resolutions_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_by_convention_code_tenor_convention_resolutions_response::result},

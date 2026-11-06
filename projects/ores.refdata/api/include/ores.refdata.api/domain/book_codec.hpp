@@ -45,7 +45,7 @@ namespace ores::refdata::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const book&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book>) {
     return std::tuple{
         utility::codec::field{"version", &book::version},
         utility::codec::field{"tenant_id", &book::tenant_id},
@@ -63,6 +63,7 @@ namespace ores::refdata::domain {
         utility::codec::field{"book_purpose_type", &book::book_purpose_type},
         utility::codec::field{"ledger_feed_type", &book::ledger_feed_type},
         utility::codec::field{"is_sweepable", &book::is_sweepable},
+        utility::codec::field{"restricts_product_types", &book::restricts_product_types},
         utility::codec::field{"rates_centre_code", &book::rates_centre_code},
         utility::codec::field{"sandbox_id", &book::sandbox_id},
         utility::codec::field{"modified_by", &book::modified_by},

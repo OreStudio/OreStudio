@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 52099599-FE93-4F57-865F-F12EFAC870FC
+:END:
+#+title: ores.cpp.field-group.options_header
+#+description: The options struct of a library or a process: its members, its wire shape and the guard that the shape names every member. Opt-in.
+#+type: archetype
+#+output: projects/{component_dir}/include/ores.{component_include}/{header}
+#+facet: ores.cpp.field-group
+#+default: disabled
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-11-05
+#+updated: 2026-11-05
+
+The options struct of a library or a process, written from a field group model
+that names its header. A model turns it on with
+=:ores.cpp.field-group.options_header.enabled: true= and turns the domain
+header off with =:ores.cpp.field-group.field_group_header.enabled: nil=.
+
+A field with =:secret: t= is a member but stays out of the wire shape, so the
+dump the printer writes never holds it, and the guard counts it. The printer is
+declared here and defined by hand, because each one decides what a log line
+of its options shows. Declarations the struct needs beside it, such as a
+conversion to another library's options, fill the paste point.
+
+* Template
+
+#+begin_src mustache :tangle cpp_options_header.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.field-group.options_header.org. Edit the org source. }}
+{{{cpp_license}}}
+#ifndef {{field_group.header_guard}}
+#define {{field_group.header_guard}}
+
+{{#field_group.cpp.includes}}
+#include {{{.}}}
+{{/field_group.cpp.includes}}
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+{{#field_group.has_printer}}
+#include <iosfwd>
+{{/field_group.has_printer}}
+#include <tuple>
+
+namespace {{field_group.cpp.namespace}} {
+
+/**
+ * @brief {{{field_group.brief}}}
+{{#field_group.description_lines}}
+{{{.}}}
+{{/field_group.description_lines}}
+ */
+struct {{field_group.entity_singular}} final {
+{{#field_group.options_fields}}
+{{#has_doc}}
+    /**
+{{#doc_lines}}
+     *{{#.}} {{{.}}}{{/.}}
+{{/doc_lines}}
+     */
+{{/has_doc}}
+    {{{cpp_type}}} {{name}}{{#default_value}}{ {{{default_value}}} }{{/default_value}};
+{{/field_group.options_fields}}
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{field_group.entity_singular}}>) {
+    return std::tuple{
+{{#field_group.options_fields}}
+{{^secret}}
+        ::ores::utility::codec::field{"{{name}}", &{{field_group.entity_singular}}::{{name}}},
+{{/secret}}
+{{/field_group.options_fields}}
+    };
+}
+
+static_assert(::ores::utility::codec::names_every_member<{{field_group.entity_singular}}>({{#field_group.has_options_secrets}}{{field_group.options_secret_count}}{{/field_group.has_options_secrets}}),
+              "{{field_group.entity_singular}} has a member its wire shape does not name");
+
+{{#field_group.has_printer}}
+{{field_group.export_macro}} std::ostream& operator<<(std::ostream& s, const {{field_group.entity_singular}}& v);
+
+{{/field_group.has_printer}}
+<<paste:CE396148-1E64-4D37-8D78-6430915C0F9F>>
+
+}
+
+#endif
+#+end_src

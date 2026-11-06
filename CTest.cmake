@@ -295,6 +295,17 @@ set(cmake_args ${cmake_args} "--preset ${preset}")
 # Use dynamic libraries.
 set(cmake_args ${cmake_args} "-DBUILD_SHARED_LIBS=ON")
 
+# Hosted Linux Debug builds can exhaust disk while linking full DWARF into
+# every executable and shared library. Opt in to lossless compression at link
+# time, preserving compile/cache inputs, debug symbols and coverage data.
+if(operative_system STREQUAL "linux" AND configuration STREQUAL "debug"
+        AND DEFINED compress_debug_sections AND compress_debug_sections)
+    foreach(link_type EXE SHARED MODULE)
+        list(APPEND cmake_args
+            "-DCMAKE_${link_type}_LINKER_FLAGS_DEBUG=-Wl,--compress-debug-sections=zlib")
+    endforeach()
+endif()
+
 message(STATUS "CMake args: ${cmake_args}")
 ctest_configure(OPTIONS "${cmake_args}" RETURN_VALUE configure_result)
 if(NOT configure_result EQUAL 0)
@@ -339,6 +350,22 @@ if(configure_result EQUAL 0)
         message(WARNING "Build failed with error code: ${build_result}")
         set(had_failures ON)
     endif()
+endif()
+
+#
+# Step: submit the configure and build.
+#
+# The final submit below is the only other one, and a job that runs out of
+# time before it reaches CDash with nothing at all. The memcheck run is the one
+# that does: a suite that hangs under valgrind can hold the step until the job
+# limit. Sending these parts now keeps the build on CDash whatever the tests do.
+# Two quick retries: the tests wait on this, and the final submit retries in full.
+ctest_submit(PARTS Start Configure Build
+    RETRY_COUNT 2 RETRY_DELAY 30
+    RETURN_VALUE early_submit_result)
+if(early_submit_result)
+    message(WARNING "CDash submission of the build failed "
+        "(exit code: ${early_submit_result}).")
 endif()
 
 #

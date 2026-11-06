@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::refdata::messaging::crm_enabled_derived_pair_event> {
     static constexpr std::string_view subject_prefix =
-        "refdata.v1.crm_enabled_derived_pairs_events";
+        "refdata.v1.events.crm_enabled_derived_pairs";
 
     static ores::refdata::messaging::crm_enabled_derived_pair_event
     from_notification(const entity_event_notification& notification) {

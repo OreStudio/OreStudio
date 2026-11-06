@@ -1,0 +1,11 @@
+Loading inputs                                    OK
+Requested analytics                               CASHFLOW,CURVES,NPV
+Pricing: Build Market                             OK
+Pricing: Build Portfolio                          OK
+Pricing: Cashflow Report                          OK
+Pricing: Curves Report                            OK
+Pricing: NPV Report                               OK
+Writing reports...                                OK
+Writing cubes...                                  OK
+run time: 0.211237 sec
+ORE done.

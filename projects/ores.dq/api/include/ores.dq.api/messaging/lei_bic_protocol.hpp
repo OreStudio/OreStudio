@@ -152,9 +152,9 @@ struct get_many_lei_bic_response {
  * of them.
  */
 namespace lei_bic_event_subjects {
-inline constexpr std::string_view created = "dq.v1.lei_bic_events.created";
-inline constexpr std::string_view updated = "dq.v1.lei_bic_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.lei_bic.created";
+inline constexpr std::string_view updated = "dq.v1.events.lei_bic.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.lei_bic.deleted";
 }
 /**
  * @brief The members of lei_bic_key, named as the wire names them and in the order
@@ -164,7 +164,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_bic_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_bic_key>) {
     return std::tuple{
         utility::codec::field{"lei", &lei_bic_key::lei},
     };
@@ -178,7 +178,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_bic_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_bic_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &lei_bic_lookup::key},
         utility::codec::field{"lei_bic", &lei_bic_lookup::lei_bic},
@@ -193,7 +193,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_bic_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_bic_filter>) {
     return std::tuple{
         utility::codec::field{"lei_one_of", &lei_bic_filter::lei_one_of},
     };
@@ -207,7 +207,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lei_bic_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_bic_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &lei_bic_event::event_id},
         utility::codec::field{"key", &lei_bic_event::key},
@@ -226,7 +226,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_lei_bic_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_lei_bic_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_lei_bic_request::offset},
         utility::codec::field{"limit", &list_lei_bic_request::limit},
@@ -243,7 +243,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_lei_bic_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_lei_bic_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_lei_bic_response::result},
         utility::codec::field{"lei_bic", &list_lei_bic_response::lei_bic},
@@ -259,7 +259,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_lei_bic_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_bic_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_lei_bic_request::key},
     };
@@ -273,7 +273,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_lei_bic_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_lei_bic_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_lei_bic_response::result},
         utility::codec::field{"lei_bic", &get_lei_bic_response::lei_bic},
@@ -288,7 +288,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_lei_bic_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_lei_bic_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_lei_bic_request::keys},
     };
@@ -302,7 +302,7 @@ inline constexpr std::string_view deleted = "dq.v1.lei_bic_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_lei_bic_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_lei_bic_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_lei_bic_response::result},
         utility::codec::field{"entries", &get_many_lei_bic_response::entries},

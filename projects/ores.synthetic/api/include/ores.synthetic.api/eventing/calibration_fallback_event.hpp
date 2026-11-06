@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::synthetic::messaging::calibration_fallback_event> {
-    static constexpr std::string_view subject_prefix = "synthetic.v1.calibration_fallbacks_events";
+    static constexpr std::string_view subject_prefix = "synthetic.v1.events.calibration_fallbacks";
 
     static ores::synthetic::messaging::calibration_fallback_event
     from_notification(const entity_event_notification& notification) {

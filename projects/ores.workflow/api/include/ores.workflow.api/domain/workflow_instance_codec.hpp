@@ -45,7 +45,7 @@ namespace ores::workflow::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const workflow_instance&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<workflow_instance>) {
     return std::tuple{
         utility::codec::field{"version", &workflow_instance::version},
         utility::codec::field{"tenant_id", &workflow_instance::tenant_id},

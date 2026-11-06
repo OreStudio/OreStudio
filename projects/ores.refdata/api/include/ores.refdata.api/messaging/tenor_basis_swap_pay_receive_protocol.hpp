@@ -405,11 +405,11 @@ struct get_tenor_basis_swap_pay_receive_version_response {
  */
 namespace tenor_basis_swap_pay_receive_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.tenor_basis_swap_pay_receives_events.created";
+    "refdata.v1.events.tenor_basis_swap_pay_receives.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.tenor_basis_swap_pay_receives_events.updated";
+    "refdata.v1.events.tenor_basis_swap_pay_receives.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.tenor_basis_swap_pay_receives_events.deleted";
+    "refdata.v1.events.tenor_basis_swap_pay_receives.deleted";
 }
 /**
  * @brief The members of tenor_basis_swap_pay_receive_key, named as the wire names them and in the
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_key>) {
     return std::tuple{
         utility::codec::field{"id", &tenor_basis_swap_pay_receive_key::id},
     };
@@ -433,7 +433,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_write>) {
     return std::tuple{
         utility::codec::field{"id", &tenor_basis_swap_pay_receive_write::id},
         utility::codec::field{"convention_id", &tenor_basis_swap_pay_receive_write::convention_id},
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_change>) {
     return std::tuple{
         utility::codec::field{"write", &tenor_basis_swap_pay_receive_change::write},
         utility::codec::field{"precondition", &tenor_basis_swap_pay_receive_change::precondition},
@@ -477,7 +477,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_removal>) {
     return std::tuple{
         utility::codec::field{"key", &tenor_basis_swap_pay_receive_removal::key},
         utility::codec::field{"precondition", &tenor_basis_swap_pay_receive_removal::precondition},
@@ -492,7 +492,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &tenor_basis_swap_pay_receive_lookup::key},
         utility::codec::field{"tenor_basis_swap_pay_receive",
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receives_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receives_filter>) {
     return std::tuple{
         utility::codec::field{"convention_id",
                               &tenor_basis_swap_pay_receives_filter::convention_id},
@@ -526,7 +526,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_basis_swap_pay_receive_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &tenor_basis_swap_pay_receive_event::event_id},
         utility::codec::field{"key", &tenor_basis_swap_pay_receive_event::key},
@@ -546,7 +546,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<tenor_basis_swap_pay_receive_version_key>) {
     return std::tuple{
         utility::codec::field{
             "tenor_basis_swap_pay_receive",
@@ -563,7 +564,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_basis_swap_pay_receive_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<tenor_basis_swap_pay_receive_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &tenor_basis_swap_pay_receive_versions_filter::version},
         utility::codec::field{"from_version",
@@ -581,7 +583,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tenor_basis_swap_pay_receives_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_tenor_basis_swap_pay_receives_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_tenor_basis_swap_pay_receives_request::offset},
         utility::codec::field{"limit", &list_tenor_basis_swap_pay_receives_request::limit},
@@ -599,7 +602,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tenor_basis_swap_pay_receives_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_tenor_basis_swap_pay_receives_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_tenor_basis_swap_pay_receives_response::result},
         utility::codec::field{
@@ -617,7 +621,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_basis_swap_pay_receive_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_tenor_basis_swap_pay_receive_request::key},
     };
@@ -631,7 +636,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_basis_swap_pay_receive_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_tenor_basis_swap_pay_receive_response::result},
         utility::codec::field{
@@ -648,7 +654,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_tenor_basis_swap_pay_receives_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_tenor_basis_swap_pay_receives_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_tenor_basis_swap_pay_receives_request::keys},
     };
@@ -662,7 +669,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_tenor_basis_swap_pay_receives_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_tenor_basis_swap_pay_receives_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_tenor_basis_swap_pay_receives_response::result},
         utility::codec::field{"entries", &get_many_tenor_basis_swap_pay_receives_response::entries},
@@ -677,7 +685,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_tenor_basis_swap_pay_receive_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_tenor_basis_swap_pay_receive_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_tenor_basis_swap_pay_receive_request::change},
         utility::codec::field{"intent", &put_tenor_basis_swap_pay_receive_request::intent},
@@ -692,7 +701,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_tenor_basis_swap_pay_receive_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_tenor_basis_swap_pay_receive_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_tenor_basis_swap_pay_receive_response::result},
         utility::codec::field{
@@ -709,7 +719,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_tenor_basis_swap_pay_receives_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_tenor_basis_swap_pay_receives_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_tenor_basis_swap_pay_receives_request::changes},
         utility::codec::field{"intent", &put_many_tenor_basis_swap_pay_receives_request::intent},
@@ -724,7 +735,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_tenor_basis_swap_pay_receives_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_tenor_basis_swap_pay_receives_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_tenor_basis_swap_pay_receives_response::result},
         utility::codec::field{
@@ -741,7 +753,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_tenor_basis_swap_pay_receive_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_tenor_basis_swap_pay_receive_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_tenor_basis_swap_pay_receive_request::removal},
         utility::codec::field{"intent", &delete_tenor_basis_swap_pay_receive_request::intent},
@@ -756,7 +769,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_tenor_basis_swap_pay_receive_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_tenor_basis_swap_pay_receive_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_tenor_basis_swap_pay_receive_response::result},
     };
@@ -770,7 +784,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_tenor_basis_swap_pay_receives_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_tenor_basis_swap_pay_receives_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_tenor_basis_swap_pay_receives_request::removals},
@@ -787,7 +802,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_tenor_basis_swap_pay_receives_response&) {
+wire_fields(std::type_identity<delete_many_tenor_basis_swap_pay_receives_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_tenor_basis_swap_pay_receives_response::result},
@@ -803,7 +818,7 @@ wire_fields(const delete_many_tenor_basis_swap_pay_receives_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_convention_id_tenor_basis_swap_pay_receives_request&) {
+wire_fields(std::type_identity<list_by_convention_id_tenor_basis_swap_pay_receives_request>) {
     return std::tuple{
         utility::codec::field{
             "convention_id",
@@ -830,7 +845,7 @@ wire_fields(const list_by_convention_id_tenor_basis_swap_pay_receives_request&) 
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_convention_id_tenor_basis_swap_pay_receives_response&) {
+wire_fields(std::type_identity<list_by_convention_id_tenor_basis_swap_pay_receives_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_by_convention_id_tenor_basis_swap_pay_receives_response::result},
@@ -851,7 +866,7 @@ wire_fields(const list_by_convention_id_tenor_basis_swap_pay_receives_response&)
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_tenor_basis_swap_pay_receive_versions_request&) {
+wire_fields(std::type_identity<list_tenor_basis_swap_pay_receive_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_tenor_basis_swap_pay_receive_versions_request::key},
         utility::codec::field{"offset",
@@ -872,7 +887,7 @@ wire_fields(const list_tenor_basis_swap_pay_receive_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_tenor_basis_swap_pay_receive_versions_response&) {
+wire_fields(std::type_identity<list_tenor_basis_swap_pay_receive_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_tenor_basis_swap_pay_receive_versions_response::result},
@@ -890,7 +905,8 @@ wire_fields(const list_tenor_basis_swap_pay_receive_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_basis_swap_pay_receive_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_tenor_basis_swap_pay_receive_version_request::key},
     };
@@ -904,7 +920,8 @@ wire_fields(const list_tenor_basis_swap_pay_receive_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tenor_basis_swap_pay_receive_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_tenor_basis_swap_pay_receive_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_tenor_basis_swap_pay_receive_version_response::result},
         utility::codec::field{"version",

@@ -377,11 +377,11 @@ struct get_default_curve_yield_reinterpretation_version_response {
  */
 namespace default_curve_yield_reinterpretation_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.default_curve_yield_reinterpretations_events.created";
+    "refdata.v1.events.default_curve_yield_reinterpretations.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.default_curve_yield_reinterpretations_events.updated";
+    "refdata.v1.events.default_curve_yield_reinterpretations.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.default_curve_yield_reinterpretations_events.deleted";
+    "refdata.v1.events.default_curve_yield_reinterpretations.deleted";
 }
 /**
  * @brief The members of default_curve_yield_reinterpretation_key, named as the wire names them and
@@ -391,7 +391,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_yield_reinterpretation_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_yield_reinterpretation_key>) {
     return std::tuple{
         utility::codec::field{"id", &default_curve_yield_reinterpretation_key::id},
     };
@@ -405,7 +406,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_yield_reinterpretation_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_yield_reinterpretation_write>) {
     return std::tuple{
         utility::codec::field{"id", &default_curve_yield_reinterpretation_write::id},
         utility::codec::field{
@@ -425,7 +427,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_yield_reinterpretation_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_yield_reinterpretation_change>) {
     return std::tuple{
         utility::codec::field{"write", &default_curve_yield_reinterpretation_change::write},
         utility::codec::field{"precondition",
@@ -441,7 +444,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_yield_reinterpretation_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_yield_reinterpretation_removal>) {
     return std::tuple{
         utility::codec::field{"key", &default_curve_yield_reinterpretation_removal::key},
         utility::codec::field{"precondition",
@@ -457,7 +461,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_yield_reinterpretation_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_yield_reinterpretation_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &default_curve_yield_reinterpretation_lookup::key},
         utility::codec::field{
@@ -474,7 +479,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_yield_reinterpretations_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_yield_reinterpretations_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of",
                               &default_curve_yield_reinterpretations_filter::id_one_of},
@@ -489,7 +495,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_yield_reinterpretation_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_yield_reinterpretation_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &default_curve_yield_reinterpretation_event::event_id},
         utility::codec::field{"key", &default_curve_yield_reinterpretation_event::key},
@@ -510,7 +517,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const default_curve_yield_reinterpretation_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<default_curve_yield_reinterpretation_version_key>) {
     return std::tuple{
         utility::codec::field{"default_curve_yield_reinterpretation",
                               &default_curve_yield_reinterpretation_version_key::
@@ -529,7 +537,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const default_curve_yield_reinterpretation_versions_filter&) {
+wire_fields(std::type_identity<default_curve_yield_reinterpretation_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version",
                               &default_curve_yield_reinterpretation_versions_filter::version},
@@ -549,7 +557,7 @@ wire_fields(const default_curve_yield_reinterpretation_versions_filter&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_default_curve_yield_reinterpretations_request&) {
+wire_fields(std::type_identity<list_default_curve_yield_reinterpretations_request>) {
     return std::tuple{
         utility::codec::field{"offset",
                               &list_default_curve_yield_reinterpretations_request::offset},
@@ -570,7 +578,7 @@ wire_fields(const list_default_curve_yield_reinterpretations_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_default_curve_yield_reinterpretations_response&) {
+wire_fields(std::type_identity<list_default_curve_yield_reinterpretations_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_default_curve_yield_reinterpretations_response::result},
@@ -589,7 +597,8 @@ wire_fields(const list_default_curve_yield_reinterpretations_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_default_curve_yield_reinterpretation_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_default_curve_yield_reinterpretation_request::key},
     };
@@ -603,7 +612,8 @@ wire_fields(const list_default_curve_yield_reinterpretations_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_default_curve_yield_reinterpretation_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_default_curve_yield_reinterpretation_response::result},
         utility::codec::field{"default_curve_yield_reinterpretation",
@@ -621,7 +631,7 @@ wire_fields(const list_default_curve_yield_reinterpretations_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_default_curve_yield_reinterpretations_request&) {
+wire_fields(std::type_identity<get_many_default_curve_yield_reinterpretations_request>) {
     return std::tuple{
         utility::codec::field{"keys",
                               &get_many_default_curve_yield_reinterpretations_request::keys},
@@ -637,7 +647,7 @@ wire_fields(const get_many_default_curve_yield_reinterpretations_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_default_curve_yield_reinterpretations_response&) {
+wire_fields(std::type_identity<get_many_default_curve_yield_reinterpretations_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_default_curve_yield_reinterpretations_response::result},
@@ -654,7 +664,8 @@ wire_fields(const get_many_default_curve_yield_reinterpretations_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_default_curve_yield_reinterpretation_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_default_curve_yield_reinterpretation_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_default_curve_yield_reinterpretation_request::change},
         utility::codec::field{"intent", &put_default_curve_yield_reinterpretation_request::intent},
@@ -669,7 +680,8 @@ wire_fields(const get_many_default_curve_yield_reinterpretations_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_default_curve_yield_reinterpretation_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_default_curve_yield_reinterpretation_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_default_curve_yield_reinterpretation_response::result},
         utility::codec::field{"default_curve_yield_reinterpretation",
@@ -687,7 +699,7 @@ wire_fields(const get_many_default_curve_yield_reinterpretations_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_default_curve_yield_reinterpretations_request&) {
+wire_fields(std::type_identity<put_many_default_curve_yield_reinterpretations_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_default_curve_yield_reinterpretations_request::changes},
@@ -705,7 +717,7 @@ wire_fields(const put_many_default_curve_yield_reinterpretations_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_default_curve_yield_reinterpretations_response&) {
+wire_fields(std::type_identity<put_many_default_curve_yield_reinterpretations_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_default_curve_yield_reinterpretations_response::result},
@@ -724,7 +736,7 @@ wire_fields(const put_many_default_curve_yield_reinterpretations_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_default_curve_yield_reinterpretation_request&) {
+wire_fields(std::type_identity<delete_default_curve_yield_reinterpretation_request>) {
     return std::tuple{
         utility::codec::field{"removal",
                               &delete_default_curve_yield_reinterpretation_request::removal},
@@ -742,7 +754,7 @@ wire_fields(const delete_default_curve_yield_reinterpretation_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_default_curve_yield_reinterpretation_response&) {
+wire_fields(std::type_identity<delete_default_curve_yield_reinterpretation_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_default_curve_yield_reinterpretation_response::result},
@@ -758,7 +770,7 @@ wire_fields(const delete_default_curve_yield_reinterpretation_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_default_curve_yield_reinterpretations_request&) {
+wire_fields(std::type_identity<delete_many_default_curve_yield_reinterpretations_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_default_curve_yield_reinterpretations_request::removals},
@@ -776,7 +788,7 @@ wire_fields(const delete_many_default_curve_yield_reinterpretations_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_default_curve_yield_reinterpretations_response&) {
+wire_fields(std::type_identity<delete_many_default_curve_yield_reinterpretations_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_default_curve_yield_reinterpretations_response::result},
@@ -792,7 +804,7 @@ wire_fields(const delete_many_default_curve_yield_reinterpretations_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_default_curve_yield_reinterpretation_versions_request&) {
+wire_fields(std::type_identity<list_default_curve_yield_reinterpretation_versions_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &list_default_curve_yield_reinterpretation_versions_request::key},
@@ -816,7 +828,7 @@ wire_fields(const list_default_curve_yield_reinterpretation_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_default_curve_yield_reinterpretation_versions_response&) {
+wire_fields(std::type_identity<list_default_curve_yield_reinterpretation_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_default_curve_yield_reinterpretation_versions_response::result},
@@ -836,7 +848,7 @@ wire_fields(const list_default_curve_yield_reinterpretation_versions_response&) 
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_default_curve_yield_reinterpretation_version_request&) {
+wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_version_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &get_default_curve_yield_reinterpretation_version_request::key},
@@ -852,7 +864,7 @@ wire_fields(const get_default_curve_yield_reinterpretation_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_default_curve_yield_reinterpretation_version_response&) {
+wire_fields(std::type_identity<get_default_curve_yield_reinterpretation_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_default_curve_yield_reinterpretation_version_response::result},

@@ -1278,6 +1278,7 @@ const bookLine = {
     bookPurposeType: 'Trading',
     ledgerFeedType: 'None',
     isSweepable: false,
+    restrictsProductTypes: false,
     ratesCentreCode: '',
     sandboxId: null,
 };

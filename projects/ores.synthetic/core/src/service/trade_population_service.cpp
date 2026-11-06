@@ -18,17 +18,48 @@
  *
  */
 #include "ores.synthetic.core/service/trade_population_service.hpp"
+#include "ores.logging/boost_severity.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <exception>
 
 namespace ores::synthetic::service {
+
+namespace {
+
+auto& population_lg() {
+    using namespace ores::logging;
+    static auto instance = make_logger("ores.synthetic.service.trade_population_service");
+    return instance;
+}
+
+/// How many trades pass between two progress lines, so a long population shows it is moving.
+constexpr std::uint32_t progress_every = 25;
+
+double seconds_since(std::chrono::steady_clock::time_point start) {
+    return std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+}
+
+}
 
 trade_population_service::trade_population_service(trade_population_writer& writer)
     : writer_(writer) {}
 
 trade_population_run trade_population_service::run(const boost::uuids::uuid& config_id) {
+    using namespace ores::logging;
+    const auto started = std::chrono::steady_clock::now();
+    const auto config = boost::uuids::to_string(config_id);
+    BOOST_LOG_SEV(population_lg(), info)
+        << "Trade population of config " << config << ": resolving its scope";
     const auto scope = writer_.resolve_scope(config_id);
     auto plan = planner_for(scope.asset_class_code).plan(scope);
     group_into_structures(plan, scope.structures_per_book);
+    BOOST_LOG_SEV(population_lg(), info)
+        << "Trade population of config " << config << " (" << scope.asset_class_code
+        << "): " << plan.slots.size() << " trade(s) in " << plan.structures.size()
+        << " structure(s), planned in " << seconds_since(started) << "s";
 
     // The structures come first, because a leg cannot name a deal that is not
     // there yet, and a run that grouped them before leaves them alone.
@@ -58,11 +89,26 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
             continue;
         }
 
-        writer_.write_trade(slot, scope);
-        if (slot.structure_id)
-            writer_.write_structure_member(*slot.structure_id, slot);
+        try {
+            writer_.write_trade(slot, scope);
+            if (slot.structure_id)
+                writer_.write_structure_member(*slot.structure_id, slot);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(population_lg(), error)
+                << "Trade population of config " << config << " stopped at trade "
+                << slot.internal_identifier << " (" << slot.trade_type_code << ", "
+                << run.written + run.already_present + 1 << " of " << run.planned << ") after "
+                << seconds_since(started) << "s: " << e.what();
+            throw;
+        }
 
         ++run.written;
+        if ((run.written + run.already_present) % progress_every == 0)
+            BOOST_LOG_SEV(population_lg(), info)
+                << "Trade population of config " << config << ": "
+                << run.written + run.already_present << " of " << run.planned << " done ("
+                << run.written << " written, " << run.already_present << " present) after "
+                << seconds_since(started) << "s";
         run.outcomes.push_back(
             trade_population_outcome{.trade_id = slot.trade_id,
                                      .internal_identifier = slot.internal_identifier,
@@ -72,6 +118,10 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
                                      .already_present = false});
     }
 
+    BOOST_LOG_SEV(population_lg(), info)
+        << "Trade population of config " << config << " finished: " << run.written << " written, "
+        << run.already_present << " already present, of " << run.planned << ", in "
+        << seconds_since(started) << "s";
     return run;
 }
 

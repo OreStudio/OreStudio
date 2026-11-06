@@ -52,6 +52,7 @@ set(files
     "repository_origin_dimension_repository_tests.cpp"
     "repository_subject_area_repository_tests.cpp"
     "repository_treatment_dimension_repository_tests.cpp"
+    "service_publication_order_tests.cpp"
     "subject_area_eventing_integration_tests.cpp"
     "treatment_dimension_eventing_integration_tests.cpp"
 )

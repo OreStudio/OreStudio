@@ -395,9 +395,9 @@ struct get_notification_delivery_version_response {
  * of them.
  */
 namespace notification_delivery_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.notification_deliveries_events.created";
-inline constexpr std::string_view updated = "inbox.v1.notification_deliveries_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.notification_deliveries.created";
+inline constexpr std::string_view updated = "inbox.v1.events.notification_deliveries.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.notification_deliveries.deleted";
 }
 /**
  * @brief The members of notification_delivery_key, named as the wire names them and in the order
@@ -407,7 +407,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_delivery_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_delivery_key>) {
     return std::tuple{
         utility::codec::field{"id", &notification_delivery_key::id},
     };
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_delivery_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_delivery_write>) {
     return std::tuple{
         utility::codec::field{"id", &notification_delivery_write::id},
         utility::codec::field{"notification_id", &notification_delivery_write::notification_id},
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_delivery_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_delivery_change>) {
     return std::tuple{
         utility::codec::field{"write", &notification_delivery_change::write},
         utility::codec::field{"precondition", &notification_delivery_change::precondition},
@@ -456,7 +456,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_delivery_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_delivery_removal>) {
     return std::tuple{
         utility::codec::field{"key", &notification_delivery_removal::key},
         utility::codec::field{"precondition", &notification_delivery_removal::precondition},
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_delivery_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_delivery_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &notification_delivery_lookup::key},
         utility::codec::field{"notification_delivery",
@@ -487,7 +487,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_deliveries_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_deliveries_filter>) {
     return std::tuple{
         utility::codec::field{"notification_id", &notification_deliveries_filter::notification_id},
         utility::codec::field{"id_one_of", &notification_deliveries_filter::id_one_of},
@@ -504,7 +504,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_delivery_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_delivery_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &notification_delivery_event::event_id},
         utility::codec::field{"key", &notification_delivery_event::key},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_delivery_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<notification_delivery_version_key>) {
     return std::tuple{
         utility::codec::field{"notification_delivery",
                               &notification_delivery_version_key::notification_delivery},
@@ -539,7 +539,8 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const notification_delivery_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<notification_delivery_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &notification_delivery_versions_filter::version},
         utility::codec::field{"from_version", &notification_delivery_versions_filter::from_version},
@@ -555,7 +556,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_notification_deliveries_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_notification_deliveries_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_notification_deliveries_request::offset},
         utility::codec::field{"limit", &list_notification_deliveries_request::limit},
@@ -573,7 +574,8 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_notification_deliveries_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_notification_deliveries_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_notification_deliveries_response::result},
         utility::codec::field{"deliveries", &list_notification_deliveries_response::deliveries},
@@ -589,7 +591,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_notification_delivery_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_notification_delivery_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_notification_delivery_request::key},
     };
@@ -603,7 +605,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_notification_delivery_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_notification_delivery_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_notification_delivery_response::result},
         utility::codec::field{"notification_delivery",
@@ -619,7 +621,8 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_notification_deliveries_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_notification_deliveries_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_notification_deliveries_request::keys},
     };
@@ -633,7 +636,8 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_notification_deliveries_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_notification_deliveries_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_notification_deliveries_response::result},
         utility::codec::field{"entries", &get_many_notification_deliveries_response::entries},
@@ -648,7 +652,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_notification_delivery_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_notification_delivery_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_notification_delivery_request::change},
         utility::codec::field{"intent", &put_notification_delivery_request::intent},
@@ -663,7 +667,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_notification_delivery_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_notification_delivery_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_notification_delivery_response::result},
         utility::codec::field{"notification_delivery",
@@ -679,7 +683,8 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_notification_deliveries_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_notification_deliveries_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_notification_deliveries_request::changes},
         utility::codec::field{"intent", &put_many_notification_deliveries_request::intent},
@@ -694,7 +699,8 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_notification_deliveries_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_notification_deliveries_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_notification_deliveries_response::result},
         utility::codec::field{"deliveries", &put_many_notification_deliveries_response::deliveries},
@@ -709,7 +715,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_notification_delivery_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_notification_delivery_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_notification_delivery_request::removal},
         utility::codec::field{"intent", &delete_notification_delivery_request::intent},
@@ -724,7 +730,8 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_notification_delivery_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_notification_delivery_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_notification_delivery_response::result},
     };
@@ -738,7 +745,8 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_notification_deliveries_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_notification_deliveries_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_notification_deliveries_request::removals},
         utility::codec::field{"intent", &delete_many_notification_deliveries_request::intent},
@@ -753,7 +761,8 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_notification_deliveries_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_notification_deliveries_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_notification_deliveries_response::result},
     };
@@ -768,7 +777,7 @@ inline constexpr std::string_view deleted = "inbox.v1.notification_deliveries_ev
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_notification_id_notification_deliveries_request&) {
+wire_fields(std::type_identity<list_by_notification_id_notification_deliveries_request>) {
     return std::tuple{
         utility::codec::field{
             "notification_id",
@@ -795,7 +804,7 @@ wire_fields(const list_by_notification_id_notification_deliveries_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_notification_id_notification_deliveries_response&) {
+wire_fields(std::type_identity<list_by_notification_id_notification_deliveries_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_notification_id_notification_deliveries_response::result},
@@ -814,7 +823,8 @@ wire_fields(const list_by_notification_id_notification_deliveries_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_notification_delivery_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_notification_delivery_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_notification_delivery_versions_request::key},
         utility::codec::field{"offset", &list_notification_delivery_versions_request::offset},
@@ -832,7 +842,8 @@ wire_fields(const list_by_notification_id_notification_deliveries_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_notification_delivery_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_notification_delivery_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_notification_delivery_versions_response::result},
         utility::codec::field{"versions", &list_notification_delivery_versions_response::versions},
@@ -848,7 +859,8 @@ wire_fields(const list_by_notification_id_notification_deliveries_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_notification_delivery_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_notification_delivery_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_notification_delivery_version_request::key},
     };
@@ -862,7 +874,8 @@ wire_fields(const list_by_notification_id_notification_deliveries_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_notification_delivery_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_notification_delivery_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_notification_delivery_version_response::result},
         utility::codec::field{"version", &get_notification_delivery_version_response::version},

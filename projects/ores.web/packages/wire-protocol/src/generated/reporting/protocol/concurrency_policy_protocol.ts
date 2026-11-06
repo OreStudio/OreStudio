@@ -205,7 +205,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'reporting.v1.concurrency_policies_events.created',
-    updated: 'reporting.v1.concurrency_policies_events.updated',
-    deleted: 'reporting.v1.concurrency_policies_events.deleted',
+    created: 'reporting.v1.events.concurrency_policies.created',
+    updated: 'reporting.v1.events.concurrency_policies.updated',
+    deleted: 'reporting.v1.events.concurrency_policies.deleted',
 } as const;

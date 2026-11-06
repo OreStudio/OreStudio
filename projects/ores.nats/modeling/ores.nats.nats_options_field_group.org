@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 201284D0-35E4-4C8F-B80F-EE38D2A708A9
+:ores.cpp.field-group.field_group_header.enabled: nil
+:ores.cpp.field-group.options_header.enabled: true
+:ores.ts.enabled: nil
+:END:
+#+title: ores.nats.nats_options
+#+description: Configuration for a NATS connection.
+#+type: ores.codegen.field_group
+#+component: nats
+#+entity_singular: nats_options
+#+namespace: ores::nats::config
+#+brief: Configuration for a NATS connection.
+#+header: config/nats_options.hpp
+#+printer: none
+#+filetags: :model:field_group:options:nats:
+#+created: 2026-11-05
+#+updated: 2026-11-05
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/domain/wire_format.hpp"
+#include <string>
+#+end_src
+
+* Fields
+
+** url
+:PROPERTIES:
+:cpp_type: std::string
+:default_value: "nats://localhost:4222"
+:END:
+
+NATS server URL (e.g. "nats://localhost:4222" or
+       "tls+tcp://localhost:4222" for TLS).
+
+** subject_prefix
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Subject prefix applied to every outbound subject.
+
+Format: "ores.{tier}.{instance}", e.g. "ores.dev.local1".
+When set, all pub/sub/request subjects become
+"{subject_prefix}.{relative_subject}". Leave empty to use
+subjects as-is (e.g. in tests or scripts that manage prefixes
+externally).
+
+** tls_ca_cert
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Mutual TLS settings.
+
+All three paths must be set together, or all left empty (plain TCP).
+When set, the NATS connection uses TLS and presents the client
+certificate to the broker for mutual authentication.
+
+  tls_ca_cert     — path to the CA certificate (ca.crt)
+  tls_client_cert — path to this service's certificate (<service>.crt)
+  tls_client_key  — path to this service's private key (<service>.key)
+
+** tls_client_cert
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** tls_client_key
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+
+** format
+:PROPERTIES:
+:cpp_type: ores::nats::wire_format
+:default_value: ores::nats::default_wire_codec().format()
+:END:
+
+Wire format used to serialize every NATS message body this
+process sends and decode every one it receives, decided once at
+startup (env: ORES_NATS_WIRE_FORMAT).
+
+Defaults to the process's *current* default_wire_codec() rather than
+a hardcoded literal, so that any caller who default-constructs a
+nats_options without explicitly setting format -- e.g. ores.qt's
+ClientManager, which builds its own options ad hoc per connection
+rather than going through nats_configuration's CLI/env resolution --
+inherits whatever was already resolved at startup instead of silently
+reverting to the compiled-in default. This makes client::client()'s own
+set_default_wire_codec(wire_codec(opts.format)) call an idempotent
+no-op for any caller that didn't deliberately override format,
+instead of a footgun that resets the global on every reconnect.
+

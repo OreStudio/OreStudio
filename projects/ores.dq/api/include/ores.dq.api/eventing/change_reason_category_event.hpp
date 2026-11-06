@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::dq::messaging::change_reason_category_event> {
-    static constexpr std::string_view subject_prefix = "dq.v1.change_reason_categories_events";
+    static constexpr std::string_view subject_prefix = "dq.v1.events.change_reason_categories";
 
     static ores::dq::messaging::change_reason_category_event
     from_notification(const entity_event_notification& notification) {

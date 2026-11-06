@@ -125,22 +125,22 @@ def test_both_protocol_twins_state_the_three_subjects(tmp_path):
     cpp = _render(tmp_path, "cpp_protocol.hpp.mustache",
                   "evented_entity_protocol.hpp")
     assert "namespace evented_entity_event_subjects {" in cpp
-    assert 'created = "testcomp.v1.evented_entities_events.created"' in cpp
-    assert 'updated = "testcomp.v1.evented_entities_events.updated"' in cpp
-    assert 'deleted = "testcomp.v1.evented_entities_events.deleted"' in cpp
+    assert 'created = "testcomp.v1.events.evented_entities.created"' in cpp
+    assert 'updated = "testcomp.v1.events.evented_entities.updated"' in cpp
+    assert 'deleted = "testcomp.v1.events.evented_entities.deleted"' in cpp
     assert "struct evented_entity_event {" in cpp
 
     ts = _render(tmp_path, "ts_protocol.ts.mustache",
                  "evented_entity_protocol.ts")
     assert "export const eventSubjects = {" in ts
-    assert 'created: "testcomp.v1.evented_entities_events.created"' in ts
-    assert 'deleted: "testcomp.v1.evented_entities_events.deleted"' in ts
+    assert 'created: "testcomp.v1.events.evented_entities.created"' in ts
+    assert 'deleted: "testcomp.v1.events.evented_entities.deleted"' in ts
 
 
 def test_the_event_states_its_subject_prefix_and_its_own_conversion(tmp_path):
     header = _render(tmp_path, "cpp_nats_changed_event.hpp.mustache",
                      "evented_entity_event.hpp")
-    assert 'subject_prefix = "testcomp.v1.evented_entities_events"' in header
+    assert 'subject_prefix = "testcomp.v1.events.evented_entities"' in header
     assert "from_notification(const entity_event_notification& notification)" in header
     # The key is the entity's own record, so the conversion is the one place
     # that knows which columns it carries.

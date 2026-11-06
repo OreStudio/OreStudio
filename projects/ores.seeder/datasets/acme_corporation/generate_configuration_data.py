@@ -241,6 +241,20 @@ REPORT_PRICING = {
     "Delta and Gamma": "Risk Sensitivities",
     "Bucketed DV01": "Risk Sensitivities",
     "Vega": "Risk Sensitivities",
+    # A ladder bumps one factor and reprices the book, so it wants the prices that
+    # carry analytic sensitivities for the same reason the delta, gamma and DV01
+    # reports do. A close twin is left out on purpose: what a report's numbers are
+    # worth does not change because the run reads the authorised cut.
+    "Bump and Reprice Rho Ladder": "Risk Sensitivities",
+    "Bump and Reprice Gamma Ladder": "Risk Sensitivities",
+    "Bump and Reprice Theta Ladder": "Risk Sensitivities",
+    "Bump and Reprice Cross-gamma Ladder": "Risk Sensitivities",
+    "Bump and Reprice ATM Vega Ladder": "Risk Sensitivities",
+    "Bump and Reprice Surface Vega Ladder": "Risk Sensitivities",
+    "Bump and Reprice Risk-reversal Vega Ladder": "Risk Sensitivities",
+    "Bump and Reprice Butterfly Vega Ladder": "Risk Sensitivities",
+    "Bump and Reprice DV01 Ladder": "Risk Sensitivities",
+    "Bump and Reprice Delta Ladder": "Risk Sensitivities",
     "Stressed VaR": "Stress Test Shocked",
     "FRTB SA Capital": "Regulatory FRTB",
 }

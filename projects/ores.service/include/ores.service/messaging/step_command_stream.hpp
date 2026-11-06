@@ -23,10 +23,13 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/concurrency/stoppable_thread.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include <chrono>
 #include <cstddef>
+#include <exception>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -286,6 +289,8 @@ private:
                  * workflow headers names no step, so there is nothing to claim
                  * and it goes straight to its handler.
                  */
+                std::string claimed_step;
+                std::string claimed_tenant;
                 if (const auto wf = workflow_step_context::from_message(nats, msg)) {
                     const auto outcome = claim_step(nats, wf->step_id, wf->tenant_id, claim_owner);
                     if (outcome != step_claim_outcome::claimed) {
@@ -332,9 +337,83 @@ private:
                         }
                         return;
                     }
+                    claimed_step = wf->step_id;
+                    claimed_tenant = wf->tenant_id;
+                    BOOST_LOG_SEV(detail::lg(), info)
+                        << "Step " << claimed_step << " claimed by " << claim_owner
+                        << "; running its handler for " << msg.subject;
                 }
 
-                handler(std::move(msg));
+                const auto started = std::chrono::steady_clock::now();
+                const auto served = msg.subject;
+                /*
+                 * A handler can outlive the claim's lease. While it runs, the claim is renewed
+                 * and the server is told the delivery is still being worked on, so no
+                 * redelivery takes the step over from a holder that is still working. A holder
+                 * that dies stops renewing, and its lease ends as before.
+                 */
+                std::optional<ores::platform::concurrency::jthread> renewer;
+                if (!claimed_step.empty())
+                    renewer.emplace([&nats,
+                                     step = claimed_step,
+                                     tenant = claimed_tenant,
+                                     owner = claim_owner,
+                                     ack = msg.ack,
+                                     started](ores::platform::concurrency::stop_token stop) {
+                        using ores::workflow::messaging::step_claim_renew_interval;
+                        while (!ores::platform::concurrency::wait_for(stop,
+                                                                      step_claim_renew_interval)) {
+                            if (ack)
+                                ack->working();
+                            std::string state;
+                            const auto outcome = renew_step_claim(nats, step, tenant, owner, state);
+                            const auto held = std::chrono::duration<double>(
+                                                  std::chrono::steady_clock::now() - started)
+                                                  .count();
+                            if (outcome == step_renewal_outcome::renewed) {
+                                BOOST_LOG_SEV(detail::lg(), info)
+                                    << "Step " << step << " still running after " << held
+                                    << "s; its claim's lease is renewed";
+                            } else if (outcome == step_renewal_outcome::lost) {
+                                BOOST_LOG_SEV(detail::lg(), error)
+                                    << "Step " << step << " lost its claim after " << held
+                                    << "s while its handler still runs (" << state
+                                    << "); another delivery may now run its work";
+                                return;
+                            } else {
+                                BOOST_LOG_SEV(detail::lg(), warn)
+                                    << "Step " << step << " could not renew its claim after "
+                                    << held << "s (" << state << "); trying again in "
+                                    << step_claim_renew_interval.count() << "s";
+                            }
+                        }
+                    });
+                const auto ran_for = [&started] {
+                    return std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
+                        .count();
+                };
+                try {
+                    handler(std::move(msg));
+                } catch (const std::exception& e) {
+                    renewer.reset();
+                    if (!claimed_step.empty())
+                        BOOST_LOG_SEV(detail::lg(), error)
+                            << "Step " << claimed_step << " handler for " << served
+                            << " threw after " << ran_for() << "s: " << e.what();
+                    throw;
+                } catch (...) {
+                    renewer.reset();
+                    if (!claimed_step.empty())
+                        BOOST_LOG_SEV(detail::lg(), error)
+                            << "Step " << claimed_step << " handler for " << served
+                            << " threw a non-standard exception after " << ran_for() << "s";
+                    throw;
+                }
+                renewer.reset();
+                if (!claimed_step.empty())
+                    BOOST_LOG_SEV(detail::lg(), info)
+                        << "Step " << claimed_step << " handler for " << served
+                        << " returned after " << ran_for() << "s";
                 return;
             }
             // The consumer filters exactly the declared subjects, so a delivery

@@ -399,7 +399,7 @@ struct submit_result_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const work_assignment_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<work_assignment_event>) {
     return std::tuple{
         ::ores::utility::codec::field{"tenant_id", &work_assignment_event::tenant_id},
         ::ores::utility::codec::field{"result_id", &work_assignment_event::result_id},
@@ -424,7 +424,7 @@ struct submit_result_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const heartbeat_message&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<heartbeat_message>) {
     return std::tuple{
         ::ores::utility::codec::field{"host_id", &heartbeat_message::host_id},
         ::ores::utility::codec::field{"cpu_count", &heartbeat_message::cpu_count},
@@ -441,7 +441,7 @@ struct submit_result_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const reap_work_message&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reap_work_message>) {
     return std::tuple{};
 }
 
@@ -453,7 +453,7 @@ struct submit_result_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const claim_work_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<claim_work_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"host_id", &claim_work_request::host_id},
         ::ores::utility::codec::field{"platform", &claim_work_request::platform},
@@ -468,7 +468,7 @@ struct submit_result_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const claim_work_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<claim_work_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &claim_work_response::success},
         ::ores::utility::codec::field{"has_work", &claim_work_response::has_work},
@@ -497,7 +497,7 @@ struct submit_result_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const work_available_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<work_available_event>) {
     return std::tuple{
         ::ores::utility::codec::field{"queued", &work_available_event::queued},
     };
@@ -511,7 +511,7 @@ struct submit_result_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const submit_result_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<submit_result_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"tenant_id", &submit_result_request::tenant_id},
         ::ores::utility::codec::field{"result_id", &submit_result_request::result_id},
@@ -531,7 +531,7 @@ struct submit_result_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const submit_result_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<submit_result_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &submit_result_response::success},
         ::ores::utility::codec::field{"message", &submit_result_response::message},

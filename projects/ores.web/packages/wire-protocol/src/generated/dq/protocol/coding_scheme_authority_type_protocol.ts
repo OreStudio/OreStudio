@@ -207,7 +207,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'dq.v1.coding_scheme_authority_types_events.created',
-    updated: 'dq.v1.coding_scheme_authority_types_events.updated',
-    deleted: 'dq.v1.coding_scheme_authority_types_events.deleted',
+    created: 'dq.v1.events.coding_scheme_authority_types.created',
+    updated: 'dq.v1.events.coding_scheme_authority_types.updated',
+    deleted: 'dq.v1.events.coding_scheme_authority_types.deleted',
 } as const;

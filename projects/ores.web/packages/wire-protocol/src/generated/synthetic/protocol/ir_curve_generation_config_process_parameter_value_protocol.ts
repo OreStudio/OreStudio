@@ -216,7 +216,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.ir_curve_generation_config_process_parameter_values_events.created',
-    updated: 'synthetic.v1.ir_curve_generation_config_process_parameter_values_events.updated',
-    deleted: 'synthetic.v1.ir_curve_generation_config_process_parameter_values_events.deleted',
+    created: 'synthetic.v1.events.ir_curve_generation_config_process_parameter_values.created',
+    updated: 'synthetic.v1.events.ir_curve_generation_config_process_parameter_values.updated',
+    deleted: 'synthetic.v1.events.ir_curve_generation_config_process_parameter_values.deleted',
 } as const;

@@ -30,8 +30,10 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <string>
 #include <tuple>
 
 namespace ores::storage::service::config {
@@ -61,7 +63,7 @@ struct options final {
     std::string storage_dir;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const options&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
     return std::tuple{
         ::ores::utility::codec::field{"logging", &options::logging},
         ::ores::utility::codec::field{"nats", &options::nats},

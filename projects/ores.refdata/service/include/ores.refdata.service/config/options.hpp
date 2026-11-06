@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_options.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_SERVICE_CONFIG_OPTIONS_HPP
 #define ORES_REFDATA_SERVICE_CONFIG_OPTIONS_HPP
 
@@ -49,7 +54,7 @@ struct options final {
     ores::database::database_options database;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const options&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
     return std::tuple{
         ::ores::utility::codec::field{"logging", &options::logging},
         ::ores::utility::codec::field{"nats", &options::nats},

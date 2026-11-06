@@ -76,7 +76,7 @@ struct lookup_country_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lookup_country_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lookup_country_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"address", &lookup_country_request::address},
     };
@@ -90,7 +90,7 @@ struct lookup_country_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const lookup_country_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lookup_country_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"country_code", &lookup_country_response::country_code},
         ::ores::utility::codec::field{"found", &lookup_country_response::found},

@@ -1,0 +1,216 @@
+:PROPERTIES:
+:ID: 1D312B0F-04FD-4D1F-A619-969695F4ADEC
+:ores.cpp.field-group.field_group_header.enabled: nil
+:ores.cpp.field-group.options_header.enabled: true
+:ores.ts.enabled: nil
+:END:
+#+title: ores.http.http_server_options
+#+description: Configuration options for the HTTP server.
+#+type: ores.codegen.field_group
+#+component: http
+#+subcomponent: api
+#+entity_singular: http_server_options
+#+namespace: ores::http::net
+#+brief: Configuration options for the HTTP server.
+#+header: net/http_server_options.hpp
+#+export_macro: ORES_HTTP_API_EXPORT
+#+filetags: :model:field_group:options:http:
+#+created: 2026-11-05
+#+updated: 2026-11-05
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.http.api/export.hpp"
+#include <chrono>
+#include <cstdint>
+#include <string>
+#+end_src
+
+* Fields
+
+** address
+:PROPERTIES:
+:cpp_type: std::string
+:default_value: "0.0.0.0"
+:END:
+
+Address to bind to (default: 0.0.0.0).
+
+** port
+:PROPERTIES:
+:cpp_type: std::uint16_t
+:default_value: 8080
+:END:
+
+Port to listen on.
+
+** max_connections
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default_value: 100
+:END:
+
+Maximum number of concurrent connections.
+
+** request_timeout
+:PROPERTIES:
+:cpp_type: std::chrono::seconds
+:default_value: 30
+:END:
+
+Request timeout duration.
+
+** default_max_body_size
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default_value: 1024 * 1024
+:END:
+
+The body limit a route gets when it states none.
+
+A JSON request is small. A route that accepts an upload states its own
+limit with max_body(); everything else refuses a larger body with 413
+rather than reading it.
+
+** max_body_size
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default_value: 256 * 1024 * 1024
+:END:
+
+Maximum accepted request body size, in bytes.
+
+Beast's default body_limit for a plain (non-parser) http::read is
+1MB, far below the size of a compute engine package upload
+(tens of MB) -- storage_routes' PUT handler needs this raised.
+
+** body_chunk_size
+:PROPERTIES:
+:cpp_type: std::size_t
+:default_value: 64 * 1024
+:END:
+
+How much of a streamed body is read at a time, in bytes.
+
+The chunk is the whole memory bound of a streamed body: the session holds
+one of these, hands it on, and reads the next.
+
+** response_chunk_size
+:PROPERTIES:
+:cpp_type: std::size_t
+:default_value: 64 * 1024
+:END:
+
+How much of a streamed response is written at a time, in bytes.
+
+The write buffer is the response's memory bound: a body read from a source is
+written one of these at a time, never held whole.
+
+** max_header_size
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default_value: 64 * 1024
+:END:
+
+Maximum accepted size of the request headers, in bytes.
+
+Beast's default header_limit is 8KB. The access token a session sends in the
+Authorization header carries the session's parties and permissions, so a person
+who acts for many parties holds a token past 8KB, and the server closed the
+connection before it read the request. The limit is raised so such a token is
+read, and it stays bounded so a header cannot grow without limit.
+
+** worker_threads
+:PROPERTIES:
+:cpp_type: std::size_t
+:default_value: 0
+:END:
+
+Threads that run a route handler.
+
+A handler forwards to a service with a synchronous request, so running it
+on the connection's thread stalls every other connection for the length of
+one downstream answer. The handler runs here instead, and the connection
+stays on its own executor. Zero selects the default of eight.
+
+** max_inflight_requests
+:PROPERTIES:
+:cpp_type: std::size_t
+:default_value: 1024
+:END:
+
+Handlers the pool accepts at once.
+
+A slow service must cost a refusal once this is reached, not unbounded
+queueing: the request is answered 503 and each worker keeps a bounded
+share. Zero removes the cap, which is only appropriate for a test.
+
+** bytes_flush_interval
+:PROPERTIES:
+:cpp_type: std::chrono::seconds
+:default_value: 5
+:END:
+
+How often a session's byte totals are written.
+
+The totals are kept in memory and written once per interval, from a
+worker, so a request never waits on the database for a counter.
+
+** bytes_retain
+:PROPERTIES:
+:cpp_type: std::chrono::seconds
+:default_value: 3600
+:END:
+
+How long a quiet session keeps its totals in memory.
+
+Bounds what a long-lived process holds. A session that comes back after
+this window starts its total again from that point.
+
+** enable_ssl
+:PROPERTIES:
+:cpp_type: bool
+:default_value: false
+:END:
+
+Whether to enable SSL/TLS.
+
+** certificate_file
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Path to SSL certificate file.
+
+** private_key_file
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Path to SSL private key file.
+
+** enable_cors
+:PROPERTIES:
+:cpp_type: bool
+:default_value: true
+:END:
+
+Enable CORS support.
+
+** cors_allowed_origins
+:PROPERTIES:
+:cpp_type: std::string
+:default_value: "*"
+:END:
+
+Allowed origins for CORS (empty = all).
+
+** server_identifier
+:PROPERTIES:
+:cpp_type: std::string
+:default_value: "ores-http-server"
+:END:
+
+Server identifier for responses.
+

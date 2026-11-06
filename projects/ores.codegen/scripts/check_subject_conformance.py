@@ -5,9 +5,9 @@ The specification is
 [[id=C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]
 in doc/knowledge/architecture/nats_entity_protocol.org. Its grammar is:
 
-    {component}.v1.{resource}.{verb}            a request
-    {component}.v1.{resource}_events.{action}   an event
-    {component}.v1.ops.{operation}              a domain operation
+    {component}.v1.{resource}.{verb}                  a request
+    {component}.v1.events.{collection}.{action}       an event
+    {component}.v1.ops.{operation}                    a domain operation
 
 Every segment is lower snake_case, the second is the literal ``v1``, and a
 request's verb is one of the eight the specification closes the set to
@@ -139,8 +139,31 @@ def classify(subject: str) -> tuple[bool, str]:
     """Whether a subject conforms, and why not when it does not."""
     segments = subject.split(".")
 
+    # An event names the events namespace and then the collection, so it has one
+    # segment more than a request. The namespace is a token of its own because a
+    # wildcard is a whole token: a collection spelled ``tenants_events`` cannot
+    # be addressed by ``*_events``, and a subscriber wanting every event would
+    # have to hear every request too.
+    if len(segments) == 5 and segments[2] == "events":
+        component, version, namespace, resource, suffix = segments
+        for name, segment in (
+            ("component", component),
+            ("version", version),
+            ("resource", resource),
+        ):
+            if not SNAKE.match(segment):
+                return False, f"the {name} segment {segment!r} is not lower snake_case"
+        if version != "v1":
+            return False, f"the version segment is {version!r}, not 'v1'"
+        if suffix not in SPEC_EVENT_ACTIONS:
+            return False, (
+                f"the event action {suffix!r} is not one of "
+                f"{', '.join(SPEC_EVENT_ACTIONS)}"
+            )
+        return True, "an event"
+
     if len(segments) != 4:
-        return False, f"{len(segments)} segments, the grammar has four"
+        return False, f"{len(segments)} segments, the grammar has four, or five for an event"
 
     component, version, resource, suffix = segments
 
@@ -178,13 +201,15 @@ def classify(subject: str) -> tuple[bool, str]:
     if suffix in SPEC_VERBS or suffix.startswith(LIST_BY):
         return True, "a request"
 
-    if resource.endswith("_events"):
-        if suffix not in SPEC_EVENT_ACTIONS:
-            return False, (
-                f"the event action {suffix!r} is not one of "
-                f"{', '.join(SPEC_EVENT_ACTIONS)}"
-            )
-        return True, "an event"
+    # The four-segment spelling of an event is gone: an events collection is the
+    # third token now, so a resource that ends in _events with an action after it
+    # is the old shape and is refused. A resource genuinely named *_events is a
+    # request and reaches this point with a verb, which the check above accepted.
+    if resource.endswith("_events") and suffix in SPEC_EVENT_ACTIONS:
+        return False, (
+            "the four-segment event spelling; an event names the events namespace, "
+            "as in component.v1.events.collection.action"
+        )
 
     # Everything still standing here is an operation that acts on an entity
     # without being one of the eight. The specification's discriminator is that

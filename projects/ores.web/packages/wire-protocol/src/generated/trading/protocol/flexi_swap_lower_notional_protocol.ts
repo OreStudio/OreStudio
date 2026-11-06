@@ -232,7 +232,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'trading.v1.flexi_swap_lower_notionals_events.created',
-    updated: 'trading.v1.flexi_swap_lower_notionals_events.updated',
-    deleted: 'trading.v1.flexi_swap_lower_notionals_events.deleted',
+    created: 'trading.v1.events.flexi_swap_lower_notionals.created',
+    updated: 'trading.v1.events.flexi_swap_lower_notionals.updated',
+    deleted: 'trading.v1.events.flexi_swap_lower_notionals.deleted',
 } as const;

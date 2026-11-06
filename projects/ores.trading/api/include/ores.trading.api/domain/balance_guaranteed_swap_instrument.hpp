@@ -25,13 +25,13 @@
 #ifndef ORES_TRADING_API_DOMAIN_BALANCE_GUARANTEED_SWAP_INSTRUMENT_HPP
 #define ORES_TRADING_API_DOMAIN_BALANCE_GUARANTEED_SWAP_INSTRUMENT_HPP
 
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <span>
+#include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -138,24 +138,19 @@ struct balance_guaranteed_swap_instrument final {
 };
 
 /**
- * @brief The members of balance_guaranteed_swap_instrument the customer agreed to.
+ * @brief The canonical text of the members of balance_guaranteed_swap_instrument the customer
+ * agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view balance_guaranteed_swap_instrument_economic_fields[] = {
-    "reference_security",
-    "lockout_days",
-};
-
-/**
- * @brief Names the members of balance_guaranteed_swap_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<balance_guaranteed_swap_instrument>) {
-    return balance_guaranteed_swap_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const balance_guaranteed_swap_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "reference_security", v.reference_security);
+    ores::utility::digest::append_member(out, "lockout_days", v.lockout_days);
+    out.push_back('}');
+    return out;
 }
 
 /**

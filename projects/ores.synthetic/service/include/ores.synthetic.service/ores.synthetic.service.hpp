@@ -26,7 +26,7 @@
 #define ORES_SYNTHETIC_SERVICE_HPP
 
 /**
- * @brief Synthetic data service entrypoint
+ * @brief Synthetic data generation service
  *
  * NATS service entrypoint for the synthetic data component.
  */

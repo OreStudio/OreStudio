@@ -15,67 +15,26 @@
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-"""The renderings ORE accepts for one value, read from ORE's own reader.
+"""The renderings ORE accepts for one value: what the value sets read.
 
 ORE reads several spellings for one business day convention, day counter,
 frequency, compounding rule and date rule, and converts each to the form it
-holds. The tables that do the conversion live in the ORE reader,
-projects/ores.ore/core/src/domain/conventions_fields.cpp, and this module reads
-them so a value set can state the same knowledge as data.
+holds. =ore_renderings.json= states that mapping: the form a configuration
+holds, and every other rendering that means it. This module reads the file so a
+value set can state the same knowledge as data.
 
-One table, day_counter_spellings, runs the other way: it names the spelling an
-export writes for a canonical day counter. A reader knows nothing about it, and
-it is not a rendering a reader accepts in place of another.
-
-The canonical form a set states is the form the store holds, which is not always
-a form a document may write: ORE writes 'NEAREST' where the compiled table holds
-'Nearest', so the table that converts a value on the way out still states a fact
-the value set does not. That direction is left where it is until the export is
-stated as data too.
+The reader's own tables are generated from this file, so the two cannot
+disagree: a table written by hand is a difference the checks report.
 """
 
 import json
 import os
 import re
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-SOURCE = os.path.join(ROOT, "projects", "ores.ore", "core", "src", "domain",
-                      "conventions_fields.cpp")
 RENDERINGS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "ore_renderings.json")
 
-CODE_TABLE = re.compile(r"const code_table (\w+) = \{(.*?)\n\};", re.S)
-SPELLING_TABLE = re.compile(
-    r"const std::map<std::string, std::string, std::less<>> (\w+) = \{(.*?)\n\};", re.S)
-ENTRY = re.compile(r'\{"((?:[^"\\]|\\.)*)", "((?:[^"\\]|\\.)*)"\}')
-
 _cached = None
-
-
-def _unescape(text):
-    return text.replace('\\"', '"').replace("\\\\", "\\")
-
-
-def reader_tables():
-    """The tables ORE's reader states, read from its source.
-
-    A step on the way to the value sets stating the renderings themselves: the
-    reader still converts, so the file is written from its tables and checked
-    against them. When the reader stops converting, nothing reads them.
-    """
-    with open(SOURCE, encoding="utf-8") as handle:
-        source = handle.read()
-    found = {}
-    for name, body in CODE_TABLE.findall(source):
-        found[name] = [(_unescape(spelling), _unescape(canonical))
-                       for spelling, canonical in ENTRY.findall(body)]
-    for name, body in SPELLING_TABLE.findall(source):
-        found[name] = [(_unescape(spelling), _unescape(canonical))
-                       for spelling, canonical in ENTRY.findall(body)]
-    if len(found) < 5:
-        raise ValueError(f"{SOURCE} holds {len(found)} conversion tables, and ORE's "
-                         "reader holds at least five; the table names likely changed")
-    return found
 
 
 def tables():

@@ -217,7 +217,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'trading.v1.synthetic_cdo_instruments_events.created',
-    updated: 'trading.v1.synthetic_cdo_instruments_events.updated',
-    deleted: 'trading.v1.synthetic_cdo_instruments_events.deleted',
+    created: 'trading.v1.events.synthetic_cdo_instruments.created',
+    updated: 'trading.v1.events.synthetic_cdo_instruments.updated',
+    deleted: 'trading.v1.events.synthetic_cdo_instruments.deleted',
 } as const;

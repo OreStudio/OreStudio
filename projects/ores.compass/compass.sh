@@ -13,6 +13,8 @@ VENV_PATH="$SCRIPT_DIR/venv"
 # On Windows (Git Bash / MSYS2) the venv layout uses Scripts/ not bin/.
 if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
     VENV_BIN="$VENV_PATH/Scripts"
+    # Compass reads UTF-8 sources and prints Unicode even when redirected.
+    export PYTHONUTF8=1
 else
     VENV_BIN="$VENV_PATH/bin"
 fi
@@ -30,10 +32,24 @@ if [ "$1" = "--no-deps" ]; then
 fi
 
 # --- Auto-bootstrap Virtual Environment ---
+resolve_bootstrap_python() {
+    # Probe execution: Windows may expose a python3 Store alias even when
+    # CPython is installed as python.exe. Prefer Python 3 that actually runs.
+    for candidate in python3 python; do
+        if "$candidate" -c 'import sys; sys.exit(sys.version_info.major != 3)' >/dev/null 2>&1; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    echo "Error: Python 3 is required. Install Python and add it to PATH." >&2
+    return 1
+}
+
 if [ ! -d "$VENV_PATH" ]; then
     echo "🌱 Virtual environment not found. Creating one at $VENV_PATH..."
 
-    if ! python3 -m venv "$VENV_PATH"; then
+    BOOTSTRAP_PYTHON="$(resolve_bootstrap_python)"
+    if ! "$BOOTSTRAP_PYTHON" -m venv "$VENV_PATH"; then
         echo "❌ Error: Failed to create virtual environment."
         echo "   You may need to install the venv package: sudo apt install python3-venv"
         exit 1
@@ -46,8 +62,10 @@ fi
 # is a no-op on Linux and macOS. Falls back to the POSIX name so a venv
 # that holds no interpreter fails the way it always did.
 resolve_venv_python() {
-    for candidate in "$VENV_BIN/python3" "$VENV_BIN/python3.exe" \
-                     "$VENV_BIN/python" "$VENV_BIN/python.exe"; do
+    # MSYS also considers foo to exist when only foo.exe is present.
+    # Check explicit .exe names first to return the actual file name.
+    for candidate in "$VENV_BIN/python3.exe" "$VENV_BIN/python3" \
+                     "$VENV_BIN/python.exe" "$VENV_BIN/python"; do
         if [ -f "$candidate" ]; then
             printf '%s\n' "$candidate"
             return 0

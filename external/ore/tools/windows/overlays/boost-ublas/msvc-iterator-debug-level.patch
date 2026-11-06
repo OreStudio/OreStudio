@@ -1,0 +1,27 @@
+Restore the value of the MSVC iterator macro, rather than a lazy macro alias
+that refers to an undefined backup name when <span> is subsequently included.
+https://github.com/boostorg/ublas/issues/77
+
+diff --git a/include/boost/numeric/ublas/vector_sparse.hpp b/include/boost/numeric/ublas/vector_sparse.hpp
+--- a/include/boost/numeric/ublas/vector_sparse.hpp
++++ b/include/boost/numeric/ublas/vector_sparse.hpp
+@@ -33,7 +33,7 @@
+ // status are restored at the end of file.
+ // https://msdn.microsoft.com/en-us/library/hh697468.aspx
+ #ifdef BOOST_MSVC
+-#define _BACKUP_ITERATOR_DEBUG_LEVEL _ITERATOR_DEBUG_LEVEL
++#pragma push_macro("_ITERATOR_DEBUG_LEVEL")
+ #undef _ITERATOR_DEBUG_LEVEL
+ #define _ITERATOR_DEBUG_LEVEL 0
+ #endif
+@@ -2238,9 +2238,7 @@
+ }}}
+ 
+ #ifdef BOOST_MSVC
+-#undef _ITERATOR_DEBUG_LEVEL
+-#define _ITERATOR_DEBUG_LEVEL _BACKUP_ITERATOR_DEBUG_LEVEL
+-#undef _BACKUP_ITERATOR_DEBUG_LEVEL
++#pragma pop_macro("_ITERATOR_DEBUG_LEVEL")
+ #endif
+ 
+ #endif

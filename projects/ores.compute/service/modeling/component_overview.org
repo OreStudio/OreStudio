@@ -1,12 +1,17 @@
 :PROPERTIES:
 :ID: 152C4A5E-9947-4EE1-A5D4-893305D235B5
 :ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :END:
 #+title: ores.compute.service
 #+name: compute.service
 #+full_name: ores.compute.service
 #+description: NATS service entrypoint for the compute domain.
-#+brief: Compute orchestrator service entrypoint
+#+brief: Compute service
 #+type: ores.codegen.component
 #+component_kind: service
 #+level: cross
@@ -49,6 +54,27 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
+* Options
+:PROPERTIES:
+:group: Telemetry Options
+:END:
+
+The options this service takes beyond logging, NATS and the database. Codegen
+writes the member, its wire field, its command-line declaration and its
+assignment from each entry.
+
+** telemetry_interval_seconds
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:option: telemetry-interval
+:default: 30
+:initial: 30
+:help: Compute grid telemetry sample interval in seconds (0 = disabled)
+:END:
+
+Interval in seconds between compute grid telemetry samples.
+
+Set to 0 to disable the grid poller entirely.
 
 * See also
 
@@ -59,7 +85,6 @@ into its generated file after the profile's baseline.
 * Test dependencies
 
 The suites link what the profile cannot know about.
-
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}

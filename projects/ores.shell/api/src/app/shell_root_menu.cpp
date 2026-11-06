@@ -26,10 +26,10 @@ namespace ores::shell::app {
 shell_root_menu::shell_root_menu()
     : cli::Menu("ores-shell") {}
 
-void shell_root_menu::take(const std::string& name) {
-    if (!names_.insert(name).second)
+void shell_root_menu::take(const std::string& command_name) {
+    if (!names_.insert(command_name).second)
         throw std::runtime_error(
-            "Two shell command units register the name '" + name +
+            "Two shell command units register the name '" + command_name +
             "'. One name has one owner: the first unit answers every verb the two share, "
             "and the help describes only that unit, so the second unit's verbs answer "
             "without appearing in the help. Move the second unit's verbs onto the first "
@@ -42,25 +42,25 @@ void shell_root_menu::claim(cli::Menu& menu) {
     // builds, because each is constructed from its name alone; the menu-name
     // gate rejects a construction that passes a separate prompt, so the two
     // cannot drift.
-    const std::string name(menu.Prompt());
-    take(name);
-    menus_[name] = &menu;
+    const std::string command_name(menu.Prompt());
+    take(command_name);
+    menus_[command_name] = &menu;
 }
 
-void shell_root_menu::claim(const std::string& name) {
-    take(name);
+void shell_root_menu::claim(const std::string& command_name) {
+    take(command_name);
 }
 
-void shell_root_menu::add_extension(const std::string& name,
+void shell_root_menu::add_extension(const std::string& command_name,
                                     std::function<void(cli::Menu&)> extend) {
-    extensions_[name].push_back(std::move(extend));
+    extensions_[command_name].push_back(std::move(extend));
 }
 
 void shell_root_menu::apply_extensions() {
-    for (auto& [name, extensions] : extensions_) {
-        const auto found = menus_.find(name);
+    for (auto& [command_name, extensions] : extensions_) {
+        const auto found = menus_.find(command_name);
         if (found == menus_.end() || found->second == nullptr)
-            throw std::runtime_error("A shell unit extends the name '" + name +
+            throw std::runtime_error("A shell unit extends the name '" + command_name +
                                      "', which no unit registers as a menu.");
         for (auto& extend : extensions)
             extend(*found->second);

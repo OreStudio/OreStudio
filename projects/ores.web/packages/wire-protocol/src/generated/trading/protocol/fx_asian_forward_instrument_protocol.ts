@@ -222,7 +222,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'trading.v1.fx_asian_forward_instruments_events.created',
-    updated: 'trading.v1.fx_asian_forward_instruments_events.updated',
-    deleted: 'trading.v1.fx_asian_forward_instruments_events.deleted',
+    created: 'trading.v1.events.fx_asian_forward_instruments.created',
+    updated: 'trading.v1.events.fx_asian_forward_instruments.updated',
+    deleted: 'trading.v1.events.fx_asian_forward_instruments.deleted',
 } as const;

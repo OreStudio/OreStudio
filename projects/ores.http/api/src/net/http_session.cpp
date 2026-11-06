@@ -71,6 +71,47 @@ namespace beast = boost::beast;
 namespace http = beast::http;
 namespace asio = boost::asio;
 
+/*
+ * The types below are named, and outside the anonymous namespace, because a
+ * coroutine's frame holds its locals: a lambda or a local type there gives the
+ * frame a subobject with no linkage. gcc refuses that under -Wsubobject-linkage
+ * once a unity build makes this file a header of the unity source, and the
+ * project builds with -Werror on every toolchain.
+ */
+
+/// Aborts the sink unless it was published. abort() does nothing once published.
+struct discard_unless_published final {
+    domain::body_sink* sink;
+    ~discard_unless_published() {
+        if (sink != nullptr)
+            sink->abort();
+    }
+};
+
+/// The route handler, as the worker pool runs it.
+struct run_route_handler final {
+    const domain::request_handler& handler;
+    const domain::http_request& request;
+
+    asio::awaitable<domain::http_response> operator()() const {
+        return handler(request);
+    }
+};
+
+/**
+ * @brief The next piece of a streamed body, from whichever source it has.
+ *
+ * A synchronous source always has its next piece, so the coroutine that wraps it
+ * never suspends; one that waits suspends the response and leaves the thread to
+ * other work, which is the whole point of the awaitable form.
+ */
+asio::awaitable<std::size_t> read_response_piece(const domain::http_response& resp,
+                                                 std::span<char> into) {
+    if (resp.body_stream != nullptr)
+        co_return resp.body_stream->read(into);
+    co_return co_await resp.body_awaitable->read(into);
+}
+
 http_session::http_session(asio::ip::tcp::socket socket,
                            std::shared_ptr<router> router,
                            std::shared_ptr<ores::security::jwt::jwt_authenticator> verifier,
@@ -145,41 +186,9 @@ asio::awaitable<void> http_session::run() {
                 convert_method(parser.get().method()), route_path(subject), path_params);
             const auto limit = body_limit_for(route);
 
-            /*
-             * The refusal is written here, not by the failed read, so the caller
-             * is told why instead of watching the socket close. One place answers
-             * the declared size, the chunked body that declares none, the stream
-             * that runs past the limit, the route that will not take the request,
-             * and the destination that cannot take the bytes.
-             */
-            const auto refuse =
-                [this, version, &subject](domain::http_status status,
-                                          std::string_view reason,
-                                          std::string_view note) -> asio::awaitable<void> {
-                BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
-                auto response = domain::http_response::error(status, std::string(reason));
-                co_await write_response(response, version, false, true);
-            };
-
-            const auto refuse_too_large = [this,
-                                           &refuse](std::uint64_t size) -> asio::awaitable<void> {
-                if (counters_ != nullptr)
-                    counters_->refused_too_large.fetch_add(1, std::memory_order_relaxed);
-                co_await refuse(domain::http_status::payload_too_large,
-                                "The request body is larger than this route accepts.",
-                                "a body of " + std::to_string(size) + " bytes is past the limit");
-            };
-
-            const auto refuse_destination =
-                [&refuse](std::string_view note) -> asio::awaitable<void> {
-                co_await refuse(domain::http_status::internal_server_error,
-                                "The request body could not be stored.",
-                                note);
-            };
-
             const auto declared = parser.content_length().value_or(0);
             if (declared > limit) {
-                co_await refuse_too_large(declared);
+                co_await refuse_too_large(version, subject, declared);
                 break;
             }
 
@@ -218,14 +227,16 @@ asio::awaitable<void> http_session::run() {
             }
 
             if (!refused_request.empty()) {
-                co_await refuse(domain::http_status::bad_request,
+                co_await refuse(version,
+                                subject,
+                                domain::http_status::bad_request,
                                 refused_request,
                                 "the route will not take this request");
                 break;
             }
 
             if (!sink_failed.empty()) {
-                co_await refuse_destination(sink_failed);
+                co_await refuse_destination(version, subject, sink_failed);
                 break;
             }
 
@@ -234,24 +245,19 @@ asio::awaitable<void> http_session::run() {
             /*
              * Every path that does not publish leaves the bytes discarded, and the
              * guard is what makes that true of the refused, the failed and the
-             * abandoned request alike. abort() does nothing once published.
+             * abandoned request alike.
              */
-            struct discard_unless_published final {
-                domain::body_sink* sink;
-                ~discard_unless_published() {
-                    if (sink != nullptr)
-                        sink->abort();
-                }
-            } discard_guard{sink.get()};
+            discard_unless_published discard_guard{sink.get()};
 
             std::string content;
             std::uint64_t byte_count = 0;
             const auto outcome = co_await read_body(parser, sink.get(), content, byte_count);
             if (outcome != body_outcome::complete) {
                 if (outcome == body_outcome::too_large)
-                    co_await refuse_too_large(limit);
+                    co_await refuse_too_large(version, subject, limit);
                 else
-                    co_await refuse_destination("the body could not be written where it goes");
+                    co_await refuse_destination(
+                        version, subject, "the body could not be written where it goes");
                 break;
             }
 
@@ -290,6 +296,37 @@ asio::awaitable<void> http_session::run() {
 
     // Graceful shutdown
     stream_.socket().shutdown(asio::ip::tcp::socket::shutdown_send, ec);
+}
+
+asio::awaitable<void> http_session::refuse(unsigned version,
+                                           std::string_view subject,
+                                           domain::http_status status,
+                                           std::string_view reason,
+                                           std::string_view note) {
+    BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
+    auto response = domain::http_response::error(status, std::string(reason));
+    co_await write_response(response, version, false, true);
+}
+
+asio::awaitable<void>
+http_session::refuse_too_large(unsigned version, std::string_view subject, std::uint64_t size) {
+    if (counters_ != nullptr)
+        counters_->refused_too_large.fetch_add(1, std::memory_order_relaxed);
+    co_await refuse(version,
+                    subject,
+                    domain::http_status::payload_too_large,
+                    "The request body is larger than this route accepts.",
+                    "a body of " + std::to_string(size) + " bytes is past the limit");
+}
+
+asio::awaitable<void> http_session::refuse_destination(unsigned version,
+                                                       std::string_view subject,
+                                                       std::string_view note) {
+    co_await refuse(version,
+                    subject,
+                    domain::http_status::internal_server_error,
+                    "The request body could not be stored.",
+                    note);
 }
 
 asio::awaitable<http_session::body_outcome>
@@ -525,8 +562,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
             BOOST_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
             if (workers_ != nullptr) {
                 const auto handler = matched->handler;
-                response = co_await workers_->run(
-                    [&handler, &domain_req]() { return handler(domain_req); });
+                response = co_await workers_->run(run_route_handler{handler, domain_req});
             } else {
                 response = co_await matched->handler(domain_req);
             }
@@ -682,21 +718,9 @@ asio::awaitable<void> http_session::write_response(const domain::http_response& 
 
     auto buffer = std::vector<char>(options_.response_chunk_size);
 
-    /*
-     * One loop serves both sources. A synchronous source always has its next piece,
-     * so the coroutine that wraps it never suspends; one that waits suspends the
-     * response and leaves the thread to other work, which is the whole point of the
-     * awaitable form.
-     */
-    auto next = [&]() -> asio::awaitable<std::size_t> {
-        const auto into = std::span(buffer.data(), buffer.size());
-        if (resp.body_stream != nullptr)
-            co_return resp.body_stream->read(into);
-        co_return co_await resp.body_awaitable->read(into);
-    };
-
     for (;;) {
-        const auto taken = co_await next();
+        const auto taken =
+            co_await read_response_piece(resp, std::span(buffer.data(), buffer.size()));
         // The serializer reads the message it was given, so the body is set there.
         auto& body = head.body();
         body.data = buffer.data();

@@ -68,7 +68,7 @@ struct storage_grant final {
     friend bool operator==(const storage_grant&, const storage_grant&) = default;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const storage_grant&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<storage_grant>) {
     return std::tuple{utility::codec::field{"bucket", &storage_grant::bucket},
                       utility::codec::field{"key_prefix", &storage_grant::key_prefix},
                       utility::codec::field{"op", &storage_grant::op}};

@@ -26,7 +26,7 @@
 #define ORES_ANALYTICS_SERVICE_HPP
 
 /**
- * @brief ORE Studio analytics service binary.
+ * @brief Analytics pricing service
  *
  * NATS service entrypoint for the analytics domain.
  */

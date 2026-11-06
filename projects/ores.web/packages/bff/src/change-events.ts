@@ -153,12 +153,15 @@ export function isWatchable(watch: Watch): boolean {
 /**
  * The subject the services publish an entity's changes on.
  *
- * The canonical form is `component.v1.collection_events.action`, so a watch
+ * The canonical form is `component.v1.events.collection.action`: the events
+ * namespace is a token of its own because a NATS wildcard is a whole token, so a
+ * collection spelled `collection_events` could not be addressed by `*_events`. A
+ * watch
  * listens on the collection's wildcard and hears created, updated and deleted
  * alike.
  */
 export function eventSubject(component: string, entity: string): string {
-    return `${component}.v1.${entity}_events.>`;
+    return `${component}.v1.events.${entity}.>`;
 }
 
 /** The part of a logger the registry writes through: a record of facts and a message. */

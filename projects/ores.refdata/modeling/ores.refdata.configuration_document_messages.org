@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BB690F37-423E-4FBC-AC93-5F5577DF7B10
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.configuration_document_messages
 #+description: Codegen operation model for the configuration documents refdata owns: save, get and delete a curve configuration document. The FX convention projection stays here for the ORE boundary.

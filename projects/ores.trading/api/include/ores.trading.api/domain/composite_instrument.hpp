@@ -28,12 +28,11 @@
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -193,43 +192,45 @@ struct composite_instrument final {
 };
 
 /**
- * @brief The members of composite_instrument the customer agreed to.
+ * @brief The canonical text of the members of composite_instrument the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view composite_instrument_economic_fields[] = {
-    "currency",
-    "notional_calculation",
-    "notional_override",
-    "portfolio_basket",
-    "index_quantity",
-    "return_payer",
-    "return_currency",
-    "return_observation_lag",
-    "return_observation_convention",
-    "return_observation_calendar",
-    "return_payment_lag",
-    "return_payment_convention",
-    "return_payment_calendar",
-    "return_initial_price",
-    "return_initial_price_currency",
-    "return_fx_index",
-    "return_pay_underlying_cash_flows_immediately",
-    "funding_notional_types",
-    "underlying_basket_name",
-    "underlying_index_quantity",
-    "underlying_price_is_per_unit",
-};
-
-/**
- * @brief Names the members of composite_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<composite_instrument>) {
-    return composite_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const composite_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "currency", v.currency);
+    ores::utility::digest::append_member(out, "notional_calculation", v.notional_calculation);
+    ores::utility::digest::append_member(out, "notional_override", v.notional_override);
+    ores::utility::digest::append_member(out, "portfolio_basket", v.portfolio_basket);
+    ores::utility::digest::append_member(out, "index_quantity", v.index_quantity);
+    ores::utility::digest::append_member(out, "return_payer", v.return_payer);
+    ores::utility::digest::append_member(out, "return_currency", v.return_currency);
+    ores::utility::digest::append_member(out, "return_observation_lag", v.return_observation_lag);
+    ores::utility::digest::append_member(
+        out, "return_observation_convention", v.return_observation_convention);
+    ores::utility::digest::append_member(
+        out, "return_observation_calendar", v.return_observation_calendar);
+    ores::utility::digest::append_member(out, "return_payment_lag", v.return_payment_lag);
+    ores::utility::digest::append_member(
+        out, "return_payment_convention", v.return_payment_convention);
+    ores::utility::digest::append_member(out, "return_payment_calendar", v.return_payment_calendar);
+    ores::utility::digest::append_member(out, "return_initial_price", v.return_initial_price);
+    ores::utility::digest::append_member(
+        out, "return_initial_price_currency", v.return_initial_price_currency);
+    ores::utility::digest::append_member(out, "return_fx_index", v.return_fx_index);
+    ores::utility::digest::append_member(out,
+                                         "return_pay_underlying_cash_flows_immediately",
+                                         v.return_pay_underlying_cash_flows_immediately);
+    ores::utility::digest::append_member(out, "funding_notional_types", v.funding_notional_types);
+    ores::utility::digest::append_member(out, "underlying_basket_name", v.underlying_basket_name);
+    ores::utility::digest::append_member(
+        out, "underlying_index_quantity", v.underlying_index_quantity);
+    ores::utility::digest::append_member(
+        out, "underlying_price_is_per_unit", v.underlying_price_is_per_unit);
+    out.push_back('}');
+    return out;
 }
 
 /**

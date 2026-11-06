@@ -26,12 +26,10 @@
 #define ORES_DQ_API_DOMAIN_AUDIT_RECORD_HPP
 
 #include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
-#include <span>
 #include <string>
-#include <string_view>
 #include <tuple>
-#include <type_traits>
 
 namespace ores::dq::domain {
 
@@ -89,7 +87,7 @@ struct audit_record {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const audit_record&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<audit_record>) {
     return std::tuple{
         utility::codec::field{"modified_by", &audit_record::modified_by},
         utility::codec::field{"performed_by", &audit_record::performed_by},
@@ -100,14 +98,16 @@ struct audit_record {
 }
 
 /**
- * @brief Names the members of audit_record that are economic.
+ * @brief The canonical text of the members of audit_record the customer agreed to.
  *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
+ * Renders, in member order, the fields the model declares economic. The
+ * economic digest hashes this text, so a field the customer did not agree to
+ * never moves it.
  */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<audit_record>) {
-    return {};
+[[nodiscard]] inline std::string canonical_form(const audit_record&) {
+    std::string out = "{";
+    out.push_back('}');
+    return out;
 }
 
 }

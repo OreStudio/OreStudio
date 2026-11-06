@@ -356,9 +356,9 @@ struct get_product_family_code_version_response {
  * of them.
  */
 namespace product_family_code_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.product_family_codes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.product_family_codes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.product_family_codes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.product_family_codes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.product_family_codes.deleted";
 }
 /**
  * @brief The members of product_family_code_key, named as the wire names them and in the order
@@ -368,7 +368,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const product_family_code_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_family_code_key>) {
     return std::tuple{
         utility::codec::field{"code", &product_family_code_key::code},
     };
@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const product_family_code_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_family_code_write>) {
     return std::tuple{
         utility::codec::field{"code", &product_family_code_write::code},
         utility::codec::field{"name", &product_family_code_write::name},
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const product_family_code_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_family_code_change>) {
     return std::tuple{
         utility::codec::field{"write", &product_family_code_change::write},
         utility::codec::field{"precondition", &product_family_code_change::precondition},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const product_family_code_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_family_code_removal>) {
     return std::tuple{
         utility::codec::field{"key", &product_family_code_removal::key},
         utility::codec::field{"precondition", &product_family_code_removal::precondition},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const product_family_code_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_family_code_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &product_family_code_lookup::key},
         utility::codec::field{"product_family_code",
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const product_family_codes_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_family_codes_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &product_family_codes_filter::code_one_of},
     };
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const product_family_code_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_family_code_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &product_family_code_event::event_id},
         utility::codec::field{"key", &product_family_code_event::key},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const product_family_code_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_family_code_version_key>) {
     return std::tuple{
         utility::codec::field{"product_family_code",
                               &product_family_code_version_key::product_family_code},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const product_family_code_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<product_family_code_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &product_family_code_versions_filter::version},
         utility::codec::field{"from_version", &product_family_code_versions_filter::from_version},
@@ -510,7 +510,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_product_family_codes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_product_family_codes_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_product_family_codes_request::offset},
         utility::codec::field{"limit", &list_product_family_codes_request::limit},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_product_family_codes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_product_family_codes_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_product_family_codes_response::result},
         utility::codec::field{"families", &list_product_family_codes_response::families},
@@ -544,7 +544,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_product_family_code_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_product_family_code_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_product_family_code_request::key},
     };
@@ -558,7 +558,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_product_family_code_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_product_family_code_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_product_family_code_response::result},
         utility::codec::field{"product_family_code",
@@ -574,7 +574,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_product_family_codes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_product_family_codes_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_product_family_codes_request::keys},
     };
@@ -588,7 +589,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_product_family_codes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_product_family_codes_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_product_family_codes_response::result},
         utility::codec::field{"entries", &get_many_product_family_codes_response::entries},
@@ -603,7 +605,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_product_family_code_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_product_family_code_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_product_family_code_request::change},
         utility::codec::field{"intent", &put_product_family_code_request::intent},
@@ -618,7 +620,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_product_family_code_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_product_family_code_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_product_family_code_response::result},
         utility::codec::field{"product_family_code",
@@ -634,7 +636,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_product_family_codes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_product_family_codes_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_product_family_codes_request::changes},
         utility::codec::field{"intent", &put_many_product_family_codes_request::intent},
@@ -649,7 +652,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_product_family_codes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_product_family_codes_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_product_family_codes_response::result},
         utility::codec::field{"families", &put_many_product_family_codes_response::families},
@@ -664,7 +668,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_product_family_code_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_product_family_code_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_product_family_code_request::removal},
         utility::codec::field{"intent", &delete_product_family_code_request::intent},
@@ -679,7 +683,7 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_product_family_code_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_product_family_code_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_product_family_code_response::result},
     };
@@ -693,7 +697,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_product_family_codes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_product_family_codes_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_product_family_codes_request::removals},
         utility::codec::field{"intent", &delete_many_product_family_codes_request::intent},
@@ -708,7 +713,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_product_family_codes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_product_family_codes_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_product_family_codes_response::result},
     };
@@ -722,7 +728,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_product_family_code_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_product_family_code_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_product_family_code_versions_request::key},
         utility::codec::field{"offset", &list_product_family_code_versions_request::offset},
@@ -740,7 +747,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_product_family_code_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_product_family_code_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_product_family_code_versions_response::result},
         utility::codec::field{"versions", &list_product_family_code_versions_response::versions},
@@ -756,7 +764,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_product_family_code_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_product_family_code_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_product_family_code_version_request::key},
     };
@@ -770,7 +779,8 @@ inline constexpr std::string_view deleted = "refdata.v1.product_family_codes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_product_family_code_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_product_family_code_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_product_family_code_version_response::result},
         utility::codec::field{"version", &get_product_family_code_version_response::version},

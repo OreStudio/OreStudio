@@ -27,12 +27,11 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -136,26 +135,21 @@ struct credit_instrument final {
 };
 
 /**
- * @brief The members of credit_instrument the customer agreed to.
+ * @brief The canonical text of the members of credit_instrument the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view credit_instrument_economic_fields[] = {
-    "reference_entity_id_type",
-    "reference_entity_id",
-    "start_date",
-    "maturity_date",
-};
-
-/**
- * @brief Names the members of credit_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<credit_instrument>) {
-    return credit_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const credit_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(
+        out, "reference_entity_id_type", v.reference_entity_id_type);
+    ores::utility::digest::append_member(out, "reference_entity_id", v.reference_entity_id);
+    ores::utility::digest::append_member(out, "start_date", v.start_date);
+    ores::utility::digest::append_member(out, "maturity_date", v.maturity_date);
+    out.push_back('}');
+    return out;
 }
 
 /**

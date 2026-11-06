@@ -45,7 +45,8 @@ namespace ores::refdata::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const inflation_cap_floor_volatility_config&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<inflation_cap_floor_volatility_config>) {
     return std::tuple{
         utility::codec::field{"version", &inflation_cap_floor_volatility_config::version},
         utility::codec::field{"tenant_id", &inflation_cap_floor_volatility_config::tenant_id},

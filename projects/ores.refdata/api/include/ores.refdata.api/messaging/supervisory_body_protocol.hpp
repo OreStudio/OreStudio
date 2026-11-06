@@ -345,9 +345,9 @@ struct get_supervisory_body_version_response {
  * of them.
  */
 namespace supervisory_body_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.supervisory_bodies_events.created";
-inline constexpr std::string_view updated = "refdata.v1.supervisory_bodies_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.supervisory_bodies.created";
+inline constexpr std::string_view updated = "refdata.v1.events.supervisory_bodies.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.supervisory_bodies.deleted";
 }
 /**
  * @brief The members of supervisory_body_key, named as the wire names them and in the order
@@ -357,7 +357,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const supervisory_body_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_key>) {
     return std::tuple{
         utility::codec::field{"code", &supervisory_body_key::code},
         utility::codec::field{"coding_scheme_code", &supervisory_body_key::coding_scheme_code},
@@ -372,7 +372,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const supervisory_body_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_write>) {
     return std::tuple{
         utility::codec::field{"code", &supervisory_body_write::code},
         utility::codec::field{"coding_scheme_code", &supervisory_body_write::coding_scheme_code},
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const supervisory_body_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_change>) {
     return std::tuple{
         utility::codec::field{"write", &supervisory_body_change::write},
         utility::codec::field{"precondition", &supervisory_body_change::precondition},
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const supervisory_body_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_removal>) {
     return std::tuple{
         utility::codec::field{"key", &supervisory_body_removal::key},
         utility::codec::field{"precondition", &supervisory_body_removal::precondition},
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const supervisory_body_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &supervisory_body_lookup::key},
         utility::codec::field{"supervisory_body", &supervisory_body_lookup::supervisory_body},
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const supervisory_body_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &supervisory_body_event::event_id},
         utility::codec::field{"key", &supervisory_body_event::key},
@@ -453,7 +453,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const supervisory_body_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_version_key>) {
     return std::tuple{
         utility::codec::field{"supervisory_body", &supervisory_body_version_key::supervisory_body},
         utility::codec::field{"version", &supervisory_body_version_key::version},
@@ -468,7 +468,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const supervisory_body_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<supervisory_body_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &supervisory_body_versions_filter::version},
         utility::codec::field{"from_version", &supervisory_body_versions_filter::from_version},
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_supervisory_bodies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_supervisory_bodies_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_supervisory_bodies_request::offset},
         utility::codec::field{"limit", &list_supervisory_bodies_request::limit},
@@ -501,7 +501,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_supervisory_bodies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_supervisory_bodies_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_supervisory_bodies_response::result},
         utility::codec::field{"bodies", &list_supervisory_bodies_response::bodies},
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_supervisory_body_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_supervisory_body_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_supervisory_body_request::key},
     };
@@ -531,7 +531,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_supervisory_body_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_supervisory_body_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_supervisory_body_response::result},
         utility::codec::field{"supervisory_body", &get_supervisory_body_response::supervisory_body},
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_supervisory_bodies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_supervisory_bodies_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_supervisory_bodies_request::keys},
     };
@@ -560,7 +560,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_supervisory_bodies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_supervisory_bodies_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_supervisory_bodies_response::result},
         utility::codec::field{"entries", &get_many_supervisory_bodies_response::entries},
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_supervisory_body_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_supervisory_body_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_supervisory_body_request::change},
         utility::codec::field{"intent", &put_supervisory_body_request::intent},
@@ -590,7 +590,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_supervisory_body_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_supervisory_body_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_supervisory_body_response::result},
         utility::codec::field{"supervisory_body", &put_supervisory_body_response::supervisory_body},
@@ -605,7 +605,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_supervisory_bodies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_supervisory_bodies_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_supervisory_bodies_request::changes},
         utility::codec::field{"intent", &put_many_supervisory_bodies_request::intent},
@@ -620,7 +620,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_supervisory_bodies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_supervisory_bodies_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_supervisory_bodies_response::result},
         utility::codec::field{"bodies", &put_many_supervisory_bodies_response::bodies},
@@ -635,7 +635,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_supervisory_body_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_supervisory_body_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_supervisory_body_request::removal},
         utility::codec::field{"intent", &delete_supervisory_body_request::intent},
@@ -650,7 +650,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_supervisory_body_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_supervisory_body_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_supervisory_body_response::result},
     };
@@ -664,7 +664,8 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_supervisory_bodies_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_supervisory_bodies_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_supervisory_bodies_request::removals},
         utility::codec::field{"intent", &delete_many_supervisory_bodies_request::intent},
@@ -679,7 +680,8 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_supervisory_bodies_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_supervisory_bodies_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_supervisory_bodies_response::result},
     };
@@ -693,7 +695,8 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_supervisory_body_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_supervisory_body_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_supervisory_body_versions_request::key},
         utility::codec::field{"offset", &list_supervisory_body_versions_request::offset},
@@ -711,7 +714,8 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_supervisory_body_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_supervisory_body_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_supervisory_body_versions_response::result},
         utility::codec::field{"versions", &list_supervisory_body_versions_response::versions},
@@ -727,7 +731,7 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_supervisory_body_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_supervisory_body_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_supervisory_body_version_request::key},
     };
@@ -741,7 +745,8 @@ inline constexpr std::string_view deleted = "refdata.v1.supervisory_bodies_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_supervisory_body_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_supervisory_body_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_supervisory_body_version_response::result},
         utility::codec::field{"version", &get_supervisory_body_version_response::version},

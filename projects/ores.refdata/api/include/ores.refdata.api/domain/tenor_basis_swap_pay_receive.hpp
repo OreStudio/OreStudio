@@ -30,10 +30,10 @@
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_leg.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_coupon.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_receive_leg.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
-#include <span>
+#include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::refdata::domain {
 
@@ -67,14 +67,16 @@ struct tenor_basis_swap_pay_receive final {
 };
 
 /**
- * @brief Names the members of tenor_basis_swap_pay_receive that are economic.
+ * @brief The canonical text of the members of tenor_basis_swap_pay_receive the customer agreed to.
  *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<tenor_basis_swap_pay_receive>) {
-    return {};
+[[nodiscard]] inline std::string canonical_form(const tenor_basis_swap_pay_receive&) {
+    std::string out = "{";
+    out.push_back('}');
+    return out;
 }
 
 /**

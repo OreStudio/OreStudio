@@ -78,7 +78,7 @@ struct bond_schedule_data {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_schedule_data&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_schedule_data>) {
     return std::tuple{
         utility::codec::field{"rules", &bond_schedule_data::rules},
         utility::codec::field{"dates", &bond_schedule_data::dates},

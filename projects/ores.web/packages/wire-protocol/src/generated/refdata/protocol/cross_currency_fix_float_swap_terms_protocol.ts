@@ -238,7 +238,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.cross_currency_fix_float_swap_terms_events.created',
-    updated: 'refdata.v1.cross_currency_fix_float_swap_terms_events.updated',
-    deleted: 'refdata.v1.cross_currency_fix_float_swap_terms_events.deleted',
+    created: 'refdata.v1.events.cross_currency_fix_float_swap_terms.created',
+    updated: 'refdata.v1.events.cross_currency_fix_float_swap_terms.updated',
+    deleted: 'refdata.v1.events.cross_currency_fix_float_swap_terms.deleted',
 } as const;

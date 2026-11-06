@@ -213,7 +213,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.curve_segment_weighted_averages_events.created',
-    updated: 'refdata.v1.curve_segment_weighted_averages_events.updated',
-    deleted: 'refdata.v1.curve_segment_weighted_averages_events.deleted',
+    created: 'refdata.v1.events.curve_segment_weighted_averages.created',
+    updated: 'refdata.v1.events.curve_segment_weighted_averages.updated',
+    deleted: 'refdata.v1.events.curve_segment_weighted_averages.deleted',
 } as const;

@@ -1,6 +1,11 @@
 :PROPERTIES:
 :ID: 95D9E246-27ED-440F-B14A-481A546B7C4F
 :ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :END:
 #+title: ores.variability.service
 #+description: NATS service entrypoint for the variability domain.
@@ -58,7 +63,6 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-
 * See also
 
 - [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability.core]] — all business logic for the variability domain.
@@ -66,7 +70,6 @@ into its generated file after the profile's baseline.
 * Test dependencies
 
 The suites link what the profile cannot know about.
-
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}

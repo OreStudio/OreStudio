@@ -120,7 +120,7 @@ struct end_session_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const session_view&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<session_view>) {
     return std::tuple{
         ::ores::utility::codec::field{"session", &session_view::session},
         ::ores::utility::codec::field{"party_id", &session_view::party_id},
@@ -137,7 +137,7 @@ struct end_session_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_active_sessions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_active_sessions_request>) {
     return std::tuple{};
 }
 
@@ -149,7 +149,7 @@ struct end_session_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_active_sessions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_active_sessions_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"sessions", &get_active_sessions_response::sessions},
         ::ores::utility::codec::field{"success", &get_active_sessions_response::success},
@@ -165,7 +165,7 @@ struct end_session_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const end_session_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<end_session_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"session_id", &end_session_request::session_id},
     };
@@ -179,7 +179,7 @@ struct end_session_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const end_session_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<end_session_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &end_session_response::success},
         ::ores::utility::codec::field{"message", &end_session_response::message},

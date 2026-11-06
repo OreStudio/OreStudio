@@ -340,9 +340,9 @@ struct get_image_version_response {
  * of them.
  */
 namespace image_event_subjects {
-inline constexpr std::string_view created = "assets.v1.images_events.created";
-inline constexpr std::string_view updated = "assets.v1.images_events.updated";
-inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
+inline constexpr std::string_view created = "assets.v1.events.images.created";
+inline constexpr std::string_view updated = "assets.v1.events.images.updated";
+inline constexpr std::string_view deleted = "assets.v1.events.images.deleted";
 }
 /**
  * @brief The members of image_key, named as the wire names them and in the order
@@ -352,7 +352,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_key>) {
     return std::tuple{
         utility::codec::field{"code", &image_key::code},
     };
@@ -366,7 +366,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_write>) {
     return std::tuple{
         utility::codec::field{"id", &image_write::id},
         utility::codec::field{"code", &image_write::code},
@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_change>) {
     return std::tuple{
         utility::codec::field{"write", &image_change::write},
         utility::codec::field{"precondition", &image_change::precondition},
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_removal>) {
     return std::tuple{
         utility::codec::field{"key", &image_removal::key},
         utility::codec::field{"precondition", &image_removal::precondition},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &image_lookup::key},
         utility::codec::field{"image", &image_lookup::image},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const images_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<images_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &images_filter::id_one_of},
         utility::codec::field{"search", &images_filter::search},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &image_event::event_id},
         utility::codec::field{"key", &image_event::key},
@@ -463,7 +463,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_version_key>) {
     return std::tuple{
         utility::codec::field{"image", &image_version_key::image},
         utility::codec::field{"version", &image_version_key::version},
@@ -478,7 +478,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const image_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<image_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &image_versions_filter::version},
         utility::codec::field{"from_version", &image_versions_filter::from_version},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_images_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_images_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_images_request::offset},
         utility::codec::field{"limit", &list_images_request::limit},
@@ -512,7 +512,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_images_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_images_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_images_response::result},
         utility::codec::field{"images", &list_images_response::images},
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_image_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_image_request::key},
     };
@@ -542,7 +542,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_image_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_image_response::result},
         utility::codec::field{"image", &get_image_response::image},
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_images_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_images_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_images_request::keys},
     };
@@ -571,7 +571,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_images_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_images_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_images_response::result},
         utility::codec::field{"entries", &get_many_images_response::entries},
@@ -586,7 +586,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_image_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_image_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_image_request::change},
         utility::codec::field{"intent", &put_image_request::intent},
@@ -601,7 +601,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_image_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_image_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_image_response::result},
         utility::codec::field{"image", &put_image_response::image},
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_images_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_images_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_images_request::changes},
         utility::codec::field{"intent", &put_many_images_request::intent},
@@ -631,7 +631,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_images_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_images_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_images_response::result},
         utility::codec::field{"images", &put_many_images_response::images},
@@ -646,7 +646,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_image_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_image_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_image_request::removal},
         utility::codec::field{"intent", &delete_image_request::intent},
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_image_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_image_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_image_response::result},
     };
@@ -675,7 +675,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_images_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_images_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_images_request::removals},
         utility::codec::field{"intent", &delete_many_images_request::intent},
@@ -690,7 +690,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_images_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_images_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_images_response::result},
     };
@@ -704,7 +704,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_image_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_image_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_image_versions_request::key},
         utility::codec::field{"offset", &list_image_versions_request::offset},
@@ -722,7 +722,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_image_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_image_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_image_versions_response::result},
         utility::codec::field{"versions", &list_image_versions_response::versions},
@@ -738,7 +738,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_image_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_image_version_request::key},
     };
@@ -752,7 +752,7 @@ inline constexpr std::string_view deleted = "assets.v1.images_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_image_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_image_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_image_version_response::result},
         utility::codec::field{"version", &get_image_version_response::version},

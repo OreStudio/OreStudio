@@ -61,6 +61,29 @@ CONSOLIDATED_REPORTS = {"Leverage Ratio", "Liquidity Coverage", "Large Exposures
 OPTION_REPORTS = {"Vega", "Volatility Surfaces", "Triple Vol Spot Ladder",
                   "Triple Vol Spot Ladder (EOD)", "Spike Map", "Strike Map", "Option Map"}
 
+# The ladder family, which the product owner overruled the design on: on
+# 2026-11-04 they asked for the catalogue to state the ladders and let them fail
+# at the engine like every other report that waits on its inputs. A definition
+# that produces no figure costs nothing to hold, so every party runs the family,
+# including the holding company, whose own scope holds no desk. What each party
+# still cannot do is price it, and that is a fact about the data and the missing
+# sensitivity document, not about the definition. The design's rows 11 to 14 stay
+# out: they wait on swaption, cap and floor, credit and equity volatility data,
+# and the catalogue states that backlog rather than a definition that names no
+# document.
+LADDER_REPORTS = {
+    "Bump and Reprice Rho Ladder", "Bump and Reprice Rho Ladder (EOD)",
+    "Bump and Reprice Gamma Ladder", "Bump and Reprice Theta Ladder",
+    "Bump and Reprice Cross-gamma Ladder",
+    "Bump and Reprice ATM Vega Ladder", "Bump and Reprice ATM Vega Ladder (EOD)",
+    "Bump and Reprice Surface Vega Ladder", "Bump and Reprice Surface Vega Ladder (EOD)",
+    "Bump and Reprice Risk-reversal Vega Ladder",
+    "Bump and Reprice Risk-reversal Vega Ladder (EOD)",
+    "Bump and Reprice Butterfly Vega Ladder",
+    "Bump and Reprice Butterfly Vega Ladder (EOD)",
+    "Bump and Reprice DV01 Ladder", "Bump and Reprice Delta Ladder",
+}
+
 # D6: what a report needs in the same entity, from the prerequisites its
 # catalogue text states. Stressed VaR is left out on purpose: its text names
 # the volatility surface as a prerequisite elsewhere, but it also states that it
@@ -95,6 +118,11 @@ def write(name, records):
 def runs(entity, report):
     tier = report["tier"]
     name = report["name"]
+
+    # The product owner's overrule on the ladder family: the catalogue states it
+    # at every party, so it is decided before any rule that chooses a party's set.
+    if name in LADDER_REPORTS:
+        return True
 
     if entity["role"] == "holding":
         # D2: oversight, consolidation and the consolidated ratios. D5: the

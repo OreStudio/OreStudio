@@ -334,7 +334,7 @@ the output of a run from last week.
 | Read the errors | Read one error | =reporting.v1.report_error_events.get= | exists |
 | Read the errors | Read the scope vocabulary | =reporting.v1.report_error_scopes.list= | exists |
 | Read the package | Prepare the ORE package the engine reads | =ore.v1.ops.prepare_ore_package= | exists |
-| Watch for output | Learn that the run completed and its output landed | =reporting.v1.report_instances_events.updated= | exists |
+| Watch for output | Learn that the run completed and its output landed | =reporting.v1.events.report_instances.updated= | exists |
 | Take the archive | List the files inside the run's archive | (no operation lists an archive's contents) | missing |
 | Take the archive | Read or stream the archive's bytes | (no reporting operation serves the archive) | missing |
 | Take the package | Read the exported ORE package, or list its files | (no operation in the set returns it) | missing |

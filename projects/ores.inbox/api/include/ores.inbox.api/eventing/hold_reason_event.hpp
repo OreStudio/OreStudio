@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::inbox::messaging::hold_reason_event> {
-    static constexpr std::string_view subject_prefix = "inbox.v1.hold_reasons_events";
+    static constexpr std::string_view subject_prefix = "inbox.v1.events.hold_reasons";
 
     static ores::inbox::messaging::hold_reason_event
     from_notification(const entity_event_notification& notification) {

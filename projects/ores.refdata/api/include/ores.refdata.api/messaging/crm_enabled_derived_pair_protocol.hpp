@@ -362,9 +362,9 @@ struct get_crm_enabled_derived_pair_version_response {
  * of them.
  */
 namespace crm_enabled_derived_pair_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.crm_enabled_derived_pairs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.crm_enabled_derived_pairs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pairs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.crm_enabled_derived_pairs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.crm_enabled_derived_pairs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.crm_enabled_derived_pairs.deleted";
 }
 /**
  * @brief The members of crm_enabled_derived_pair_key, named as the wire names them and in the order
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const crm_enabled_derived_pair_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_enabled_derived_pair_key>) {
     return std::tuple{
         utility::codec::field{"id", &crm_enabled_derived_pair_key::id},
     };
@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const crm_enabled_derived_pair_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_enabled_derived_pair_write>) {
     return std::tuple{
         utility::codec::field{"id", &crm_enabled_derived_pair_write::id},
         utility::codec::field{"party_id", &crm_enabled_derived_pair_write::party_id},
@@ -409,7 +409,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const crm_enabled_derived_pair_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_enabled_derived_pair_change>) {
     return std::tuple{
         utility::codec::field{"write", &crm_enabled_derived_pair_change::write},
         utility::codec::field{"precondition", &crm_enabled_derived_pair_change::precondition},
@@ -424,7 +424,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const crm_enabled_derived_pair_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_enabled_derived_pair_removal>) {
     return std::tuple{
         utility::codec::field{"key", &crm_enabled_derived_pair_removal::key},
         utility::codec::field{"precondition", &crm_enabled_derived_pair_removal::precondition},
@@ -439,7 +439,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const crm_enabled_derived_pair_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_enabled_derived_pair_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &crm_enabled_derived_pair_lookup::key},
         utility::codec::field{"crm_enabled_derived_pair",
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const crm_enabled_derived_pairs_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_enabled_derived_pairs_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &crm_enabled_derived_pairs_filter::id_one_of},
     };
@@ -469,7 +469,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const crm_enabled_derived_pair_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_enabled_derived_pair_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &crm_enabled_derived_pair_event::event_id},
         utility::codec::field{"key", &crm_enabled_derived_pair_event::key},
@@ -488,7 +488,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const crm_enabled_derived_pair_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<crm_enabled_derived_pair_version_key>) {
     return std::tuple{
         utility::codec::field{"crm_enabled_derived_pair",
                               &crm_enabled_derived_pair_version_key::crm_enabled_derived_pair},
@@ -504,7 +504,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const crm_enabled_derived_pair_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<crm_enabled_derived_pair_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &crm_enabled_derived_pair_versions_filter::version},
         utility::codec::field{"from_version",
@@ -521,7 +522,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_crm_enabled_derived_pairs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_crm_enabled_derived_pairs_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_crm_enabled_derived_pairs_request::offset},
         utility::codec::field{"limit", &list_crm_enabled_derived_pairs_request::limit},
@@ -539,7 +541,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_crm_enabled_derived_pairs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_crm_enabled_derived_pairs_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_crm_enabled_derived_pairs_response::result},
         utility::codec::field{"crm_enabled_derived_pairs",
@@ -556,7 +559,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_crm_enabled_derived_pair_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_crm_enabled_derived_pair_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_crm_enabled_derived_pair_request::key},
     };
@@ -570,7 +573,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_crm_enabled_derived_pair_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_crm_enabled_derived_pair_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_crm_enabled_derived_pair_response::result},
         utility::codec::field{"crm_enabled_derived_pair",
@@ -586,7 +590,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_crm_enabled_derived_pairs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_crm_enabled_derived_pairs_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_crm_enabled_derived_pairs_request::keys},
     };
@@ -600,7 +605,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_crm_enabled_derived_pairs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_crm_enabled_derived_pairs_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_crm_enabled_derived_pairs_response::result},
         utility::codec::field{"entries", &get_many_crm_enabled_derived_pairs_response::entries},
@@ -615,7 +621,7 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_crm_enabled_derived_pair_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_crm_enabled_derived_pair_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_crm_enabled_derived_pair_request::change},
         utility::codec::field{"intent", &put_crm_enabled_derived_pair_request::intent},
@@ -630,7 +636,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_crm_enabled_derived_pair_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_crm_enabled_derived_pair_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_crm_enabled_derived_pair_response::result},
         utility::codec::field{"crm_enabled_derived_pair",
@@ -646,7 +653,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_crm_enabled_derived_pairs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_crm_enabled_derived_pairs_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_crm_enabled_derived_pairs_request::changes},
         utility::codec::field{"intent", &put_many_crm_enabled_derived_pairs_request::intent},
@@ -661,7 +669,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_crm_enabled_derived_pairs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_crm_enabled_derived_pairs_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_crm_enabled_derived_pairs_response::result},
         utility::codec::field{
@@ -678,7 +687,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_crm_enabled_derived_pair_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_crm_enabled_derived_pair_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_crm_enabled_derived_pair_request::removal},
         utility::codec::field{"intent", &delete_crm_enabled_derived_pair_request::intent},
@@ -693,7 +703,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_crm_enabled_derived_pair_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_crm_enabled_derived_pair_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_crm_enabled_derived_pair_response::result},
     };
@@ -707,7 +718,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_crm_enabled_derived_pairs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_crm_enabled_derived_pairs_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_crm_enabled_derived_pairs_request::removals},
         utility::codec::field{"intent", &delete_many_crm_enabled_derived_pairs_request::intent},
@@ -722,7 +734,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_crm_enabled_derived_pairs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_crm_enabled_derived_pairs_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_crm_enabled_derived_pairs_response::result},
     };
@@ -736,7 +749,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_crm_enabled_derived_pair_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_crm_enabled_derived_pair_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_crm_enabled_derived_pair_versions_request::key},
         utility::codec::field{"offset", &list_crm_enabled_derived_pair_versions_request::offset},
@@ -754,7 +768,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_crm_enabled_derived_pair_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_crm_enabled_derived_pair_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_crm_enabled_derived_pair_versions_response::result},
         utility::codec::field{"versions",
@@ -771,7 +786,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_crm_enabled_derived_pair_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_crm_enabled_derived_pair_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_crm_enabled_derived_pair_version_request::key},
     };
@@ -785,7 +801,8 @@ inline constexpr std::string_view deleted = "refdata.v1.crm_enabled_derived_pair
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_crm_enabled_derived_pair_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_crm_enabled_derived_pair_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_crm_enabled_derived_pair_version_response::result},
         utility::codec::field{"version", &get_crm_enabled_derived_pair_version_response::version},

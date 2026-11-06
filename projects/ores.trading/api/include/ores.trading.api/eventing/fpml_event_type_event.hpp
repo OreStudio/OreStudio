@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::trading::messaging::fpml_event_type_event> {
-    static constexpr std::string_view subject_prefix = "trading.v1.fpml_event_types_events";
+    static constexpr std::string_view subject_prefix = "trading.v1.events.fpml_event_types";
 
     static ores::trading::messaging::fpml_event_type_event
     from_notification(const entity_event_notification& notification) {

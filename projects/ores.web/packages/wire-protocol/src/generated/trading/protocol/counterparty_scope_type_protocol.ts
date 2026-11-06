@@ -204,7 +204,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'trading.v1.counterparty_scope_types_events.created',
-    updated: 'trading.v1.counterparty_scope_types_events.updated',
-    deleted: 'trading.v1.counterparty_scope_types_events.deleted',
+    created: 'trading.v1.events.counterparty_scope_types.created',
+    updated: 'trading.v1.events.counterparty_scope_types.updated',
+    deleted: 'trading.v1.events.counterparty_scope_types.deleted',
 } as const;

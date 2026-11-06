@@ -39,6 +39,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 
 namespace ores::http::net {
@@ -148,6 +149,27 @@ private:
                                                 unsigned version,
                                                 bool keep_alive,
                                                 bool send_body);
+
+    /**
+     * @brief Answers a request that will not be served, and closes the connection.
+     *
+     * The refusal is written by the session, not by the failed read, so the
+     * caller is told why instead of watching the socket close. It answers the
+     * declared size, the chunked body that declares none, the stream that runs
+     * past the limit, the route that will not take the request, and the
+     * destination that cannot take the bytes.
+     */
+    boost::asio::awaitable<void> refuse(unsigned version,
+                                        std::string_view subject,
+                                        domain::http_status status,
+                                        std::string_view reason,
+                                        std::string_view note);
+
+    boost::asio::awaitable<void>
+    refuse_too_large(unsigned version, std::string_view subject, std::uint64_t size);
+
+    boost::asio::awaitable<void>
+    refuse_destination(unsigned version, std::string_view subject, std::string_view note);
 
     domain::http_method convert_method(boost::beast::http::verb verb);
 

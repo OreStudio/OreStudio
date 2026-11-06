@@ -596,7 +596,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const raise_approval_request_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_approval_request_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"kind_code", &raise_approval_request_request::kind_code},
         ::ores::utility::codec::field{"reason", &raise_approval_request_request::reason},
@@ -612,7 +612,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const raise_approval_request_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_approval_request_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &raise_approval_request_response::result},
         ::ores::utility::codec::field{"request", &raise_approval_request_response::request},
@@ -627,7 +627,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const withdraw_approval_request_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_approval_request_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id", &withdraw_approval_request_request::request_id},
         ::ores::utility::codec::field{"version", &withdraw_approval_request_request::version},
@@ -643,7 +643,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const withdraw_approval_request_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_approval_request_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &withdraw_approval_request_response::result},
         ::ores::utility::codec::field{"request", &withdraw_approval_request_response::request},
@@ -658,7 +658,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const decide_approval_request_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<decide_approval_request_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id", &decide_approval_request_request::request_id},
         ::ores::utility::codec::field{"version", &decide_approval_request_request::version},
@@ -679,7 +679,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const decide_approval_request_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<decide_approval_request_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &decide_approval_request_response::result},
         ::ores::utility::codec::field{"request", &decide_approval_request_response::request},
@@ -694,7 +694,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_approval_queue_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_queue_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"offset", &list_approval_queue_request::offset},
         ::ores::utility::codec::field{"limit", &list_approval_queue_request::limit},
@@ -709,7 +709,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_approval_queue_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_queue_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &list_approval_queue_response::result},
         ::ores::utility::codec::field{"requests", &list_approval_queue_response::requests},
@@ -726,7 +726,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_my_approval_requests_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_my_approval_requests_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"offset", &list_my_approval_requests_request::offset},
         ::ores::utility::codec::field{"limit", &list_my_approval_requests_request::limit},
@@ -741,7 +741,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_my_approval_requests_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_my_approval_requests_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &list_my_approval_requests_response::result},
         ::ores::utility::codec::field{"requests", &list_my_approval_requests_response::requests},
@@ -757,7 +757,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id", &get_approval_request::request_id},
     };
@@ -771,7 +771,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_approval_response::result},
         ::ores::utility::codec::field{"request", &get_approval_response::request},
@@ -786,7 +786,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const expire_overdue_approvals_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<expire_overdue_approvals_request>) {
     return std::tuple{};
 }
 
@@ -798,7 +798,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const expire_overdue_approvals_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<expire_overdue_approvals_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &expire_overdue_approvals_response::result},
         ::ores::utility::codec::field{"expired", &expire_overdue_approvals_response::expired},
@@ -813,7 +813,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const remind_expiring_approvals_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<remind_expiring_approvals_request>) {
     return std::tuple{};
 }
 
@@ -825,7 +825,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const remind_expiring_approvals_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<remind_expiring_approvals_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &remind_expiring_approvals_response::result},
         ::ores::utility::codec::field{"reminded", &remind_expiring_approvals_response::reminded},
@@ -840,7 +840,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const retry_stalled_applies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<retry_stalled_applies_request>) {
     return std::tuple{};
 }
 
@@ -852,7 +852,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const retry_stalled_applies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<retry_stalled_applies_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &retry_stalled_applies_response::result},
         ::ores::utility::codec::field{"resumed", &retry_stalled_applies_response::resumed},
@@ -868,7 +868,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_field&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_field>) {
     return std::tuple{
         ::ores::utility::codec::field{"name", &approval_request_field::name},
         ::ores::utility::codec::field{"value", &approval_request_field::value},
@@ -883,7 +883,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_version&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_version>) {
     return std::tuple{
         ::ores::utility::codec::field{"version", &approval_request_version::version},
         ::ores::utility::codec::field{"modified_by", &approval_request_version::modified_by},
@@ -905,7 +905,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_history_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_history_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id", &get_approval_history_request::request_id},
     };
@@ -919,7 +919,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_history_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_history_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_approval_history_response::result},
         ::ores::utility::codec::field{"versions", &get_approval_history_response::versions},
@@ -934,7 +934,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_part_progress&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_part_progress>) {
     return std::tuple{
         ::ores::utility::codec::field{"code", &approval_part_progress::code},
         ::ores::utility::codec::field{"name", &approval_part_progress::name},
@@ -954,7 +954,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_parts_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_parts_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id", &get_approval_parts_request::request_id},
     };
@@ -968,7 +968,7 @@ struct get_approval_parts_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_parts_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_parts_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_approval_parts_response::result},
         ::ores::utility::codec::field{"parts", &get_approval_parts_response::parts},

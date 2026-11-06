@@ -46,6 +46,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/project_root.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/publish_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/run_coroutine_test.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/running_under_valgrind.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/scoped_database_helper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/scoped_environment_override.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.testing/series_classification_rule_seed.hpp"

@@ -207,7 +207,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.curve_volatility_curves_events.created',
-    updated: 'refdata.v1.curve_volatility_curves_events.updated',
-    deleted: 'refdata.v1.curve_volatility_curves_events.deleted',
+    created: 'refdata.v1.events.curve_volatility_curves.created',
+    updated: 'refdata.v1.events.curve_volatility_curves.updated',
+    deleted: 'refdata.v1.events.curve_volatility_curves.deleted',
 } as const;

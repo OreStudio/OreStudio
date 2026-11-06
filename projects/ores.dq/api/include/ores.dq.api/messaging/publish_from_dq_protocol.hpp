@@ -229,7 +229,7 @@ struct publish_badge_mappings_from_dq_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_from_dq_command&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_from_dq_command>) {
     return std::tuple{
         ::ores::utility::codec::field{"dataset_id", &publish_from_dq_command::dataset_id},
         ::ores::utility::codec::field{"tenant_id", &publish_from_dq_command::tenant_id},
@@ -246,7 +246,7 @@ struct publish_badge_mappings_from_dq_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_from_dq_result&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_from_dq_result>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &publish_from_dq_result::success},
         ::ores::utility::codec::field{"error_message", &publish_from_dq_result::error_message},
@@ -266,7 +266,7 @@ struct publish_badge_mappings_from_dq_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_ip2country_from_dq_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_ip2country_from_dq_request>) {
     return std::tuple{};
 }
 
@@ -278,7 +278,8 @@ struct publish_badge_mappings_from_dq_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_coding_schemes_from_dq_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<publish_coding_schemes_from_dq_request>) {
     return std::tuple{};
 }
 
@@ -290,7 +291,8 @@ struct publish_badge_mappings_from_dq_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_badge_severities_from_dq_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<publish_badge_severities_from_dq_request>) {
     return std::tuple{};
 }
 
@@ -302,7 +304,8 @@ struct publish_badge_mappings_from_dq_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_badge_definitions_from_dq_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<publish_badge_definitions_from_dq_request>) {
     return std::tuple{};
 }
 
@@ -314,7 +317,7 @@ struct publish_badge_mappings_from_dq_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_code_domains_from_dq_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_code_domains_from_dq_request>) {
     return std::tuple{};
 }
 
@@ -326,7 +329,8 @@ struct publish_badge_mappings_from_dq_request {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const publish_badge_mappings_from_dq_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<publish_badge_mappings_from_dq_request>) {
     return std::tuple{};
 }
 

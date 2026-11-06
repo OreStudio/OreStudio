@@ -1106,7 +1106,7 @@ template <typename T>
  * @brief The arrays of a batch, named as the wire names them and in the order
  * the type declares them.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_batch&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_batch>) {
     return std::tuple{
         ::ores::utility::codec::field{"bond_instruments", &instrument_batch::bond_instruments},
         ::ores::utility::codec::field{"commodity_instruments",

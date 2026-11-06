@@ -39,9 +39,9 @@ Published when a job definition changes, one subject per action.
 
 | Subject | Description |
 |---------+-------------|
-| =scheduler.v1.job_definitions_events.created= | A job definition was created |
-| =scheduler.v1.job_definitions_events.updated= | A job definition was updated |
-| =scheduler.v1.job_definitions_events.deleted= | A job definition was removed |
+| =scheduler.v1.events.job_definitions.created= | A job definition was created |
+| =scheduler.v1.events.job_definitions.updated= | A job definition was updated |
+| =scheduler.v1.events.job_definitions.deleted= | A job definition was removed |
 
 * Job definition history
 
@@ -70,7 +70,7 @@ subscribes to this subject today; the payload is the shared
 
 | Subject | Description |
 |---------+-------------|
-| =scheduler.v1.job_instance_events.updated= | A job execution changed state |
+| =scheduler.v1.events.job_instances.updated= | A job execution changed state |
 
 * Useful Pages
 

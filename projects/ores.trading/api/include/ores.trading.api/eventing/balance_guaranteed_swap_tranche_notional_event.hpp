@@ -49,7 +49,7 @@ template <>
 struct entity_event_traits<
     ores::trading::messaging::balance_guaranteed_swap_tranche_notional_event> {
     static constexpr std::string_view subject_prefix =
-        "trading.v1.balance_guaranteed_swap_tranche_notionals_events";
+        "trading.v1.events.balance_guaranteed_swap_tranche_notionals";
 
     static ores::trading::messaging::balance_guaranteed_swap_tranche_notional_event
     from_notification(const entity_event_notification& notification) {

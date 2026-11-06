@@ -8,12 +8,12 @@
 #+filetags: :let-the-blotter-read-a-page-not-the-book:sprint_29:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 4403
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
 #+updated: 2026-11-01
-#+environment: festive-dijkstra
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:44A58042-462F-46E2-93A5-F6936D38B411][Let the blotter read a page, not the book]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:44A58042-462F-46E2-93A5-F6936D38B411][Let the blotter read a page, not the book]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#4403](https://github.com/OreStudio/OreStudio/pull/4403) | [trading] Answer the blotter's two questions with two reads |
 
 * Review
 
@@ -83,3 +83,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The rail is answered by one grouped read. =count_blotter_rail= groups
+=ores_trading_trade_summaries_vw= by the dimension the request names, under the
+same filter the page takes, and =trading.v1.blotter.rail= returns one node per
+group with its count. The portfolios a book sits under are rolled up from the
+grouped rows, not from the trades.
+
+Merged on main in #4403 at =b903acb4=. The six =[rail]= cases in
+=trading/core/tests/blotter_rail_tests.cpp= cover the book counts, the portfolio
+subtree, the filter the page honours, a list of values, a search, and the
+refusal of a dimension the rail does not have.
+
+The store behind the rail is still the union view. This task gave the rail the
+right shape; making it cheap is [[id:A0AE98E4-DF2E-4D75-9099-FF3E2555B5B1][List a
+package as the trade it is]] and
+[[id:2A42890A-63B5-4076-B934-E98685795CF0][Order the page by an indexed key]].

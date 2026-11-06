@@ -1,0 +1,102 @@
+{
+  "engine_repository": "https://github.com/OreStudio/Engine",
+  "engine_commit": "3d75a69087911a7e2cf1e6882da7bc27135c0762",
+  "engine_commit_date": "2026-09-11T17:26:17Z",
+  "submodules": [
+    " 3c594b86d3d361a7a583f937f898b4076a31be73 ORE-SWIG/QuantLib-SWIG (3c594b8)",
+    " a092efc5b9b581d8c943ebb2b3284ddd1d93604e QuantLib (a092efc)"
+  ],
+  "built_at": "2026-11-03T11:44:57.6564722Z",
+  "platform": "x64-windows",
+  "configuration": "Release",
+  "compiler": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\cl.exe",
+  "compiler_version": "19.44.35229.0",
+  "cmake_version": "cmake version 4.4.4",
+  "vcpkg_commit": "0c2a9ace1964b818b15f7ae50ba1c42404918a7b",
+  "dependency_manifest_sha256": "e57088969e23633d35530564733d26b731455e233485905f9ce5805804c33e62",
+  "dependency_overlay_sha256": [
+    {
+      "sha256": "68af9f8c1daa9b7b160d89b9e72e30d0aff98d1e32a46723a1d89691b7f4597d",
+      "file": "boost-ublas\\msvc-iterator-debug-level.patch"
+    },
+    {
+      "sha256": "bb41f3753ab289fe3fd8ce1a605af2506cfb715df44ee450e9ea05b3e4b475bd",
+      "file": "boost-ublas\\portfile.cmake"
+    },
+    {
+      "sha256": "4ddd8ee5bb4d8c25e77b969fb4d3801a022ffde1a49087a3081cadb32fc9a4cc",
+      "file": "boost-ublas\\vcpkg.json"
+    }
+  ],
+  "configure_arguments": [
+    "--preset",
+    "windows-ninja-x64-release",
+    "-S",
+    "C:\\Users\\alexa\\Documents\\projects\\orestudio\\Engine",
+    "-B",
+    "C:\\Users\\alexa\\Documents\\projects\\orestudio\\Engine\\build\\orestudio-windows-x64-release",
+    "-DVCPKG_INSTALLED_DIR=C:\\Users\\alexa\\Documents\\projects\\orestudio\\Engine\\build\\orestudio-windows-x64-release\\vcpkg_installed",
+    "-DVCPKG_MANIFEST_MODE=OFF",
+    "-DVCPKG_TARGET_TRIPLET=x64-windows",
+    "-DORE_BUILD_APP=ON",
+    "-DORE_BUILD_SWIG=OFF",
+    "-DORE_BUILD_TESTS=OFF",
+    "-DORE_BUILD_EXAMPLES=OFF",
+    "-DORE_BUILD_DOC=OFF",
+    "-DQL_BUILD_EXAMPLES=OFF",
+    "-DQL_BUILD_TEST_SUITE=OFF",
+    "-DQL_BUILD_BENCHMARK=OFF",
+    "-DMSVC_WHOLE_PROGRAM_OPTIMIZATION=OFF",
+    "-DMSVC_PARALLELBUILD=OFF",
+    "-DBoost_USE_STATIC_LIBS=OFF",
+    "-DBoost_USE_STATIC_RUNTIME=OFF",
+    "-DMSVC_LINK_DYNAMIC_RUNTIME=ON"
+  ],
+  "file": "ore-1.8.17.0-x64-windows.tar.gz",
+  "engine_version": "1.8.17.0",
+  "built_by": "external/ore/tools/build_ore_windows.ps1",
+  "packaged_by": "external/ore/tools/package_ore_windows.ps1",
+  "host_system_dlls": [
+    "ADVAPI32.dll",
+    "api-ms-win-core-synch-l1-2-0.dll",
+    "api-ms-win-crt-convert-l1-1-0.dll",
+    "api-ms-win-crt-environment-l1-1-0.dll",
+    "api-ms-win-crt-filesystem-l1-1-0.dll",
+    "api-ms-win-crt-heap-l1-1-0.dll",
+    "api-ms-win-crt-locale-l1-1-0.dll",
+    "api-ms-win-crt-math-l1-1-0.dll",
+    "api-ms-win-crt-runtime-l1-1-0.dll",
+    "api-ms-win-crt-stdio-l1-1-0.dll",
+    "api-ms-win-crt-string-l1-1-0.dll",
+    "api-ms-win-crt-time-l1-1-0.dll",
+    "api-ms-win-crt-utility-l1-1-0.dll",
+    "KERNEL32.dll",
+    "Secur32.dll",
+    "WS2_32.dll"
+  ],
+  "packaged_at": "2026-11-03T11:45:00.610799+00:00",
+  "runtime_files": {
+    "boost_filesystem-vc143-mt-x64-1_92.dll": "57d6487724173c571d8ddf84b0eba23797029d551101980f1692c0662d5d7e04",
+    "boost_iostreams-vc143-mt-x64-1_92.dll": "ddf94dc62983d306f0105dab9829c4617850716e34fd4c8dca5767ccb21e3d1a",
+    "boost_log-vc143-mt-x64-1_92.dll": "35bc90e5481a4c3dadd3f6ce0ff57a632549bdee195cc4fd9ed666bf5c146641",
+    "boost_program_options-vc143-mt-x64-1_92.dll": "72ccdfa005583c9bc5b0ecd14ab1f498f3e17de56ea69a6bcf1ba143f8cd50d0",
+    "boost_serialization-vc143-mt-x64-1_92.dll": "06a3caaccfb29e67ea0c1e238d5cb02020151865eb7c0ba43488347bd68710bd",
+    "boost_thread-vc143-mt-x64-1_92.dll": "a82d43b8218d9c89dafaa4d803300ae31711fe1661afc8068a754c3425b38f61",
+    "boost_timer-vc143-mt-x64-1_92.dll": "fef831bf98375cf9503e4e68577fd0506c04000827da74ff1cb615388327bbd0",
+    "bz2.dll": "0aefe1e757f1c9419fbae1ca13f90c3b91ec284ffb7506867cae840b12cc9671",
+    "liblzma.dll": "67ad35e054bdeed614ebde505252befd3948e2c3ae77574ae27b022460a3203d",
+    "manifest.json": "e65c972954a386122482ef13b653e18b5dd4c57ea69bd095cb881624f2b12907",
+    "MSVCP140.dll": "0f885b509a685d2bbfa652fed26b5fb31d88fbdab0a978c641d1c7b8aa460aa9",
+    "MSVCP140_CODECVT_IDS.dll": "f2069a52880ec885ee7f0511186100eb7fada0411a2b4948fafea7735b878a18",
+    "ore.exe": "de1ca9c560e7a67155f787a38f2d833ab7a89c2fdc862df9dc0283cb327a32e0",
+    "VCRUNTIME140.dll": "d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066",
+    "VCRUNTIME140_1.dll": "1f2d41c4aa5db0bc33ebf7b66d72943a817d7ce6cbe880502a9403823633093f",
+    "z.dll": "c6b868327d26d3520fc6acaf5bf0f4307a65e29be037884674b950e7c1fe09a7",
+    "zstd.dll": "104a3b6fd69e6976b0e648f1f02af18744753cc624ba2968e7f0a364f546c1ce"
+  },
+  "dependency_status_sha256": "f5a823b88862aa5ad29afa77f09c7c11184305e46aca34a710244dd4de1ad9ac",
+  "verified_against": "C:\\Users\\alexa\\Documents\\projects\\orestudio\\OreStudio\\external\\ore\\examples\\Academy\\TA002_IR_Swap\\ExpectedOutput",
+  "rtol": 1e-06,
+  "sha256": "8b87e41940f1bc7590ec25f6acb7607264f3a6d50c73097f620c085f3ae6e114",
+  "size_bytes": 28129364
+}

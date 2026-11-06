@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :recipe:shell:provisioning:acme:
 #+created: 2026-07-29
-#+updated: 2026-07-29
+#+updated: 2026-11-03
 
 The shell's demonstration provision: the GLEIF recipe's flow with the
 demonstration starting point in place of a GLEIF hierarchy. The starting
@@ -61,6 +61,10 @@ Two engine versions are published, 1.8.16.0 and 1.8.17.0, so a job can
 be dispatched against either and the two results compared. Both rows
 land under the same =ORE= app, because =publish-package= upserts the app
 by name and adds a version rather than creating a second app.
+Version 1.8.17.0 publishes both =x64-linux= and =x64-windows=
+packages, allowing native workers of either platform to price jobs.
+The Windows build/package procedure is in
+=external/ore/packages/README.md=; both builds use the same Engine commit.
 
 =--file= is =build/output/${ORES_PRESET}/publish/vendor-packages/...=,
 not a bare =publish/vendor-packages/...=, even though the running
@@ -80,6 +84,7 @@ connect $ORES_NATS_URL
 bootstrap setup super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation --profile acme_demo
 compute publish-package ORE 1.8.16.0-4-g3b62ba248 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
 compute publish-package ORE 1.8.17.0 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.17.0-x64-linux.tar.gz
+compute publish-package ORE 1.8.17.0 x64-windows --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.17.0-x64-windows.tar.gz
 logout
 
 exit

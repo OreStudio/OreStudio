@@ -860,7 +860,7 @@ read_bond_issues_by_security(Nats& nats, std::string& out_error) {
 
     std::unordered_map<std::string, std::vector<bond_security_terms>> result;
     std::uint32_t offset = 0;
-    for (int page = 0; page < max_pages; ++page) {
+    for (int page_index = 0; page_index < max_pages; ++page_index) {
         list_bond_issues_request req;
         req.offset = offset;
         req.limit = page_size;

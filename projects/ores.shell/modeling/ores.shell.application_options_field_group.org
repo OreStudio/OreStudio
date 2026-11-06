@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: F513AABC-A1A7-4275-B380-F5A0FA86A856
+:ores.cpp.field-group.field_group_header.enabled: nil
+:ores.cpp.field-group.options_header.enabled: true
+:ores.ts.enabled: nil
+:END:
+#+title: ores.shell.options
+#+description: All of the configuration options required by the client.
+#+type: ores.codegen.field_group
+#+component: shell
+#+subcomponent: application
+#+component_include: shell
+#+entity_singular: options
+#+namespace: ores::shell::config
+#+brief: All of the configuration options required by the client.
+#+header: config/options.hpp
+#+filetags: :model:field_group:options:shell:
+#+created: 2026-11-05
+#+updated: 2026-11-05
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.logging/logging_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
+#include "ores.shell/config/login_options.hpp"
+#include "ores.telemetry.core/exporting/telemetry_options.hpp"
+#include <optional>
+#include <string>
+#+end_src
+
+* Fields
+
+** logging
+:PROPERTIES:
+:cpp_type: std::optional<logging::logging_options>
+:END:
+
+Configuration options related to logging, if any.
+
+** connection
+:PROPERTIES:
+:cpp_type: std::optional<nats::config::nats_options>
+:END:
+
+Configuration options for connecting to the server.
+
+** login
+:PROPERTIES:
+:cpp_type: std::optional<login_options>
+:END:
+
+Configuration options for logging in to the server.
+
+** telemetry
+:PROPERTIES:
+:cpp_type: std::optional<telemetry::exporting::telemetry_options>
+:END:
+
+Configuration options for telemetry export, if any.
+
+** script_path
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Path to a .ores script to run non-interactively, if any.
+
+When set, the shell auto-connects/logs in, runs the script via the
+`load` command (which skips `#` comments and expands $VAR/${VAR}
+references) and then exits instead of entering the interactive REPL.
+

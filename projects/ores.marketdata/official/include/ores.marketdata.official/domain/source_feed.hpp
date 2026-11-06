@@ -47,7 +47,7 @@ struct hosted_source final {
     std::string frankfurter_key;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const hosted_source&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hosted_source>) {
     return std::tuple{
         ::ores::utility::codec::field{"source_name", &hosted_source::source_name},
         ::ores::utility::codec::field{"provider_code", &hosted_source::provider_code},

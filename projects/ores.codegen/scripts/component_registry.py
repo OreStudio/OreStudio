@@ -295,4 +295,8 @@ def accepted_exceptions(component: str) -> tuple[AcceptedException, ...]:
 # documentation header for its outermost namespace, and every item that does
 # not apply to a component of kind All is recorded with its reason on
 # doc/agile/versions/v0/sprint_26/clean-shell/task_clean_shell.org.
-COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "diff", "dq", "http-cpp", "inbox-cpp", "marketdata", "ore", "refdata", "reporting", "scheduler-cpp", "history", "shell", "storage-cpp", "synthetic", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp")
+# logging, nats and database join when their options types move onto codegen.
+# Each lists its component model as excluded in the catalogue, so only its
+# field group models regenerate: the options header, and for database its
+# outcomes model as well. Their hand-written trees are otherwise untouched.
+COMPONENTS_UNDER_TEST = ("iam", "analytics-cpp", "assets-cpp", "compute-cpp", "diff", "dq", "http-cpp", "inbox-cpp", "marketdata", "ore", "refdata", "reporting", "scheduler-cpp", "history", "shell", "storage-cpp", "synthetic", "telemetry-cpp", "trading-cpp", "variability-cpp", "workflow-cpp", "logging", "nats", "database")

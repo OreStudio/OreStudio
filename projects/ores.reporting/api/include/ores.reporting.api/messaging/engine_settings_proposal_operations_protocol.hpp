@@ -227,7 +227,7 @@ struct recheck_engine_settings_changes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_value_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_value_change>) {
     return std::tuple{
         ::ores::utility::codec::field{"column_name", &engine_settings_value_change::column_name},
         ::ores::utility::codec::field{"ore_name", &engine_settings_value_change::ore_name},
@@ -245,7 +245,7 @@ struct recheck_engine_settings_changes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_change_line&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_change_line>) {
     return std::tuple{
         ::ores::utility::codec::field{"line_no", &engine_settings_change_line::line_no},
         ::ores::utility::codec::field{"group_code", &engine_settings_change_line::group_code},
@@ -265,7 +265,7 @@ struct recheck_engine_settings_changes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const engine_settings_value&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<engine_settings_value>) {
     return std::tuple{
         ::ores::utility::codec::field{"setting_code", &engine_settings_value::setting_code},
         ::ores::utility::codec::field{"text_value", &engine_settings_value::text_value},
@@ -280,7 +280,7 @@ struct recheck_engine_settings_changes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const raise_engine_settings_change_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_engine_settings_change_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"engine_settings_id",
                                       &raise_engine_settings_change_request::engine_settings_id},
@@ -301,7 +301,8 @@ struct recheck_engine_settings_changes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const raise_engine_settings_change_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<raise_engine_settings_change_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &raise_engine_settings_change_response::result},
         ::ores::utility::codec::field{"request_id",
@@ -317,7 +318,7 @@ struct recheck_engine_settings_changes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_changes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_engine_settings_changes_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id",
                                       &get_engine_settings_changes_request::request_id},
@@ -332,7 +333,7 @@ struct recheck_engine_settings_changes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_engine_settings_changes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_engine_settings_changes_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &get_engine_settings_changes_response::result},
         ::ores::utility::codec::field{"changes", &get_engine_settings_changes_response::changes},
@@ -347,7 +348,8 @@ struct recheck_engine_settings_changes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const recheck_engine_settings_changes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<recheck_engine_settings_changes_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"request_id",
                                       &recheck_engine_settings_changes_request::request_id},
@@ -362,7 +364,8 @@ struct recheck_engine_settings_changes_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const recheck_engine_settings_changes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<recheck_engine_settings_changes_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"result", &recheck_engine_settings_changes_response::result},
         ::ores::utility::codec::field{"changes",

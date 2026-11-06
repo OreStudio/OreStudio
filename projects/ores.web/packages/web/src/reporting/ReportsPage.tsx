@@ -74,6 +74,7 @@ import {
     HealthTag,
     formatCount,
     formatDuration,
+    isOnDemand,
     runDuration,
 } from './shared.js';
 
@@ -255,20 +256,19 @@ function ProblemCount({ value }: { readonly value: number | null }): ReactNode {
 }
 
 /**
- * The expression a definition carries when it runs only when a person asks.
- * The scheduler needs one, and one that never fires is the statement that the
- * report is on demand; the row says so rather than drawing a date that never
- * comes.
+ * The schedule the definition runs on, in words, with the next fire when the
+ * scheduler states one.
+ *
+ * A definition with no scheduler job is on demand: nothing will fire whatever
+ * expression it keeps, and the row says so rather than drawing a schedule that
+ * never comes.
  */
-const ON_DEMAND_SCHEDULE = '0 0 31 2 *';
-
-/** The schedule the definition runs on, in words, with the next fire when the scheduler states one. */
 function ScheduleCell({ row }: { readonly row: ReportRowView }): ReactNode {
     const { t } = useTranslation();
     return (
         <span className="flex flex-col gap-1">
             <span className="text-xs">
-                {row.scheduleExpression === ON_DEMAND_SCHEDULE ? (
+                {isOnDemand(row.scheduled, row.scheduleExpression) ? (
                     t('reporting.schedule.onDemand')
                 ) : (
                     <CronValue expression={row.scheduleExpression} />
@@ -312,9 +312,7 @@ function useColumns(showParty: boolean): readonly ListColumn<ReportRowView>[] {
             sort: 'report_type',
             header: t('reporting.columns.reportType'),
             cell: (row) => (
-                <Tag tone={row.reportType === 'risk' ? 'accent' : 'neutral'}>
-                    {row.reportType}
-                </Tag>
+                <Tag tone={row.reportType === 'risk' ? 'accent' : 'neutral'}>{row.reportType}</Tag>
             ),
         },
         {

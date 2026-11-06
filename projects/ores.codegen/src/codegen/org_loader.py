@@ -2529,7 +2529,7 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     fm = doc.frontmatter
 
     fg: dict[str, Any] = {}
-    for key in ("product", "component", "subcomponent",
+    for key in ("product", "component", "subcomponent", "component_include",
                 "entity_singular", "brief"):
         if key in fm:
             fg[key] = fm[key]
@@ -2570,6 +2570,12 @@ def load_org_field_group_model(path: Path | str) -> dict[str, Any]:
     fg["has_economic_declaration"] = declared
     fg["economic_fields"] = economic
     fg["has_economic_fields"] = bool(economic)
+    fg["canonical_members"] = economic
+    fg["has_canonical_members"] = bool(economic)
+    fg.update(options_struct(Path(path).name, fm, fields))
+    implementations = _collect_implementations(doc.root)
+    if implementations:
+        fg["implementations"] = implementations
 
     return {"field_group": fg}
 
@@ -3038,12 +3044,15 @@ SPEC_VERSIONS_VERBS = ("list", "get")
 
 
 def entity_event_prefix(component: str, plural: str) -> str:
-    """``iam.v1.tenants_events`` -- the collection one entity's events share.
+    """``iam.v1.events.tenants`` -- the collection one entity's events share.
 
-    The prefix names the events collection, and the action is the last
-    segment, so one payload is addressed by three subjects.
+    The events namespace is a segment of its own, because a NATS wildcard is a
+    whole token: an events collection spelled ``tenants_events`` cannot be
+    addressed by ``*_events``, and a subscriber that wants every event of every
+    component would have to hear every request as well. With the namespace in
+    place, ``*.v1.events.>`` hears the events and nothing else.
     """
-    return f"{component}.v1.{plural}_events"
+    return f"{component}.v1.events.{plural}"
 
 
 def entity_events(component: str, plural: str) -> list[dict[str, Any]]:
@@ -3067,17 +3076,18 @@ def request_subject(component: str, plural: str, verb: str) -> str:
 
 
 def event_subject(component: str, plural: str, action: str) -> str:
-    """``iam.v1.tenants_events.created`` -- an announcement, not an operation.
+    """``iam.v1.events.tenants.created`` -- an announcement, not an operation.
 
-    The resource segment names the events collection rather than the resource,
-    in the ``{resource}_{collection}`` form a sub-resource uses, so the subject
-    still has four segments and still sits inside its component's namespace.
+    The namespace takes the resource's place, so an event has five segments and
+    the collection is a token a subscriber can name. That is the whole reason
+    the namespace exists: the collection cannot be wildcarded when it is a
+    suffix of another token.
     """
     if action not in SPEC_EVENT_ACTIONS:
         raise ValueError(
             f"{action!r} is not an event action; "
             f"expected one of {SPEC_EVENT_ACTIONS}")
-    return f"{component}.v1.{plural}_events.{action}"
+    return f"{entity_event_prefix(component, plural)}.{action}"
 
 
 def versions_subject(component: str, plural: str, verb: str) -> str:
@@ -6146,6 +6156,66 @@ def entity_economic_declaration(
     return economic_declaration(owner, members, carried)
 
 
+def _field_group_model(model_path: Path, dotted: str) -> Path:
+    """The model of the field group named @p dotted, as seen from @p model_path.
+
+    A group's model sits beside the entity that uses it, or in its own
+    component's modeling folder. Exactly one model may answer to the name.
+    """
+    parts = dotted.split(".")
+    if len(parts) != 3:
+        raise ValueError(
+            f"{model_path.name}: field group '{dotted}' must be a 3-part dotted "
+            f"name, such as 'ores.trading.instrument_identity'")
+    name = f"{dotted}_field_group.org"
+    beside = model_path.resolve().parent / name
+    if beside.is_file():
+        return beside
+    projects_dir = next(
+        (q for q in model_path.resolve().parents if q.name == "projects"), None)
+    found = sorted(projects_dir.glob(f"{parts[0]}.{parts[1]}/**/modeling/{name}")) \
+        if projects_dir else []
+    if len(found) != 1:
+        raise ValueError(
+            f"{model_path.name}: field group '{dotted}' needs exactly one model, "
+            f"found {len(found)}: {[str(f) for f in found]}")
+    return found[0]
+
+
+@lru_cache(maxsize=None)
+def _group_declares_economic_fields(group_model: Path) -> bool:
+    """Whether a field group's model declares any economic field.
+
+    A group member takes part in its owner's canonical form exactly when its
+    own model declares one, so the owner's form is decided from the group's
+    model and not from the generated header.
+    """
+    return bool(load_org_field_group_model(group_model)["field_group"]["has_economic_fields"])
+
+
+def entity_canonical_members(path: Path | str, entity: dict[str, Any]) -> list[str]:
+    """The members of the entity's canonical form, in member order.
+
+    These are the columns the model declares economic and each group whose own
+    model declares an economic field. Every other member stays out, so a field
+    the customer did not agree to never moves the digest.
+    """
+    def group(dotted: str) -> bool:
+        return _group_declares_economic_fields(_field_group_model(Path(path), dotted))
+
+    if entity.get("has_domain_groups"):
+        return [g["member"] for g in entity.get("domain_groups") or []
+                if group(g["field_group"])]
+    members: list[str] = []
+    if entity.get("domain_identity_group") and group(entity["domain_identity_group"]):
+        members.append("identity")
+    members.extend(_member_name(c) for c in entity_struct_member_columns(entity)
+                   if c.get("economic") is True)
+    if entity.get("domain_audit_group") and group(entity["domain_audit_group"]):
+        members.append("audit")
+    return members
+
+
 def _entity_domain_ts_member(
     field: dict[str, Any], name_key: str
 ) -> dict[str, Any]:
@@ -7403,7 +7473,101 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     implementations = _collect_implementations(doc.root)
     if implementations:
         c["implementations"] = implementations
+    c.update(service_options(Path(path).name, _section(doc.root, "Options")))
     return {"component": c}
+
+
+def options_struct(owner: str, fm: dict[str, Any], fields: list[dict[str, Any]]) -> dict[str, Any]:
+    """What the options header needs of a field group that names its header.
+
+    A model that states ``#+header:`` is an options struct: its header lives
+    where its library keeps it, its guard comes from that path, and a
+    ``:secret:`` field stays out of the wire shape.
+    """
+    header = str(fm.get("header", "")).strip()
+    if not header:
+        return {}
+    include = str(fm.get("component_include") or fm.get("component", ""))
+    if fm.get("subcomponent") and not fm.get("component_include"):
+        include = f"{fm.get('component')}.{fm['subcomponent']}"
+    guard = re.sub(r"[^A-Za-z0-9]", "_", f"ores.{include}/{header}").upper()
+    options = []
+    for field in fields:
+        doc = [line.rstrip() for line in str(field.get("description", "")).splitlines()]
+        if doc:
+            doc[0] = "@brief " + doc[0]
+        options.append({**field, "doc_lines": doc, "has_doc": bool(doc),
+                        "secret": _option_flag(owner, field["name"],
+                                               {k: str(v) for k, v in field.items()}, "secret")})
+    secrets = sum(1 for o in options if o["secret"])
+    return {"header": header, "header_guard": guard,
+            "export_macro": str(fm.get("export_macro", "")).strip(),
+            "has_printer": str(fm.get("printer", "")).strip().lower() != "none",
+            "options_fields": options, "options_secret_count": secrets,
+            "has_options_secrets": bool(secrets)}
+
+
+def _cpp_string(text: str) -> str:
+    return text.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _option_flag(owner: str, option: str, props: dict[str, Any], key: str) -> bool:
+    """A yes-or-no property of one option, refusing a value that is neither.
+
+    A misspelt :secret: must not read as "not secret": the value would then
+    reach the wire shape and the startup dump.
+    """
+    value = str(props.get(key, "")).strip().lower()
+    if value in ("", "nil", "false", "no"):
+        return False
+    if value in ("t", "true", "yes"):
+        return True
+    raise ValueError(f"{owner}: option '{option}' sets :{key}: to {value!r}. Write t or nil.")
+
+
+def service_options(owner: str, section: OrgNode | None) -> dict[str, Any]:
+    """The options a service declares beyond the standard set, for the templates.
+
+    Each heading under ``* Options`` is one member of the service's options
+    struct. The member, its wire field, its command-line declaration and its
+    assignment are all written from this one list, so none of them can drift
+    from the others. A ``:secret:`` member stays out of the wire shape, so the
+    startup dump of the options never prints it.
+    """
+    if section is None or not section.children:
+        return {"has_service_options": False, "service_options": []}
+    group = {k.lower(): v for k, v in section.properties.items()}.get("group", "")
+    if not group:
+        raise ValueError(f"{owner}: * Options needs a :group: property, the title "
+                         f"its --help section prints")
+    options: list[dict[str, Any]] = []
+    for node in section.children:
+        props = {k.lower(): v for k, v in node.properties.items()}
+        missing = [k for k in ("cpp_type", "default", "help") if not props.get(k)]
+        if missing:
+            raise ValueError(f"{owner}: option '{node.title}' needs {missing}")
+        doc = [line.rstrip() for line in _strip_body(node).splitlines()] or [node.title]
+        doc[0] = "@brief " + doc[0]
+        options.append({
+            "name": node.title,
+            "cpp_type": props["cpp_type"],
+            "option": props.get("option") or node.title.replace("_", "-"),
+            "default": props["default"],
+            "initial": props.get("initial", ""),
+            "help": _cpp_string(" ".join(str(props["help"]).split())),
+            "secret": _option_flag(owner, node.title, props, "secret"),
+            "positive": _option_flag(owner, node.title, props, "positive"),
+            "doc_lines": doc,
+        })
+    secrets = sum(1 for o in options if o["secret"])
+    return {
+        "has_service_options": True,
+        "service_options": options,
+        "service_options_group": _cpp_string(group),
+        "service_secret_count": secrets,
+        "has_service_secrets": bool(secrets),
+        "has_positive_options": any(o["positive"] for o in options),
+    }
 
 
 # The coarse outcome a catalogue entry may declare. Mirrors

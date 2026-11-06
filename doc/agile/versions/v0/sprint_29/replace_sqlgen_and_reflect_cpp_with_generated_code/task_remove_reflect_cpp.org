@@ -71,6 +71,19 @@ task and name that file in the Command column.
 
 * Notes
 
+Seven operation models still have no generated wire codec, so their messages
+go through reflect-cpp. Each needs =:ores.cpp.wire-codec.enabled: true= and a
+regeneration before the dependency can go. Found by "State a type's wire shape
+by its type" on 2026-11-04:
+
+- =ores.history.history_messages=
+- =ores.refdata.publish_operations=
+- =ores.refdata.calendar_adjustment_messages=
+- =ores.refdata.bundle_import_operations=
+- =ores.refdata.counterparty_proposal_operations=
+- =ores.refdata.calendar_materialisation_messages=
+- =ores.refdata.book_proposal_operations=
+
 **The conventions path waits on its own story.** =run_configuration_operations.cpp=
 uses =rfl::Generic= for the conventions export, and ores.ore core encodes
 convention rows with reflect-cpp in =conventions_family_pack.hpp=,

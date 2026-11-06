@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::inbox::messaging::delivery_outcome_type_event> {
-    static constexpr std::string_view subject_prefix = "inbox.v1.delivery_outcome_types_events";
+    static constexpr std::string_view subject_prefix = "inbox.v1.events.delivery_outcome_types";
 
     static ores::inbox::messaging::delivery_outcome_type_event
     from_notification(const entity_event_notification& notification) {

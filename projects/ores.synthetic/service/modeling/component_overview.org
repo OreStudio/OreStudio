@@ -1,6 +1,11 @@
 :PROPERTIES:
 :ID: 702753E8-0E07-4690-AFAB-D75514ADE660
 :ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :END:
 #+title: ores.synthetic.service
 #+description: NATS service entrypoint for the synthetic data component.
@@ -12,7 +17,7 @@
 #+updated: 2026-10-07
 #+name: synthetic.service
 #+full_name: ores.synthetic.service
-#+brief: Synthetic data service entrypoint
+#+brief: Synthetic data generation service
 
 * Diagram
 
@@ -67,6 +72,40 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
+* Options
+:PROPERTIES:
+:group: Market simulation
+:END:
+
+The options this service takes beyond logging, NATS and the database. Codegen
+writes the member, its wire field, its command-line declaration and its
+assignment from each entry.
+
+** run_seed
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 42
+:initial: 42
+:help: Seed every random stream of the run is keyed by. One seed reproduces a run.
+:END:
+
+The seed every random stream of the run is keyed by.
+
+One seed reproduces a run: the same feeds tick at the same times.
+
+** market_speed
+:PROPERTIES:
+:cpp_type: double
+:default: 1440.0
+:initial: 1440.0
+:help: Simulated seconds one unit of market time spans: how fast the simulated world runs. Every feed's prices step by it.
+:positive: t
+:END:
+
+The simulated seconds one unit of market time spans.
+
+One number for the run: every feed's prices step by it, so spot and curve feeds live in
+one simulated world. The default steps a curve at one tick a minute by a calendar day.
 
 * See also
 
@@ -75,7 +114,6 @@ into its generated file after the profile's baseline.
 * Test dependencies
 
 The suites link what the profile cannot know about.
-
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}

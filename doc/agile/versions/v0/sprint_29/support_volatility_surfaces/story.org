@@ -56,7 +56,7 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:E7A79AFD-FD48-43F6-9A6F-9E1D522469C6][Review a variance calibration]] | DONE | 2026-11-03 | 2026-11-03 | Approve or reject a proposed calibration with a reason; approving one supersedes the pair's earlier approval. |
 | [[id:748305F3-48FD-4551-BD68-D269AF56292D][Apply an approved variance calibration to a feed]] | DONE | | 2026-11-03 | An FX spot feed names the approved calibration it runs; the feed no longer fits at start, and its start record names the calibration it used. |
 | [[id:764B5B0A-9B8E-4C6F-A5D1-0BD6D8F18C68][Show the calibration chain of a feed]] | DONE | 2026-11-03 | 2026-11-03 | Replace the start banner with a This run tab in plain text, and add a Calibration tab that shows inputs, fits and reviews, linked both ways. |
-| [[id:ACF60CC6-3DB4-44C4-9059-B8D58180E7AB][Run the derived source in the system tenant]] | BACKLOG | | | Fix the three defects of the derived FX volatility source that a live run showed: an unknown derivation kind, no conventions in the system tenant, and stale pgTAP counts. |
+| [[id:ACF60CC6-3DB4-44C4-9059-B8D58180E7AB][Run the derived source in the system tenant]] | DONE | 2026-11-04 | 2026-11-04 | Fix the three defects of the derived FX volatility source that a live run showed: an unknown derivation kind, no conventions in the system tenant, and stale pgTAP counts. |
 | [[id:64F0A193-A749-4B94-99C6-78CCFC9C45AD][Read whole numbers as doubles on the wire]] | DONE | | 2026-11-03 | Fix the MessagePack reader refusing a whole number packed as an integer for a double field, which broke the Price behaviour tab. |
 | [[id:4C7886D2-8D1E-4D5E-86A4-0D9B14E616A7][Show a feed's run and its variance on one tab]] | DONE | 2026-11-03 | 2026-11-03 | Merge the This run and Variance tabs of a feed into one tab of fact cards, with the calibration as a link to its page. |
 | [[id:7B0EED43-9012-4A09-AAC0-1059E375F4D0][Show the variance calibration's history and its review state]] | DONE | 2026-11-03 | 2026-11-03 | A feed's history shows every variance calibration record of its pair, before and after approval; the feed and calibration screens say when a fit waits for review; and the fit is plotted from its stored points. |
@@ -71,9 +71,36 @@ The system holds, builds and serves volatility surfaces as market data, and pric
 | [[id:958AD1EA-6A2B-4067-A162-5515B9CC7402][Re-anchor a class to the public rates]] | BACKLOG | | | An operator re-anchors an asset class: its feeds restart from the latest calibrated levels, a deliberate and recorded jump, since otherwise a running feed's level follows its own path. |
 | [[id:6E5973FF-B931-467F-BE72-542BC819EF10][Calibrate in the provisioning system run]] | BACKLOG | | | The system run of provisioning starts the calibration workflow after it publishes the system data, and a profile may release the feeds once it completes. |
 | [[id:D3E4FB25-30DE-48B3-B6B4-E3A766E8EB50][Recalibrate the synthetic feeds on a schedule]] | BACKLOG | | | The scheduler starts the calibration workflow each business day, so new fixings move the levels and the fits without a person starting it. |
+| [[id:69FAED7E-EFF4-459F-A3DD-BE81357E7B54][Make provisioning explain itself, and fix the trade generation stall]] | DONE | 2026-11-03 | 2026-11-04 | Log every provisioning step and every call inside it, warn about a step that outlives its expected time, and use that to find and fix why generate_trades stopped part way on 2026-11-03 without completing, failing or logging. |
 
 * Decisions
 
+- *The system tenant holds its own copy of the instrument conventions*
+  (2026-11-04). Context: the derived source of FX volatility quotes runs in the
+  system tenant, where the feeds run, and reads the FX option convention of
+  each pair it quotes. The conventions were published only into each party of
+  a tenant, so the system tenant held none, and a party-scoped publish into the
+  system tenant was skipped, since it holds no party but its system party.
+  Decision: =system_core= publishes =ore.conventions=, and a publish into the
+  system tenant that names no party writes for its system party. Consequences:
+  the system tenant carries one more copy of the conventions, as it already
+  does of the ORE parameters; the capture
+  [[id:A5B4097A-0FF4-4855-9BBE-D7461FC096F5][One source for reference data that the system and each tenant read]]
+  covers both copies.
+- *A bundle publishes in its member order where no dependency decides*
+  (2026-11-04). Context: the bundle publish sorted its datasets with a plain
+  topological sort, so two datasets with no edge between them ran in an
+  arbitrary order. =ore.conventions= ran before =iso.currencies= in
+  =system_core= and its currency check failed. Declaring the edge was rejected
+  because dependencies resolve transitively: every =party_essentials= publish
+  would republish the currencies and write a version of each for every party.
+  Decision: a sort that keeps the given order, so a dataset publishes after
+  its dependencies and otherwise in the bundle's member order, and a
+  dependency takes the place of the first dataset that needs it.
+  Consequences: a bundle's member order is now its publish order, and an
+  ordering that only worked by chance shows up. The first was the Bloomberg
+  feed quoting CNH before any currency existed, so =system_core= now publishes
+  =fpml.non_iso_currency= after =iso.currencies=.
 - *GJR-GARCH sets the daily variance of FX spot, and not the surface*
   (2026-11-03). Context: the approach document used GARCH only to feed the
   MDN's surface, the volatility channel listed GARCH as not adopted, and FX spot

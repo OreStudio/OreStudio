@@ -317,7 +317,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_currency_group_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_currency_group_key>) {
     return std::tuple{
         utility::codec::field{"currency_iso_code", &currency_currency_group_key::currency_iso_code},
         utility::codec::field{"currency_group_code",
@@ -333,7 +333,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_currency_group_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_currency_group_write>) {
     return std::tuple{
         utility::codec::field{"currency_iso_code",
                               &currency_currency_group_write::currency_iso_code},
@@ -350,7 +350,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_currency_group_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_currency_group_change>) {
     return std::tuple{
         utility::codec::field{"write", &currency_currency_group_change::write},
         utility::codec::field{"precondition", &currency_currency_group_change::precondition},
@@ -365,7 +365,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_currency_group_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_currency_group_removal>) {
     return std::tuple{
         utility::codec::field{"key", &currency_currency_group_removal::key},
         utility::codec::field{"precondition", &currency_currency_group_removal::precondition},
@@ -380,7 +380,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_currency_group_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_currency_group_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &currency_currency_group_lookup::key},
         utility::codec::field{"currency_currency_group",
@@ -396,7 +396,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_currency_groups_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_currency_groups_filter>) {
     return std::tuple{
         utility::codec::field{"currency_iso_code",
                               &currency_currency_groups_filter::currency_iso_code},
@@ -413,7 +413,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const currency_currency_group_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_currency_group_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &currency_currency_group_event::event_id},
         utility::codec::field{"key", &currency_currency_group_event::key},
@@ -432,7 +432,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_currency_currency_groups_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_currency_currency_groups_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_currency_currency_groups_request::offset},
         utility::codec::field{"limit", &list_currency_currency_groups_request::limit},
@@ -449,7 +450,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_currency_currency_groups_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_currency_currency_groups_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_currency_currency_groups_response::result},
         utility::codec::field{"currency_currency_groups",
@@ -466,7 +468,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_currency_currency_group_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_currency_currency_group_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_currency_currency_group_request::key},
     };
@@ -480,7 +482,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_currency_currency_group_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_currency_currency_group_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_currency_currency_group_response::result},
         utility::codec::field{"currency_currency_group",
@@ -496,7 +498,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_currency_currency_groups_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_currency_currency_groups_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_currency_currency_groups_request::keys},
     };
@@ -510,7 +513,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_currency_currency_groups_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_currency_currency_groups_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_currency_currency_groups_response::result},
         utility::codec::field{"entries", &get_many_currency_currency_groups_response::entries},
@@ -525,7 +529,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_currency_currency_group_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_currency_currency_group_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_currency_currency_group_request::change},
         utility::codec::field{"intent", &put_currency_currency_group_request::intent},
@@ -540,7 +544,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_currency_currency_group_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_currency_currency_group_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_currency_currency_group_response::result},
         utility::codec::field{"currency_currency_group",
@@ -556,7 +560,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_currency_currency_groups_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_currency_currency_groups_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_currency_currency_groups_request::changes},
         utility::codec::field{"intent", &put_many_currency_currency_groups_request::intent},
@@ -571,7 +576,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_currency_currency_groups_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_currency_currency_groups_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_currency_currency_groups_response::result},
         utility::codec::field{
@@ -588,7 +594,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_currency_currency_group_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_currency_currency_group_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_currency_currency_group_request::removal},
         utility::codec::field{"intent", &delete_currency_currency_group_request::intent},
@@ -603,7 +610,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_currency_currency_group_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_currency_currency_group_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_currency_currency_group_response::result},
     };
@@ -617,7 +625,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_currency_currency_groups_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_currency_currency_groups_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_currency_currency_groups_request::removals},
         utility::codec::field{"intent", &delete_many_currency_currency_groups_request::intent},
@@ -632,7 +641,8 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_currency_currency_groups_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_currency_currency_groups_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_currency_currency_groups_response::result},
     };
@@ -647,7 +657,7 @@ struct list_by_currency_iso_code_currency_currency_groups_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_currency_iso_code_currency_currency_groups_request&) {
+wire_fields(std::type_identity<list_by_currency_iso_code_currency_currency_groups_request>) {
     return std::tuple{
         utility::codec::field{
             "currency_iso_code",
@@ -674,7 +684,7 @@ wire_fields(const list_by_currency_iso_code_currency_currency_groups_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_currency_iso_code_currency_currency_groups_response&) {
+wire_fields(std::type_identity<list_by_currency_iso_code_currency_currency_groups_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_currency_iso_code_currency_currency_groups_response::result},

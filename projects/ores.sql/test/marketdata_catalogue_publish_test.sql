@@ -75,6 +75,48 @@ select throws_ok(
     'the supplier catalogue is not published into a tenant other than the system tenant'
 );
 
+select results_eq(
+    format($$select action, record_count from ores_marketdata_publish_adapters_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'insert_only', '{}'::jsonb)$$,
+        (select id from t_adapters_dataset)),
+    format($$values ('skipped'::text, %s::bigint)$$,
+        (select count(*) from ores_dq_adapters_artefact_tbl
+         where dataset_id = (select id from t_adapters_dataset))),
+    'an insert-only publish over the adapter catalogue skips every adapter the dataset stages'
+);
+
+select results_eq(
+    format($$select action, record_count from ores_marketdata_publish_suppliers_from_dq_fn(%L::uuid, ores_utility_system_tenant_id_fn(), 'insert_only', '{}'::jsonb)$$,
+        (select id from t_suppliers_dataset)),
+    format($$values ('skipped'::text, %s::bigint)$$,
+        (select count(*) from ores_dq_suppliers_artefact_tbl
+         where dataset_id = (select id from t_suppliers_dataset))),
+    'an insert-only publish over the supplier catalogue skips every supplier the dataset stages'
+);
+
+select is(
+    (select count(*)::int from (
+        select code from ores_dq_adapters_artefact_tbl
+        where dataset_id = (select id from t_adapters_dataset)
+        except
+        select code from ores_marketdata_adapters_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()) missing),
+    0,
+    'the system tenant holds every adapter the dataset stages'
+);
+
+select is(
+    (select count(*)::int from (
+        select code from ores_dq_suppliers_artefact_tbl
+        where dataset_id = (select id from t_suppliers_dataset)
+        except
+        select code from ores_marketdata_suppliers_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and valid_to = ores_utility_infinity_timestamp_fn()) missing),
+    0,
+    'the system tenant holds every supplier the dataset stages'
+);
+
 -- The catalogues were published earlier in this same transaction. A
 -- replace_all closes those rows; a close stamped with the transaction's
 -- frozen start time would fall before their valid_from.

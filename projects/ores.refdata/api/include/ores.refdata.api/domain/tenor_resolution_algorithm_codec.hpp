@@ -45,7 +45,7 @@ namespace ores::refdata::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const tenor_resolution_algorithm&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tenor_resolution_algorithm>) {
     return std::tuple{
         utility::codec::field{"version", &tenor_resolution_algorithm::version},
         utility::codec::field{"tenant_id", &tenor_resolution_algorithm::tenant_id},

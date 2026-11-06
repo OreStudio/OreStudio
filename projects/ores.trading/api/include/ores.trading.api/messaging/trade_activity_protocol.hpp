@@ -351,9 +351,9 @@ struct get_trade_activity_version_response {
  * of them.
  */
 namespace trade_activity_event_subjects {
-inline constexpr std::string_view created = "trading.v1.trade_activities_events.created";
-inline constexpr std::string_view updated = "trading.v1.trade_activities_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.trade_activities.created";
+inline constexpr std::string_view updated = "trading.v1.events.trade_activities.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.trade_activities.deleted";
 }
 /**
  * @brief The members of trade_activity_key, named as the wire names them and in the order
@@ -363,7 +363,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_activity_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_activity_key>) {
     return std::tuple{
         utility::codec::field{"id", &trade_activity_key::id},
     };
@@ -377,7 +377,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_activity_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_activity_write>) {
     return std::tuple{
         utility::codec::field{"id", &trade_activity_write::id},
         utility::codec::field{"activity_type_code", &trade_activity_write::activity_type_code},
@@ -396,7 +396,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_activity_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_activity_change>) {
     return std::tuple{
         utility::codec::field{"write", &trade_activity_change::write},
         utility::codec::field{"precondition", &trade_activity_change::precondition},
@@ -411,7 +411,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_activity_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_activity_removal>) {
     return std::tuple{
         utility::codec::field{"key", &trade_activity_removal::key},
         utility::codec::field{"precondition", &trade_activity_removal::precondition},
@@ -426,7 +426,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_activity_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_activity_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &trade_activity_lookup::key},
         utility::codec::field{"trade_activity", &trade_activity_lookup::trade_activity},
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_activities_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_activities_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &trade_activities_filter::id_one_of},
     };
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_activity_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_activity_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &trade_activity_event::event_id},
         utility::codec::field{"key", &trade_activity_event::key},
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_activity_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_activity_version_key>) {
     return std::tuple{
         utility::codec::field{"trade_activity", &trade_activity_version_key::trade_activity},
         utility::codec::field{"version", &trade_activity_version_key::version},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_activity_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_activity_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &trade_activity_versions_filter::version},
         utility::codec::field{"from_version", &trade_activity_versions_filter::from_version},
@@ -505,7 +505,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_activities_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_trade_activities_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_trade_activities_request::offset},
         utility::codec::field{"limit", &list_trade_activities_request::limit},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_activities_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_trade_activities_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_trade_activities_response::result},
         utility::codec::field{"activities", &list_trade_activities_response::activities},
@@ -539,7 +539,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_activity_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trade_activity_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_trade_activity_request::key},
     };
@@ -553,7 +553,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_activity_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trade_activity_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_trade_activity_response::result},
         utility::codec::field{"trade_activity", &get_trade_activity_response::trade_activity},
@@ -568,7 +568,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_trade_activities_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_trade_activities_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_trade_activities_request::keys},
     };
@@ -582,7 +582,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_trade_activities_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_trade_activities_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_trade_activities_response::result},
         utility::codec::field{"entries", &get_many_trade_activities_response::entries},
@@ -597,7 +597,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_trade_activity_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_trade_activity_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_trade_activity_request::change},
         utility::codec::field{"intent", &put_trade_activity_request::intent},
@@ -612,7 +612,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_trade_activity_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_trade_activity_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_trade_activity_response::result},
         utility::codec::field{"trade_activity", &put_trade_activity_response::trade_activity},
@@ -627,7 +627,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_trade_activities_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_trade_activities_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_trade_activities_request::changes},
         utility::codec::field{"intent", &put_many_trade_activities_request::intent},
@@ -642,7 +642,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_trade_activities_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_trade_activities_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_trade_activities_response::result},
         utility::codec::field{"activities", &put_many_trade_activities_response::activities},
@@ -657,7 +657,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_trade_activity_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_trade_activity_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_trade_activity_request::removal},
         utility::codec::field{"intent", &delete_trade_activity_request::intent},
@@ -672,7 +672,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_trade_activity_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_trade_activity_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_trade_activity_response::result},
     };
@@ -686,7 +686,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_trade_activities_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_trade_activities_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_trade_activities_request::removals},
         utility::codec::field{"intent", &delete_many_trade_activities_request::intent},
@@ -701,7 +701,8 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_trade_activities_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_trade_activities_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_trade_activities_response::result},
     };
@@ -715,7 +716,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_activity_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_trade_activity_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_trade_activity_versions_request::key},
         utility::codec::field{"offset", &list_trade_activity_versions_request::offset},
@@ -733,7 +734,8 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_activity_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_trade_activity_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_trade_activity_versions_response::result},
         utility::codec::field{"versions", &list_trade_activity_versions_response::versions},
@@ -749,7 +751,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_activity_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trade_activity_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_trade_activity_version_request::key},
     };
@@ -763,7 +765,7 @@ inline constexpr std::string_view deleted = "trading.v1.trade_activities_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_activity_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_trade_activity_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_trade_activity_version_response::result},
         utility::codec::field{"version", &get_trade_activity_version_response::version},

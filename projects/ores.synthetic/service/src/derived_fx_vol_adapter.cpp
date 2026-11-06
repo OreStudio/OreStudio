@@ -162,7 +162,12 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
                 return std::unexpected("the system party is not an id");
             const auto uri = feed::derived_fx_series_uri(pair);
             ores::marketdata::client::market_data_client md(svc_nats_);
+            const auto started = std::chrono::steady_clock::now();
             const auto series = md.list_series_of_provider(provider_code_);
+            BOOST_LOG_SEV(lg(), debug)
+                << "Listed the series of provider " << provider_code_ << " in "
+                << std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count()
+                << "s: " << (series ? std::to_string(series->size()) + " series" : "failed");
             if (!series)
                 return std::unexpected(series.error());
             for (const auto& s : *series)
@@ -199,12 +204,21 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
             for (int back = 0; back < window_days; back += stored_chunk_days) {
                 const auto end = std::chrono::year_month_day{std::chrono::sys_days{to} -
                                                              std::chrono::days{back}};
+                const auto started = std::chrono::steady_clock::now();
                 const auto window =
                     md.get_observation_window({.item = feed::derived_fx_series_uri(pair),
                                                .provider_code = provider_code_,
                                                .party_id = *party,
                                                .to = end,
                                                .days = stored_chunk_days});
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Read the stored days of " << feed::derived_fx_series_uri(pair) << " ending "
+                    << end << " in "
+                    << std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
+                           .count()
+                    << "s: "
+                    << (window ? std::to_string(window->observed_at.size()) + " day(s)" :
+                                 "failed, " + window.error());
                 if (!window)
                     return std::unexpected(window.error());
                 for (const auto& at : window->observed_at)
@@ -230,10 +244,17 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
             const auto flush = [&]() -> std::expected<void, std::string> {
                 if (batch.empty())
                     return {};
+                const auto started = std::chrono::steady_clock::now();
                 const auto stored =
                     md.put_observations(batch,
                                         {.reason_code = "system.new_record",
                                          .commentary = "Derived FX volatility quotes"});
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Wrote " << batch.size() << " derived observation(s) of series " << series_id
+                    << " in "
+                    << std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
+                           .count()
+                    << "s" << (stored ? "" : ": failed");
                 batch.clear();
                 if (!stored)
                     return std::unexpected(stored.error());
@@ -399,8 +420,6 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
     // was sending is sent again on the next, since its day is recorded only once sent.
     try {
         const auto kept = feed_.persist(today);
-        for (const auto& failure : feed_.failures())
-            BOOST_LOG_SEV(lg(), warn) << "The derived source kept no history of " << failure;
         if (kept > 0)
             BOOST_LOG_SEV(lg(), info)
                 << "Kept " << kept << " day(s) of derived quotes of '" << source_name_ << "'";

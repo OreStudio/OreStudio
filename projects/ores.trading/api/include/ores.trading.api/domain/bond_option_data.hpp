@@ -198,7 +198,7 @@ struct bond_option_data {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_option_data&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_option_data>) {
     return std::tuple{
         utility::codec::field{"long_short", &bond_option_data::long_short},
         utility::codec::field{"option_type", &bond_option_data::option_type},

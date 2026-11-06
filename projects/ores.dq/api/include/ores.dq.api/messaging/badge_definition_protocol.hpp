@@ -356,9 +356,9 @@ struct get_badge_definition_version_response {
  * of them.
  */
 namespace badge_definition_event_subjects {
-inline constexpr std::string_view created = "dq.v1.badge_definitions_events.created";
-inline constexpr std::string_view updated = "dq.v1.badge_definitions_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.badge_definitions.created";
+inline constexpr std::string_view updated = "dq.v1.events.badge_definitions.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.badge_definitions.deleted";
 }
 /**
  * @brief The members of badge_definition_key, named as the wire names them and in the order
@@ -368,7 +368,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const badge_definition_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_key>) {
     return std::tuple{
         utility::codec::field{"code", &badge_definition_key::code},
     };
@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const badge_definition_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_write>) {
     return std::tuple{
         utility::codec::field{"code", &badge_definition_write::code},
         utility::codec::field{"name", &badge_definition_write::name},
@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const badge_definition_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_change>) {
     return std::tuple{
         utility::codec::field{"write", &badge_definition_change::write},
         utility::codec::field{"precondition", &badge_definition_change::precondition},
@@ -418,7 +418,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const badge_definition_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_removal>) {
     return std::tuple{
         utility::codec::field{"key", &badge_definition_removal::key},
         utility::codec::field{"precondition", &badge_definition_removal::precondition},
@@ -433,7 +433,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const badge_definition_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &badge_definition_lookup::key},
         utility::codec::field{"badge_definition", &badge_definition_lookup::badge_definition},
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const badge_definitions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definitions_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &badge_definitions_filter::code_one_of},
     };
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const badge_definition_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &badge_definition_event::event_id},
         utility::codec::field{"key", &badge_definition_event::key},
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const badge_definition_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_version_key>) {
     return std::tuple{
         utility::codec::field{"badge_definition", &badge_definition_version_key::badge_definition},
         utility::codec::field{"version", &badge_definition_version_key::version},
@@ -496,7 +496,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const badge_definition_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<badge_definition_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &badge_definition_versions_filter::version},
         utility::codec::field{"from_version", &badge_definition_versions_filter::from_version},
@@ -512,7 +512,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_badge_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_badge_definitions_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_badge_definitions_request::offset},
         utility::codec::field{"limit", &list_badge_definitions_request::limit},
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_badge_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_badge_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_badge_definitions_response::result},
         utility::codec::field{"definitions", &list_badge_definitions_response::definitions},
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_badge_definition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_badge_definition_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_badge_definition_request::key},
     };
@@ -560,7 +560,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_badge_definition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_badge_definition_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_badge_definition_response::result},
         utility::codec::field{"badge_definition", &get_badge_definition_response::badge_definition},
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_badge_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_badge_definitions_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_badge_definitions_request::keys},
     };
@@ -589,7 +589,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_badge_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_badge_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_badge_definitions_response::result},
         utility::codec::field{"entries", &get_many_badge_definitions_response::entries},
@@ -604,7 +604,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_badge_definition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_badge_definition_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_badge_definition_request::change},
         utility::codec::field{"intent", &put_badge_definition_request::intent},
@@ -619,7 +619,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_badge_definition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_badge_definition_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_badge_definition_response::result},
         utility::codec::field{"badge_definition", &put_badge_definition_response::badge_definition},
@@ -634,7 +634,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_badge_definitions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_badge_definitions_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_badge_definitions_request::changes},
         utility::codec::field{"intent", &put_many_badge_definitions_request::intent},
@@ -649,7 +649,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_badge_definitions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_badge_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_badge_definitions_response::result},
         utility::codec::field{"definitions", &put_many_badge_definitions_response::definitions},
@@ -664,7 +664,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_badge_definition_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_badge_definition_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_badge_definition_request::removal},
         utility::codec::field{"intent", &delete_badge_definition_request::intent},
@@ -679,7 +679,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_badge_definition_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_badge_definition_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_badge_definition_response::result},
     };
@@ -693,7 +693,8 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_badge_definitions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_badge_definitions_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_badge_definitions_request::removals},
         utility::codec::field{"intent", &delete_many_badge_definitions_request::intent},
@@ -708,7 +709,8 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_badge_definitions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_badge_definitions_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_badge_definitions_response::result},
     };
@@ -722,7 +724,8 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_badge_definition_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_badge_definition_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_badge_definition_versions_request::key},
         utility::codec::field{"offset", &list_badge_definition_versions_request::offset},
@@ -740,7 +743,8 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_badge_definition_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_badge_definition_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_badge_definition_versions_response::result},
         utility::codec::field{"versions", &list_badge_definition_versions_response::versions},
@@ -756,7 +760,7 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_badge_definition_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_badge_definition_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_badge_definition_version_request::key},
     };
@@ -770,7 +774,8 @@ inline constexpr std::string_view deleted = "dq.v1.badge_definitions_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_badge_definition_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_badge_definition_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_badge_definition_version_response::result},
         utility::codec::field{"version", &get_badge_definition_version_response::version},

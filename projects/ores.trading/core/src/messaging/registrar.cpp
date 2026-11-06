@@ -19,6 +19,7 @@
  */
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.trading.api/messaging/blotter_protocol.hpp"
 #include "ores.trading.core/messaging/activity_category_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/activity_category_registrar.hpp"
 #include "ores.trading.core/messaging/activity_type_history_provider_registrar.hpp"
@@ -32,6 +33,7 @@
 #include "ores.trading.core/messaging/balance_guaranteed_swap_tranche_notional_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/barrier_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/barrier_type_registrar.hpp"
+#include "ores.trading.core/messaging/blotter_handler.hpp"
 #include "ores.trading.core/messaging/bond_forward_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_future_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/bond_issue_call_date_history_provider_registrar.hpp"
@@ -125,8 +127,6 @@
 #include "ores.trading.core/messaging/trade_identifier_registrar.hpp"
 #include "ores.trading.core/messaging/trade_link_registrar.hpp"
 #include "ores.trading.core/messaging/trade_link_type_registrar.hpp"
-#include "ores.trading.api/messaging/blotter_protocol.hpp"
-#include "ores.trading.core/messaging/blotter_handler.hpp"
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
 #include "ores.trading.core/messaging/trade_party_role_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
@@ -136,7 +136,7 @@
 #include "ores.trading.core/messaging/trade_state_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_state_registrar.hpp"
 #include "ores.trading.core/messaging/trade_summary_registrar.hpp"
-#include "ores.trading.core/service/bus_book_status.hpp"
+#include "ores.trading.core/service/bus_book_rules.hpp"
 #include <memory>
 
 namespace ores::trading::messaging {
@@ -204,11 +204,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_activity_handlers(nats, ctx, verifier));
     {
         // Trade operations (hand-written handler, not codegen).
-        // The booking rule asks refdata for the book over the bus this process
-        // already holds, as the caller, so the service itself stays a database
-        // service. The port has static lifetime because the handler keeps a
-        // reference to it.
-        static const service::bus_book_status books(nats);
+        // The booking rules ask refdata for the book and the product types it
+        // allows over the bus this process already holds, as the caller, so the
+        // service itself stays a database service. The port has static lifetime
+        // because the handler keeps a reference to it.
+        static const service::bus_book_rules books(nats);
         auto toh =
             std::make_shared<trade_operations_handler>(nats, books, ctx, verifier, http_base_url);
         subs.push_back(nats.queue_subscribe(

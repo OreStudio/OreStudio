@@ -121,7 +121,7 @@ struct list_dq_report_definition_templates_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const dq_report_definition_template&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dq_report_definition_template>) {
     return std::tuple{
         ::ores::utility::codec::field{"name", &dq_report_definition_template::name},
         ::ores::utility::codec::field{"description", &dq_report_definition_template::description},
@@ -143,7 +143,8 @@ struct list_dq_report_definition_templates_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_dq_report_definition_templates_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_dq_report_definition_templates_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"bundle_code",
                                       &list_dq_report_definition_templates_request::bundle_code},
@@ -158,7 +159,8 @@ struct list_dq_report_definition_templates_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_dq_report_definition_templates_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_dq_report_definition_templates_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success",
                                       &list_dq_report_definition_templates_response::success},

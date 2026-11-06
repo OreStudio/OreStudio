@@ -391,9 +391,9 @@ struct get_approval_request_version_response {
  * of them.
  */
 namespace approval_request_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.approval_requests_events.created";
-inline constexpr std::string_view updated = "inbox.v1.approval_requests_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.approval_requests.created";
+inline constexpr std::string_view updated = "inbox.v1.events.approval_requests.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.approval_requests.deleted";
 }
 /**
  * @brief The members of approval_request_key, named as the wire names them and in the order
@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_key>) {
     return std::tuple{
         utility::codec::field{"id", &approval_request_key::id},
     };
@@ -417,7 +417,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_write>) {
     return std::tuple{
         utility::codec::field{"id", &approval_request_write::id},
         utility::codec::field{"kind_code", &approval_request_write::kind_code},
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_change>) {
     return std::tuple{
         utility::codec::field{"write", &approval_request_change::write},
         utility::codec::field{"precondition", &approval_request_change::precondition},
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_removal>) {
     return std::tuple{
         utility::codec::field{"key", &approval_request_removal::key},
         utility::codec::field{"precondition", &approval_request_removal::precondition},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &approval_request_lookup::key},
         utility::codec::field{"approval_request", &approval_request_lookup::approval_request},
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_requests_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_requests_filter>) {
     return std::tuple{
         utility::codec::field{"kind_code", &approval_requests_filter::kind_code},
         utility::codec::field{"state_code", &approval_requests_filter::state_code},
@@ -503,7 +503,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &approval_request_event::event_id},
         utility::codec::field{"key", &approval_request_event::key},
@@ -522,7 +522,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_version_key>) {
     return std::tuple{
         utility::codec::field{"approval_request", &approval_request_version_key::approval_request},
         utility::codec::field{"version", &approval_request_version_key::version},
@@ -537,7 +537,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const approval_request_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<approval_request_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &approval_request_versions_filter::version},
         utility::codec::field{"from_version", &approval_request_versions_filter::from_version},
@@ -553,7 +553,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_approval_requests_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_requests_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_approval_requests_request::offset},
         utility::codec::field{"limit", &list_approval_requests_request::limit},
@@ -571,7 +571,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_approval_requests_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_approval_requests_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_approval_requests_response::result},
         utility::codec::field{"requests", &list_approval_requests_response::requests},
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_request_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_request_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_approval_request_request::key},
     };
@@ -601,7 +601,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_request_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_request_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_approval_request_response::result},
         utility::codec::field{"approval_request", &get_approval_request_response::approval_request},
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_approval_requests_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_approval_requests_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_approval_requests_request::keys},
     };
@@ -630,7 +630,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_approval_requests_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_approval_requests_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_approval_requests_response::result},
         utility::codec::field{"entries", &get_many_approval_requests_response::entries},
@@ -645,7 +645,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_approval_request_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_request_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_approval_request_request::change},
         utility::codec::field{"intent", &put_approval_request_request::intent},
@@ -660,7 +660,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_approval_request_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_approval_request_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_approval_request_response::result},
         utility::codec::field{"approval_request", &put_approval_request_response::approval_request},
@@ -675,7 +675,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_approval_requests_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_approval_requests_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_approval_requests_request::changes},
         utility::codec::field{"intent", &put_many_approval_requests_request::intent},
@@ -690,7 +690,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_approval_requests_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_approval_requests_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_approval_requests_response::result},
         utility::codec::field{"requests", &put_many_approval_requests_response::requests},
@@ -705,7 +705,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_approval_request_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_approval_request_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_approval_request_request::removal},
         utility::codec::field{"intent", &delete_approval_request_request::intent},
@@ -720,7 +720,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_approval_request_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_approval_request_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_approval_request_response::result},
     };
@@ -734,7 +734,8 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_approval_requests_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_approval_requests_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_approval_requests_request::removals},
         utility::codec::field{"intent", &delete_many_approval_requests_request::intent},
@@ -749,7 +750,8 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_approval_requests_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_approval_requests_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_approval_requests_response::result},
     };
@@ -763,7 +765,8 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_kind_code_approval_requests_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_kind_code_approval_requests_request>) {
     return std::tuple{
         utility::codec::field{"kind_code", &list_by_kind_code_approval_requests_request::kind_code},
         utility::codec::field{"scope", &list_by_kind_code_approval_requests_request::scope},
@@ -782,7 +785,8 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_kind_code_approval_requests_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_kind_code_approval_requests_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_kind_code_approval_requests_response::result},
         utility::codec::field{"requests", &list_by_kind_code_approval_requests_response::requests},
@@ -798,7 +802,8 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_approval_request_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_approval_request_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_approval_request_versions_request::key},
         utility::codec::field{"offset", &list_approval_request_versions_request::offset},
@@ -816,7 +821,8 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_approval_request_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_approval_request_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_approval_request_versions_response::result},
         utility::codec::field{"versions", &list_approval_request_versions_response::versions},
@@ -832,7 +838,7 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_request_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approval_request_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_approval_request_version_request::key},
     };
@@ -846,7 +852,8 @@ inline constexpr std::string_view deleted = "inbox.v1.approval_requests_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_approval_request_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_approval_request_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_approval_request_version_response::result},
         utility::codec::field{"version", &get_approval_request_version_response::version},

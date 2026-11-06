@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: A1DFEE45-A089-4E9E-A6D2-F74AFB1D6E0E
+:END:
+#+title: Story: Fix the nightly platform failures
+#+description: The Linux gcc, Windows, macOS and memcheck nightlies, and the codegen drift check on main, fail. Fix each one so the nightlies build, test and submit to CDash.
+#+type: story
+#+level: s2
+#+filetags: :ci:hotfix:nightly:sprint_29:v0:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every nightly builds, tests and submits its results to CDash, and the codegen drift check on main passes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-04                               |
+
+* Acceptance
+
+- The Windows nightly sets up its database.
+- The gcc nightly compiles, with gcc 16 as well as gcc 13.
+- The macOS nightly compiles its tests.
+- The memcheck nightly submits to CDash.
+- The codegen drift check on main passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A29DCF7B-92D2-431E-B3DE-E9661C306DFD][Fix the nightly platform failures]] | DONE | 2026-11-04 | 2026-11-04 | Fix the Windows populate line endings, the gcc coroutine frames, the macOS clock test, the memcheck hang and submit, and the codegen drift on main. |
+
+* Decisions
+
+* Out of scope
+
+-

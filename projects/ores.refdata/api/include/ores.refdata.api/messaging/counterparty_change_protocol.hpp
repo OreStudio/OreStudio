@@ -265,9 +265,9 @@ struct get_counterparty_change_version_response {
  * of them.
  */
 namespace counterparty_change_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.counterparty_changes_events.created";
-inline constexpr std::string_view updated = "refdata.v1.counterparty_changes_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.counterparty_changes.created";
+inline constexpr std::string_view updated = "refdata.v1.events.counterparty_changes.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.counterparty_changes.deleted";
 }
 /**
  * @brief The members of counterparty_change_key, named as the wire names them and in the order
@@ -277,7 +277,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const counterparty_change_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_change_key>) {
     return std::tuple{
         utility::codec::field{"id", &counterparty_change_key::id},
     };
@@ -291,7 +291,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const counterparty_change_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_change_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &counterparty_change_lookup::key},
         utility::codec::field{"counterparty_change",
@@ -307,7 +307,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const counterparty_changes_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_changes_filter>) {
     return std::tuple{
         utility::codec::field{"request_id", &counterparty_changes_filter::request_id},
         utility::codec::field{"id_one_of", &counterparty_changes_filter::id_one_of},
@@ -323,7 +323,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const counterparty_change_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_change_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &counterparty_change_event::event_id},
         utility::codec::field{"key", &counterparty_change_event::key},
@@ -342,7 +342,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const counterparty_change_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_change_version_key>) {
     return std::tuple{
         utility::codec::field{"counterparty_change",
                               &counterparty_change_version_key::counterparty_change},
@@ -358,7 +358,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const counterparty_change_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_change_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &counterparty_change_versions_filter::version},
         utility::codec::field{"from_version", &counterparty_change_versions_filter::from_version},
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_counterparty_changes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_counterparty_changes_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_counterparty_changes_request::offset},
         utility::codec::field{"limit", &list_counterparty_changes_request::limit},
@@ -392,7 +392,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_counterparty_changes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_counterparty_changes_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_counterparty_changes_response::result},
         utility::codec::field{"counterparty_changes",
@@ -409,7 +409,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_counterparty_change_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_counterparty_change_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_counterparty_change_request::key},
     };
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_counterparty_change_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_counterparty_change_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_counterparty_change_response::result},
         utility::codec::field{"counterparty_change",
@@ -439,7 +439,8 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_counterparty_changes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_counterparty_changes_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_counterparty_changes_request::keys},
     };
@@ -453,7 +454,8 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_counterparty_changes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_counterparty_changes_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_counterparty_changes_response::result},
         utility::codec::field{"entries", &get_many_counterparty_changes_response::entries},
@@ -468,7 +470,8 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_request_id_counterparty_changes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_request_id_counterparty_changes_request>) {
     return std::tuple{
         utility::codec::field{"request_id",
                               &list_by_request_id_counterparty_changes_request::request_id},
@@ -488,7 +491,8 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_request_id_counterparty_changes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_request_id_counterparty_changes_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_request_id_counterparty_changes_response::result},
         utility::codec::field{
@@ -506,7 +510,8 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_counterparty_change_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_counterparty_change_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_counterparty_change_versions_request::key},
         utility::codec::field{"offset", &list_counterparty_change_versions_request::offset},
@@ -524,7 +529,8 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_counterparty_change_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_counterparty_change_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_counterparty_change_versions_response::result},
         utility::codec::field{"versions", &list_counterparty_change_versions_response::versions},
@@ -540,7 +546,8 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_counterparty_change_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_counterparty_change_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_counterparty_change_version_request::key},
     };
@@ -554,7 +561,8 @@ inline constexpr std::string_view deleted = "refdata.v1.counterparty_changes_eve
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_counterparty_change_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_counterparty_change_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_counterparty_change_version_response::result},
         utility::codec::field{"version", &get_counterparty_change_version_response::version},

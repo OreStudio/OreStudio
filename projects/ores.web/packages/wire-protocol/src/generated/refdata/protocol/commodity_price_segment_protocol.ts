@@ -212,7 +212,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.commodity_price_segments_events.created',
-    updated: 'refdata.v1.commodity_price_segments_events.updated',
-    deleted: 'refdata.v1.commodity_price_segments_events.deleted',
+    created: 'refdata.v1.events.commodity_price_segments.created',
+    updated: 'refdata.v1.events.commodity_price_segments.updated',
+    deleted: 'refdata.v1.events.commodity_price_segments.deleted',
 } as const;

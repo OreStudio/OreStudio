@@ -394,11 +394,11 @@ struct get_inflation_cap_floor_volatility_config_version_response {
  */
 namespace inflation_cap_floor_volatility_config_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.inflation_cap_floor_volatility_configs_events.created";
+    "refdata.v1.events.inflation_cap_floor_volatility_configs.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.inflation_cap_floor_volatility_configs_events.updated";
+    "refdata.v1.events.inflation_cap_floor_volatility_configs.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.inflation_cap_floor_volatility_configs_events.deleted";
+    "refdata.v1.events.inflation_cap_floor_volatility_configs.deleted";
 }
 /**
  * @brief The members of inflation_cap_floor_volatility_config_key, named as the wire names them and
@@ -408,7 +408,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const inflation_cap_floor_volatility_config_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<inflation_cap_floor_volatility_config_key>) {
     return std::tuple{
         utility::codec::field{"id", &inflation_cap_floor_volatility_config_key::id},
     };
@@ -422,7 +423,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const inflation_cap_floor_volatility_config_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<inflation_cap_floor_volatility_config_write>) {
     return std::tuple{
         utility::codec::field{"id", &inflation_cap_floor_volatility_config_write::id},
         utility::codec::field{"curve_definition_id",
@@ -468,7 +470,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const inflation_cap_floor_volatility_config_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<inflation_cap_floor_volatility_config_change>) {
     return std::tuple{
         utility::codec::field{"write", &inflation_cap_floor_volatility_config_change::write},
         utility::codec::field{"precondition",
@@ -484,7 +487,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const inflation_cap_floor_volatility_config_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<inflation_cap_floor_volatility_config_removal>) {
     return std::tuple{
         utility::codec::field{"key", &inflation_cap_floor_volatility_config_removal::key},
         utility::codec::field{"precondition",
@@ -500,7 +504,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const inflation_cap_floor_volatility_config_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<inflation_cap_floor_volatility_config_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &inflation_cap_floor_volatility_config_lookup::key},
         utility::codec::field{
@@ -517,7 +522,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const inflation_cap_floor_volatility_configs_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<inflation_cap_floor_volatility_configs_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of",
                               &inflation_cap_floor_volatility_configs_filter::id_one_of},
@@ -532,7 +538,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const inflation_cap_floor_volatility_config_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<inflation_cap_floor_volatility_config_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &inflation_cap_floor_volatility_config_event::event_id},
         utility::codec::field{"key", &inflation_cap_floor_volatility_config_event::key},
@@ -553,7 +560,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const inflation_cap_floor_volatility_config_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<inflation_cap_floor_volatility_config_version_key>) {
     return std::tuple{
         utility::codec::field{"inflation_cap_floor_volatility_config",
                               &inflation_cap_floor_volatility_config_version_key::
@@ -572,7 +580,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const inflation_cap_floor_volatility_config_versions_filter&) {
+wire_fields(std::type_identity<inflation_cap_floor_volatility_config_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version",
                               &inflation_cap_floor_volatility_config_versions_filter::version},
@@ -592,7 +600,7 @@ wire_fields(const inflation_cap_floor_volatility_config_versions_filter&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_inflation_cap_floor_volatility_configs_request&) {
+wire_fields(std::type_identity<list_inflation_cap_floor_volatility_configs_request>) {
     return std::tuple{
         utility::codec::field{"offset",
                               &list_inflation_cap_floor_volatility_configs_request::offset},
@@ -613,7 +621,7 @@ wire_fields(const list_inflation_cap_floor_volatility_configs_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_inflation_cap_floor_volatility_configs_response&) {
+wire_fields(std::type_identity<list_inflation_cap_floor_volatility_configs_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_inflation_cap_floor_volatility_configs_response::result},
@@ -633,7 +641,8 @@ wire_fields(const list_inflation_cap_floor_volatility_configs_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_inflation_cap_floor_volatility_config_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_inflation_cap_floor_volatility_config_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_inflation_cap_floor_volatility_config_request::key},
     };
@@ -648,7 +657,7 @@ wire_fields(const list_inflation_cap_floor_volatility_configs_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_inflation_cap_floor_volatility_config_response&) {
+wire_fields(std::type_identity<get_inflation_cap_floor_volatility_config_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_inflation_cap_floor_volatility_config_response::result},
@@ -667,7 +676,7 @@ wire_fields(const get_inflation_cap_floor_volatility_config_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_inflation_cap_floor_volatility_configs_request&) {
+wire_fields(std::type_identity<get_many_inflation_cap_floor_volatility_configs_request>) {
     return std::tuple{
         utility::codec::field{"keys",
                               &get_many_inflation_cap_floor_volatility_configs_request::keys},
@@ -683,7 +692,7 @@ wire_fields(const get_many_inflation_cap_floor_volatility_configs_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_inflation_cap_floor_volatility_configs_response&) {
+wire_fields(std::type_identity<get_many_inflation_cap_floor_volatility_configs_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_inflation_cap_floor_volatility_configs_response::result},
@@ -700,7 +709,8 @@ wire_fields(const get_many_inflation_cap_floor_volatility_configs_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_inflation_cap_floor_volatility_config_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_inflation_cap_floor_volatility_config_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_inflation_cap_floor_volatility_config_request::change},
         utility::codec::field{"intent", &put_inflation_cap_floor_volatility_config_request::intent},
@@ -716,7 +726,7 @@ wire_fields(const get_many_inflation_cap_floor_volatility_configs_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_inflation_cap_floor_volatility_config_response&) {
+wire_fields(std::type_identity<put_inflation_cap_floor_volatility_config_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_inflation_cap_floor_volatility_config_response::result},
@@ -735,7 +745,7 @@ wire_fields(const put_inflation_cap_floor_volatility_config_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_inflation_cap_floor_volatility_configs_request&) {
+wire_fields(std::type_identity<put_many_inflation_cap_floor_volatility_configs_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_inflation_cap_floor_volatility_configs_request::changes},
@@ -753,7 +763,7 @@ wire_fields(const put_many_inflation_cap_floor_volatility_configs_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_inflation_cap_floor_volatility_configs_response&) {
+wire_fields(std::type_identity<put_many_inflation_cap_floor_volatility_configs_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_inflation_cap_floor_volatility_configs_response::result},
@@ -772,7 +782,7 @@ wire_fields(const put_many_inflation_cap_floor_volatility_configs_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_inflation_cap_floor_volatility_config_request&) {
+wire_fields(std::type_identity<delete_inflation_cap_floor_volatility_config_request>) {
     return std::tuple{
         utility::codec::field{"removal",
                               &delete_inflation_cap_floor_volatility_config_request::removal},
@@ -790,7 +800,7 @@ wire_fields(const delete_inflation_cap_floor_volatility_config_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_inflation_cap_floor_volatility_config_response&) {
+wire_fields(std::type_identity<delete_inflation_cap_floor_volatility_config_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_inflation_cap_floor_volatility_config_response::result},
@@ -806,7 +816,7 @@ wire_fields(const delete_inflation_cap_floor_volatility_config_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_inflation_cap_floor_volatility_configs_request&) {
+wire_fields(std::type_identity<delete_many_inflation_cap_floor_volatility_configs_request>) {
     return std::tuple{
         utility::codec::field{
             "removals", &delete_many_inflation_cap_floor_volatility_configs_request::removals},
@@ -824,7 +834,7 @@ wire_fields(const delete_many_inflation_cap_floor_volatility_configs_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_inflation_cap_floor_volatility_configs_response&) {
+wire_fields(std::type_identity<delete_many_inflation_cap_floor_volatility_configs_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_inflation_cap_floor_volatility_configs_response::result},
@@ -840,7 +850,7 @@ wire_fields(const delete_many_inflation_cap_floor_volatility_configs_response&) 
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_inflation_cap_floor_volatility_config_versions_request&) {
+wire_fields(std::type_identity<list_inflation_cap_floor_volatility_config_versions_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &list_inflation_cap_floor_volatility_config_versions_request::key},
@@ -864,7 +874,7 @@ wire_fields(const list_inflation_cap_floor_volatility_config_versions_request&) 
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_inflation_cap_floor_volatility_config_versions_response&) {
+wire_fields(std::type_identity<list_inflation_cap_floor_volatility_config_versions_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_inflation_cap_floor_volatility_config_versions_response::result},
@@ -884,7 +894,7 @@ wire_fields(const list_inflation_cap_floor_volatility_config_versions_response&)
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_inflation_cap_floor_volatility_config_version_request&) {
+wire_fields(std::type_identity<get_inflation_cap_floor_volatility_config_version_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &get_inflation_cap_floor_volatility_config_version_request::key},
@@ -900,7 +910,7 @@ wire_fields(const get_inflation_cap_floor_volatility_config_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_inflation_cap_floor_volatility_config_version_response&) {
+wire_fields(std::type_identity<get_inflation_cap_floor_volatility_config_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_inflation_cap_floor_volatility_config_version_response::result},

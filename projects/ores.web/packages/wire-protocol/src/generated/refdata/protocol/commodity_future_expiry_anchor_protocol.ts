@@ -237,7 +237,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.commodity_future_expiry_anchors_events.created',
-    updated: 'refdata.v1.commodity_future_expiry_anchors_events.updated',
-    deleted: 'refdata.v1.commodity_future_expiry_anchors_events.deleted',
+    created: 'refdata.v1.events.commodity_future_expiry_anchors.created',
+    updated: 'refdata.v1.events.commodity_future_expiry_anchors.updated',
+    deleted: 'refdata.v1.events.commodity_future_expiry_anchors.deleted',
 } as const;

@@ -359,9 +359,9 @@ struct get_stress_test_scenario_version_response {
  * of them.
  */
 namespace stress_test_scenario_event_subjects {
-inline constexpr std::string_view created = "analytics.v1.stress_test_scenarios_events.created";
-inline constexpr std::string_view updated = "analytics.v1.stress_test_scenarios_events.updated";
-inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_events.deleted";
+inline constexpr std::string_view created = "analytics.v1.events.stress_test_scenarios.created";
+inline constexpr std::string_view updated = "analytics.v1.events.stress_test_scenarios.updated";
+inline constexpr std::string_view deleted = "analytics.v1.events.stress_test_scenarios.deleted";
 }
 /**
  * @brief The members of stress_test_scenario_key, named as the wire names them and in the order
@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_scenario_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_key>) {
     return std::tuple{
         utility::codec::field{"id", &stress_test_scenario_key::id},
     };
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_scenario_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_write>) {
     return std::tuple{
         utility::codec::field{"id", &stress_test_scenario_write::id},
         utility::codec::field{"stress_test_library_id",
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_scenario_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_change>) {
     return std::tuple{
         utility::codec::field{"write", &stress_test_scenario_change::write},
         utility::codec::field{"precondition", &stress_test_scenario_change::precondition},
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_scenario_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_removal>) {
     return std::tuple{
         utility::codec::field{"key", &stress_test_scenario_removal::key},
         utility::codec::field{"precondition", &stress_test_scenario_removal::precondition},
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_scenario_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &stress_test_scenario_lookup::key},
         utility::codec::field{"stress_test_scenario",
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_scenarios_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenarios_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &stress_test_scenarios_filter::id_one_of},
     };
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_scenario_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &stress_test_scenario_event::event_id},
         utility::codec::field{"key", &stress_test_scenario_event::key},
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_scenario_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_version_key>) {
     return std::tuple{
         utility::codec::field{"stress_test_scenario",
                               &stress_test_scenario_version_key::stress_test_scenario},
@@ -499,7 +499,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const stress_test_scenario_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stress_test_scenario_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &stress_test_scenario_versions_filter::version},
         utility::codec::field{"from_version", &stress_test_scenario_versions_filter::from_version},
@@ -515,7 +515,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_stress_test_scenarios_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_stress_test_scenarios_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_stress_test_scenarios_request::offset},
         utility::codec::field{"limit", &list_stress_test_scenarios_request::limit},
@@ -533,7 +533,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_stress_test_scenarios_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_stress_test_scenarios_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_stress_test_scenarios_response::result},
         utility::codec::field{"stress_test_scenarios",
@@ -550,7 +550,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_stress_test_scenario_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_stress_test_scenario_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_stress_test_scenario_request::key},
     };
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_stress_test_scenario_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_stress_test_scenario_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_stress_test_scenario_response::result},
         utility::codec::field{"stress_test_scenario",
@@ -580,7 +580,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_stress_test_scenarios_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_stress_test_scenarios_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_stress_test_scenarios_request::keys},
     };
@@ -594,7 +595,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_stress_test_scenarios_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_stress_test_scenarios_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_stress_test_scenarios_response::result},
         utility::codec::field{"entries", &get_many_stress_test_scenarios_response::entries},
@@ -609,7 +611,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_stress_test_scenario_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_stress_test_scenario_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_stress_test_scenario_request::change},
         utility::codec::field{"intent", &put_stress_test_scenario_request::intent},
@@ -624,7 +626,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_stress_test_scenario_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_stress_test_scenario_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_stress_test_scenario_response::result},
         utility::codec::field{"stress_test_scenario",
@@ -640,7 +642,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_stress_test_scenarios_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_stress_test_scenarios_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_stress_test_scenarios_request::changes},
         utility::codec::field{"intent", &put_many_stress_test_scenarios_request::intent},
@@ -655,7 +658,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_stress_test_scenarios_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_stress_test_scenarios_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_stress_test_scenarios_response::result},
         utility::codec::field{"stress_test_scenarios",
@@ -671,7 +675,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_stress_test_scenario_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_stress_test_scenario_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_stress_test_scenario_request::removal},
         utility::codec::field{"intent", &delete_stress_test_scenario_request::intent},
@@ -686,7 +690,7 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_stress_test_scenario_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_stress_test_scenario_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_stress_test_scenario_response::result},
     };
@@ -700,7 +704,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_stress_test_scenarios_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_stress_test_scenarios_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_stress_test_scenarios_request::removals},
         utility::codec::field{"intent", &delete_many_stress_test_scenarios_request::intent},
@@ -715,7 +720,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_stress_test_scenarios_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_stress_test_scenarios_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_stress_test_scenarios_response::result},
     };
@@ -729,7 +735,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_stress_test_scenario_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_stress_test_scenario_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_stress_test_scenario_versions_request::key},
         utility::codec::field{"offset", &list_stress_test_scenario_versions_request::offset},
@@ -747,7 +754,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_stress_test_scenario_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_stress_test_scenario_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_stress_test_scenario_versions_response::result},
         utility::codec::field{"versions", &list_stress_test_scenario_versions_response::versions},
@@ -763,7 +771,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_stress_test_scenario_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_stress_test_scenario_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_stress_test_scenario_version_request::key},
     };
@@ -777,7 +786,8 @@ inline constexpr std::string_view deleted = "analytics.v1.stress_test_scenarios_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_stress_test_scenario_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_stress_test_scenario_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_stress_test_scenario_version_response::result},
         utility::codec::field{"version", &get_stress_test_scenario_version_response::version},

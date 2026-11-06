@@ -2,7 +2,7 @@
 :ID: 7DFE57DE-70C9-4EB6-AF94-DCEC65ADB494
 :END:
 #+title: The ORE XML infrastructure
-#+description: How an ORE document becomes rows and comes back, ordered as six notes: the component that owns the document's shape, the mapper that converts a rendering, the export that states the stored form, the tables that name the element, the value set that states the rule, and the trigger that enforces it.
+#+description: How an ORE document becomes rows and comes back, ordered as six notes: the component that owns the document's shape, the two boundaries that convert a rendering, the export that states the stored form, the tables that name the element, the value set that states the rule, and the trigger that enforces it.
 #+type: knowledge
 #+level: cross
 #+filetags: :ore:xml:architecture:structure_note:
@@ -34,15 +34,15 @@ other component parses ORE XML. A store receives typed rows. Read this first
 because every rule in this cluster acts on rows: a reader who does not know where
 the XML stops cannot tell which page owns a change.
 
-** A value changes form exactly once
+** A value changes form at two boundaries
 
-[[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value is converted at the entity mapper, never in the codec]]
+[[id:948DAC44-404D-4B70-A8FC-3E9D4C05F72D][A stored value reaches the row in the form the value set names]]
 
-The conversion from an ORE rendering to the stored form is the only
-transformation in the path, and it sits in the entity mapper. It follows from the
-boundary above: the codec may not know the store, so the conversion cannot be
-there. It comes next because it settles what the value means for everything
-below it.
+A rendering becomes the stored form at the codec, for the document families the
+codec reads, and at the database guard, for every other writer. It follows from
+the boundary above: the codec may state the store's form because that form is a
+file, not a demand on the store. It comes next because it settles what the value
+means for everything below it.
 
 ** The way out is not the way in
 

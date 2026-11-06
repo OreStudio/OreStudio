@@ -21,6 +21,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -29,6 +30,8 @@
 #include <cstddef>
 #include <optional>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 namespace {
@@ -59,6 +62,15 @@ struct document {
     boost::uuids::uuid id{};
     int count = 0;
 };
+
+// The walk reads a struct by its stated shape, as codegen states it for a
+// generated document.
+constexpr auto wire_fields(std::type_identity<document>) {
+    return std::tuple{ores::utility::codec::field{"header", &document::header},
+                      ores::utility::codec::field{"rows", &document::rows},
+                      ores::utility::codec::field{"id", &document::id},
+                      ores::utility::codec::field{"count", &document::count}};
+}
 
 }
 

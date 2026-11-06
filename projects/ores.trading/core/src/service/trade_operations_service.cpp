@@ -48,7 +48,6 @@
 #include <chrono>
 #include <exception>
 #include <optional>
-#include <rfl.hpp>
 #include <string>
 #include <string_view>
 
@@ -56,7 +55,7 @@ namespace ores::trading::service {
 
 using namespace ores::logging;
 
-trade_operations_service::trade_operations_service(context ctx, const book_status_port& books)
+trade_operations_service::trade_operations_service(context ctx, const book_rules_port& books)
     : ctx_(std::move(ctx))
     , books_(&books) {}
 
@@ -131,9 +130,8 @@ std::vector<std::string> unsupported_bond_parts(const domain::instrument_batch& 
     std::vector<std::string> names;
     for (const auto& bond : batch.bond_instruments) {
         bool refused = false;
-        rfl::to_view(bond).apply([&](const auto& field) {
-            const std::string_view name = field.name();
-            if (name != "instrument" && name != "issue" && holds_data(*field.value())) {
+        ores::utility::codec::for_each_field(bond, [&](std::string_view name, const auto& member) {
+            if (name != "instrument" && name != "issue" && holds_data(member)) {
                 names.emplace_back("bond_instruments." + std::string(name));
                 refused = true;
             }
@@ -195,24 +193,45 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
     }
 
     /*
-     * A booking lands in a book, and a book that is not open takes no booking.
-     * The status is reference data, so it is asked for rather than assumed; a
-     * status that cannot be had is logged and does not stop the booking, because
-     * refusing every booking while refdata is busy would be a worse fault.
+     * A booking lands in a book, so the book's own rules decide whether it may:
+     * the book must be open, and it must allow the product type the trade
+     * states. Both are reference data and both are asked for rather than
+     * assumed; an answer that cannot be had is logged and does not stop the
+     * booking, because refusing every booking while refdata is busy would be a
+     * worse fault than the one these rules prevent.
      */
-    switch (books_->of(booking.book_id, actor_token)) {
-        case book_status_port::state::not_open:
+    const auto book_rules = books_->of(booking.book_id, anchor.trade_type, actor_token);
+    switch (book_rules.book_status) {
+        case book_rules_port::status::not_open:
             response.result.outcome = outcome::failed;
             response.result.code = "book_not_open";
             response.result.message =
                 "Book " + boost::uuids::to_string(booking.book_id) + " is not open for booking.";
             return response;
-        case book_status_port::state::unknown:
+        case book_rules_port::status::unknown:
             BOOST_LOG_SEV(lg(), warn)
                 << "Could not read the status of book " << boost::uuids::to_string(booking.book_id)
                 << "; booking continues.";
             break;
-        case book_status_port::state::open:
+        case book_rules_port::status::open:
+            break;
+    }
+    switch (book_rules.allowed) {
+        case book_rules_port::product_type::refuses:
+            response.result.outcome = outcome::failed;
+            response.result.code = "product_type_not_allowed";
+            response.result.message =
+                "Book " + boost::uuids::to_string(booking.book_id) +
+                " does not allow product type " + anchor.trade_type +
+                ": the book restricts the product types it takes, and this code is not one of "
+                "them.";
+            return response;
+        case book_rules_port::product_type::unknown:
+            BOOST_LOG_SEV(lg(), warn)
+                << "Could not read the product types book "
+                << boost::uuids::to_string(booking.book_id) << " allows; booking continues.";
+            break;
+        case book_rules_port::product_type::allows:
             break;
     }
 

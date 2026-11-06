@@ -19,11 +19,12 @@
  *
  */
 
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { symlinkForTest } from '../test-support/symlink.js';
 import { FileAgileStore } from './file-agile-store.js';
 import { InvalidSprintNameError } from './agile-store.js';
 
@@ -123,21 +124,28 @@ describe('a board', () => {
         }
     });
 
-    it('skips a story folder that is a link, and a story file that is a link', async () => {
+    it('skips a story folder that is a link, and a story file that is a link', async (context) => {
         await sprint('sprint_27');
         await put(
             'outside/story.org',
             org('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', { title: 'Story: Out' }, 'STARTED'),
         );
-        await symlink(join(root, 'outside'), join(root, 'agile/versions/v0/sprint_27/linked'));
+        await symlinkForTest(
+            context,
+            join(root, 'outside'),
+            join(root, 'agile/versions/v0/sprint_27/linked'),
+            'dir',
+        );
         await put(
             'real/story.org',
             org('ffffffff-ffff-4fff-8fff-ffffffffffff', { title: 'Story: Real' }, 'STARTED'),
         );
         await mkdir(join(root, 'agile/versions/v0/sprint_27/filelink'), { recursive: true });
-        await symlink(
+        await symlinkForTest(
+            context,
             join(root, 'real/story.org'),
             join(root, 'agile/versions/v0/sprint_27/filelink/story.org'),
+            'file',
         );
         const board = await new FileAgileStore(root, { now: NOW }).board();
         expect(board?.stories).toEqual([]);

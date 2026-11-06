@@ -38,11 +38,8 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
-find_package(msgpack-c CONFIG REQUIRED)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
-        msgpack-c
         ores.service.lib
         ores.security.lib
         ores.storage.core.lib
@@ -54,15 +51,11 @@ target_link_libraries(${lib_target_name}
 # A component declares here what the profile cannot know: the libraries it
 # needs beyond the baseline above, and the find_package calls they bring.
 
+find_package(msgpack-c CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.service.lib
-        ores.security.lib
-        ores.storage.core.lib
-        ores.nats.lib
-        ores.database.lib
-        ores.utility.lib
-        ores.telemetry.core.lib)
+        msgpack-c)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

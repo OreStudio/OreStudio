@@ -382,9 +382,9 @@ struct get_configuration_version_response {
  * of them.
  */
 namespace configuration_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.configurations_events.created";
-inline constexpr std::string_view updated = "reporting.v1.configurations_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.configurations_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.configurations.created";
+inline constexpr std::string_view updated = "reporting.v1.events.configurations.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.configurations.deleted";
 }
 /**
  * @brief The members of configuration_key, named as the wire names them and in the order
@@ -394,7 +394,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const configuration_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_key>) {
     return std::tuple{
         utility::codec::field{"name", &configuration_key::name},
     };
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const configuration_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_write>) {
     return std::tuple{
         utility::codec::field{"id", &configuration_write::id},
         utility::codec::field{"name", &configuration_write::name},
@@ -426,7 +426,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const configuration_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_change>) {
     return std::tuple{
         utility::codec::field{"write", &configuration_change::write},
         utility::codec::field{"precondition", &configuration_change::precondition},
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const configuration_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_removal>) {
     return std::tuple{
         utility::codec::field{"key", &configuration_removal::key},
         utility::codec::field{"precondition", &configuration_removal::precondition},
@@ -456,7 +456,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const configuration_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &configuration_lookup::key},
         utility::codec::field{"configuration", &configuration_lookup::configuration},
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const configurations_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<configurations_filter>) {
     return std::tuple{
         utility::codec::field{"configuration_type_code",
                               &configurations_filter::configuration_type_code},
@@ -489,7 +489,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const configuration_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &configuration_event::event_id},
         utility::codec::field{"key", &configuration_event::key},
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const configuration_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_version_key>) {
     return std::tuple{
         utility::codec::field{"configuration", &configuration_version_key::configuration},
         utility::codec::field{"version", &configuration_version_key::version},
@@ -523,7 +523,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const configuration_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<configuration_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &configuration_versions_filter::version},
         utility::codec::field{"from_version", &configuration_versions_filter::from_version},
@@ -539,7 +539,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_configurations_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_configurations_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_configurations_request::offset},
         utility::codec::field{"limit", &list_configurations_request::limit},
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_configurations_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_configurations_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_configurations_response::result},
         utility::codec::field{"configurations", &list_configurations_response::configurations},
@@ -573,7 +573,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_configuration_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_configuration_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_configuration_request::key},
     };
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_configuration_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_configuration_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_configuration_response::result},
         utility::codec::field{"configuration", &get_configuration_response::configuration},
@@ -602,7 +602,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_configurations_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_configurations_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_configurations_request::keys},
     };
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_configurations_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_configurations_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_configurations_response::result},
         utility::codec::field{"entries", &get_many_configurations_response::entries},
@@ -631,7 +631,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_configuration_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_configuration_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_configuration_request::change},
         utility::codec::field{"intent", &put_configuration_request::intent},
@@ -646,7 +646,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_configuration_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_configuration_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_configuration_response::result},
         utility::codec::field{"configuration", &put_configuration_response::configuration},
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_configurations_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_configurations_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_configurations_request::changes},
         utility::codec::field{"intent", &put_many_configurations_request::intent},
@@ -676,7 +676,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_configurations_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_configurations_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_configurations_response::result},
         utility::codec::field{"configurations", &put_many_configurations_response::configurations},
@@ -691,7 +691,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_configuration_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_configuration_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_configuration_request::removal},
         utility::codec::field{"intent", &delete_configuration_request::intent},
@@ -706,7 +706,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_configuration_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_configuration_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_configuration_response::result},
     };
@@ -720,7 +720,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_configurations_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_configurations_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_configurations_request::removals},
         utility::codec::field{"intent", &delete_many_configurations_request::intent},
@@ -735,7 +735,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_configurations_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_configurations_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_configurations_response::result},
     };
@@ -750,7 +750,7 @@ inline constexpr std::string_view deleted = "reporting.v1.configurations_events.
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_configuration_type_code_configurations_request&) {
+wire_fields(std::type_identity<list_by_configuration_type_code_configurations_request>) {
     return std::tuple{
         utility::codec::field{
             "configuration_type_code",
@@ -777,7 +777,7 @@ wire_fields(const list_by_configuration_type_code_configurations_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_configuration_type_code_configurations_response&) {
+wire_fields(std::type_identity<list_by_configuration_type_code_configurations_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_configuration_type_code_configurations_response::result},
@@ -797,7 +797,7 @@ wire_fields(const list_by_configuration_type_code_configurations_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_configuration_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_configuration_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_configuration_versions_request::key},
         utility::codec::field{"offset", &list_configuration_versions_request::offset},
@@ -815,7 +815,7 @@ wire_fields(const list_by_configuration_type_code_configurations_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_configuration_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_configuration_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_configuration_versions_response::result},
         utility::codec::field{"versions", &list_configuration_versions_response::versions},
@@ -831,7 +831,7 @@ wire_fields(const list_by_configuration_type_code_configurations_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_configuration_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_configuration_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_configuration_version_request::key},
     };
@@ -845,7 +845,7 @@ wire_fields(const list_by_configuration_type_code_configurations_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_configuration_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_configuration_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_configuration_version_response::result},
         utility::codec::field{"version", &get_configuration_version_response::version},

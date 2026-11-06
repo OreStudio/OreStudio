@@ -356,9 +356,9 @@ struct get_dataset_version_response {
  * of them.
  */
 namespace dataset_event_subjects {
-inline constexpr std::string_view created = "dq.v1.datasets_events.created";
-inline constexpr std::string_view updated = "dq.v1.datasets_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.datasets.created";
+inline constexpr std::string_view updated = "dq.v1.events.datasets.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.datasets.deleted";
 }
 /**
  * @brief The members of dataset_key, named as the wire names them and in the order
@@ -368,7 +368,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const dataset_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_key>) {
     return std::tuple{
         utility::codec::field{"code", &dataset_key::code},
     };
@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const dataset_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_write>) {
     return std::tuple{
         utility::codec::field{"id", &dataset_write::id},
         utility::codec::field{"code", &dataset_write::code},
@@ -415,7 +415,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const dataset_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_change>) {
     return std::tuple{
         utility::codec::field{"write", &dataset_change::write},
         utility::codec::field{"precondition", &dataset_change::precondition},
@@ -430,7 +430,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const dataset_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_removal>) {
     return std::tuple{
         utility::codec::field{"key", &dataset_removal::key},
         utility::codec::field{"precondition", &dataset_removal::precondition},
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const dataset_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &dataset_lookup::key},
         utility::codec::field{"dataset", &dataset_lookup::dataset},
@@ -460,7 +460,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const datasets_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<datasets_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &datasets_filter::id_one_of},
     };
@@ -474,7 +474,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const dataset_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &dataset_event::event_id},
         utility::codec::field{"key", &dataset_event::key},
@@ -493,7 +493,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const dataset_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_version_key>) {
     return std::tuple{
         utility::codec::field{"dataset", &dataset_version_key::dataset},
         utility::codec::field{"version", &dataset_version_key::version},
@@ -508,7 +508,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const dataset_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &dataset_versions_filter::version},
         utility::codec::field{"from_version", &dataset_versions_filter::from_version},
@@ -524,7 +524,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_datasets_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_datasets_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_datasets_request::offset},
         utility::codec::field{"limit", &list_datasets_request::limit},
@@ -542,7 +542,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_datasets_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_datasets_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_datasets_response::result},
         utility::codec::field{"datasets", &list_datasets_response::datasets},
@@ -558,7 +558,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_dataset_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_dataset_request::key},
     };
@@ -572,7 +572,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_dataset_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_dataset_response::result},
         utility::codec::field{"dataset", &get_dataset_response::dataset},
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_datasets_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_datasets_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_datasets_request::keys},
     };
@@ -601,7 +601,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_datasets_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_datasets_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_datasets_response::result},
         utility::codec::field{"entries", &get_many_datasets_response::entries},
@@ -616,7 +616,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_dataset_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_dataset_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_dataset_request::change},
         utility::codec::field{"intent", &put_dataset_request::intent},
@@ -631,7 +631,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_dataset_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_dataset_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_dataset_response::result},
         utility::codec::field{"dataset", &put_dataset_response::dataset},
@@ -646,7 +646,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_datasets_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_datasets_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_datasets_request::changes},
         utility::codec::field{"intent", &put_many_datasets_request::intent},
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_datasets_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_datasets_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_datasets_response::result},
         utility::codec::field{"datasets", &put_many_datasets_response::datasets},
@@ -676,7 +676,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_dataset_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_dataset_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_dataset_request::removal},
         utility::codec::field{"intent", &delete_dataset_request::intent},
@@ -691,7 +691,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_dataset_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_dataset_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_dataset_response::result},
     };
@@ -705,7 +705,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_datasets_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_datasets_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_datasets_request::removals},
         utility::codec::field{"intent", &delete_many_datasets_request::intent},
@@ -720,7 +720,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_datasets_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_datasets_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_datasets_response::result},
     };
@@ -734,7 +734,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_dataset_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_dataset_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_dataset_versions_request::key},
         utility::codec::field{"offset", &list_dataset_versions_request::offset},
@@ -752,7 +752,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_dataset_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_dataset_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_dataset_versions_response::result},
         utility::codec::field{"versions", &list_dataset_versions_response::versions},
@@ -768,7 +768,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_dataset_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_dataset_version_request::key},
     };
@@ -782,7 +782,7 @@ inline constexpr std::string_view deleted = "dq.v1.datasets_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_dataset_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_dataset_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_dataset_version_response::result},
         utility::codec::field{"version", &get_dataset_version_response::version},

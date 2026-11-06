@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::dq::messaging::origin_dimension_event> {
-    static constexpr std::string_view subject_prefix = "dq.v1.origin_dimensions_events";
+    static constexpr std::string_view subject_prefix = "dq.v1.events.origin_dimensions";
 
     static ores::dq::messaging::origin_dimension_event
     from_notification(const entity_event_notification& notification) {

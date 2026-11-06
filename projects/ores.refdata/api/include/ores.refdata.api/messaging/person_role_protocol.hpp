@@ -342,9 +342,9 @@ struct get_person_role_version_response {
  * of them.
  */
 namespace person_role_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.person_roles_events.created";
-inline constexpr std::string_view updated = "refdata.v1.person_roles_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.person_roles.created";
+inline constexpr std::string_view updated = "refdata.v1.events.person_roles.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.person_roles.deleted";
 }
 /**
  * @brief The members of person_role_key, named as the wire names them and in the order
@@ -354,7 +354,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const person_role_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<person_role_key>) {
     return std::tuple{
         utility::codec::field{"code", &person_role_key::code},
         utility::codec::field{"coding_scheme_code", &person_role_key::coding_scheme_code},
@@ -369,7 +369,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const person_role_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<person_role_write>) {
     return std::tuple{
         utility::codec::field{"code", &person_role_write::code},
         utility::codec::field{"coding_scheme_code", &person_role_write::coding_scheme_code},
@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const person_role_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<person_role_change>) {
     return std::tuple{
         utility::codec::field{"write", &person_role_change::write},
         utility::codec::field{"precondition", &person_role_change::precondition},
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const person_role_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<person_role_removal>) {
     return std::tuple{
         utility::codec::field{"key", &person_role_removal::key},
         utility::codec::field{"precondition", &person_role_removal::precondition},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const person_role_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<person_role_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &person_role_lookup::key},
         utility::codec::field{"person_role", &person_role_lookup::person_role},
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const person_role_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<person_role_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &person_role_event::event_id},
         utility::codec::field{"key", &person_role_event::key},
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const person_role_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<person_role_version_key>) {
     return std::tuple{
         utility::codec::field{"person_role", &person_role_version_key::person_role},
         utility::codec::field{"version", &person_role_version_key::version},
@@ -465,7 +465,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const person_role_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<person_role_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &person_role_versions_filter::version},
         utility::codec::field{"from_version", &person_role_versions_filter::from_version},
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_person_roles_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_person_roles_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_person_roles_request::offset},
         utility::codec::field{"limit", &list_person_roles_request::limit},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_person_roles_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_person_roles_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_person_roles_response::result},
         utility::codec::field{"roles", &list_person_roles_response::roles},
@@ -514,7 +514,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_person_role_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_person_role_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_person_role_request::key},
     };
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_person_role_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_person_role_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_person_role_response::result},
         utility::codec::field{"person_role", &get_person_role_response::person_role},
@@ -543,7 +543,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_person_roles_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_person_roles_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_person_roles_request::keys},
     };
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_person_roles_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_person_roles_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_person_roles_response::result},
         utility::codec::field{"entries", &get_many_person_roles_response::entries},
@@ -572,7 +572,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_person_role_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_person_role_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_person_role_request::change},
         utility::codec::field{"intent", &put_person_role_request::intent},
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_person_role_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_person_role_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_person_role_response::result},
         utility::codec::field{"person_role", &put_person_role_response::person_role},
@@ -602,7 +602,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_person_roles_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_person_roles_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_person_roles_request::changes},
         utility::codec::field{"intent", &put_many_person_roles_request::intent},
@@ -617,7 +617,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_person_roles_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_person_roles_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_person_roles_response::result},
         utility::codec::field{"roles", &put_many_person_roles_response::roles},
@@ -632,7 +632,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_person_role_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_person_role_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_person_role_request::removal},
         utility::codec::field{"intent", &delete_person_role_request::intent},
@@ -647,7 +647,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_person_role_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_person_role_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_person_role_response::result},
     };
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_person_roles_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_person_roles_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_person_roles_request::removals},
         utility::codec::field{"intent", &delete_many_person_roles_request::intent},
@@ -676,7 +676,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_person_roles_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_person_roles_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_person_roles_response::result},
     };
@@ -690,7 +690,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_person_role_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_person_role_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_person_role_versions_request::key},
         utility::codec::field{"offset", &list_person_role_versions_request::offset},
@@ -708,7 +708,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_person_role_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_person_role_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_person_role_versions_response::result},
         utility::codec::field{"versions", &list_person_role_versions_response::versions},
@@ -724,7 +724,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_person_role_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_person_role_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_person_role_version_request::key},
     };
@@ -738,7 +738,7 @@ inline constexpr std::string_view deleted = "refdata.v1.person_roles_events.dele
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_person_role_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_person_role_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_person_role_version_response::result},
         utility::codec::field{"version", &get_person_role_version_response::version},

@@ -254,7 +254,7 @@ struct get_service_roster_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const service_sample&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<service_sample>) {
     return std::tuple{
         ::ores::utility::codec::field{"sampled_at", &service_sample::sampled_at},
         ::ores::utility::codec::field{"service_name", &service_sample::service_name},
@@ -272,7 +272,7 @@ struct get_service_roster_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const service_heartbeat_message&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<service_heartbeat_message>) {
     return std::tuple{
         ::ores::utility::codec::field{"service_name", &service_heartbeat_message::service_name},
         ::ores::utility::codec::field{"instance_id", &service_heartbeat_message::instance_id},
@@ -289,7 +289,7 @@ struct get_service_roster_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_service_samples_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_service_samples_request>) {
     return std::tuple{};
 }
 
@@ -301,7 +301,7 @@ struct get_service_roster_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_service_samples_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_service_samples_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_service_samples_response::success},
         ::ores::utility::codec::field{"message", &get_service_samples_response::message},
@@ -317,7 +317,7 @@ struct get_service_roster_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const service_roster_slot&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<service_roster_slot>) {
     return std::tuple{
         ::ores::utility::codec::field{"service_name", &service_roster_slot::service_name},
         ::ores::utility::codec::field{"display_name", &service_roster_slot::display_name},
@@ -340,7 +340,7 @@ struct get_service_roster_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_service_roster_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_service_roster_request>) {
     return std::tuple{};
 }
 
@@ -352,7 +352,7 @@ struct get_service_roster_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_service_roster_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_service_roster_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_service_roster_response::success},
         ::ores::utility::codec::field{"message", &get_service_roster_response::message},

@@ -109,7 +109,7 @@ struct signup_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const signup_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<signup_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"principal", &signup_request::principal},
         ::ores::utility::codec::field{"password", &signup_request::password},
@@ -126,7 +126,7 @@ struct signup_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const signup_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<signup_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &signup_response::success},
         ::ores::utility::codec::field{"message", &signup_response::message},

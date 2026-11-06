@@ -50,6 +50,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <chrono>
 #include <filesystem>
+#include <utility>
 
 namespace ores::http::server::app {
 
@@ -232,7 +233,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << "Swagger UI available at /swagger";
     BOOST_LOG_SEV(lg(), info) << "HTTP base URL advertised via NATS: " << http_base_url;
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         service_name,
@@ -267,6 +269,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             event_source.stop();
             ticker->stop();
         });
+    co_await std::move(service_run);
     co_return;
 }
 

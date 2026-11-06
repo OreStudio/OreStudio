@@ -356,9 +356,9 @@ struct get_report_error_scope_version_response {
  * of them.
  */
 namespace report_error_scope_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.report_error_scopes_events.created";
-inline constexpr std::string_view updated = "reporting.v1.report_error_scopes_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.report_error_scopes.created";
+inline constexpr std::string_view updated = "reporting.v1.events.report_error_scopes.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.report_error_scopes.deleted";
 }
 /**
  * @brief The members of report_error_scope_key, named as the wire names them and in the order
@@ -368,7 +368,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_error_scope_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_scope_key>) {
     return std::tuple{
         utility::codec::field{"code", &report_error_scope_key::code},
     };
@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_error_scope_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_scope_write>) {
     return std::tuple{
         utility::codec::field{"code", &report_error_scope_write::code},
         utility::codec::field{"name", &report_error_scope_write::name},
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_error_scope_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_scope_change>) {
     return std::tuple{
         utility::codec::field{"write", &report_error_scope_change::write},
         utility::codec::field{"precondition", &report_error_scope_change::precondition},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_error_scope_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_scope_removal>) {
     return std::tuple{
         utility::codec::field{"key", &report_error_scope_removal::key},
         utility::codec::field{"precondition", &report_error_scope_removal::precondition},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_error_scope_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_scope_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &report_error_scope_lookup::key},
         utility::codec::field{"report_error_scope", &report_error_scope_lookup::report_error_scope},
@@ -444,7 +444,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_error_scopes_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_scopes_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &report_error_scopes_filter::code_one_of},
     };
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_error_scope_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_scope_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &report_error_scope_event::event_id},
         utility::codec::field{"key", &report_error_scope_event::key},
@@ -477,7 +477,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_error_scope_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_scope_version_key>) {
     return std::tuple{
         utility::codec::field{"report_error_scope",
                               &report_error_scope_version_key::report_error_scope},
@@ -493,7 +493,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_error_scope_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_scope_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &report_error_scope_versions_filter::version},
         utility::codec::field{"from_version", &report_error_scope_versions_filter::from_version},
@@ -509,7 +509,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_error_scopes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_error_scopes_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_report_error_scopes_request::offset},
         utility::codec::field{"limit", &list_report_error_scopes_request::limit},
@@ -527,7 +527,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_error_scopes_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_report_error_scopes_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_report_error_scopes_response::result},
         utility::codec::field{"scopes", &list_report_error_scopes_response::scopes},
@@ -543,7 +543,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_error_scope_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_error_scope_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_report_error_scope_request::key},
     };
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_error_scope_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_report_error_scope_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_report_error_scope_response::result},
         utility::codec::field{"report_error_scope",
@@ -573,7 +573,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_report_error_scopes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_report_error_scopes_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_report_error_scopes_request::keys},
     };
@@ -587,7 +587,8 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_report_error_scopes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_report_error_scopes_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_report_error_scopes_response::result},
         utility::codec::field{"entries", &get_many_report_error_scopes_response::entries},
@@ -602,7 +603,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_report_error_scope_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_report_error_scope_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_report_error_scope_request::change},
         utility::codec::field{"intent", &put_report_error_scope_request::intent},
@@ -617,7 +618,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_report_error_scope_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_report_error_scope_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_report_error_scope_response::result},
         utility::codec::field{"report_error_scope",
@@ -633,7 +634,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_report_error_scopes_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_report_error_scopes_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_report_error_scopes_request::changes},
         utility::codec::field{"intent", &put_many_report_error_scopes_request::intent},
@@ -648,7 +649,8 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_report_error_scopes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_report_error_scopes_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_report_error_scopes_response::result},
         utility::codec::field{"scopes", &put_many_report_error_scopes_response::scopes},
@@ -663,7 +665,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_report_error_scope_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_report_error_scope_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_report_error_scope_request::removal},
         utility::codec::field{"intent", &delete_report_error_scope_request::intent},
@@ -678,7 +680,7 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_report_error_scope_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_report_error_scope_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_report_error_scope_response::result},
     };
@@ -692,7 +694,8 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_report_error_scopes_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_report_error_scopes_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_report_error_scopes_request::removals},
         utility::codec::field{"intent", &delete_many_report_error_scopes_request::intent},
@@ -707,7 +710,8 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_report_error_scopes_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_report_error_scopes_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_report_error_scopes_response::result},
     };
@@ -721,7 +725,8 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_error_scope_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_report_error_scope_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_report_error_scope_versions_request::key},
         utility::codec::field{"offset", &list_report_error_scope_versions_request::offset},
@@ -739,7 +744,8 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_error_scope_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_report_error_scope_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_report_error_scope_versions_response::result},
         utility::codec::field{"versions", &list_report_error_scope_versions_response::versions},
@@ -755,7 +761,8 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_error_scope_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_report_error_scope_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_report_error_scope_version_request::key},
     };
@@ -769,7 +776,8 @@ inline constexpr std::string_view deleted = "reporting.v1.report_error_scopes_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_error_scope_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_report_error_scope_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_report_error_scope_version_response::result},
         utility::codec::field{"version", &get_report_error_scope_version_response::version},

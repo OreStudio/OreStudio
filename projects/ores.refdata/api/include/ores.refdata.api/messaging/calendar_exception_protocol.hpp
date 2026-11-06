@@ -388,9 +388,9 @@ struct get_calendar_exception_version_response {
  * of them.
  */
 namespace calendar_exception_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.calendar_exceptions_events.created";
-inline constexpr std::string_view updated = "refdata.v1.calendar_exceptions_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.calendar_exceptions.created";
+inline constexpr std::string_view updated = "refdata.v1.events.calendar_exceptions.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.calendar_exceptions.deleted";
 }
 /**
  * @brief The members of calendar_exception_key, named as the wire names them and in the order
@@ -400,7 +400,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_exception_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exception_key>) {
     return std::tuple{
         utility::codec::field{"id", &calendar_exception_key::id},
     };
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_exception_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exception_write>) {
     return std::tuple{
         utility::codec::field{"id", &calendar_exception_write::id},
         utility::codec::field{"calendar_code", &calendar_exception_write::calendar_code},
@@ -432,7 +432,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_exception_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exception_change>) {
     return std::tuple{
         utility::codec::field{"write", &calendar_exception_change::write},
         utility::codec::field{"precondition", &calendar_exception_change::precondition},
@@ -447,7 +447,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_exception_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exception_removal>) {
     return std::tuple{
         utility::codec::field{"key", &calendar_exception_removal::key},
         utility::codec::field{"precondition", &calendar_exception_removal::precondition},
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_exception_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exception_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &calendar_exception_lookup::key},
         utility::codec::field{"calendar_exception", &calendar_exception_lookup::calendar_exception},
@@ -477,7 +477,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_exceptions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exceptions_filter>) {
     return std::tuple{
         utility::codec::field{"calendar_code", &calendar_exceptions_filter::calendar_code},
         utility::codec::field{"id_one_of", &calendar_exceptions_filter::id_one_of},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_exception_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exception_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &calendar_exception_event::event_id},
         utility::codec::field{"key", &calendar_exception_event::key},
@@ -513,7 +513,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_exception_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exception_version_key>) {
     return std::tuple{
         utility::codec::field{"calendar_exception",
                               &calendar_exception_version_key::calendar_exception},
@@ -529,7 +529,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const calendar_exception_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<calendar_exception_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &calendar_exception_versions_filter::version},
         utility::codec::field{"from_version", &calendar_exception_versions_filter::from_version},
@@ -545,7 +545,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calendar_exceptions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_exceptions_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_calendar_exceptions_request::offset},
         utility::codec::field{"limit", &list_calendar_exceptions_request::limit},
@@ -563,7 +563,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calendar_exceptions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_calendar_exceptions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_calendar_exceptions_response::result},
         utility::codec::field{"calendar_exceptions",
@@ -580,7 +580,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calendar_exception_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_exception_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_calendar_exception_request::key},
     };
@@ -594,7 +594,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calendar_exception_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_calendar_exception_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_calendar_exception_response::result},
         utility::codec::field{"calendar_exception",
@@ -610,7 +610,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_calendar_exceptions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_calendar_exceptions_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_calendar_exceptions_request::keys},
     };
@@ -624,7 +624,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_calendar_exceptions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_calendar_exceptions_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_calendar_exceptions_response::result},
         utility::codec::field{"entries", &get_many_calendar_exceptions_response::entries},
@@ -639,7 +640,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_calendar_exception_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_calendar_exception_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_calendar_exception_request::change},
         utility::codec::field{"intent", &put_calendar_exception_request::intent},
@@ -654,7 +655,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_calendar_exception_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_calendar_exception_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_calendar_exception_response::result},
         utility::codec::field{"calendar_exception",
@@ -670,7 +671,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_calendar_exceptions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_calendar_exceptions_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_calendar_exceptions_request::changes},
         utility::codec::field{"intent", &put_many_calendar_exceptions_request::intent},
@@ -685,7 +686,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_calendar_exceptions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_calendar_exceptions_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_calendar_exceptions_response::result},
         utility::codec::field{"calendar_exceptions",
@@ -701,7 +703,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_calendar_exception_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_calendar_exception_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_calendar_exception_request::removal},
         utility::codec::field{"intent", &delete_calendar_exception_request::intent},
@@ -716,7 +718,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_calendar_exception_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_calendar_exception_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_calendar_exception_response::result},
     };
@@ -730,7 +732,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_calendar_exceptions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_calendar_exceptions_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_calendar_exceptions_request::removals},
         utility::codec::field{"intent", &delete_many_calendar_exceptions_request::intent},
@@ -745,7 +748,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_calendar_exceptions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_calendar_exceptions_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_calendar_exceptions_response::result},
     };
@@ -759,7 +763,8 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_calendar_code_calendar_exceptions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_calendar_code_calendar_exceptions_request>) {
     return std::tuple{
         utility::codec::field{"calendar_code",
                               &list_by_calendar_code_calendar_exceptions_request::calendar_code},
@@ -780,7 +785,7 @@ inline constexpr std::string_view deleted = "refdata.v1.calendar_exceptions_even
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_calendar_code_calendar_exceptions_response&) {
+wire_fields(std::type_identity<list_by_calendar_code_calendar_exceptions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_calendar_code_calendar_exceptions_response::result},
@@ -799,7 +804,8 @@ wire_fields(const list_by_calendar_code_calendar_exceptions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calendar_exception_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_calendar_exception_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_calendar_exception_versions_request::key},
         utility::codec::field{"offset", &list_calendar_exception_versions_request::offset},
@@ -817,7 +823,8 @@ wire_fields(const list_by_calendar_code_calendar_exceptions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_calendar_exception_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_calendar_exception_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_calendar_exception_versions_response::result},
         utility::codec::field{"versions", &list_calendar_exception_versions_response::versions},
@@ -833,7 +840,8 @@ wire_fields(const list_by_calendar_code_calendar_exceptions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calendar_exception_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_calendar_exception_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_calendar_exception_version_request::key},
     };
@@ -847,7 +855,8 @@ wire_fields(const list_by_calendar_code_calendar_exceptions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_calendar_exception_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_calendar_exception_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_calendar_exception_version_response::result},
         utility::codec::field{"version", &get_calendar_exception_version_response::version},

@@ -227,7 +227,8 @@ cut_body body_of_facts(const cut_body_facts& facts) {
     } else {
         add(facts.deals_refusal.empty() ?
                 std::string("the trade store answered no count of its deals") :
-                std::format("the trade store answered no count of its deals: {}", facts.deals_refusal));
+                std::format("the trade store answered no count of its deals: {}",
+                            facts.deals_refusal));
     }
 
     if (facts.market_data_set_count && *facts.market_data_set_count > 0) {
@@ -237,7 +238,8 @@ cut_body body_of_facts(const cut_body_facts& facts) {
                             *facts.market_data_set_count,
                             facts.market_data_as_of));
     } else if (!facts.market_data_refusal.empty()) {
-        add(std::format("the market data answered no published set: {}", facts.market_data_refusal));
+        add(std::format("the market data answered no published set: {}",
+                        facts.market_data_refusal));
     } else {
         add("no published set was in use, so the body names no market data snapshot");
     }

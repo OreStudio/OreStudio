@@ -73,6 +73,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:assign', 'Assign roles to accounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::roles:revoke', 'Revoke roles from accounts');
 
+    -- Role product types: the product types a role may book
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_product_types:read', 'View the product types a role permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_product_types:write', 'Grant a role the product types it may book');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::role_product_types:delete', 'Withdraw a role''s product types');
+
     -- Run grant permissions. Any person may create a grant for a role they
     -- hold in full, and its grantor may revoke it; this permission lets an
     -- administrator revoke any grant of the tenant. The generated reads check
@@ -346,6 +351,11 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_purpose_types:read',                  'View book purpose types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_purpose_types:write',                 'Create and modify book purpose types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_purpose_types:delete',                'Delete book purpose types');
+
+    -- Book product types: the product types a book allows, when it states them
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:read',                  'View the product types a book allows');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:write',                 'State the product types a book allows');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:delete',                'Restore a book to allowing every product type');
 
     -- Business day convention types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:read',       'View business day convention types');

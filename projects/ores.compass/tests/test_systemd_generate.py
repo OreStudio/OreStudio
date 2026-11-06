@@ -266,3 +266,37 @@ class TestFleetMemoryCap:
     def test_the_site_preview_unit_is_not_part_of_the_fleet_cap(self):
         unit = systemd_generate.render_site_unit("/checkout", "eager_maxwell", 8000)
         assert "MemoryMax" not in unit
+
+
+class TestServiceLogFile:
+    """The journal drops lines under load, so each process also writes a file."""
+
+    def test_the_file_sink_is_on_unless_the_checkout_turns_it_off(self):
+        assert systemd_generate.service_log_to_file({})
+        assert systemd_generate.service_log_to_file({"ORES_SERVICE_LOG_TO_FILE": "true"})
+        for off in ("0", "false", "No"):
+            assert not systemd_generate.service_log_to_file(
+                {"ORES_SERVICE_LOG_TO_FILE": off})
+
+    def test_a_singleton_writes_its_file_under_publish_log(self):
+        unit = systemd_generate.render_singleton_unit(
+            _native_def(), [], "/checkout", "eager_maxwell", TARGET, log_to_file=True)
+        assert ("--log-directory ../log --log-filename ores.marketdata.service.log"
+                " --log-replica-index 0") in unit
+
+    def test_each_wrapper_replica_writes_its_own_file(self):
+        units = [u for _, u in systemd_generate.render_wrapper_units(
+            _native_def("ores.compute.wrapper", replicas=2), [], "/checkout",
+            "eager_maxwell", TARGET, log_to_file=True)]
+        assert "--log-replica-index 1" in units[0]
+        assert "--log-replica-index 2" in units[1]
+
+    def test_no_file_sink_when_it_is_off(self):
+        unit = systemd_generate.render_singleton_unit(
+            _native_def(), [], "/checkout", "eager_maxwell", TARGET)
+        assert "--log-directory" not in unit
+
+    def test_quadlet_units_add_no_file_sink(self):
+        unit = systemd_generate.render_quadlet_singleton_unit(
+            _native_def(), [], "/checkout", "eager_maxwell", TARGET)
+        assert "--log-directory" not in unit

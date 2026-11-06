@@ -212,7 +212,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'synthetic.v1.ir_curve_template_entries_events.created',
-    updated: 'synthetic.v1.ir_curve_template_entries_events.updated',
-    deleted: 'synthetic.v1.ir_curve_template_entries_events.deleted',
+    created: 'synthetic.v1.events.ir_curve_template_entries.created',
+    updated: 'synthetic.v1.events.ir_curve_template_entries.updated',
+    deleted: 'synthetic.v1.events.ir_curve_template_entries.deleted',
 } as const;

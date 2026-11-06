@@ -208,7 +208,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.fx_vol_surface_pillars_events.created',
-    updated: 'refdata.v1.fx_vol_surface_pillars_events.updated',
-    deleted: 'refdata.v1.fx_vol_surface_pillars_events.deleted',
+    created: 'refdata.v1.events.fx_vol_surface_pillars.created',
+    updated: 'refdata.v1.events.fx_vol_surface_pillars.updated',
+    deleted: 'refdata.v1.events.fx_vol_surface_pillars.deleted',
 } as const;

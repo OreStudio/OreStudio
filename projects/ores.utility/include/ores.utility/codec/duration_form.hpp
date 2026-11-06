@@ -44,7 +44,7 @@ struct duration_form {
     std::string unit;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const duration_form&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<duration_form>) {
     return std::tuple{field{"count", &duration_form::count}, field{"unit", &duration_form::unit}};
 }
 

@@ -250,6 +250,9 @@
 \ir ./refdata_sandbox_members_notify_trigger_create.sql
 \ir ./refdata_books_create.sql
 \ir ./refdata_books_notify_trigger_create.sql
+-- The product types a book allows, when it states them at all.
+\ir ./refdata_book_product_type_create.sql
+\ir ./refdata_book_product_types_notify_trigger_create.sql
 \ir ./refdata_book_changes_create.sql
 \ir ./refdata_book_changes_notify_trigger_create.sql
 \ir ./refdata_counterparty_changes_create.sql

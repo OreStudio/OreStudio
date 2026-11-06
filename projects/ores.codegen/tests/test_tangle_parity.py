@@ -48,8 +48,11 @@ def test_the_directory_declares_at_least_one_tangled_template():
     assert len(list(tangled_blocks())) > 50
 
 
-@pytest.mark.parametrize("org,target,block", list(tangled_blocks()),
-                         ids=lambda v: v.name if isinstance(v, Path) else str(v))
+CASES = list(tangled_blocks())
+
+
+@pytest.mark.parametrize("org,target,block", CASES,
+                         ids=[f"{org.name}:{target}" for org, target, _ in CASES])
 def test_the_tangled_file_is_what_the_source_states(org, target, block):
     tangled = TEMPLATES / target
     assert tangled.exists(), f"{org.name} tangles {target}, which is not on disk"

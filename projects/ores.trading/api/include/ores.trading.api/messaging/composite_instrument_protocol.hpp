@@ -378,9 +378,9 @@ struct get_composite_instrument_version_response {
  * of them.
  */
 namespace composite_instrument_event_subjects {
-inline constexpr std::string_view created = "trading.v1.composite_instruments_events.created";
-inline constexpr std::string_view updated = "trading.v1.composite_instruments_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.composite_instruments_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.composite_instruments.created";
+inline constexpr std::string_view updated = "trading.v1.events.composite_instruments.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.composite_instruments.deleted";
 }
 /**
  * @brief The members of composite_instrument_key, named as the wire names them and in the order
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_instrument_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_instrument_key>) {
     return std::tuple{
         utility::codec::field{"trade_id", &composite_instrument_key::trade_id},
     };
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_instrument_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_instrument_write>) {
     return std::tuple{
         utility::codec::field{"trade_id", &composite_instrument_write::trade_id},
         utility::codec::field{"trade_type_code", &composite_instrument_write::trade_type_code},
@@ -457,7 +457,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_instrument_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_instrument_change>) {
     return std::tuple{
         utility::codec::field{"write", &composite_instrument_change::write},
         utility::codec::field{"precondition", &composite_instrument_change::precondition},
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_instrument_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_instrument_removal>) {
     return std::tuple{
         utility::codec::field{"key", &composite_instrument_removal::key},
         utility::codec::field{"precondition", &composite_instrument_removal::precondition},
@@ -487,7 +487,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_instrument_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_instrument_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &composite_instrument_lookup::key},
         utility::codec::field{"composite_instrument",
@@ -503,7 +503,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_instruments_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_instruments_filter>) {
     return std::tuple{
         utility::codec::field{"trade_id_one_of", &composite_instruments_filter::trade_id_one_of},
     };
@@ -517,7 +517,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_instrument_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_instrument_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &composite_instrument_event::event_id},
         utility::codec::field{"key", &composite_instrument_event::key},
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_instrument_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_instrument_version_key>) {
     return std::tuple{
         utility::codec::field{"composite_instrument",
                               &composite_instrument_version_key::composite_instrument},
@@ -552,7 +552,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const composite_instrument_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<composite_instrument_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &composite_instrument_versions_filter::version},
         utility::codec::field{"from_version", &composite_instrument_versions_filter::from_version},
@@ -568,7 +568,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_instruments_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_composite_instruments_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_composite_instruments_request::offset},
         utility::codec::field{"limit", &list_composite_instruments_request::limit},
@@ -586,7 +586,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_instruments_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_composite_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_composite_instruments_response::result},
         utility::codec::field{"composite_instruments",
@@ -603,7 +603,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_instrument_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_instrument_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_composite_instrument_request::key},
     };
@@ -617,7 +617,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_instrument_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_composite_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_composite_instrument_response::result},
         utility::codec::field{"composite_instrument",
@@ -633,7 +633,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_composite_instruments_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_composite_instruments_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_composite_instruments_request::keys},
     };
@@ -647,7 +648,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_composite_instruments_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_composite_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_composite_instruments_response::result},
         utility::codec::field{"entries", &get_many_composite_instruments_response::entries},
@@ -662,7 +664,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_composite_instrument_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_composite_instrument_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_composite_instrument_request::change},
         utility::codec::field{"intent", &put_composite_instrument_request::intent},
@@ -677,7 +679,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_composite_instrument_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_composite_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_composite_instrument_response::result},
         utility::codec::field{"composite_instrument",
@@ -693,7 +695,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_composite_instruments_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_composite_instruments_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_composite_instruments_request::changes},
         utility::codec::field{"intent", &put_many_composite_instruments_request::intent},
@@ -708,7 +711,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_composite_instruments_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_composite_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_composite_instruments_response::result},
         utility::codec::field{"composite_instruments",
@@ -724,7 +728,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_composite_instrument_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_composite_instrument_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_composite_instrument_request::removal},
         utility::codec::field{"intent", &delete_composite_instrument_request::intent},
@@ -739,7 +743,7 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_composite_instrument_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_composite_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_composite_instrument_response::result},
     };
@@ -753,7 +757,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_composite_instruments_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_composite_instruments_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_composite_instruments_request::removals},
         utility::codec::field{"intent", &delete_many_composite_instruments_request::intent},
@@ -768,7 +773,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_composite_instruments_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_composite_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_composite_instruments_response::result},
     };
@@ -782,7 +788,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_instrument_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_composite_instrument_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_composite_instrument_versions_request::key},
         utility::codec::field{"offset", &list_composite_instrument_versions_request::offset},
@@ -800,7 +807,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_composite_instrument_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_composite_instrument_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_composite_instrument_versions_response::result},
         utility::codec::field{"versions", &list_composite_instrument_versions_response::versions},
@@ -816,7 +824,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_instrument_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_composite_instrument_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_composite_instrument_version_request::key},
     };
@@ -830,7 +839,8 @@ inline constexpr std::string_view deleted = "trading.v1.composite_instruments_ev
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_composite_instrument_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_composite_instrument_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_composite_instrument_version_response::result},
         utility::codec::field{"version", &get_composite_instrument_version_response::version},

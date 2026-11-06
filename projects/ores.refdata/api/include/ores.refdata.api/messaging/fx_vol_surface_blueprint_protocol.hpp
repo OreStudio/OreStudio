@@ -371,9 +371,9 @@ struct get_fx_vol_surface_blueprint_version_response {
  * of them.
  */
 namespace fx_vol_surface_blueprint_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.fx_vol_surface_blueprints_events.created";
-inline constexpr std::string_view updated = "refdata.v1.fx_vol_surface_blueprints_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprints_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.fx_vol_surface_blueprints.created";
+inline constexpr std::string_view updated = "refdata.v1.events.fx_vol_surface_blueprints.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.fx_vol_surface_blueprints.deleted";
 }
 /**
  * @brief The members of fx_vol_surface_blueprint_key, named as the wire names them and in the order
@@ -383,7 +383,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_vol_surface_blueprint_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_blueprint_key>) {
     return std::tuple{
         utility::codec::field{"id", &fx_vol_surface_blueprint_key::id},
     };
@@ -397,7 +397,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_vol_surface_blueprint_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_blueprint_write>) {
     return std::tuple{
         utility::codec::field{"id", &fx_vol_surface_blueprint_write::id},
         utility::codec::field{"output_series_id",
@@ -425,7 +425,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_vol_surface_blueprint_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_blueprint_change>) {
     return std::tuple{
         utility::codec::field{"write", &fx_vol_surface_blueprint_change::write},
         utility::codec::field{"precondition", &fx_vol_surface_blueprint_change::precondition},
@@ -440,7 +440,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_vol_surface_blueprint_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_blueprint_removal>) {
     return std::tuple{
         utility::codec::field{"key", &fx_vol_surface_blueprint_removal::key},
         utility::codec::field{"precondition", &fx_vol_surface_blueprint_removal::precondition},
@@ -455,7 +455,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_vol_surface_blueprint_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_blueprint_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &fx_vol_surface_blueprint_lookup::key},
         utility::codec::field{"fx_vol_surface_blueprint",
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_vol_surface_blueprints_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_blueprints_filter>) {
     return std::tuple{
         utility::codec::field{"base_currency_code",
                               &fx_vol_surface_blueprints_filter::base_currency_code},
@@ -494,7 +494,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_vol_surface_blueprint_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_blueprint_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &fx_vol_surface_blueprint_event::event_id},
         utility::codec::field{"key", &fx_vol_surface_blueprint_event::key},
@@ -513,7 +513,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_vol_surface_blueprint_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_blueprint_version_key>) {
     return std::tuple{
         utility::codec::field{"fx_vol_surface_blueprint",
                               &fx_vol_surface_blueprint_version_key::fx_vol_surface_blueprint},
@@ -529,7 +529,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_vol_surface_blueprint_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<fx_vol_surface_blueprint_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &fx_vol_surface_blueprint_versions_filter::version},
         utility::codec::field{"from_version",
@@ -546,7 +547,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fx_vol_surface_blueprints_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_fx_vol_surface_blueprints_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_fx_vol_surface_blueprints_request::offset},
         utility::codec::field{"limit", &list_fx_vol_surface_blueprints_request::limit},
@@ -564,7 +566,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fx_vol_surface_blueprints_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_fx_vol_surface_blueprints_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_fx_vol_surface_blueprints_response::result},
         utility::codec::field{"blueprints", &list_fx_vol_surface_blueprints_response::blueprints},
@@ -580,7 +583,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fx_vol_surface_blueprint_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_vol_surface_blueprint_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_fx_vol_surface_blueprint_request::key},
     };
@@ -594,7 +597,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fx_vol_surface_blueprint_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_fx_vol_surface_blueprint_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_fx_vol_surface_blueprint_response::result},
         utility::codec::field{"fx_vol_surface_blueprint",
@@ -610,7 +614,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_fx_vol_surface_blueprints_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_fx_vol_surface_blueprints_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_fx_vol_surface_blueprints_request::keys},
     };
@@ -624,7 +629,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_fx_vol_surface_blueprints_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_fx_vol_surface_blueprints_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_fx_vol_surface_blueprints_response::result},
         utility::codec::field{"entries", &get_many_fx_vol_surface_blueprints_response::entries},
@@ -639,7 +645,7 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_fx_vol_surface_blueprint_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_fx_vol_surface_blueprint_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_fx_vol_surface_blueprint_request::change},
         utility::codec::field{"intent", &put_fx_vol_surface_blueprint_request::intent},
@@ -654,7 +660,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_fx_vol_surface_blueprint_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_fx_vol_surface_blueprint_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_fx_vol_surface_blueprint_response::result},
         utility::codec::field{"fx_vol_surface_blueprint",
@@ -670,7 +677,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_fx_vol_surface_blueprints_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_fx_vol_surface_blueprints_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_fx_vol_surface_blueprints_request::changes},
         utility::codec::field{"intent", &put_many_fx_vol_surface_blueprints_request::intent},
@@ -685,7 +693,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_fx_vol_surface_blueprints_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_fx_vol_surface_blueprints_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_fx_vol_surface_blueprints_response::result},
         utility::codec::field{"blueprints",
@@ -701,7 +710,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_fx_vol_surface_blueprint_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_fx_vol_surface_blueprint_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_fx_vol_surface_blueprint_request::removal},
         utility::codec::field{"intent", &delete_fx_vol_surface_blueprint_request::intent},
@@ -716,7 +726,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_fx_vol_surface_blueprint_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_fx_vol_surface_blueprint_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_fx_vol_surface_blueprint_response::result},
     };
@@ -730,7 +741,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_fx_vol_surface_blueprints_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_fx_vol_surface_blueprints_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_fx_vol_surface_blueprints_request::removals},
         utility::codec::field{"intent", &delete_many_fx_vol_surface_blueprints_request::intent},
@@ -745,7 +757,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_fx_vol_surface_blueprints_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_fx_vol_surface_blueprints_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_fx_vol_surface_blueprints_response::result},
     };
@@ -759,7 +772,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fx_vol_surface_blueprint_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_fx_vol_surface_blueprint_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_fx_vol_surface_blueprint_versions_request::key},
         utility::codec::field{"offset", &list_fx_vol_surface_blueprint_versions_request::offset},
@@ -777,7 +791,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fx_vol_surface_blueprint_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_fx_vol_surface_blueprint_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_fx_vol_surface_blueprint_versions_response::result},
         utility::codec::field{"versions",
@@ -794,7 +809,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fx_vol_surface_blueprint_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_fx_vol_surface_blueprint_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_fx_vol_surface_blueprint_version_request::key},
     };
@@ -808,7 +824,8 @@ inline constexpr std::string_view deleted = "refdata.v1.fx_vol_surface_blueprint
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fx_vol_surface_blueprint_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_fx_vol_surface_blueprint_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_fx_vol_surface_blueprint_version_response::result},
         utility::codec::field{"version", &get_fx_vol_surface_blueprint_version_response::version},

@@ -1,6 +1,11 @@
 :PROPERTIES:
 :ID: 0EBAD7F6-F0DF-4FF5-8404-C3F0EA8E8BBD
 :ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :END:
 #+title: ores.trading.service
 #+description: NATS service entrypoint for the trading domain — wires handlers, repositories, and configuration.
@@ -62,6 +67,25 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
+* Options
+:PROPERTIES:
+:group: Storage
+:END:
+
+The options this service takes beyond logging, NATS and the database. Codegen
+writes the member, its wire field, its command-line declaration and its
+assignment from each entry.
+
+** http_base_url
+:PROPERTIES:
+:cpp_type: std::string
+:default: "http://localhost:8080"
+:help: Base URL of the storage HTTP API
+:END:
+
+Base URL of the storage HTTP API, e.g. "http://localhost:8080".
+
+Used by export-to-storage handlers to upload serialised data blobs.
 
 * See also
 
@@ -72,7 +96,6 @@ into its generated file after the profile's baseline.
 * Test dependencies
 
 The suites link what the profile cannot know about.
-
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}

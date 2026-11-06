@@ -376,11 +376,11 @@ struct get_curve_segment_cross_currency_terms_version_response {
  */
 namespace curve_segment_cross_currency_terms_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.curve_segment_cross_currency_terms_events.created";
+    "refdata.v1.events.curve_segment_cross_currency_terms.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.curve_segment_cross_currency_terms_events.updated";
+    "refdata.v1.events.curve_segment_cross_currency_terms.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.curve_segment_cross_currency_terms_events.deleted";
+    "refdata.v1.events.curve_segment_cross_currency_terms.deleted";
 }
 /**
  * @brief The members of curve_segment_cross_currency_terms_key, named as the wire names them and in
@@ -390,7 +390,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_cross_currency_terms_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_cross_currency_terms_key>) {
     return std::tuple{
         utility::codec::field{"id", &curve_segment_cross_currency_terms_key::id},
     };
@@ -404,7 +405,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_cross_currency_terms_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_cross_currency_terms_write>) {
     return std::tuple{
         utility::codec::field{"id", &curve_segment_cross_currency_terms_write::id},
         utility::codec::field{"curve_segment_id",
@@ -427,7 +429,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_cross_currency_terms_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_cross_currency_terms_change>) {
     return std::tuple{
         utility::codec::field{"write", &curve_segment_cross_currency_terms_change::write},
         utility::codec::field{"precondition",
@@ -443,7 +446,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_cross_currency_terms_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_cross_currency_terms_removal>) {
     return std::tuple{
         utility::codec::field{"key", &curve_segment_cross_currency_terms_removal::key},
         utility::codec::field{"precondition",
@@ -459,7 +463,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_cross_currency_terms_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_cross_currency_terms_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &curve_segment_cross_currency_terms_lookup::key},
         utility::codec::field{
@@ -476,7 +481,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_cross_currency_terms_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_cross_currency_terms_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &curve_segment_cross_currency_terms_filter::id_one_of},
     };
@@ -490,7 +496,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_cross_currency_terms_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_cross_currency_terms_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &curve_segment_cross_currency_terms_event::event_id},
         utility::codec::field{"key", &curve_segment_cross_currency_terms_event::key},
@@ -511,7 +518,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_cross_currency_terms_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_cross_currency_terms_version_key>) {
     return std::tuple{
         utility::codec::field{
             "curve_segment_cross_currency_terms",
@@ -529,7 +537,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const curve_segment_cross_currency_terms_versions_filter&) {
+wire_fields(std::type_identity<curve_segment_cross_currency_terms_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version",
                               &curve_segment_cross_currency_terms_versions_filter::version},
@@ -548,7 +556,8 @@ wire_fields(const curve_segment_cross_currency_terms_versions_filter&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_segment_cross_currency_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_curve_segment_cross_currency_terms_request::offset},
         utility::codec::field{"limit", &list_curve_segment_cross_currency_terms_request::limit},
@@ -566,7 +575,8 @@ wire_fields(const curve_segment_cross_currency_terms_versions_filter&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_segment_cross_currency_terms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_curve_segment_cross_currency_terms_response::result},
         utility::codec::field{
@@ -584,7 +594,8 @@ wire_fields(const curve_segment_cross_currency_terms_versions_filter&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_cross_currency_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_segment_cross_currency_terms_request::key},
     };
@@ -598,7 +609,8 @@ wire_fields(const curve_segment_cross_currency_terms_versions_filter&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_cross_currency_terms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_curve_segment_cross_currency_terms_response::result},
         utility::codec::field{
@@ -616,7 +628,7 @@ wire_fields(const curve_segment_cross_currency_terms_versions_filter&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_curve_segment_cross_currency_terms_request&) {
+wire_fields(std::type_identity<get_many_curve_segment_cross_currency_terms_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_curve_segment_cross_currency_terms_request::keys},
     };
@@ -631,7 +643,7 @@ wire_fields(const get_many_curve_segment_cross_currency_terms_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_curve_segment_cross_currency_terms_response&) {
+wire_fields(std::type_identity<get_many_curve_segment_cross_currency_terms_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_curve_segment_cross_currency_terms_response::result},
@@ -648,7 +660,8 @@ wire_fields(const get_many_curve_segment_cross_currency_terms_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_segment_cross_currency_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_segment_cross_currency_terms_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_curve_segment_cross_currency_terms_request::change},
         utility::codec::field{"intent", &put_curve_segment_cross_currency_terms_request::intent},
@@ -663,7 +676,8 @@ wire_fields(const get_many_curve_segment_cross_currency_terms_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_segment_cross_currency_terms_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_segment_cross_currency_terms_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_curve_segment_cross_currency_terms_response::result},
         utility::codec::field{
@@ -681,7 +695,7 @@ wire_fields(const get_many_curve_segment_cross_currency_terms_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_curve_segment_cross_currency_terms_request&) {
+wire_fields(std::type_identity<put_many_curve_segment_cross_currency_terms_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_curve_segment_cross_currency_terms_request::changes},
@@ -699,7 +713,7 @@ wire_fields(const put_many_curve_segment_cross_currency_terms_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_curve_segment_cross_currency_terms_response&) {
+wire_fields(std::type_identity<put_many_curve_segment_cross_currency_terms_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_curve_segment_cross_currency_terms_response::result},
@@ -717,7 +731,8 @@ wire_fields(const put_many_curve_segment_cross_currency_terms_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_segment_cross_currency_terms_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_segment_cross_currency_terms_request>) {
     return std::tuple{
         utility::codec::field{"removal",
                               &delete_curve_segment_cross_currency_terms_request::removal},
@@ -734,7 +749,7 @@ wire_fields(const put_many_curve_segment_cross_currency_terms_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_curve_segment_cross_currency_terms_response&) {
+wire_fields(std::type_identity<delete_curve_segment_cross_currency_terms_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_curve_segment_cross_currency_terms_response::result},
@@ -750,7 +765,7 @@ wire_fields(const delete_curve_segment_cross_currency_terms_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_curve_segment_cross_currency_terms_request&) {
+wire_fields(std::type_identity<delete_many_curve_segment_cross_currency_terms_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_curve_segment_cross_currency_terms_request::removals},
@@ -768,7 +783,7 @@ wire_fields(const delete_many_curve_segment_cross_currency_terms_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_curve_segment_cross_currency_terms_response&) {
+wire_fields(std::type_identity<delete_many_curve_segment_cross_currency_terms_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_curve_segment_cross_currency_terms_response::result},
@@ -784,7 +799,7 @@ wire_fields(const delete_many_curve_segment_cross_currency_terms_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_curve_segment_cross_currency_terms_versions_request&) {
+wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_versions_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &list_curve_segment_cross_currency_terms_versions_request::key},
@@ -808,7 +823,7 @@ wire_fields(const list_curve_segment_cross_currency_terms_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_curve_segment_cross_currency_terms_versions_response&) {
+wire_fields(std::type_identity<list_curve_segment_cross_currency_terms_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_curve_segment_cross_currency_terms_versions_response::result},
@@ -828,7 +843,7 @@ wire_fields(const list_curve_segment_cross_currency_terms_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_curve_segment_cross_currency_terms_version_request&) {
+wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_segment_cross_currency_terms_version_request::key},
     };
@@ -843,7 +858,7 @@ wire_fields(const get_curve_segment_cross_currency_terms_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_curve_segment_cross_currency_terms_version_response&) {
+wire_fields(std::type_identity<get_curve_segment_cross_currency_terms_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_curve_segment_cross_currency_terms_version_response::result},

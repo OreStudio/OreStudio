@@ -48,7 +48,7 @@ namespace ores::eventing::domain {
 template <>
 struct entity_event_traits<ores::trading::messaging::credit_basket_constituent_event> {
     static constexpr std::string_view subject_prefix =
-        "trading.v1.credit_basket_constituents_events";
+        "trading.v1.events.credit_basket_constituents";
 
     static ores::trading::messaging::credit_basket_constituent_event
     from_notification(const entity_event_notification& notification) {

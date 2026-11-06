@@ -368,11 +368,11 @@ struct get_cms_spread_option_convention_version_response {
  */
 namespace cms_spread_option_convention_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.cms_spread_option_conventions_events.created";
+    "refdata.v1.events.cms_spread_option_conventions.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.cms_spread_option_conventions_events.updated";
+    "refdata.v1.events.cms_spread_option_conventions.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.cms_spread_option_conventions_events.deleted";
+    "refdata.v1.events.cms_spread_option_conventions.deleted";
 }
 /**
  * @brief The members of cms_spread_option_convention_key, named as the wire names them and in the
@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cms_spread_option_convention_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cms_spread_option_convention_key>) {
     return std::tuple{
         utility::codec::field{"id", &cms_spread_option_convention_key::id},
     };
@@ -396,7 +396,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cms_spread_option_convention_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cms_spread_option_convention_write>) {
     return std::tuple{
         utility::codec::field{"id", &cms_spread_option_convention_write::id},
         utility::codec::field{"forward_start", &cms_spread_option_convention_write::forward_start},
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cms_spread_option_convention_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cms_spread_option_convention_change>) {
     return std::tuple{
         utility::codec::field{"write", &cms_spread_option_convention_change::write},
         utility::codec::field{"precondition", &cms_spread_option_convention_change::precondition},
@@ -435,7 +435,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cms_spread_option_convention_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cms_spread_option_convention_removal>) {
     return std::tuple{
         utility::codec::field{"key", &cms_spread_option_convention_removal::key},
         utility::codec::field{"precondition", &cms_spread_option_convention_removal::precondition},
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cms_spread_option_convention_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cms_spread_option_convention_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &cms_spread_option_convention_lookup::key},
         utility::codec::field{"cms_spread_option_convention",
@@ -466,7 +466,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cms_spread_option_conventions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cms_spread_option_conventions_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &cms_spread_option_conventions_filter::id_one_of},
     };
@@ -480,7 +480,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cms_spread_option_convention_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<cms_spread_option_convention_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &cms_spread_option_convention_event::event_id},
         utility::codec::field{"key", &cms_spread_option_convention_event::key},
@@ -500,7 +500,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cms_spread_option_convention_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cms_spread_option_convention_version_key>) {
     return std::tuple{
         utility::codec::field{
             "cms_spread_option_convention",
@@ -517,7 +518,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const cms_spread_option_convention_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<cms_spread_option_convention_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &cms_spread_option_convention_versions_filter::version},
         utility::codec::field{"from_version",
@@ -535,7 +537,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_cms_spread_option_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_cms_spread_option_conventions_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_cms_spread_option_conventions_request::offset},
         utility::codec::field{"limit", &list_cms_spread_option_conventions_request::limit},
@@ -553,7 +556,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_cms_spread_option_conventions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_cms_spread_option_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_cms_spread_option_conventions_response::result},
         utility::codec::field{
@@ -571,7 +575,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cms_spread_option_convention_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_cms_spread_option_convention_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_cms_spread_option_convention_request::key},
     };
@@ -585,7 +590,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cms_spread_option_convention_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_cms_spread_option_convention_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_cms_spread_option_convention_response::result},
         utility::codec::field{
@@ -602,7 +608,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_cms_spread_option_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_cms_spread_option_conventions_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_cms_spread_option_conventions_request::keys},
     };
@@ -616,7 +623,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_cms_spread_option_conventions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_cms_spread_option_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_cms_spread_option_conventions_response::result},
         utility::codec::field{"entries", &get_many_cms_spread_option_conventions_response::entries},
@@ -631,7 +639,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_cms_spread_option_convention_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_cms_spread_option_convention_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_cms_spread_option_convention_request::change},
         utility::codec::field{"intent", &put_cms_spread_option_convention_request::intent},
@@ -646,7 +655,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_cms_spread_option_convention_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_cms_spread_option_convention_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_cms_spread_option_convention_response::result},
         utility::codec::field{
@@ -663,7 +673,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_cms_spread_option_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_cms_spread_option_conventions_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_cms_spread_option_conventions_request::changes},
         utility::codec::field{"intent", &put_many_cms_spread_option_conventions_request::intent},
@@ -678,7 +689,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_cms_spread_option_conventions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_cms_spread_option_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_cms_spread_option_conventions_response::result},
         utility::codec::field{
@@ -695,7 +707,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_cms_spread_option_convention_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_cms_spread_option_convention_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_cms_spread_option_convention_request::removal},
         utility::codec::field{"intent", &delete_cms_spread_option_convention_request::intent},
@@ -710,7 +723,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_cms_spread_option_convention_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_cms_spread_option_convention_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_cms_spread_option_convention_response::result},
     };
@@ -724,7 +738,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_cms_spread_option_conventions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_cms_spread_option_conventions_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_cms_spread_option_conventions_request::removals},
@@ -741,7 +756,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_cms_spread_option_conventions_response&) {
+wire_fields(std::type_identity<delete_many_cms_spread_option_conventions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_cms_spread_option_conventions_response::result},
@@ -757,7 +772,7 @@ wire_fields(const delete_many_cms_spread_option_conventions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_cms_spread_option_convention_versions_request&) {
+wire_fields(std::type_identity<list_cms_spread_option_convention_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_cms_spread_option_convention_versions_request::key},
         utility::codec::field{"offset",
@@ -778,7 +793,7 @@ wire_fields(const list_cms_spread_option_convention_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_cms_spread_option_convention_versions_response&) {
+wire_fields(std::type_identity<list_cms_spread_option_convention_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_cms_spread_option_convention_versions_response::result},
@@ -796,7 +811,8 @@ wire_fields(const list_cms_spread_option_convention_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cms_spread_option_convention_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_cms_spread_option_convention_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_cms_spread_option_convention_version_request::key},
     };
@@ -810,7 +826,8 @@ wire_fields(const list_cms_spread_option_convention_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_cms_spread_option_convention_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_cms_spread_option_convention_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_cms_spread_option_convention_version_response::result},
         utility::codec::field{"version",

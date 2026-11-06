@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::analytics::messaging::sensitivity_template_event> {
-    static constexpr std::string_view subject_prefix = "analytics.v1.sensitivity_templates_events";
+    static constexpr std::string_view subject_prefix = "analytics.v1.events.sensitivity_templates";
 
     static ores::analytics::messaging::sensitivity_template_event
     from_notification(const entity_event_notification& notification) {

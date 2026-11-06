@@ -28,12 +28,11 @@
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -182,27 +181,35 @@ struct fx_barrier_option_instrument final {
 };
 
 /**
- * @brief The members of fx_barrier_option_instrument the customer agreed to.
+ * @brief The canonical text of the members of fx_barrier_option_instrument the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view fx_barrier_option_instrument_economic_fields[] = {
-    "bought_currency",  "bought_amount",        "sold_currency",   "sold_amount",
-    "option_type",      "expiry_date",          "settlement",      "barrier_type",
-    "lower_barrier",    "upper_barrier",        "underlying_code", "barrier_start_date",
-    "barrier_calendar", "barrier_fixing_index", "quantity",        "strike",
-    "amount",           "settlement_date",      "kiko_type",
-};
-
-/**
- * @brief Names the members of fx_barrier_option_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<fx_barrier_option_instrument>) {
-    return fx_barrier_option_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const fx_barrier_option_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "bought_currency", v.bought_currency);
+    ores::utility::digest::append_member(out, "bought_amount", v.bought_amount);
+    ores::utility::digest::append_member(out, "sold_currency", v.sold_currency);
+    ores::utility::digest::append_member(out, "sold_amount", v.sold_amount);
+    ores::utility::digest::append_member(out, "option_type", v.option_type);
+    ores::utility::digest::append_member(out, "expiry_date", v.expiry_date);
+    ores::utility::digest::append_member(out, "settlement", v.settlement);
+    ores::utility::digest::append_member(out, "barrier_type", v.barrier_type);
+    ores::utility::digest::append_member(out, "lower_barrier", v.lower_barrier);
+    ores::utility::digest::append_member(out, "upper_barrier", v.upper_barrier);
+    ores::utility::digest::append_member(out, "underlying_code", v.underlying_code);
+    ores::utility::digest::append_member(out, "barrier_start_date", v.barrier_start_date);
+    ores::utility::digest::append_member(out, "barrier_calendar", v.barrier_calendar);
+    ores::utility::digest::append_member(out, "barrier_fixing_index", v.barrier_fixing_index);
+    ores::utility::digest::append_member(out, "quantity", v.quantity);
+    ores::utility::digest::append_member(out, "strike", v.strike);
+    ores::utility::digest::append_member(out, "amount", v.amount);
+    ores::utility::digest::append_member(out, "settlement_date", v.settlement_date);
+    ores::utility::digest::append_member(out, "kiko_type", v.kiko_type);
+    out.push_back('}');
+    return out;
 }
 
 /**

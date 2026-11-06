@@ -263,9 +263,9 @@ struct get_account_credential_version_response {
  * of them.
  */
 namespace account_credential_event_subjects {
-inline constexpr std::string_view created = "iam.v1.account_credentials_events.created";
-inline constexpr std::string_view updated = "iam.v1.account_credentials_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.account_credentials.created";
+inline constexpr std::string_view updated = "iam.v1.events.account_credentials.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.account_credentials.deleted";
 }
 /**
  * @brief The members of account_credential_key, named as the wire names them and in the order
@@ -275,7 +275,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const account_credential_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_key>) {
     return std::tuple{
         utility::codec::field{"id", &account_credential_key::id},
     };
@@ -289,7 +289,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const account_credential_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &account_credential_lookup::key},
         utility::codec::field{"account_credential", &account_credential_lookup::account_credential},
@@ -304,7 +304,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const account_credentials_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credentials_filter>) {
     return std::tuple{
         utility::codec::field{"account_id", &account_credentials_filter::account_id},
         utility::codec::field{"id_one_of", &account_credentials_filter::id_one_of},
@@ -320,7 +320,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const account_credential_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &account_credential_event::event_id},
         utility::codec::field{"key", &account_credential_event::key},
@@ -339,7 +339,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const account_credential_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_version_key>) {
     return std::tuple{
         utility::codec::field{"account_credential",
                               &account_credential_version_key::account_credential},
@@ -355,7 +355,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const account_credential_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<account_credential_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &account_credential_versions_filter::version},
         utility::codec::field{"from_version", &account_credential_versions_filter::from_version},
@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_account_credentials_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_credentials_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_account_credentials_request::offset},
         utility::codec::field{"limit", &list_account_credentials_request::limit},
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_account_credentials_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_account_credentials_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_account_credentials_response::result},
         utility::codec::field{"account_credentials",
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_account_credential_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_credential_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_account_credential_request::key},
     };
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_account_credential_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_account_credential_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_account_credential_response::result},
         utility::codec::field{"account_credential",
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_account_credentials_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_account_credentials_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_account_credentials_request::keys},
     };
@@ -450,7 +450,8 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_account_credentials_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_account_credentials_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_account_credentials_response::result},
         utility::codec::field{"entries", &get_many_account_credentials_response::entries},
@@ -465,7 +466,8 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_account_id_account_credentials_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_account_id_account_credentials_request>) {
     return std::tuple{
         utility::codec::field{"account_id",
                               &list_by_account_id_account_credentials_request::account_id},
@@ -485,7 +487,8 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_account_id_account_credentials_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_account_id_account_credentials_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_account_id_account_credentials_response::result},
         utility::codec::field{
@@ -503,7 +506,8 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_account_credential_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_account_credential_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_account_credential_versions_request::key},
         utility::codec::field{"offset", &list_account_credential_versions_request::offset},
@@ -521,7 +525,8 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_account_credential_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_account_credential_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_account_credential_versions_response::result},
         utility::codec::field{"versions", &list_account_credential_versions_response::versions},
@@ -537,7 +542,8 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_account_credential_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_account_credential_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_account_credential_version_request::key},
     };
@@ -551,7 +557,8 @@ inline constexpr std::string_view deleted = "iam.v1.account_credentials_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_account_credential_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_account_credential_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_account_credential_version_response::result},
         utility::codec::field{"version", &get_account_credential_version_response::version},

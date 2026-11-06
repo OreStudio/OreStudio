@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: A29DCF7B-92D2-431E-B3DE-E9661C306DFD
+:END:
+#+title: Task: Fix the nightly platform failures
+#+description: Fix the Windows populate line endings, the gcc coroutine frames, the macOS clock test, the memcheck hang and submit, and the codegen drift on main.
+#+type: task
+#+level: s1
+#+filetags: :ci:hotfix:nightly:nightly_platform_failures:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/nightly-platform-failures
+#+pr: 4458
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1DFEE45-A089-4E9E-A6D2-F74AFB1D6E0E][Fix the nightly platform failures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each failing nightly and the codegen drift check pass.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A1DFEE45-A089-4E9E-A6D2-F74AFB1D6E0E][Fix the nightly platform failures]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-04                               |
+
+* Acceptance
+
+- Every fix names the failing run it answers.
+
+* Plan
+
+Read the failed step of each failing run on main at =4a87a2941c= and
+=b251bcbfd0=, reproduce each cause where this machine can, and fix it at its
+root. One commit per platform.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4458][#4458]] | [ci] Fix the Linux, Windows, macOS and memcheck nightlies |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4458, @claude 1: worker_pool::run now needs a copyable callable | worker_pool.hpp | Accept | Documented on run(). std::move_only_function is C++23, but the macOS libc++ is not known to have it, and every caller passes a copyable lambda. |
+| 2 | PR #4458, @claude 2: the storage service drops its msgpack-c link | storage CMakeLists.txt | Accept | A real regression: the regeneration removed the link a337e95529 added by hand, which the service needs to load. Main has since stated it in the model (bf94148021) and regenerated it (981d78670f); after the sync the branch leaves the file as main has it. |
+| 3 | PR #4458, @claude 3: the valgrind check relies on LD_PRELOAD | running_under_valgrind.hpp | Accept | The comment now says it is a heuristic. valgrind.h is not on every platform the tests build on. |
+| 4 | PR #4458, @claude 4: the early submit may duplicate the CDash build | CTest.cmake | No change | Submits share the build stamp, so CDash adds parts to one build. The first memcheck night confirms it. The 5400 s cap is per suite under a parallel ctest, not a sum against the job limit. |
+| 5 | PR #4458, @claude 5: .gitattributes only fixes new checkouts | .gitattributes | No change | The Windows runners check out fresh each run. |
+| 6 | PR #4458, @claude 6: a dropped runner result skips the service | service runners | Accept | =[[nodiscard]]= on =run()= and =run_signing()=. |
+| 7 | PR #4458, @claude 7 and minor: coverage, member order, comment placement | various | No change | Coverage is stated in the PR. gcc compiles the loop's initialiser list with no -Wreorder. The wrapper comment explains the namespace split it sits in. |
+
+* Result
+
+Each failure, the run that showed it, and the fix:
+
+| Failure | Run | Cause | Fix |
+|---------+-----+-------+-----|
+| Windows: database setup | 41789730366 | A CRLF checkout lengthened the XSD that =reporting_ore_file_versions_populate.sql= embeds, so =bytes = octet_length(content)= failed. The QUIET fix of PR #4408 works: setup passed the grants. | =.gitattributes= keeps =projects/ores.sql/populate/**= LF. |
+| Linux gcc: compile | 41775446786 | gcc 13 refuses lambdas and local types in a coroutine frame under =-Wsubobject-linkage= when a unity build includes the source: eight sites in =http_session.cpp= and =worker_pool.hpp=. | Named types and member coroutines; =worker_pool= holds the callable as =std::function=. |
+| macOS: compile | 41800766916 | libc++'s =system_clock= counts microseconds, so a test that added nanoseconds did not compile. | The test adds the time in the clock's unit. |
+| Linux memcheck: no CDash submit | 41775446786 | The burst-ordering test failed its timing under valgrind with its gate closed, which held the loop for 12000 s; the step reached its 350-minute limit before the only =ctest_submit=. | The test reopens its gate on exit; both timing-bound tests skip under valgrind; the build is submitted before the tests; a memcheck suite stops at 5400 s. |
+| Codegen drift on main | 41839074611 | #4438 merged junction headers in the old =X_events= subject after the events namespace landed, and the book's pending-change model lacked =restricts_product_types=. | The junction test follows the namespace; the model is derived and the output regenerated. |
+| gcc 16 | local | =feed_ingest_loop= sized its handoffs in default member initializers, and every service's runner held lambdas in coroutine frames. | The handoffs are sized in the constructor; the runners take =std::function=, and a codemod binds each service's runner awaitable before the await. |
+
+The include hygiene nightly (41811608153) ran out of disk while it rebuilt
+=reflectcpp=, on a morning the cache service was down. Nothing in the tree
+caused it, and nothing here changes it.
+
+The gcc 16 sweep checked ten of the twenty services before memory pressure
+stopped it. The other ten are unchecked under gcc 16; gcc 13, which CI uses,
+compiles them.

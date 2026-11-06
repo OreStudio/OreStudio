@@ -381,11 +381,11 @@ struct get_curve_volatility_delta_surface_version_response {
  */
 namespace curve_volatility_delta_surface_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.curve_volatility_delta_surfaces_events.created";
+    "refdata.v1.events.curve_volatility_delta_surfaces.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.curve_volatility_delta_surfaces_events.updated";
+    "refdata.v1.events.curve_volatility_delta_surfaces.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.curve_volatility_delta_surfaces_events.deleted";
+    "refdata.v1.events.curve_volatility_delta_surfaces.deleted";
 }
 /**
  * @brief The members of curve_volatility_delta_surface_key, named as the wire names them and in the
@@ -395,7 +395,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_volatility_delta_surface_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_volatility_delta_surface_key>) {
     return std::tuple{
         utility::codec::field{"id", &curve_volatility_delta_surface_key::id},
     };
@@ -409,7 +409,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_volatility_delta_surface_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_volatility_delta_surface_write>) {
     return std::tuple{
         utility::codec::field{"id", &curve_volatility_delta_surface_write::id},
         utility::codec::field{"curve_volatility_kind_id",
@@ -446,7 +446,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_volatility_delta_surface_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_volatility_delta_surface_change>) {
     return std::tuple{
         utility::codec::field{"write", &curve_volatility_delta_surface_change::write},
         utility::codec::field{"precondition", &curve_volatility_delta_surface_change::precondition},
@@ -461,7 +462,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_volatility_delta_surface_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_volatility_delta_surface_removal>) {
     return std::tuple{
         utility::codec::field{"key", &curve_volatility_delta_surface_removal::key},
         utility::codec::field{"precondition",
@@ -477,7 +479,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_volatility_delta_surface_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_volatility_delta_surface_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &curve_volatility_delta_surface_lookup::key},
         utility::codec::field{
@@ -494,7 +497,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_volatility_delta_surfaces_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_volatility_delta_surfaces_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &curve_volatility_delta_surfaces_filter::id_one_of},
     };
@@ -508,7 +512,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_volatility_delta_surface_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_volatility_delta_surface_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &curve_volatility_delta_surface_event::event_id},
         utility::codec::field{"key", &curve_volatility_delta_surface_event::key},
@@ -528,7 +532,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_volatility_delta_surface_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_volatility_delta_surface_version_key>) {
     return std::tuple{
         utility::codec::field{
             "curve_volatility_delta_surface",
@@ -545,7 +550,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_volatility_delta_surface_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_volatility_delta_surface_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &curve_volatility_delta_surface_versions_filter::version},
         utility::codec::field{"from_version",
@@ -563,7 +569,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_volatility_delta_surfaces_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_volatility_delta_surfaces_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_curve_volatility_delta_surfaces_request::offset},
         utility::codec::field{"limit", &list_curve_volatility_delta_surfaces_request::limit},
@@ -581,7 +588,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_volatility_delta_surfaces_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_volatility_delta_surfaces_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_curve_volatility_delta_surfaces_response::result},
         utility::codec::field{
@@ -599,7 +607,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_volatility_delta_surface_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_volatility_delta_surface_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_volatility_delta_surface_request::key},
     };
@@ -613,7 +622,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_volatility_delta_surface_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_volatility_delta_surface_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_curve_volatility_delta_surface_response::result},
         utility::codec::field{
@@ -630,7 +640,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_volatility_delta_surfaces_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_curve_volatility_delta_surfaces_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_curve_volatility_delta_surfaces_request::keys},
     };
@@ -644,7 +655,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_volatility_delta_surfaces_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_curve_volatility_delta_surfaces_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_curve_volatility_delta_surfaces_response::result},
         utility::codec::field{"entries",
@@ -660,7 +672,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_volatility_delta_surface_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_volatility_delta_surface_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_curve_volatility_delta_surface_request::change},
         utility::codec::field{"intent", &put_curve_volatility_delta_surface_request::intent},
@@ -675,7 +688,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_volatility_delta_surface_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_volatility_delta_surface_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_curve_volatility_delta_surface_response::result},
         utility::codec::field{
@@ -692,7 +706,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_volatility_delta_surfaces_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_curve_volatility_delta_surfaces_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_curve_volatility_delta_surfaces_request::changes},
@@ -708,7 +723,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_volatility_delta_surfaces_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_curve_volatility_delta_surfaces_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_curve_volatility_delta_surfaces_response::result},
         utility::codec::field{
@@ -725,7 +741,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_volatility_delta_surface_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_volatility_delta_surface_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_curve_volatility_delta_surface_request::removal},
         utility::codec::field{"intent", &delete_curve_volatility_delta_surface_request::intent},
@@ -740,7 +757,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_volatility_delta_surface_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_volatility_delta_surface_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_curve_volatility_delta_surface_response::result},
     };
@@ -755,7 +773,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_curve_volatility_delta_surfaces_request&) {
+wire_fields(std::type_identity<delete_many_curve_volatility_delta_surfaces_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_curve_volatility_delta_surfaces_request::removals},
@@ -773,7 +791,7 @@ wire_fields(const delete_many_curve_volatility_delta_surfaces_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_curve_volatility_delta_surfaces_response&) {
+wire_fields(std::type_identity<delete_many_curve_volatility_delta_surfaces_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_curve_volatility_delta_surfaces_response::result},
@@ -789,7 +807,7 @@ wire_fields(const delete_many_curve_volatility_delta_surfaces_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_curve_volatility_delta_surface_versions_request&) {
+wire_fields(std::type_identity<list_curve_volatility_delta_surface_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_curve_volatility_delta_surface_versions_request::key},
         utility::codec::field{"offset",
@@ -812,7 +830,7 @@ wire_fields(const list_curve_volatility_delta_surface_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_curve_volatility_delta_surface_versions_response&) {
+wire_fields(std::type_identity<list_curve_volatility_delta_surface_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_curve_volatility_delta_surface_versions_response::result},
@@ -832,7 +850,7 @@ wire_fields(const list_curve_volatility_delta_surface_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_curve_volatility_delta_surface_version_request&) {
+wire_fields(std::type_identity<get_curve_volatility_delta_surface_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_volatility_delta_surface_version_request::key},
     };
@@ -847,7 +865,7 @@ wire_fields(const get_curve_volatility_delta_surface_version_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_curve_volatility_delta_surface_version_response&) {
+wire_fields(std::type_identity<get_curve_volatility_delta_surface_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_curve_volatility_delta_surface_version_response::result},

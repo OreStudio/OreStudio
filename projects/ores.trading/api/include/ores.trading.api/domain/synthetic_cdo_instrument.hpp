@@ -26,14 +26,13 @@
 #define ORES_TRADING_API_DOMAIN_SYNTHETIC_CDO_INSTRUMENT_HPP
 
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -183,33 +182,27 @@ struct synthetic_cdo_instrument final {
 };
 
 /**
- * @brief The members of synthetic_cdo_instrument the customer agreed to.
+ * @brief The canonical text of the members of synthetic_cdo_instrument the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view synthetic_cdo_instrument_economic_fields[] = {
-    "qualifier",
-    "protection_start_date",
-    "attachment_point",
-    "detachment_point",
-    "recovery_rate",
-    "settles_accrual",
-    "rebates_accrual",
-    "pays_at_default_time",
-    "protection_payment_time",
-    "upfront_date",
-    "upfront_fee",
-};
-
-/**
- * @brief Names the members of synthetic_cdo_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<synthetic_cdo_instrument>) {
-    return synthetic_cdo_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const synthetic_cdo_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "qualifier", v.qualifier);
+    ores::utility::digest::append_member(out, "protection_start_date", v.protection_start_date);
+    ores::utility::digest::append_member(out, "attachment_point", v.attachment_point);
+    ores::utility::digest::append_member(out, "detachment_point", v.detachment_point);
+    ores::utility::digest::append_member(out, "recovery_rate", v.recovery_rate);
+    ores::utility::digest::append_member(out, "settles_accrual", v.settles_accrual);
+    ores::utility::digest::append_member(out, "rebates_accrual", v.rebates_accrual);
+    ores::utility::digest::append_member(out, "pays_at_default_time", v.pays_at_default_time);
+    ores::utility::digest::append_member(out, "protection_payment_time", v.protection_payment_time);
+    ores::utility::digest::append_member(out, "upfront_date", v.upfront_date);
+    ores::utility::digest::append_member(out, "upfront_fee", v.upfront_fee);
+    out.push_back('}');
+    return out;
 }
 
 /**

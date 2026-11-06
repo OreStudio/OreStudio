@@ -128,7 +128,7 @@ struct leave_tenant_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const enter_tenant_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<enter_tenant_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"tenant_id", &enter_tenant_request::tenant_id},
     };
@@ -142,7 +142,7 @@ struct leave_tenant_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const enter_tenant_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<enter_tenant_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &enter_tenant_response::success},
         ::ores::utility::codec::field{"message", &enter_tenant_response::message},
@@ -165,7 +165,7 @@ struct leave_tenant_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const leave_tenant_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<leave_tenant_request>) {
     return std::tuple{};
 }
 
@@ -177,7 +177,7 @@ struct leave_tenant_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const leave_tenant_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<leave_tenant_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &leave_tenant_response::success},
         ::ores::utility::codec::field{"message", &leave_tenant_response::message},

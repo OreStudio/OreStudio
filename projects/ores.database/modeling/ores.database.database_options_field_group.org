@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: FBB32894-2808-4B1B-BB83-EE82EA30D87F
+:ores.cpp.field-group.field_group_header.enabled: nil
+:ores.cpp.field-group.options_header.enabled: true
+:ores.ts.enabled: nil
+:END:
+#+title: ores.database.database_options
+#+description: Configuration for database connection.
+#+type: ores.codegen.field_group
+#+component: database
+#+entity_singular: database_options
+#+namespace: ores::database
+#+brief: Configuration for database connection.
+#+header: domain/database_options.hpp
+#+export_macro: ORES_DATABASE_EXPORT
+#+filetags: :model:field_group:options:database:
+#+created: 2026-11-05
+#+updated: 2026-11-05
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.database/export.hpp"
+#include "ores.database/pq/connection.hpp"
+#include <string>
+#+end_src
+
+* Fields
+
+** user
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Database user name.
+
+** password
+:PROPERTIES:
+:cpp_type: std::string
+:secret: t
+:END:
+
+Password for the user.
+
+** host
+:PROPERTIES:
+:cpp_type: std::string
+:default_value: "localhost"
+:END:
+
+Host to connect to.
+
+** database
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Database to connect to.
+
+** port
+:PROPERTIES:
+:cpp_type: int
+:default_value: 5432
+:END:
+
+Port the database is listening on.
+
+** tenant
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Tenant code or ID for multi-tenant isolation.
+
+Can be either a tenant code (e.g., "system", "acme") or a tenant UUID.
+Required for all operations in a multi-tenant environment.
+
+** pool_size
+:PROPERTIES:
+:cpp_type: int
+:default_value: 2
+:END:
+
+Number of connections in this service's connection pool.
+
+** pool_backoff
+:PROPERTIES:
+:cpp_type: std::string
+:default_value: "exponential"
+:END:
+
+Backoff strategy for pool acquisition retries.
+
+"exponential" (the default) doubles the wait between attempts;
+"linear" waits a fixed interval per attempt.
+
+* Declarations
+
+What the struct needs beside it, after its printer.
+
+#+begin_src cpp :name options_declarations :implements CE396148-1E64-4D37-8D78-6430915C0F9F
+/**
+ * @brief The libpq connection options of database_options.
+ *
+ * @param opts The database options to convert.
+ * @return The options a libpq connection opens with.
+ */
+ORES_DATABASE_EXPORT pq::connection_options to_connection_options(const database_options& opts);
+#+end_src
+

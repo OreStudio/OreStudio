@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::refdata::messaging::swap_index_convention_event> {
-    static constexpr std::string_view subject_prefix = "refdata.v1.swap_index_conventions_events";
+    static constexpr std::string_view subject_prefix = "refdata.v1.events.swap_index_conventions";
 
     static ores::refdata::messaging::swap_index_convention_event
     from_notification(const entity_event_notification& notification) {

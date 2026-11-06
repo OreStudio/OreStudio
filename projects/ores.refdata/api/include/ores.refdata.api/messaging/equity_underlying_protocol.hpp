@@ -357,9 +357,9 @@ struct get_equity_underlying_version_response {
  * of them.
  */
 namespace equity_underlying_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.equity_underlyings_events.created";
-inline constexpr std::string_view updated = "refdata.v1.equity_underlyings_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.equity_underlyings.created";
+inline constexpr std::string_view updated = "refdata.v1.events.equity_underlyings.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.equity_underlyings.deleted";
 }
 /**
  * @brief The members of equity_underlying_key, named as the wire names them and in the order
@@ -369,7 +369,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_underlying_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_key>) {
     return std::tuple{
         utility::codec::field{"code", &equity_underlying_key::code},
     };
@@ -383,7 +383,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_underlying_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_write>) {
     return std::tuple{
         utility::codec::field{"code", &equity_underlying_write::code},
         utility::codec::field{"name", &equity_underlying_write::name},
@@ -403,7 +403,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_underlying_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_change>) {
     return std::tuple{
         utility::codec::field{"write", &equity_underlying_change::write},
         utility::codec::field{"precondition", &equity_underlying_change::precondition},
@@ -418,7 +418,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_underlying_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_removal>) {
     return std::tuple{
         utility::codec::field{"key", &equity_underlying_removal::key},
         utility::codec::field{"precondition", &equity_underlying_removal::precondition},
@@ -433,7 +433,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_underlying_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &equity_underlying_lookup::key},
         utility::codec::field{"equity_underlying", &equity_underlying_lookup::equity_underlying},
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_underlyings_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlyings_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &equity_underlyings_filter::code_one_of},
     };
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_underlying_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &equity_underlying_event::event_id},
         utility::codec::field{"key", &equity_underlying_event::key},
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_underlying_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_version_key>) {
     return std::tuple{
         utility::codec::field{"equity_underlying",
                               &equity_underlying_version_key::equity_underlying},
@@ -497,7 +497,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const equity_underlying_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<equity_underlying_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &equity_underlying_versions_filter::version},
         utility::codec::field{"from_version", &equity_underlying_versions_filter::from_version},
@@ -513,7 +513,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_underlyings_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_underlyings_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_equity_underlyings_request::offset},
         utility::codec::field{"limit", &list_equity_underlyings_request::limit},
@@ -531,7 +531,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_underlyings_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_equity_underlyings_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_equity_underlyings_response::result},
         utility::codec::field{"equity_underlyings",
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_underlying_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_underlying_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_equity_underlying_request::key},
     };
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_underlying_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_equity_underlying_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_equity_underlying_response::result},
         utility::codec::field{"equity_underlying",
@@ -578,7 +578,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_equity_underlyings_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_equity_underlyings_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_equity_underlyings_request::keys},
     };
@@ -592,7 +592,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_equity_underlyings_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_equity_underlyings_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_equity_underlyings_response::result},
         utility::codec::field{"entries", &get_many_equity_underlyings_response::entries},
@@ -607,7 +607,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_equity_underlying_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_underlying_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_equity_underlying_request::change},
         utility::codec::field{"intent", &put_equity_underlying_request::intent},
@@ -622,7 +622,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_equity_underlying_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_equity_underlying_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_equity_underlying_response::result},
         utility::codec::field{"equity_underlying",
@@ -638,7 +638,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_equity_underlyings_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_equity_underlyings_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_equity_underlyings_request::changes},
         utility::codec::field{"intent", &put_many_equity_underlyings_request::intent},
@@ -653,7 +653,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_equity_underlyings_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_equity_underlyings_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_equity_underlyings_response::result},
         utility::codec::field{"equity_underlyings",
@@ -669,7 +669,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_equity_underlying_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_underlying_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_equity_underlying_request::removal},
         utility::codec::field{"intent", &delete_equity_underlying_request::intent},
@@ -684,7 +684,7 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_equity_underlying_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_equity_underlying_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_equity_underlying_response::result},
     };
@@ -698,7 +698,8 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_equity_underlyings_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_equity_underlyings_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_equity_underlyings_request::removals},
         utility::codec::field{"intent", &delete_many_equity_underlyings_request::intent},
@@ -713,7 +714,8 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_equity_underlyings_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_equity_underlyings_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_equity_underlyings_response::result},
     };
@@ -727,7 +729,8 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_underlying_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_equity_underlying_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_equity_underlying_versions_request::key},
         utility::codec::field{"offset", &list_equity_underlying_versions_request::offset},
@@ -745,7 +748,8 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_equity_underlying_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_equity_underlying_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_equity_underlying_versions_response::result},
         utility::codec::field{"versions", &list_equity_underlying_versions_response::versions},
@@ -761,7 +765,8 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_underlying_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_equity_underlying_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_equity_underlying_version_request::key},
     };
@@ -775,7 +780,8 @@ inline constexpr std::string_view deleted = "refdata.v1.equity_underlyings_event
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_equity_underlying_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_equity_underlying_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_equity_underlying_version_response::result},
         utility::codec::field{"version", &get_equity_underlying_version_response::version},

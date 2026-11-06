@@ -28,10 +28,10 @@
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.refdata.api/domain/convention_identity.hpp"
 #include "ores.refdata.api/domain/convention_payload.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
-#include <span>
+#include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::refdata::domain {
 
@@ -70,14 +70,16 @@ struct convention final {
 };
 
 /**
- * @brief Names the members of convention that are economic.
+ * @brief The canonical text of the members of convention the customer agreed to.
  *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<convention>) {
-    return {};
+[[nodiscard]] inline std::string canonical_form(const convention&) {
+    std::string out = "{";
+    out.push_back('}');
+    return out;
 }
 
 /**

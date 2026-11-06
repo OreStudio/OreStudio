@@ -7,7 +7,7 @@
 #+level: cross
 +#+filetags: :report:market-risk:greeks:rates:sensitivity:eod:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-04
 #+report_code: bump_and_reprice_rho_ladder
 #+startup: inlineimages
 
@@ -43,21 +43,26 @@ add them.
 
 * Frequency
 
-Every ladder in this family is end of day. A ladder is read as the risk statement
-of record and compared across days, and a live ladder would be priced against a
-body that is not reproducible.
+The rates delta ladder runs on both cycles. The plain definition selects the =LIVE=
+cut and reads the market data of the instant it starts, so a desk questions the
+shape of its rate risk while the day is still moving. Its "(EOD)" twin selects the
+=EOD= cut and values the portfolio at the weekday before the run date, which is the
+figure market risk compares across closes. A live ladder is indicative and a close
+ladder stands, so the two are separate definitions with separate run settings and
+neither run replaces the record of the other.
 
 #+ATTR_HTML: :class hug-leading
-| Field     | Value       |
-|-----------+-------------|
-| Cycle     | eod         |
-| Frequency | scheduled   |
-| Batch     | none        |
-| Owner     | market-risk |
+| Field     | Value            |
+|-----------+------------------|
+| Cycle     | eod and intraday |
+| Frequency | scheduled        |
+| Batch     | none             |
+| Owner     | market-risk      |
 
-The definition selects the =EOD= cut, and the run settings row it binds states
-market data type =eod=. The run therefore values the portfolio at the weekday
-before the run date, and holiday calendars are not consulted.
+The plain definition selects the =LIVE= cut and its run settings row states market
+data type =live=; the twin selects =EOD= and states =eod=. Holiday calendars are not
+consulted, so the close is the weekday before the run date whether or not that
+weekday traded.
 
 * Inputs
 
@@ -224,8 +229,8 @@ parameter of the store, and no seed states a shift size anywhere.
 #+ATTR_HTML: :class hug-leading
 | Parameter                        | Domain                        | Seeded value | Meaning                                                          |
 |----------------------------------+-------------------------------+--------------+------------------------------------------------------------------|
-| cut_kind_code                    | a kind of cut                 | EOD          | The kind of cut the run mints when it starts.                     |
-| market_data_type                 | live, eod or date             | eod          | The market data the run values the portfolio at.                  |
+| cut_kind_code                    | a kind of cut                 | LIVE and EOD | The kind of cut each definition selects: the plain name LIVE, the twin EOD. |
+| market_data_type                 | live, eod or date             | live and eod | The market data each definition reads: the plain name the live cut, the twin the end of day one. |
 | base_currency                    | ISO 4217 code                 | the entity's | The currency the figures are expressed in.                        |
 | sensitivity.sensitivityConfigFile| a name in the file library    | sensitivity.xml | The sensitivity document the analytic reads.                   |
 | sensitivity.recalibrateModels    | Y or N                        | Y            | Whether models are recalibrated before each shift.                |
@@ -294,4 +299,6 @@ not by a smoke test. The machinery that proves a bundle without gathering one is
 
 * See also
 
+
+- [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — the structure note that orders this cluster, and where to read this page in it.
 - [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]]: the engine whose =DiscountCurves= and =IndexCurves= blocks produce these rows.

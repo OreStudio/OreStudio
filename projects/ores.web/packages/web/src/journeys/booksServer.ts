@@ -124,6 +124,7 @@ export function bookLine(write: Book, version: number | null): BookLineInput {
         bookPurposeType: write.book_purpose_type,
         ledgerFeedType: write.ledger_feed_type,
         isSweepable: write.is_sweepable,
+        restrictsProductTypes: write.restricts_product_types,
         ratesCentreCode: write.rates_centre_code,
         sandboxId: write.sandbox_id,
     };

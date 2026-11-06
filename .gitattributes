@@ -1,3 +1,7 @@
 # -*- mode: sh; tab-width: 4; indent-tabs-mode: nil -*-
 *.patch binary diff
 *.diff binary diff
+
+# Populate scripts embed file contents whose length and hash the tables check,
+# so a CRLF checkout on Windows would change the bytes the checks compare.
+projects/ores.sql/populate/** text eol=lf

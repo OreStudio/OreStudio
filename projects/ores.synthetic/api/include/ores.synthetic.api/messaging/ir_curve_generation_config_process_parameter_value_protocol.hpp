@@ -406,11 +406,11 @@ struct get_ir_curve_generation_config_process_parameter_value_version_response {
  */
 namespace ir_curve_generation_config_process_parameter_value_event_subjects {
 inline constexpr std::string_view created =
-    "synthetic.v1.ir_curve_generation_config_process_parameter_values_events.created";
+    "synthetic.v1.events.ir_curve_generation_config_process_parameter_values.created";
 inline constexpr std::string_view updated =
-    "synthetic.v1.ir_curve_generation_config_process_parameter_values_events.updated";
+    "synthetic.v1.events.ir_curve_generation_config_process_parameter_values.updated";
 inline constexpr std::string_view deleted =
-    "synthetic.v1.ir_curve_generation_config_process_parameter_values_events.deleted";
+    "synthetic.v1.events.ir_curve_generation_config_process_parameter_values.deleted";
 }
 /**
  * @brief The members of ir_curve_generation_config_process_parameter_value_key, named as the wire
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_value_key&) {
+wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_key>) {
     return std::tuple{
         utility::codec::field{"id", &ir_curve_generation_config_process_parameter_value_key::id},
     };
@@ -436,7 +436,7 @@ wire_fields(const ir_curve_generation_config_process_parameter_value_key&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_value_write&) {
+wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_write>) {
     return std::tuple{
         utility::codec::field{"id", &ir_curve_generation_config_process_parameter_value_write::id},
         utility::codec::field{"config_id",
@@ -459,7 +459,7 @@ wire_fields(const ir_curve_generation_config_process_parameter_value_write&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_value_change&) {
+wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_change>) {
     return std::tuple{
         utility::codec::field{"write",
                               &ir_curve_generation_config_process_parameter_value_change::write},
@@ -478,7 +478,7 @@ wire_fields(const ir_curve_generation_config_process_parameter_value_change&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_value_removal&) {
+wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_removal>) {
     return std::tuple{
         utility::codec::field{"key",
                               &ir_curve_generation_config_process_parameter_value_removal::key},
@@ -497,7 +497,7 @@ wire_fields(const ir_curve_generation_config_process_parameter_value_removal&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_value_lookup&) {
+wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_lookup>) {
     return std::tuple{
         utility::codec::field{"key",
                               &ir_curve_generation_config_process_parameter_value_lookup::key},
@@ -516,7 +516,7 @@ wire_fields(const ir_curve_generation_config_process_parameter_value_lookup&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_values_filter&) {
+wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_values_filter>) {
     return std::tuple{
         utility::codec::field{
             "config_id", &ir_curve_generation_config_process_parameter_values_filter::config_id},
@@ -537,7 +537,7 @@ wire_fields(const ir_curve_generation_config_process_parameter_values_filter&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_value_event&) {
+wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_event>) {
     return std::tuple{
         utility::codec::field{"event_id",
                               &ir_curve_generation_config_process_parameter_value_event::event_id},
@@ -564,7 +564,7 @@ wire_fields(const ir_curve_generation_config_process_parameter_value_event&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_value_version_key&) {
+wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value_version_key>) {
     return std::tuple{
         utility::codec::field{"ir_curve_generation_config_process_parameter_value",
                               &ir_curve_generation_config_process_parameter_value_version_key::
@@ -582,8 +582,8 @@ wire_fields(const ir_curve_generation_config_process_parameter_value_version_key
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_value_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<ir_curve_generation_config_process_parameter_value_versions_filter>) {
     return std::tuple{
         utility::codec::field{
             "version",
@@ -606,7 +606,7 @@ wire_fields(const ir_curve_generation_config_process_parameter_value_versions_fi
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_ir_curve_generation_config_process_parameter_values_request&) {
+wire_fields(std::type_identity<list_ir_curve_generation_config_process_parameter_values_request>) {
     return std::tuple{
         utility::codec::field{
             "offset", &list_ir_curve_generation_config_process_parameter_values_request::offset},
@@ -630,7 +630,7 @@ wire_fields(const list_ir_curve_generation_config_process_parameter_values_reque
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_ir_curve_generation_config_process_parameter_values_response&) {
+wire_fields(std::type_identity<list_ir_curve_generation_config_process_parameter_values_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_ir_curve_generation_config_process_parameter_values_response::result},
@@ -651,7 +651,7 @@ wire_fields(const list_ir_curve_generation_config_process_parameter_values_respo
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_ir_curve_generation_config_process_parameter_value_request&) {
+wire_fields(std::type_identity<get_ir_curve_generation_config_process_parameter_value_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &get_ir_curve_generation_config_process_parameter_value_request::key},
@@ -667,7 +667,7 @@ wire_fields(const get_ir_curve_generation_config_process_parameter_value_request
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_ir_curve_generation_config_process_parameter_value_response&) {
+wire_fields(std::type_identity<get_ir_curve_generation_config_process_parameter_value_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &get_ir_curve_generation_config_process_parameter_value_response::result},
@@ -685,8 +685,8 @@ wire_fields(const get_ir_curve_generation_config_process_parameter_value_respons
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const get_many_ir_curve_generation_config_process_parameter_values_request&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<get_many_ir_curve_generation_config_process_parameter_values_request>) {
     return std::tuple{
         utility::codec::field{
             "keys", &get_many_ir_curve_generation_config_process_parameter_values_request::keys},
@@ -701,8 +701,8 @@ wire_fields(const get_many_ir_curve_generation_config_process_parameter_values_r
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const get_many_ir_curve_generation_config_process_parameter_values_response&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<get_many_ir_curve_generation_config_process_parameter_values_response>) {
     return std::tuple{
         utility::codec::field{
             "result",
@@ -722,7 +722,7 @@ wire_fields(const get_many_ir_curve_generation_config_process_parameter_values_r
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_ir_curve_generation_config_process_parameter_value_request&) {
+wire_fields(std::type_identity<put_ir_curve_generation_config_process_parameter_value_request>) {
     return std::tuple{
         utility::codec::field{
             "change", &put_ir_curve_generation_config_process_parameter_value_request::change},
@@ -740,7 +740,7 @@ wire_fields(const put_ir_curve_generation_config_process_parameter_value_request
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_ir_curve_generation_config_process_parameter_value_response&) {
+wire_fields(std::type_identity<put_ir_curve_generation_config_process_parameter_value_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &put_ir_curve_generation_config_process_parameter_value_response::result},
@@ -758,8 +758,8 @@ wire_fields(const put_ir_curve_generation_config_process_parameter_value_respons
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const put_many_ir_curve_generation_config_process_parameter_values_request&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<put_many_ir_curve_generation_config_process_parameter_values_request>) {
     return std::tuple{
         utility::codec::field{
             "changes",
@@ -778,8 +778,8 @@ wire_fields(const put_many_ir_curve_generation_config_process_parameter_values_r
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const put_many_ir_curve_generation_config_process_parameter_values_response&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<put_many_ir_curve_generation_config_process_parameter_values_response>) {
     return std::tuple{
         utility::codec::field{
             "result",
@@ -800,7 +800,7 @@ wire_fields(const put_many_ir_curve_generation_config_process_parameter_values_r
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_ir_curve_generation_config_process_parameter_value_request&) {
+wire_fields(std::type_identity<delete_ir_curve_generation_config_process_parameter_value_request>) {
     return std::tuple{
         utility::codec::field{
             "removal", &delete_ir_curve_generation_config_process_parameter_value_request::removal},
@@ -817,8 +817,8 @@ wire_fields(const delete_ir_curve_generation_config_process_parameter_value_requ
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const delete_ir_curve_generation_config_process_parameter_value_response&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<delete_ir_curve_generation_config_process_parameter_value_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &delete_ir_curve_generation_config_process_parameter_value_response::result},
@@ -833,8 +833,8 @@ wire_fields(const delete_ir_curve_generation_config_process_parameter_value_resp
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const delete_many_ir_curve_generation_config_process_parameter_values_request&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<delete_many_ir_curve_generation_config_process_parameter_values_request>) {
     return std::tuple{
         utility::codec::field{
             "removals",
@@ -853,8 +853,8 @@ wire_fields(const delete_many_ir_curve_generation_config_process_parameter_value
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const delete_many_ir_curve_generation_config_process_parameter_values_response&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<delete_many_ir_curve_generation_config_process_parameter_values_response>) {
     return std::tuple{
         utility::codec::field{
             "result",
@@ -870,8 +870,8 @@ wire_fields(const delete_many_ir_curve_generation_config_process_parameter_value
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const list_ir_curve_generation_config_process_parameter_value_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<list_ir_curve_generation_config_process_parameter_value_versions_request>) {
     return std::tuple{
         utility::codec::field{
             "key", &list_ir_curve_generation_config_process_parameter_value_versions_request::key},
@@ -898,8 +898,8 @@ wire_fields(const list_ir_curve_generation_config_process_parameter_value_versio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const list_ir_curve_generation_config_process_parameter_value_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<list_ir_curve_generation_config_process_parameter_value_versions_response>) {
     return std::tuple{
         utility::codec::field{
             "result",
@@ -921,8 +921,8 @@ wire_fields(const list_ir_curve_generation_config_process_parameter_value_versio
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const get_ir_curve_generation_config_process_parameter_value_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<get_ir_curve_generation_config_process_parameter_value_version_request>) {
     return std::tuple{
         utility::codec::field{
             "key", &get_ir_curve_generation_config_process_parameter_value_version_request::key},
@@ -937,8 +937,8 @@ wire_fields(const get_ir_curve_generation_config_process_parameter_value_version
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto
-wire_fields(const get_ir_curve_generation_config_process_parameter_value_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<get_ir_curve_generation_config_process_parameter_value_version_response>) {
     return std::tuple{
         utility::codec::field{
             "result",

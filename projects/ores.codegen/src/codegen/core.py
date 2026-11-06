@@ -880,7 +880,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         component = fg.get('component', 'unknown')
         subcomponent = fg.get('subcomponent', '')
         if subcomponent:
-            component_include = f"{component}.{subcomponent}"
+            component_include = fg.get('component_include') or f"{component}.{subcomponent}"
             component_dir = f"ores.{component}/{subcomponent}"
         else:
             component_include = fg.get('component_include', component)
@@ -891,6 +891,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{component_dir}', component_dir)
         result = result.replace('{component_include}', component_include)
         result = result.replace('{component}', component)
+        result = result.replace('{header}', fg.get('header', ''))
         result = result.replace('{entity}', entity_singular)
         result = result.replace('{EntityPascal}', entity_pascal)
 
@@ -1200,8 +1201,9 @@ def _substitute_paste_markers(text, data):
     case-insensitive -- a case mismatch between the two must not silently
     drop an author's paste block, which a case-sensitive dict lookup would
     do without any error or warning."""
+    # One model renders at a time, so at most one of these keys is set.
     de = (data.get("domain_entity") or data.get("junction")
-          or data.get("component") or {})
+          or data.get("component") or data.get("field_group") or {})
     impls = de.get("implementations") or {}
     impls_lower = {k.lower(): v for k, v in impls.items()}
 
@@ -1539,7 +1541,7 @@ def derive_junction_events(junction):
 
     A junction that states ``:events: true`` announces its changes like any
     entity: a notify trigger names the link by both columns, and the service
-    publishes it on ``<component>.v1.<name>_events``. Sets the table's channel
+    publishes it on ``<component>.v1.events.<name>``. Sets the table's channel
     name, the subject prefix, and the declarations the trigger spells for each
     key column. A key column is spelled as text, which is what the JSON key
     record reads back, whatever the column's own type.
@@ -1556,7 +1558,7 @@ def derive_junction_events(junction):
                 f"{owner}: cannot announce a link keyed by the date column "
                 f"{junction[side]['column']}")
     junction['events_channel'] = table[:-len('_tbl')]
-    junction['event_prefix'] = f"{junction['component']}.v1.{junction['name']}_events"
+    junction['event_prefix'] = f"{junction['component']}.v1.events.{junction['name']}"
     junction['event_key_columns'] = [
         {'column': column, 'last': index == len(columns) - 1}
         for index, column in enumerate(columns)]
@@ -2847,16 +2849,8 @@ def _mapper_include_gates(entity: dict[str, Any]) -> dict[str, bool]:
         for t in enum_types
         if (m := re.fullmatch(r'ores::(\w+)::domain::(\w+)', t or ''))
     })
-    # A column the model states a store transform for names the transform in
-    # the mapper's write direction, so the header that declares it is included
-    # once however many columns ask for the same one.
-    transform_headers = sorted({
-        c['store_transform_include'] for c in columns
-        if c.get('store_transform_include')
-    })
     return {
         'mapper_enum_includes': [{'path': h} for h in enum_headers],
-        'mapper_store_transform_includes': [{'path': h} for h in transform_headers],
         'mapper_uses_optional': any(
             c.get('is_optional_uuid') or c.get('is_optional_timestamp')
             or (c.get('is_date') and c.get('is_optional_date'))
@@ -3859,6 +3853,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             SERVICE_APP_RUN_BODY_PASTE_KIND.lower() in pasted)
         component['has_app_config_decl'] = (
             SERVICE_APP_CONFIG_DECL_PASTE_KIND.lower() in pasted)
+        if component.get('has_service_options') and component['has_app_config_decl']:
+            raise ValueError(
+                f"{component.get('full_name')}: states its options in * Options and "
+                f"also pastes an options declaration; the list writes the declaration, "
+                f"so keep only one")
 
         data['component'] = component
 
@@ -6502,6 +6501,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['has_economic_declaration'] = _declared
         domain_entity['economic_fields'] = _economic
         domain_entity['has_economic_fields'] = bool(_economic)
+        if _declared:
+            from .org_loader import entity_canonical_members
+            domain_entity['canonical_members'] = entity_canonical_members(
+                model_path, domain_entity)
+            domain_entity['has_canonical_members'] = bool(
+                domain_entity['canonical_members'])
         # The standard CRUD message list, derived once so the TypeScript
         # twin renders from the same shapes the C++ entity block states. The
         # component's other entities are read here because the versions

@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::refdata::messaging::inflation_seasonality_event> {
-    static constexpr std::string_view subject_prefix = "refdata.v1.inflation_seasonalities_events";
+    static constexpr std::string_view subject_prefix = "refdata.v1.events.inflation_seasonalities";
 
     static ores::refdata::messaging::inflation_seasonality_event
     from_notification(const entity_event_notification& notification) {

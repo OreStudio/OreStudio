@@ -68,7 +68,7 @@ struct bond_forward_premium {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_forward_premium&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_forward_premium>) {
     return std::tuple{
         utility::codec::field{"amount", &bond_forward_premium::amount},
         utility::codec::field{"date", &bond_forward_premium::date},

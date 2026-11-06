@@ -37,6 +37,7 @@ Sibling to [[id:71124286-50D3-4E3F-A948-43A67690FFB3][ores.cpp.enum]].
 | Archetype | Description |
 |-----------+-------------|
 | [[id:8E7101A1-64D5-4F5B-9A7F-D39EA03849FD][ores.cpp.field-group.field_group_header]] | A plain struct with no table behind it: a column block composed into an entity, or a document-only struct that crosses the wire whole. =field-group= profile. |
+| [[id:52099599-FE93-4F57-865F-F12EFAC870FC][ores.cpp.field-group.options_header]] | The options struct of a library or a process: its members, its wire shape and the guard that the shape names every member. Opt-in. |
 
 * See also
 

@@ -386,11 +386,11 @@ struct get_risk_participation_agreement_instrument_version_response {
  */
 namespace risk_participation_agreement_instrument_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.risk_participation_agreement_instruments_events.created";
+    "trading.v1.events.risk_participation_agreement_instruments.created";
 inline constexpr std::string_view updated =
-    "trading.v1.risk_participation_agreement_instruments_events.updated";
+    "trading.v1.events.risk_participation_agreement_instruments.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.risk_participation_agreement_instruments_events.deleted";
+    "trading.v1.events.risk_participation_agreement_instruments.deleted";
 }
 /**
  * @brief The members of risk_participation_agreement_instrument_key, named as the wire names them
@@ -400,7 +400,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const risk_participation_agreement_instrument_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<risk_participation_agreement_instrument_key>) {
     return std::tuple{
         utility::codec::field{"trade_id", &risk_participation_agreement_instrument_key::trade_id},
     };
@@ -414,7 +415,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const risk_participation_agreement_instrument_write&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<risk_participation_agreement_instrument_write>) {
     return std::tuple{
         utility::codec::field{"trade_id", &risk_participation_agreement_instrument_write::trade_id},
         utility::codec::field{"trade_activity_id",
@@ -442,7 +444,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const risk_participation_agreement_instrument_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<risk_participation_agreement_instrument_change>) {
     return std::tuple{
         utility::codec::field{"write", &risk_participation_agreement_instrument_change::write},
         utility::codec::field{"precondition",
@@ -458,7 +461,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const risk_participation_agreement_instrument_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<risk_participation_agreement_instrument_removal>) {
     return std::tuple{
         utility::codec::field{"key", &risk_participation_agreement_instrument_removal::key},
         utility::codec::field{"precondition",
@@ -474,7 +478,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const risk_participation_agreement_instrument_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<risk_participation_agreement_instrument_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &risk_participation_agreement_instrument_lookup::key},
         utility::codec::field{"risk_participation_agreement_instrument",
@@ -491,7 +496,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const risk_participation_agreement_instruments_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<risk_participation_agreement_instruments_filter>) {
     return std::tuple{
         utility::codec::field{"trade_id_one_of",
                               &risk_participation_agreement_instruments_filter::trade_id_one_of},
@@ -506,7 +512,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const risk_participation_agreement_instrument_event&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<risk_participation_agreement_instrument_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &risk_participation_agreement_instrument_event::event_id},
         utility::codec::field{"key", &risk_participation_agreement_instrument_event::key},
@@ -528,7 +535,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const risk_participation_agreement_instrument_version_key&) {
+wire_fields(std::type_identity<risk_participation_agreement_instrument_version_key>) {
     return std::tuple{
         utility::codec::field{"risk_participation_agreement_instrument",
                               &risk_participation_agreement_instrument_version_key::
@@ -547,7 +554,7 @@ wire_fields(const risk_participation_agreement_instrument_version_key&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const risk_participation_agreement_instrument_versions_filter&) {
+wire_fields(std::type_identity<risk_participation_agreement_instrument_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version",
                               &risk_participation_agreement_instrument_versions_filter::version},
@@ -567,7 +574,7 @@ wire_fields(const risk_participation_agreement_instrument_versions_filter&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_risk_participation_agreement_instruments_request&) {
+wire_fields(std::type_identity<list_risk_participation_agreement_instruments_request>) {
     return std::tuple{
         utility::codec::field{"offset",
                               &list_risk_participation_agreement_instruments_request::offset},
@@ -591,7 +598,7 @@ wire_fields(const list_risk_participation_agreement_instruments_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_risk_participation_agreement_instruments_response&) {
+wire_fields(std::type_identity<list_risk_participation_agreement_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_risk_participation_agreement_instruments_response::result},
@@ -612,7 +619,7 @@ wire_fields(const list_risk_participation_agreement_instruments_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_risk_participation_agreement_instrument_request&) {
+wire_fields(std::type_identity<get_risk_participation_agreement_instrument_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_risk_participation_agreement_instrument_request::key},
     };
@@ -627,7 +634,7 @@ wire_fields(const get_risk_participation_agreement_instrument_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_risk_participation_agreement_instrument_response&) {
+wire_fields(std::type_identity<get_risk_participation_agreement_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_risk_participation_agreement_instrument_response::result},
@@ -646,7 +653,7 @@ wire_fields(const get_risk_participation_agreement_instrument_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_risk_participation_agreement_instruments_request&) {
+wire_fields(std::type_identity<get_many_risk_participation_agreement_instruments_request>) {
     return std::tuple{
         utility::codec::field{"keys",
                               &get_many_risk_participation_agreement_instruments_request::keys},
@@ -662,7 +669,7 @@ wire_fields(const get_many_risk_participation_agreement_instruments_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_many_risk_participation_agreement_instruments_response&) {
+wire_fields(std::type_identity<get_many_risk_participation_agreement_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_many_risk_participation_agreement_instruments_response::result},
@@ -680,7 +687,7 @@ wire_fields(const get_many_risk_participation_agreement_instruments_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_risk_participation_agreement_instrument_request&) {
+wire_fields(std::type_identity<put_risk_participation_agreement_instrument_request>) {
     return std::tuple{
         utility::codec::field{"change",
                               &put_risk_participation_agreement_instrument_request::change},
@@ -698,7 +705,7 @@ wire_fields(const put_risk_participation_agreement_instrument_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_risk_participation_agreement_instrument_response&) {
+wire_fields(std::type_identity<put_risk_participation_agreement_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_risk_participation_agreement_instrument_response::result},
@@ -717,7 +724,7 @@ wire_fields(const put_risk_participation_agreement_instrument_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_risk_participation_agreement_instruments_request&) {
+wire_fields(std::type_identity<put_many_risk_participation_agreement_instruments_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_risk_participation_agreement_instruments_request::changes},
@@ -735,7 +742,7 @@ wire_fields(const put_many_risk_participation_agreement_instruments_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const put_many_risk_participation_agreement_instruments_response&) {
+wire_fields(std::type_identity<put_many_risk_participation_agreement_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &put_many_risk_participation_agreement_instruments_response::result},
@@ -754,7 +761,7 @@ wire_fields(const put_many_risk_participation_agreement_instruments_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_risk_participation_agreement_instrument_request&) {
+wire_fields(std::type_identity<delete_risk_participation_agreement_instrument_request>) {
     return std::tuple{
         utility::codec::field{"removal",
                               &delete_risk_participation_agreement_instrument_request::removal},
@@ -772,7 +779,7 @@ wire_fields(const delete_risk_participation_agreement_instrument_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_risk_participation_agreement_instrument_response&) {
+wire_fields(std::type_identity<delete_risk_participation_agreement_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_risk_participation_agreement_instrument_response::result},
@@ -788,7 +795,7 @@ wire_fields(const delete_risk_participation_agreement_instrument_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_risk_participation_agreement_instruments_request&) {
+wire_fields(std::type_identity<delete_many_risk_participation_agreement_instruments_request>) {
     return std::tuple{
         utility::codec::field{
             "removals", &delete_many_risk_participation_agreement_instruments_request::removals},
@@ -806,7 +813,7 @@ wire_fields(const delete_many_risk_participation_agreement_instruments_request&)
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_risk_participation_agreement_instruments_response&) {
+wire_fields(std::type_identity<delete_many_risk_participation_agreement_instruments_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &delete_many_risk_participation_agreement_instruments_response::result},
@@ -822,7 +829,7 @@ wire_fields(const delete_many_risk_participation_agreement_instruments_response&
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_risk_participation_agreement_instrument_versions_request&) {
+wire_fields(std::type_identity<list_risk_participation_agreement_instrument_versions_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &list_risk_participation_agreement_instrument_versions_request::key},
@@ -846,7 +853,7 @@ wire_fields(const list_risk_participation_agreement_instrument_versions_request&
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_risk_participation_agreement_instrument_versions_response&) {
+wire_fields(std::type_identity<list_risk_participation_agreement_instrument_versions_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_risk_participation_agreement_instrument_versions_response::result},
@@ -866,7 +873,7 @@ wire_fields(const list_risk_participation_agreement_instrument_versions_response
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_risk_participation_agreement_instrument_version_request&) {
+wire_fields(std::type_identity<get_risk_participation_agreement_instrument_version_request>) {
     return std::tuple{
         utility::codec::field{"key",
                               &get_risk_participation_agreement_instrument_version_request::key},
@@ -882,7 +889,7 @@ wire_fields(const get_risk_participation_agreement_instrument_version_request&) 
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_risk_participation_agreement_instrument_version_response&) {
+wire_fields(std::type_identity<get_risk_participation_agreement_instrument_version_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &get_risk_participation_agreement_instrument_version_response::result},

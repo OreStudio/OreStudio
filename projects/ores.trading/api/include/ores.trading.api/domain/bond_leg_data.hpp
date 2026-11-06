@@ -173,7 +173,7 @@ struct bond_leg_data {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_leg_data&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_leg_data>) {
     return std::tuple{
         utility::codec::field{"payer", &bond_leg_data::payer},
         utility::codec::field{"leg_type", &bond_leg_data::leg_type},

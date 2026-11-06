@@ -58,6 +58,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/crypto/sha256.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/decimal/decimal.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/decimal/ores.utility.decimal.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/digest/canonical_form.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/domain/hierarchy.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/domain/protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.utility/domain/protocol_codec.hpp"

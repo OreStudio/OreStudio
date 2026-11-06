@@ -256,9 +256,9 @@ struct get_run_grant_version_response {
  * of them.
  */
 namespace run_grant_event_subjects {
-inline constexpr std::string_view created = "iam.v1.run_grants_events.created";
-inline constexpr std::string_view updated = "iam.v1.run_grants_events.updated";
-inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
+inline constexpr std::string_view created = "iam.v1.events.run_grants.created";
+inline constexpr std::string_view updated = "iam.v1.events.run_grants.updated";
+inline constexpr std::string_view deleted = "iam.v1.events.run_grants.deleted";
 }
 /**
  * @brief The members of run_grant_key, named as the wire names them and in the order
@@ -268,7 +268,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_grant_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_grant_key>) {
     return std::tuple{
         utility::codec::field{"resource", &run_grant_key::resource},
     };
@@ -282,7 +282,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_grant_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_grant_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &run_grant_lookup::key},
         utility::codec::field{"run_grant", &run_grant_lookup::run_grant},
@@ -297,7 +297,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_grants_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_grants_filter>) {
     return std::tuple{
         utility::codec::field{"grantor_account_id", &run_grants_filter::grantor_account_id},
         utility::codec::field{"id_one_of", &run_grants_filter::id_one_of},
@@ -314,7 +314,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_grant_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_grant_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &run_grant_event::event_id},
         utility::codec::field{"key", &run_grant_event::key},
@@ -333,7 +333,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_grant_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_grant_version_key>) {
     return std::tuple{
         utility::codec::field{"run_grant", &run_grant_version_key::run_grant},
         utility::codec::field{"version", &run_grant_version_key::version},
@@ -348,7 +348,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_grant_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_grant_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &run_grant_versions_filter::version},
         utility::codec::field{"from_version", &run_grant_versions_filter::from_version},
@@ -364,7 +364,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_run_grants_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_run_grants_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_run_grants_request::offset},
         utility::codec::field{"limit", &list_run_grants_request::limit},
@@ -382,7 +382,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_run_grants_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_run_grants_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_run_grants_response::result},
         utility::codec::field{"grants", &list_run_grants_response::grants},
@@ -398,7 +398,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_run_grant_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_grant_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_run_grant_request::key},
     };
@@ -412,7 +412,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_run_grant_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_grant_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_run_grant_response::result},
         utility::codec::field{"run_grant", &get_run_grant_response::run_grant},
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_run_grants_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_run_grants_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_run_grants_request::keys},
     };
@@ -441,7 +441,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_run_grants_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_run_grants_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_run_grants_response::result},
         utility::codec::field{"entries", &get_many_run_grants_response::entries},
@@ -456,7 +456,8 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_grantor_account_id_run_grants_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_grantor_account_id_run_grants_request>) {
     return std::tuple{
         utility::codec::field{"grantor_account_id",
                               &list_by_grantor_account_id_run_grants_request::grantor_account_id},
@@ -476,7 +477,8 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_grantor_account_id_run_grants_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_grantor_account_id_run_grants_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_grantor_account_id_run_grants_response::result},
         utility::codec::field{"grants", &list_by_grantor_account_id_run_grants_response::grants},
@@ -492,7 +494,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_run_grant_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_run_grant_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_run_grant_versions_request::key},
         utility::codec::field{"offset", &list_run_grant_versions_request::offset},
@@ -510,7 +512,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_run_grant_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_run_grant_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_run_grant_versions_response::result},
         utility::codec::field{"versions", &list_run_grant_versions_response::versions},
@@ -526,7 +528,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_run_grant_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_grant_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_run_grant_version_request::key},
     };
@@ -540,7 +542,7 @@ inline constexpr std::string_view deleted = "iam.v1.run_grants_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_run_grant_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_grant_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_run_grant_version_response::result},
         utility::codec::field{"version", &get_run_grant_version_response::version},

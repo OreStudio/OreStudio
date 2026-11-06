@@ -317,7 +317,7 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_type_configuration_type_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_type_configuration_type_key>) {
     return std::tuple{
         utility::codec::field{"report_type_code",
                               &report_type_configuration_type_key::report_type_code},
@@ -334,7 +334,7 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_type_configuration_type_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_type_configuration_type_write>) {
     return std::tuple{
         utility::codec::field{"report_type_code",
                               &report_type_configuration_type_write::report_type_code},
@@ -351,7 +351,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_type_configuration_type_change&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<report_type_configuration_type_change>) {
     return std::tuple{
         utility::codec::field{"write", &report_type_configuration_type_change::write},
         utility::codec::field{"precondition", &report_type_configuration_type_change::precondition},
@@ -366,7 +367,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_type_configuration_type_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<report_type_configuration_type_removal>) {
     return std::tuple{
         utility::codec::field{"key", &report_type_configuration_type_removal::key},
         utility::codec::field{"precondition",
@@ -382,7 +384,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_type_configuration_type_lookup&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<report_type_configuration_type_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &report_type_configuration_type_lookup::key},
         utility::codec::field{
@@ -399,7 +402,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const report_type_configuration_types_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<report_type_configuration_types_filter>) {
     return std::tuple{
         utility::codec::field{"report_type_code",
                               &report_type_configuration_types_filter::report_type_code},
@@ -416,7 +420,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_type_configuration_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_report_type_configuration_types_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_report_type_configuration_types_request::offset},
         utility::codec::field{"limit", &list_report_type_configuration_types_request::limit},
@@ -433,7 +438,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_report_type_configuration_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_report_type_configuration_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_report_type_configuration_types_response::result},
         utility::codec::field{
@@ -451,7 +457,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_type_configuration_type_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_report_type_configuration_type_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_report_type_configuration_type_request::key},
     };
@@ -465,7 +472,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_report_type_configuration_type_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_report_type_configuration_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_report_type_configuration_type_response::result},
         utility::codec::field{
@@ -482,7 +490,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_report_type_configuration_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_report_type_configuration_types_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_report_type_configuration_types_request::keys},
     };
@@ -496,7 +505,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_report_type_configuration_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_report_type_configuration_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_report_type_configuration_types_response::result},
         utility::codec::field{"entries",
@@ -512,7 +522,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_report_type_configuration_type_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_report_type_configuration_type_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_report_type_configuration_type_request::change},
         utility::codec::field{"intent", &put_report_type_configuration_type_request::intent},
@@ -527,7 +538,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_report_type_configuration_type_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_report_type_configuration_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_report_type_configuration_type_response::result},
         utility::codec::field{
@@ -544,7 +556,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_report_type_configuration_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_report_type_configuration_types_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_report_type_configuration_types_request::changes},
@@ -560,7 +573,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_report_type_configuration_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_report_type_configuration_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_report_type_configuration_types_response::result},
         utility::codec::field{
@@ -577,7 +591,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_report_type_configuration_type_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_report_type_configuration_type_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_report_type_configuration_type_request::removal},
         utility::codec::field{"intent", &delete_report_type_configuration_type_request::intent},
@@ -592,7 +607,8 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_report_type_configuration_type_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_report_type_configuration_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_report_type_configuration_type_response::result},
     };
@@ -607,7 +623,7 @@ struct list_by_report_type_code_report_type_configuration_types_response {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_report_type_configuration_types_request&) {
+wire_fields(std::type_identity<delete_many_report_type_configuration_types_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_report_type_configuration_types_request::removals},
@@ -625,7 +641,7 @@ wire_fields(const delete_many_report_type_configuration_types_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_report_type_configuration_types_response&) {
+wire_fields(std::type_identity<delete_many_report_type_configuration_types_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_report_type_configuration_types_response::result},
@@ -641,7 +657,7 @@ wire_fields(const delete_many_report_type_configuration_types_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_report_type_code_report_type_configuration_types_request&) {
+wire_fields(std::type_identity<list_by_report_type_code_report_type_configuration_types_request>) {
     return std::tuple{
         utility::codec::field{
             "report_type_code",
@@ -668,7 +684,7 @@ wire_fields(const list_by_report_type_code_report_type_configuration_types_reque
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_report_type_code_report_type_configuration_types_response&) {
+wire_fields(std::type_identity<list_by_report_type_code_report_type_configuration_types_response>) {
     return std::tuple{
         utility::codec::field{
             "result", &list_by_report_type_code_report_type_configuration_types_response::result},

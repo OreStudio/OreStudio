@@ -374,11 +374,11 @@ struct get_fx_asian_forward_instrument_version_response {
  */
 namespace fx_asian_forward_instrument_event_subjects {
 inline constexpr std::string_view created =
-    "trading.v1.fx_asian_forward_instruments_events.created";
+    "trading.v1.events.fx_asian_forward_instruments.created";
 inline constexpr std::string_view updated =
-    "trading.v1.fx_asian_forward_instruments_events.updated";
+    "trading.v1.events.fx_asian_forward_instruments.updated";
 inline constexpr std::string_view deleted =
-    "trading.v1.fx_asian_forward_instruments_events.deleted";
+    "trading.v1.events.fx_asian_forward_instruments.deleted";
 }
 /**
  * @brief The members of fx_asian_forward_instrument_key, named as the wire names them and in the
@@ -388,7 +388,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_asian_forward_instrument_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_asian_forward_instrument_key>) {
     return std::tuple{
         utility::codec::field{"trade_id", &fx_asian_forward_instrument_key::trade_id},
     };
@@ -402,7 +402,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_asian_forward_instrument_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_asian_forward_instrument_write>) {
     return std::tuple{
         utility::codec::field{"trade_id", &fx_asian_forward_instrument_write::trade_id},
         utility::codec::field{"trade_type_code",
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_asian_forward_instrument_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_asian_forward_instrument_change>) {
     return std::tuple{
         utility::codec::field{"write", &fx_asian_forward_instrument_change::write},
         utility::codec::field{"precondition", &fx_asian_forward_instrument_change::precondition},
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_asian_forward_instrument_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_asian_forward_instrument_removal>) {
     return std::tuple{
         utility::codec::field{"key", &fx_asian_forward_instrument_removal::key},
         utility::codec::field{"precondition", &fx_asian_forward_instrument_removal::precondition},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_asian_forward_instrument_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_asian_forward_instrument_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &fx_asian_forward_instrument_lookup::key},
         utility::codec::field{"fx_asian_forward_instrument",
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_asian_forward_instruments_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_asian_forward_instruments_filter>) {
     return std::tuple{
         utility::codec::field{"trade_id_one_of",
                               &fx_asian_forward_instruments_filter::trade_id_one_of},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_asian_forward_instrument_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_asian_forward_instrument_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &fx_asian_forward_instrument_event::event_id},
         utility::codec::field{"key", &fx_asian_forward_instrument_event::key},
@@ -517,7 +517,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_asian_forward_instrument_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<fx_asian_forward_instrument_version_key>) {
     return std::tuple{
         utility::codec::field{
             "fx_asian_forward_instrument",
@@ -534,7 +535,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const fx_asian_forward_instrument_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<fx_asian_forward_instrument_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &fx_asian_forward_instrument_versions_filter::version},
         utility::codec::field{"from_version",
@@ -552,7 +554,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fx_asian_forward_instruments_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_fx_asian_forward_instruments_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_fx_asian_forward_instruments_request::offset},
         utility::codec::field{"limit", &list_fx_asian_forward_instruments_request::limit},
@@ -570,7 +573,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fx_asian_forward_instruments_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_fx_asian_forward_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_fx_asian_forward_instruments_response::result},
         utility::codec::field{
@@ -588,7 +592,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fx_asian_forward_instrument_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_fx_asian_forward_instrument_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_fx_asian_forward_instrument_request::key},
     };
@@ -602,7 +607,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fx_asian_forward_instrument_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_fx_asian_forward_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_fx_asian_forward_instrument_response::result},
         utility::codec::field{
@@ -619,7 +625,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_fx_asian_forward_instruments_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_fx_asian_forward_instruments_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_fx_asian_forward_instruments_request::keys},
     };
@@ -633,7 +640,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_fx_asian_forward_instruments_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_fx_asian_forward_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_fx_asian_forward_instruments_response::result},
         utility::codec::field{"entries", &get_many_fx_asian_forward_instruments_response::entries},
@@ -648,7 +656,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_fx_asian_forward_instrument_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_fx_asian_forward_instrument_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_fx_asian_forward_instrument_request::change},
         utility::codec::field{"intent", &put_fx_asian_forward_instrument_request::intent},
@@ -663,7 +672,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_fx_asian_forward_instrument_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_fx_asian_forward_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_fx_asian_forward_instrument_response::result},
         utility::codec::field{
@@ -680,7 +690,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_fx_asian_forward_instruments_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_fx_asian_forward_instruments_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_fx_asian_forward_instruments_request::changes},
         utility::codec::field{"intent", &put_many_fx_asian_forward_instruments_request::intent},
@@ -695,7 +706,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_fx_asian_forward_instruments_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_fx_asian_forward_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_fx_asian_forward_instruments_response::result},
         utility::codec::field{
@@ -712,7 +724,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_fx_asian_forward_instrument_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_fx_asian_forward_instrument_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_fx_asian_forward_instrument_request::removal},
         utility::codec::field{"intent", &delete_fx_asian_forward_instrument_request::intent},
@@ -727,7 +740,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_fx_asian_forward_instrument_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_fx_asian_forward_instrument_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_fx_asian_forward_instrument_response::result},
     };
@@ -741,7 +755,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_fx_asian_forward_instruments_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_fx_asian_forward_instruments_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_fx_asian_forward_instruments_request::removals},
@@ -757,7 +772,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_fx_asian_forward_instruments_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_fx_asian_forward_instruments_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_fx_asian_forward_instruments_response::result},
     };
@@ -771,7 +787,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_fx_asian_forward_instrument_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_fx_asian_forward_instrument_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_fx_asian_forward_instrument_versions_request::key},
         utility::codec::field{"offset", &list_fx_asian_forward_instrument_versions_request::offset},
@@ -790,7 +807,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_fx_asian_forward_instrument_versions_response&) {
+wire_fields(std::type_identity<list_fx_asian_forward_instrument_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_fx_asian_forward_instrument_versions_response::result},
@@ -808,7 +825,8 @@ wire_fields(const list_fx_asian_forward_instrument_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fx_asian_forward_instrument_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_fx_asian_forward_instrument_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_fx_asian_forward_instrument_version_request::key},
     };
@@ -822,7 +840,8 @@ wire_fields(const list_fx_asian_forward_instrument_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_fx_asian_forward_instrument_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_fx_asian_forward_instrument_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_fx_asian_forward_instrument_version_response::result},
         utility::codec::field{"version",

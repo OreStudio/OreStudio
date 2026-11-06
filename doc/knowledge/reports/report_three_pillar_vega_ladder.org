@@ -7,7 +7,7 @@
 +#+level: cross
 +#+filetags: :report:trading-desk:greeks:volatility:sensitivity:eod:
 +#+created: 2026-11-03
-+#+updated: 2026-11-03
++#+updated: 2026-11-04
 +#+report_code: three_pillar_vega_ladder_bump_and_reprice
 +#+startup: inlineimages
 
@@ -44,26 +44,24 @@ the ladder this page defines.
 
 * Frequency
 
-Every ladder in this family is end of day. A ladder is read as the risk statement
-of record and compared across days, and a live ladder would be priced against a
-body that is not reproducible. Two ladders have an intraday variant worth naming,
-the ATM vega ladder and the surface vega ladder, because a desk watching a vol
-move wants the same bucket list during the day. No intraday variant is seeded for
-this ladder.
+This page names the same computation twice. The store seeds one report for the
+full-surface shift and calls it the surface vega ladder, so the three-pillar is that
+report read by its other name; a second definition under this name would be a second
+run of one report. The report runs on both cycles, and
+[[file:./report_surface_vega_ladder.org][its page]] states them.
 
 #+ATTR_HTML: :class hug-leading
-| Field     | Value        |
-|-----------+--------------|
-| Cycle     | eod          |
-| Frequency | scheduled    |
-| Batch     | none         |
-| Owner     | trading-desk |
+| Field     | Value            |
+|-----------+------------------|
+| Cycle     | eod and intraday |
+| Frequency | scheduled        |
+| Batch     | none             |
+| Owner     | trading-desk     |
 
-An intraday variant of this report would need three things. It would need a
-definition whose cut selection is =LIVE=, a run settings row whose market data type
-is =live=, and the same sensitivity configuration. Nothing else would change,
-because the bump is a setting of the configuration and not the identity of the
-report.
+The live definition selects the =LIVE= cut and its run settings row states market
+data type =live=; the close twin selects =EOD= and states =eod=. Nothing else
+changes between them, because the bump is a setting of the configuration and not
+the identity of the report.
 
 * Inputs
 
@@ -299,4 +297,6 @@ not by a smoke test. The machinery that proves a bundle without gathering one is
 
 * See also
 
+
+- [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — the structure note that orders this cluster, and where to read this page in it.
 - [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]]: the engine whose =FxVolatilities= block shifts a surface.

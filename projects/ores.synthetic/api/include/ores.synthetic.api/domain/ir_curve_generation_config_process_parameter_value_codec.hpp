@@ -46,7 +46,7 @@ namespace ores::synthetic::domain {
  * member is this type encodes it as its own object without knowing the type.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const ir_curve_generation_config_process_parameter_value&) {
+wire_fields(std::type_identity<ir_curve_generation_config_process_parameter_value>) {
     return std::tuple{
         utility::codec::field{"version",
                               &ir_curve_generation_config_process_parameter_value::version},

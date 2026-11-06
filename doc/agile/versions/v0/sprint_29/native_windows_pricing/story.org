@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: A5920AD8-3AF8-4D7D-B98E-976D3F3EF4DE
+:END:
+#+title: Story: Support native Windows pricing and local services
+#+description: Build and package the pinned ORE engine for Windows workers and make native OreStudio development portable without changing shared account seeds.
+#+type: story
+#+level: s2
+#+filetags: :build:compute:sprint_29:v0:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+#+environment: orestudio
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Run pricing on native x64 Windows workers using the same Engine revision and package contract as Linux.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Implementation and scoped validation complete.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Review the upstream PR and track the remaining platform validation separately.            |
+| Last touched  | 2026-11-04                               |
+
+* Acceptance
+
+- Build ORE 1.8.17.0 from the pinned OreStudio Engine revision and bundle ore.exe, runtime DLLs and an x64-windows manifest.
+- Demonstrate native worker pricing and preserve existing Linux packages.
+- Verify current-main account and credential preservation with strict schema matching, documenting untested upgrade paths.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:702359B7-93D5-4B0D-AD70-41724F9AF5B5][Package and validate native Windows pricing]] | DONE | | | Deliver the Windows engine package, build portability fixes, reproducible scripts and validation evidence for the existing Windows branch. |
+
+* Decisions
+
+- Use the existing OreStudio/Engine fork at the same revision as the bundled Linux engine; no engine source changes or additional fork.
+- Keep the package contract common across platforms and add the Windows package beside the Linux packages.
+- Run unchanged Unix SQL through an explicit container adapter on Windows; keep shared SQL and password verification identical to upstream.
+- Keep the upstream Windows CRLF seed failure outside this PR, as requested by the owner.
+
+* Out of scope
+
+- Migrating the older installed database to the current-main schema.
+- Fixing the upstream Windows nightly database seed line-ending failure.
+- Claiming completion of the full application or fleet validation gate.

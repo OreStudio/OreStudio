@@ -28,12 +28,11 @@
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -168,36 +167,30 @@ struct fx_digital_option_instrument final {
 };
 
 /**
- * @brief The members of fx_digital_option_instrument the customer agreed to.
+ * @brief The canonical text of the members of fx_digital_option_instrument the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view fx_digital_option_instrument_economic_fields[] = {
-    "foreign_currency",
-    "domestic_currency",
-    "payoff_currency",
-    "payoff_amount",
-    "option_type",
-    "expiry_date",
-    "long_short",
-    "strike",
-    "barrier_type",
-    "lower_barrier",
-    "upper_barrier",
-    "barrier_start_date",
-    "barrier_calendar",
-    "barrier_fixing_index",
-};
-
-/**
- * @brief Names the members of fx_digital_option_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<fx_digital_option_instrument>) {
-    return fx_digital_option_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const fx_digital_option_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "foreign_currency", v.foreign_currency);
+    ores::utility::digest::append_member(out, "domestic_currency", v.domestic_currency);
+    ores::utility::digest::append_member(out, "payoff_currency", v.payoff_currency);
+    ores::utility::digest::append_member(out, "payoff_amount", v.payoff_amount);
+    ores::utility::digest::append_member(out, "option_type", v.option_type);
+    ores::utility::digest::append_member(out, "expiry_date", v.expiry_date);
+    ores::utility::digest::append_member(out, "long_short", v.long_short);
+    ores::utility::digest::append_member(out, "strike", v.strike);
+    ores::utility::digest::append_member(out, "barrier_type", v.barrier_type);
+    ores::utility::digest::append_member(out, "lower_barrier", v.lower_barrier);
+    ores::utility::digest::append_member(out, "upper_barrier", v.upper_barrier);
+    ores::utility::digest::append_member(out, "barrier_start_date", v.barrier_start_date);
+    ores::utility::digest::append_member(out, "barrier_calendar", v.barrier_calendar);
+    ores::utility::digest::append_member(out, "barrier_fixing_index", v.barrier_fixing_index);
+    out.push_back('}');
+    return out;
 }
 
 /**

@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::compute::messaging::batch_event> {
-    static constexpr std::string_view subject_prefix = "compute.v1.batches_events";
+    static constexpr std::string_view subject_prefix = "compute.v1.events.batches";
 
     static ores::compute::messaging::batch_event
     from_notification(const entity_event_notification& notification) {

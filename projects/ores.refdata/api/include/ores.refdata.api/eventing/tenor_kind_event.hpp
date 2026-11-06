@@ -47,7 +47,7 @@ namespace ores::eventing::domain {
  */
 template <>
 struct entity_event_traits<ores::refdata::messaging::tenor_kind_event> {
-    static constexpr std::string_view subject_prefix = "refdata.v1.tenor_kinds_events";
+    static constexpr std::string_view subject_prefix = "refdata.v1.events.tenor_kinds";
 
     static ores::refdata::messaging::tenor_kind_event
     from_notification(const entity_event_notification& notification) {

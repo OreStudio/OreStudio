@@ -204,7 +204,7 @@ struct get_scheduler_status_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_job_instances_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_job_instances_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"offset", &get_job_instances_request::offset},
         ::ores::utility::codec::field{"limit", &get_job_instances_request::limit},
@@ -219,7 +219,7 @@ struct get_scheduler_status_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const job_instance_summary&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<job_instance_summary>) {
     return std::tuple{
         ::ores::utility::codec::field{"id", &job_instance_summary::id},
         ::ores::utility::codec::field{"job_definition_id",
@@ -243,7 +243,7 @@ struct get_scheduler_status_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_job_instances_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_job_instances_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_job_instances_response::success},
         ::ores::utility::codec::field{"message", &get_job_instances_response::message},
@@ -261,7 +261,7 @@ struct get_scheduler_status_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_scheduler_status_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_scheduler_status_request>) {
     return std::tuple{};
 }
 
@@ -273,7 +273,7 @@ struct get_scheduler_status_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const job_schedule_status&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<job_schedule_status>) {
     return std::tuple{
         ::ores::utility::codec::field{"job_definition_id", &job_schedule_status::job_definition_id},
         ::ores::utility::codec::field{"job_name", &job_schedule_status::job_name},
@@ -296,7 +296,7 @@ struct get_scheduler_status_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_scheduler_status_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_scheduler_status_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &get_scheduler_status_response::success},
         ::ores::utility::codec::field{"message", &get_scheduler_status_response::message},

@@ -26,7 +26,7 @@
 #define ORES_ORE_SERVICE_HPP
 
 /**
- * @brief ORE import service
+ * @brief ORE import microservice
  *
  * The runnable host for the ORE integration — configuration, the import worklist, execute and
  * rollback handlers, and the report package handler.

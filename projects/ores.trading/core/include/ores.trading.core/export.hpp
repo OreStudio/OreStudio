@@ -27,10 +27,14 @@
 
 #include <boost/config.hpp>
 
-#ifdef ORES_TRADING_CORE_LIBRARY
-#    define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_EXPORT
+#if defined(_WIN32)
+#    define ORES_TRADING_CORE_EXPORT
 #else
-#    define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_IMPORT
+#    ifdef ORES_TRADING_CORE_LIBRARY
+#        define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_EXPORT
+#    else
+#        define ORES_TRADING_CORE_EXPORT BOOST_SYMBOL_IMPORT
+#    endif
 #endif
 
 #endif

@@ -34,7 +34,7 @@ struct entity_page_state {
     /// Current offset in the result set
     std::uint32_t current_offset = 0;
     /// Total count of available records (from last response)
-    std::uint32_t total_count = 0;
+    std::uint64_t total_count = 0;
 };
 
 /**

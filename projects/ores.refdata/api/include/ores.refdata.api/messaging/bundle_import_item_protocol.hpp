@@ -389,9 +389,9 @@ struct get_bundle_import_item_version_response {
  * of them.
  */
 namespace bundle_import_item_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.bundle_import_items_events.created";
-inline constexpr std::string_view updated = "refdata.v1.bundle_import_items_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.bundle_import_items.created";
+inline constexpr std::string_view updated = "refdata.v1.events.bundle_import_items.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.bundle_import_items.deleted";
 }
 /**
  * @brief The members of bundle_import_item_key, named as the wire names them and in the order
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import_item_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_item_key>) {
     return std::tuple{
         utility::codec::field{"id", &bundle_import_item_key::id},
     };
@@ -415,7 +415,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import_item_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_item_write>) {
     return std::tuple{
         utility::codec::field{"id", &bundle_import_item_write::id},
         utility::codec::field{"import_id", &bundle_import_item_write::import_id},
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import_item_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_item_change>) {
     return std::tuple{
         utility::codec::field{"write", &bundle_import_item_change::write},
         utility::codec::field{"precondition", &bundle_import_item_change::precondition},
@@ -449,7 +449,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import_item_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_item_removal>) {
     return std::tuple{
         utility::codec::field{"key", &bundle_import_item_removal::key},
         utility::codec::field{"precondition", &bundle_import_item_removal::precondition},
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import_item_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_item_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &bundle_import_item_lookup::key},
         utility::codec::field{"bundle_import_item", &bundle_import_item_lookup::bundle_import_item},
@@ -479,7 +479,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import_items_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_items_filter>) {
     return std::tuple{
         utility::codec::field{"import_id", &bundle_import_items_filter::import_id},
         utility::codec::field{"id_one_of", &bundle_import_items_filter::id_one_of},
@@ -495,7 +495,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import_item_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_item_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &bundle_import_item_event::event_id},
         utility::codec::field{"key", &bundle_import_item_event::key},
@@ -514,7 +514,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import_item_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_item_version_key>) {
     return std::tuple{
         utility::codec::field{"bundle_import_item",
                               &bundle_import_item_version_key::bundle_import_item},
@@ -530,7 +530,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import_item_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_item_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &bundle_import_item_versions_filter::version},
         utility::codec::field{"from_version", &bundle_import_item_versions_filter::from_version},
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bundle_import_items_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bundle_import_items_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_bundle_import_items_request::offset},
         utility::codec::field{"limit", &list_bundle_import_items_request::limit},
@@ -564,7 +564,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bundle_import_items_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_bundle_import_items_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_bundle_import_items_response::result},
         utility::codec::field{"bundle_import_items",
@@ -581,7 +581,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bundle_import_item_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bundle_import_item_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_bundle_import_item_request::key},
     };
@@ -595,7 +595,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bundle_import_item_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_bundle_import_item_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_bundle_import_item_response::result},
         utility::codec::field{"bundle_import_item",
@@ -611,7 +611,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_bundle_import_items_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_bundle_import_items_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_bundle_import_items_request::keys},
     };
@@ -625,7 +625,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_bundle_import_items_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_bundle_import_items_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_bundle_import_items_response::result},
         utility::codec::field{"entries", &get_many_bundle_import_items_response::entries},
@@ -640,7 +641,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_bundle_import_item_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bundle_import_item_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_bundle_import_item_request::change},
         utility::codec::field{"intent", &put_bundle_import_item_request::intent},
@@ -655,7 +656,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_bundle_import_item_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_bundle_import_item_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_bundle_import_item_response::result},
         utility::codec::field{"bundle_import_item",
@@ -671,7 +672,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_bundle_import_items_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_bundle_import_items_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_bundle_import_items_request::changes},
         utility::codec::field{"intent", &put_many_bundle_import_items_request::intent},
@@ -686,7 +687,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_bundle_import_items_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_bundle_import_items_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_bundle_import_items_response::result},
         utility::codec::field{"bundle_import_items",
@@ -702,7 +704,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_bundle_import_item_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_bundle_import_item_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_bundle_import_item_request::removal},
         utility::codec::field{"intent", &delete_bundle_import_item_request::intent},
@@ -717,7 +719,7 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_bundle_import_item_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_bundle_import_item_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_bundle_import_item_response::result},
     };
@@ -731,7 +733,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_bundle_import_items_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_bundle_import_items_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_bundle_import_items_request::removals},
         utility::codec::field{"intent", &delete_many_bundle_import_items_request::intent},
@@ -746,7 +749,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_bundle_import_items_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_bundle_import_items_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_bundle_import_items_response::result},
     };
@@ -760,7 +764,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_import_id_bundle_import_items_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_import_id_bundle_import_items_request>) {
     return std::tuple{
         utility::codec::field{"import_id",
                               &list_by_import_id_bundle_import_items_request::import_id},
@@ -780,7 +785,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_by_import_id_bundle_import_items_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_by_import_id_bundle_import_items_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_by_import_id_bundle_import_items_response::result},
         utility::codec::field{"bundle_import_items",
@@ -797,7 +803,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bundle_import_item_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bundle_import_item_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_bundle_import_item_versions_request::key},
         utility::codec::field{"offset", &list_bundle_import_item_versions_request::offset},
@@ -815,7 +822,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_bundle_import_item_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_bundle_import_item_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_bundle_import_item_versions_response::result},
         utility::codec::field{"versions", &list_bundle_import_item_versions_response::versions},
@@ -831,7 +839,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bundle_import_item_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bundle_import_item_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_bundle_import_item_version_request::key},
     };
@@ -845,7 +854,8 @@ inline constexpr std::string_view deleted = "refdata.v1.bundle_import_items_even
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_bundle_import_item_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_bundle_import_item_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_bundle_import_item_version_response::result},
         utility::codec::field{"version", &get_bundle_import_item_version_response::version},

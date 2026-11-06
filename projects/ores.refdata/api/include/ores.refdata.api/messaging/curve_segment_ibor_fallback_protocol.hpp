@@ -364,11 +364,11 @@ struct get_curve_segment_ibor_fallback_version_response {
  */
 namespace curve_segment_ibor_fallback_event_subjects {
 inline constexpr std::string_view created =
-    "refdata.v1.curve_segment_ibor_fallbacks_events.created";
+    "refdata.v1.events.curve_segment_ibor_fallbacks.created";
 inline constexpr std::string_view updated =
-    "refdata.v1.curve_segment_ibor_fallbacks_events.updated";
+    "refdata.v1.events.curve_segment_ibor_fallbacks.updated";
 inline constexpr std::string_view deleted =
-    "refdata.v1.curve_segment_ibor_fallbacks_events.deleted";
+    "refdata.v1.events.curve_segment_ibor_fallbacks.deleted";
 }
 /**
  * @brief The members of curve_segment_ibor_fallback_key, named as the wire names them and in the
@@ -378,7 +378,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_ibor_fallback_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_key>) {
     return std::tuple{
         utility::codec::field{"id", &curve_segment_ibor_fallback_key::id},
     };
@@ -392,7 +392,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_ibor_fallback_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_write>) {
     return std::tuple{
         utility::codec::field{"id", &curve_segment_ibor_fallback_write::id},
         utility::codec::field{"curve_segment_id",
@@ -412,7 +412,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_ibor_fallback_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_change>) {
     return std::tuple{
         utility::codec::field{"write", &curve_segment_ibor_fallback_change::write},
         utility::codec::field{"precondition", &curve_segment_ibor_fallback_change::precondition},
@@ -427,7 +427,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_ibor_fallback_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_removal>) {
     return std::tuple{
         utility::codec::field{"key", &curve_segment_ibor_fallback_removal::key},
         utility::codec::field{"precondition", &curve_segment_ibor_fallback_removal::precondition},
@@ -442,7 +442,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_ibor_fallback_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &curve_segment_ibor_fallback_lookup::key},
         utility::codec::field{"curve_segment_ibor_fallback",
@@ -458,7 +458,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_ibor_fallbacks_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallbacks_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &curve_segment_ibor_fallbacks_filter::id_one_of},
     };
@@ -472,7 +472,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_ibor_fallback_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_segment_ibor_fallback_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &curve_segment_ibor_fallback_event::event_id},
         utility::codec::field{"key", &curve_segment_ibor_fallback_event::key},
@@ -491,7 +491,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_ibor_fallback_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_ibor_fallback_version_key>) {
     return std::tuple{
         utility::codec::field{
             "curve_segment_ibor_fallback",
@@ -508,7 +509,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const curve_segment_ibor_fallback_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<curve_segment_ibor_fallback_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &curve_segment_ibor_fallback_versions_filter::version},
         utility::codec::field{"from_version",
@@ -526,7 +528,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_segment_ibor_fallbacks_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_segment_ibor_fallbacks_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_curve_segment_ibor_fallbacks_request::offset},
         utility::codec::field{"limit", &list_curve_segment_ibor_fallbacks_request::limit},
@@ -544,7 +547,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_segment_ibor_fallbacks_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_segment_ibor_fallbacks_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_curve_segment_ibor_fallbacks_response::result},
         utility::codec::field{"segment_ibor_fallbacks",
@@ -561,7 +565,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_ibor_fallback_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_ibor_fallback_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_segment_ibor_fallback_request::key},
     };
@@ -575,7 +580,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_ibor_fallback_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_ibor_fallback_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_curve_segment_ibor_fallback_response::result},
         utility::codec::field{
@@ -592,7 +598,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_segment_ibor_fallbacks_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_curve_segment_ibor_fallbacks_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_curve_segment_ibor_fallbacks_request::keys},
     };
@@ -606,7 +613,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_curve_segment_ibor_fallbacks_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_curve_segment_ibor_fallbacks_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_curve_segment_ibor_fallbacks_response::result},
         utility::codec::field{"entries", &get_many_curve_segment_ibor_fallbacks_response::entries},
@@ -621,7 +629,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_segment_ibor_fallback_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_segment_ibor_fallback_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_curve_segment_ibor_fallback_request::change},
         utility::codec::field{"intent", &put_curve_segment_ibor_fallback_request::intent},
@@ -636,7 +645,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_curve_segment_ibor_fallback_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_curve_segment_ibor_fallback_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_curve_segment_ibor_fallback_response::result},
         utility::codec::field{
@@ -653,7 +663,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_segment_ibor_fallbacks_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_curve_segment_ibor_fallbacks_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_curve_segment_ibor_fallbacks_request::changes},
         utility::codec::field{"intent", &put_many_curve_segment_ibor_fallbacks_request::intent},
@@ -668,7 +679,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_curve_segment_ibor_fallbacks_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_curve_segment_ibor_fallbacks_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_curve_segment_ibor_fallbacks_response::result},
         utility::codec::field{
@@ -685,7 +697,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_segment_ibor_fallback_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_segment_ibor_fallback_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_curve_segment_ibor_fallback_request::removal},
         utility::codec::field{"intent", &delete_curve_segment_ibor_fallback_request::intent},
@@ -700,7 +713,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_curve_segment_ibor_fallback_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_curve_segment_ibor_fallback_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_curve_segment_ibor_fallback_response::result},
     };
@@ -714,7 +728,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_curve_segment_ibor_fallbacks_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_curve_segment_ibor_fallbacks_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_curve_segment_ibor_fallbacks_request::removals},
@@ -730,7 +745,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_curve_segment_ibor_fallbacks_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_curve_segment_ibor_fallbacks_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_curve_segment_ibor_fallbacks_response::result},
     };
@@ -744,7 +760,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_curve_segment_ibor_fallback_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_curve_segment_ibor_fallback_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_curve_segment_ibor_fallback_versions_request::key},
         utility::codec::field{"offset", &list_curve_segment_ibor_fallback_versions_request::offset},
@@ -763,7 +780,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_curve_segment_ibor_fallback_versions_response&) {
+wire_fields(std::type_identity<list_curve_segment_ibor_fallback_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_curve_segment_ibor_fallback_versions_response::result},
@@ -781,7 +798,8 @@ wire_fields(const list_curve_segment_ibor_fallback_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_ibor_fallback_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_ibor_fallback_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_curve_segment_ibor_fallback_version_request::key},
     };
@@ -795,7 +813,8 @@ wire_fields(const list_curve_segment_ibor_fallback_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_curve_segment_ibor_fallback_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_curve_segment_ibor_fallback_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_curve_segment_ibor_fallback_version_response::result},
         utility::codec::field{"version",

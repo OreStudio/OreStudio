@@ -401,9 +401,9 @@ struct get_instrument_schedule_date_version_response {
  * of them.
  */
 namespace instrument_schedule_date_event_subjects {
-inline constexpr std::string_view created = "trading.v1.instrument_schedule_dates_events.created";
-inline constexpr std::string_view updated = "trading.v1.instrument_schedule_dates_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_dates_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.instrument_schedule_dates.created";
+inline constexpr std::string_view updated = "trading.v1.events.instrument_schedule_dates.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedule_dates.deleted";
 }
 /**
  * @brief The members of instrument_schedule_date_key, named as the wire names them and in the order
@@ -413,7 +413,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_schedule_date_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_date_key>) {
     return std::tuple{
         utility::codec::field{"trade_id", &instrument_schedule_date_key::trade_id},
         utility::codec::field{"owner_role", &instrument_schedule_date_key::owner_role},
@@ -433,7 +433,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_schedule_date_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_date_write>) {
     return std::tuple{
         utility::codec::field{"trade_id", &instrument_schedule_date_write::trade_id},
         utility::codec::field{"owner_role", &instrument_schedule_date_write::owner_role},
@@ -456,7 +456,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_schedule_date_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_date_change>) {
     return std::tuple{
         utility::codec::field{"write", &instrument_schedule_date_change::write},
         utility::codec::field{"precondition", &instrument_schedule_date_change::precondition},
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_schedule_date_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_date_removal>) {
     return std::tuple{
         utility::codec::field{"key", &instrument_schedule_date_removal::key},
         utility::codec::field{"precondition", &instrument_schedule_date_removal::precondition},
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_schedule_date_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_date_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &instrument_schedule_date_lookup::key},
         utility::codec::field{"instrument_schedule_date",
@@ -502,7 +502,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_schedule_dates_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_dates_filter>) {
     return std::tuple{
         utility::codec::field{"trade_id", &instrument_schedule_dates_filter::trade_id},
         utility::codec::field{"trade_id_one_of",
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_schedule_date_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_date_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &instrument_schedule_date_event::event_id},
         utility::codec::field{"key", &instrument_schedule_date_event::key},
@@ -537,7 +537,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_schedule_date_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<instrument_schedule_date_version_key>) {
     return std::tuple{
         utility::codec::field{"instrument_schedule_date",
                               &instrument_schedule_date_version_key::instrument_schedule_date},
@@ -553,7 +553,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const instrument_schedule_date_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<instrument_schedule_date_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &instrument_schedule_date_versions_filter::version},
         utility::codec::field{"from_version",
@@ -570,7 +571,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_instrument_schedule_dates_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_instrument_schedule_dates_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_instrument_schedule_dates_request::offset},
         utility::codec::field{"limit", &list_instrument_schedule_dates_request::limit},
@@ -588,7 +590,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_instrument_schedule_dates_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_instrument_schedule_dates_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_instrument_schedule_dates_response::result},
         utility::codec::field{"instrument_schedule_dates",
@@ -605,7 +608,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_instrument_schedule_date_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_instrument_schedule_date_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_instrument_schedule_date_request::key},
     };
@@ -619,7 +622,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_instrument_schedule_date_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_instrument_schedule_date_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_instrument_schedule_date_response::result},
         utility::codec::field{"instrument_schedule_date",
@@ -635,7 +639,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_instrument_schedule_dates_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_instrument_schedule_dates_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_instrument_schedule_dates_request::keys},
     };
@@ -649,7 +654,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_instrument_schedule_dates_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_instrument_schedule_dates_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_instrument_schedule_dates_response::result},
         utility::codec::field{"entries", &get_many_instrument_schedule_dates_response::entries},
@@ -664,7 +670,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_instrument_schedule_date_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_instrument_schedule_date_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_instrument_schedule_date_request::change},
         utility::codec::field{"intent", &put_instrument_schedule_date_request::intent},
@@ -679,7 +685,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_instrument_schedule_date_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_instrument_schedule_date_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_instrument_schedule_date_response::result},
         utility::codec::field{"instrument_schedule_date",
@@ -695,7 +702,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_instrument_schedule_dates_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_instrument_schedule_dates_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_instrument_schedule_dates_request::changes},
         utility::codec::field{"intent", &put_many_instrument_schedule_dates_request::intent},
@@ -710,7 +718,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_instrument_schedule_dates_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_instrument_schedule_dates_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_instrument_schedule_dates_response::result},
         utility::codec::field{
@@ -727,7 +736,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_instrument_schedule_date_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_instrument_schedule_date_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_instrument_schedule_date_request::removal},
         utility::codec::field{"intent", &delete_instrument_schedule_date_request::intent},
@@ -742,7 +752,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_instrument_schedule_date_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_instrument_schedule_date_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_instrument_schedule_date_response::result},
     };
@@ -756,7 +767,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_instrument_schedule_dates_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_instrument_schedule_dates_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_instrument_schedule_dates_request::removals},
         utility::codec::field{"intent", &delete_many_instrument_schedule_dates_request::intent},
@@ -771,7 +783,8 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_instrument_schedule_dates_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_instrument_schedule_dates_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_instrument_schedule_dates_response::result},
     };
@@ -786,7 +799,7 @@ inline constexpr std::string_view deleted = "trading.v1.instrument_schedule_date
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_trade_id_instrument_schedule_dates_request&) {
+wire_fields(std::type_identity<list_by_trade_id_instrument_schedule_dates_request>) {
     return std::tuple{
         utility::codec::field{"trade_id",
                               &list_by_trade_id_instrument_schedule_dates_request::trade_id},
@@ -809,7 +822,7 @@ wire_fields(const list_by_trade_id_instrument_schedule_dates_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_by_trade_id_instrument_schedule_dates_response&) {
+wire_fields(std::type_identity<list_by_trade_id_instrument_schedule_dates_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_by_trade_id_instrument_schedule_dates_response::result},
@@ -828,7 +841,8 @@ wire_fields(const list_by_trade_id_instrument_schedule_dates_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_instrument_schedule_date_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_instrument_schedule_date_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_instrument_schedule_date_versions_request::key},
         utility::codec::field{"offset", &list_instrument_schedule_date_versions_request::offset},
@@ -846,7 +860,8 @@ wire_fields(const list_by_trade_id_instrument_schedule_dates_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_instrument_schedule_date_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_instrument_schedule_date_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_instrument_schedule_date_versions_response::result},
         utility::codec::field{"versions",
@@ -863,7 +878,8 @@ wire_fields(const list_by_trade_id_instrument_schedule_dates_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_instrument_schedule_date_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_instrument_schedule_date_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_instrument_schedule_date_version_request::key},
     };
@@ -877,7 +893,8 @@ wire_fields(const list_by_trade_id_instrument_schedule_dates_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_instrument_schedule_date_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_instrument_schedule_date_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_instrument_schedule_date_version_response::result},
         utility::codec::field{"version", &get_instrument_schedule_date_version_response::version},

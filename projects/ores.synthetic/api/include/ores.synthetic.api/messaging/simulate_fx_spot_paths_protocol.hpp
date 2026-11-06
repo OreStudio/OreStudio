@@ -100,7 +100,7 @@ struct simulate_fx_spot_paths_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const simulate_fx_spot_paths_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<simulate_fx_spot_paths_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"gmm_means", &simulate_fx_spot_paths_request::gmm_means},
         ::ores::utility::codec::field{"gmm_stdevs", &simulate_fx_spot_paths_request::gmm_stdevs},
@@ -123,7 +123,7 @@ struct simulate_fx_spot_paths_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const simulate_fx_spot_paths_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<simulate_fx_spot_paths_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &simulate_fx_spot_paths_response::success},
         ::ores::utility::codec::field{"message", &simulate_fx_spot_paths_response::message},

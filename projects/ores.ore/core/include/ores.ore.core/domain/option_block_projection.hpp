@@ -31,6 +31,7 @@
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include <boost/numeric/conversion/cast.hpp>
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
@@ -457,7 +458,7 @@ void read_option_block(Data& result, const record_reader& od) {
     if (const auto payment = od.child("PaymentData")) {
         if (const auto rules = payment->child("Rules")) {
             if (const auto lag = rules->integer("Lag"))
-                row.payment_lag = *lag;
+                row.payment_lag = boost::numeric_cast<int>(*lag);
             row.payment_calendar = text_of(*rules, "Calendar");
             row.payment_convention = spelling_of(*rules, "Convention");
             if (rules->has("RelativeTo"))

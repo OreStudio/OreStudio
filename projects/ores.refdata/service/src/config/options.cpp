@@ -17,9 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_options.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.refdata.service/config/options.hpp"
 #include "ores.utility/codec/json_codec.hpp"
-#include <ostream>
 
 namespace ores::refdata::service::config {
 

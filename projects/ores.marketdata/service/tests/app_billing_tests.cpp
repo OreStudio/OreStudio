@@ -445,3 +445,15 @@ TEST_CASE("components_of_different_licence_rights_do_not_replace_each_other", "[
     CHECK(bill.lines.size() == 2);
     CHECK(bill.total_micros == 300);
 }
+
+TEST_CASE("billing_uses_wide_intermediates_without_losing_integer_precision", "[app][billing]") {
+    const auto parts = split_weighted(8000000000000000000LL, {1000000000, 3000000000});
+    REQUIRE(parts.size() == 2);
+    CHECK(parts[0] == 2000000000000000000LL);
+    CHECK(parts[1] == 6000000000000000000LL);
+
+    world w;
+    w.component(w.live, "per_thousand_ticks", 3000000000LL);
+    w.delivered(w.alice, w.live, 4000000000LL);
+    CHECK(rate_source(w.live, w.card, w.events, w.period()).total_micros == 12000000000000000LL);
+}

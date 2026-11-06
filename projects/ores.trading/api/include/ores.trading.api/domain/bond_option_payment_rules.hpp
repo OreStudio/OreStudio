@@ -77,7 +77,7 @@ struct bond_option_payment_rules {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_option_payment_rules&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_option_payment_rules>) {
     return std::tuple{
         utility::codec::field{"lag", &bond_option_payment_rules::lag},
         utility::codec::field{"calendar", &bond_option_payment_rules::calendar},

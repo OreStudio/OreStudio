@@ -35,16 +35,20 @@ def test_a_scoped_read_keeps_the_relation_in_the_verb_slot():
     assert len(subject.split(".")) == 4, subject
 
 
-def test_an_event_names_the_collection_and_an_action():
+def test_an_event_names_the_events_namespace_its_collection_and_an_action():
     subject = event_subject("iam", "tenants", "created")
-    assert subject == "iam.v1.tenants_events.created"
-    assert len(subject.split(".")) == 4, subject
+    assert subject == "iam.v1.events.tenants.created"
+    # Five segments, so that the namespace is a token a wildcard can name: a
+    # collection spelled tenants_events could never be matched by *_events.
+    assert len(subject.split(".")) == 5, subject
+    assert subject.split(".")[2] == "events"
 
 
-def test_every_event_action_builds_a_four_segment_subject():
+def test_every_event_action_builds_a_five_segment_subject():
     for action in SPEC_EVENT_ACTIONS:
         subject = event_subject("iam", "tenants", action)
-        assert len(subject.split(".")) == 4, subject
+        assert len(subject.split(".")) == 5, subject
+        assert subject.endswith("." + action)
 
 
 def test_versions_are_a_sub_resource_of_the_entity():

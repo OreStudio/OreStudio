@@ -23,6 +23,7 @@
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/numeric/conversion/cast.hpp>
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -692,14 +693,14 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
     auto data = trade.child("CapFloorData");
     data.set_spelling("LongShort", fact.long_short.value_or("Long"), "long short");
 
-    // A cap or a floor pays on the floating leg, so that is the leg the
+    // A cap or a floor pays on the floating_leg leg, so that is the leg the
     // document states. Taking the first leg would write a fixed one for a
     // trade whose fixed side happens to be numbered first.
-    const auto floating = std::find_if(v.legs.begin(), v.legs.end(), [](const auto& candidate) {
+    const auto floating_row = std::find_if(v.legs.begin(), v.legs.end(), [](const auto& candidate) {
         return candidate.leg_type_code == "Floating";
     });
     if (!v.legs.empty()) {
-        const auto& row = floating != v.legs.end() ? *floating : v.legs.front();
+        const auto& row = floating_row != v.legs.end() ? *floating_row : v.legs.front();
         auto leg = data.child("LegData");
         leg_block::write_leg(leg, v.header.start_date, v.header.maturity_date, row, v);
     }

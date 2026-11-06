@@ -21,6 +21,7 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
+#include <boost/numeric/conversion/cast.hpp>
 #include <cli/cli.h>
 #include <functional>
 #include <ostream>
@@ -175,7 +176,8 @@ void navigation_commands::process_last(std::ostream& out, pagination_context& pa
     const auto page_size = pagination.page_size();
     std::uint32_t last_page_offset = 0;
     if (state.total_count > page_size) {
-        last_page_offset = ((state.total_count - 1) / page_size) * page_size;
+        last_page_offset =
+            boost::numeric_cast<std::uint32_t>(((state.total_count - 1) / page_size) * page_size);
     }
 
     if (state.current_offset == last_page_offset) {

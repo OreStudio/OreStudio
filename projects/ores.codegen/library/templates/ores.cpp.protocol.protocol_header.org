@@ -114,7 +114,7 @@ inline constexpr std::string_view {{action}} = "{{subject}}";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const {{name}}&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name}}>) {
     return std::tuple{
 {{#fields}}        utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
 {{/fields}}    };
@@ -209,7 +209,7 @@ struct {{name}} {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const {{name}}&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name}}>) {
     return std::tuple{
 {{#fields}}        utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
 {{/fields}}    };
@@ -336,7 +336,7 @@ struct {{name}} {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const {{name}}&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name}}>) {
     return std::tuple{
 {{#fields}}        ::ores::utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
 {{/fields}}    };
@@ -434,7 +434,7 @@ struct {{name}} {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const {{name}}&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{name}}>) {
     return std::tuple{
 {{#fields}}        ::ores::utility::codec::field{"{{name}}", &{{struct_name}}::{{name}}},
 {{/fields}}    };

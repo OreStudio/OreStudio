@@ -342,9 +342,9 @@ struct get_batch_version_response {
  * of them.
  */
 namespace batch_event_subjects {
-inline constexpr std::string_view created = "compute.v1.batches_events.created";
-inline constexpr std::string_view updated = "compute.v1.batches_events.updated";
-inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
+inline constexpr std::string_view created = "compute.v1.events.batches.created";
+inline constexpr std::string_view updated = "compute.v1.events.batches.updated";
+inline constexpr std::string_view deleted = "compute.v1.events.batches.deleted";
 }
 /**
  * @brief The members of batch_key, named as the wire names them and in the order
@@ -354,7 +354,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const batch_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batch_key>) {
     return std::tuple{
         utility::codec::field{"external_ref", &batch_key::external_ref},
     };
@@ -368,7 +368,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const batch_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batch_write>) {
     return std::tuple{
         utility::codec::field{"id", &batch_write::id},
         utility::codec::field{"external_ref", &batch_write::external_ref},
@@ -384,7 +384,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const batch_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batch_change>) {
     return std::tuple{
         utility::codec::field{"write", &batch_change::write},
         utility::codec::field{"precondition", &batch_change::precondition},
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const batch_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batch_removal>) {
     return std::tuple{
         utility::codec::field{"key", &batch_removal::key},
         utility::codec::field{"precondition", &batch_removal::precondition},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const batch_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batch_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &batch_lookup::key},
         utility::codec::field{"batch", &batch_lookup::batch},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const batches_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batches_filter>) {
     return std::tuple{
         utility::codec::field{"party_id", &batches_filter::party_id},
         utility::codec::field{"status", &batches_filter::status},
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const batch_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batch_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &batch_event::event_id},
         utility::codec::field{"key", &batch_event::key},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const batch_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batch_version_key>) {
     return std::tuple{
         utility::codec::field{"batch", &batch_version_key::batch},
         utility::codec::field{"version", &batch_version_key::version},
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const batch_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<batch_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &batch_versions_filter::version},
         utility::codec::field{"from_version", &batch_versions_filter::from_version},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_batches_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_batches_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_batches_request::offset},
         utility::codec::field{"limit", &list_batches_request::limit},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_batches_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_batches_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_batches_response::result},
         utility::codec::field{"batches", &list_batches_response::batches},
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_batch_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_batch_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_batch_request::key},
     };
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_batch_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_batch_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_batch_response::result},
         utility::codec::field{"batch", &get_batch_response::batch},
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_batches_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_batches_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_batches_request::keys},
     };
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_batches_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_batches_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_batches_response::result},
         utility::codec::field{"entries", &get_many_batches_response::entries},
@@ -590,7 +590,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_batch_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_batch_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_batch_request::change},
         utility::codec::field{"intent", &put_batch_request::intent},
@@ -605,7 +605,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_batch_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_batch_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_batch_response::result},
         utility::codec::field{"batch", &put_batch_response::batch},
@@ -620,7 +620,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_batches_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_batches_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_batches_request::changes},
         utility::codec::field{"intent", &put_many_batches_request::intent},
@@ -635,7 +635,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_batches_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_batches_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_batches_response::result},
         utility::codec::field{"batches", &put_many_batches_response::batches},
@@ -650,7 +650,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_batch_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_batch_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_batch_request::removal},
         utility::codec::field{"intent", &delete_batch_request::intent},
@@ -665,7 +665,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_batch_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_batch_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_batch_response::result},
     };
@@ -679,7 +679,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_batches_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_batches_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_batches_request::removals},
         utility::codec::field{"intent", &delete_many_batches_request::intent},
@@ -694,7 +694,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_batches_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_batches_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_batches_response::result},
     };
@@ -708,7 +708,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_batch_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_batch_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_batch_versions_request::key},
         utility::codec::field{"offset", &list_batch_versions_request::offset},
@@ -726,7 +726,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_batch_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_batch_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_batch_versions_response::result},
         utility::codec::field{"versions", &list_batch_versions_response::versions},
@@ -742,7 +742,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_batch_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_batch_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_batch_version_request::key},
     };
@@ -756,7 +756,7 @@ inline constexpr std::string_view deleted = "compute.v1.batches_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_batch_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_batch_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_batch_version_response::result},
         utility::codec::field{"version", &get_batch_version_response::version},

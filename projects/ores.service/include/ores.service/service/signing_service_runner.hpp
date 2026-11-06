@@ -57,7 +57,7 @@ namespace ores::service::service {
  * @param on_shutdown     Optional: called after signal, before nats.drain().
  */
 template <typename RegisterFn>
-boost::asio::awaitable<void>
+[[nodiscard]] boost::asio::awaitable<void>
 run_signing(boost::asio::io_context& io_ctx,
             ores::nats::service::client& nats,
             ores::database::context ctx,

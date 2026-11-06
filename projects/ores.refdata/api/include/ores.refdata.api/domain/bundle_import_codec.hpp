@@ -45,7 +45,7 @@ namespace ores::refdata::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const bundle_import&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import>) {
     return std::tuple{
         utility::codec::field{"version", &bundle_import::version},
         utility::codec::field{"tenant_id", &bundle_import::tenant_id},

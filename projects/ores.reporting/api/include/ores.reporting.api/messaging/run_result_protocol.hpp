@@ -171,9 +171,9 @@ struct get_many_run_results_response {
  * of them.
  */
 namespace run_result_event_subjects {
-inline constexpr std::string_view created = "reporting.v1.run_results_events.created";
-inline constexpr std::string_view updated = "reporting.v1.run_results_events.updated";
-inline constexpr std::string_view deleted = "reporting.v1.run_results_events.deleted";
+inline constexpr std::string_view created = "reporting.v1.events.run_results.created";
+inline constexpr std::string_view updated = "reporting.v1.events.run_results.updated";
+inline constexpr std::string_view deleted = "reporting.v1.events.run_results.deleted";
 }
 /**
  * @brief The members of run_result_key, named as the wire names them and in the order
@@ -183,7 +183,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_result_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_result_key>) {
     return std::tuple{
         utility::codec::field{"id", &run_result_key::id},
     };
@@ -197,7 +197,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_result_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_result_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &run_result_lookup::key},
         utility::codec::field{"run_result", &run_result_lookup::run_result},
@@ -212,7 +212,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_results_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_results_filter>) {
     return std::tuple{
         utility::codec::field{"party_id", &run_results_filter::party_id},
         utility::codec::field{"report_instance_id", &run_results_filter::report_instance_id},
@@ -245,7 +245,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const run_result_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<run_result_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &run_result_event::event_id},
         utility::codec::field{"key", &run_result_event::key},
@@ -264,7 +264,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_run_results_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_run_results_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_run_results_request::offset},
         utility::codec::field{"limit", &list_run_results_request::limit},
@@ -281,7 +281,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_run_results_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_run_results_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_run_results_response::result},
         utility::codec::field{"results", &list_run_results_response::results},
@@ -297,7 +297,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_run_result_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_result_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_run_result_request::key},
     };
@@ -311,7 +311,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_run_result_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_run_result_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_run_result_response::result},
         utility::codec::field{"run_result", &get_run_result_response::run_result},
@@ -326,7 +326,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_run_results_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_run_results_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_run_results_request::keys},
     };
@@ -340,7 +340,7 @@ inline constexpr std::string_view deleted = "reporting.v1.run_results_events.del
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_run_results_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_run_results_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_run_results_response::result},
         utility::codec::field{"entries", &get_many_run_results_response::entries},

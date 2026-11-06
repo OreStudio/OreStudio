@@ -347,9 +347,9 @@ struct get_structure_kind_version_response {
  * of them.
  */
 namespace structure_kind_event_subjects {
-inline constexpr std::string_view created = "trading.v1.structure_kinds_events.created";
-inline constexpr std::string_view updated = "trading.v1.structure_kinds_events.updated";
-inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.deleted";
+inline constexpr std::string_view created = "trading.v1.events.structure_kinds.created";
+inline constexpr std::string_view updated = "trading.v1.events.structure_kinds.updated";
+inline constexpr std::string_view deleted = "trading.v1.events.structure_kinds.deleted";
 }
 /**
  * @brief The members of structure_kind_key, named as the wire names them and in the order
@@ -359,7 +359,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const structure_kind_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_key>) {
     return std::tuple{
         utility::codec::field{"code", &structure_kind_key::code},
     };
@@ -373,7 +373,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const structure_kind_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_write>) {
     return std::tuple{
         utility::codec::field{"code", &structure_kind_write::code},
         utility::codec::field{"description", &structure_kind_write::description},
@@ -389,7 +389,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const structure_kind_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_change>) {
     return std::tuple{
         utility::codec::field{"write", &structure_kind_change::write},
         utility::codec::field{"precondition", &structure_kind_change::precondition},
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const structure_kind_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_removal>) {
     return std::tuple{
         utility::codec::field{"key", &structure_kind_removal::key},
         utility::codec::field{"precondition", &structure_kind_removal::precondition},
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const structure_kind_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &structure_kind_lookup::key},
         utility::codec::field{"structure_kind", &structure_kind_lookup::structure_kind},
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const structure_kinds_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kinds_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &structure_kinds_filter::code_one_of},
     };
@@ -448,7 +448,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const structure_kind_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &structure_kind_event::event_id},
         utility::codec::field{"key", &structure_kind_event::key},
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const structure_kind_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_version_key>) {
     return std::tuple{
         utility::codec::field{"structure_kind", &structure_kind_version_key::structure_kind},
         utility::codec::field{"version", &structure_kind_version_key::version},
@@ -482,7 +482,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const structure_kind_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<structure_kind_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &structure_kind_versions_filter::version},
         utility::codec::field{"from_version", &structure_kind_versions_filter::from_version},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_structure_kinds_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_structure_kinds_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_structure_kinds_request::offset},
         utility::codec::field{"limit", &list_structure_kinds_request::limit},
@@ -516,7 +516,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_structure_kinds_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_structure_kinds_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_structure_kinds_response::result},
         utility::codec::field{"structure_kinds", &list_structure_kinds_response::structure_kinds},
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_structure_kind_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_kind_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_structure_kind_request::key},
     };
@@ -546,7 +546,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_structure_kind_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_kind_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_structure_kind_response::result},
         utility::codec::field{"structure_kind", &get_structure_kind_response::structure_kind},
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_structure_kinds_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_structure_kinds_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_structure_kinds_request::keys},
     };
@@ -575,7 +575,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_structure_kinds_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_structure_kinds_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_structure_kinds_response::result},
         utility::codec::field{"entries", &get_many_structure_kinds_response::entries},
@@ -590,7 +590,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_structure_kind_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_structure_kind_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_structure_kind_request::change},
         utility::codec::field{"intent", &put_structure_kind_request::intent},
@@ -605,7 +605,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_structure_kind_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_structure_kind_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_structure_kind_response::result},
         utility::codec::field{"structure_kind", &put_structure_kind_response::structure_kind},
@@ -620,7 +620,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_structure_kinds_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_structure_kinds_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_structure_kinds_request::changes},
         utility::codec::field{"intent", &put_many_structure_kinds_request::intent},
@@ -635,7 +635,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_structure_kinds_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_structure_kinds_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_structure_kinds_response::result},
         utility::codec::field{"structure_kinds",
@@ -651,7 +651,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_structure_kind_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_structure_kind_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_structure_kind_request::removal},
         utility::codec::field{"intent", &delete_structure_kind_request::intent},
@@ -666,7 +666,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_structure_kind_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_structure_kind_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_structure_kind_response::result},
     };
@@ -680,7 +680,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_structure_kinds_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_structure_kinds_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_structure_kinds_request::removals},
         utility::codec::field{"intent", &delete_many_structure_kinds_request::intent},
@@ -695,7 +695,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_structure_kinds_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_structure_kinds_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_structure_kinds_response::result},
     };
@@ -709,7 +709,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_structure_kind_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_structure_kind_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_structure_kind_versions_request::key},
         utility::codec::field{"offset", &list_structure_kind_versions_request::offset},
@@ -727,7 +727,8 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_structure_kind_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_structure_kind_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_structure_kind_versions_response::result},
         utility::codec::field{"versions", &list_structure_kind_versions_response::versions},
@@ -743,7 +744,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_structure_kind_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_kind_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_structure_kind_version_request::key},
     };
@@ -757,7 +758,7 @@ inline constexpr std::string_view deleted = "trading.v1.structure_kinds_events.d
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_structure_kind_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_structure_kind_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_structure_kind_version_response::result},
         utility::codec::field{"version", &get_structure_kind_version_response::version},

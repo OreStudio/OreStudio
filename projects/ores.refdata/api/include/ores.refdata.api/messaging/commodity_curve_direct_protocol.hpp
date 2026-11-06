@@ -359,9 +359,9 @@ struct get_commodity_curve_direct_version_response {
  * of them.
  */
 namespace commodity_curve_direct_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.commodity_curve_directs_events.created";
-inline constexpr std::string_view updated = "refdata.v1.commodity_curve_directs_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.commodity_curve_directs.created";
+inline constexpr std::string_view updated = "refdata.v1.events.commodity_curve_directs.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.commodity_curve_directs.deleted";
 }
 /**
  * @brief The members of commodity_curve_direct_key, named as the wire names them and in the order
@@ -371,7 +371,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_curve_direct_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_key>) {
     return std::tuple{
         utility::codec::field{"id", &commodity_curve_direct_key::id},
     };
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_curve_direct_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_write>) {
     return std::tuple{
         utility::codec::field{"id", &commodity_curve_direct_write::id},
         utility::codec::field{"curve_definition_id",
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_curve_direct_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_change>) {
     return std::tuple{
         utility::codec::field{"write", &commodity_curve_direct_change::write},
         utility::codec::field{"precondition", &commodity_curve_direct_change::precondition},
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_curve_direct_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_removal>) {
     return std::tuple{
         utility::codec::field{"key", &commodity_curve_direct_removal::key},
         utility::codec::field{"precondition", &commodity_curve_direct_removal::precondition},
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_curve_direct_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &commodity_curve_direct_lookup::key},
         utility::codec::field{"commodity_curve_direct",
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_curve_directs_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_directs_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &commodity_curve_directs_filter::id_one_of},
     };
@@ -464,7 +464,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_curve_direct_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &commodity_curve_direct_event::event_id},
         utility::codec::field{"key", &commodity_curve_direct_event::key},
@@ -483,7 +483,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_curve_direct_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commodity_curve_direct_version_key>) {
     return std::tuple{
         utility::codec::field{"commodity_curve_direct",
                               &commodity_curve_direct_version_key::commodity_curve_direct},
@@ -499,7 +499,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const commodity_curve_direct_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<commodity_curve_direct_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &commodity_curve_direct_versions_filter::version},
         utility::codec::field{"from_version",
@@ -516,7 +517,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_commodity_curve_directs_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_commodity_curve_directs_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_commodity_curve_directs_request::offset},
         utility::codec::field{"limit", &list_commodity_curve_directs_request::limit},
@@ -534,7 +535,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_commodity_curve_directs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_commodity_curve_directs_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_commodity_curve_directs_response::result},
         utility::codec::field{"directs", &list_commodity_curve_directs_response::directs},
@@ -550,7 +552,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_commodity_curve_direct_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_commodity_curve_direct_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_commodity_curve_direct_request::key},
     };
@@ -564,7 +566,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_commodity_curve_direct_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_commodity_curve_direct_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_commodity_curve_direct_response::result},
         utility::codec::field{"commodity_curve_direct",
@@ -580,7 +582,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_commodity_curve_directs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_commodity_curve_directs_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_commodity_curve_directs_request::keys},
     };
@@ -594,7 +597,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_commodity_curve_directs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_commodity_curve_directs_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_commodity_curve_directs_response::result},
         utility::codec::field{"entries", &get_many_commodity_curve_directs_response::entries},
@@ -609,7 +613,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_commodity_curve_direct_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_commodity_curve_direct_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_commodity_curve_direct_request::change},
         utility::codec::field{"intent", &put_commodity_curve_direct_request::intent},
@@ -624,7 +628,7 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_commodity_curve_direct_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_commodity_curve_direct_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_commodity_curve_direct_response::result},
         utility::codec::field{"commodity_curve_direct",
@@ -640,7 +644,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_commodity_curve_directs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_commodity_curve_directs_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_commodity_curve_directs_request::changes},
         utility::codec::field{"intent", &put_many_commodity_curve_directs_request::intent},
@@ -655,7 +660,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_commodity_curve_directs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_commodity_curve_directs_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_commodity_curve_directs_response::result},
         utility::codec::field{"directs", &put_many_commodity_curve_directs_response::directs},
@@ -670,7 +676,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_commodity_curve_direct_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_commodity_curve_direct_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_commodity_curve_direct_request::removal},
         utility::codec::field{"intent", &delete_commodity_curve_direct_request::intent},
@@ -685,7 +692,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_commodity_curve_direct_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_commodity_curve_direct_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_commodity_curve_direct_response::result},
     };
@@ -699,7 +707,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_commodity_curve_directs_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_commodity_curve_directs_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_commodity_curve_directs_request::removals},
         utility::codec::field{"intent", &delete_many_commodity_curve_directs_request::intent},
@@ -714,7 +723,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_commodity_curve_directs_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_commodity_curve_directs_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_commodity_curve_directs_response::result},
     };
@@ -728,7 +738,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_commodity_curve_direct_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_commodity_curve_direct_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_commodity_curve_direct_versions_request::key},
         utility::codec::field{"offset", &list_commodity_curve_direct_versions_request::offset},
@@ -746,7 +757,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_commodity_curve_direct_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_commodity_curve_direct_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_commodity_curve_direct_versions_response::result},
         utility::codec::field{"versions", &list_commodity_curve_direct_versions_response::versions},
@@ -762,7 +774,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_commodity_curve_direct_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_commodity_curve_direct_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_commodity_curve_direct_version_request::key},
     };
@@ -776,7 +789,8 @@ inline constexpr std::string_view deleted = "refdata.v1.commodity_curve_directs_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_commodity_curve_direct_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_commodity_curve_direct_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_commodity_curve_direct_version_response::result},
         utility::codec::field{"version", &get_commodity_curve_direct_version_response::version},

@@ -233,7 +233,7 @@ struct bond_instrument_data {
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const bond_instrument_data&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bond_instrument_data>) {
     return std::tuple{
         utility::codec::field{"instrument", &bond_instrument_data::instrument},
         utility::codec::field{"issue", &bond_instrument_data::issue},

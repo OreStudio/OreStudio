@@ -25,14 +25,13 @@
 #ifndef ORES_TRADING_API_DOMAIN_INSTRUMENT_SCHEDULE_HPP
 #define ORES_TRADING_API_DOMAIN_INSTRUMENT_SCHEDULE_HPP
 
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -308,44 +307,39 @@ struct instrument_schedule final {
 };
 
 /**
- * @brief The members of instrument_schedule the customer agreed to.
+ * @brief The canonical text of the members of instrument_schedule the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view instrument_schedule_economic_fields[] = {
-    "owner_role",
-    "owner_number",
-    "schedule_role",
-    "sequence_number",
-    "schedule_kind",
-    "start_date",
-    "end_date",
-    "adjust_end_date_to_previous_month_end",
-    "tenor",
-    "calendar",
-    "convention",
-    "term_convention",
-    "rule",
-    "end_of_month",
-    "end_of_month_convention",
-    "first_date",
-    "last_date",
-    "remove_first_date",
-    "remove_last_date",
-    "include_duplicate_dates",
-    "base_schedule",
-    "shift",
-};
-
-/**
- * @brief Names the members of instrument_schedule that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<instrument_schedule>) {
-    return instrument_schedule_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const instrument_schedule& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "owner_role", v.owner_role);
+    ores::utility::digest::append_member(out, "owner_number", v.owner_number);
+    ores::utility::digest::append_member(out, "schedule_role", v.schedule_role);
+    ores::utility::digest::append_member(out, "sequence_number", v.sequence_number);
+    ores::utility::digest::append_member(out, "schedule_kind", v.schedule_kind);
+    ores::utility::digest::append_member(out, "start_date", v.start_date);
+    ores::utility::digest::append_member(out, "end_date", v.end_date);
+    ores::utility::digest::append_member(
+        out, "adjust_end_date_to_previous_month_end", v.adjust_end_date_to_previous_month_end);
+    ores::utility::digest::append_member(out, "tenor", v.tenor);
+    ores::utility::digest::append_member(out, "calendar", v.calendar);
+    ores::utility::digest::append_member(out, "convention", v.convention);
+    ores::utility::digest::append_member(out, "term_convention", v.term_convention);
+    ores::utility::digest::append_member(out, "rule", v.rule);
+    ores::utility::digest::append_member(out, "end_of_month", v.end_of_month);
+    ores::utility::digest::append_member(out, "end_of_month_convention", v.end_of_month_convention);
+    ores::utility::digest::append_member(out, "first_date", v.first_date);
+    ores::utility::digest::append_member(out, "last_date", v.last_date);
+    ores::utility::digest::append_member(out, "remove_first_date", v.remove_first_date);
+    ores::utility::digest::append_member(out, "remove_last_date", v.remove_last_date);
+    ores::utility::digest::append_member(out, "include_duplicate_dates", v.include_duplicate_dates);
+    ores::utility::digest::append_member(out, "base_schedule", v.base_schedule);
+    ores::utility::digest::append_member(out, "shift", v.shift);
+    out.push_back('}');
+    return out;
 }
 
 /**

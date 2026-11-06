@@ -342,9 +342,9 @@ struct get_asset_measure_version_response {
  * of them.
  */
 namespace asset_measure_event_subjects {
-inline constexpr std::string_view created = "refdata.v1.asset_measures_events.created";
-inline constexpr std::string_view updated = "refdata.v1.asset_measures_events.updated";
-inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.deleted";
+inline constexpr std::string_view created = "refdata.v1.events.asset_measures.created";
+inline constexpr std::string_view updated = "refdata.v1.events.asset_measures.updated";
+inline constexpr std::string_view deleted = "refdata.v1.events.asset_measures.deleted";
 }
 /**
  * @brief The members of asset_measure_key, named as the wire names them and in the order
@@ -354,7 +354,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const asset_measure_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_measure_key>) {
     return std::tuple{
         utility::codec::field{"code", &asset_measure_key::code},
         utility::codec::field{"coding_scheme_code", &asset_measure_key::coding_scheme_code},
@@ -369,7 +369,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const asset_measure_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_measure_write>) {
     return std::tuple{
         utility::codec::field{"code", &asset_measure_write::code},
         utility::codec::field{"coding_scheme_code", &asset_measure_write::coding_scheme_code},
@@ -386,7 +386,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const asset_measure_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_measure_change>) {
     return std::tuple{
         utility::codec::field{"write", &asset_measure_change::write},
         utility::codec::field{"precondition", &asset_measure_change::precondition},
@@ -401,7 +401,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const asset_measure_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_measure_removal>) {
     return std::tuple{
         utility::codec::field{"key", &asset_measure_removal::key},
         utility::codec::field{"precondition", &asset_measure_removal::precondition},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const asset_measure_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_measure_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &asset_measure_lookup::key},
         utility::codec::field{"asset_measure", &asset_measure_lookup::asset_measure},
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const asset_measure_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_measure_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &asset_measure_event::event_id},
         utility::codec::field{"key", &asset_measure_event::key},
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const asset_measure_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_measure_version_key>) {
     return std::tuple{
         utility::codec::field{"asset_measure", &asset_measure_version_key::asset_measure},
         utility::codec::field{"version", &asset_measure_version_key::version},
@@ -465,7 +465,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const asset_measure_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_measure_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &asset_measure_versions_filter::version},
         utility::codec::field{"from_version", &asset_measure_versions_filter::from_version},
@@ -481,7 +481,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_asset_measures_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_asset_measures_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_asset_measures_request::offset},
         utility::codec::field{"limit", &list_asset_measures_request::limit},
@@ -498,7 +498,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_asset_measures_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_asset_measures_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_asset_measures_response::result},
         utility::codec::field{"measures", &list_asset_measures_response::measures},
@@ -514,7 +514,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_asset_measure_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_asset_measure_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_asset_measure_request::key},
     };
@@ -528,7 +528,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_asset_measure_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_asset_measure_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_asset_measure_response::result},
         utility::codec::field{"asset_measure", &get_asset_measure_response::asset_measure},
@@ -543,7 +543,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_asset_measures_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_asset_measures_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_asset_measures_request::keys},
     };
@@ -557,7 +557,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_asset_measures_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_asset_measures_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_asset_measures_response::result},
         utility::codec::field{"entries", &get_many_asset_measures_response::entries},
@@ -572,7 +572,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_asset_measure_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_asset_measure_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_asset_measure_request::change},
         utility::codec::field{"intent", &put_asset_measure_request::intent},
@@ -587,7 +587,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_asset_measure_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_asset_measure_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_asset_measure_response::result},
         utility::codec::field{"asset_measure", &put_asset_measure_response::asset_measure},
@@ -602,7 +602,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_asset_measures_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_asset_measures_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_asset_measures_request::changes},
         utility::codec::field{"intent", &put_many_asset_measures_request::intent},
@@ -617,7 +617,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_asset_measures_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_asset_measures_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_asset_measures_response::result},
         utility::codec::field{"measures", &put_many_asset_measures_response::measures},
@@ -632,7 +632,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_asset_measure_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_asset_measure_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_asset_measure_request::removal},
         utility::codec::field{"intent", &delete_asset_measure_request::intent},
@@ -647,7 +647,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_asset_measure_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_asset_measure_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_asset_measure_response::result},
     };
@@ -661,7 +661,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_asset_measures_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_asset_measures_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_asset_measures_request::removals},
         utility::codec::field{"intent", &delete_many_asset_measures_request::intent},
@@ -676,7 +676,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_asset_measures_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_asset_measures_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_asset_measures_response::result},
     };
@@ -690,7 +690,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_asset_measure_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_asset_measure_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_asset_measure_versions_request::key},
         utility::codec::field{"offset", &list_asset_measure_versions_request::offset},
@@ -708,7 +708,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_asset_measure_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_asset_measure_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_asset_measure_versions_response::result},
         utility::codec::field{"versions", &list_asset_measure_versions_response::versions},
@@ -724,7 +724,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_asset_measure_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_asset_measure_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_asset_measure_version_request::key},
     };
@@ -738,7 +738,7 @@ inline constexpr std::string_view deleted = "refdata.v1.asset_measures_events.de
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_asset_measure_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_asset_measure_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_asset_measure_version_response::result},
         utility::codec::field{"version", &get_asset_measure_version_response::version},

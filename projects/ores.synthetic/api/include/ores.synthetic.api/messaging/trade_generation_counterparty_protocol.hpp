@@ -371,11 +371,11 @@ struct get_trade_generation_counterparty_version_response {
  */
 namespace trade_generation_counterparty_event_subjects {
 inline constexpr std::string_view created =
-    "synthetic.v1.trade_generation_counterparties_events.created";
+    "synthetic.v1.events.trade_generation_counterparties.created";
 inline constexpr std::string_view updated =
-    "synthetic.v1.trade_generation_counterparties_events.updated";
+    "synthetic.v1.events.trade_generation_counterparties.updated";
 inline constexpr std::string_view deleted =
-    "synthetic.v1.trade_generation_counterparties_events.deleted";
+    "synthetic.v1.events.trade_generation_counterparties.deleted";
 }
 /**
  * @brief The members of trade_generation_counterparty_key, named as the wire names them and in the
@@ -385,7 +385,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_counterparty_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_counterparty_key>) {
     return std::tuple{
         utility::codec::field{"id", &trade_generation_counterparty_key::id},
     };
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_counterparty_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_counterparty_write>) {
     return std::tuple{
         utility::codec::field{"id", &trade_generation_counterparty_write::id},
         utility::codec::field{"config_id", &trade_generation_counterparty_write::config_id},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_counterparty_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_counterparty_change>) {
     return std::tuple{
         utility::codec::field{"write", &trade_generation_counterparty_change::write},
         utility::codec::field{"precondition", &trade_generation_counterparty_change::precondition},
@@ -431,7 +431,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_counterparty_removal&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<trade_generation_counterparty_removal>) {
     return std::tuple{
         utility::codec::field{"key", &trade_generation_counterparty_removal::key},
         utility::codec::field{"precondition", &trade_generation_counterparty_removal::precondition},
@@ -446,7 +447,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_counterparty_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_counterparty_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &trade_generation_counterparty_lookup::key},
         utility::codec::field{"trade_generation_counterparty",
@@ -462,7 +463,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_counterparties_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<trade_generation_counterparties_filter>) {
     return std::tuple{
         utility::codec::field{"config_id", &trade_generation_counterparties_filter::config_id},
         utility::codec::field{"id_one_of", &trade_generation_counterparties_filter::id_one_of},
@@ -479,7 +481,7 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_counterparty_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_counterparty_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &trade_generation_counterparty_event::event_id},
         utility::codec::field{"key", &trade_generation_counterparty_event::key},
@@ -499,7 +501,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_counterparty_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<trade_generation_counterparty_version_key>) {
     return std::tuple{
         utility::codec::field{
             "trade_generation_counterparty",
@@ -516,7 +519,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const trade_generation_counterparty_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<trade_generation_counterparty_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &trade_generation_counterparty_versions_filter::version},
         utility::codec::field{"from_version",
@@ -534,7 +538,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_generation_counterparties_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_trade_generation_counterparties_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_trade_generation_counterparties_request::offset},
         utility::codec::field{"limit", &list_trade_generation_counterparties_request::limit},
@@ -552,7 +557,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_trade_generation_counterparties_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_trade_generation_counterparties_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_trade_generation_counterparties_response::result},
         utility::codec::field{
@@ -570,7 +576,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_generation_counterparty_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_trade_generation_counterparty_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_trade_generation_counterparty_request::key},
     };
@@ -584,7 +591,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_generation_counterparty_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_trade_generation_counterparty_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_trade_generation_counterparty_response::result},
         utility::codec::field{
@@ -601,7 +609,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_trade_generation_counterparties_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_trade_generation_counterparties_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_trade_generation_counterparties_request::keys},
     };
@@ -615,7 +624,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_trade_generation_counterparties_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_trade_generation_counterparties_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_trade_generation_counterparties_response::result},
         utility::codec::field{"entries",
@@ -631,7 +641,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_trade_generation_counterparty_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_trade_generation_counterparty_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_trade_generation_counterparty_request::change},
         utility::codec::field{"intent", &put_trade_generation_counterparty_request::intent},
@@ -646,7 +657,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_trade_generation_counterparty_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_trade_generation_counterparty_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_trade_generation_counterparty_response::result},
         utility::codec::field{
@@ -663,7 +675,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_trade_generation_counterparties_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_trade_generation_counterparties_request>) {
     return std::tuple{
         utility::codec::field{"changes",
                               &put_many_trade_generation_counterparties_request::changes},
@@ -679,7 +692,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_trade_generation_counterparties_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_trade_generation_counterparties_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_trade_generation_counterparties_response::result},
         utility::codec::field{
@@ -696,7 +710,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_trade_generation_counterparty_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_trade_generation_counterparty_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_trade_generation_counterparty_request::removal},
         utility::codec::field{"intent", &delete_trade_generation_counterparty_request::intent},
@@ -711,7 +726,8 @@ inline constexpr std::string_view deleted =
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_trade_generation_counterparty_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_trade_generation_counterparty_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_trade_generation_counterparty_response::result},
     };
@@ -726,7 +742,7 @@ inline constexpr std::string_view deleted =
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_trade_generation_counterparties_request&) {
+wire_fields(std::type_identity<delete_many_trade_generation_counterparties_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_trade_generation_counterparties_request::removals},
@@ -744,7 +760,7 @@ wire_fields(const delete_many_trade_generation_counterparties_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_trade_generation_counterparties_response&) {
+wire_fields(std::type_identity<delete_many_trade_generation_counterparties_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_trade_generation_counterparties_response::result},
@@ -760,7 +776,7 @@ wire_fields(const delete_many_trade_generation_counterparties_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_trade_generation_counterparty_versions_request&) {
+wire_fields(std::type_identity<list_trade_generation_counterparty_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_trade_generation_counterparty_versions_request::key},
         utility::codec::field{"offset",
@@ -781,7 +797,7 @@ wire_fields(const list_trade_generation_counterparty_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_trade_generation_counterparty_versions_response&) {
+wire_fields(std::type_identity<list_trade_generation_counterparty_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_trade_generation_counterparty_versions_response::result},
@@ -800,7 +816,8 @@ wire_fields(const list_trade_generation_counterparty_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_trade_generation_counterparty_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_trade_generation_counterparty_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_trade_generation_counterparty_version_request::key},
     };
@@ -815,7 +832,7 @@ wire_fields(const list_trade_generation_counterparty_versions_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const get_trade_generation_counterparty_version_response&) {
+wire_fields(std::type_identity<get_trade_generation_counterparty_version_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &get_trade_generation_counterparty_version_response::result},

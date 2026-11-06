@@ -17,18 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_service_config_parser_exception.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ORE_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 #define ORES_ORE_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
 
-#include <stdexcept>
+#include <boost/exception/info.hpp>
 #include <string>
 
 namespace ores::ore::service::config {
 
-class parser_exception : public std::runtime_error {
+/**
+ * @brief A fatal error has occurred during option parsing.
+ */
+class parser_exception : public virtual std::exception, public virtual boost::exception {
 public:
-    explicit parser_exception(const std::string& message)
-        : std::runtime_error(message) {}
+    explicit parser_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
 };
 
 }

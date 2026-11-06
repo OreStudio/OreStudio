@@ -27,6 +27,7 @@
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <utility>
 
 namespace ores::assets::service::app {
 
@@ -60,7 +61,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
 
-    co_await ores::service::service::run(
+    // Bound before the await, so no lambda of the call lives in this frame; see run().
+    auto service_run = ores::service::service::run(
         io_ctx,
         nats,
         make_context(cfg.database),
@@ -74,6 +76,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
         });
+    co_await std::move(service_run);
     co_return;
 }
 

@@ -357,9 +357,9 @@ struct get_coding_scheme_authority_type_version_response {
  * of them.
  */
 namespace coding_scheme_authority_type_event_subjects {
-inline constexpr std::string_view created = "dq.v1.coding_scheme_authority_types_events.created";
-inline constexpr std::string_view updated = "dq.v1.coding_scheme_authority_types_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.coding_scheme_authority_types.created";
+inline constexpr std::string_view updated = "dq.v1.events.coding_scheme_authority_types.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.coding_scheme_authority_types.deleted";
 }
 /**
  * @brief The members of coding_scheme_authority_type_key, named as the wire names them and in the
@@ -369,7 +369,7 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const coding_scheme_authority_type_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<coding_scheme_authority_type_key>) {
     return std::tuple{
         utility::codec::field{"code", &coding_scheme_authority_type_key::code},
     };
@@ -383,7 +383,7 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const coding_scheme_authority_type_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<coding_scheme_authority_type_write>) {
     return std::tuple{
         utility::codec::field{"code", &coding_scheme_authority_type_write::code},
         utility::codec::field{"name", &coding_scheme_authority_type_write::name},
@@ -399,7 +399,7 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const coding_scheme_authority_type_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<coding_scheme_authority_type_change>) {
     return std::tuple{
         utility::codec::field{"write", &coding_scheme_authority_type_change::write},
         utility::codec::field{"precondition", &coding_scheme_authority_type_change::precondition},
@@ -414,7 +414,7 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const coding_scheme_authority_type_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<coding_scheme_authority_type_removal>) {
     return std::tuple{
         utility::codec::field{"key", &coding_scheme_authority_type_removal::key},
         utility::codec::field{"precondition", &coding_scheme_authority_type_removal::precondition},
@@ -429,7 +429,7 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const coding_scheme_authority_type_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<coding_scheme_authority_type_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &coding_scheme_authority_type_lookup::key},
         utility::codec::field{"coding_scheme_authority_type",
@@ -445,7 +445,7 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const coding_scheme_authority_types_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<coding_scheme_authority_types_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &coding_scheme_authority_types_filter::code_one_of},
     };
@@ -459,7 +459,7 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const coding_scheme_authority_type_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<coding_scheme_authority_type_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &coding_scheme_authority_type_event::event_id},
         utility::codec::field{"key", &coding_scheme_authority_type_event::key},
@@ -479,7 +479,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const coding_scheme_authority_type_version_key&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<coding_scheme_authority_type_version_key>) {
     return std::tuple{
         utility::codec::field{
             "coding_scheme_authority_type",
@@ -496,7 +497,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const coding_scheme_authority_type_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<coding_scheme_authority_type_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &coding_scheme_authority_type_versions_filter::version},
         utility::codec::field{"from_version",
@@ -514,7 +516,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_coding_scheme_authority_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_coding_scheme_authority_types_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_coding_scheme_authority_types_request::offset},
         utility::codec::field{"limit", &list_coding_scheme_authority_types_request::limit},
@@ -532,7 +535,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_coding_scheme_authority_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_coding_scheme_authority_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_coding_scheme_authority_types_response::result},
         utility::codec::field{"authority_types",
@@ -549,7 +553,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_coding_scheme_authority_type_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_coding_scheme_authority_type_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_coding_scheme_authority_type_request::key},
     };
@@ -563,7 +568,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_coding_scheme_authority_type_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_coding_scheme_authority_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_coding_scheme_authority_type_response::result},
         utility::codec::field{
@@ -580,7 +586,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_coding_scheme_authority_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_coding_scheme_authority_types_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_coding_scheme_authority_types_request::keys},
     };
@@ -594,7 +601,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_coding_scheme_authority_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_coding_scheme_authority_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_coding_scheme_authority_types_response::result},
         utility::codec::field{"entries", &get_many_coding_scheme_authority_types_response::entries},
@@ -609,7 +617,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_coding_scheme_authority_type_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_coding_scheme_authority_type_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_coding_scheme_authority_type_request::change},
         utility::codec::field{"intent", &put_coding_scheme_authority_type_request::intent},
@@ -624,7 +633,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_coding_scheme_authority_type_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_coding_scheme_authority_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_coding_scheme_authority_type_response::result},
         utility::codec::field{
@@ -641,7 +651,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_coding_scheme_authority_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_coding_scheme_authority_types_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_coding_scheme_authority_types_request::changes},
         utility::codec::field{"intent", &put_many_coding_scheme_authority_types_request::intent},
@@ -656,7 +667,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_coding_scheme_authority_types_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_coding_scheme_authority_types_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_coding_scheme_authority_types_response::result},
         utility::codec::field{"authority_types",
@@ -672,7 +684,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_coding_scheme_authority_type_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_coding_scheme_authority_type_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_coding_scheme_authority_type_request::removal},
         utility::codec::field{"intent", &delete_coding_scheme_authority_type_request::intent},
@@ -687,7 +700,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_coding_scheme_authority_type_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_coding_scheme_authority_type_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_coding_scheme_authority_type_response::result},
     };
@@ -701,7 +715,8 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_coding_scheme_authority_types_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_coding_scheme_authority_types_request>) {
     return std::tuple{
         utility::codec::field{"removals",
                               &delete_many_coding_scheme_authority_types_request::removals},
@@ -718,7 +733,7 @@ inline constexpr std::string_view deleted = "dq.v1.coding_scheme_authority_types
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const delete_many_coding_scheme_authority_types_response&) {
+wire_fields(std::type_identity<delete_many_coding_scheme_authority_types_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &delete_many_coding_scheme_authority_types_response::result},
@@ -734,7 +749,7 @@ wire_fields(const delete_many_coding_scheme_authority_types_response&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_coding_scheme_authority_type_versions_request&) {
+wire_fields(std::type_identity<list_coding_scheme_authority_type_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_coding_scheme_authority_type_versions_request::key},
         utility::codec::field{"offset",
@@ -755,7 +770,7 @@ wire_fields(const list_coding_scheme_authority_type_versions_request&) {
  * holds another message or a domain type encodes it as its own object.
  */
 [[nodiscard]] constexpr auto
-wire_fields(const list_coding_scheme_authority_type_versions_response&) {
+wire_fields(std::type_identity<list_coding_scheme_authority_type_versions_response>) {
     return std::tuple{
         utility::codec::field{"result",
                               &list_coding_scheme_authority_type_versions_response::result},
@@ -773,7 +788,8 @@ wire_fields(const list_coding_scheme_authority_type_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_coding_scheme_authority_type_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_coding_scheme_authority_type_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_coding_scheme_authority_type_version_request::key},
     };
@@ -787,7 +803,8 @@ wire_fields(const list_coding_scheme_authority_type_versions_response&) {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_coding_scheme_authority_type_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_coding_scheme_authority_type_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_coding_scheme_authority_type_version_response::result},
         utility::codec::field{"version",

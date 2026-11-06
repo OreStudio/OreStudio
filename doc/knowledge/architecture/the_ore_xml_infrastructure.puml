@@ -60,7 +60,7 @@ ops --> bus : save request
 bus --> rsvc
 bus --> asvc
 bus --> psvc
-rsvc --> rdb : repository, then entity mapper
+rsvc --> rdb : repository insert
 asvc --> adb
 psvc --> pdb
 rdb ..> verdict : before insert

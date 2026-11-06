@@ -144,7 +144,7 @@ struct withdraw_provider_terms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const accept_provider_terms_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<accept_provider_terms_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"provider_code",
                                       &accept_provider_terms_request::provider_code},
@@ -161,7 +161,7 @@ struct withdraw_provider_terms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const accept_provider_terms_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<accept_provider_terms_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &accept_provider_terms_response::success},
         ::ores::utility::codec::field{"message", &accept_provider_terms_response::message},
@@ -178,7 +178,7 @@ struct withdraw_provider_terms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const withdraw_provider_terms_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_provider_terms_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"provider_code",
                                       &withdraw_provider_terms_request::provider_code},
@@ -193,7 +193,7 @@ struct withdraw_provider_terms_response {
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const withdraw_provider_terms_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<withdraw_provider_terms_response>) {
     return std::tuple{
         ::ores::utility::codec::field{"success", &withdraw_provider_terms_response::success},
         ::ores::utility::codec::field{"message", &withdraw_provider_terms_response::message},

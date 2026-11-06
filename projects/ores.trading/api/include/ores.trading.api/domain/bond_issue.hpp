@@ -26,14 +26,13 @@
 #define ORES_TRADING_API_DOMAIN_BOND_ISSUE_HPP
 
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -247,39 +246,33 @@ struct bond_issue final {
 };
 
 /**
- * @brief The members of bond_issue the customer agreed to.
+ * @brief The canonical text of the members of bond_issue the customer agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view bond_issue_economic_fields[] = {
-    "security_id",
-    "issuer",
-    "face_value",
-    "issue_date",
-    "settlement_days",
-    "calendar",
-    "credit_curve_id",
-    "reference_curve_id",
-    "income_curve_id",
-    "credit_group",
-    "volatility_curve_id",
-    "price_quote_method",
-    "price_quote_base_value",
-    "sub_type",
-    "price_type",
-    "payer",
-    "credit_risk",
-};
-
-/**
- * @brief Names the members of bond_issue that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<bond_issue>) {
-    return bond_issue_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const bond_issue& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "security_id", v.security_id);
+    ores::utility::digest::append_member(out, "issuer", v.issuer);
+    ores::utility::digest::append_member(out, "face_value", v.face_value);
+    ores::utility::digest::append_member(out, "issue_date", v.issue_date);
+    ores::utility::digest::append_member(out, "settlement_days", v.settlement_days);
+    ores::utility::digest::append_member(out, "calendar", v.calendar);
+    ores::utility::digest::append_member(out, "credit_curve_id", v.credit_curve_id);
+    ores::utility::digest::append_member(out, "reference_curve_id", v.reference_curve_id);
+    ores::utility::digest::append_member(out, "income_curve_id", v.income_curve_id);
+    ores::utility::digest::append_member(out, "credit_group", v.credit_group);
+    ores::utility::digest::append_member(out, "volatility_curve_id", v.volatility_curve_id);
+    ores::utility::digest::append_member(out, "price_quote_method", v.price_quote_method);
+    ores::utility::digest::append_member(out, "price_quote_base_value", v.price_quote_base_value);
+    ores::utility::digest::append_member(out, "sub_type", v.sub_type);
+    ores::utility::digest::append_member(out, "price_type", v.price_type);
+    ores::utility::digest::append_member(out, "payer", v.payer);
+    ores::utility::digest::append_member(out, "credit_risk", v.credit_risk);
+    out.push_back('}');
+    return out;
 }
 
 /**

@@ -213,7 +213,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'inbox.v1.approval_kinds_events.created',
-    updated: 'inbox.v1.approval_kinds_events.updated',
-    deleted: 'inbox.v1.approval_kinds_events.deleted',
+    created: 'inbox.v1.events.approval_kinds.created',
+    updated: 'inbox.v1.events.approval_kinds.updated',
+    deleted: 'inbox.v1.events.approval_kinds.deleted',
 } as const;

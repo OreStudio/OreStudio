@@ -45,7 +45,7 @@ namespace ores::synthetic::domain {
  * argument-dependent lookup, so no caller passes a list, and a message whose
  * member is this type encodes it as its own object without knowing the type.
  */
-[[nodiscard]] constexpr auto wire_fields(const yield_curve_process_type&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<yield_curve_process_type>) {
     return std::tuple{
         utility::codec::field{"version", &yield_curve_process_type::version},
         utility::codec::field{"tenant_id", &yield_curve_process_type::tenant_id},

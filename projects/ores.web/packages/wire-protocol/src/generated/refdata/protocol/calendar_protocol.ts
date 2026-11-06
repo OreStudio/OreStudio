@@ -210,7 +210,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'refdata.v1.calendars_events.created',
-    updated: 'refdata.v1.calendars_events.updated',
-    deleted: 'refdata.v1.calendars_events.deleted',
+    created: 'refdata.v1.events.calendars.created',
+    updated: 'refdata.v1.events.calendars.updated',
+    deleted: 'refdata.v1.events.calendars.deleted',
 } as const;

@@ -95,7 +95,7 @@ instrument, so it is the parent key rather than a separate instrument key.
  * shape through it: the parent's field names the member, and this one names the
  * members inside it.
  */
-[[nodiscard]] constexpr auto wire_fields(const swap_leg_identity&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<swap_leg_identity>) {
     return std::tuple{
         utility::codec::field{"version", &swap_leg_identity::version},
         utility::codec::field{"tenant_id", &swap_leg_identity::tenant_id},

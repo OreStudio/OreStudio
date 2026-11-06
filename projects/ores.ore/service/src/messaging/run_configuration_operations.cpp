@@ -157,10 +157,10 @@ std::vector<rfl::Generic> read_family(nats_client& owners,
                                       const ores::refdata::domain::convention_family_entry& family,
                                       const std::string& party_id) {
     const auto subject = std::string(family.subject_stem) + ".list";
-    constexpr std::uint64_t page = 1000;
+    constexpr std::uint64_t page_size = 1000;
     std::vector<rfl::Generic> rows;
-    for (std::uint64_t offset = 0;; offset += page) {
-        const auto response = call_subject(owners, subject, family_list_request(offset, page));
+    for (std::uint64_t offset = 0;; offset += page_size) {
+        const auto response = call_subject(owners, subject, family_list_request(offset, page_size));
         const auto* object = std::get_if<rfl::Generic::Object>(&response.get());
         if (object == nullptr)
             throw std::runtime_error(
@@ -171,7 +171,7 @@ std::vector<rfl::Generic> read_family(nats_client& owners,
         for (const auto& row : *array)
             if (!family.party_scoped || party_of_family_row(row) == party_id)
                 rows.push_back(row);
-        if (array->size() < page)
+        if (array->size() < page_size)
             break;
     }
     return rows;

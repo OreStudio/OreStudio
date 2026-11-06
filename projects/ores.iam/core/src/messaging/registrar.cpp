@@ -656,14 +656,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_role_grant_request_role_handlers(nats, ctx, signer))
         subs.push_back(std::move(sub));
     {
-        auto rh = std::make_shared<role_request_handler>(nats, ctx, signer);
+        auto role_requests = std::make_shared<role_request_handler>(nats, ctx, signer);
         subs.push_back(nats.queue_subscribe(
-            ask_for_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
-                rh->ask(std::move(msg));
+            ask_for_roles_request::nats_subject, qg, [role_requests](ores::nats::message msg) {
+                role_requests->ask(std::move(msg));
             }));
         subs.push_back(nats.queue_subscribe(
-            get_request_roles_request::nats_subject, qg, [rh](ores::nats::message msg) {
-                rh->get_roles(std::move(msg));
+            get_request_roles_request::nats_subject, qg, [role_requests](ores::nats::message msg) {
+                role_requests->get_roles(std::move(msg));
             }));
     }
 

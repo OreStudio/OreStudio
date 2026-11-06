@@ -51,6 +51,16 @@
   },
   {
     "company_code": "acme_group",
+    "id": "81346f7b-f504-579e-8a4b-cff06c299137",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "894cbd37-b2da-55b2-af2e-569e0b9c7ba9",
+    "analytic_type_code": "sensitivity",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
     "id": "73009c0b-b66d-5a13-bf1d-f89be2d761eb",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -66,6 +76,46 @@
     "party_id": "00000000-0000-0000-0000-000000000000",
     "configuration_id": "66b39725-e6ab-59b3-ba4a-05e2934d4757",
     "analytic_type_code": "saccr",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "bff96a19-aa1c-54e1-bed0-6cbecf772af4",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "fec3d334-f78b-54a6-9c44-61cfe29c7842",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "75c12fc7-cf6a-55cf-b307-840e3dcc4c42",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "fec3d334-f78b-54a6-9c44-61cfe29c7842",
+    "analytic_type_code": "sensitivity",
+    "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "9f47567f-6ea8-5724-b5ae-4183add0b395",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "276dc552-e2e8-5682-90dd-3227f03bfb49",
+    "analytic_type_code": "npv",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_group",
+    "id": "cf3fa689-32ef-582f-ad3f-e214116b4ec5",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "276dc552-e2e8-5682-90dd-3227f03bfb49",
+    "analytic_type_code": "sensitivity",
     "display_order": 2,
     "active": "Y"
   },
@@ -451,6 +501,16 @@
   },
   {
     "company_code": "acme_us",
+    "id": "3af88df5-b824-545e-9048-5ef35f80d12b",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "28d48885-40a7-5735-a7df-6e26888b6916",
+    "analytic_type_code": "sensitivity",
+    "display_order": 1,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_us",
     "id": "e1003844-b2a2-5b4a-99a8-8c81106620a6",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
@@ -687,6 +747,16 @@
     "configuration_id": "b9630f4c-9157-5d3b-a8e4-09e64792258c",
     "analytic_type_code": "pnlExplain",
     "display_order": 2,
+    "active": "Y"
+  },
+  {
+    "company_code": "acme_hk",
+    "id": "f28e689d-8bb7-5274-8411-918c9e7b7a0c",
+    "version": 0,
+    "party_id": "00000000-0000-0000-0000-000000000000",
+    "configuration_id": "8a775a9a-bd2c-5cc3-9113-e837a6226f09",
+    "analytic_type_code": "sensitivity",
+    "display_order": 1,
     "active": "Y"
   },
   {

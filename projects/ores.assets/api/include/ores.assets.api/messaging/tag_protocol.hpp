@@ -333,9 +333,9 @@ struct get_tag_version_response {
  * of them.
  */
 namespace tag_event_subjects {
-inline constexpr std::string_view created = "assets.v1.tags_events.created";
-inline constexpr std::string_view updated = "assets.v1.tags_events.updated";
-inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
+inline constexpr std::string_view created = "assets.v1.events.tags.created";
+inline constexpr std::string_view updated = "assets.v1.events.tags.updated";
+inline constexpr std::string_view deleted = "assets.v1.events.tags.deleted";
 }
 /**
  * @brief The members of tag_key, named as the wire names them and in the order
@@ -345,7 +345,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tag_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tag_key>) {
     return std::tuple{
         utility::codec::field{"name", &tag_key::name},
     };
@@ -359,7 +359,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tag_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tag_write>) {
     return std::tuple{
         utility::codec::field{"id", &tag_write::id},
         utility::codec::field{"name", &tag_write::name},
@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tag_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tag_change>) {
     return std::tuple{
         utility::codec::field{"write", &tag_change::write},
         utility::codec::field{"precondition", &tag_change::precondition},
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tag_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tag_removal>) {
     return std::tuple{
         utility::codec::field{"key", &tag_removal::key},
         utility::codec::field{"precondition", &tag_removal::precondition},
@@ -405,7 +405,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tag_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tag_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &tag_lookup::key},
         utility::codec::field{"tag", &tag_lookup::tag},
@@ -420,7 +420,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tags_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tags_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &tags_filter::id_one_of},
     };
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tag_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tag_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &tag_event::event_id},
         utility::codec::field{"key", &tag_event::key},
@@ -453,7 +453,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tag_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tag_version_key>) {
     return std::tuple{
         utility::codec::field{"tag", &tag_version_key::tag},
         utility::codec::field{"version", &tag_version_key::version},
@@ -468,7 +468,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const tag_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<tag_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &tag_versions_filter::version},
         utility::codec::field{"from_version", &tag_versions_filter::from_version},
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tags_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tags_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_tags_request::offset},
         utility::codec::field{"limit", &list_tags_request::limit},
@@ -502,7 +502,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tags_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tags_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_tags_response::result},
         utility::codec::field{"tags", &list_tags_response::tags},
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tag_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tag_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_tag_request::key},
     };
@@ -532,7 +532,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tag_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tag_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_tag_response::result},
         utility::codec::field{"tag", &get_tag_response::tag},
@@ -547,7 +547,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_tags_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_tags_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_tags_request::keys},
     };
@@ -561,7 +561,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_tags_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_tags_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_tags_response::result},
         utility::codec::field{"entries", &get_many_tags_response::entries},
@@ -576,7 +576,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_tag_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_tag_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_tag_request::change},
         utility::codec::field{"intent", &put_tag_request::intent},
@@ -591,7 +591,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_tag_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_tag_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_tag_response::result},
         utility::codec::field{"tag", &put_tag_response::tag},
@@ -606,7 +606,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_tags_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_tags_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_tags_request::changes},
         utility::codec::field{"intent", &put_many_tags_request::intent},
@@ -621,7 +621,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_tags_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_tags_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_tags_response::result},
         utility::codec::field{"tags", &put_many_tags_response::tags},
@@ -636,7 +636,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_tag_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_tag_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_tag_request::removal},
         utility::codec::field{"intent", &delete_tag_request::intent},
@@ -651,7 +651,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_tag_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_tag_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_tag_response::result},
     };
@@ -665,7 +665,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_tags_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_tags_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_tags_request::removals},
         utility::codec::field{"intent", &delete_many_tags_request::intent},
@@ -680,7 +680,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_tags_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_tags_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_tags_response::result},
     };
@@ -694,7 +694,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tag_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tag_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_tag_versions_request::key},
         utility::codec::field{"offset", &list_tag_versions_request::offset},
@@ -712,7 +712,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_tag_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_tag_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_tag_versions_response::result},
         utility::codec::field{"versions", &list_tag_versions_response::versions},
@@ -728,7 +728,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tag_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tag_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_tag_version_request::key},
     };
@@ -742,7 +742,7 @@ inline constexpr std::string_view deleted = "assets.v1.tags_events.deleted";
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_tag_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_tag_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_tag_version_response::result},
         utility::codec::field{"version", &get_tag_version_response::version},

@@ -1,0 +1,20 @@
+# The old name of the triple vol spot ladder, unscheduled.
+#
+# The environment still carries a definition the catalogue stated before
+# 2026-11-03, under the name "Bump and Reprice Triple Vol Spot Ladder", and it
+# holds a job at the old fifteen-minute expression. The catalogue now states the
+# same report as "Triple Vol Spot Ladder" at the hourly expression, so the older
+# definition's job is the one firing the triple every fifteen minutes. This
+# script ends that job and leaves the definition itself alone: a definition with
+# no job is a definition a person may still run, and the report's own page now
+# states the hourly cadence.
+#
+# Run from the repository root:
+#   ./compass.sh shell --no-login -l doc/agile/versions/v0/sprint_29/rework-the-market-data-feeds-remaining/evidence/unschedule_the_legacy_triple.ores
+
+login tenant_admin@acme_corporation Secure-Password-123
+
+account_operations switch-party 5b21df84-5f3a-4f82-9d71-ab07db32facf
+report_operations unschedule-report-definitions 0ac857b2-b5b6-4bca-8e0f-2a0b12177004
+
+exit

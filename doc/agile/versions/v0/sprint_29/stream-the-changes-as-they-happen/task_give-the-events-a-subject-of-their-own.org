@@ -8,12 +8,12 @@
 #+filetags: :stream-the-changes-as-they-happen:sprint_29:v0:
 #+owner: marco
 #+branch: feature/give-the-events-a-subject-of-their-own
-#+pr: 4433
+#+pr: 4445
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-01
 #+updated: 2026-11-01
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance
@@ -55,7 +55,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Declarations the conformance checker reads | 406 | =check_subject_conformance.py= | =013054611f= |
+| Codegen tests | 64 | =pytest test_protocol_subject_grammar test_entity_events test_check_subject_conformance= | =013054611f= |
+| Core suite | 196 assertions, 48 cases | =ores.http.core.tests= | =013054611f= |
 
 * Notes
 
@@ -74,6 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4445][#4445]] | [codegen] Give the events a subject of their own |
 | [[https://github.com/OreStudio/OreStudio/pull/4433][#4433]] | [codegen] Delete the twins no model writes |
 
 * Review
@@ -82,4 +85,36 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Plan
+
+- The generator moves, not the callers: =entity_event_prefix= states
+  <component>.v1.events.<collection>, and the junction prefix with it, so every
+  event header, protocol header and TypeScript twin follows from one rule.
+- The feed subscribes =*.v1.events.>= and reads five segments from the right.
+  The old four-segment spelling is refused rather than tolerated, so a publisher
+  left behind is named by the check instead of going quiet.
+- The checker learns the event grammar and refuses the old form. The
+  specification, the messaging references and the codegen tests state it too.
+- Two subjects are written by hand and move with it: the scheduler's
+  job-instance announcement and the shell's watch of it.
+
 * Result
+
+An event is now =<component>.v1.events.<collection>.<action>=. The namespace is a
+token of its own, so =*.v1.events.>= hears the events of every component and
+nothing else: the feed no longer subscribes to every versioned request in the
+fleet and discards all but the events.
+
+The generator states the rule once, and the catalogue is regenerated from it:
+481 event headers before the merge, and every protocol header and committed twin
+with them. The feed parses five segments from the right and refuses the old
+spelling; the conformance checker accepts the new grammar and refuses the old
+form; the specification says five segments for an event. The BFF's
+=eventSubject= and its twelve assertions follow, and so do the scheduler's
+hand-written announcement and the shell's watch.
+
+Verified: the conformance check reads 406 declarations with none new, 64 codegen
+tests pass, and the core and eventing suites pass. Not verified: the scheduler's
+integration cases, which need a broker this worktree does not have running, and
+the web suite beyond formatting. The deployment runs the old spelling until it is
+rebuilt.

@@ -96,7 +96,7 @@ The parts, in the order data flows.
 
 The generator emits an event per entity — =country_event= and its siblings — and
 the services publish them on ={component}.v1.{resource}_events.{action}=, for
-example =refdata.v1.countries_events.updated=. They are not something the
+example =refdata.v1.events.countries.updated=. They are not something the
 interface invents.
 
 ** A channel to the browser

@@ -371,9 +371,9 @@ struct get_subscription_interval_version_response {
  * of them.
  */
 namespace subscription_interval_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.subscription_intervals_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.subscription_intervals_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.subscription_intervals_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.subscription_intervals.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.subscription_intervals.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.subscription_intervals.deleted";
 }
 /**
  * @brief The members of subscription_interval_key, named as the wire names them and in the order
@@ -383,7 +383,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const subscription_interval_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_key>) {
     return std::tuple{
         utility::codec::field{"provider_code", &subscription_interval_key::provider_code},
     };
@@ -397,7 +397,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const subscription_interval_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_write>) {
     return std::tuple{
         utility::codec::field{"id", &subscription_interval_write::id},
         utility::codec::field{"party_id", &subscription_interval_write::party_id},
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const subscription_interval_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_change>) {
     return std::tuple{
         utility::codec::field{"write", &subscription_interval_change::write},
         utility::codec::field{"precondition", &subscription_interval_change::precondition},
@@ -434,7 +434,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const subscription_interval_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_removal>) {
     return std::tuple{
         utility::codec::field{"key", &subscription_interval_removal::key},
         utility::codec::field{"precondition", &subscription_interval_removal::precondition},
@@ -449,7 +449,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const subscription_interval_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &subscription_interval_lookup::key},
         utility::codec::field{"subscription_interval",
@@ -465,7 +465,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const subscription_intervals_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_intervals_filter>) {
     return std::tuple{
         utility::codec::field{"party_id", &subscription_intervals_filter::party_id},
         utility::codec::field{"provider_code", &subscription_intervals_filter::provider_code},
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const subscription_interval_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &subscription_interval_event::event_id},
         utility::codec::field{"key", &subscription_interval_event::key},
@@ -505,7 +505,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const subscription_interval_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<subscription_interval_version_key>) {
     return std::tuple{
         utility::codec::field{"subscription_interval",
                               &subscription_interval_version_key::subscription_interval},
@@ -521,7 +521,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const subscription_interval_versions_filter&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<subscription_interval_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &subscription_interval_versions_filter::version},
         utility::codec::field{"from_version", &subscription_interval_versions_filter::from_version},
@@ -537,7 +538,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_subscription_intervals_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_subscription_intervals_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_subscription_intervals_request::offset},
         utility::codec::field{"limit", &list_subscription_intervals_request::limit},
@@ -555,7 +556,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_subscription_intervals_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_subscription_intervals_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_subscription_intervals_response::result},
         utility::codec::field{"subscription_intervals",
@@ -572,7 +573,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_subscription_interval_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_subscription_interval_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_subscription_interval_request::key},
     };
@@ -586,7 +587,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_subscription_interval_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_subscription_interval_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_subscription_interval_response::result},
         utility::codec::field{"subscription_interval",
@@ -602,7 +603,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_subscription_intervals_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_subscription_intervals_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_subscription_intervals_request::keys},
     };
@@ -616,7 +618,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_subscription_intervals_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_subscription_intervals_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_subscription_intervals_response::result},
         utility::codec::field{"entries", &get_many_subscription_intervals_response::entries},
@@ -631,7 +634,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_subscription_interval_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_subscription_interval_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_subscription_interval_request::change},
         utility::codec::field{"intent", &put_subscription_interval_request::intent},
@@ -646,7 +649,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_subscription_interval_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_subscription_interval_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_subscription_interval_response::result},
         utility::codec::field{"subscription_interval",
@@ -662,7 +665,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_subscription_intervals_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_subscription_intervals_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_subscription_intervals_request::changes},
         utility::codec::field{"intent", &put_many_subscription_intervals_request::intent},
@@ -677,7 +681,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_subscription_intervals_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_subscription_intervals_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_subscription_intervals_response::result},
         utility::codec::field{"subscription_intervals",
@@ -693,7 +698,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_subscription_interval_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_subscription_interval_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_subscription_interval_request::removal},
         utility::codec::field{"intent", &delete_subscription_interval_request::intent},
@@ -708,7 +713,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_subscription_interval_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_subscription_interval_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_subscription_interval_response::result},
     };
@@ -722,7 +728,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_subscription_intervals_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_subscription_intervals_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_subscription_intervals_request::removals},
         utility::codec::field{"intent", &delete_many_subscription_intervals_request::intent},
@@ -737,7 +744,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_subscription_intervals_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_subscription_intervals_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_subscription_intervals_response::result},
     };
@@ -751,7 +759,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_subscription_interval_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_subscription_interval_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_subscription_interval_versions_request::key},
         utility::codec::field{"offset", &list_subscription_interval_versions_request::offset},
@@ -769,7 +778,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_subscription_interval_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_subscription_interval_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_subscription_interval_versions_response::result},
         utility::codec::field{"versions", &list_subscription_interval_versions_response::versions},
@@ -785,7 +795,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_subscription_interval_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_subscription_interval_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_subscription_interval_version_request::key},
     };
@@ -799,7 +810,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.subscription_interval
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_subscription_interval_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_subscription_interval_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_subscription_interval_version_response::result},
         utility::codec::field{"version", &get_subscription_interval_version_response::version},

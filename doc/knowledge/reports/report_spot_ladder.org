@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :report:trading-desk:market-data:intraday:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-04
 #+report_code: spot_ladder
 #+startup: inlineimages
 
@@ -15,8 +15,8 @@ This page defines one [[id:A7FCC423-1CA3-4345-BF5B-18D54207B00B][report]]:
 Bump and Reprice Spot Ladder. It states the full forward curve of a currency pair, every tenor's
 outright rate, so a desk reads the whole curve while it quotes and hedges at a
 named tenor. The trading desk reads it, on the book scope, and its methodology is
-audit-derived. It holds a never firing schedule, so it is inactive until a person
-activates it, and then a person asks for one while quoting. It leaves the
+audit-derived. It runs every half hour through the London trading day on weekdays,
+and a person may also ask for one while quoting. It leaves the
 engine's own output archive behind and records the cut its run minted. The result
 store that would carry the rows is not built, so a reader opens the CSV files in
 the archive.
@@ -30,10 +30,10 @@ sits where the curve says it should, and what a hedge at a nearby tenor would
 cost.
 
 The catalogue states the report is read from the live cut and not from a
-valuation, because a desk asks for it in the middle of a quote. It therefore
-holds a schedule and fires only when the definition is activated. A definition
-that fires on its own would produce ladders nobody asked for, at instants nobody
-chose.
+valuation, because a desk asks for it in the middle of a quote. The definition runs
+every half hour through the London trading day, so the curve a desk reads is at
+most half an hour old, and a desk may still ask for a run at any instant. The
+product owner set that cadence on 2026-11-04.
 
 The section "What is not built" states what a run of the seeded definition
 actually leaves behind, because the analytic the definition binds inspects the
@@ -48,10 +48,9 @@ book and does not price it.
 
 * Frequency
 
-Cycle =intraday=, started by a person. The definition is seeded with the
-expression =0 0 31 2 *=, which can never fire, so the definition is inactive
-until a person activates it. Once it is active, a person asks for a run while
-quoting and hedging at a named tenor.
+Cycle =intraday=. The definition is seeded with the expression =*/30 8-17 * * 1-5=,
+which fires it every half hour through the London trading day on weekdays, and a
+person may ask for a run at any time. It is not a member of an ordered batch.
 
 The concurrency policy is =skip=. A firing that arrives while a run of the same
 definition is in flight is dropped.
@@ -63,7 +62,7 @@ run begins and carries the indicative label.
 | Field     | Value             |
 |-----------+-------------------|
 | Cycle     | intraday          |
-| Frequency | on demand         |
+| Frequency | scheduled, on demand |
 | Batch     | none              |
 | Owner     | market-risk       |
 
@@ -170,6 +169,7 @@ The mechanism is on
 | Parameter                       | Domain                | Seeded value      | Meaning                                              |
 |---------------------------------+-----------------------+-------------------+------------------------------------------------------|
 | cut_kind_code                   | a kind of cut         | LIVE              | The kind of cut the run mints at the instant it starts. |
+| schedule_expression             | a cron expression     | */30 8-17 * * 1-5 | When the definition fires: every half hour through the London trading day. |
 | market_data_type                | live, eod or date     | live              | The market data the run reads.                       |
 | base_currency                   | ISO 4217 code         | the entity's      | The currency the figures are expressed in.           |
 | portfolioDetails.riskFactorFileName  | a file name      | riskFactors.csv   | The file the risk factors are written to.            |
@@ -222,9 +222,8 @@ rows yet, so the steps name the files and the comparisons and quote no figure.
 The =portfolioDetails= analytic type and the two file types are in the store, and
 the worked configuration the fragment comes from is vendored.
 
-The definition cannot run until a person activates it, because its schedule
-expression never fires. A test run therefore starts from a person or from a
-direct invocation, and it proves the gather, the cut and the generated run
+The definition fires on its own schedule now, so a test run starts either from the
+scheduler or from a person. It proves the gather, the cut and the generated run
 document. It proves no ladder of rates, because the bound analytic writes names.
 The pricing phase also stops where the engine needs a volatility, so a run of this
 definition records the refusal and not a priced book.
@@ -244,4 +243,6 @@ definition records the refusal and not a priced book.
 
 * See also
 
+
+- [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] — the structure note that orders this cluster, and where to read this page in it.
 - [[https://github.com/OpenSourceRisk/Engine][Open Source Risk Engine]], the valuation engine whose =portfolioDetails= analytic writes these two files.

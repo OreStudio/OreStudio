@@ -222,9 +222,9 @@ struct get_adapter_version_response {
  * of them.
  */
 namespace adapter_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.adapters_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.adapters_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.adapters.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.adapters.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.adapters.deleted";
 }
 /**
  * @brief The members of adapter_key, named as the wire names them and in the order
@@ -234,7 +234,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const adapter_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_key>) {
     return std::tuple{
         utility::codec::field{"code", &adapter_key::code},
     };
@@ -248,7 +248,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const adapter_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &adapter_lookup::key},
         utility::codec::field{"adapter", &adapter_lookup::adapter},
@@ -263,7 +263,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const adapters_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<adapters_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &adapters_filter::code_one_of},
     };
@@ -277,7 +277,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const adapter_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &adapter_event::event_id},
         utility::codec::field{"key", &adapter_event::key},
@@ -296,7 +296,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const adapter_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_version_key>) {
     return std::tuple{
         utility::codec::field{"adapter", &adapter_version_key::adapter},
         utility::codec::field{"version", &adapter_version_key::version},
@@ -311,7 +311,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const adapter_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &adapter_versions_filter::version},
         utility::codec::field{"from_version", &adapter_versions_filter::from_version},
@@ -327,7 +327,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_adapters_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_adapters_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_adapters_request::offset},
         utility::codec::field{"limit", &list_adapters_request::limit},
@@ -345,7 +345,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_adapters_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_adapters_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_adapters_response::result},
         utility::codec::field{"adapters", &list_adapters_response::adapters},
@@ -361,7 +361,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_adapter_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_adapter_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_adapter_request::key},
     };
@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_adapter_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_adapter_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_adapter_response::result},
         utility::codec::field{"adapter", &get_adapter_response::adapter},
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_adapters_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_adapters_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_adapters_request::keys},
     };
@@ -404,7 +404,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_adapters_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_adapters_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_adapters_response::result},
         utility::codec::field{"entries", &get_many_adapters_response::entries},
@@ -419,7 +419,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_adapter_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_adapter_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_adapter_versions_request::key},
         utility::codec::field{"offset", &list_adapter_versions_request::offset},
@@ -437,7 +437,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_adapter_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_adapter_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_adapter_versions_response::result},
         utility::codec::field{"versions", &list_adapter_versions_response::versions},
@@ -453,7 +453,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_adapter_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_adapter_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_adapter_version_request::key},
     };
@@ -467,7 +467,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.adapters_events.delet
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_adapter_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_adapter_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_adapter_version_response::result},
         utility::codec::field{"version", &get_adapter_version_response::version},

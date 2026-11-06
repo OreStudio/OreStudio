@@ -1,0 +1,16 @@
+Package: ore-1.8.17.0-x64-windows
+Engine commit: 3d75a69087911a7e2cf1e6882da7bc27135c0762
+SHA256: 8b87e41940f1bc7590ec25f6acb7607264f3a6d50c73097f620c085f3ae6e114
+Extracted archive tested with PATH restricted to Windows system directories.
+Tolerance: rtol=1e-06
+
+curves.csv:
+  OK: 240 row(s) x 4 shared column(s) match within rtol=1e-06.
+
+flows.csv:
+  NEW COLUMNS (in this build, not in the reference -- review before sign-off):
+    ['EffectiveFloorVolatility', 'EffectiveCapVolatility', 'Amount(Base)', 'DiscountFactor(Base)']
+  OK: 60 row(s) x 25 shared column(s) match within rtol=1e-06.
+
+npv.csv:
+  OK: 1 row(s) x 13 shared column(s) match within rtol=1e-06.

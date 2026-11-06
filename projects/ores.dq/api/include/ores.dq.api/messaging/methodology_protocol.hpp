@@ -349,9 +349,9 @@ struct get_methodology_version_response {
  * of them.
  */
 namespace methodology_event_subjects {
-inline constexpr std::string_view created = "dq.v1.methodologies_events.created";
-inline constexpr std::string_view updated = "dq.v1.methodologies_events.updated";
-inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted";
+inline constexpr std::string_view created = "dq.v1.events.methodologies.created";
+inline constexpr std::string_view updated = "dq.v1.events.methodologies.updated";
+inline constexpr std::string_view deleted = "dq.v1.events.methodologies.deleted";
 }
 /**
  * @brief The members of methodology_key, named as the wire names them and in the order
@@ -361,7 +361,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodology_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodology_key>) {
     return std::tuple{
         utility::codec::field{"name", &methodology_key::name},
     };
@@ -375,7 +375,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodology_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodology_write>) {
     return std::tuple{
         utility::codec::field{"id", &methodology_write::id},
         utility::codec::field{"name", &methodology_write::name},
@@ -393,7 +393,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodology_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodology_change>) {
     return std::tuple{
         utility::codec::field{"write", &methodology_change::write},
         utility::codec::field{"precondition", &methodology_change::precondition},
@@ -408,7 +408,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodology_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodology_removal>) {
     return std::tuple{
         utility::codec::field{"key", &methodology_removal::key},
         utility::codec::field{"precondition", &methodology_removal::precondition},
@@ -423,7 +423,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodology_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodology_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &methodology_lookup::key},
         utility::codec::field{"methodology", &methodology_lookup::methodology},
@@ -438,7 +438,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodologies_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodologies_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &methodologies_filter::id_one_of},
     };
@@ -452,7 +452,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodology_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodology_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &methodology_event::event_id},
         utility::codec::field{"key", &methodology_event::key},
@@ -471,7 +471,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodology_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodology_version_key>) {
     return std::tuple{
         utility::codec::field{"methodology", &methodology_version_key::methodology},
         utility::codec::field{"version", &methodology_version_key::version},
@@ -486,7 +486,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const methodology_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<methodology_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &methodology_versions_filter::version},
         utility::codec::field{"from_version", &methodology_versions_filter::from_version},
@@ -502,7 +502,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_methodologies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_methodologies_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_methodologies_request::offset},
         utility::codec::field{"limit", &list_methodologies_request::limit},
@@ -520,7 +520,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_methodologies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_methodologies_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_methodologies_response::result},
         utility::codec::field{"methodologies", &list_methodologies_response::methodologies},
@@ -536,7 +536,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_methodology_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_methodology_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_methodology_request::key},
     };
@@ -550,7 +550,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_methodology_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_methodology_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_methodology_response::result},
         utility::codec::field{"methodology", &get_methodology_response::methodology},
@@ -565,7 +565,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_methodologies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_methodologies_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_methodologies_request::keys},
     };
@@ -579,7 +579,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_methodologies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_methodologies_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_methodologies_response::result},
         utility::codec::field{"entries", &get_many_methodologies_response::entries},
@@ -594,7 +594,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_methodology_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_methodology_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_methodology_request::change},
         utility::codec::field{"intent", &put_methodology_request::intent},
@@ -609,7 +609,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_methodology_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_methodology_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_methodology_response::result},
         utility::codec::field{"methodology", &put_methodology_response::methodology},
@@ -624,7 +624,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_methodologies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_methodologies_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_methodologies_request::changes},
         utility::codec::field{"intent", &put_many_methodologies_request::intent},
@@ -639,7 +639,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_methodologies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_methodologies_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_methodologies_response::result},
         utility::codec::field{"methodologies", &put_many_methodologies_response::methodologies},
@@ -654,7 +654,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_methodology_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_methodology_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_methodology_request::removal},
         utility::codec::field{"intent", &delete_methodology_request::intent},
@@ -669,7 +669,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_methodology_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_methodology_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_methodology_response::result},
     };
@@ -683,7 +683,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_methodologies_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_methodologies_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_methodologies_request::removals},
         utility::codec::field{"intent", &delete_many_methodologies_request::intent},
@@ -698,7 +698,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_methodologies_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_methodologies_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_methodologies_response::result},
     };
@@ -712,7 +712,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_methodology_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_methodology_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_methodology_versions_request::key},
         utility::codec::field{"offset", &list_methodology_versions_request::offset},
@@ -730,7 +730,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_methodology_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_methodology_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_methodology_versions_response::result},
         utility::codec::field{"versions", &list_methodology_versions_response::versions},
@@ -746,7 +746,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_methodology_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_methodology_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_methodology_version_request::key},
     };
@@ -760,7 +760,7 @@ inline constexpr std::string_view deleted = "dq.v1.methodologies_events.deleted"
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_methodology_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_methodology_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_methodology_version_response::result},
         utility::codec::field{"version", &get_methodology_version_response::version},

@@ -107,7 +107,6 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.security.lib
         libfort::fort
-        Boost::graph
         Boost::boost)
 #+end_src
 

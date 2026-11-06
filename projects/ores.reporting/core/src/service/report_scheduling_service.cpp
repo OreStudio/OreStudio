@@ -65,7 +65,7 @@ struct report_trigger_action_payload {
     std::string tenant_id;
 };
 
-[[nodiscard]] constexpr auto wire_fields(const report_trigger_action_payload&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_trigger_action_payload>) {
     using p = report_trigger_action_payload;
     return std::tuple{ores::utility::codec::field{"subject", &p::subject},
                       ores::utility::codec::field{"report_definition_id", &p::report_definition_id},

@@ -232,7 +232,7 @@ export const requiresSession = {
  * payload reports.
  */
 export const eventSubjects = {
-    created: 'trading.v1.instrument_option_payment_dates_events.created',
-    updated: 'trading.v1.instrument_option_payment_dates_events.updated',
-    deleted: 'trading.v1.instrument_option_payment_dates_events.deleted',
+    created: 'trading.v1.events.instrument_option_payment_dates.created',
+    updated: 'trading.v1.events.instrument_option_payment_dates.updated',
+    deleted: 'trading.v1.events.instrument_option_payment_dates.deleted',
 } as const;

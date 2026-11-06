@@ -348,9 +348,9 @@ struct get_hold_reason_version_response {
  * of them.
  */
 namespace hold_reason_event_subjects {
-inline constexpr std::string_view created = "inbox.v1.hold_reasons_events.created";
-inline constexpr std::string_view updated = "inbox.v1.hold_reasons_events.updated";
-inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.deleted";
+inline constexpr std::string_view created = "inbox.v1.events.hold_reasons.created";
+inline constexpr std::string_view updated = "inbox.v1.events.hold_reasons.updated";
+inline constexpr std::string_view deleted = "inbox.v1.events.hold_reasons.deleted";
 }
 /**
  * @brief The members of hold_reason_key, named as the wire names them and in the order
@@ -360,7 +360,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const hold_reason_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hold_reason_key>) {
     return std::tuple{
         utility::codec::field{"code", &hold_reason_key::code},
     };
@@ -374,7 +374,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const hold_reason_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hold_reason_write>) {
     return std::tuple{
         utility::codec::field{"code", &hold_reason_write::code},
         utility::codec::field{"name", &hold_reason_write::name},
@@ -391,7 +391,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const hold_reason_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hold_reason_change>) {
     return std::tuple{
         utility::codec::field{"write", &hold_reason_change::write},
         utility::codec::field{"precondition", &hold_reason_change::precondition},
@@ -406,7 +406,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const hold_reason_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hold_reason_removal>) {
     return std::tuple{
         utility::codec::field{"key", &hold_reason_removal::key},
         utility::codec::field{"precondition", &hold_reason_removal::precondition},
@@ -421,7 +421,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const hold_reason_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hold_reason_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &hold_reason_lookup::key},
         utility::codec::field{"hold_reason", &hold_reason_lookup::hold_reason},
@@ -436,7 +436,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const hold_reasons_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hold_reasons_filter>) {
     return std::tuple{
         utility::codec::field{"code_one_of", &hold_reasons_filter::code_one_of},
     };
@@ -450,7 +450,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const hold_reason_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hold_reason_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &hold_reason_event::event_id},
         utility::codec::field{"key", &hold_reason_event::key},
@@ -469,7 +469,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const hold_reason_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hold_reason_version_key>) {
     return std::tuple{
         utility::codec::field{"hold_reason", &hold_reason_version_key::hold_reason},
         utility::codec::field{"version", &hold_reason_version_key::version},
@@ -484,7 +484,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const hold_reason_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<hold_reason_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &hold_reason_versions_filter::version},
         utility::codec::field{"from_version", &hold_reason_versions_filter::from_version},
@@ -500,7 +500,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_hold_reasons_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_hold_reasons_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_hold_reasons_request::offset},
         utility::codec::field{"limit", &list_hold_reasons_request::limit},
@@ -518,7 +518,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_hold_reasons_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_hold_reasons_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_hold_reasons_response::result},
         utility::codec::field{"reasons", &list_hold_reasons_response::reasons},
@@ -534,7 +534,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_hold_reason_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_hold_reason_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_hold_reason_request::key},
     };
@@ -548,7 +548,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_hold_reason_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_hold_reason_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_hold_reason_response::result},
         utility::codec::field{"hold_reason", &get_hold_reason_response::hold_reason},
@@ -563,7 +563,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_hold_reasons_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_hold_reasons_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_hold_reasons_request::keys},
     };
@@ -577,7 +577,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_hold_reasons_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_many_hold_reasons_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_hold_reasons_response::result},
         utility::codec::field{"entries", &get_many_hold_reasons_response::entries},
@@ -592,7 +592,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_hold_reason_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_hold_reason_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_hold_reason_request::change},
         utility::codec::field{"intent", &put_hold_reason_request::intent},
@@ -607,7 +607,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_hold_reason_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_hold_reason_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_hold_reason_response::result},
         utility::codec::field{"hold_reason", &put_hold_reason_response::hold_reason},
@@ -622,7 +622,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_hold_reasons_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_hold_reasons_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_hold_reasons_request::changes},
         utility::codec::field{"intent", &put_many_hold_reasons_request::intent},
@@ -637,7 +637,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_hold_reasons_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_many_hold_reasons_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_hold_reasons_response::result},
         utility::codec::field{"reasons", &put_many_hold_reasons_response::reasons},
@@ -652,7 +652,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_hold_reason_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_hold_reason_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_hold_reason_request::removal},
         utility::codec::field{"intent", &delete_hold_reason_request::intent},
@@ -667,7 +667,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_hold_reason_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_hold_reason_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_hold_reason_response::result},
     };
@@ -681,7 +681,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_hold_reasons_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_hold_reasons_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_hold_reasons_request::removals},
         utility::codec::field{"intent", &delete_many_hold_reasons_request::intent},
@@ -696,7 +696,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_hold_reasons_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_many_hold_reasons_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_hold_reasons_response::result},
     };
@@ -710,7 +710,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_hold_reason_versions_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_hold_reason_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_hold_reason_versions_request::key},
         utility::codec::field{"offset", &list_hold_reason_versions_request::offset},
@@ -728,7 +728,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_hold_reason_versions_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_hold_reason_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_hold_reason_versions_response::result},
         utility::codec::field{"versions", &list_hold_reason_versions_response::versions},
@@ -744,7 +744,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_hold_reason_version_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_hold_reason_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_hold_reason_version_request::key},
     };
@@ -758,7 +758,7 @@ inline constexpr std::string_view deleted = "inbox.v1.hold_reasons_events.delete
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_hold_reason_version_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_hold_reason_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_hold_reason_version_response::result},
         utility::codec::field{"version", &get_hold_reason_version_response::version},

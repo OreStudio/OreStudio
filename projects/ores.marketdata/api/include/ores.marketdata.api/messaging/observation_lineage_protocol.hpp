@@ -364,9 +364,9 @@ struct get_observation_lineage_version_response {
  * of them.
  */
 namespace observation_lineage_event_subjects {
-inline constexpr std::string_view created = "marketdata.v1.observation_lineages_events.created";
-inline constexpr std::string_view updated = "marketdata.v1.observation_lineages_events.updated";
-inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_events.deleted";
+inline constexpr std::string_view created = "marketdata.v1.events.observation_lineages.created";
+inline constexpr std::string_view updated = "marketdata.v1.events.observation_lineages.updated";
+inline constexpr std::string_view deleted = "marketdata.v1.events.observation_lineages.deleted";
 }
 /**
  * @brief The members of observation_lineage_key, named as the wire names them and in the order
@@ -376,7 +376,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const observation_lineage_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_key>) {
     return std::tuple{
         utility::codec::field{"id", &observation_lineage_key::id},
     };
@@ -390,7 +390,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const observation_lineage_write&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_write>) {
     return std::tuple{
         utility::codec::field{"id", &observation_lineage_write::id},
         utility::codec::field{"party_id", &observation_lineage_write::party_id},
@@ -416,7 +416,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const observation_lineage_change&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_change>) {
     return std::tuple{
         utility::codec::field{"write", &observation_lineage_change::write},
         utility::codec::field{"precondition", &observation_lineage_change::precondition},
@@ -431,7 +431,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const observation_lineage_removal&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_removal>) {
     return std::tuple{
         utility::codec::field{"key", &observation_lineage_removal::key},
         utility::codec::field{"precondition", &observation_lineage_removal::precondition},
@@ -446,7 +446,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const observation_lineage_lookup&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_lookup>) {
     return std::tuple{
         utility::codec::field{"key", &observation_lineage_lookup::key},
         utility::codec::field{"observation_lineage",
@@ -462,7 +462,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const observation_lineages_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineages_filter>) {
     return std::tuple{
         utility::codec::field{"id_one_of", &observation_lineages_filter::id_one_of},
     };
@@ -476,7 +476,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const observation_lineage_event&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_event>) {
     return std::tuple{
         utility::codec::field{"event_id", &observation_lineage_event::event_id},
         utility::codec::field{"key", &observation_lineage_event::key},
@@ -495,7 +495,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const observation_lineage_version_key&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_version_key>) {
     return std::tuple{
         utility::codec::field{"observation_lineage",
                               &observation_lineage_version_key::observation_lineage},
@@ -511,7 +511,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const observation_lineage_versions_filter&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<observation_lineage_versions_filter>) {
     return std::tuple{
         utility::codec::field{"version", &observation_lineage_versions_filter::version},
         utility::codec::field{"from_version", &observation_lineage_versions_filter::from_version},
@@ -527,7 +527,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_observation_lineages_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_observation_lineages_request>) {
     return std::tuple{
         utility::codec::field{"offset", &list_observation_lineages_request::offset},
         utility::codec::field{"limit", &list_observation_lineages_request::limit},
@@ -545,7 +545,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_observation_lineages_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_observation_lineages_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_observation_lineages_response::result},
         utility::codec::field{"observation_lineages",
@@ -562,7 +562,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_observation_lineage_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_observation_lineage_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_observation_lineage_request::key},
     };
@@ -576,7 +576,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_observation_lineage_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_observation_lineage_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_observation_lineage_response::result},
         utility::codec::field{"observation_lineage",
@@ -592,7 +592,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_observation_lineages_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_observation_lineages_request>) {
     return std::tuple{
         utility::codec::field{"keys", &get_many_observation_lineages_request::keys},
     };
@@ -606,7 +607,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_many_observation_lineages_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_many_observation_lineages_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_many_observation_lineages_response::result},
         utility::codec::field{"entries", &get_many_observation_lineages_response::entries},
@@ -621,7 +623,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_observation_lineage_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_observation_lineage_request>) {
     return std::tuple{
         utility::codec::field{"change", &put_observation_lineage_request::change},
         utility::codec::field{"intent", &put_observation_lineage_request::intent},
@@ -636,7 +638,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_observation_lineage_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<put_observation_lineage_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_observation_lineage_response::result},
         utility::codec::field{"observation_lineage",
@@ -652,7 +654,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_observation_lineages_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_observation_lineages_request>) {
     return std::tuple{
         utility::codec::field{"changes", &put_many_observation_lineages_request::changes},
         utility::codec::field{"intent", &put_many_observation_lineages_request::intent},
@@ -667,7 +670,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const put_many_observation_lineages_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<put_many_observation_lineages_response>) {
     return std::tuple{
         utility::codec::field{"result", &put_many_observation_lineages_response::result},
         utility::codec::field{"observation_lineages",
@@ -683,7 +687,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_observation_lineage_request&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_observation_lineage_request>) {
     return std::tuple{
         utility::codec::field{"removal", &delete_observation_lineage_request::removal},
         utility::codec::field{"intent", &delete_observation_lineage_request::intent},
@@ -698,7 +702,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_observation_lineage_response&) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<delete_observation_lineage_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_observation_lineage_response::result},
     };
@@ -712,7 +716,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_observation_lineages_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_observation_lineages_request>) {
     return std::tuple{
         utility::codec::field{"removals", &delete_many_observation_lineages_request::removals},
         utility::codec::field{"intent", &delete_many_observation_lineages_request::intent},
@@ -727,7 +732,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const delete_many_observation_lineages_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<delete_many_observation_lineages_response>) {
     return std::tuple{
         utility::codec::field{"result", &delete_many_observation_lineages_response::result},
     };
@@ -741,7 +747,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_observation_lineage_versions_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_observation_lineage_versions_request>) {
     return std::tuple{
         utility::codec::field{"key", &list_observation_lineage_versions_request::key},
         utility::codec::field{"offset", &list_observation_lineage_versions_request::offset},
@@ -759,7 +766,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const list_observation_lineage_versions_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_observation_lineage_versions_response>) {
     return std::tuple{
         utility::codec::field{"result", &list_observation_lineage_versions_response::result},
         utility::codec::field{"versions", &list_observation_lineage_versions_response::versions},
@@ -775,7 +783,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_observation_lineage_version_request&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_observation_lineage_version_request>) {
     return std::tuple{
         utility::codec::field{"key", &get_observation_lineage_version_request::key},
     };
@@ -789,7 +798,8 @@ inline constexpr std::string_view deleted = "marketdata.v1.observation_lineages_
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(const get_observation_lineage_version_response&) {
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_observation_lineage_version_response>) {
     return std::tuple{
         utility::codec::field{"result", &get_observation_lineage_version_response::result},
         utility::codec::field{"version", &get_observation_lineage_version_response::version},

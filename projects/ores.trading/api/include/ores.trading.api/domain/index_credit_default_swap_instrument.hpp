@@ -26,14 +26,13 @@
 #define ORES_TRADING_API_DOMAIN_INDEX_CREDIT_DEFAULT_SWAP_INSTRUMENT_HPP
 
 #include "ores.utility/decimal/decimal.hpp"
+#include "ores.utility/digest/canonical_form.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
-#include <type_traits>
 
 namespace ores::trading::domain {
 
@@ -184,33 +183,28 @@ struct index_credit_default_swap_instrument final {
 };
 
 /**
- * @brief The members of index_credit_default_swap_instrument the customer agreed to.
+ * @brief The canonical text of the members of index_credit_default_swap_instrument the customer
+ * agreed to.
  *
- * Declared by the model's :economic: property on each column.
+ * Renders, in member order, the columns the model declares economic and each
+ * group whose own model declares an economic field. The economic digest hashes
+ * this text, so a member the customer did not agree to never moves it.
  */
-inline constexpr std::string_view index_credit_default_swap_instrument_economic_fields[] = {
-    "credit_curve_id",
-    "issuer_id",
-    "settles_accrual",
-    "rebates_accrual",
-    "pays_at_default_time",
-    "protection_payment_time",
-    "protection_start_date",
-    "upfront_date",
-    "upfront_fee",
-    "trade_date",
-    "cash_settlement_days",
-};
-
-/**
- * @brief Names the members of index_credit_default_swap_instrument that are economic.
- *
- * The economic digest reads this at compile time and decides nothing by a
- * field's name. A type without this overload cannot be digested.
- */
-[[nodiscard]] constexpr std::span<const std::string_view>
-economic_fields_of(std::type_identity<index_credit_default_swap_instrument>) {
-    return index_credit_default_swap_instrument_economic_fields;
+[[nodiscard]] inline std::string canonical_form(const index_credit_default_swap_instrument& v) {
+    std::string out = "{";
+    ores::utility::digest::append_member(out, "credit_curve_id", v.credit_curve_id);
+    ores::utility::digest::append_member(out, "issuer_id", v.issuer_id);
+    ores::utility::digest::append_member(out, "settles_accrual", v.settles_accrual);
+    ores::utility::digest::append_member(out, "rebates_accrual", v.rebates_accrual);
+    ores::utility::digest::append_member(out, "pays_at_default_time", v.pays_at_default_time);
+    ores::utility::digest::append_member(out, "protection_payment_time", v.protection_payment_time);
+    ores::utility::digest::append_member(out, "protection_start_date", v.protection_start_date);
+    ores::utility::digest::append_member(out, "upfront_date", v.upfront_date);
+    ores::utility::digest::append_member(out, "upfront_fee", v.upfront_fee);
+    ores::utility::digest::append_member(out, "trade_date", v.trade_date);
+    ores::utility::digest::append_member(out, "cash_settlement_days", v.cash_settlement_days);
+    out.push_back('}');
+    return out;
 }
 
 /**

@@ -157,6 +157,28 @@ export function HealthSummary({ tally }: { readonly tally: ReportHealthTally }):
     );
 }
 
+/**
+ * The expression a definition carries when it runs only when a person asks.
+ *
+ * The scheduler needs an expression, and one that never fires is the statement
+ * that the report is on demand: the 31st of February is a day no month has, so
+ * the job the scheduler keeps fires on nothing. The list and the page both name
+ * this expression, so it is stated once.
+ */
+export const ON_DEMAND_SCHEDULE = '0 0 31 2 *';
+
+/**
+ * Whether a definition reads as on demand.
+ *
+ * A report with no scheduler job fires on nothing, whatever expression it keeps,
+ * so that is the first fact. A job whose expression never fires is the second:
+ * the two are the same statement, and a screen that stated only one would call a
+ * report scheduled that will never run.
+ */
+export function isOnDemand(scheduled: boolean, expression: string): boolean {
+    return !scheduled || expression === ON_DEMAND_SCHEDULE;
+}
+
 /** How long a run took, in milliseconds, or nothing when it has not finished. */
 export function runDuration(startedAt: string | null, completedAt: string | null): number | null {
     if (startedAt === null || completedAt === null) {

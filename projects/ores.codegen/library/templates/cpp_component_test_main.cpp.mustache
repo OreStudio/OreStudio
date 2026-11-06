@@ -3,7 +3,6 @@
 {{#component}}
 {{#has_test_fixture}}
 #include <openssl/crypto.h>
-#include <boost/scope_exit.hpp>
 {{/has_test_fixture}}
 #include <catch2/catch_session.hpp>
 {{#has_test_fixture}}
@@ -17,9 +16,12 @@ CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 
 int main(int argc, char* argv[]) {
 {{#has_test_fixture}}
-    BOOST_SCOPE_EXIT(void) {
-        OPENSSL_cleanup();
-    } BOOST_SCOPE_EXIT_END
+    // Runs OPENSSL_cleanup() however main returns.
+    struct openssl_cleanup final {
+        ~openssl_cleanup() {
+            OPENSSL_cleanup();
+        }
+    } cleanup;
 
     ores::testing::logging_listener::set_test_module_name("{{full_name}}.tests");
 {{/has_test_fixture}}

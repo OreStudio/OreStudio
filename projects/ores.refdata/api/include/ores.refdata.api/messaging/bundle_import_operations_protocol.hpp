@@ -26,10 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_BUNDLE_IMPORT_OPERATIONS_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/bundle_import.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -160,6 +167,205 @@ struct commit_bundle_import_response {
                            const commit_bundle_import_response&) = default;
 };
 
+/**
+ * @brief The members of bundle_import_family_outcome, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_import_family_outcome>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"family", &bundle_import_family_outcome::family},
+        ::ores::utility::codec::field{"sequence", &bundle_import_family_outcome::sequence},
+        ::ores::utility::codec::field{"applied", &bundle_import_family_outcome::applied},
+        ::ores::utility::codec::field{"message", &bundle_import_family_outcome::message},
+    };
 }
+
+/**
+ * @brief The members of begin_bundle_import_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<begin_bundle_import_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"id", &begin_bundle_import_request::id},
+        ::ores::utility::codec::field{"source", &begin_bundle_import_request::source},
+        ::ores::utility::codec::field{"families_expected",
+                                      &begin_bundle_import_request::families_expected},
+        ::ores::utility::codec::field{"expires_at", &begin_bundle_import_request::expires_at},
+        ::ores::utility::codec::field{"state", &begin_bundle_import_request::state},
+    };
+}
+
+/**
+ * @brief The members of begin_bundle_import_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<begin_bundle_import_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &begin_bundle_import_response::success},
+        ::ores::utility::codec::field{"message", &begin_bundle_import_response::message},
+        ::ores::utility::codec::field{"import_row", &begin_bundle_import_response::import_row},
+    };
+}
+
+/**
+ * @brief The members of stage_bundle_family_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stage_bundle_family_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"import_id", &stage_bundle_family_request::import_id},
+        ::ores::utility::codec::field{"family", &stage_bundle_family_request::family},
+        ::ores::utility::codec::field{"sequence", &stage_bundle_family_request::sequence},
+        ::ores::utility::codec::field{"payload", &stage_bundle_family_request::payload},
+        ::ores::utility::codec::field{"checksum", &stage_bundle_family_request::checksum},
+    };
+}
+
+/**
+ * @brief The members of stage_bundle_family_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stage_bundle_family_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &stage_bundle_family_response::success},
+        ::ores::utility::codec::field{"message", &stage_bundle_family_response::message},
+    };
+}
+
+/**
+ * @brief The members of commit_bundle_import_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commit_bundle_import_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"import_id", &commit_bundle_import_request::import_id},
+    };
+}
+
+/**
+ * @brief The members of commit_bundle_import_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<commit_bundle_import_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &commit_bundle_import_response::success},
+        ::ores::utility::codec::field{"message", &commit_bundle_import_response::message},
+        ::ores::utility::codec::field{"world_kept", &commit_bundle_import_response::world_kept},
+        ::ores::utility::codec::field{"fx_skipped", &commit_bundle_import_response::fx_skipped},
+        ::ores::utility::codec::field{"families", &commit_bundle_import_response::families},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::bundle_import_family_outcome> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::bundle_import_family_outcome& v);
+    static ores::refdata::messaging::bundle_import_family_outcome read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::bundle_import_family_outcome& v);
+    static ores::refdata::messaging::bundle_import_family_outcome
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::begin_bundle_import_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::begin_bundle_import_request& v);
+    static ores::refdata::messaging::begin_bundle_import_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::begin_bundle_import_request& v);
+    static ores::refdata::messaging::begin_bundle_import_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::begin_bundle_import_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::begin_bundle_import_response& v);
+    static ores::refdata::messaging::begin_bundle_import_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::begin_bundle_import_response& v);
+    static ores::refdata::messaging::begin_bundle_import_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::stage_bundle_family_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::stage_bundle_family_request& v);
+    static ores::refdata::messaging::stage_bundle_family_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::stage_bundle_family_request& v);
+    static ores::refdata::messaging::stage_bundle_family_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::stage_bundle_family_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::stage_bundle_family_response& v);
+    static ores::refdata::messaging::stage_bundle_family_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::stage_bundle_family_response& v);
+    static ores::refdata::messaging::stage_bundle_family_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::commit_bundle_import_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::commit_bundle_import_request& v);
+    static ores::refdata::messaging::commit_bundle_import_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::commit_bundle_import_request& v);
+    static ores::refdata::messaging::commit_bundle_import_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::commit_bundle_import_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::commit_bundle_import_response& v);
+    static ores::refdata::messaging::commit_bundle_import_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::commit_bundle_import_response& v);
+    static ores::refdata::messaging::commit_bundle_import_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

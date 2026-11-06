@@ -28,7 +28,8 @@ namespace {
 /*
  * Whether the address names a fixing. The codec's two readers each refuse the
  * other's kind, so the type decides which one judges the address and whose
- * reason a refusal carries.
+ * reason a refusal carries. Text that is not a URI at all goes to the datum
+ * reader, whose refusal then gives the reason.
  */
 bool names_a_fixing(std::string_view uri) {
     const auto parsed = boost::urls::parse_uri(uri);

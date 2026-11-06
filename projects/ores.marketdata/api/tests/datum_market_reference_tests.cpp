@@ -67,7 +67,10 @@ TEST_CASE("a series address is a reference to a datum", "[marketdata][datum][ref
 TEST_CASE("an address the grammar does not admit is refused with the codec's reason",
           "[marketdata][datum][reference]") {
     auto lg(make_logger(test_suite));
-    for (const auto* uri : {"", "EUR-EURIBOR-6M", "oresmd://ir/EUR?type=fixing&index=ibor",
+    for (const auto* uri : {"",
+                            "EUR-EURIBOR-6M",
+                            "oresmd://ir/EUR?type=fixing&index=ibor",
+                            "oresmd://ir/EUR?type=FIXING&index=ibor&name=EURIBOR&tenor=6M",
                             "oresmd://ir/EUR?type=series&instrument=nonsense"}) {
         const auto reference = market_reference::parse(uri);
         INFO("address: " << uri);
@@ -87,6 +90,19 @@ TEST_CASE("a reference made from an index is the reference its address parses to
     REQUIRE(parsed);
 
     const auto made = market_reference::of(*parsed->index());
+
+    REQUIRE(made);
+    CHECK(*made == *parsed);
+}
+
+TEST_CASE("a reference made from a datum is the reference its address parses to",
+          "[marketdata][datum][reference]") {
+    auto lg(make_logger(test_suite));
+    const auto parsed =
+        market_reference::parse("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+    REQUIRE(parsed);
+
+    const auto made = market_reference::of(*parsed->datum());
 
     REQUIRE(made);
     CHECK(*made == *parsed);

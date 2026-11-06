@@ -103,6 +103,11 @@ via its "Verifies task" field.
 | L3 | The codec tests are not in the API suite | — | Declined | Their catalogue helper is shared with the core's URI service test. |
 | L4 | Two feed ingest tests fail while the environment's services run | app_feed_ingest_loop_tests.cpp | Captured | Inbox: the feed ingest tests fail while the environment's services run. |
 | L5 | misspell-fixer on the changed files | — | Clean | |
+| C1 | parse reads the URI twice (type probe, then the codec) | market_reference.cpp | Declined | Not a hot path; a kind probe in the codec would duplicate its reading. |
+| C2 | Say that text which is not a URI falls through to the datum reader | market_reference.cpp | Accepted | Comment added. |
+| C3 | of() takes its argument by value | market_reference.hpp | Declined | Callers pass a temporary or a copy they no longer need; a failure returns the codec's reason. |
+| C4 | No test of of(datum) against parse, nor of type=FIXING | datum_market_reference_tests.cpp | Accepted | Both added: the datum case, and type=FIXING among the refused addresses. |
+| C5 | operator<=> or a hash for map keys | market_reference.hpp | Declined | Added when a reference becomes a key. |
 
 * Result
 

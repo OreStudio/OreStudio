@@ -1698,6 +1698,32 @@ def _domain_header(component_include, name, codec=True):
     return f"{component_include}/domain/{name}{suffix}.hpp"
 
 
+def _foreign_root(model_path, owner, name):
+    """The include root of another component's domain type, and whether its
+    shape is in a codec header of its own.
+
+    Most components keep their domain types in their api part, and a flat
+    component, such as ores.diff, keeps them at its own root. The header that
+    exists decides, and a type with no header or with two is refused, so the
+    generator never writes an include that is not there.
+    """
+    projects = next((q for q in Path(model_path).resolve().parents if q.name == "projects"),
+                    None)
+    if projects is None:
+        raise ValueError(f"{model_path}: no projects folder above the model, so the "
+                         f"header of {owner}'s {name} cannot be found")
+    candidates = ((owner, projects / owner / "include" / owner),
+                  (f"{owner}.api", projects / owner / "api" / "include" / f"{owner}.api"))
+    found = [(root, base) for root, base in candidates
+             if (base / "domain" / f"{name}.hpp").is_file()]
+    if len(found) != 1:
+        raise ValueError(
+            f"{model_path}: {owner}'s {name} needs exactly one domain header, found "
+            f"{len(found)} among {[str(b / 'domain' / (name + '.hpp')) for _, b in candidates]}")
+    root, base = found[0]
+    return root, (base / "domain" / f"{name}_codec.hpp").is_file()
+
+
 def _member_headers(cpp_types, model_path, domain_entity):
     """The headers that declare the shape of every type these names hold.
 
@@ -1760,7 +1786,11 @@ def _member_headers(cpp_types, model_path, domain_entity):
             # A type of the model's own component is under the model's own
             # root, which is its api subcomponent for most and core for some.
             owner = f"{parts[0]}.{parts[1]}"
-            add_named(name, root if owner == own else f"{owner}.api")
+            if owner == own:
+                add_named(name, root)
+            else:
+                foreign, codec = _foreign_root(model_path, owner, name)
+                add(_domain_header(foreign, name, codec=codec))
         # A message in the component's own namespace names its types as
         # "domain::x", which is neither of the two forms above.
         for name in re.findall(r"(?<![\w:])domain::(\w+)", cpp_type):

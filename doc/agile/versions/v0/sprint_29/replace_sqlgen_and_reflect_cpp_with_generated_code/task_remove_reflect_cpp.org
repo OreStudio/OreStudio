@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-10-27
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Step 7 of 7. reflect-cpp is gone from the build. Starts after every component ha
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -51,9 +51,25 @@ Step 7 of 7. reflect-cpp is gone from the build. Starts after every component ha
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A survey at fc4f559dfb found 193 files that name rfl, 6 of them generated.
+Each step below is one PR that ends in a green build.
+
+1. Shapes first. Moved to [[id:B95A38D7-5ADA-46A2-934A-176B6D84CB7F][Give every encoded type a stated shape]], PR 4470. Turn the generated wire codec on for the seven operation
+   models in the notes, and state a shape for every other type a hand-written
+   call encodes, so no type falls back to the reflect-cpp primary of
+   =wire_traits=.
+2. Calls. Move the 293 direct =rfl::json= and =rfl::msgpack= calls in 104
+   files onto the codec carriers of =ores.utility/codec=, component by
+   component.
+3. Dynamic JSON. Move the 113 uses of =rfl::Generic= and =rfl::Object= in ten
+   files onto yyjson.
+4. Schemas, Skip and Rename. Generate the three JSON schemas; state the
+   skipped and renamed members in their models.
+5. Removal. Delete the custom reflectors, =reflectors.hpp=, the reflect-cpp
+   primary of =wire_traits= and =ores.rfl.pch=; put the codec precompiled
+   header in its place; drop reflect-cpp from vcpkg.json and every
+   CMakeLists.txt.
+6. Docs. Rewrite the docs that still describe reflect-cpp.
 
 * Measurements
 
@@ -116,7 +132,6 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
 
 * Review
 

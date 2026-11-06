@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: CDE1FA26-BF34-4F50-89D3-067FCCDFD65E
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.history.history_messages
 #+description: Codegen operation model for the generic entity-history protocol: one request every entity shares, dispatched server side by entity_type.

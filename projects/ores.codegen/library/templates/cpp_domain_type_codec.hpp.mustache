@@ -8,6 +8,9 @@
 #include "ores.{{component_include}}/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
+{{#wire_codec_includes}}
+#include "{{{.}}}"
+{{/wire_codec_includes}}
 #include <cstddef>
 #include <span>
 #include <string>

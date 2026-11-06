@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 92BEE4E9-3CD0-4B5C-BF32-E0D176DBF036
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.bundle_import_operations
 #+description: Codegen operation model for the bundle import: begin a staging session, stage one family, and commit the staged families.

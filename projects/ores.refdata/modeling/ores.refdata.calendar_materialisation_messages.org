@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 9AE59F6F-1349-43B3-9BE3-C8AEB80FEC7E
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.calendar_materialisation_messages
 #+description: Codegen operation model for the calendar materialisation command protocol, rendered to C++ and TypeScript from one source.

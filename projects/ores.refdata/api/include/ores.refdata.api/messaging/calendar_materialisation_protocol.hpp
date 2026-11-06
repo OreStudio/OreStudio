@@ -25,9 +25,16 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CALENDAR_MATERIALISATION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CALENDAR_MATERIALISATION_PROTOCOL_HPP
 
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 
 namespace ores::refdata::messaging {
 
@@ -65,6 +72,71 @@ struct regenerate_calendar_dates_response {
                            const regenerate_calendar_dates_response&) = default;
 };
 
+/**
+ * @brief The members of regenerate_calendar_dates_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<regenerate_calendar_dates_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"calendar_code",
+                                      &regenerate_calendar_dates_request::calendar_code},
+        ::ores::utility::codec::field{"end_year", &regenerate_calendar_dates_request::end_year},
+    };
 }
+
+/**
+ * @brief The members of regenerate_calendar_dates_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<regenerate_calendar_dates_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &regenerate_calendar_dates_response::success},
+        ::ores::utility::codec::field{"message", &regenerate_calendar_dates_response::message},
+        ::ores::utility::codec::field{"rows_written",
+                                      &regenerate_calendar_dates_response::rows_written},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::regenerate_calendar_dates_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::regenerate_calendar_dates_request& v);
+    static ores::refdata::messaging::regenerate_calendar_dates_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::regenerate_calendar_dates_request& v);
+    static ores::refdata::messaging::regenerate_calendar_dates_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::regenerate_calendar_dates_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::regenerate_calendar_dates_response& v);
+    static ores::refdata::messaging::regenerate_calendar_dates_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::regenerate_calendar_dates_response& v);
+    static ores::refdata::messaging::regenerate_calendar_dates_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

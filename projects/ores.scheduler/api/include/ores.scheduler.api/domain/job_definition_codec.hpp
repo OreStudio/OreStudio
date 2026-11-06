@@ -25,6 +25,7 @@
 #ifndef ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_CODEC_HPP
 #define ORES_SCHEDULER_API_DOMAIN_JOB_DEFINITION_CODEC_HPP
 
+#include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"

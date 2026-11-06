@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_FX_VARIANCE_SWAP_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_FX_VARIANCE_SWAP_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"

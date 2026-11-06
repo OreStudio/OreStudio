@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: 63FF92C8-3E18-49BB-93FA-B0862B5FD4B2
+:END:
+#+title: Task: Test that every generated trade builds in ORE
+#+description: A test generates trades of every type the generator books, writes them as ORE XML and asks ORE to build them, so a generated trade ORE refuses fails a test rather than a report.
+#+type: task
+#+level: s1
+#+filetags: :trading:ore:synthetic:test:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
+#+owner: marco
+#+branch: feature/test-that-every-generated-trade-builds-in-ore
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A generated trade that ORE cannot read or build fails a test that names its
+type and what is wrong, so the reports only fail for market data.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
+| Now          | Plan written. |
+| Waiting on   | Nothing.                               |
+| Next         | Build the in-memory export of a generated population. |
+| Last touched | 2026-11-06                               |
+
+* Acceptance
+
+- A test plans a population of every trade type each planner routes, builds
+  the booking request of each slot and exports its instruments as ORE XML,
+  in memory, with no database or service.
+- The test fails, naming the trade type, when the writer refuses a trade,
+  when a trade is written with no product data, or when a generated trade
+  leaves out or empties a path that every ORE sample of its type states.
+- A second check runs the ORE engine on that portfolio and fails on any error
+  ORE raises reading or building a trade, unless a known list, asserted
+  exactly as the corpus losses are, names the type and the error.
+- A run of the Acme reports after provisioning records no Trade errors, only
+  market data errors; the numbers are in Measurements.
+
+* Plan
+
+The corpus roundtrip proves that ORE's example XML survives our model. It
+says nothing about the trades the generator books, which reach XML on a path
+the samples never take: planner, booking request, instrument rows, export.
+That path is where the reports fail.
+
+1. *Export a generated population in memory.* The planners state a
+   population as slots (=trade_population_planner.hpp=), and
+   =trading_trade_population_writer::book_request_for= builds the booking
+   request of a slot without a session. Its =instrument_batch= is what the
+   exporter (=ores.ore.core/xml/exporter.hpp=) takes. So the test plans one
+   population per asset class, long enough to reach every code the planner
+   routes (=code_count=), builds each request and exports the trades. This
+   needs no database, no NATS and no ORE.
+2. *Judge without ORE, in the unit suite.* Three checks, each naming the
+   trade type:
+   - The writer refuses no trade (the XSD's required elements).
+   - No trade is a passthrough: each has its product's data node.
+   - Each path every ORE sample of the type states, from
+     =Example_Trades=, is stated and not empty in each generated trade of
+     the type. This is the story's suggestion 4. It catches a missing
+     =OptionData=, =Rates=, =RangeBounds=, =Underlyings= or =Tranche=
+     without knowing ORE's rules.
+   A known list of accepted gaps, asserted for equality, starts from the
+   first run and can only shrink.
+3. *Let ORE judge, as a tagged test.* Write the portfolio and run the ORE
+   engine from the vendor package on it, with the example configuration in
+   =Products/Input=. Read the structured log with the parser the reporting
+   service uses, and fail on a Trade error that a read or build of the trade
+   raised (=node not found=, =not recognized=, =no builder found=). A Trade
+   error whose cause is a missing curve or quote is market data and is
+   counted apart. This catches values ORE refuses, such as a barrier type
+   of =KnockOut=, which no path check sees.
+4. *Fix what the checks find*, type by type, in the generator or the
+   projection, each fix taking its entry off the known list.
+5. *Prove it on the reports.* Recreate, provision Acme and let the reports
+   tick; record the error counts by scope before and after.
+
+Later, out of this task: the database leg. A generated trade written to the
+database and exported must give the same XML as the in-memory export; the
+value differ of the corpus test compares the two. That catches a row the
+export reader does not read back.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Report Trade errors after provisioning Acme, first three Headline Position runs | 284 errors over 36 of 85 trade types; 0 market data errors | =select scope_code, count(*) from ores_reporting_report_error_events_tbl group by 1= | 323e33c1bd |
+
+* Notes
+
+** The report run of 2026-11-06
+
+Three Headline Position runs at 20:50 after a fresh provisioning failed with
+ORE exit code 255. Every error is a Trade error; ORE stops at the trades, so
+no market data error is reached. By type, with the trades affected:
+
+| Trade type | Error | Trades |
+|------------+-------+--------|
+| Ascot | XML Node is NULL (expected FixedLegData) | 3 |
+| BalanceGuaranteedSwap | left out: required element 'Tranche' is absent | 45 |
+| BondPosition | No XML Child Node Identifier found | 3 |
+| CallableSwap | XML Node is NULL (expected OptionData) | 45 |
+| Commodity types (15) | the product's data node not found | 1 or 2 each |
+| CommodityPairwiseVarianceSwap | no builder found | 2 |
+| CreditDefaultSwap | No CreditDefaultSwapData Node | 11 |
+| CreditLinkedSwap | looking for child CreditCurveId | 11 |
+| DoubleDigitalOption | XML Node is NULL | 9 |
+| EquityAsianOption | ScheduleData::fromXML(): no node given | 7 |
+| EquityCliquetOption | XML Node is NULL | 7 |
+| EquityOptionPosition | left out: required element 'Underlying' is absent | 7 |
+| EquitySwap | XML Node is NULL (expected FloatingLegData) | 7 |
+| EquityTaRF | either RangeBounds or RangeBoundSet nodes required | 7 |
+| EquityWorstOfBasketSwap | left out: required element 'Underlyings' is absent | 7 |
+| FxTaRF | either RangeBounds or RangeBoundSet nodes required | 9 |
+| FxTouchOption | Barrier type "KnockOut" not recognized | 12 |
+| IndexCreditDefaultSwap | No IndexCreditDefaultSwapData Node | 11 |
+| IndexCreditDefaultSwapOption | Expected IndexCreditDefaultSwapOptionData node | 11 |
+| InflationSwap | No XML Node Rates found | 28 |
+| IntradayPowerForward | looking for child Position | 1 |
+| RiskParticipationAgreement | RiskParticipationAgreementData not found | 12 |
+
+The credit and rate trades have their instrument rows in the database, so
+the data is stored and the export or the generator leaves it out. The likely
+cause is that the generator fills the summary fields a product had before the
+corpus work, while the export now writes the new rows (underlyings, payloads,
+range bounds, structures) that the generator does not fill.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

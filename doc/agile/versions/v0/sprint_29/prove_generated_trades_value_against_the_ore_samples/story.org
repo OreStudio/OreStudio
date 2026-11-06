@@ -21,12 +21,12 @@ Every product type the generator books has a trade that ORE builds and values, a
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | Test that every generated trade builds in ORE. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into the five tasks under Background. |
-| Last touched  | 2026-11-03                               |
+| Next          | Fix the generated trade types the test finds. |
+| Last touched  | 2026-11-06                               |
 
 * Acceptance
 
@@ -84,7 +84,7 @@ data (group 5).
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:63FF92C8-3E18-49BB-93FA-B0862B5FD4B2][Test that every generated trade builds in ORE]] | STARTED | 2026-11-06 | | A test generates trades of every type the generator books, writes them as ORE XML and asks ORE to build them, so a generated trade ORE refuses fails a test rather than a report. |
 
 * Decisions
 

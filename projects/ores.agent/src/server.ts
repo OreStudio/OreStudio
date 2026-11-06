@@ -5,6 +5,7 @@ import { AppError, type Backend } from './backend.js';
 import { Sessions } from './auth.js';
 import { ToolExecutor, tools } from './tools.js';
 import { z } from 'zod';
+import { createMcp } from './mcp.js';
 
 export function json(res: ServerResponse, status: number, body: unknown): void {
     res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
@@ -23,6 +24,7 @@ export async function body(req: IncomingMessage): Promise<unknown> {
 export function createApp(config: Config, backend?: Backend) {
     const sessions = backend ? new Sessions(backend) : undefined;
     const executor = backend ? new ToolExecutor(backend) : undefined;
+    const mcp = sessions && executor ? createMcp(sessions, executor) : undefined;
     const server = createServer((req, res) => { void (async () => {
         const requestId = randomUUID();
         res.setHeader('x-request-id', requestId);
@@ -35,6 +37,7 @@ export function createApp(config: Config, backend?: Backend) {
         if (req.method === 'POST' && req.url === '/auth/login') return json(res, 200, await sessions.login(await body(req)));
         if (req.method === 'POST' && req.url === '/auth/logout') { await sessions.logout(req.headers.authorization); return json(res, 200, { signedOut: true }); }
         const session = sessions.require(req.headers.authorization);
+        if (req.url === '/mcp' && mcp) return await mcp.handle(req, res);
         if (req.method === 'GET' && req.url === '/tools') return json(res, 200, Object.entries(tools).map(([name, t]) => ({ name, description: t.description, inputSchema: z.toJSONSchema(t.schema) })));
         if (req.method === 'POST' && req.url?.startsWith('/tools/')) {
             const abort = new AbortController();
@@ -50,6 +53,6 @@ export function createApp(config: Config, backend?: Backend) {
     });
     server.requestTimeout = 65000;
     server.headersTimeout = 10000;
-    server.on('close', () => { void sessions?.close(); });
+    server.on('close', () => { void sessions?.close(); void mcp?.close(); });
     return server;
 }

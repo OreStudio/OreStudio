@@ -74,3 +74,8 @@ test('future pricing metadata and missing currency units cannot produce a usable
     const g = fixture(); g.rows[0].currency = '';
     await assert.rejects(() => g.report.execute('read_trade_results', args, g.session));
 });
+test('run discovery permits non-monetary rows without currency while NPV answers still require units', async () => {
+    const f = fixture(); f.rows.push({ ...f.rows[0], id: id(10), measure: 'notional', currency: '' });
+    assert.equal((await f.report.execute('find_report_runs', { tradeId: id(3) }, f.session)).rows.length, 1);
+    assert.equal((await f.report.execute('read_trade_results', args, f.session)).result.currency, 'GBP');
+});

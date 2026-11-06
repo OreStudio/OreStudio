@@ -11,7 +11,7 @@ export const reportingTools = {
 const scope = { id: marketId, tenant_id: marketId, party_id: marketId };
 const runSchema = z.object({ ...scope, name: z.string(), definition_id: marketId, priced_at: z.string().nullable(), price_note: z.string(), completed_at: z.string().nullable(),
     cut_id: marketId.nullable(), cut_label: z.string().nullable(), cut_timepoint: z.string().nullable(), engine_settings_id: marketId.nullable(), engine_settings_version: z.number().nullable() });
-const resultSchema = z.object({ ...scope, report_instance_id: marketId, report_definition_id: marketId, as_of: z.string(), subject_type: z.string(), subject_id: marketId, measure: z.string(), currency: z.string().regex(/^[A-Z]{3}$/), figure: z.number().finite(), source: z.string().min(1) });
+const resultSchema = z.object({ ...scope, report_instance_id: marketId, report_definition_id: marketId, as_of: z.string(), subject_type: z.string(), subject_id: marketId, measure: z.string(), currency: z.string(), figure: z.number().finite(), source: z.string().min(1) });
 function dateOf(s: string): string { const d = z.iso.date().parse(s.slice(0, 10)); if (s.length > 10) observationTime(s); return d; }
 function accepted(raw: unknown) { if (z.object({ result: z.object({ outcome: z.string() }) }).parse(raw).result.outcome !== 'ok') throw new AppError('report_read_refused', 'Backend did not complete or authorize the reporting read.', 403); }
 export class Reporting {
@@ -84,6 +84,7 @@ export class Reporting {
         const chosen = atDate[0]!, rows = stored.filter(r => r.report_instance_id === chosen.run.id);
         if (rows.some(r => r.report_definition_id !== chosen.run.definition_id || dateOf(r.as_of) !== newestDate)) throw new AppError('inconsistent_provenance', 'Result and run pricing provenance disagree.');
         if (rows.length !== 1) return { ...base, status: rows.length ? 'ambiguous' : 'unavailable', reason: 'Expected exactly one value; specify currency or inspect the duplicate result. No value selected.', currencies: [...new Set(rows.map(r => r.currency))] };
+        if (!/^[A-Z]{3}$/.test(rows[0]!.currency)) throw new AppError('invalid_result_units', 'Stored NPV has no valid currency unit.');
         const finalHealth = await health(chosen.run);
         if (finalHealth.health !== chosen.health) return { ...base, status: 'incomplete', reason: 'Run health changed during reading; retry.' };
         const stale = !args.valuationDate && (Date.parse(snapshot.slice(0, 10)) - Date.parse(newestDate)) / 86400000 > args.maxAgeDays;

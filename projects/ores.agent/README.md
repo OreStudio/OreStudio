@@ -9,6 +9,10 @@ See [deployment](docs/deployment.md), [CUDA inference](docs/inference.md),
 [backend contract](docs/backend-contract.md) for current runnable instructions.
 Version 0.1.1 adds [FX spot and basic IR lookups](docs/market-lookups.md), with
 exact point matching, provider clarification and dated freshness information.
+The [staged business-use-case plan](docs/business-use-cases-plan.md) covers the
+next reporting, booking, quotation and workflow deliveries and their gates.
+The [Stage 0 baseline](docs/business-baseline.md) records live data readiness
+and how to rerun the read-only operator inspection.
 
 Requires Node 22.11+. From this component directory:
 

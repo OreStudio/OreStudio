@@ -12,6 +12,9 @@ export const subjects = {
     login: 'iam.v1.ops.login', logout: 'iam.v1.ops.logout', selectParty: 'iam.v1.ops.select_party',
     currencies: 'refdata.v1.currencies.list', series: 'marketdata.v1.market_series.list',
     observations: 'marketdata.v1.market_observations.list_by_series_id',
+    trades: 'trading.v1.trades.list', books: 'refdata.v1.books.list', portfolios: 'refdata.v1.portfolios.list',
+    reportDefinitions: 'reporting.v1.report_definitions.list', reportInstances: 'reporting.v1.report_instances.list',
+    runResults: 'reporting.v1.run_results.list', runHealth: 'reporting.v1.ops.get_run_health',
 } as const;
 export type Operation = keyof typeof subjects;
 export interface Identity { token: string; sessionId: string }

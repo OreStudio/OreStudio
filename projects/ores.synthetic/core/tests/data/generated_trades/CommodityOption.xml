@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
+    <TradeType>CommodityOption</TradeType>
+    <CommodityOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2028-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>NYMEX:NG</Name>
+      <Currency>EUR</Currency>
+      <Strike>51.69</Strike>
+      <Quantity>92270.32</Quantity>
+    </CommodityOptionData>
+  </Trade>
+  <Trade id="f7a5f5f7-7567-5f27-ac28-264e8861c471">
+    <TradeType>CommodityOption</TradeType>
+    <CommodityOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2026-09-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>NYMEX:CL</Name>
+      <Currency>EUR</Currency>
+      <Strike>136.18</Strike>
+      <Quantity>91209.48</Quantity>
+    </CommodityOptionData>
+  </Trade>
+</Portfolio>

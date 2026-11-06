@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="24f52bd9-ca98-5bf4-b995-457c86123722">
+    <TradeType>CommodityTaRF</TradeType>
+  </Trade>
+  <Trade id="bdcb89b0-f353-59ae-b17d-2f3c4966f5b1">
+    <TradeType>CommodityTaRF</TradeType>
+  </Trade>
+</Portfolio>

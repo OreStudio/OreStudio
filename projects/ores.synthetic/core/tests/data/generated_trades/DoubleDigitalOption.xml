@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="60df601a-7488-5d36-99b7-ea62af9db083">
+    <TradeType>DoubleDigitalOption</TradeType>
+    <DoubleDigitalOptionData>
+      <Expiry>2030-12-02</Expiry>
+      <Settlement>2031-02-02</Settlement>
+      <BinaryPayout>3070177.38</BinaryPayout>
+      <BinaryLevel1>1.0516</BinaryLevel1>
+      <BinaryLevel2>1.2619</BinaryLevel2>
+      <Type1>Equity</Type1>
+      <Type2>Equity</Type2>
+      <Position>Long</Position>
+      <Underlying1>
+        <Type>Equity</Type>
+        <Name>MSFT.O</Name>
+      </Underlying1>
+      <PayCcy>EUR</PayCcy>
+    </DoubleDigitalOptionData>
+  </Trade>
+  <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
+    <TradeType>DoubleDigitalOption</TradeType>
+    <DoubleDigitalOptionData>
+      <Expiry>2032-09-02</Expiry>
+      <Settlement>2032-11-02</Settlement>
+      <BinaryPayout>5790664.33</BinaryPayout>
+      <BinaryLevel1>0.9115</BinaryLevel1>
+      <BinaryLevel2>1.0938</BinaryLevel2>
+      <Type1>Equity</Type1>
+      <Type2>Equity</Type2>
+      <Position>Long</Position>
+      <Underlying1>
+        <Type>Equity</Type>
+        <Name>.SPX</Name>
+      </Underlying1>
+      <PayCcy>EUR</PayCcy>
+    </DoubleDigitalOptionData>
+  </Trade>
+</Portfolio>

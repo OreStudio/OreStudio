@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="9e35f78e-0d03-56de-8f90-9b8ad04136e1">
+    <TradeType>FxKIKOBarrierOption</TradeType>
+    <FxKIKOBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2031-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>KnockIn</Type>
+          <Levels>
+            <Level>1.241</Level>
+          </Levels>
+        </BarrierData>
+        <BarrierData>
+          <Type>KnockIn</Type>
+          <Levels>
+            <Level>1.5168</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>4983709.98</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>3614264.98</SoldAmount>
+    </FxKIKOBarrierOptionData>
+  </Trade>
+  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
+    <TradeType>FxKIKOBarrierOption</TradeType>
+    <FxKIKOBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2029-12-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>KnockIn</Type>
+          <Levels>
+            <Level>0.6903</Level>
+          </Levels>
+        </BarrierData>
+        <BarrierData>
+          <Type>KnockIn</Type>
+          <Levels>
+            <Level>0.8437</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>6701613.27</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>8737435.82</SoldAmount>
+    </FxKIKOBarrierOptionData>
+  </Trade>
+</Portfolio>

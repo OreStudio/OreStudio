@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
+    <TradeType>CreditLinkedSwap</TradeType>
+  </Trade>
+  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
+    <TradeType>CreditLinkedSwap</TradeType>
+  </Trade>
+</Portfolio>

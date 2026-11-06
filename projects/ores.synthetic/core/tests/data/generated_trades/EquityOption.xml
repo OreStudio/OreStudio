@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
+    <TradeType>EquityOption</TradeType>
+    <EquityOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2027-11-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>.SPX</Name>
+      <Currency>USD</Currency>
+      <Quantity>7675517.41</Quantity>
+      <Strike>2538.69</Strike>
+    </EquityOptionData>
+  </Trade>
+  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+    <TradeType>EquityOption</TradeType>
+    <EquityOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2035-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>.SPX</Name>
+      <Currency>USD</Currency>
+      <Quantity>5632565.12</Quantity>
+      <Strike>209.18</Strike>
+    </EquityOptionData>
+  </Trade>
+</Portfolio>

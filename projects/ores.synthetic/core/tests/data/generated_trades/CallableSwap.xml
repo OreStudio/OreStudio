@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
+    <TradeType>CallableSwap</TradeType>
+    <CallableSwapData>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-12-02">5817155.05</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-12-02</StartDate>
+            <EndDate>2032-12-02</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.03</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-12-02">5817155.05</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-12-02</StartDate>
+            <EndDate>2032-12-02</EndDate>
+            <Tenor>6M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-EONIA</Index>
+          <Spreads>
+            <Spread startDate="2025-12-02">0.0029</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+    </CallableSwapData>
+  </Trade>
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
+    <TradeType>CallableSwap</TradeType>
+    <CallableSwapData>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-09-02">9466062.35</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-09-02</StartDate>
+            <EndDate>2033-09-02</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.0559</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-09-02">9466062.35</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-09-02</StartDate>
+            <EndDate>2033-09-02</EndDate>
+            <Tenor>6M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-EONIA</Index>
+          <Spreads>
+            <Spread startDate="2025-09-02">0.0007</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+    </CallableSwapData>
+  </Trade>
+</Portfolio>

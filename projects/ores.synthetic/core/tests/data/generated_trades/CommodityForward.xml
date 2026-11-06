@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="39b359af-9377-5560-b484-b5f7801ffb67">
+    <TradeType>CommodityForward</TradeType>
+    <CommodityForwardData>
+      <Position>Long</Position>
+      <Maturity>2036-01-02</Maturity>
+      <Name>NYMEX:CL</Name>
+      <Currency>EUR</Currency>
+      <Strike>46.38</Strike>
+      <Quantity>96950.42</Quantity>
+    </CommodityForwardData>
+  </Trade>
+  <Trade id="90294a9c-9eb6-5d85-ac7b-0550e6e0f628">
+    <TradeType>CommodityForward</TradeType>
+    <CommodityForwardData>
+      <Position>Long</Position>
+      <Maturity>2029-12-02</Maturity>
+      <Name>NYMEX:NG</Name>
+      <Currency>EUR</Currency>
+      <Strike>159.42</Strike>
+      <Quantity>2924.2</Quantity>
+    </CommodityForwardData>
+  </Trade>
+</Portfolio>

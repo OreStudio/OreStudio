@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="60df601a-7488-5d36-99b7-ea62af9db083">
+    <TradeType>EquityAsianOption</TradeType>
+    <EquityAsianOptionData>
+      <Currency>USD</Currency>
+      <Quantity>3070177.38</Quantity>
+      <StrikeData>
+        <Value>3149.24</Value>
+      </StrikeData>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>MSFT.O</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2030-12-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+    </EquityAsianOptionData>
+  </Trade>
+  <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
+    <TradeType>EquityAsianOption</TradeType>
+    <EquityAsianOptionData>
+      <Currency>USD</Currency>
+      <Quantity>6592217.61</Quantity>
+      <StrikeData>
+        <Value>4615.37</Value>
+      </StrikeData>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>MSFT.O</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2030-08-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+    </EquityAsianOptionData>
+  </Trade>
+</Portfolio>

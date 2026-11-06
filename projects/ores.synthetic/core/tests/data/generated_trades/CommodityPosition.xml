@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
+    <TradeType>CommodityPosition</TradeType>
+  </Trade>
+  <Trade id="4511c81f-f685-58e9-8f37-1a99af3ff1ff">
+    <TradeType>CommodityPosition</TradeType>
+  </Trade>
+</Portfolio>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="ce40eb75-6d18-5286-86ba-535d3e568c3f">
+    <TradeType>CommodityAsianOption</TradeType>
+  </Trade>
+  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
+    <TradeType>CommodityAsianOption</TradeType>
+  </Trade>
+</Portfolio>

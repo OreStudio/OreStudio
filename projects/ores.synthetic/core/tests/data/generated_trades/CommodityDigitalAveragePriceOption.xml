@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="9e35f78e-0d03-56de-8f90-9b8ad04136e1">
+    <TradeType>CommodityDigitalAveragePriceOption</TradeType>
+  </Trade>
+  <Trade id="ab16386a-36a6-5b49-8e00-ceb61c22c299">
+    <TradeType>CommodityDigitalAveragePriceOption</TradeType>
+  </Trade>
+</Portfolio>

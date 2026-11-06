@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="dd4d3dca-9fff-5428-8fce-ec75f34d7263">
+    <TradeType>FxDoubleTouchOption</TradeType>
+    <FxDoubleTouchOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <ExerciseDates>
+          <ExerciseDate>2028-08-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>KnockOut</Type>
+        <Levels>
+          <Level>1.2926</Level>
+          <Level>1.5798</Level>
+        </Levels>
+      </BarrierData>
+      <ForeignCurrency>EUR</ForeignCurrency>
+      <DomesticCurrency>USD</DomesticCurrency>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>2269142.01</PayoffAmount>
+    </FxDoubleTouchOptionData>
+  </Trade>
+  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
+    <TradeType>FxDoubleTouchOption</TradeType>
+    <FxDoubleTouchOptionData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <ExerciseDates>
+          <ExerciseDate>2027-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>KnockOut</Type>
+        <Levels>
+          <Level>0.6536</Level>
+          <Level>0.7988</Level>
+        </Levels>
+      </BarrierData>
+      <ForeignCurrency>EUR</ForeignCurrency>
+      <DomesticCurrency>USD</DomesticCurrency>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>189880.89</PayoffAmount>
+    </FxDoubleTouchOptionData>
+  </Trade>
+</Portfolio>

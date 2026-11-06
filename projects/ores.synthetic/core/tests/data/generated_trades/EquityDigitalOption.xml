@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
+    <TradeType>EquityDigitalOption</TradeType>
+    <EquityDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2032-09-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Strike>1401.29</Strike>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>5790664.33</PayoffAmount>
+      <Name>.SPX</Name>
+      <Quantity>1</Quantity>
+    </EquityDigitalOptionData>
+  </Trade>
+  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
+    <TradeType>EquityDigitalOption</TradeType>
+    <EquityDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2028-11-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Strike>2098.35</Strike>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>4187691.98</PayoffAmount>
+      <Name>.SPX</Name>
+      <Quantity>1</Quantity>
+    </EquityDigitalOptionData>
+  </Trade>
+</Portfolio>

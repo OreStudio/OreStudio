@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="39b359af-9377-5560-b484-b5f7801ffb67">
+    <TradeType>FxForward</TradeType>
+    <FxForwardData>
+      <ValueDate>2036-01-02</ValueDate>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>877427.22</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>723174.17</SoldAmount>
+      <Settlement>Cash</Settlement>
+    </FxForwardData>
+  </Trade>
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
+    <TradeType>FxForward</TradeType>
+    <FxForwardData>
+      <ValueDate>2033-09-02</ValueDate>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>13422876.41</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>9466062.35</SoldAmount>
+      <Settlement>Cash</Settlement>
+    </FxForwardData>
+  </Trade>
+</Portfolio>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
+    <TradeType>ConvertibleBond</TradeType>
+    <ConvertibleBondData>
+      <BondData>
+        <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
+        <SecurityId>POPCVF3EEHX34</SecurityId>
+        <SettlementDays>2</SettlementDays>
+        <Calendar>TARGET</Calendar>
+        <IssueDate>2025-07-02</IssueDate>
+        <BondNotional>7675517.41</BondNotional>
+        <PriceType>Clean</PriceType>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Fixed</LegType>
+          <Notionals>
+            <Notional>1</Notional>
+          </Notionals>
+        </LegData>
+        <SubType>Fixed</SubType>
+      </BondData>
+      <ConversionData>
+        <ConversionRatios>
+          <ConversionRatio>8.7</ConversionRatio>
+        </ConversionRatios>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>.STOXX50E</Name>
+        </Underlying>
+      </ConversionData>
+    </ConvertibleBondData>
+  </Trade>
+  <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
+    <TradeType>ConvertibleBond</TradeType>
+    <ConvertibleBondData>
+      <BondData>
+        <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
+        <SecurityId>POPCVF3EEHX34</SecurityId>
+        <SettlementDays>2</SettlementDays>
+        <Calendar>TARGET</Calendar>
+        <IssueDate>2025-07-02</IssueDate>
+        <BondNotional>4118292.15</BondNotional>
+        <PriceType>Clean</PriceType>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Fixed</LegType>
+          <Notionals>
+            <Notional>1</Notional>
+          </Notionals>
+        </LegData>
+        <SubType>Fixed</SubType>
+      </BondData>
+      <ConversionData>
+        <ConversionRatios>
+          <ConversionRatio>8.7</ConversionRatio>
+        </ConversionRatios>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>.STOXX50E</Name>
+        </Underlying>
+      </ConversionData>
+    </ConvertibleBondData>
+  </Trade>
+</Portfolio>

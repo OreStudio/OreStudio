@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
+    <TradeType>BondPosition</TradeType>
+    <BondBasketData>
+      <Quantity>3051825.57</Quantity>
+    </BondBasketData>
+  </Trade>
+  <Trade id="91aeed1d-a12c-546c-90e1-5a21011e978b">
+    <TradeType>BondPosition</TradeType>
+    <BondBasketData>
+      <Quantity>9466062.35</Quantity>
+    </BondBasketData>
+  </Trade>
+</Portfolio>

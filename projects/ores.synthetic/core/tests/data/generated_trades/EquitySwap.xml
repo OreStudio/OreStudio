@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="dd4d3dca-9fff-5428-8fce-ec75f34d7263">
+    <TradeType>EquitySwap</TradeType>
+    <EquitySwapData>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Equity</LegType>
+        <EquityLegData>
+          <Quantity>2269142.01</Quantity>
+          <ReturnType>Price</ReturnType>
+          <Name>GB0005405286</Name>
+        </EquityLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>GBP</Currency>
+        <Notionals>
+          <Notional>2269142.01</Notional>
+        </Notionals>
+      </LegData>
+    </EquitySwapData>
+  </Trade>
+  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
+    <TradeType>EquitySwap</TradeType>
+    <EquitySwapData>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Equity</LegType>
+        <EquityLegData>
+          <Quantity>189880.89</Quantity>
+          <ReturnType>Price</ReturnType>
+          <Name>GB0005405286</Name>
+        </EquityLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>GBP</Currency>
+        <Notionals>
+          <Notional>189880.89</Notional>
+        </Notionals>
+      </LegData>
+    </EquitySwapData>
+  </Trade>
+</Portfolio>

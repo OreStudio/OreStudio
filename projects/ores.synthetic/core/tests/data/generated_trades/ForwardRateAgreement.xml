@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="0940644b-3f20-5bc6-851f-fc7dccd3579f">
+    <TradeType>ForwardRateAgreement</TradeType>
+    <ForwardRateAgreementData>
+      <StartDate>2025-11-02</StartDate>
+      <EndDate>2026-11-02</EndDate>
+      <Currency>EUR</Currency>
+      <Index>EUR-ESTR</Index>
+      <LongShort>Long</LongShort>
+      <Strike>0.0228</Strike>
+      <Notional>5375309.62</Notional>
+    </ForwardRateAgreementData>
+  </Trade>
+  <Trade id="dd4d3dca-9fff-5428-8fce-ec75f34d7263">
+    <TradeType>ForwardRateAgreement</TradeType>
+    <ForwardRateAgreementData>
+      <StartDate>2025-08-02</StartDate>
+      <EndDate>2026-08-02</EndDate>
+      <Currency>EUR</Currency>
+      <Index>EUR-ESTR</Index>
+      <LongShort>Short</LongShort>
+      <Strike>0.0568</Strike>
+      <Notional>2269142.01</Notional>
+    </ForwardRateAgreementData>
+  </Trade>
+</Portfolio>

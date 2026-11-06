@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
+    <TradeType>FxAverageForward</TradeType>
+    <FxAverageForwardData>
+      <PaymentDate>2032-09-02</PaymentDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1M</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ObservationDates>
+      <FixedPayer>N</FixedPayer>
+      <ReferenceNotional>5790664.33</ReferenceNotional>
+      <ReferenceCurrency>EUR</ReferenceCurrency>
+      <SettlementNotional>4509769.38</SettlementNotional>
+      <SettlementCurrency>USD</SettlementCurrency>
+      <FXIndex>EUR/USD</FXIndex>
+    </FxAverageForwardData>
+  </Trade>
+  <Trade id="39397c03-db4e-560d-b715-5ca261dd64d9">
+    <TradeType>FxAverageForward</TradeType>
+    <FxAverageForwardData>
+      <PaymentDate>2028-11-02</PaymentDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1M</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ObservationDates>
+      <FixedPayer>N</FixedPayer>
+      <ReferenceNotional>4187691.98</ReferenceNotional>
+      <ReferenceCurrency>EUR</ReferenceCurrency>
+      <SettlementNotional>3846395.08</SettlementNotional>
+      <SettlementCurrency>USD</SettlementCurrency>
+      <FXIndex>EUR/USD</FXIndex>
+    </FxAverageForwardData>
+  </Trade>
+</Portfolio>

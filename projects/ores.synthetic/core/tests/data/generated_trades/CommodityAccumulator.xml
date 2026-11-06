@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="8f2c08ef-f6c9-5ff2-a0f5-37b3df0624a2">
+    <TradeType>CommodityAccumulator</TradeType>
+  </Trade>
+  <Trade id="1599c1b7-6f29-5e1d-b8ce-1e918ddfea2d">
+    <TradeType>CommodityAccumulator</TradeType>
+  </Trade>
+</Portfolio>

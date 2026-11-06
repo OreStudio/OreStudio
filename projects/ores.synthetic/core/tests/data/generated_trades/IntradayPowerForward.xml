@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="60df601a-7488-5d36-99b7-ea62af9db083">
+    <TradeType>IntradayPowerForward</TradeType>
+  </Trade>
+  <Trade id="f262704e-0db6-5eb8-834a-a9b463b23010">
+    <TradeType>IntradayPowerForward</TradeType>
+  </Trade>
+</Portfolio>

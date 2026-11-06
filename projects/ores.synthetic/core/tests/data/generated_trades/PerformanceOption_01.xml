@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="0940644b-3f20-5bc6-851f-fc7dccd3579f">
+    <TradeType>PerformanceOption_01</TradeType>
+    <PerformanceOption01Data>
+      <NotionalAmount>5375309.62</NotionalAmount>
+      <ParticipationRate>1</ParticipationRate>
+      <ValuationDate>2027-11-02</ValuationDate>
+      <SettlementDate>2028-01-02</SettlementDate>
+      <Underlyings>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>.STOXX50E</Name>
+        </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>GB0005405286</Name>
+        </Underlying>
+      </Underlyings>
+      <StrikePrices>
+        <StrikePrice>0.9028</StrikePrice>
+        <StrikePrice>0.9931</StrikePrice>
+        <StrikePrice>1.0834</StrikePrice>
+      </StrikePrices>
+      <Strike>0.9028</Strike>
+      <Position>Long</Position>
+      <PayCcy>EUR</PayCcy>
+    </PerformanceOption01Data>
+  </Trade>
+  <Trade id="ce40eb75-6d18-5286-86ba-535d3e568c3f">
+    <TradeType>PerformanceOption_01</TradeType>
+    <PerformanceOption01Data>
+      <NotionalAmount>2962620.02</NotionalAmount>
+      <ParticipationRate>1</ParticipationRate>
+      <ValuationDate>2032-08-02</ValuationDate>
+      <SettlementDate>2032-10-02</SettlementDate>
+      <Underlyings>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>MSFT.O</Name>
+        </Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>.STOXX50E</Name>
+        </Underlying>
+      </Underlyings>
+      <StrikePrices>
+        <StrikePrice>1.009</StrikePrice>
+        <StrikePrice>1.1099</StrikePrice>
+        <StrikePrice>1.2108</StrikePrice>
+      </StrikePrices>
+      <Strike>1.009</Strike>
+      <Position>Long</Position>
+      <PayCcy>EUR</PayCcy>
+    </PerformanceOption01Data>
+  </Trade>
+</Portfolio>

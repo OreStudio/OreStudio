@@ -9,6 +9,7 @@ import { createMcp } from './mcp.js';
 import { Agent } from './agent.js';
 import { HttpInference } from './inference.js';
 import { serveUi } from './ui.js';
+import { version } from './version.js';
 
 export function json(res: ServerResponse, status: number, body: unknown): void {
     res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
@@ -37,7 +38,7 @@ export function createApp(config: Config, backend?: Backend) {
         const host = req.headers.host ?? '';
         if (!/^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/.test(host)) return json(res, 403, { error: 'Host rejected.' });
         if (req.method === 'GET' && req.url === '/') return serveUi(res);
-        if (req.method === 'GET' && req.url === '/healthz') return json(res, 200, { status: 'ok', component: 'ores.agent', version: '0.1.0' });
+        if (req.method === 'GET' && req.url === '/healthz') return json(res, 200, { status: 'ok', component: 'ores.agent', version });
         if (req.method === 'GET' && req.url === '/readyz') return json(res, backend?.ready() ? 200 : 503, { status: backend?.ready() ? 'ready' : 'not_ready', backend: backend?.ready() ?? false });
         if (!sessions || !executor) return json(res, 503, { error: 'Backend not configured.' });
         if (req.method === 'POST' && req.url === '/auth/login') return json(res, 200, await sessions.login(await body(req)));
@@ -49,7 +50,7 @@ export function createApp(config: Config, backend?: Backend) {
             res.on('close', () => { if (!res.writableFinished) abort.abort(); });
             return json(res, 200, await agent.chat(await body(req), session, abort.signal));
         }
-        if (req.method === 'GET' && req.url === '/tools') return json(res, 200, Object.entries(tools).map(([name, t]) => ({ name, description: t.description, inputSchema: z.toJSONSchema(t.schema) })));
+        if (req.method === 'GET' && req.url === '/tools') return json(res, 200, Object.entries(tools).map(([name, t]) => ({ name, description: t.description, inputSchema: z.toJSONSchema(t.schema, { io: 'input' }) })));
         if (req.method === 'POST' && req.url?.startsWith('/tools/')) {
             const abort = new AbortController();
             res.on('close', () => { if (!res.writableFinished) abort.abort(); });

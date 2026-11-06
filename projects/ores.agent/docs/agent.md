@@ -15,7 +15,9 @@ exposed. This is the plan's first read-only deliverable, not the future trading
 workflow described in the issue comments.
 
 `POST /chat` accepts `{ "message": "..." }` and the same Bearer authentication
-as MCP. Each request is independent; conversation history is not persisted.
+as MCP. General conversation history is not persisted. Version 0.1.1 retains
+only a pending market provider/series clarification for five minutes within
+the same authenticated session; see [market lookups](market-lookups.md).
 The model receives the shared tool catalogue, proposes typed tool calls, and
 the agent invokes `ToolExecutor.execute` directly in this process. It never
 creates an MCP client or calls its own HTTP listener. Both entry paths use

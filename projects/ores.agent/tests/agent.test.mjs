@@ -30,3 +30,22 @@ test('cancelled, expired and concurrent requests are bounded; model failure rele
     session.expires = 0; await assert.rejects(() => agent.chat({ message: 'test' }, session, new AbortController().signal), /Sign in/);
     session.chatBusy = true; await assert.rejects(() => agent.chat({ message: 'test' }, session, new AbortController().signal), /busy/);
 });
+
+test('market facts are rendered from evidence; provider clarification stays in its own session', async () => {
+    const calls = []; let modelCalls = 0;
+    const ambiguous = { tool: 'read_fx_spot', status: 'ambiguous', asOf: '2026-11-06T12:00:00Z', historicalRequest: false,
+        request: { baseCurrency: 'EUR', quoteCurrency: 'USD' }, reason: 'Choose provider.', candidates: [{ provider: 'ore', seriesId: 'id-ore', instrument: 'fixture' }, { provider: 'vendor', seriesId: 'id-vendor', instrument: 'fixture' }] };
+    const resolved = { ...ambiguous, status: 'stale', units: 'USD per 1 EUR', series: { provider: 'ore', seriesId: 'id-ore', instrument: 'fixture' },
+        observation: { value: '1.0552', observedAt: '2016-12-30T00:00:00Z', source: 'labelled.fixture' } };
+    const agent = new Agent({ complete: async () => { modelCalls++; return { role: 'assistant', content: null, tool_calls: [{ id: 'm', type: 'function', function: { name: 'read_fx_spot', arguments: '{"baseCurrency":"EUR","quoteCurrency":"USD"}' } }] }; } }, {
+        execute: async (name, args) => { calls.push(args); return args.provider ? resolved : ambiguous; },
+    });
+    const s = makeSession();
+    assert.match((await agent.chat({ message: 'What is EURUSD spot?' }, s, new AbortController().signal)).answer, /specify the provider/);
+    const reply = await agent.chat({ message: 'ore' }, s, new AbortController().signal);
+    assert.match(reply.answer, /not a current market quote/); assert.match(reply.answer, /1.0552/); assert.equal(modelCalls, 1);
+    assert.equal(calls.at(-1).provider, 'ore');
+    await agent.chat({ message: 'ore' }, makeSession(), new AbortController().signal); assert.equal(modelCalls, 2);
+    await agent.chat({ message: 'What is EURUSD spot from ore?' }, s, new AbortController().signal);
+    assert.equal(calls.at(-1).provider, 'ore');
+});

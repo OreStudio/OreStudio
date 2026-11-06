@@ -4,12 +4,13 @@ import { toNodeHandler } from '@modelcontextprotocol/node';
 import { AppError } from './backend.js';
 import { tools, type ToolExecutor } from './tools.js';
 import type { Sessions } from './auth.js';
+import { version } from './version.js';
 
 export function createMcp(sessions: Sessions, executor: ToolExecutor) {
     const handler = createMcpHandler(ctx => {
         // Re-authenticate every HTTP exchange. Protocol metadata never selects an identity.
         const session = sessions.require(ctx.requestInfo?.headers.get('authorization') ?? undefined);
-        const server = new McpServer({ name: 'ores.agent', version: '0.1.0' }, {
+        const server = new McpServer({ name: 'ores.agent', version }, {
             supportedProtocolVersions: ['2026-07-28', '2025-11-25'],
         });
         for (const [name, tool] of Object.entries(tools)) {

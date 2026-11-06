@@ -7,6 +7,8 @@ process. Neither is part of the main CMake build or existing deployment fleet.
 See [deployment](docs/deployment.md), [CUDA inference](docs/inference.md),
 [agent usage](docs/agent.md), [external MCP](docs/mcp.md) and
 [backend contract](docs/backend-contract.md) for current runnable instructions.
+Version 0.1.1 adds [FX spot and basic IR lookups](docs/market-lookups.md), with
+exact point matching, provider clarification and dated freshness information.
 
 Requires Node 22.11+. From this component directory:
 

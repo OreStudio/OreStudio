@@ -26,7 +26,12 @@ inside OreStudio.
 Run `node scripts/smoke-mcp.mjs <agent-url> <private-credentials-json> <party-uuid>`
 to verify discovery and live currency reads without running a model. It uses
 the official independent client SDK, signs out, and never prints credentials.
-Live Windows smoke on 2026-11-06 discovered all three read tools and read the
+The initial Windows smoke on 2026-11-06 discovered three read tools and read the
 first three of 170 real currencies under Acme's selected party. Automated
 tests additionally reject missing/revoked bearer credentials and injected
 tenant arguments.
+
+Version 0.1.1 adds `read_fx_spot` and `read_ir_rate` to the same catalogue.
+Both use the shared selected-party lookup and return structured ambiguity,
+freshness and missing-data statuses; see market-lookups.md. Automated MCP client
+tests execute a dated FX lookup, not just catalogue discovery.

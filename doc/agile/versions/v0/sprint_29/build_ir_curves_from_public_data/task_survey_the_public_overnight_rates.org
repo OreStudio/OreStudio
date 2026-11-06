@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
 #+owner: marco
 #+branch: feature/plan-the-ir-curves-story
-#+pr:
+#+pr: 4467
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4467][#4467]] | [docs] Plan the IR curves story and survey the public overnight rates |
 
 * Review
 

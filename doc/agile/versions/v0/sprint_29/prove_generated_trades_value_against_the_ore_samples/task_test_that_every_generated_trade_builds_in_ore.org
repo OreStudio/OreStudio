@@ -339,24 +339,42 @@ exporter::export_portfolio(items, batch, ore_naming_for(run));
 - One resolver for meaning and naming: it would need a tenant's refdata and
   a run's market configuration at once, which no caller but a run has.
 
-*** Open questions and risks
+*** Decisions on the open questions
 
-- Not every reference has an address kind yet. Credit names (a CDS's
-  reference entity, held as an LEI), issuers and securities: are they
-  oresmd addresses, or refdata identities that stay foreign keys?
-- Where do =reference_resolver= and =ore_naming= live: in
-  =ores.marketdata.api=, which would then link =ores.refdata.api= for the
-  convention types, or in a small component of their own?
-- The booking check: should the trading service resolve every reference of
-  a trade it books, refusing one that does not resolve?
-- Refdata holds no index conventions for ORE's built-in indices; they need
-  seeding (from ORE's =indexparser.cpp=) before a resolver can answer for
-  them.
-- Size: this is a story, not a task. Proposed order: (1) move the codecs and
-  add =market_reference=; (2) the resolvers, with =ore_naming= replacing
-  =reference_curve_names=; (3) migrate the trade columns family by family,
-  importer and exporter with them; (4) builders, family by family, each
-  migrating its planner and clearing its known-list entries.
+Agreed with the product owner on 2026-11-06.
+
+- *Credit names are oresmd addresses, not LEIs.* The grammar already states
+  a credit name as ORE does: a =cds=, =hazard_rate= or =recovery_rate= series
+  is identified by =underlying_name=, =seniority=, =ccy= and =doc_clause=,
+  ORE's =ReferenceInformation= (entity, tier, currency, doc clause). A CDS
+  refers to its credit curve series' address.
+- *The resolvers live in =ores.marketdata.api=*, beside the address types,
+  because oresmd is a market data concept. The API links =ores.refdata.api=
+  for the convention types (no cycle: refdata does not link marketdata).
+- *A reference is checked against the series catalogue, as a curve is
+  today.* =ores_marketdata_validate_curve_series_fn= refuses a trade naming a
+  curve URI its party's =market_series= does not hold;
+  =market_series_identity= projects each series' parsed URI into columns.
+  Every reference column takes the same soft foreign key, by kind, so a
+  reference keeps a database check and its party scope.
+- *ORE's built-in index conventions are seeded by population*, mined from
+  ORE's =indexparser.cpp=, so every tenant's resolver can answer for them.
+- *The work is broken into tasks* on this story, in the order below; this
+  task closes on the recorded-trades test it built.
+
+*** Tasks
+
+1. Move the oresmd codecs into the marketdata API and add =market_reference=.
+2. Resolve an oresmd reference: =reference_resolver= and =ore_naming=, the
+   second replacing =reference_curve_names=.
+3. Seed ORE's built-in index conventions in population.
+4. Store every market reference a trade holds as an oresmd address, checked
+   against the series catalogue; the importer and exporter convert.
+5. Trade builders: the API (=required<T>=, =build_error=, the registry) and
+   the swap builders.
+6. Build every generated trade type through a builder, family by family,
+   credit first; each family migrates its planner and clears its entries
+   from the known lists.
 
 * Test Scenarios
 

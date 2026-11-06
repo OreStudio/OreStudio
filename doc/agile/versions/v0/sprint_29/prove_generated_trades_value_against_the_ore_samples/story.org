@@ -85,6 +85,12 @@ data (group 5).
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:63FF92C8-3E18-49BB-93FA-B0862B5FD4B2][Test that every generated trade builds in ORE]] | STARTED | 2026-11-06 | | A test generates trades of every type the generator books, writes them as ORE XML and asks ORE to build them, so a generated trade ORE refuses fails a test rather than a report. |
+| [[id:6C6D4D02-DDA2-4721-8B96-40950DC5E86C][Move the oresmd codecs into the marketdata API]] | BACKLOG | | | The oresmd URI and ORE index codecs move from the marketdata core to its API, and a market_reference value is the only form a market reference takes in code, so every component can parse and write an address. |
+| [[id:4435202D-6074-47F6-8BEB-85E25CF70BEF][Resolve an oresmd reference]] | BACKLOG | | | Two resolvers in the marketdata API: one says what an oresmd address means in reference data (its index, swap or CDS convention, its underlying), the other names it for ORE under a market configuration and replaces reference_curve_names. |
+| [[id:014A3FB0-36D9-44A5-8236-E60EFF7C1CA8][Seed ORE's built-in index conventions]] | BACKLOG | | | Population seeds the Ibor and overnight index conventions ORE defines in code (indexparser.cpp), each with its oresmd address, so a resolver can answer for EURIBOR, SOFR and the rest in every tenant. |
+| [[id:639CEE8C-0586-4EEF-8F12-C450F956B00F][Store trade market references as oresmd addresses]] | BACKLOG | | | Every trade column that names market data (indices, curves, underlyings, credit names) holds an oresmd address, checked against the party's series catalogue as a curve already is; the importer and exporter convert to and from ORE names. |
+| [[id:8735FE9F-153E-4113-8AAB-58A89E4DAFC6][Build trades through trade builders]] | BACKLOG | | | The trade builder API in the trading API: required terms that do not compile when left out, build errors that name the term, a registry matched to the trade type catalogue, and the swap builders that derive their legs from conventions. |
+| [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Generate every trade type through its builder]] | BACKLOG | | | Each generated trade type is built by its trade builder, family by family and credit first; each family moves its planner onto the builders, deletes its old constructors and clears its entries from the recorded trades' known lists. |
 
 * Decisions
 

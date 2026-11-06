@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 5186FE2D-2F3E-432B-A270-1EAE7FF2FA35
+:END:
+#+title: The corpus roundtrip does not cover the CBO example
+#+description: The corpus roundtrip walks ORE's Example_Trades. The Products examples hold one more trade, a collateralised bond obligation in Input_CBO, which no test reads and which needs its bond basket from reference data.
+#+type: capture
+#+level: cross
+#+filetags: :trading:ore:test:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The corpus roundtrip test reads every portfolio under
+=external/ore/examples/Products/Example_Trades=. =Input/portfolio.xml= holds
+the same trades. =Input_CBO/portfolio.xml= holds one more trade, a =CBO=,
+which no test reads. Its bond basket and tranches are in
+=Input_CBO/reference_data.xml=, so the roundtrip must read reference data as
+well as the portfolio.
+
+* Why
+
+The test's zero losses cover the 182 trades of =Example_Trades=, not every
+ORE product example. A CBO the model drops or changes is not detected. The
+PR review of #4468 found the gap.
+
+* References
+
+- =projects/ores.ore/core/tests/xml_portfolio_corpus_content_roundtrip_tests.cpp=
+- =external/ore/examples/Products/Input_CBO=
+
+* See also
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]]

@@ -203,13 +203,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/4468][#4468]] | [ore,trading] Model every ORE example trade so the corpus roundtrip loses nothing |
+| [[https://github.com/OreStudio/OreStudio/pull/4468][#4468]] | [ore,trading] Model the ORE product example trades so the corpus roundtrip loses nothing |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Merged tree untested | — | Accepted | Ran the suites on the merge; fixed four pgTAP plan counts and the bond digest. |
+| 2 | ORE equivalences apply to every path | corpus roundtrip test | Accepted | Each map now applies only to the leaves and spellings the corpus states. |
+| 3 | Both sides are normalised | corpus roundtrip test | Declined | Feeding the written XML to ORE is the story's later task. |
+| 4 | Only Example_Trades is covered | corpus roundtrip test | Accepted | Input holds the same trades; the CBO in Input_CBO is captured. PR title narrowed. CI runs the test. |
+| 5 | Changes pair by sorted position | value_differ.cpp | Accepted | Comment added. |
+| 6 | Known test gaps and compass check | — | Declined | Captured; CI does not provision acme_minimal; compass check skipped at the owner's instruction. |
+| 7 | Scope of the PR | — | Declined | Noted; no split this late. |
+| 8 | composite_legs references | load_trade_population.py | Accepted | Removed the stale entry; the class diagrams are regenerated separately. |
 
 * Result
 

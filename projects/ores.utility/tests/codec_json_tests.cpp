@@ -18,11 +18,16 @@
  *
  */
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <rfl/json.hpp>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <type_traits>
 
 namespace wire_json = ores::utility::codec::json;
 
@@ -37,6 +42,23 @@ template <typename T>
 T through_rfl_json(const T& v) {
     return rfl::json::read<T>(ores::utility::codec::json::write(v)).value();
 }
+
+/**
+ * @brief A value whose members the text may leave out.
+ */
+struct keeps_its_defaults {
+    std::string label = "kept";
+    int count = 7;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<keeps_its_defaults>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"label", &keeps_its_defaults::label},
+                      field{"count", &keeps_its_defaults::count}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<keeps_its_defaults>(),
+              "keeps_its_defaults gained a member its wire_fields does not name.");
 
 };
 
@@ -68,8 +90,10 @@ TEST_CASE("an absent uuid is the format's null", "[codec][json]") {
     CHECK(wire_json::write(id) == ores::utility::codec::json::write(id));
     CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(wire_json::write(absent)) == absent);
     CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(wire_json::write(id)) == id);
-    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(ores::utility::codec::json::write(absent)) == absent);
-    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(ores::utility::codec::json::write(id)) == id);
+    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(
+              ores::utility::codec::json::write(absent)) == absent);
+    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(
+              ores::utility::codec::json::write(id)) == id);
 }
 
 TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") {
@@ -79,7 +103,8 @@ TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") 
 
     CHECK(wire_json::write(ids) == ores::utility::codec::json::write(ids));
     CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(wire_json::write(ids)) == ids);
-    CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(ores::utility::codec::json::write(ids)) == ids);
+    CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(
+              ores::utility::codec::json::write(ids)) == ids);
 }
 
 TEST_CASE("a tenant id, a date and a decimal are the strings reflect-cpp writes", "[codec][json]") {
@@ -176,4 +201,26 @@ TEST_CASE("a floating-point number is the real reflect-cpp writes", "[codec][jso
     CHECK(wire_json::write(large) == ores::utility::codec::json::write(large));
     CHECK(wire_json::read<double>(wire_json::write(plain)) == plain);
     CHECK(wire_json::read<double>(wire_json::write(negative)) == negative);
+}
+
+TEST_CASE("a lenient read keeps a member the text leaves out at its default", "[codec][json]") {
+    const auto kept = wire_json::read_lenient<keeps_its_defaults>(R"({"count":3})");
+
+    REQUIRE(kept.has_value());
+    CHECK(kept->label == "kept");
+    CHECK(kept->count == 3);
+}
+
+TEST_CASE("a read that reports its reason names the member the text leaves out", "[codec][json]") {
+    const auto refused = wire_json::read_expected<keeps_its_defaults>(R"({"count":3})");
+
+    REQUIRE_FALSE(refused.has_value());
+    CHECK(refused.error() == "Missing member: label");
+}
+
+TEST_CASE("a strict read after a lenient read still refuses a member the text leaves out",
+          "[codec][json]") {
+    REQUIRE(wire_json::read_lenient<keeps_its_defaults>(R"({})").has_value());
+
+    CHECK_THROWS_AS(wire_json::read<keeps_its_defaults>(R"({"count":3})"), std::invalid_argument);
 }

@@ -17,15 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "conventions_family_pack.hpp"
 #include "conventions_family_units.hpp"
 #include "conventions_fields.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <format>
 #include <map>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -239,7 +238,8 @@ cross_currency_basis_facts(const refdata::messaging::conventions_bundle& bundle)
         for (const auto& part : spread)
             if (part.convention_id == c.identity.id)
                 item.spread_leg.push_back(without_keys(part));
-        out[c.identity.kind_code + "\x1f" + c.payload.name] = ores::utility::codec::json::write(item);
+        out[c.identity.kind_code + "\x1f" + c.payload.name] =
+            ores::utility::codec::json::write(item);
     }
     return out;
 }

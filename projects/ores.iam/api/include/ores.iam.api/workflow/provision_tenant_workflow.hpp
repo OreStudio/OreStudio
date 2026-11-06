@@ -21,11 +21,9 @@
 #define ORES_IAM_API_WORKFLOW_PROVISION_TENANT_WORKFLOW_HPP
 
 #include "ores.utility/codec/json_codec.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include <algorithm>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -353,7 +351,8 @@ namespace detail {
 /// The run's declaration, or a throw naming what the request lacks.
 [[nodiscard]] inline provision_tenant_workflow_request
 read_workflow_request(const std::string& request_json) {
-    auto parsed = rfl::json::read<provision_tenant_workflow_request>(request_json);
+    auto parsed =
+        ores::utility::codec::json::read_expected<provision_tenant_workflow_request>(request_json);
     if (!parsed)
         throw std::runtime_error(
             "A provisioning run was started with a request this deployment cannot read.");

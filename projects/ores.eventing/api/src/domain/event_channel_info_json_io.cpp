@@ -17,10 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.eventing.api/domain/event_channel_info_json_io.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.utility/codec/json_codec.hpp"
 
 namespace ores::eventing::domain {
 

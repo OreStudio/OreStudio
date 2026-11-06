@@ -20,12 +20,10 @@
 #ifndef ORES_DQ_API_WORKFLOW_BUNDLE_PUBLISH_WORKFLOW_HPP
 #define ORES_DQ_API_WORKFLOW_BUNDLE_PUBLISH_WORKFLOW_HPP
 
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include <rfl/json.hpp>
 #include <string>
 #include <vector>
 
@@ -83,7 +81,8 @@ inline void register_bundle_publish_workflow(ores::workflow::service::workflow_r
     def.build_steps = [](const std::string& request_json,
                          const std::string& /*tenant_id*/,
                          const std::string& /*correlation_id*/) -> std::vector<workflow_step_def> {
-        auto parsed = rfl::json::read<bundle_publish_workflow_request>(request_json);
+        auto parsed = ores::utility::codec::json::read_expected<bundle_publish_workflow_request>(
+            request_json);
         if (!parsed)
             return {};
 

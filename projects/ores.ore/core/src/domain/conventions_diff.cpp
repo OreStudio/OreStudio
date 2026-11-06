@@ -16,15 +16,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "conventions_family_units.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <map>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -77,7 +75,7 @@ std::string without_joined_kinds(const conventions_package& p) {
 
 template <typename Row>
 Row decode(const refdata::messaging::conventions_bundle_row& row) {
-    auto decoded = rfl::json::read<Row>(row.payload);
+    auto decoded = ores::utility::codec::json::read_expected<Row>(row.payload);
     if (!decoded)
         throw std::runtime_error("A conventions payload does not decode: " + row.family);
     return std::move(*decoded);
@@ -127,7 +125,8 @@ std::map<std::string, std::string> tenor_basis_swap_facts(const conventions_pack
             copy.identity.convention_id = boost::uuids::uuid{};
             item.long_short.push_back(copy);
         }
-        out[c.identity.kind_code + "\x1f" + c.payload.name] = ores::utility::codec::json::write(item);
+        out[c.identity.kind_code + "\x1f" + c.payload.name] =
+            ores::utility::codec::json::write(item);
     }
     return out;
 }

@@ -20,13 +20,13 @@
 #ifndef ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>

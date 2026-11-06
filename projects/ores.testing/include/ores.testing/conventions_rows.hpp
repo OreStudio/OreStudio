@@ -21,8 +21,7 @@
 #define ORES_TESTING_CONVENTIONS_ROWS_HPP
 
 #include "ores.ore.core/domain/conventions_package.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <rfl/json.hpp>
+#include "ores.utility/codec/json_codec.hpp"
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -43,7 +42,7 @@ std::vector<Row> rows_of(const ores::ore::domain::conventions_package& package,
     for (const auto& row : package.bundle.rows) {
         if (row.family != family)
             continue;
-        auto decoded = rfl::json::read<Row>(row.payload);
+        auto decoded = ores::utility::codec::json::read_expected<Row>(row.payload);
         if (!decoded)
             throw std::runtime_error("A package payload does not decode: " + row.family);
         out.push_back(std::move(*decoded));

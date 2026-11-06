@@ -20,11 +20,9 @@
 #ifndef ORES_ORE_CORE_DOMAIN_CONVENTIONS_FAMILY_PACK_HPP
 #define ORES_ORE_CORE_DOMAIN_CONVENTIONS_FAMILY_PACK_HPP
 
-#include "ores.utility/codec/json_codec.hpp"
 #include "conventions_family_units.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <format>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -48,8 +46,9 @@ void pack_family(refdata::messaging::conventions_bundle& bundle,
                  const std::vector<xml::record_reader>& rows,
                  Convert convert) {
     for (std::size_t i = 0; i < rows.size(); ++i)
-        bundle.rows.push_back(
-            {std::string(family), static_cast<int>(i), ores::utility::codec::json::write(convert(rows[i]))});
+        bundle.rows.push_back({std::string(family),
+                               static_cast<int>(i),
+                               ores::utility::codec::json::write(convert(rows[i]))});
 }
 
 template <typename Row>
@@ -68,7 +67,7 @@ void pack_row(refdata::messaging::conventions_bundle& bundle,
  */
 template <typename Row>
 Row unpack_row(const package_row& row) {
-    auto decoded = rfl::json::read<Row>(row.payload);
+    auto decoded = ores::utility::codec::json::read_expected<Row>(row.payload);
     if (!decoded)
         throw std::runtime_error(
             std::format("Conventions payload for family \"{}\" does not decode.", row.family));

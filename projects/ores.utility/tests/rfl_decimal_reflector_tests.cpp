@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include "test_suite.hpp"
@@ -107,8 +107,8 @@ TEST_CASE("optional_decimal_travels_as_an_omitted_field_when_absent", "[rfl][dec
     REQUIRE(back.has_value());
     CHECK_FALSE(back->amount.has_value());
 
-    const auto present =
-        ores::utility::codec::json::write(maybe_holds_amount{.amount = decimal::from_string("1e-10").value()});
+    const auto present = ores::utility::codec::json::write(
+        maybe_holds_amount{.amount = decimal::from_string("1e-10").value()});
     CHECK(present == R"({"amount":"0.0000000001"})");
 
     const auto read = rfl::json::read<maybe_holds_amount>(present);

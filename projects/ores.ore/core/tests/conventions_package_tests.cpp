@@ -17,20 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.testing/project_root.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "test_helpers.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
-#include <rfl/json.hpp>
 #include <set>
 #include <sstream>
 #include <stdexcept>

@@ -17,11 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -351,8 +350,8 @@ TEST_CASE("a step command carries the tenant it provisions, its administrator an
         tenant_id,
         correlation_id);
 
-    const auto command =
-        rfl::json::read<provision_tenant_step_command>(steps[0].build_command("", {}));
+    const auto command = ores::utility::codec::json::read_expected<provision_tenant_step_command>(
+        steps[0].build_command("", {}));
     REQUIRE(command);
     CHECK(command->kind == "provision_party");
     // The tenant the step acts on is the one the request names, not the
@@ -374,8 +373,8 @@ TEST_CASE("the handing step's command carries the whole run request", "[workflow
     const auto steps = def.build_steps(request, tenant_id, correlation_id);
 
     REQUIRE(steps.size() == 2);
-    const auto command =
-        rfl::json::read<provision_tenant_step_command>(steps[1].build_command("", {}));
+    const auto command = ores::utility::codec::json::read_expected<provision_tenant_step_command>(
+        steps[1].build_command("", {}));
     REQUIRE(command);
     CHECK(command->kind == start_tenant_setup_step_kind);
     CHECK(command->tenant_id == provisioned_tenant_id);
@@ -496,8 +495,8 @@ TEST_CASE("the demo profile's schedule step carries the parties and nothing else
         request_json({declared("schedule_reports", arguments)}), tenant_id, correlation_id);
 
     REQUIRE(steps.size() == 2);
-    const auto command =
-        rfl::json::read<provision_tenant_step_command>(steps[0].build_command("", {}));
+    const auto command = ores::utility::codec::json::read_expected<provision_tenant_step_command>(
+        steps[0].build_command("", {}));
     REQUIRE(command);
     CHECK(command->kind == "schedule_reports");
     CHECK(command->arguments_json == arguments);
@@ -585,8 +584,8 @@ TEST_CASE("a party run is its declared steps and nothing that completes the tena
     CHECK(steps.front().name == provision_party_step_kind);
     CHECK(steps.front().command_subject == provision_tenant_step_subject);
 
-    const auto command =
-        rfl::json::read<provision_tenant_step_command>(steps.front().build_command("", {}));
+    const auto command = ores::utility::codec::json::read_expected<provision_tenant_step_command>(
+        steps.front().build_command("", {}));
     REQUIRE(command);
     CHECK(command->arguments_json == R"({"bundles":["party_essentials"],"party":"BARCLAYS PLC"})");
     CHECK(command->admin_account_id == admin_account_id);

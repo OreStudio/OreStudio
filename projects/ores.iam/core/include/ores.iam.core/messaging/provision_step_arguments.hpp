@@ -21,6 +21,7 @@
 #define ORES_IAM_MESSAGING_PROVISION_STEP_ARGUMENTS_HPP
 
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
@@ -589,10 +590,10 @@ parse_trade_generation_assignments(const std::string& arguments_json) {
      * positional parse failure against the whole object.
      */
     auto parsed =
-        rfl::json::read<trade_generation_step_arguments, rfl::DefaultIfMissing>(arguments_json);
+        ores::utility::codec::json::read_lenient<trade_generation_step_arguments>(arguments_json);
     if (!parsed)
         throw std::runtime_error("The step's arguments are not a trade generation recipe: " +
-                                 parsed.error().what());
+                                 parsed.error());
 
     auto result = std::move(parsed->configs);
     if (result.empty())

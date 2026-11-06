@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.ore.api/messaging/currency_config_protocol.hpp"
 #include "ores.ore.api/messaging/ore_document_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/messaging/pricing_engines_protocol.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.

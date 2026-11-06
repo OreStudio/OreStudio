@@ -20,7 +20,6 @@
 #ifndef ORES_DQ_CORE_MESSAGING_PUBLISH_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_PUBLISH_HANDLER_HPP
 
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_datasets_protocol.hpp"
@@ -37,14 +36,13 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <optional>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -183,7 +181,8 @@ public:
             // fpml.* codes, countries, calendars, ...) alongside it.
             std::vector<std::string> allowed;
             if (!req->params_json.empty()) {
-                auto parsed = rfl::json::read<publish_bundle_params>(req->params_json);
+                auto parsed = ores::utility::codec::json::read_expected<publish_bundle_params>(
+                    req->params_json);
                 if (parsed)
                     allowed = parsed->opted_in_datasets;
             }

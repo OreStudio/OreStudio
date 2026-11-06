@@ -17,12 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.dq.api/domain/dataset_dependency_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 
 namespace ores::dq::domain {
 

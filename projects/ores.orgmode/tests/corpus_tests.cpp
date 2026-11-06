@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.orgmode/parser/parser.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
-#include <rfl/json.hpp>
 #include <vector>
 
 namespace {

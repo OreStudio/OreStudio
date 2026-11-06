@@ -16,7 +16,6 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
@@ -29,11 +28,10 @@
 #include "ores.refdata.core/service/bundle_import_operations_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace {
@@ -79,7 +77,8 @@ TEST_CASE("a part staged before its central row still commits into one row each"
     // The part is staged first on purpose. The apply writes the central family
     // before the families that name it, so stage order must not decide this.
     const auto import_id = begin_import(ctx, uuid());
-    stage(ctx, import_id, "tenor_basis_swap_pay_receive", 0, ores::utility::codec::json::write(part));
+    stage(
+        ctx, import_id, "tenor_basis_swap_pay_receive", 0, ores::utility::codec::json::write(part));
     stage(ctx, import_id, "convention", 1, ores::utility::codec::json::write(central));
 
     ores::refdata::service::bundle_import_operations_service imports(ctx);

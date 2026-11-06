@@ -20,7 +20,6 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 #define ORES_IAM_MESSAGING_TENANT_PROVISIONING_HANDLER_HPP
 
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.assets.api/messaging/image_operations_protocol.hpp"
 #include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.database/domain/context.hpp"
@@ -85,6 +84,7 @@
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
@@ -99,7 +99,6 @@
 #include <memory>
 #include <optional>
 #include <ranges>
-#include <rfl/json.hpp>
 #include <set>
 #include <stdexcept>
 #include <thread>
@@ -561,7 +560,8 @@ public:
              */
             if (!req->lei.empty())
                 arguments["lei"] = req->lei;
-            run.steps.push_back({party_step->step_kind, ores::utility::codec::json::write(arguments)});
+            run.steps.push_back(
+                {party_step->step_kind, ores::utility::codec::json::write(arguments)});
 
             boost::uuids::random_generator generate;
             const auto instance_id = boost::uuids::to_string(generate());
@@ -657,13 +657,13 @@ public:
 
             const std::string_view payload(reinterpret_cast<const char*>(msg.data.data()),
                                            msg.data.size());
-            auto parsed =
-                rfl::json::read<ores::iam::workflow::provision_tenant_step_command>(payload);
+            auto parsed = ores::utility::codec::json::read_expected<
+                ores::iam::workflow::provision_tenant_step_command>(payload);
             if (!parsed) {
                 // The step is failed, so the delivery is done with: re-running
                 // it would only report the same failure again.
                 wf->fail("The provisioning step command could not be read: " +
-                         std::string(parsed.error().what()));
+                         std::string(parsed.error()));
                 ack.accept();
                 return;
             }
@@ -987,7 +987,8 @@ private:
             publish_bundle_or_throw(
                 admin_client, bundle_code, super_actor.username, params_json, command.kind);
             complete_system_onboarding(admin_client);
-            wf.complete(ores::utility::codec::json::write(provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
+            wf.complete(ores::utility::codec::json::write(
+                provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
             return;
         }
         wf.fail("The system tenant holds no administrator to publish '" + bundle_code + "' as.");
@@ -1017,7 +1018,8 @@ private:
         for (const auto& bundle_code : arguments.bundles)
             publish_bundle_or_throw(client, bundle_code, actor.username, params_json, command.kind);
 
-        wf.complete(ores::utility::codec::json::write(provision_step_result{.kind = command.kind, .bundles = arguments.bundles}));
+        wf.complete(ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .bundles = arguments.bundles}));
     }
 
     /// Publishes the bundles that carry the LEI hierarchy, each with the root
@@ -1152,8 +1154,8 @@ private:
             parties.push_back(boost::uuids::to_string(party->id));
         }
 
-        wf.complete(
-            ores::utility::codec::json::write(provision_step_result{.kind = command.kind, .parties = parties}));
+        wf.complete(ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .parties = parties}));
     }
 
     /**
@@ -1197,7 +1199,8 @@ private:
         }
 
         if (account_ids.empty()) {
-            wf.complete(ores::utility::codec::json::write(provision_step_result{.kind = command.kind}));
+            wf.complete(
+                ores::utility::codec::json::write(provision_step_result{.kind = command.kind}));
             return;
         }
 
@@ -1223,7 +1226,8 @@ private:
                                      "' was not set: " + resp.results[i].message);
         }
 
-        wf.complete(ores::utility::codec::json::write(provision_step_result{.kind = command.kind, .accounts = set}));
+        wf.complete(ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .accounts = set}));
     }
 
     /// Attaches each named party's staff photos, read from the dataset that
@@ -1265,7 +1269,8 @@ private:
             parties.push_back(boost::uuids::to_string(party->id));
         }
 
-        wf.complete(ores::utility::codec::json::write(provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
+        wf.complete(ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
     }
 
     /// Gives each party the tenant holds a subscription to a provider and a route to
@@ -1346,8 +1351,8 @@ private:
                 throw std::runtime_error("The tenant holds no party the market data step names: '" +
                                          assignment.party + "'.");
 
-        wf.complete(
-            ores::utility::codec::json::write(provision_step_result{.kind = command.kind, .parties = subscribed}));
+        wf.complete(ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .parties = subscribed}));
     }
 
     /// A client that speaks as one party over the connection this handler
@@ -2017,7 +2022,8 @@ private:
         auto client = make_step_client(
             command.tenant_id, actor.account_id, settings_party->id, actor.username);
 
-        const auto result = ores::utility::codec::json::write(provision_step_result{.kind = command.kind, .tenant_id = command.tenant_id});
+        const auto result = ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .tenant_id = command.tenant_id});
         const auto warn = [&](const std::string& message) {
             wf.warn(result,
                     {ores::workflow::messaging::step_log_entry{

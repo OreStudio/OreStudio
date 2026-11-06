@@ -47,8 +47,8 @@ TEST_CASE("a cron expression is the text reflect-cpp writes", "[codec]") {
           expression);
     CHECK(wire_msgpack::read<ores::scheduler::domain::cron_expression>(
               wire_msgpack::write(expression)) == expression);
-    CHECK(wire_json::read<ores::scheduler::domain::cron_expression>(ores::utility::codec::json::write(expression)) ==
-          expression);
+    CHECK(wire_json::read<ores::scheduler::domain::cron_expression>(
+              ores::utility::codec::json::write(expression)) == expression);
     CHECK(wire_msgpack::read<ores::scheduler::domain::cron_expression>(
               rfl_msgpack_cron(expression)) == expression);
 }

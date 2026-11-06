@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.scheduler.core/service/action_payloads.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -109,7 +109,8 @@ TEST_CASE("a job's action payload reads as reflect-cpp read it", tags) {
 
     CHECK_THROWS_WITH(read_json<mq_payload_fields>(R"({"queue_id": "q1"})"),
                       Catch::Matchers::ContainsSubstring("Missing member"));
-    CHECK_FALSE(rfl::json::read<mq_payload_fields>(std::string(R"({"queue_id": "q1"})")));
+    CHECK_FALSE(ores::utility::codec::json::read_expected<mq_payload_fields>(
+        std::string(R"({"queue_id": "q1"})")));
 }
 
 TEST_CASE("an answer's result reads among the members it does not name", tags) {

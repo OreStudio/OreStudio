@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
@@ -28,6 +27,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstdint>
@@ -94,9 +94,10 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<ores::dq::messaging::publish_from_dq_command>(sv);
+    auto parsed =
+        ores::utility::codec::json::read_expected<ores::dq::messaging::publish_from_dq_command>(sv);
     if (!parsed) {
-        wf->fail("Failed to decode publish_from_dq_command: " + std::string(parsed.error().what()));
+        wf->fail("Failed to decode publish_from_dq_command: " + std::string(parsed.error()));
         ack.accept();
         return;
     }

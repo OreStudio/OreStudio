@@ -123,7 +123,8 @@ TEST_CASE("a completed step with its log has reflect-cpp's bytes", codec_tags) {
 
     namespace json = ores::utility::codec::json;
     CHECK(json::write(event.log) == ores::utility::codec::json::write(event.log));
-    const auto log = json::try_read<std::vector<step_log_entry>>(ores::utility::codec::json::write(event.log));
+    const auto log =
+        json::try_read<std::vector<step_log_entry>>(ores::utility::codec::json::write(event.log));
     REQUIRE(log);
     CHECK(json::write(*log) == json::write(event.log));
 }

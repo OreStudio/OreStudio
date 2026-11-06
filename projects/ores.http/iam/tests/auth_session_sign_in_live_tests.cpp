@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -25,7 +24,7 @@
 #include "ores.nats/service/jwks.hpp"
 #include "ores.nats/service/timeouts.hpp"
 #include "ores.platform/environment/environment.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -33,7 +32,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 
 using namespace ores::http::domain;

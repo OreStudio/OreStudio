@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.dq.api/domain/catalog_codec.hpp"
 #include "ores.dq.api/generators/catalog_generator.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/generation/generation_context.hpp"

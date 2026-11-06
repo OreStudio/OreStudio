@@ -25,6 +25,7 @@
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include <cstdint>
+#include <expected>
 #include <limits>
 #include <map>
 #include <optional>
@@ -82,6 +83,14 @@ write_object(yyjson_mut_doc* doc, const T& v, const std::tuple<field<T, Members>
     return object;
 }
 
+/**
+ * @brief Whether a member a document leaves out keeps its default.
+ *
+ * Set for the length of one read_lenient() call on this thread, so it reaches
+ * every object the read descends into and no other read.
+ */
+inline thread_local bool missing_keeps_default = false;
+
 template <typename T, typename... Members>
 void read_object(yyjson_val* v, T& out, const std::tuple<field<T, Members>...>& fields) {
     if (!yyjson_is_obj(v))
@@ -94,6 +103,8 @@ void read_object(yyjson_val* v, T& out, const std::tuple<field<T, Members>...>& 
                     auto* value = yyjson_obj_getn(v, f.name.data(), f.name.size());
                     if (value == nullptr) {
                         if constexpr (is_optional_member<member_type>)
+                            return;
+                        else if (detail::missing_keeps_default)
                             return;
                         else
                             throw std::invalid_argument("Missing member: " + std::string(f.name));
@@ -372,6 +383,43 @@ T read(std::string_view text) {
         yyjson_doc_free(doc);
         throw;
     }
+}
+
+/**
+ * @brief The value the text states, or why it states none.
+ *
+ * For a caller that reports the reason, as a workflow step does when it fails
+ * a request it cannot decode.
+ */
+template <typename T>
+std::expected<T, std::string> read_expected(std::string_view text) noexcept {
+    try {
+        return read<T>(text);
+    } catch (const std::exception& e) {
+        return std::unexpected(std::string(e.what()));
+    }
+}
+
+/**
+ * @brief The value the text states, with every member it leaves out, at any
+ * depth, at its default.
+ *
+ * For a document a person writes by hand, whose every member has a default
+ * worth keeping.
+ */
+template <typename T>
+std::expected<T, std::string> read_lenient(std::string_view text) noexcept {
+    struct lenient {
+        lenient()
+            : stated(detail::missing_keeps_default) {
+            detail::missing_keeps_default = true;
+        }
+        ~lenient() {
+            detail::missing_keeps_default = stated;
+        }
+        bool stated;
+    } scope;
+    return read_expected<T>(text);
 }
 
 /**

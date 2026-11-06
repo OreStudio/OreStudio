@@ -23,7 +23,7 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Six implementation checkpoints pushed; independent Windows deployment running.                       |
+| Now           | Version 0.1.1 FX/IR lookups deployed; 24 Windows/Linux tests pass.                       |
 | Waiting on    | Linux NVIDIA host for remaining native GPU validation.                               |
 | Next          | Validate native Linux CUDA; review hosted auth and broker ACL hardening.            |
 | Last touched  | 2026-11-06                               |
@@ -62,3 +62,12 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 - Validation: 12 tests pass on Windows/Linux; identical artifact =512b6069701e=.
 - Live release: =88fe926d56fa64653a70e4c009cab53eaa3cbda3=; all 25/25 model layers offloaded on the RTX 4070. Main native backend/broker PID set unchanged across AI lifecycle checks.
 - Remaining: native Linux NVIDIA validation, hosted auth/client enrollment and broker ACL hardening. Task/story remain STARTED; no unverified completion is claimed.
+
+* FX/IR lookup enhancement
+
+- Commit: =7cc8511292a2416da54c25fe8bd54530326b37c7=; release =0.1.1-86a407144a11=.
+- =npm test=: 24 tests pass on Windows and Linux; same artifact identity on both.
+- =scripts/smoke-market.mjs=: external MCP, provider clarification and actual CUDA-backed historical FX lookup pass; sampled IR series correctly returns no observation.
+- Before/after native backend, NATS and inference PID sets unchanged. No server build, broker configuration, new subjects or data mutation.
+- Freshness, exact point matching, selected-party restrictions and bounded complete scans are documented in =projects/ores.agent/docs/market-lookups.md=.
+- Remaining broader story acceptance items (Linux GPU and hosted isolation) stay open.

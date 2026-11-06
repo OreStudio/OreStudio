@@ -1,5 +1,41 @@
 # Implementation validation
 
+## Current release: 0.1.1 market lookups
+
+Committed/pushed source: `7cc8511292a2416da54c25fe8bd54530326b37c7`.
+Installed release: `../agent-runtime/app/releases/0.1.1-86a407144a11`.
+Windows and Linux produced the same artifact identity prefix `86a407144a11`.
+All **24 tests pass** on both platforms; Linux output is retained locally in
+`build/output/agent-market-linux-check.log`. The checks use the same pinned
+Linux Node container recorded below. No remote CI or Linux GPU execution is
+claimed.
+
+The deployed application passed `scripts/smoke-market.mjs` using the official
+external MCP client and actual CUDA-backed chat:
+
+| Request | Result | Sample application time |
+| --- | --- | --- |
+| EURUSD spot, no provider | Asks ore vs bloomberg | 1,012 ms |
+| Provider clarification: ore | Historical/stale 1.0552, observed 2016-12-30 | 45 ms |
+| EURUSD spot from ore | Same dated result with stale warning | 723 ms |
+| EURUSD from ore on 2016-12-30 | Historical as-of result | 1,782 ms |
+| USD 5Y swap from bloomberg | No matching observation; no rate supplied | 1,792 ms |
+
+External MCP historical FX and the existing currency tool-loop regression also
+passed. These timings are individual smoke samples, not benchmarks. Successful
+populated IR cases use labelled fixtures; live-populated IR is not claimed.
+The market facts are rendered from validated tool output, not rewritten by the
+model. See [market lookups](market-lookups.md) for boundaries and examples.
+
+Only the standalone agent process was restarted. Before/after process-ID sets
+for the native backend, NATS and llama.cpp matched exactly; the main web app
+continued returning HTTP 200. No OreStudio server source/build, NATS subjects,
+broker configuration or database changes were needed. The reusable local
+lifecycle CLI now exits gracefully to avoid the native Windows Node handle
+shutdown crash observed during tests.
+
+## Initial 0.1.0 validation history
+
 Checkpoints pushed to `alexhock/OreStudio`, branch `feature/local-ai-assistant`:
 
 | Stage | Commit | Evidence |
@@ -60,4 +96,4 @@ MCP authentication uses explicit short-lived bearer headers, not OAuth client
 enrollment. Automatic OS boot registration, conversation persistence, trading
 writes/two-way pricing and broad model accuracy evaluation are outside this
 first local read-only deliverable. The sampled market series has no seeded
-observations, so no successful live FX-price lookup is claimed.
+observations; that initial smoke did not demonstrate a populated FX lookup. Version 0.1.1 now verifies imported historical EURUSD observations as recorded above.

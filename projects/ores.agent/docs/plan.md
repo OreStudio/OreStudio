@@ -5,6 +5,18 @@ Source: https://github.com/OreStudio/OreStudio/issues/4295 and its three comment
 
 ## Current implementation status (2026-11-06)
 
+The initial six checkpoints are followed by the 0.1.1 FX/IR enhancement,
+committed as `7cc8511292a2416da54c25fe8bd54530326b37c7` and deployed as
+`0.1.1-86a407144a11`. All 24 component tests pass on Windows and Linux.
+Exact selected-party FX spot and basic period-maturity IR reads now include
+provider clarification, observation dates, sources, units and freshness.
+The live demo proves a historical EURUSD lookup (2016-12-30), not a current
+market quote; the sampled USD swap has no observations. Only the agent was
+restarted. No OreStudio server, NATS or database changes were required.
+See `docs/market-lookups.md` and the current-release section of validation.md.
+
+The following paragraphs preserve the initial 0.1.0 checkpoint history.
+
 Six runnable checkpoints are committed and pushed to the fork. The combined
 agent/MCP application is deployed independently at http://127.0.0.1:20100/.
 llama.cpp b12172 serves the approved official LiquidAI LFM3-1.7B QAD Q4_0

@@ -202,6 +202,162 @@ cause is that the generator fills the summary fields a product had before the
 corpus work, while the export now writes the new rows (underlyings, payloads,
 range bounds, structures) that the generator does not fill.
 
+** Design: oresmd references, resolvers and trade builders
+
+Agreed direction (2026-11-06): every market reference a trade holds is an
+oresmd address; ORE names exist only in ORE documents, converted when we
+read or write one. Trade builders build on that. The design has three
+layers; each depends only on the one below it.
+
+*** Problem
+
+A trade type's constructor takes what its family shares and returns what
+those terms fill: a CreditDefaultSwap with no CDS row, a callable swap with
+no call. Builders fix that, but a builder needs to ask questions about the
+market data a trade refers to ("which convention does this index's swap
+use?"), and today a trade names market data three ways: ORE names (a leg's
+=EUR-EURIBOR-6M=), oresmd URIs (a bond's reference curve) and codes of our
+own. Grounding found:
+
+- About 60 trade columns name market data: indices (=floating_index_code=,
+  =fx_index=, =inflation_index_code=, the funding, repo and stub indices),
+  curves (=reference_curve_id=, =credit_curve_id=, =volatility_curve_id=,
+  =income_curve_id=), underlyings (=underlying_name= in 13 tables,
+  =equity_name=, =spread_commodity_code=, =contract_name=) and entities and
+  securities (=reference_entity_id=, =issuer_id=, =security_id=).
+- The oresmd grammar has two kinds of address: a datum or series (quotes,
+  curves; =market_datum=) and an index (fixings; =market_index=). Both types
+  are in =ores.marketdata.api/datum=; their codecs (=oresmd_uri_codec=, URI
+  text; =ore_index_codec=, ORE index names) are in =ores.marketdata.core= but
+  depend only on the API's types.
+- Refdata conventions already carry an address: =swap_convention.oresmd_uri=
+  is the fixing its floating leg uses, an index convention's is the index it
+  defines. Refdata holds addresses as values and does not link marketdata.
+- Some address-to-ORE-name conversions are fixed (an index and its ORE
+  name); others depend on the market configuration a run reads (a curve URI
+  and the ORE curve name its today's market forwards to; see
+  =reference_curve_names_of= in =run_configuration_operations.cpp=).
+
+*** Layer 1: the address
+
+- The codecs move from =ores.marketdata.core= to =ores.marketdata.api=, so
+  any component can parse and write an address without the core.
+- One value type for a reference, =market_reference=, a variant of the
+  typed addresses the grammar has (=market_index=, =market_datum=, and the
+  kinds still to add, see Open questions). Parsing is the only way to get
+  one, so a column read back is a typed reference or a stated failure.
+- A trade stores the address's canonical text; the codec's writer is the
+  one spelling.
+
+*** Layer 2: the resolvers
+
+Two questions, two contexts, two interfaces; one type would mix a tenant's
+reference data with a run's market configuration.
+
+- =reference_resolver=: what an address means in reference data. By
+  address: the index's convention, the swap convention that uses it, the
+  CDS convention, the equity underlying, the commodity, the currency pair.
+  Answers =std::expected<refdata type, resolve_error>=. Context: a tenant's
+  refdata. Implementations: in memory (tests, generator, shell) and one over
+  the refdata service.
+- =ore_naming=: an address and its ORE name, both ways, under one market
+  configuration. Fixed for indices (=ore_index_codec=), configuration-bound
+  for curves (today's =reference_curve_names_of=, generalised). Context: a
+  run's or an import's market configuration. The exporter writes through it,
+  the importer reads through it.
+
+Both interfaces sit beside the address types, so trading, ORE and the
+services see them without seeing each other.
+
+*** Layer 3: the trade builders
+
+- A builder per trade type, in =ores.trading.api=, returning the
+  =trade_instrument= member (=swap_instrument_data=, ...). Required terms are
+  an aggregate of =required<T>= members, so omitting one does not compile;
+  optional terms and overrides are setters; =build() const= returns
+  =std::expected<T, build_error>= with =build_error{term, message}=.
+- Market references are =market_reference= values, never strings. =build=
+  resolves them through a =reference_resolver= given at construction and
+  derives what conventions fix (a fixed leg's frequency, day count, calendar
+  and adjustment from the swap convention; the floating leg's from the index
+  convention), as ORE's =TradeGenerator= does. An unresolved reference fails
+  naming the term and the address.
+- Shared sub-builders (legs, schedules, option blocks, barriers,
+  underlyings, range bounds) are internal and compose the product builders;
+  every leg gets its schedule row, so a written leg states its calendar and
+  rule.
+- ORE vocabularies the builder owns are enums (=side=, =long_short=,
+  =option_style=, =barrier_type=), spelt for ORE in one place.
+- Registry: each builder states its =trade_type=; one tuple lists the
+  builder types; a test fails when it and the trade type catalogue differ.
+- Builders do not do trade ids, the envelope or booking rows.
+
+*** Usage (caller's view)
+
+#+begin_src cpp
+const auto euribor_6m = market_reference::parse(
+    "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M");
+
+auto swap = vanilla_swap_builder{refdata,          // a reference_resolver
+        {.notional = 10'000'000, .currency = "EUR",
+         .start = 2026y/1/5, .maturity = 2036y/1/5,
+         .fixed_rate = 0.0215, .index = *euribor_6m,
+         .fixed_side = side::pay}}
+    .fixed_day_count("30/360")
+    .build();       // std::expected<swap_instrument_data, build_error>
+
+// Export: the run's market configuration names each address for ORE.
+exporter::export_portfolio(items, batch, ore_naming_for(run));
+#+end_src
+
+*** How the parts hang together
+
+- One language for references (layer 1); every component speaks it.
+- Meaning comes from refdata (=reference_resolver=); ORE spelling comes from
+  the market configuration (=ore_naming=). Neither is in a trade.
+- Builders produce complete trades in that language; the exporter is the
+  only place a trade becomes ORE names, the importer the only place ORE names
+  become a trade.
+- The recorded trades and the ORE check judge the result, as now.
+
+*** Tradeoffs accepted
+
+- We accept losing SQL foreign keys on the reference columns (an address is
+  not a row of one table) in exchange for one language; a reference is
+  checked by parsing at write and by resolving at booking.
+- We accept a class per trade type (about 85) in exchange for each type's
+  required terms being visible where it is built.
+- We accept migrating stored trades in exchange for a model with no ORE
+  names in it.
+
+*** Alternatives considered
+
+- Maps of every reference table given to each builder: builders would know
+  refdata's storage and every foreign key would have two owners.
+- ORE's samples as templates: complete by construction, but no use to a
+  person entering a trade, and no terms beyond the samples'.
+- One resolver for meaning and naming: it would need a tenant's refdata and
+  a run's market configuration at once, which no caller but a run has.
+
+*** Open questions and risks
+
+- Not every reference has an address kind yet. Credit names (a CDS's
+  reference entity, held as an LEI), issuers and securities: are they
+  oresmd addresses, or refdata identities that stay foreign keys?
+- Where do =reference_resolver= and =ore_naming= live: in
+  =ores.marketdata.api=, which would then link =ores.refdata.api= for the
+  convention types, or in a small component of their own?
+- The booking check: should the trading service resolve every reference of
+  a trade it books, refusing one that does not resolve?
+- Refdata holds no index conventions for ORE's built-in indices; they need
+  seeding (from ORE's =indexparser.cpp=) before a resolver can answer for
+  them.
+- Size: this is a story, not a task. Proposed order: (1) move the codecs and
+  add =market_reference=; (2) the resolvers, with =ore_naming= replacing
+  =reference_curve_names=; (3) migrate the trade columns family by family,
+  importer and exporter with them; (4) builders, family by family, each
+  migrating its planner and clearing its known-list entries.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

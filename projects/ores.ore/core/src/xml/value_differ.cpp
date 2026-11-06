@@ -42,7 +42,13 @@ auto values_of(const std::vector<value_entry>& entries, std::size_t from, std::s
     return out;
 }
 
-/// Compares the values both fingerprints state at one path.
+/**
+ * @brief Compares the values both fingerprints state at one path.
+ *
+ * The values each side alone states are paired as changes in sorted order, not
+ * by likeness. Where a path holds several values, a change can name two values
+ * that are not related; the count of differences is still exact.
+ */
 auto diff_path(const std::string& path,
                const std::vector<std::string>& expected,
                const std::vector<std::string>& actual,

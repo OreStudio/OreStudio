@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: D2EA779C-B12F-4F01-94EB-A42439C23B82
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.calendar_adjustment_messages
 #+description: Codegen operation model for the calendar_adjustment export protocol, rendered to C++ and TypeScript from one source.

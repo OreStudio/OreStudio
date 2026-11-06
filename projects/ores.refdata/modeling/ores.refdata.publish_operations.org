@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8B1F4A52-6F0D-4C47-9A3E-2F5C7D1B8E64
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.publish_operations
 #+description: Codegen operation model for the workflow steps that publish a refdata dataset from DQ.

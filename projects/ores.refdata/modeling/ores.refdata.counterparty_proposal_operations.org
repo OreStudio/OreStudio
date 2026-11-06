@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2FAAB5AD-7521-590B-A24A-1F5DF3C8676C
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.counterparty_proposal_operations
 #+description: Codegen operation model for proposing changes to counterparties -- a preview that runs the real writes and writes nothing, a raise that holds the lines in an approval request, and the reads a decider works from -- rendered to C++ and TypeScript from one source.

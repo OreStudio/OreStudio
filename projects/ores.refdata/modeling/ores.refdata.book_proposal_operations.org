@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8C4E1B27-5D90-4A3F-B6E2-9F7A0D3C5B18
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.book_proposal_operations
 #+description: Codegen operation model for proposing changes to books -- a preview that runs the real write and writes nothing, and a raise that holds the lines in an approval request -- rendered to C++ and TypeScript from one source.

@@ -29,7 +29,6 @@
 #include <functional>
 #include <iomanip>
 #include <sstream>
-#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -47,7 +46,8 @@ namespace {
  */
 std::string os_hostname() {
 #if defined(_WIN32)
-    return ores::platform::environment::environment::get_value("COMPUTERNAME").value_or(std::string());
+    return ores::platform::environment::environment::get_value("COMPUTERNAME")
+        .value_or(std::string());
 #else
     char buffer[256] = {};
     return ::gethostname(buffer, sizeof(buffer)) == 0 ? std::string(buffer) : std::string();

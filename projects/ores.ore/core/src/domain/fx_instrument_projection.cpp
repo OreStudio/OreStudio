@@ -298,7 +298,11 @@ auto read_fx_option(const record_reader& trade) -> fx_vanilla_option_instrument 
     r.option_type = fx_instrument_projection_option_type_of(option);
     r.settlement =
         option ? fx_instrument_projection_spelling_of(*option, "Settlement") : std::string{};
-    r.exercise_style = "European";
+    // ORE refuses an FxOption that states no style, so a document is read
+    // as European only where it states none.
+    r.exercise_style = option && option->has("Style") ?
+                           scalar_terms::read_text(*option, "Style").value_or("European") :
+                           "European";
     r.expiry_date = fx_instrument_projection_expiry_date_of(option);
     return r;
 }
@@ -629,6 +633,8 @@ void write_fx_option(record_writer& trade, const fx_vanilla_option_instrument& v
 
     auto option = data.child("OptionData");
     fx_instrument_projection_write_option_entry(option, v.option_type, v.expiry_date);
+    if (!v.exercise_style.empty())
+        scalar_terms::write_text(option, "Style", v.exercise_style);
     write_settlement(option, v.settlement);
 }
 

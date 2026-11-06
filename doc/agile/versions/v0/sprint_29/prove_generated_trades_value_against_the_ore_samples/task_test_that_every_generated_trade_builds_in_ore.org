@@ -29,9 +29,9 @@ type and what is wrong, so the reports only fail for market data.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
-| Now          | Plan written. |
+| Now          | Trade builders: conventions interface and swap leg builder. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the in-memory export of a generated population. |
+| Next         | Credit builders. |
 | Last touched | 2026-11-06                               |
 
 * Acceptance
@@ -86,6 +86,52 @@ That path is where the reports fail.
    projection, each fix taking its entry off the known list.
 5. *Prove it on the reports.* Recreate, provision Acme and let the reports
    tick; record the error counts by scope before and after.
+
+** Revised on 2026-11-06: recorded trades and trade builders
+
+Agreed with the product owner. Steps 1 and 2 above became a recorded set:
+the generated trades of each type are written to
+=projects/ores.synthetic/core/tests/data/generated_trades=, one portfolio per
+type, and a test fails when the generator moves until the files are written
+again (=ORES_UPDATE_GENERATED_TRADES=1=). The structure checks judge those
+files against known lists asserted exactly.
+
+The first run showed the cause of most report errors: the trade
+constructors let a trade be built without its product. The credit
+constructors take the terms every credit product shares and return the
+header alone, so a CreditDefaultSwap has no CDS row and no premium leg; a
+callable swap's terms hold no call option. The fix is trade builders, one
+per trade type, usable outside the generator:
+
+1. *A builder returns the trade the system uses*, a member of
+   =trade_instrument=, not loose batch rows.
+2. *Economic terms in, the rest from conventions*, as ORE's own
+   =TradeGenerator= does (=OREData/ored/portfolio/tradegenerator.cpp=): an
+   index, a notional, a maturity and a rate give a complete swap, the day
+   count, frequency, calendar, adjustment and fixing days taken from the
+   index's convention. A setter overrides any of them.
+3. *Required terms in the constructor, optional terms in setters.* The
+   required terms of a product are the ones its ORE data class reads as
+   mandatory (=getChildValue(..., true)=; 439 reads in =ored/portfolio=),
+   so a forgotten term is a compile error, not an empty string.
+4. *ORE's vocabularies as enums*, taken from its parsers, so a builder cannot
+   state a value ORE refuses, such as a barrier type of =KnockOut=.
+5. *Shared sub-builders* for the shapes ORE repeats: legs, schedules, option
+   blocks, barriers, underlyings, range bounds.
+6. =build()= returns =std::expected= and checks what types cannot: dates in
+   order, a schedule that is not empty. The error names the term.
+7. *A registry* maps each catalogued trade type to its builder; a test fails
+   for a type with none, and each builder's trade must roundtrip through our
+   XML unchanged.
+8. The builders live in =ores.trading.api= and take conventions through a
+   small interface of value structs defined there, so the trading API keeps
+   no dependency on refdata. An adapter from the refdata conventions lives
+   where both are seen.
+
+Rollout: the conventions interface and the swap leg builder, proven on Swap;
+then credit, whose every type is broken; then family by family, each
+removing its =construct_*= functions and =*_terms= structs, migrating its
+planner and taking its entries off the known lists.
 
 Later, out of this task: the database leg. A generated trade written to the
 database and exported must give the same XML as the in-memory export; the

@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 1817AF98-6863-48F9-A37F-3FAA0D0842B4
+:END:
+#+title: The feed ingest tests fail while the environment's services run
+#+description: Two feed ingest loop tests count the rows and republishes their own feed produced, in the environment's database and on its NATS subjects; when the environment's marketdata, official and synthetic services run they add ticks of their own, and the tests fail.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:test:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits=
+and =a_small_batch_does_not_pass_the_batches_that_are_in_the_stages= in
+=ores.marketdata.service.tests= count the ticks their own feed stored and
+republished. They read the environment's database and NATS subjects, where the
+environment's marketdata, official and synthetic services write ticks of their
+own; while those run, the counts are off (6203 stored where 6200 were sent)
+and the tests fail every time. With the three services stopped they pass.
+
+* Why
+
+A suite that fails because the environment is up reads as a regression and
+gets rerun or ignored. The tests should count only their own ticks: scope
+them by a feed, party or subject of their own, or run on a database and
+subject prefix no service shares. Found on 2026-11-06 while moving the oresmd
+codecs.
+
+* References
+
+- =projects/ores.marketdata/service/tests/app_feed_ingest_loop_tests.cpp=
+
+* See also
+
+- [[id:6C6D4D02-DDA2-4721-8B96-40950DC5E86C][Move the oresmd codecs into the marketdata API]]

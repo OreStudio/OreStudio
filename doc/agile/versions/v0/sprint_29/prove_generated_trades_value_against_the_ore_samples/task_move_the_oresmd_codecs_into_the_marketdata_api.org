@@ -8,7 +8,7 @@
 #+filetags: :marketdata:oresmd:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-the-oresmd-codecs-into-the-marketdata-api
-#+pr:
+#+pr: 4476
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4476][#4476]] | [marketdata] Move the oresmd codecs into the API and add market_reference |
 
 * Review
 

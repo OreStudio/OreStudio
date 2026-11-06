@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve one screen from the new server]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-06                               |
 
 * Acceptance
@@ -83,3 +83,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story exists with its goal, its four acceptance criteria and two decisions, and
+both tasks are wired into its table and into Sprint 29's. Nothing was implemented:
+the scaffold is the record that the shape was decided before a screen moved.

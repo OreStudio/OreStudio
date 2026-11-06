@@ -39,7 +39,7 @@ A signed-in person uses one screen served end to end by the C++ server, and the 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:18835766-D75B-4438-BF90-4B6A148631E4][Scaffold story: Serve one screen from the new server]] | STARTED | 2026-11-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:18835766-D75B-4438-BF90-4B6A148631E4][Scaffold story: Serve one screen from the new server]] | DONE | 2026-11-06 | 2026-11-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:506FB5FA-42AD-4F95-BFC2-CB2E52079DD7][Point one screen at the new server]] | BACKLOG | | | Initial task for: Serve one screen from the new server |
 
 * Decisions

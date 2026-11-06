@@ -110,7 +110,6 @@ struct bond_instrument final {
  */
 [[nodiscard]] inline std::string canonical_form(const bond_instrument& v) {
     std::string out = "{";
-    ores::utility::digest::append_member(out, "position_identifier", v.position_identifier);
     ores::utility::digest::append_member(out, "notional", v.notional);
     out.push_back('}');
     return out;

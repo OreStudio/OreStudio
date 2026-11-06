@@ -135,7 +135,7 @@ ctx.generate_uuid()
 :type:     text
 :cpp_type: std::optional<std::string>
 :nullable: true
-:economic: true
+:economic: false
 :END:
 
 The name a bond position gives its basket, as =BondBasketData/Identifier=

@@ -27,7 +27,7 @@
 
 begin;
 
-select plan(3);
+select plan(5);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 

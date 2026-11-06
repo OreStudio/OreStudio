@@ -31,7 +31,7 @@
 
 begin;
 
-select plan(5);
+select plan(9);
 
 create temporary table t_adapters_dataset on commit drop as
 select id from ores_dq_datasets_tbl

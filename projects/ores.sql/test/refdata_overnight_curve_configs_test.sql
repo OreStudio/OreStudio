@@ -41,9 +41,10 @@ where c.tenant_id = ores_utility_system_tenant_id_fn()
   and c.valid_to = ores_utility_infinity_timestamp_fn();
 
 select is(
-    (select count(*)::int from t_configs where name <> 'USD-SOFR-FOMC'),
-    19,
-    'the seed holds an overnight-index curve config for nineteen currencies besides USD'
+    (select count(*)::int from (
+        select currency_code from t_configs group by currency_code having count(*) > 1) twice),
+    0,
+    'no currency has two overnight-index curve configs'
 );
 
 select is(
@@ -53,6 +54,8 @@ select is(
     'every currency of the derived FX pairs has a curve config'
 );
 
+-- Only A360 and A365F are mapped, so a config with any other day count fails
+-- here until its mapping to the convention's spelling is added.
 select is(
     (select count(*)::int from t_configs t
      where t.name <> 'USD-SOFR-FOMC'

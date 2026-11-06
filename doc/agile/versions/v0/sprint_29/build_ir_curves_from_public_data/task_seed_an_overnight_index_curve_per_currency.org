@@ -118,6 +118,9 @@ via its "Verifies task" field.
 | 1 | Local check: =lint= reports a dangling id link | doc/recipes/shell/shell.org | Decline | On main, in a page this branch does not touch. |
 | 2 | Local check: =er-diagram= reports the trading diagrams stale | ores_schema.trading.puml | Decline | Drift from main's trading schema commits; this branch changes no table. |
 | 3 | Local tests: two ingest-loop cases of =ores.marketdata.service.tests= fail | app_feed_ingest_loop_tests.cpp | Decline | They fail while the live marketdata service shares their subjects, and pass with it stopped; this branch changes no C++. |
+| 4 | Claude review 1: the first assertion hard-codes nineteen configs | refdata_overnight_curve_configs_test.sql | Accept | Now asserts what the seed guarantees: no currency has two configs. |
+| 5 | Claude review 2: say that the day count check maps only A360 and A365F | refdata_overnight_curve_configs_test.sql | Accept | A comment above the check says a new code fails it until mapped. |
+| 6 | Claude review 3: confirm the UUIDs are deterministic | the two seeds | No change | They are uuid5 values of a fixed namespace and the row's role and currency, written as literals, so a re-seed gives the same ids. |
 
 * Result
 

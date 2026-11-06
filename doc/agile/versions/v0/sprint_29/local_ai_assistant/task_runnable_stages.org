@@ -114,3 +114,13 @@ via its "Verifies task" field.
 - Before/after native backend, NATS and inference PID sets unchanged. No server build, broker configuration, new subjects or data mutation.
 - Freshness, exact point matching, selected-party restrictions and bounded complete scans are documented in =projects/ores.agent/docs/market-lookups.md=.
 - Remaining broader story acceptance items (Linux GPU and hosted isolation) stay open.
+
+* Business use cases: Stage 0
+
+- Validated implementation commit: =8e83cc9f7b99df31e6a1f77929294fe2eb67dd73=.
+- =npm test=: 28 tests pass on Windows and Linux; local Linux evidence in =build/output/agent-business-linux-check.log=.
+- =scripts/inspect-business.mjs=: successful real NATS reads for selected-party trades, books, portfolios, report definitions/instances/results and IR catalogue observations.
+- Live sample at 2026-11-06 20:33 UTC: 73 trades, 2 books, 3 portfolios, 25 report definitions, 61 runs and 584 result rows. Four runs were clean, but none established the required matching clean trade-NPV example. All 32 selected-party IR series were empty.
+- Inspection delivered; clean-NPV and populated-IR data readiness remain open. Discovery can proceed; no reporting result acceptance is claimed from fixtures.
+- Existing stopped backend services were restored for inspection. No server rebuild, broker configuration change, database recreation, report trigger or feed import was performed by the probe.
+- Reproduction, concrete record IDs and next actions: =projects/ores.agent/docs/business-baseline.md=. Scope and later stages: =projects/ores.agent/docs/business-use-cases-plan.md=.

@@ -87,6 +87,10 @@ first user's resolution or results. No mutation subjects are enabled.
 
 ## Stage 2 — single-trade valuation results
 
+Read-only code slice delivered in 0.1.3; see [reporting behaviour](reporting.md)
+and [validation](validation.md). The clean live trade-NPV acceptance gate
+remains open: current applicable runs completed with errors.
+
 Question: “What is the NPV of trade X?” Proposed tools: `find_report_runs`,
 `read_run_status`, `read_trade_results`.
 

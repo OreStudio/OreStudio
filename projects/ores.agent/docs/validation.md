@@ -1,6 +1,36 @@
 # Implementation validation
 
-## Current release: 0.1.2 discovery
+## Current release: 0.1.3 stored reporting
+
+Validated code: `bf08fba92c6cfe2da67ec172f6c207272501b4ff` (implementation begins
+at `5ff7160a7b`). Installed artifact: `0.1.3-5b23d543cb79`, identical on Windows
+and Linux. All **48 tests pass** on both platforms. Linux output is retained
+locally in `build/output/agent-reporting-linux-check.log`; the pinned container
+is the same image used below. No Linux GPU or remote CI run is claimed.
+
+The installed release passed `scripts/smoke-reporting.mjs` with the official
+independent MCP client and actual Acme data. Run discovery and health succeeded;
+default NPV requests withheld the errored runs' figures; explicit run-scoped
+partial inspection returned a labelled `npv.csv` row priced at 2026-11-06.
+A separate login selecting Acme HK could not read the Plc trade's results.
+No report was generated, retried or repaired during these checks.
+
+GPU-backed NPV and run-status questions passed (3,671 ms and 1,279 ms samples).
+The exact explicit two-UUID partial command uses validated direct execution,
+not a model round trip (1,071 ms sample). This distinction is deliberate and
+recorded in reporting.md. All numbers are smoke samples, not benchmarks.
+Discovery/book clarification/trade economics and market/provider/currency
+regressions passed. Native backend, NATS and inference PID sets were unchanged;
+the main app remained HTTP 200. Only the standalone agent release changed.
+
+The clean live NPV acceptance gate is **still open**. Clean success, zero,
+staleness and ambiguity are verified using labelled fixtures/MCP tests; actual
+live data proves health, withholding and partial inspection, not a clean
+valuation. Prepare or repair one approved clean run as a separate declared
+action before claiming that business gate or proceeding to reconciled portfolio
+aggregation. See [stored reporting](reporting.md).
+
+## Previous release: 0.1.2 discovery
 
 Validated code: `26217842d462e4f5b193b55d4e02ce366adb728d` (Stage 1 implementation
 starts at `065e5dc857`). Installed artifact: `0.1.2-adeb734cfeb9`, identical on

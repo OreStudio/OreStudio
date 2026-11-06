@@ -24,32 +24,62 @@
 #include "ores.http.core/stream/change_pump.hpp"
 #include <boost/asio/any_io_executor.hpp>
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <atomic>
 #include <chrono>
 #include <cstddef>
+#include <functional>
+#include <memory>
+#include <mutex>
 
 namespace ores::http::stream {
 
 /**
- * @brief Closes a window on an interval.
+ * @brief Closes the window a change opened.
  *
- * A window is what the coalescer gathered since the last one. This is the clock that
- * ends it: one timer per process, re-armed after each tick, so a quiet system pays
- * one timer per interval and no thread.
+ * A window is what the coalescer gathered since it was armed. This is the clock that
+ * ends it, and it is armed by the first change rather than re-armed on an interval:
+ * a burst that begins just after a tick would otherwise be cut in two, and a screen
+ * would redraw twice for one import.
  *
- * The loop ends when the ticker is stopped, which a draining server calls. It
- * publishes nothing after that, so a shutdown does not write to a stream it is about
- * to close.
+ * A window is never extended by what arrives inside it, so a long import is still a
+ * series of windows and not one. A quiet system arms nothing, so the clock costs one
+ * sleeping timer and no thread.
+ *
+ * The change that arms a window arrives on the publish thread and the timer belongs
+ * to the server's, so an arm is a post: the timer is only ever touched by the
+ * executor that owns it.
+ *
+ * That executor must run its handlers one at a time on one thread: a single-threaded
+ * =io_context=, or an executor bound to a strand. The window's flags are plain, and
+ * the arm is a plain write from the posted handler, so two threads in this executor
+ * would be a data race.
+ *
+ * One ticker per coalescer, for as long as the coalescer lives: the ticker is the
+ * clock the coalescer calls when a change opens a window.
  */
 class ORES_HTTP_CORE_EXPORT change_ticker final {
 public:
-    change_ticker(change_coalescer& coalescer, change_hub& hub, std::chrono::milliseconds interval)
-        : pump_(coalescer, hub)
-        , interval_(interval) {}
+    change_ticker(change_coalescer& coalescer, change_hub& hub, std::chrono::milliseconds window);
+
+    ~change_ticker();
+
+    change_ticker(const change_ticker&) = delete;
+    change_ticker& operator=(const change_ticker&) = delete;
 
     /// Runs the loop until stop() is called. One per process.
     boost::asio::awaitable<void> run(boost::asio::any_io_executor executor);
 
-    /// Ends the loop after the tick in progress.
+    /**
+     * @brief Opens a window that ends one interval from now.
+     *
+     * Safe to call from any thread. A call that lands while a window is open does
+     * nothing, because the window belongs to the change that opened it and what
+     * arrives later does not lengthen it.
+     */
+    void arm();
+
+    /// Ends the loop after the window in progress.
     void stop();
 
     /// Whether a tick is still scheduled.
@@ -58,9 +88,23 @@ public:
     }
 
 private:
+    /// What a posted arm finds. Shared, so a post that outlives the ticker is harmless.
+    struct window final {
+        std::shared_ptr<boost::asio::steady_timer> timer;
+        bool armed = false;
+        bool done = false;
+    };
+
+    /// Posts @p change to the window's executor, if there is one to post to.
+    void post(std::function<void(const std::shared_ptr<window>&)> change);
+
     change_pump pump_;
-    std::chrono::milliseconds interval_;
-    bool stopped_ = false;
+    change_coalescer& coalescer_;
+    std::chrono::milliseconds window_;
+    std::shared_ptr<window> open_;
+    std::atomic<bool> stopped_{false};
+    mutable std::mutex mu_;
+    std::shared_ptr<boost::asio::any_io_executor> executor_;
 };
 
 }

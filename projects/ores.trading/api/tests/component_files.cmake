@@ -249,6 +249,8 @@ set(files
     "payoff_type_protocol_codec_roundtrip_tests.cpp"
     "price_type_codec_roundtrip_tests.cpp"
     "price_type_protocol_codec_roundtrip_tests.cpp"
+    "product_type_asset_class_codec_roundtrip_tests.cpp"
+    "product_type_asset_class_protocol_codec_roundtrip_tests.cpp"
     "product_type_codec_roundtrip_tests.cpp"
     "product_type_protocol_codec_roundtrip_tests.cpp"
     "range_bound_codec_roundtrip_tests.cpp"

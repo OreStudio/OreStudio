@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.refdata.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
@@ -148,7 +149,7 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
             << "publish_from_dq complete: fn=" << fn_name << " inserted=" << result.records_inserted
             << " updated=" << result.records_updated;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
 
     } catch (const std::exception& e) {

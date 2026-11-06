@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
@@ -170,7 +171,7 @@ TEST_CASE("cron_expression round-trips through rfl as its string", "[domain][cro
     const auto parsed = cron_expression::from_string("*/5 * * * *");
     REQUIRE(parsed.has_value());
 
-    const auto written = rfl::json::write(*parsed);
+    const auto written = ores::utility::codec::json::write(*parsed);
     CHECK(written == R"("*/5 * * * *")");
 
     const auto read = rfl::json::read<cron_expression>(written);

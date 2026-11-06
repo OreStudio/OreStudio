@@ -8,7 +8,7 @@
 #include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/timeouts.hpp"
 {{^has_generated_wire_codec}}
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{#has_generated_wire_codec}}
 #include "ores.utility/codec/wire_traits_fwd.hpp"
@@ -19,7 +19,6 @@
 #include <optional>
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
-#include <rfl/json.hpp>
 {{/has_generated_wire_codec}}
 #include <string>
 {{#has_generated_wire_codec}}
@@ -98,7 +97,7 @@ boost::asio::awaitable<http_response>
             co_return http_response::internal_error(std::string("Failed to decode response: ") +
                                                     decoded.error().what());
         }
-        co_return http_response::json({{#has_generated_wire_codec}}ores::utility::codec::wire_traits<typename Request::response_type>::write_json(*decoded){{/has_generated_wire_codec}}{{^has_generated_wire_codec}}rfl::json::write(*decoded){{/has_generated_wire_codec}});
+        co_return http_response::json(ores::utility::codec::wire_traits<typename Request::response_type>::write_json(*decoded));
     } catch (const ores::nats::service::session_expired_error& e) {
         co_return http_response::unauthorized(e.what());
     } catch (const std::exception& e) {
@@ -114,7 +113,7 @@ boost::asio::awaitable<http_response>
     using request_type = messaging::{{request}};
     try {
 {{#has_fields}}
-        const auto parsed = {{#has_generated_wire_codec}}{{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_body<request_type>(req.body){{/has_generated_wire_codec}}{{^has_generated_wire_codec}}rfl::json::read<request_type>(req.body){{/has_generated_wire_codec}};
+        const auto parsed = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_body<request_type>(req.body);
         if (!parsed) {
             co_return http_response::bad_request("Invalid request body");
         }

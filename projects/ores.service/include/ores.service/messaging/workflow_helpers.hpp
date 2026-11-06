@@ -20,6 +20,7 @@
 #ifndef ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 #define ORES_SERVICE_MESSAGING_WORKFLOW_HELPERS_HPP
 
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -75,7 +76,7 @@ inline std::string extract_workflow_header(const ores::nats::message& msg,
  *   if (!wf) return;           // not a workflow command
  *   try {
  *       auto result = do_work(wf->tenant_id, ...);
- *       wf->complete(rfl::json::write(result));
+ *       wf->complete(ores::utility::codec::json::write(result));
  *   } catch (const std::exception& e) {
  *       wf->fail(e.what());
  *   }

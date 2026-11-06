@@ -20,6 +20,7 @@
 #ifndef ORES_DQ_CORE_MESSAGING_PUBLISH_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_PUBLISH_HANDLER_HPP
 
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_datasets_protocol.hpp"
@@ -274,7 +275,7 @@ private:
         ores::workflow::messaging::start_workflow_message start_msg;
         start_msg.type = "bundle_publish_workflow";
         start_msg.tenant_id = tenant_id;
-        start_msg.request_json = rfl::json::write(wf_req);
+        start_msg.request_json = ores::utility::codec::json::write(wf_req);
         start_msg.correlation_id = correlation_id;
         start_msg.instance_id = instance_id;
 

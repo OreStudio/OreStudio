@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.diff/domain/diff_result.hpp"
 #include "ores.diff/domain/field_value.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -32,7 +33,7 @@ TEST_CASE("diff_result_round_trips_through_rfl_json", "[domain]") {
             {.field_name = "Name", .old_value = "US Dollar", .new_value = "United States Dollar"},
             {.field_name = "Market Tier", .old_value = "", .new_value = "Major"}}};
 
-    const auto json = rfl::json::write(original);
+    const auto json = ores::utility::codec::json::write(original);
     const auto restored = rfl::json::read<diff_result>(json);
 
     REQUIRE(restored);
@@ -42,7 +43,7 @@ TEST_CASE("diff_result_round_trips_through_rfl_json", "[domain]") {
 TEST_CASE("field_value_round_trips_through_rfl_json", "[domain]") {
     const field_value original{.name = "ISO Code", .value = "USD"};
 
-    const auto json = rfl::json::write(original);
+    const auto json = ores::utility::codec::json::write(original);
     const auto restored = rfl::json::read<field_value>(json);
 
     REQUIRE(restored);
@@ -56,7 +57,7 @@ TEST_CASE("diff_result_with_populated_spans_round_trips_through_rfl_json", "[dom
                                             .old_spans = {{.offset = 3, .length = 1}},
                                             .new_spans = {{.offset = 3, .length = 1}}}}};
 
-    const auto json = rfl::json::write(original);
+    const auto json = ores::utility::codec::json::write(original);
     const auto restored = rfl::json::read<diff_result>(json);
 
     REQUIRE(restored);

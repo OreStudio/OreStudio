@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_API_WORKFLOW_PROVISION_TENANT_WORKFLOW_HPP
 #define ORES_IAM_API_WORKFLOW_PROVISION_TENANT_WORKFLOW_HPP
 
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
@@ -392,7 +393,7 @@ make_step(const provision_tenant_workflow_request& run,
 
     step.build_command = [command](const std::string&,
                                    const ores::workflow::service::workflow_step_results&) {
-        return rfl::json::write(command);
+        return ores::utility::codec::json::write(command);
     };
     step.build_compensation = [](const std::string&, const std::string&, const std::string&) {
         return "{}";

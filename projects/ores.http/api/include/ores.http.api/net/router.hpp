@@ -20,6 +20,7 @@
 #ifndef ORES_HTTP_NET_ROUTER_HPP
 #define ORES_HTTP_NET_ROUTER_HPP
 
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.http.api/domain/route.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -129,7 +130,7 @@ public:
         schema.json_schema = rfl::json::to_schema<T>();
 
         if (example_generator) {
-            schema.example_json = rfl::json::write(example_generator());
+            schema.example_json = ores::utility::codec::json::write(example_generator());
         }
 
         body_schema_ = schema;
@@ -159,7 +160,7 @@ public:
         schema.json_schema = rfl::json::to_schema<T>();
 
         if (example_generator) {
-            schema.example_json = rfl::json::write(example_generator());
+            schema.example_json = ores::utility::codec::json::write(example_generator());
         }
 
         success_response_schema_ = schema;

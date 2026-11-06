@@ -20,6 +20,7 @@
 #ifndef ORES_DQ_API_WORKFLOW_BUNDLE_PUBLISH_WORKFLOW_HPP
 #define ORES_DQ_API_WORKFLOW_BUNDLE_PUBLISH_WORKFLOW_HPP
 
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
@@ -117,7 +118,7 @@ inline void register_bundle_publish_workflow(ores::workflow::service::workflow_r
                 cmd.tenant_id = tenant_id_v;
                 cmd.mode = mode;
                 cmd.params_json = params;
-                return rfl::json::write(cmd);
+                return ores::utility::codec::json::write(cmd);
             };
 
             s.build_compensation =

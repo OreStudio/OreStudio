@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_CORE_DOMAIN_CONVENTIONS_FAMILY_PACK_HPP
 #define ORES_ORE_CORE_DOMAIN_CONVENTIONS_FAMILY_PACK_HPP
 
+#include "ores.utility/codec/json_codec.hpp"
 #include "conventions_family_units.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <format>
@@ -48,7 +49,7 @@ void pack_family(refdata::messaging::conventions_bundle& bundle,
                  Convert convert) {
     for (std::size_t i = 0; i < rows.size(); ++i)
         bundle.rows.push_back(
-            {std::string(family), static_cast<int>(i), rfl::json::write(convert(rows[i]))});
+            {std::string(family), static_cast<int>(i), ores::utility::codec::json::write(convert(rows[i]))});
 }
 
 template <typename Row>
@@ -56,7 +57,7 @@ void pack_row(refdata::messaging::conventions_bundle& bundle,
               std::string_view family,
               int sequence,
               const Row& row) {
-    bundle.rows.push_back({std::string(family), sequence, rfl::json::write(row)});
+    bundle.rows.push_back({std::string(family), sequence, ores::utility::codec::json::write(row)});
 }
 
 /**

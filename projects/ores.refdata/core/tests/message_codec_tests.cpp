@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.database/query_builder/json.hpp"
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
@@ -69,7 +70,7 @@ void same_bytes_as_reflect_cpp(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
+    CHECK(json == ores::utility::codec::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
@@ -188,7 +189,7 @@ TEST_CASE("a refdata field group states its shape, so its holder recurses", "[co
     group.party_id = boost::uuids::string_generator{}("5c9d4a3b-2e1f-4a6b-8c7d-9e0f1a2b3c4d");
     group.kind_code = "OIS";
 
-    CHECK(ores::utility::codec::json::write(group) == rfl::json::write(group));
+    CHECK(ores::utility::codec::json::write(group) == ores::utility::codec::json::write(group));
     CHECK(ores::utility::codec::msgpack::write(group) == their_msgpack(group));
 }
 
@@ -253,7 +254,7 @@ TEST_CASE("a printed row is the JSON the reflector prints", "[codec][refdata]") 
     const auto c = a_currency();
     std::ostringstream printed;
     printed << c;
-    CHECK(printed.str() == rfl::json::write(c));
+    CHECK(printed.str() == ores::utility::codec::json::write(c));
 }
 
 TEST_CASE("a printed storage row carries what the reflector prints", "[codec][refdata][storage]") {
@@ -272,7 +273,7 @@ TEST_CASE("a printed storage row carries what the reflector prints", "[codec][re
     row.ore_currency_type = "Fiat";
 
     const auto printed = ores::database::query_builder::write_json(row);
-    const auto reflected = rfl::json::write(row);
+    const auto reflected = ores::utility::codec::json::write(row);
 
     INFO(printed);
     INFO(reflected);

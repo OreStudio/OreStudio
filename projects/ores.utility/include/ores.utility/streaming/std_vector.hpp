@@ -20,6 +20,7 @@
 #ifndef ORES_UTILITY_STREAMING_STD_VECTOR_HPP
 #define ORES_UTILITY_STREAMING_STD_VECTOR_HPP
 
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/rfl/time_point_parser.hpp"
 #include "ores.utility/streaming/tenant_id_parser.hpp"
 #include "ores.utility/streaming/uuid_parser.hpp"
@@ -32,7 +33,7 @@ namespace std {
 
 template <typename Containee>
 inline ostream& operator<<(ostream& s, const vector<Containee>& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

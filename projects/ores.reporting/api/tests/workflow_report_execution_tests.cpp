@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -55,7 +56,7 @@ std::string run_request(std::string pre_processing,
                                             .prepared_input_key = std::move(prepared_input_key),
                                             .post_processing = std::move(post_processing),
                                             .kind = std::move(kind)};
-    return rfl::json::write(req);
+    return ores::utility::codec::json::write(req);
 }
 
 std::vector<svc::workflow_step_def> steps_for(const std::string& request_json) {
@@ -75,7 +76,7 @@ std::vector<std::string> names_of(const std::vector<svc::workflow_step_def>& ste
 }
 
 std::string packaging_result(const std::string& uri) {
-    return rfl::json::write(msg::prepare_ore_package_result{
+    return ores::utility::codec::json::write(msg::prepare_ore_package_result{
         .success = true, .message = "input ready", .tarball_uris = {uri}});
 }
 
@@ -198,8 +199,8 @@ TEST_CASE("the bundle is told the version of each trade the run read", "[workflo
     market_data.storage_key = "market";
     market_data.fixings_storage_key = "fixings";
     const std::vector<svc::workflow_step_result> prev{
-        {.name = "gather_trades", .response_json = rfl::json::write(trades)},
-        {.name = "gather_market_data", .response_json = rfl::json::write(market_data)}};
+        {.name = "gather_trades", .response_json = ores::utility::codec::json::write(trades)},
+        {.name = "gather_market_data", .response_json = ores::utility::codec::json::write(market_data)}};
 
     const auto cmd =
         rfl::json::read<msg::assemble_bundle_request>(steps[2].build_command(json, prev));
@@ -222,9 +223,9 @@ TEST_CASE("packaging names the report definition the run belongs to", "[workflow
     market_data.storage_key = "market";
     market_data.fixings_storage_key = "fixings";
     const std::vector<svc::workflow_step_result> prev{
-        {.name = "gather_trades", .response_json = rfl::json::write(trades)},
-        {.name = "gather_market_data", .response_json = rfl::json::write(market_data)},
-        {.name = "assemble_bundle", .response_json = rfl::json::write(bundle)}};
+        {.name = "gather_trades", .response_json = ores::utility::codec::json::write(trades)},
+        {.name = "gather_market_data", .response_json = ores::utility::codec::json::write(market_data)},
+        {.name = "assemble_bundle", .response_json = ores::utility::codec::json::write(bundle)}};
 
     const auto cmd =
         rfl::json::read<msg::prepare_ore_package_request>(steps[3].build_command(json, prev));

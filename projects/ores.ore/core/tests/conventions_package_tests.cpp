@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/xml/record.hpp"
@@ -190,7 +191,7 @@ TEST_CASE("a_central_row_of_another_kind_is_not_written_as_a_tenor_basis_swap",
     c.payload.name = "not a tenor basis swap";
 
     conventions_package package;
-    package.bundle.rows.push_back({"convention", 0, rfl::json::write(c)});
+    package.bundle.rows.push_back({"convention", 0, ores::utility::codec::json::write(c)});
 
     CHECK(count(join_conventions(package), "TenorBasisSwap") == 0);
 }

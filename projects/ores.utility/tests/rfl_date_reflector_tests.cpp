@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include "test_suite.hpp"
@@ -61,7 +62,7 @@ TEST_CASE("an_absent_date_travels_as_the_empty_string", "[rfl][date]") {
     CHECK(rfl::Reflector<year_month_day>::to("") == year_month_day{});
 
     holds_date sut{.when = year_month_day{}};
-    const auto written = rfl::json::write(sut);
+    const auto written = ores::utility::codec::json::write(sut);
     const auto read = rfl::json::read<holds_date>(written);
     REQUIRE(read);
     CHECK(read->when == year_month_day{});
@@ -81,6 +82,6 @@ TEST_CASE("a_date_that_is_not_a_date_refuses_to_be_written", "[rfl][date]") {
     CHECK_THROWS_AS(rfl::Reflector<year_month_day>::from(invented), std::runtime_error);
 
     const holds_date sut{.when = invented};
-    CHECK_THROWS(rfl::json::write(sut));
+    CHECK_THROWS(ores::utility::codec::json::write(sut));
     CHECK_THROWS(rfl::msgpack::write(sut));
 }

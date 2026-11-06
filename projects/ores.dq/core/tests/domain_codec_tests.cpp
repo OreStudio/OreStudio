@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.dq.api/domain/artefact_type_codec.hpp"
 #include "ores.dq.api/domain/badge_definition_codec.hpp"
 #include "ores.dq.api/domain/badge_mapping_codec.hpp"
@@ -113,7 +114,7 @@ void same_bytes_as_reflect_cpp(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
+    CHECK(json == ores::utility::codec::json::write(v));
     CHECK(codec::read_json(json) == rfl::json::read<T>(json).value());
 
     const auto msgpack = codec::write_msgpack(v);

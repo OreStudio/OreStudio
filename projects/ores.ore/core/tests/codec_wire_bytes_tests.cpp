@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.ore.api/messaging/currency_config_protocol.hpp"
 #include "ores.ore.api/messaging/ore_document_protocol.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
@@ -61,7 +62,7 @@ void same_bytes_as_reflect_cpp(const T& v) {
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
+    CHECK(json == ores::utility::codec::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
@@ -209,7 +210,7 @@ TEST_CASE("the import choices have reflect-cpp's bytes", tags) {
     namespace object = ores::utility::codec::object;
     for (const auto& choices : {import_choices{}, some_choices()}) {
         const auto json = object::write_json(choices);
-        CHECK(json == rfl::json::write(choices));
+        CHECK(json == ores::utility::codec::json::write(choices));
         CHECK(object::write_json(object::read_json<import_choices>(json)) == json);
 
         const auto msgpack = object::write_msgpack(choices);

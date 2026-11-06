@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.dq.core/repository/dataset_dependency_entity.hpp"
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -24,7 +25,7 @@
 namespace ores::dq::repository {
 
 std::ostream& operator<<(std::ostream& s, const dataset_dependency_entity& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

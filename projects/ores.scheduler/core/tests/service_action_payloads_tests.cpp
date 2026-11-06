@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.scheduler.core/service/action_payloads.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
@@ -67,7 +68,7 @@ template <typename T>
 void same_bytes_as_reflect_cpp(const T& v) {
     namespace object = ores::utility::codec::object;
     const auto json = object::write_json(v);
-    CHECK(json == rfl::json::write(v));
+    CHECK(json == ores::utility::codec::json::write(v));
     CHECK(object::write_json(object::read_json<T>(json)) == json);
 
     const auto msgpack = object::write_msgpack(v);

@@ -16,6 +16,7 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/convention_codec.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
@@ -68,10 +69,10 @@ TEST_CASE("a bundle resolves the identity the party already holds",
 
     ores::refdata::service::conventions_bundle first;
     first.rows.push_back(
-        {.family = "convention", .sequence = 0, .payload = rfl::json::write(central)});
+        {.family = "convention", .sequence = 0, .payload = ores::utility::codec::json::write(central)});
     first.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                           .sequence = 0,
-                          .payload = rfl::json::write(part)});
+                          .payload = ores::utility::codec::json::write(part)});
     ores::refdata::service::conventions_bundle_service(ctx).apply(first);
 
     ores::refdata::repository::convention_repository conventions;
@@ -96,10 +97,10 @@ TEST_CASE("a bundle resolves the identity the party already holds",
 
     ores::refdata::service::conventions_bundle second;
     second.rows.push_back(
-        {.family = "convention", .sequence = 0, .payload = rfl::json::write(second_central)});
+        {.family = "convention", .sequence = 0, .payload = ores::utility::codec::json::write(second_central)});
     second.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                            .sequence = 0,
-                           .payload = rfl::json::write(second_part)});
+                           .payload = ores::utility::codec::json::write(second_part)});
     ores::refdata::service::conventions_bundle_service(ctx).apply(second);
 
     const auto held = conventions.read_latest(ctx);
@@ -137,10 +138,10 @@ TEST_CASE("a bundle that changes leg form closes the other form",
 
     ores::refdata::service::conventions_bundle first;
     first.rows.push_back(
-        {.family = "convention", .sequence = 0, .payload = rfl::json::write(central)});
+        {.family = "convention", .sequence = 0, .payload = ores::utility::codec::json::write(central)});
     first.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                           .sequence = 0,
-                          .payload = rfl::json::write(pay_receive)});
+                          .payload = ores::utility::codec::json::write(pay_receive)});
     ores::refdata::service::conventions_bundle_service(ctx).apply(first);
 
     // The second carries the long and short form for the same convention. A
@@ -152,10 +153,10 @@ TEST_CASE("a bundle that changes leg form closes the other form",
 
     ores::refdata::service::conventions_bundle second;
     second.rows.push_back(
-        {.family = "convention", .sequence = 0, .payload = rfl::json::write(central)});
+        {.family = "convention", .sequence = 0, .payload = ores::utility::codec::json::write(central)});
     second.rows.push_back({.family = "tenor_basis_swap_long_short",
                            .sequence = 0,
-                           .payload = rfl::json::write(long_short)});
+                           .payload = ores::utility::codec::json::write(long_short)});
     ores::refdata::service::conventions_bundle_service(ctx).apply(second);
 
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository pay_receives;
@@ -180,7 +181,7 @@ TEST_CASE("applying a party's convention again replaces it",
 
     ores::refdata::service::conventions_bundle bundle;
     bundle.rows.push_back(
-        {.family = "deposit", .sequence = 0, .payload = rfl::json::write(deposit)});
+        {.family = "deposit", .sequence = 0, .payload = ores::utility::codec::json::write(deposit)});
 
     ores::refdata::service::conventions_bundle_service service(ctx);
     service.apply(bundle);
@@ -207,7 +208,7 @@ TEST_CASE("a world convention the tenant holds is left as it is",
 
     ores::refdata::service::conventions_bundle bundle;
     bundle.rows.push_back(
-        {.family = "ibor_index", .sequence = 0, .payload = rfl::json::write(index)});
+        {.family = "ibor_index", .sequence = 0, .payload = ores::utility::codec::json::write(index)});
 
     const auto version_held = [&](const ores::refdata::service::conventions_bundle& read) {
         for (const auto& row : read.rows) {
@@ -265,9 +266,9 @@ TEST_CASE("a bundle whose part comes first still writes the central row first",
     ores::refdata::service::conventions_bundle bundle;
     bundle.rows.push_back({.family = "tenor_basis_swap_long_short",
                            .sequence = 0,
-                           .payload = rfl::json::write(long_short)});
+                           .payload = ores::utility::codec::json::write(long_short)});
     bundle.rows.push_back(
-        {.family = "convention", .sequence = 1, .payload = rfl::json::write(central)});
+        {.family = "convention", .sequence = 1, .payload = ores::utility::codec::json::write(central)});
     ores::refdata::service::conventions_bundle_service(ctx).apply(bundle);
 
     ores::refdata::repository::convention_repository conventions;
@@ -300,10 +301,10 @@ TEST_CASE("a bundle reads back the rows an apply wrote",
 
     ores::refdata::service::conventions_bundle written;
     written.rows.push_back(
-        {.family = "convention", .sequence = 0, .payload = rfl::json::write(central)});
+        {.family = "convention", .sequence = 0, .payload = ores::utility::codec::json::write(central)});
     written.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                             .sequence = 0,
-                            .payload = rfl::json::write(part)});
+                            .payload = ores::utility::codec::json::write(part)});
     ores::refdata::service::conventions_bundle_service service(ctx);
     service.apply(written);
 
@@ -357,7 +358,7 @@ TEST_CASE("the shared convention family reads back only the kind the bundle cove
 
     ores::refdata::service::conventions_bundle written;
     written.rows.push_back(
-        {.family = "convention", .sequence = 0, .payload = rfl::json::write(covered)});
+        {.family = "convention", .sequence = 0, .payload = ores::utility::codec::json::write(covered)});
     ores::refdata::service::conventions_bundle_service(ctx).apply(written);
 
     // The shared table carries every kind, so a row of another kind is written
@@ -401,10 +402,10 @@ TEST_CASE("a read bundle applies into another party unchanged",
 
     ores::refdata::service::conventions_bundle written;
     written.rows.push_back(
-        {.family = "convention", .sequence = 0, .payload = rfl::json::write(central)});
+        {.family = "convention", .sequence = 0, .payload = ores::utility::codec::json::write(central)});
     written.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                             .sequence = 0,
-                            .payload = rfl::json::write(part)});
+                            .payload = ores::utility::codec::json::write(part)});
 
     ores::refdata::service::conventions_bundle_service(first).apply(written);
     const auto read = ores::refdata::service::conventions_bundle_service(first).read();
@@ -472,14 +473,14 @@ TEST_CASE("a bundle read carries a row for every family an apply wrote",
 
     ores::refdata::service::conventions_bundle bundle;
     bundle.rows.push_back(
-        {.family = "convention", .sequence = 0, .payload = rfl::json::write(central)});
+        {.family = "convention", .sequence = 0, .payload = ores::utility::codec::json::write(central)});
     bundle.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                            .sequence = 0,
-                           .payload = rfl::json::write(part)});
+                           .payload = ores::utility::codec::json::write(part)});
     bundle.rows.push_back(
-        {.family = "deposit", .sequence = 0, .payload = rfl::json::write(deposit)});
+        {.family = "deposit", .sequence = 0, .payload = ores::utility::codec::json::write(deposit)});
     bundle.rows.push_back(
-        {.family = "ibor_index", .sequence = 0, .payload = rfl::json::write(index)});
+        {.family = "ibor_index", .sequence = 0, .payload = ores::utility::codec::json::write(index)});
 
     ores::refdata::service::conventions_bundle_service service(ctx);
     service.apply(bundle);
@@ -545,10 +546,10 @@ TEST_CASE("the bundle read drops a part whose central row it does not carry",
 
     ores::refdata::service::conventions_bundle written;
     written.rows.push_back(
-        {.family = "convention", .sequence = 0, .payload = rfl::json::write(covered)});
+        {.family = "convention", .sequence = 0, .payload = ores::utility::codec::json::write(covered)});
     written.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                             .sequence = 0,
-                            .payload = rfl::json::write(attached)});
+                            .payload = ores::utility::codec::json::write(attached)});
     ores::refdata::service::conventions_bundle_service(ctx).apply(written);
 
     const auto read = ores::refdata::service::conventions_bundle_service(ctx).read();

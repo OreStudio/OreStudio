@@ -22,6 +22,7 @@
  * Template: cpp_domain_type_json_io.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.trading.api/domain/product_type_asset_class_json_io.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <ostream>
@@ -31,7 +32,7 @@
 namespace ores::trading::domain {
 
 std::ostream& operator<<(std::ostream& s, const product_type_asset_class& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

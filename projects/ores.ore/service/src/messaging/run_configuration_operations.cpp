@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -217,7 +218,7 @@ domain::conventions_package read_conventions(nats_client& owners, const std::str
         int sequence = 0;
         for (const auto& row : read_family(owners, family, party_id))
             package.bundle.rows.push_back(
-                {std::string(family.key), sequence++, rfl::json::write(row)});
+                {std::string(family.key), sequence++, ores::utility::codec::json::write(row)});
     }
     // FX conventions have no store, as they have none on the write path.
     return package;

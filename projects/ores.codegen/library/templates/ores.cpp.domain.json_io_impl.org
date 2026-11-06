@@ -32,9 +32,6 @@ The full template source. Edit here and re-tangle with
 #include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 {{/has_generated_wire_codec}}
 
 #include <ostream>
@@ -46,7 +43,7 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v) {
     s << ores::utility::codec::json::write(v);
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
 {{/has_generated_wire_codec}}
     return s;
 }
@@ -60,9 +57,6 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}& v) {
 #include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 {{/has_generated_wire_codec}}
 
 #include <ostream>
@@ -74,7 +68,7 @@ std::ostream& operator<<(std::ostream& s, const {{name_singular}}& v) {
     s << ores::utility::codec::json::write(v);
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
 {{/has_generated_wire_codec}}
     return s;
 }

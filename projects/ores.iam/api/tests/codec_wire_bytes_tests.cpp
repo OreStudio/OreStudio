@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.iam.api/domain/account_codec.hpp"
 #include "ores.iam.api/domain/account_contact_information_codec.hpp"
 #include "ores.iam.api/domain/account_credential_codec.hpp"
@@ -116,7 +117,7 @@ void same_bytes_as_reflect_cpp(const T& v) {
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
+    CHECK(json == ores::utility::codec::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
@@ -307,7 +308,7 @@ TEST_CASE("an account credential reads what reflect-cpp wrote", codec_tags) {
     ores::utility::generation::generation_context ctx(20261104);
     const auto credential = ores::iam::generators::generate_synthetic_account_credential(ctx);
     using codec = ores::utility::codec::wire_traits<ores::iam::domain::account_credential>;
-    CHECK(codec::write_json(credential) == rfl::json::write(credential));
+    CHECK(codec::write_json(credential) == ores::utility::codec::json::write(credential));
 
     // reflect-cpp's MessagePack keeps the three skipped members' names with nil
     // values, and its JSON drops them; the codec drops them in both. A reader
@@ -332,7 +333,7 @@ TEST_CASE("an account credential's secrets stay off the wire", codec_tags) {
         REQUIRE_FALSE(secret.empty());
         CHECK(codec::write_json(credential).find(secret) == std::string::npos);
         CHECK(codec::write_msgpack(credential).find(secret) == std::string::npos);
-        CHECK(rfl::json::write(credential).find(secret) == std::string::npos);
+        CHECK(ores::utility::codec::json::write(credential).find(secret) == std::string::npos);
         CHECK(their_msgpack(credential).find(secret) == std::string::npos);
     }
     const auto json = codec::write_json(credential);

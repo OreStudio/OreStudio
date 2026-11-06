@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "conventions_family_pack.hpp"
 #include "conventions_family_units.hpp"
 #include "conventions_fields.hpp"
@@ -499,7 +500,7 @@ commodity_future_facts(const refdata::messaging::conventions_bundle& bundle) {
         auto item = parts.item_of(c, without_keys);
         item.key.id = boost::uuids::uuid{};
         item.convention->identity.id = boost::uuids::uuid{};
-        out[c.identity.kind_code + "\x1f" + c.payload.name] = rfl::json::write(item);
+        out[c.identity.kind_code + "\x1f" + c.payload.name] = ores::utility::codec::json::write(item);
     }
     return out;
 }

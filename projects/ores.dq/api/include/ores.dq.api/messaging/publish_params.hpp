@@ -20,6 +20,7 @@
 #ifndef ORES_DQ_API_MESSAGING_PUBLISH_PARAMS_HPP
 #define ORES_DQ_API_MESSAGING_PUBLISH_PARAMS_HPP
 
+#include "ores.utility/codec/json_codec.hpp"
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
@@ -52,7 +53,7 @@ struct publish_bundle_params {
  * @brief Renders the parameters as the JSON the publish path carries.
  */
 inline std::string build_params_json(const publish_bundle_params& params) {
-    return rfl::json::write(params);
+    return ores::utility::codec::json::write(params);
 }
 
 /**
@@ -70,7 +71,7 @@ struct dataset_publish_params {
  * @brief Renders the parameters as the JSON the publish path carries.
  */
 inline std::string build_params_json(const dataset_publish_params& params) {
-    return rfl::json::write(params);
+    return ores::utility::codec::json::write(params);
 }
 
 }

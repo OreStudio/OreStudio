@@ -254,7 +254,7 @@ def test_a_unit_writes_its_family_in_the_mode_the_registry_states(tmp_path):
 def test_a_unit_reflects_its_own_type_and_includes_its_own_repository(tmp_path):
     text = _render_unit(_tree(tmp_path, THREE), "ois_convention")
 
-    assert text.count("rfl::json::read<ores::refdata::domain::ois_convention>") == 1
+    assert text.count("ores::utility::codec::json::try_read<ores::refdata::domain::ois_convention>") == 1
     assert text.count("ores::refdata::domain::") == text.count(
         "ores::refdata::domain::ois_convention")
     includes = [line for line in text.splitlines() if "repository/" in line]

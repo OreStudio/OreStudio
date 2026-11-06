@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include "test_suite.hpp"
@@ -65,7 +66,7 @@ TEST_CASE("an object with an absent member omits it, as reflect-cpp does", "[cod
                          std::nullopt};
 
     const auto mine = ores::utility::codec::object::write_json(v, probe_fields);
-    CHECK(mine == rfl::json::write(v));
+    CHECK(mine == ores::utility::codec::json::write(v));
     CHECK(mine == R"({"id":"00000000-0000-0000-0000-000000000000","label":"beta"})");
 
     const auto back = ores::utility::codec::object::read_json(mine, probe_fields);

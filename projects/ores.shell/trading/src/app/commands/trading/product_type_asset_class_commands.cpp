@@ -22,6 +22,7 @@
  * Template: cpp_shell_command_impl.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.shell/app/commands/trading/product_type_asset_class_commands.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_args.hpp"
@@ -232,7 +233,7 @@ void product_type_asset_class_commands::process_list(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 }
 
 void product_type_asset_class_commands::process_get(std::ostream& out,
@@ -278,7 +279,7 @@ void product_type_asset_class_commands::process_get(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 }
 
 void product_type_asset_class_commands::process_get_many(std::ostream& out,
@@ -328,7 +329,7 @@ void product_type_asset_class_commands::process_get_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 }
 
 void product_type_asset_class_commands::process_add(std::ostream& out,
@@ -379,7 +380,7 @@ void product_type_asset_class_commands::process_add(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 }
 
 void product_type_asset_class_commands::process_set(std::ostream& out,
@@ -438,7 +439,7 @@ void product_type_asset_class_commands::process_set(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 }
 
 void product_type_asset_class_commands::process_put_many(std::ostream& out,
@@ -501,7 +502,7 @@ void product_type_asset_class_commands::process_put_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 }
 
 void product_type_asset_class_commands::process_delete(std::ostream& out,
@@ -557,7 +558,7 @@ void product_type_asset_class_commands::process_delete(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 }
 
 void product_type_asset_class_commands::process_delete_many(std::ostream& out,
@@ -611,7 +612,7 @@ void product_type_asset_class_commands::process_delete_many(std::ostream& out,
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 }
 
 void product_type_asset_class_commands::process_by_product_type_code(
@@ -666,7 +667,7 @@ void product_type_asset_class_commands::process_by_product_type_code(
     if (!result)
         return;
 
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 }
 
 }

@@ -9,7 +9,7 @@
 #include "ores.shell/app/shell_root_menu.hpp"
 #include "ores.{{component}}.{{subcomponent}}/messaging/{{entity_singular}}_protocol.hpp"
 {{^has_generated_wire_codec}}
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 {{/has_generated_wire_codec}}
 {{#has_generated_wire_codec}}
 #include "ores.utility/codec/wire_traits_fwd.hpp"
@@ -27,8 +27,6 @@
 #include <optional>
 #include <ostream>
 {{^has_generated_wire_codec}}
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 {{/has_generated_wire_codec}}
 #include <stdexcept>
 #include <string>
@@ -356,7 +354,7 @@ void {{entity_singular}}_commands::process_{{identifier}}(
         << std::endl;
 {{/has_generated_wire_codec}}
 {{^has_generated_wire_codec}}
-    out << rfl::json::write(*result) << std::endl;
+    out << ores::utility::codec::json::write(*result) << std::endl;
 {{/has_generated_wire_codec}}
 }
 {{/shell.commands}}

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -138,7 +139,7 @@ TEST_CASE("a_person_signs_in_and_the_token_stays_with_the_server", "[auth_sessio
 
     http_request req;
     req.method = http_method::post;
-    req.body = rfl::json::write(credentials);
+    req.body = ores::utility::codec::json::write(credentials);
 
     std::optional<http_response> answer;
     asio::io_context io;

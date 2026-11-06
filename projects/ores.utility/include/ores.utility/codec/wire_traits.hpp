@@ -20,6 +20,7 @@
 #ifndef ORES_UTILITY_CODEC_WIRE_TRAITS_HPP
 #define ORES_UTILITY_CODEC_WIRE_TRAITS_HPP
 
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/throw_exception.hpp>
@@ -45,7 +46,7 @@ namespace ores::utility::codec {
 template <typename T>
 struct wire_traits {
     static std::string write_json(const T& v) {
-        return rfl::json::write(v);
+        return ores::utility::codec::json::write(v);
     }
 
     static T read_json(std::string_view text) {

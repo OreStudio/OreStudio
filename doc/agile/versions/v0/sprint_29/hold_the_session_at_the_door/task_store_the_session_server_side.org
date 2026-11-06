@@ -8,7 +8,7 @@
 #+filetags: :hold_the_session_at_the_door:sprint_29:v0:
 #+owner: marco
 #+branch: feature/store-the-session-server-side
-#+pr: 4472
+#+pr: 4183
 #+blocked_on: review
 #+blocked_since: 2026-10-31 02:40
 #+blocked_since:
@@ -101,4 +101,4 @@ via its "Verifies task" field.
 The session lives in the server. Signing in mints a 256-bit identifier, the store
 keys it by its SHA-256, slides its expiry on each use, and rotates it when the
 privilege changes. The record holds the token's claims, so a handler reads the same
-claims whichever proof reached it. Merged as #4183.
+claims whichever proof reached it. Merged as #4183; the task was closed by #4472.

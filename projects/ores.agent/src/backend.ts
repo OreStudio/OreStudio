@@ -15,6 +15,10 @@ export const subjects = {
     trades: 'trading.v1.trades.list', books: 'refdata.v1.books.list', portfolios: 'refdata.v1.portfolios.list',
     reportDefinitions: 'reporting.v1.report_definitions.list', reportInstances: 'reporting.v1.report_instances.list',
     runResults: 'reporting.v1.run_results.list', runHealth: 'reporting.v1.ops.get_run_health',
+    counterparties: 'refdata.v1.counterparties.list', trade: 'trading.v1.trades.get',
+    tradeBooking: 'trading.v1.trade_bookings.get', tradePortfolios: 'trading.v1.trade_portfolios.list_by_trade_id',
+    exportPortfolio: 'trading.v1.ops.export_portfolio', fxForward: 'trading.v1.fx_forward_instruments.get', bond: 'trading.v1.bond_instruments.get',
+    counterparty: 'refdata.v1.counterparties.get',
 } as const;
 export type Operation = keyof typeof subjects;
 export interface Identity { token: string; sessionId: string }

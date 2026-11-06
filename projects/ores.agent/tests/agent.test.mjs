@@ -49,3 +49,12 @@ test('market facts are rendered from evidence; provider clarification stays in i
     await agent.chat({ message: 'What is EURUSD spot from ore?' }, s, new AbortController().signal);
     assert.equal(calls.at(-1).provider, 'ore');
 });
+test('book clarification is bound to the requesting session and resumes the original trade search', async () => {
+    let modelCalls = 0; const calls = [];
+    const agent = new Agent({ complete: async (_, catalog) => { modelCalls++; assert.ok(catalog.length <= 6); return { role: 'assistant', content: null, tool_calls: [{ id: 'b', type: 'function', function: { name: 'find_trades', arguments: '{"book":"Group"}' } }] }; } }, {
+        execute: async (name, args) => { calls.push(args); return args.book === 'id-fx' ? { tool: name, status: 'ok', rows: [], totalMatches: 0, catalogueScope: 'selected_party', offset: 0 } : { tool: name, status: 'ambiguous', request: args, field: 'book', reason: 'Choose a book.', candidates: [{ id: 'id-fx', name: 'Group FX' }, { id: 'id-loans', name: 'Group Loans' }] }; },
+    });
+    const s = makeSession(); await agent.chat({ message: 'Show trades in book Group' }, s, new AbortController().signal);
+    await agent.chat({ message: 'Group FX' }, s, new AbortController().signal); assert.equal(modelCalls, 1); assert.equal(calls.at(-1).book, 'id-fx');
+    await agent.chat({ message: 'Group FX' }, makeSession(), new AbortController().signal); assert.equal(modelCalls, 2);
+});

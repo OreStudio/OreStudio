@@ -13,6 +13,8 @@ The [staged business-use-case plan](docs/business-use-cases-plan.md) covers the
 next reporting, booking, quotation and workflow deliveries and their gates.
 The [Stage 0 baseline](docs/business-baseline.md) records live data readiness
 and how to rerun the read-only operator inspection.
+Version 0.1.2 adds [Stage 1 discovery](docs/discovery.md): trades, books,
+portfolios, counterparties and scoped trade economics.
 
 Requires Node 22.11+. From this component directory:
 

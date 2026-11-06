@@ -18,4 +18,6 @@ test('reject malformed and remotely bound configurations', () => {
     assert.throws(() => validateConfig({ ...config, host: '0.0.0.0' }));
     assert.throws(() => validateConfig({ ...config, port: -1 }));
     assert.throws(() => validateConfig({ ...config, nats: {} }));
+    assert.throws(() => validateConfig({ ...config, inference: { ...config.inference, baseUrl: 'http://remote.invalid/v1' } }));
+    assert.throws(() => validateConfig({ ...config, inference: { ...config.inference, baseUrl: 'https://user:secret@remote.invalid/v1' } }));
 });

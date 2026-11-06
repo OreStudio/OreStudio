@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Configuration only: no download, compilation or process startup.
-import { readFile, writeFile, mkdir, readdir, access } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir, access, copyFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { resolve, join, dirname, delimiter } from 'node:path';
 import { randomBytes } from 'node:crypto';
 const root = resolve(process.argv[2] ?? '');
@@ -22,4 +23,5 @@ const spec = { component: 'llama.cpp', command: exe, cwd: dirname(exe), stateDir
         '--no-ui', '--api-key-file', key, '--cors-origins', 'http://127.0.0.1:20100', '--log-colors', 'off', '--log-verbosity', '4'],
     env: process.platform === 'linux' ? { LD_LIBRARY_PATH: dirs.join(delimiter) } : {} };
 await writeFile(join(root, 'service.json'), JSON.stringify(spec, null, 2) + '\n', { mode: 0o600 });
+await copyFile(join(dirname(fileURLToPath(import.meta.url)), 'service.mjs'), join(root, 'service.mjs'));
 console.log(JSON.stringify({ configured: join(root, 'service.json'), started: false, apiKeyFile: key }));

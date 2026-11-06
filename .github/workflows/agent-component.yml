@@ -20,7 +20,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
           cache-dependency-path: projects/ores.agent/package-lock.json
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run package
       - uses: actions/upload-artifact@v4

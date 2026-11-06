@@ -24,6 +24,12 @@ test('a checksummed release runs outside the checkout without installing depende
         const port = JSON.parse(output).address.port;
         assert.equal((await fetch(`http://127.0.0.1:${port}/healthz`)).status, 200);
         assert.equal((await fetch(`http://127.0.0.1:${port}/readyz`)).status, 503);
+        const ui = await fetch(`http://127.0.0.1:${port}/`);
+        assert.match(ui.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+        assert.match(await ui.text(), /OreStudio assistant/);
+        // A damaged installed release is never silently repaired/overwritten.
+        await writeFile(join(installed.installed, 'agent.mjs'), 'damaged installed release');
+        assert.throws(() => execFileSync(process.execPath, ['scripts/deploy.mjs', 'install', artifact, dir], { stdio: 'pipe' }));
         await writeFile(join(artifact, 'agent.mjs'), 'tampered');
         assert.throws(() => execFileSync(process.execPath, ['scripts/deploy.mjs', 'install', artifact, dir], { stdio: 'pipe' }));
     } finally {

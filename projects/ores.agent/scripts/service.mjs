@@ -2,9 +2,9 @@
 // Independent, user-owned process supervisor; no PID-based signalling of strangers.
 import { readFile, writeFile, mkdir, unlink } from 'node:fs/promises';
 import { openSync, closeSync } from 'node:fs';
-import { resolve, join, isAbsolute } from 'node:path';
+import { resolve, join, isAbsolute, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes, timingSafeEqual, createHash } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -34,6 +34,11 @@ if (action === 'status' || action === 'stop') {
 }
 if (action === 'start') {
     if (await readState()) throw Error('Service has an existing process record; use status/stop before starting.');
+    if (spec.manifestPath) {
+        const manifest = JSON.parse(await readFile(spec.manifestPath, 'utf8'));
+        if (Object.keys(manifest.files).sort().join(',') !== 'agent.mjs,service.mjs') throw Error('Unexpected release manifest.');
+        for (const [name, hash] of Object.entries(manifest.files)) if (createHash('sha256').update(await readFile(join(dirname(spec.manifestPath), name))).digest('hex') !== hash) throw Error('Installed release checksum mismatch.');
+    }
     const worker = spawn(process.execPath, [fileURLToPath(import.meta.url), 'supervise', specPath], { detached: true, windowsHide: true, stdio: 'ignore' });
     worker.unref();
     for (let i = 0; i < 300; i++) {

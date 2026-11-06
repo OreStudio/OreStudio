@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 35649881-C6FE-4FC6-97D7-DA18A05A0355
+:END:
+#+title: Story: Serve one screen from the new server
+#+description: Sign in, one list and the change stream all work on the C++ server, and no screen calls them: the browser still reaches the BFF for everything. Put one screen on the C++ server behind a flag, with the BFF serving every other screen, so the shape is proven against a real person before the rest is ported.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A signed-in person uses one screen served end to end by the C++ server, and the rest of the application is unchanged.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Scaffolded. No screen calls the new server yet. |
+| Waiting on    | Nothing.                               |
+| Next          | Point one list at the new server behind a flag. |
+| Last touched  | 2026-11-06                               |
+
+* Acceptance
+
+- A signed-in person loads one list from the C++ server while the BFF serves every other screen.
+- The list follows its rows: a change in the data reaches the open screen over the change stream.
+- Turning the flag off serves the same screen from the BFF.
+- The smoke run proves both paths, and the gate stays green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:18835766-D75B-4438-BF90-4B6A148631E4][Scaffold story: Serve one screen from the new server]] | STARTED | 2026-11-06 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:506FB5FA-42AD-4F95-BFC2-CB2E52079DD7][Point one screen at the new server]] | BACKLOG | | | Initial task for: Serve one screen from the new server |
+
+* Decisions
+
+*The first screen is the one with the fewest reasons to be in the BFF.* Sign in, one
+list and the change stream are the three pieces the C++ server already answers, and
+they are the whole of a screen's life: it opens, it reads, it follows. A screen that
+needs no composed view proves the path without porting a view.
+
+*The switch is a flag, not a rewrite.* Both servers answer the same request while the
+flag is on, so the same screen can be compared against either, and a failure is one
+flag away from being undone. The flag is the shape of the whole port: every later
+increment moves one more screen across and leaves the switch behind.
+
+* Out of scope
+
+-

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 3F2A7C41-8D6E-4B95-A1C3-7E5D9B2F4A68
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.diff.diff_span
 #+description: Codegen entity model for the diff engine's byte span: a table-less record that crosses the wire.

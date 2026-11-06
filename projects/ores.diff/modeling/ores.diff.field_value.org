@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 8C41D7A2-5E39-4B06-9F72-3A1E6D5C8B04
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.diff.field_value
 #+description: Codegen entity model for the diff engine's rendered field: a table-less record that crosses the wire.

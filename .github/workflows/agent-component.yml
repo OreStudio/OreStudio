@@ -1,0 +1,29 @@
+name: Agent component
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [22, 24]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: projects/ores.agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: projects/ores.agent/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ores-agent-${{ matrix.os }}-node${{ matrix.node }}
+          path: projects/ores.agent/artifacts/

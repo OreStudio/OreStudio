@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: A8A686A6-DD71-4AF4-A0FC-F679E24A7D30
+:END:
+#+title: Story: Run an independent local AI assistant
+#+description: Expose shared read-only NATS tools through a standalone agent and MCP application with separately deployed GPU inference.
+#+type: story
+#+level: s2
+#+filetags: :agent:mcp:local-ai:sprint_29:v0:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+#+environment: OreStudio
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Provide the independent agent/MCP application described in issue #4295, backed only by NATS and a separately deployed CUDA LFM3 model.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Stage 1 foundation verified; implementing NATS tools.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Finish authenticated NATS integration and shared tools.            |
+| Last touched  | 2026-11-06                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9BACE972-57A4-430F-A9C1-C0F48CB0E78A][Build and verify the independent agent stages]] | STARTED | | | Implement and push runnable checkpoints for foundation, NATS tools, MCP, CUDA inference, the agent loop and independent deployment. |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Implementation checkpoints
+
+- Stage 1: health/configuration, checksummed package and separate installation; three Windows tests passed. Linux/Windows CI workflow added (manual dispatch); remote CI not yet run.
+- Model: user approved official LFM3-1.7B QAD Q4_0, approximately 1.05 GB, replacing Qwen.
+- Remaining: authenticated NATS, shared tools/MCP, GPU deployment, agent loop and independent lifecycle validation.

@@ -1,0 +1,11 @@
+import { mkdir, copyFile, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+const content = await readFile('build/agent.mjs');
+const hash = createHash('sha256').update(content).digest('hex');
+const folder = `artifacts/ores-agent-${pkg.version}-${hash.slice(0, 12)}`;
+await mkdir(folder, { recursive: true });
+await copyFile('build/agent.mjs', `${folder}/agent.mjs`);
+await writeFile(`${folder}/manifest.json`, JSON.stringify({ component: 'ores.agent', version: pkg.version, node: '>=22.11.0', sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), files: { 'agent.mjs': hash } }, null, 2) + '\n');
+console.log(folder);

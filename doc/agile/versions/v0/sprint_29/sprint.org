@@ -176,6 +176,7 @@ of the application join as their own stories under this heading.
 | [[id:839D0CD2-7684-4580-8C60-AE68C9DAD478][Stamp the time a build starts and finishes]] | DONE | 2026-11-03 | 2026-11-03 | compass build prints and logs the wall-clock start and finish of a build, so a reader can tell when a build ran. |
 | [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] | BACKLOG | | | The local check gate runs every heavy check for any C++ change, so a test-only header change pays for the database rebuild, the tick smoke and all 98 suites. |
 | [[id:A5920AD8-3AF8-4D7D-B98E-976D3F3EF4DE][Support native Windows pricing and local services]] | DONE | | | Native ORE package, local services, build portability and account-preservation evidence. |
+| [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] | STARTED | | | Build standalone agent/MCP stages for issue #4295 with NATS-only tools and separate CUDA inference. |
 
 * Achievements
 

@@ -20,8 +20,8 @@
 #include "datum_catalogue.hpp"
 #include "ores.marketdata.api/datum/ore_types.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include <algorithm>

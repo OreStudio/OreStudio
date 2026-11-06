@@ -57,8 +57,6 @@ target_link_libraries(${lib_target_name}
 # Appending to the target rather than replacing the profile keeps the
 # baseline honest for every other component.
 
-find_package(Boost REQUIRED COMPONENTS url)
-
 find_package(magic_enum CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}
@@ -78,7 +76,6 @@ target_link_libraries(${lib_target_name}
         ores.security.lib
         faker-cxx::faker-cxx
         magic_enum::magic_enum
-        Boost::boost
-        Boost::url)
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_CORE_DATUM_ORE_KEY_CODEC_HPP
-#define ORES_MARKETDATA_CORE_DATUM_ORE_KEY_CODEC_HPP
+#ifndef ORES_MARKETDATA_API_DATUM_ORE_KEY_CODEC_HPP
+#define ORES_MARKETDATA_API_DATUM_ORE_KEY_CODEC_HPP
 
 #include "ores.marketdata.api/datum/market_datum.hpp"
-#include "ores.marketdata.core/export.hpp"
+#include "ores.marketdata.api/export.hpp"
 #include <expected>
 #include <string>
 #include <string_view>
@@ -46,7 +46,7 @@ namespace ores::marketdata::datum {
  * shift, a sixth token on a base correlation tranche), and a numeric slot that
  * holds text ORE's std::stod would read only in part.
  */
-class ORES_MARKETDATA_CORE_EXPORT ore_key_codec final {
+class ORES_MARKETDATA_API_EXPORT ore_key_codec final {
 public:
     /// The datum @p key names, or why ORE's grammar does not admit it.
     [[nodiscard]] static std::expected<market_datum, std::string> read(std::string_view key);

@@ -18,7 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/adapter_tick_translator.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <cmath>
 #include <map>

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_CORE_DATUM_ORE_KEY_READING_HPP
-#define ORES_MARKETDATA_CORE_DATUM_ORE_KEY_READING_HPP
+#ifndef ORES_MARKETDATA_API_DATUM_ORE_KEY_READING_HPP
+#define ORES_MARKETDATA_API_DATUM_ORE_KEY_READING_HPP
 
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include <initializer_list>

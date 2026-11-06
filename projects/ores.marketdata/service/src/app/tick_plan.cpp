@@ -19,7 +19,7 @@
  */
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <boost/uuid/uuid_io.hpp>
 

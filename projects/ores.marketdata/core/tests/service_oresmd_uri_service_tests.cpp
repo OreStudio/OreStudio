@@ -18,9 +18,9 @@
  *
  */
 #include "datum_catalogue.hpp"
-#include "ores.marketdata.core/datum/ore_index_codec.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/ore_index_codec.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/service/oresmd_uri_service.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>

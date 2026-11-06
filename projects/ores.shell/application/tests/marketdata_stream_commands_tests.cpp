@@ -20,7 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
 #include "test_suite.hpp"
 #include <algorithm>

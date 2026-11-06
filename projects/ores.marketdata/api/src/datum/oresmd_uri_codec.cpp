@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/datum/ore_index_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/ore_index_codec.hpp"
+#include "shared_helpers.hpp"
 #include <boost/url.hpp>
 #include <algorithm>
 #include <format>
@@ -42,19 +43,7 @@ boost::urls::encoding_opts query_encoding() {
     return opts;
 }
 
-std::string lower(std::string_view s) {
-    std::string out(s);
-    std::ranges::transform(
-        out, out.begin(), [](char c) { return c >= 'A' && c <= 'Z' ? char(c - 'A' + 'a') : c; });
-    return out;
-}
 
-std::string upper(std::string_view s) {
-    std::string out(s);
-    std::ranges::transform(
-        out, out.begin(), [](char c) { return c >= 'a' && c <= 'z' ? char(c - 'a' + 'A') : c; });
-    return out;
-}
 
 std::unexpected<std::string> oresmd_uri_codec_refuse(std::string_view uri, std::string_view why) {
     return std::unexpected(std::format("'{}': {}", uri, why));

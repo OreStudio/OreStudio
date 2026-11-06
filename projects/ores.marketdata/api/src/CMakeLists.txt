@@ -52,13 +52,16 @@ target_link_libraries(${lib_target_name}
 # A component declares here what the profile cannot know: the libraries it
 # needs beyond the baseline above, and the find_package calls they bring.
 
+find_package(Boost REQUIRED COMPONENTS url)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.platform.lib
     PRIVATE
         ores.utility.lib
         faker-cxx::faker-cxx
-        libfort::fort)
+        libfort::fort
+        Boost::url)
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 

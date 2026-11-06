@@ -8,7 +8,7 @@
 #+filetags: :hold_the_session_at_the_door:sprint_29:v0:
 #+owner: marco
 #+branch: feature/store-the-session-server-side
-#+pr: 4183
+#+pr: 4472
 #+blocked_on: review
 #+blocked_since: 2026-10-31 02:40
 #+blocked_since:
@@ -87,6 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4472][#4472]] | [docs] Close the door and the bundle |
 | [#4183](https://github.com/OreStudio/OreStudio/pull/4183) | [http] Hold the session server side |
 
 * Review

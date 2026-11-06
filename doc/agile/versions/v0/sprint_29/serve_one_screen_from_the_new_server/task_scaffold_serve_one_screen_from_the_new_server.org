@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server:sprint_29:v0:
 #+owner: marco
 #+branch: feature/serve-one-screen-from-the-new-server
-#+pr:
+#+pr: 4473
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4473][#4473]] | [agile] Scaffold the story that serves one screen from the new server |
 
 * Review
 

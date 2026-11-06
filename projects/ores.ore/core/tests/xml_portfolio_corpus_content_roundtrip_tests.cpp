@@ -90,56 +90,28 @@ std::string_view leaf_of(std::string_view path) {
  *
  * Only ORE's own equivalences, taken from its parsers (OREData
  * ored/utilities/parsers.cpp): parseBool, parseBusinessDayConvention and
- * parseDate, which reads a date of eight characters as it reads one of ten. A
- * spelling ORE reads differently, such as F and MF, stays a difference.
+ * parseDate, which reads a date of eight characters as it reads one of ten.
+ * Each applies only to the leaves and spellings the example corpus states, so
+ * the test still sees any other spelling the model changes.
  */
 std::string ore_equivalent(std::string_view path, const std::string& value) {
+    static const std::set<std::string, std::less<>> boolean_leaves = {
+        "KnockOut", "PaysAtDefaultTime", "SettlesAccrual"};
     static const std::map<std::string, std::string, std::less<>> booleans = {{"Y", "true"},
-                                                                             {"YES", "true"},
-                                                                             {"TRUE", "true"},
-                                                                             {"True", "true"},
-                                                                             {"true", "true"},
-                                                                             {"N", "false"},
-                                                                             {"NO", "false"},
-                                                                             {"FALSE", "false"},
-                                                                             {"False", "false"},
-                                                                             {"false", "false"}};
+                                                                             {"N", "false"}};
     static const std::map<std::string, std::string, std::less<>> conventions = {
-        {"F", "Following"},
-        {"Following", "Following"},
-        {"FOLLOWING", "Following"},
-        {"MF", "ModifiedFollowing"},
-        {"ModifiedFollowing", "ModifiedFollowing"},
-        {"Modified Following", "ModifiedFollowing"},
-        {"MODIFIEDF", "ModifiedFollowing"},
-        {"MODFOLLOWING", "ModifiedFollowing"},
-        {"P", "Preceding"},
-        {"Preceding", "Preceding"},
-        {"PRECEDING", "Preceding"},
-        {"MP", "ModifiedPreceding"},
-        {"ModifiedPreceding", "ModifiedPreceding"},
-        {"Modified Preceding", "ModifiedPreceding"},
-        {"MODIFIEDP", "ModifiedPreceding"},
-        {"U", "Unadjusted"},
-        {"Unadjusted", "Unadjusted"},
-        {"INDIFF", "Unadjusted"},
-        {"NONE", "Unadjusted"},
-        {"HalfMonthModifiedFollowing", "HalfMonthModifiedFollowing"},
-        {"HMMF", "HalfMonthModifiedFollowing"},
-        {"Half Month Modified Following", "HalfMonthModifiedFollowing"},
-        {"HALFMONTHMF", "HalfMonthModifiedFollowing"},
-        {"HalfMonthMF", "HalfMonthModifiedFollowing"},
-        {"NEAREST", "Nearest"},
-    };
+        {"F", "Following"}, {"MF", "ModifiedFollowing"}, {"P", "Preceding"}};
 
-    if (const auto found = booleans.find(value); found != booleans.end())
-        return found->second;
     const auto leaf = leaf_of(path);
+    if (boolean_leaves.contains(leaf)) {
+        if (const auto found = booleans.find(value); found != booleans.end())
+            return found->second;
+    }
     if (leaf.ends_with("Convention")) {
         if (const auto found = conventions.find(value); found != conventions.end())
             return found->second;
     }
-    if (leaf.find("Date") != std::string_view::npos && value.size() == 8 &&
+    if (leaf.ends_with("Date") && value.size() == 8 &&
         std::ranges::all_of(value, [](unsigned char c) { return std::isdigit(c) != 0; }))
         return value.substr(0, 4) + "-" + value.substr(4, 2) + "-" + value.substr(6, 2);
     return value;

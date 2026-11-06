@@ -20,11 +20,15 @@
 #ifndef ORES_EVENTING_API_DOMAIN_ENTITY_EVENT_HPP
 #define ORES_EVENTING_API_DOMAIN_ENTITY_EVENT_HPP
 
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <type_traits>
 
 namespace ores::eventing::domain {
 
@@ -101,6 +105,28 @@ struct entity_event_notification final {
      */
     std::optional<std::string> party_id;
 };
+
+/**
+ * @brief The members of entity_event_notification, in the order it declares them.
+ *
+ * The database writes this object in its notify trigger, so the names are the
+ * keys the trigger writes.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_event_notification>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"event_id", &entity_event_notification::event_id},
+                      field{"entity", &entity_event_notification::entity},
+                      field{"key", &entity_event_notification::key},
+                      field{"action", &entity_event_notification::action},
+                      field{"version", &entity_event_notification::version},
+                      field{"occurred_at", &entity_event_notification::occurred_at},
+                      field{"correlation_id", &entity_event_notification::correlation_id},
+                      field{"tenant_id", &entity_event_notification::tenant_id},
+                      field{"party_id", &entity_event_notification::party_id}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<entity_event_notification>(),
+              "entity_event_notification gained a member its wire_fields does not name.");
 
 /**
  * @brief A typed entity event with the tenancy the store reported for it.

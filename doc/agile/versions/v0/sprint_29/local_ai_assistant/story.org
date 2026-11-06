@@ -23,14 +23,20 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Stage 1 foundation verified; implementing NATS tools.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Finish authenticated NATS integration and shared tools.            |
+| Now           | Six implementation checkpoints pushed; independent Windows deployment running.                       |
+| Waiting on    | Linux NVIDIA host for remaining native GPU validation.                               |
+| Next          | Validate native Linux CUDA; review hosted auth and broker ACL hardening.            |
 | Last touched  | 2026-11-06                               |
 
 * Acceptance
 
--
+- [X] Combined independent agent/MCP process with NATS-only backend access.
+- [X] Shared authenticated read-only tools, standard external MCP client and bounded agent loop.
+- [X] Official LFM3 QAD model with full CUDA offload on native Windows.
+- [X] Independent checksummed packages, installation and lifecycle, tested on Windows/Linux.
+- [X] Real currency/missing-observation answers; main backend remains running.
+- [ ] Validate the native inference deployment on a Linux NVIDIA host.
+- [ ] Validate restricted broker subject ACLs and a hosted client-enrollment profile before claiming production isolation.
 
 * Tasks
 
@@ -48,4 +54,11 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 
 - Stage 1: health/configuration, checksummed package and separate installation; three Windows tests passed. Linux/Windows CI workflow added (manual dispatch); remote CI not yet run.
 - Model: user approved official LFM3-1.7B QAD Q4_0, approximately 1.05 GB, replacing Qwen.
-- Remaining: authenticated NATS, shared tools/MCP, GPU deployment, agent loop and independent lifecycle validation.
+- Stage 2: =ad58eefcf4=, authenticated NATS/session/tool adapter.
+- Stage 3: =6520bca6ed=, official SDK MCP endpoint and independent client smoke.
+- Stage 4: =da3599e08b=, pinned official CUDA runtime and approved LiquidAI model.
+- Stage 5: =a3cc72d40b=, bounded direct tool loop and separate UI.
+- Stage 6: =88fe926d56=, immutable release and independent lifecycle controls.
+- Validation: 12 tests pass on Windows/Linux; identical artifact =512b6069701e=.
+- Live release: =88fe926d56fa64653a70e4c009cab53eaa3cbda3=; all 25/25 model layers offloaded on the RTX 4070. Main native backend/broker PID set unchanged across AI lifecycle checks.
+- Remaining: native Linux NVIDIA validation, hosted auth/client enrollment and broker ACL hardening. Task/story remain STARTED; no unverified completion is claimed.

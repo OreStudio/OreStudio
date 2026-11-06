@@ -10,6 +10,9 @@ An incompatible reply fails closed; no HTTP or direct SQL fallback exists.
 The allowlist is in `src/backend.ts`. Requests use MessagePack, mTLS, a user
 Bearer token, Nats-Session-Id and a fresh correlation ID. Reads time out after
 eight seconds without retries. Compressed and decoded replies are bounded.
+Cancellation discards a pending read's result; the NATS request itself may
+remain outstanding until its eight-second deadline. No backend cancellation
+operation is assumed.
 Only selected DTO fields leave the adapter. Backend result envelopes and
 authorization remain authoritative.
 

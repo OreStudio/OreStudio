@@ -1,7 +1,31 @@
 # Feature #4295: local AI assistant
 
-Planning date: 2026-11-04. Updated: 2026-11-06. This is a local working plan, outside the source checkout.
+Planning date: 2026-11-04. Updated: 2026-11-06. This is the versioned implementation plan; a convenience copy is kept beside the checkout.
 Source: https://github.com/OreStudio/OreStudio/issues/4295 and its three comments.
+
+## Current implementation status (2026-11-06)
+
+Six runnable checkpoints are committed and pushed to the fork. The combined
+agent/MCP application is deployed independently at http://127.0.0.1:20100/.
+llama.cpp b12172 serves the approved official LiquidAI LFM3-1.7B QAD Q4_0
+model on port 20010 with all 25 layers offloaded to the RTX 4070. Builds and
+deployments are separate; no main-server compilation or restart was required.
+
+The first read-only deliverable is running: real NATS currencies, market-series
+and observation tools, official external MCP client interoperability, a bounded
+direct tool loop and a separate authenticated UI. Twelve tests pass on Windows
+and Linux. Independent stop/restart checks leave all 25 native backend/broker
+process IDs unchanged. Release source: `88fe926d56fa64653a70e4c009cab53eaa3cbda3`;
+artifact identity: `512b6069701e` (identical Windows/Linux builds).
+
+Remaining validation/hardening: native Linux NVIDIA GPU execution; restricted
+broker subject ACLs for the dedicated certificate; a hosted OAuth/client
+enrollment profile beyond the documented local bearer profile. The sampled
+market series has no observations, so the assistant reports missing data.
+No successful live FX quote, booking or two-way pricing implementation is
+claimed. See the component's deployment, validation, MCP and inference guides
+for current commands and evidence. Historical planning notes below record the
+initial environment setup and broader follow-up scope.
 
 ## Local workspace
 
@@ -20,7 +44,7 @@ Source: https://github.com/OreStudio/OreStudio/issues/4295 and its three comment
 | Development database | `ores_dev_orestudio`, recreated on current-main schema with explicit user authorization |
 | Proposed inference port | `20010`, verify availability before launch |
 
-The original checkout and its existing CMake build tree, vcpkg installation, web dependencies and ignored `.env` provide the running OreStudio backend reference deployment. The combined agent/MCP application and inference deployment will be built and operated separately, as specified below; they will not use that CMake build tree or `.env`. The existing branch-specific `pushRemote` is `fork`. No feature branch has been pushed. Use an explicit `git push -u fork feature/local-ai-assistant` when ready to publish changes from that branch.
+The original checkout and its existing CMake build tree, vcpkg installation, web dependencies and ignored `.env` provide the running OreStudio backend reference deployment. The combined agent/MCP application and inference deployment will be built and operated separately, as specified below; they will not use that CMake build tree or `.env`. The existing branch-specific `pushRemote` is `fork`. The feature branch is now pushed to the fork in six runnable implementation checkpoints; see `docs/validation.md`.
 
 On 2026-11-05, following the user's disk-space concern and request to reuse the same worktree, the clean duplicate `ores_dev_calm_turing` worktree was removed and `feature/local-ai-assistant` was checked out in `OreStudio`. The retired environment skeleton was retained outside Git as `retired-calm-turing.env`; no feature database had been created. The removed checkout contained about 1.64 GiB of files, including generated web dependencies. Git history and the prior Windows branches remain available.
 
@@ -38,7 +62,7 @@ Deployment completed: the web and all required native targets passed in the orig
 
 ## First deliverable
 
-A user asks for supported market data; the standalone TypeScript agent/MCP application sends the prompt and tool schemas to a local Qwen model served by llama.cpp. The agent invokes its shared tool-execution layer directly in process; the NATS adapter obtains the answer from OreStudio under the user's authorization. The assistant returns the value with its observation date and source. External MCP clients invoke the same tools through the application's MCP endpoint. A missing or ambiguous quote produces a clear answer or clarification, never an invented value.
+A user asks for supported market data; the standalone TypeScript agent/MCP application sends the prompt and tool schemas to a local LiquidAI LFM3-1.7B QAD Q4_0 model served by llama.cpp. The agent invokes its shared tool-execution layer directly in process; the NATS adapter obtains the answer from OreStudio under the user's authorization. The assistant returns the value with its observation date and source. External MCP clients invoke the same tools through the application's MCP endpoint. A missing or ambiguous quote produces a clear answer or clarification, never an invented value.
 
 Start with one read-only capability, preferably an FX spot lookup. Confirm the actual backend query and seeded data first. A currency lookup can establish transport interoperability while that query is wired. Fixtures must be visibly identified as fixtures.
 
@@ -72,7 +96,7 @@ Agent UI                     External MCP clients
 
 - Run the combined application, OreStudio and inference independently. The agent and MCP endpoint share deployment, restart, rollback and process-failure boundaries; they are separate modules, not separate services. Existing OreStudio remains available when the combined application is stopped. Apply CPU/memory/concurrency limits: process separation alone does not eliminate shared-host resource contention, especially for inference.
 - Use the official TypeScript MCP server SDK for external access. The built-in agent does not need an MCP client connection to its own endpoint. An MCP client SDK remains useful for external-client interoperability tests. Do not use the SDK's test/development in-memory transport as the production shortcut; call the shared execution layer directly.
-- Keep the implementation in the user's existing `alexhock/OreStudio` fork, on `feature/local-ai-assistant`, as a standalone component proposed at `projects/ores.agent`. This supersedes the earlier separate-repository suggestion: repository ownership and build/deployment independence are separate choices. Give the component its own lockfile, CI, configuration and release artifact; do not add it to the main CMake build or existing fleet lifecycle. Suggested modules are `agent`, `mcp`, `tools`, `auth`, `ores-nats` and `inference`, all in one deployable application. The directory/implementation has not been created yet. It must not import or symlink the main application's source or require its CMake build. Keep the existing checkout/build available as the backend test deployment. The TypeScript MCP implementation differs from the original issue's C++ MCP proposal and should be documented when discussing it upstream.
+- Keep the implementation in the user's existing `alexhock/OreStudio` fork, on `feature/local-ai-assistant`, as a standalone component proposed at `projects/ores.agent`. This supersedes the earlier separate-repository suggestion: repository ownership and build/deployment independence are separate choices. Give the component its own lockfile, CI, configuration and release artifact; do not add it to the main CMake build or existing fleet lifecycle. Suggested modules are `agent`, `mcp`, `tools`, `auth`, `ores-nats` and `inference`, all in one deployable application. The component is implemented in `projects/ores.agent`. It must not import or symlink the main application's source or require its CMake build. Keep the existing checkout/build available as the backend test deployment. The TypeScript MCP implementation differs from the original issue's C++ MCP proposal and should be documented when discussing it upstream.
 - Start with a separate agent UI or client harness so prompt/model/tool-loop experiments require no OreStudio web changes. A later main-app integration can use one stable agent API. Do not treat the existing BFF's opaque session cookie as a portable credential for a separately hosted agent.
 - Keep all OreStudio access inside one NATS adapter with domain operations such as `readFxSpot` and `readTradeResults`. Use existing authenticated request/reply operations for reads and commands, and explicitly selected subscriptions for updates. Confirm the actual subjects, schemas and backend capability for each tool. The agent never selects a raw subject or receives broker credentials.
 - Give the combined application a dedicated service identity, restricted publish/subscribe permissions and supported caller delegation. Broker permissions do not replace backend user/tenant/party authorization. Resolve missing capabilities through a supported NATS domain operation or leave that tool unavailable; do not introduce an HTTP fallback.
@@ -87,13 +111,13 @@ Agent UI                     External MCP clients
 
 Requirement confirmed 2026-11-06: the inference server must deploy on both Windows and Linux. Keep it as a separate process from the combined agent/MCP application and OreStudio. Native Windows support is the baseline; a Windows deployment must not depend on WSL. Linux may use a native process or a container. The selected GPU backend can differ by OS, but the agent-facing inference contract must remain the same.
 
-The issue proposes llama.cpp. The selected initial runtime is its existing CUDA-enabled `llama-server`, independently deployed on native Windows and NVIDIA-equipped Linux; do not build a new C++ inference wrapper. Prefer a compatible pinned prebuilt CUDA release, including required runtime libraries, before considering a separate source build. No inference runtime or model has been installed yet.
+The issue proposes llama.cpp. The selected initial runtime is its existing CUDA-enabled `llama-server`, independently deployed on native Windows and NVIDIA-equipped Linux; do not build a new C++ inference wrapper. Prefer a compatible pinned prebuilt CUDA release, including required runtime libraries, before considering a separate source build. The pinned CUDA runtime and approved model are installed in the separate local runtime; see `docs/inference.md`.
 
 ### Selected GPU test model
 
 The user replaced Qwen with LiquidAI/LFM3-1.7B and explicitly approved its official QAD Q4_0 GGUF at approximately 1.05 GB, overriding the earlier strict 1 GB artifact limit. Use `LiquidAI/LFM3-1.7B-GGUF`, file `LFM3-1.7B-QAD-Q4_0.gguf`, not Qwen or NVFP4. The RTX 4070 is an Ada GPU; do not select a quantization for Blackwell-only acceleration. Pin the model revision/hash and an LFM3-capable CUDA llama.cpp release (official model documentation requires b11960/v0.8.0 or newer). Start with 4096 tokens and one slot; verify actual model-layer CUDA offload on the already confirmed RTX 4070 (8188 MiB VRAM, driver 577.02). Use the model's own current tool-capable chat template and recommended sampling (temperature 0.1, top_k 50, repeat penalty 1.1). Model/runtime deployment is independent of the application build; a successful CPU fallback is not a GPU test pass.
 
-This small model is for integration testing; keep deterministic agent tests and measure tool selection/replay instead of assuming reasoning accuracy. No model is installed yet. Source: https://huggingface.co/LiquidAI/LFM3-1.7B-GGUF.
+This small model is for integration testing; keep deterministic agent tests and measure tool selection/replay instead of assuming reasoning accuracy. The approved model is installed and CUDA-verified on Windows. Source: https://huggingface.co/LiquidAI/LFM3-1.7B-GGUF.
 
 Candidates researched from primary documentation:
 

@@ -58,3 +58,17 @@ test('book clarification is bound to the requesting session and resumes the orig
     await agent.chat({ message: 'Group FX' }, s, new AbortController().signal); assert.equal(modelCalls, 1); assert.equal(calls.at(-1).book, 'id-fx');
     await agent.chat({ message: 'Group FX' }, makeSession(), new AbortController().signal); assert.equal(modelCalls, 2);
 });
+test('exact partial inspection preserves UUIDs and explicit opt-in without a model round trip', async () => {
+    const tradeId = '11111111-1111-4111-8111-111111111111', runId = '22222222-2222-4222-8222-222222222222';
+    const agent = new Agent({ complete: async () => assert.fail('Exact command must not need model transcription') }, { execute: async (name, args) => {
+        assert.equal(name, 'read_trade_results'); assert.equal(args.tradeId, tradeId); assert.equal(args.runId, runId); assert.equal(args.allowPartial, true);
+        return { tool: name, status: 'unavailable', reason: 'labelled fixture unavailable' };
+    } });
+    assert.match((await agent.chat({ message: `Show the partial NPV of trade ${tradeId} from run ${runId}` }, makeSession(), new AbortController().signal)).answer, /unavailable/);
+});
+test('the model cannot opt into partial results when the user did not request them', async () => {
+    let turn = 0;
+    const agent = new Agent({ complete: async () => ++turn === 1 ? toolCall('{"allowPartial":true}', 'read_trade_results') : { role: 'assistant', content: 'No verified value available.' } }, { execute: async () => assert.fail('Unrequested partial read must not execute') });
+    const r = await agent.chat({ message: 'What is the NPV of my trade?' }, makeSession(), new AbortController().signal);
+    assert.equal(r.evidence.length, 0);
+});

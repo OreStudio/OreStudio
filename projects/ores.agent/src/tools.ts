@@ -4,11 +4,13 @@ import { AppError, type Backend } from './backend.js';
 import type { Session } from './auth.js';
 import { MarketLookup, marketId, marketSeries, fxInput, irInput } from './market.js';
 import { Discovery, discoveryTools } from './discovery.js';
+import { Reporting, reportingTools } from './reporting.js';
 
 const page = { offset: 0, order: { field: '', descending: false }, filter: null, as_of: null };
 const limit = z.number().int().min(1).max(50).default(10);
 export const tools = {
     ...discoveryTools,
+    ...reportingTools,
     read_fx_spot: { description: 'Look up an exact directed FX spot pair in the selected party. Returns value, units, observation date, provider, source and freshness. Ask the user to choose when ambiguous; stale means historical, never a current quote. No inversion or cross-rate calculation.', schema: fxInput },
     read_ir_rate: { description: 'Read an exact IR point: currency, instrument (ir_swap/mm/zero/discount) and maturity term, e.g. 5Y. Floating-leg tenor is separate. Returns provider, dated source and freshness; asks for clarification if ambiguous. No interpolation or pricing.', schema: irInput },
     list_currencies: { description: 'Read configured currency codes and names from OreStudio. Results may be paginated.',
@@ -25,7 +27,8 @@ const envelope = z.object({ result: z.object({ outcome: z.string() }), total: z.
 export class ToolExecutor {
     private market: MarketLookup;
     private discovery: Discovery;
-    constructor(private backend: Backend, private audit: (event: Record<string, unknown>) => void = e => console.log(JSON.stringify(e))) { this.market = new MarketLookup(backend); this.discovery = new Discovery(backend); }
+    private reporting: Reporting;
+    constructor(private backend: Backend, private audit: (event: Record<string, unknown>) => void = e => console.log(JSON.stringify(e))) { this.market = new MarketLookup(backend); this.discovery = new Discovery(backend); this.reporting = new Reporting(backend); }
     async execute(name: string, args: unknown, session: Session, signal?: AbortSignal): Promise<unknown> {
         if (!session.active || session.expires <= Date.now()) throw new AppError('session_expired', 'Sign in again.', 401);
         if (!Object.hasOwn(tools, name)) throw new AppError('unknown_tool', 'Tool is not available.', 400);
@@ -38,6 +41,11 @@ export class ToolExecutor {
         const start = Date.now(); let outcome = 'failed';
         try {
             signal?.throwIfAborted();
+            if (Object.hasOwn(reportingTools, name)) {
+                const output = await this.reporting.execute(name, input, session, signal);
+                if (Buffer.byteLength(JSON.stringify(output)) > 32768) throw new AppError('oversized_result', 'Tool output exceeds its limit.');
+                outcome = 'ok'; return output;
+            }
             if (Object.hasOwn(discoveryTools, name)) {
                 const output = await this.discovery.execute(name, input, session, signal);
                 if (Buffer.byteLength(JSON.stringify(output)) > 32768) throw new AppError('oversized_result', 'Tool output exceeds its limit.');

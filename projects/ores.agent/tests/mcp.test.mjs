@@ -7,6 +7,7 @@ const party = '11111111-1111-4111-8111-111111111111';
 const tenant = '22222222-2222-4222-8222-222222222222';
 const seriesId = '33333333-3333-f333-0333-333333333333';
 const uri = 'oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD';
+const runId = '44444444-4444-4444-8444-444444444444';
 const config = { host: '127.0.0.1', port: 0, allowedOrigins: [], nats: null, inference: { baseUrl: 'http://127.0.0.1:20010/v1', model: 'lfm3-1.7b', timeoutMs: 60000 } };
 test('independent official MCP client discovers/calls tools; denied calls and revoked tokens fail', async () => {
     const calls = [];
@@ -14,6 +15,10 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         calls.push({ op, token: s?.token });
         if (op === 'login') return { success: true, token: 'private-backend-token', session_id: 'session', username: 'alice', tenant_id: tenant, selected_party_id: party };
         if (op === 'logout') return {};
+        if (op === 'trade') return { result: { outcome: 'ok' }, trade: { id: seriesId, tenant_id: tenant, party_id: party } };
+        if (op === 'reportInstances') return { result: { outcome: 'ok' }, total: 1, instances: [{ id: runId, tenant_id: tenant, party_id: party, name: 'labelled fixture run', definition_id: runId, priced_at: '2016-12-30', price_note: '', completed_at: '2016-12-30T12:00:00Z', cut_id: null, cut_label: null, cut_timepoint: null, engine_settings_id: null, engine_settings_version: null }] };
+        if (op === 'runHealth') return { result: { outcome: 'ok' }, health: 'completed clean', state_name: 'completed' };
+        if (op === 'runResults') return { result: { outcome: 'ok' }, total: 1, results: [{ id: runId, tenant_id: tenant, party_id: party, report_instance_id: runId, report_definition_id: runId, as_of: '2016-12-30', subject_type: 'trade', subject_id: seriesId, measure: 'npv', currency: 'GBP', figure: 0, source: 'labelled.fixture' }] };
         if (op === 'books') return { result: { outcome: 'ok' }, total: 1, books: [{ id: seriesId, tenant_id: tenant, party_id: party, name: 'fixture book', parent_portfolio_id: seriesId, functional_currency: 'GBP' }] };
         if (op === 'series') return { result: { outcome: 'ok' }, total: 1, market_series: [{ id: seriesId, tenant_id: tenant, party_id: party, provider_code: 'fixture', oresmd_uri: uri, series_subclass: 'fixture' }] };
         if (op === 'observations') return { result: { outcome: 'ok' }, total: 1, market_observations: [{ series_id: seriesId, tenant_id: tenant, party_id: party, oresmd_uri: uri.replace('type=series', 'type=quote'), value: '1.0552', observation_datetime: '2016-12-30 00:00:00.000000Z', source: 'labelled.fixture' }] };
@@ -27,7 +32,7 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         const login = await (await fetch(base + '/auth/login', { method: 'POST', body: JSON.stringify({ principal: 'alice', password: 'fixture' }) })).json();
         const headers = { Authorization: 'Bearer ' + login.accessToken };
         await client.connect(new StreamableHTTPClientTransport(new URL(base + '/mcp'), { requestInit: { headers } }));
-        const catalog = await client.listTools(); assert.deepEqual(catalog.tools.map(t => t.name).sort(), ['list_currencies', 'list_market_series', 'read_market_observations', 'read_fx_spot', 'read_ir_rate', 'find_trades', 'read_trade', 'find_books', 'find_portfolios', 'find_counterparties'].sort());
+        const catalog = await client.listTools(); assert.deepEqual(catalog.tools.map(t => t.name).sort(), ['list_currencies', 'list_market_series', 'read_market_observations', 'read_fx_spot', 'read_ir_rate', 'find_trades', 'read_trade', 'find_books', 'find_portfolios', 'find_counterparties', 'find_report_runs', 'read_run_status', 'read_trade_results'].sort());
         const result = await client.callTool({ name: 'list_currencies', arguments: { limit: 1 } });
         assert.equal(JSON.parse(result.content[0].text).rows[0].iso_code, 'GBP');
         assert.ok(!JSON.stringify(result).includes('private-backend-token'));
@@ -37,6 +42,8 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         assert.equal(JSON.parse(market.content[0].text).observation.value, '1.0552');
         const books = await client.callTool({ name: 'find_books', arguments: { query: 'fixture' } });
         assert.equal(JSON.parse(books.content[0].text).rows[0].name, 'fixture book');
+        const npv = await client.callTool({ name: 'read_trade_results', arguments: { tradeId: seriesId } });
+        assert.equal(JSON.parse(npv.content[0].text).status, 'stale'); assert.equal(JSON.parse(npv.content[0].text).result.figure, 0);
         const denied = await client.callTool({ name: 'list_currencies', arguments: { tenantId: 'other' } });
         assert.equal(denied.isError, true);
         await fetch(base + '/auth/logout', { method: 'POST', headers });

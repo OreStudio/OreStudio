@@ -15,6 +15,8 @@ The [Stage 0 baseline](docs/business-baseline.md) records live data readiness
 and how to rerun the read-only operator inspection.
 Version 0.1.2 adds [Stage 1 discovery](docs/discovery.md): trades, books,
 portfolios, counterparties and scoped trade economics.
+Version 0.1.3 adds [stored trade results and run health](docs/reporting.md),
+with explicit handling of partial output and a still-open clean live NPV gate.
 
 Requires Node 22.11+. From this component directory:
 

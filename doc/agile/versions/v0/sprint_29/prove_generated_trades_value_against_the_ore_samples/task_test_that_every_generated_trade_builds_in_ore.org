@@ -27,11 +27,11 @@ type and what is wrong, so the reports only fail for market data.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
-| Now          | Trade builders: conventions interface and swap leg builder. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Credit builders. |
+| Next         | Nothing. |
 | Last touched | 2026-11-06                               |
 
 * Acceptance
@@ -162,6 +162,9 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Report Trade errors after provisioning Acme, first three Headline Position runs | 284 errors over 36 of 85 trade types; 0 market data errors | =select scope_code, count(*) from ores_reporting_report_error_events_tbl group by 1= | 323e33c1bd |
+| Generated trade types recorded | 85, 344 KB | =ORES_UPDATE_GENERATED_TRADES=1 ores.synthetic.core.tests "[generated]"= | a1333d131c |
+| Known refusals, no-product types, missing blocks | 5, 22, 188 | =ores.synthetic.core.tests "[generated]"= | de3c46102b |
+| ores.synthetic.core.tests | 2610 assertions in 112 test cases pass | =ores.synthetic.core.tests= | de3c46102b |
 
 * Notes
 
@@ -400,3 +403,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generated trades are now recorded and judged. A test plans every asset
+class, builds each slot's booking request as the writer does, exports it as
+ORE XML in memory and keeps one portfolio per trade type in
+=projects/ores.synthetic/core/tests/data/generated_trades=. A generator change
+fails the test until the files are written again, so it shows as a diff.
+Three checks judge the files against known lists asserted exactly: 5
+refused types, 22 types written with no product data, and 188 blocks ORE's
+samples state that generated trades leave out. They match the Trade errors
+of the Acme reports.
+
+The writer now books every row a plan states rather than copying named
+arrays per family; no recorded trade changed, because the planners state
+nothing more. The cause the recorded files exposed is upstream: the trade
+constructors let a product be built without its own terms. The fix is
+designed here and broken into five tasks on the story: oresmd references
+and their resolvers, the seeded index conventions, the stored references,
+the trade builders, and every type built through them.
+
+Acceptance: the first two criteria are met by the recorded-trades test. The
+ORE engine check and the clean report run move to the tasks that fix the
+trades, since the engine would only confirm the known lists until then. The
+component audit of =ores.synthetic=: one source file changed, a test and its
+data added, no part or facet changed; =validate_docs.sh= passes.

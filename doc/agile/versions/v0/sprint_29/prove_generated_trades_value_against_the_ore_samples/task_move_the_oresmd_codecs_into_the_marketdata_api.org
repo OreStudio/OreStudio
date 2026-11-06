@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:oresmd:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/move-the-oresmd-codecs-into-the-marketdata-api
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Any component can parse and write an oresmd address without the marketdata core,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

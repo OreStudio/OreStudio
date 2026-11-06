@@ -60,6 +60,23 @@ task and name that file in the Command column.
 
 * Notes
 
+** From the review of PR #4474
+
+Points the review raised on the recorded-trades test and the writer, left
+for this task because it edits both:
+
+- =state_reason= in the writer skips a row with none of the three audit
+  shapes without a word; end it with a =static_assert= so a new row type
+  that fits none fails to compile.
+- =known_refusals()= mixes writer refusals with the three bond types the
+  in-memory path cannot join; split the test-only ones into a list of their
+  own, so the case's name says what it asserts.
+- =sample_requirements()= should =REQUIRE= the corpus directory, for a
+  clear failure when =external/ore= is missing.
+- The recorded files compare as exact text; check line endings
+  (=.gitattributes= for =tests/data=) and number formatting on the Windows
+  build.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

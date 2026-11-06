@@ -123,10 +123,11 @@ per trade type, usable outside the generator:
 7. *A registry* maps each catalogued trade type to its builder; a test fails
    for a type with none, and each builder's trade must roundtrip through our
    XML unchanged.
-8. The builders live in =ores.trading.api= and take conventions through a
-   small interface of value structs defined there, so the trading API keeps
-   no dependency on refdata. An adapter from the refdata conventions lives
-   where both are seen.
+8. The builders live in =ores.trading.api=, which links =ores.refdata.api=
+   (no cycle: refdata does not link trading), and take the refdata
+   convention types themselves. A small =conventions_source= interface finds
+   a convention by index name; one implementation holds conventions in
+   memory, for tests, the generator and the shell.
 
 Rollout: the conventions interface and the swap leg builder, proven on Swap;
 then credit, whose every type is broken; then family by family, each

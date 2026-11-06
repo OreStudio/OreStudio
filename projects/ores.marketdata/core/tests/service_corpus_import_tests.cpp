@@ -30,6 +30,7 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.testing/running_under_valgrind.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
@@ -338,6 +339,10 @@ TEST_CASE("every_line_of_a_sampled_corpus_file_reaches_the_database", "[corpus][
 }
 
 TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[corpus-full]") {
+    // The walk takes minutes natively and more than the suite's hour under valgrind. The
+    // sampled case above takes the same import path, so memcheck still checks it.
+    if (ores::testing::running_under_valgrind())
+        SKIP("the whole corpus is too slow under valgrind; the sampled case covers the path");
     auto lg(make_logger(test_suite));
 
     corpus_tenant tenant;

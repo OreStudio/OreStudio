@@ -60,6 +60,15 @@ struct equity_swap_instrument_write {
     std::chrono::year_month_day maturity_date;
     std::string long_short;
     std::string payment_frequency_code;
+    std::optional<ores::utility::decimal::decimal> fixed_rate;
+    std::optional<std::string> floating_index;
+    std::optional<ores::utility::decimal::decimal> floating_spread;
+    std::optional<std::string> floating_day_count_fraction;
+    std::optional<ores::utility::decimal::decimal> initial_fixed_rate;
+    std::optional<ores::utility::decimal::decimal> knock_in_level;
+    std::optional<bool> bermudan_knock_in;
+    std::optional<bool> accruing_fixed_coupons;
+    std::optional<bool> accumulating_fixed_coupons;
     std::string description;
 
     friend bool operator==(const equity_swap_instrument_write&,
@@ -407,6 +416,20 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_instr
         utility::codec::field{"long_short", &equity_swap_instrument_write::long_short},
         utility::codec::field{"payment_frequency_code",
                               &equity_swap_instrument_write::payment_frequency_code},
+        utility::codec::field{"fixed_rate", &equity_swap_instrument_write::fixed_rate},
+        utility::codec::field{"floating_index", &equity_swap_instrument_write::floating_index},
+        utility::codec::field{"floating_spread", &equity_swap_instrument_write::floating_spread},
+        utility::codec::field{"floating_day_count_fraction",
+                              &equity_swap_instrument_write::floating_day_count_fraction},
+        utility::codec::field{"initial_fixed_rate",
+                              &equity_swap_instrument_write::initial_fixed_rate},
+        utility::codec::field{"knock_in_level", &equity_swap_instrument_write::knock_in_level},
+        utility::codec::field{"bermudan_knock_in",
+                              &equity_swap_instrument_write::bermudan_knock_in},
+        utility::codec::field{"accruing_fixed_coupons",
+                              &equity_swap_instrument_write::accruing_fixed_coupons},
+        utility::codec::field{"accumulating_fixed_coupons",
+                              &equity_swap_instrument_write::accumulating_fixed_coupons},
         utility::codec::field{"description", &equity_swap_instrument_write::description},
     };
 }

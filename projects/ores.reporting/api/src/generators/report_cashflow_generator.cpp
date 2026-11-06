@@ -57,6 +57,7 @@ generate_synthetic_report_cashflow(utility::generation::generation_context& ctx)
     r.measure = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.part = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.report_definition_id = ctx.generate_uuid();
+    r.value = faker::number::decimal<double>(-1000000.0, 1000000.0);
     r.source = std::string(faker::word::noun());
     return r;
 }

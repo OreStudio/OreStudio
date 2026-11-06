@@ -83,6 +83,13 @@ struct structure_member final {
     int sequence_number = 0;
 
     /**
+     * @brief The name the parent states the member by, when it is not the member's own id: a total
+     * return swap names each underlying by its Derivative/Id, while the trade inside states an id
+     * of its own.
+     */
+    std::optional<std::string> member_label;
+
+    /**
      * @brief Username of the person who last modified this structure member.
      */
     std::string modified_by;

@@ -56,6 +56,8 @@ generate_synthetic_equity_position_option_underlying(utility::generation::genera
     r.option_type = std::string("Call");
     r.exercise_type = std::string("European");
     r.settlement_type = std::string("Cash");
+    r.exercise_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

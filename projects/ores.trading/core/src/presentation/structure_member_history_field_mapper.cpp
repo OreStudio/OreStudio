@@ -42,6 +42,7 @@ render_structure_member_fields(const domain::structure_member& v) {
     fields.push_back({.name = "Structure ID", .value = boost::uuids::to_string(v.structure_id)});
     fields.push_back({.name = "Role", .value = v.role});
     fields.push_back({.name = "Sequence Number", .value = std::to_string(v.sequence_number)});
+    fields.push_back({.name = "Member Label", .value = v.member_label.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

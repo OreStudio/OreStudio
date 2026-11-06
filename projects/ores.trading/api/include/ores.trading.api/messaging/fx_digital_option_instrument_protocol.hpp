@@ -63,6 +63,9 @@ struct fx_digital_option_instrument_write {
     std::string barrier_type;
     std::optional<ores::utility::decimal::decimal> lower_barrier;
     std::optional<ores::utility::decimal::decimal> upper_barrier;
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+    std::optional<std::string> barrier_calendar;
+    std::optional<std::string> barrier_fixing_index;
     std::string description;
 
     friend bool operator==(const fx_digital_option_instrument_write&,
@@ -423,6 +426,12 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"barrier_type", &fx_digital_option_instrument_write::barrier_type},
         utility::codec::field{"lower_barrier", &fx_digital_option_instrument_write::lower_barrier},
         utility::codec::field{"upper_barrier", &fx_digital_option_instrument_write::upper_barrier},
+        utility::codec::field{"barrier_start_date",
+                              &fx_digital_option_instrument_write::barrier_start_date},
+        utility::codec::field{"barrier_calendar",
+                              &fx_digital_option_instrument_write::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &fx_digital_option_instrument_write::barrier_fixing_index},
         utility::codec::field{"description", &fx_digital_option_instrument_write::description},
     };
 }

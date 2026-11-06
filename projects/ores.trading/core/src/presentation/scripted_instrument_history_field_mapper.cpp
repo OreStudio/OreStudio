@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -48,6 +49,7 @@ render_scripted_instrument_fields(const domain::scripted_instrument& v) {
     fields.push_back({.name = "Underlyings Json", .value = v.underlyings_json});
     fields.push_back({.name = "Parameters Json", .value = v.parameters_json});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Data Element", .value = v.data_element.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

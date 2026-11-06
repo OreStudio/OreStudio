@@ -51,6 +51,147 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     fields.push_back({.name = "Floating Index Code", .value = v.floating_index_code});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Leg Group", .value = v.leg_group.value_or(std::string{})});
+    fields.push_back({.name = "Fixing Days",
+                      .value = v.fixing_days ? std::to_string(*v.fixing_days) : std::string{}});
+    fields.push_back(
+        {.name = "Is In Arrears",
+         .value = v.is_in_arrears ? (*v.is_in_arrears ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Include Spread",
+         .value = v.include_spread ? (*v.include_spread ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Is Averaged",
+         .value = v.is_averaged ? (*v.is_averaged ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Has Sub Periods",
+         .value = v.has_sub_periods ? (*v.has_sub_periods ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Notional Initial Exchange",
+                      .value = v.notional_initial_exchange ?
+                                   (*v.notional_initial_exchange ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Notional Final Exchange",
+                      .value = v.notional_final_exchange ?
+                                   (*v.notional_final_exchange ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Payment Lag", .value = v.payment_lag.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Payment Calendar", .value = v.payment_calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Commodity Price Type", .value = v.commodity_price_type.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Future Month Offset",
+         .value = v.future_month_offset ? std::to_string(*v.future_month_offset) : std::string{}});
+    fields.push_back(
+        {.name = "Daily Expiry Offset",
+         .value = v.daily_expiry_offset ? std::to_string(*v.daily_expiry_offset) : std::string{}});
+    fields.push_back(
+        {.name = "Pricing Calendar", .value = v.pricing_calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Equity Return Type", .value = v.equity_return_type.value_or(std::string{})});
+    fields.push_back({.name = "Equity Name", .value = v.equity_name.value_or(std::string{})});
+    fields.push_back({.name = "Equity Underlying Type",
+                      .value = v.equity_underlying_type.value_or(std::string{})});
+    fields.push_back({.name = "Equity Underlying Identifier Type",
+                      .value = v.equity_underlying_identifier_type.value_or(std::string{})});
+    fields.push_back({.name = "Equity Quantity",
+                      .value = v.equity_quantity ? v.equity_quantity->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Equity Initial Price",
+         .value = v.equity_initial_price ? v.equity_initial_price->to_string() : std::string{}});
+    fields.push_back({.name = "Equity Initial Price Currency",
+                      .value = v.equity_initial_price_currency.value_or(std::string{})});
+    fields.push_back({.name = "Equity Dividend Factor",
+                      .value = v.equity_dividend_factor ? v.equity_dividend_factor->to_string() :
+                                                          std::string{}});
+    fields.push_back({.name = "Equity Notional Reset",
+                      .value = v.equity_notional_reset ?
+                                   (*v.equity_notional_reset ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back(
+        {.name = "Equity Currency", .value = v.equity_currency.value_or(std::string{})});
+    fields.push_back({.name = "FX Index", .value = v.fx_index.value_or(std::string{})});
+    fields.push_back({.name = "FX Reset Foreign Currency",
+                      .value = v.fx_reset_foreign_currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "FX Reset Start Date", .value = v.fx_reset_start_date.value_or(std::string{})});
+    fields.push_back({.name = "FX Reset Foreign Amount",
+                      .value = v.fx_reset_foreign_amount ? v.fx_reset_foreign_amount->to_string() :
+                                                           std::string{}});
+    fields.push_back(
+        {.name = "FX Reset FX Index", .value = v.fx_reset_fx_index.value_or(std::string{})});
+    fields.push_back({.name = "FX Reset Fixing Days",
+                      .value = v.fx_reset_fixing_days ? std::to_string(*v.fx_reset_fixing_days) :
+                                                        std::string{}});
+    fields.push_back({.name = "FX Reset Fixing Calendar",
+                      .value = v.fx_reset_fixing_calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Fixing Calendar", .value = v.fixing_calendar.value_or(std::string{})});
+    fields.push_back({.name = "Digital Call Position",
+                      .value = v.digital_call_position.value_or(std::string{})});
+    fields.push_back({.name = "Digital Is Call Atm Included",
+                      .value = v.digital_is_call_atm_included ?
+                                   (*v.digital_is_call_atm_included ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back(
+        {.name = "Digital Put Position", .value = v.digital_put_position.value_or(std::string{})});
+    fields.push_back({.name = "Digital Is Put Atm Included",
+                      .value = v.digital_is_put_atm_included ?
+                                   (*v.digital_is_put_atm_included ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Equity Margin Initial Margin Factor",
+                      .value = v.equity_margin_initial_margin_factor ?
+                                   v.equity_margin_initial_margin_factor->to_string() :
+                                   std::string{}});
+    fields.push_back({.name = "Equity Margin Multiplier",
+                      .value = v.equity_margin_multiplier ?
+                                   v.equity_margin_multiplier->to_string() :
+                                   std::string{}});
+    fields.push_back({.name = "Commodity Pay Relative To",
+                      .value = v.commodity_pay_relative_to.value_or(std::string{})});
+    fields.push_back({.name = "Commodity Quantity Frequency",
+                      .value = v.commodity_quantity_frequency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Pricing Date Rule", .value = v.pricing_date_rule.value_or(std::string{})});
+    fields.push_back({.name = "Indexings From Asset Leg",
+                      .value = v.indexings_from_asset_leg ?
+                                   (*v.indexings_from_asset_leg ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Floating Index Code 2",
+                      .value = v.floating_index_code_2.value_or(std::string{})});
+    fields.push_back({.name = "Cms Duration",
+                      .value = v.cms_duration ? std::to_string(*v.cms_duration) : std::string{}});
+    fields.push_back(
+        {.name = "Naked Option",
+         .value = v.naked_option ? (*v.naked_option ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Lookback", .value = v.lookback.value_or(std::string{})});
+    fields.push_back({.name = "Rate Cutoff",
+                      .value = v.rate_cutoff ? std::to_string(*v.rate_cutoff) : std::string{}});
+    fields.push_back(
+        {.name = "Local Cap Floor",
+         .value = v.local_cap_floor ? (*v.local_cap_floor ? "true" : "false") : std::string{}});
+    fields.push_back(
+        {.name = "Observation Lag", .value = v.observation_lag.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Cpi Base", .value = v.cpi_base ? v.cpi_base->to_string() : std::string{}});
+    fields.push_back({.name = "Cpi Start Date",
+                      .value = v.cpi_start_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                      *v.cpi_start_date) :
+                                                  std::string{}});
+    fields.push_back(
+        {.name = "Cpi Interpolation", .value = v.cpi_interpolation.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Cpi Interpolated",
+         .value = v.cpi_interpolated ? (*v.cpi_interpolated ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Subtract Inflation Notional",
+                      .value = v.subtract_inflation_notional ?
+                                   (*v.subtract_inflation_notional ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Zero Coupon Compounding",
+                      .value = v.zero_coupon_compounding.value_or(std::string{})});
+    fields.push_back({.name = "Zero Coupon Subtract Notional",
+                      .value = v.zero_coupon_subtract_notional ?
+                                   (*v.zero_coupon_subtract_notional ? "true" : "false") :
+                                   std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

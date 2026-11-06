@@ -61,6 +61,11 @@ namespace ores::trading::domain {
         utility::codec::field{"barrier_type", &fx_digital_option_instrument::barrier_type},
         utility::codec::field{"lower_barrier", &fx_digital_option_instrument::lower_barrier},
         utility::codec::field{"upper_barrier", &fx_digital_option_instrument::upper_barrier},
+        utility::codec::field{"barrier_start_date",
+                              &fx_digital_option_instrument::barrier_start_date},
+        utility::codec::field{"barrier_calendar", &fx_digital_option_instrument::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &fx_digital_option_instrument::barrier_fixing_index},
         utility::codec::field{"description", &fx_digital_option_instrument::description},
         utility::codec::field{"audit", &fx_digital_option_instrument::audit},
     };

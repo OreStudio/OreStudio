@@ -22,6 +22,7 @@
 
 #include "ores.http.core/export.hpp"
 #include <cstddef>
+#include <functional>
 #include <mutex>
 #include <set>
 #include <string>
@@ -64,12 +65,12 @@ struct coalesced_frame final {
 };
 
 /**
- * @brief Gathers changes into one frame per collection per tick.
+ * @brief Gathers changes into one frame per collection per window.
  *
  * A bulk import writes thousands of rows, and a stream that sends one frame per row is
  * one a screen cannot use: it redraws a list per row and falls behind the writer. The
- * coalescer keeps a dirty set per tenant, party, component and collection, and a tick
- * drains it into one frame per collection.
+ * coalescer keeps a dirty set per tenant, party, component and collection, and the
+ * window's end drains it into one frame per collection.
  *
  * A change that arrives for another tenant or party is a different frame, because a
  * frame is addressed at one party's data and never at a mixture.
@@ -78,6 +79,16 @@ class ORES_HTTP_CORE_EXPORT change_coalescer final {
 public:
     /// Records one change in the window that is open.
     void record(const change_event& event);
+
+    /**
+     * @brief Sets what to call when a change opens a window.
+     *
+     * The call happens once per window, on the thread that recorded the change that
+     * found the set empty, and never for a change that lands in a window another
+     * change already opened: a window is armed by its first change and not extended
+     * by the rest.
+     */
+    void set_wake(std::function<void()> wake);
 
     /// Takes everything recorded since the last drain, one frame per collection.
     std::vector<coalesced_frame> drain();
@@ -90,6 +101,7 @@ private:
 
     mutable std::mutex mu_;
     std::set<key> dirty_;
+    std::function<void()> wake_;
 };
 
 }

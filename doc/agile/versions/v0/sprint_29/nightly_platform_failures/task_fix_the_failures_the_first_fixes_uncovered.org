@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 63C1832E-7DC7-4DC6-AE2D-9AB5FA07893A
+:END:
+#+title: Task: Fix the failures the first fixes uncovered
+#+description: With the first fixes merged, the nightlies get further and fail later: MSVC and clang-cl test compile errors, a gcc redundant move, macOS test failures and linker warnings, a memcheck timeout, and uninitialised values valgrind reports in the reporting codec.
+#+type: task
+#+level: s1
+#+filetags: :ci:hotfix:nightly:nightly_platform_failures:sprint_29:v0:
+#+owner: marco
+#+branch: hotfix/nightly-failures-round-two
+#+pr: 4469
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1DFEE45-A089-4E9E-A6D2-F74AFB1D6E0E][Fix the nightly platform failures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each nightly gets past the failures the 2026-11-06 runs show.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A1DFEE45-A089-4E9E-A6D2-F74AFB1D6E0E][Fix the nightly platform failures]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-06                               |
+
+* Acceptance
+
+- Every fix names the failing run it answers.
+
+* Plan
+
+Read the failed step of each nightly on =de699dd7c7= and the valgrind
+defects of CDash build 4468864, fix each cause at its root, and where a cause
+cannot be seen from the log, make the next run say it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4469][#4469]] | [ci] Fix the failures the first nightly fixes uncovered |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | PR #4469, @claude: CheckLinkerFlag needs CMake 3.18 | CMakeLists.txt | No change | The project requires CMake 3.28. |
+| 2 | PR #4469, @claude: <cstdlib> is unused and out of order | net_network_info_tests.cpp | Accept | Removed: the environment helper replaced the getenv call that needed it. |
+| 3 | PR #4469, @claude: a long line | xml_roundtrip_conventions_tests.cpp | Accept | clang-format over the lines this change wrote. |
+| 4 | PR #4469, @claude: rows_wanted throws on a non-numeric value | benchmark_run_output_load_tests.cpp | No change | The behaviour is the one before this change; a bad benchmark setting should stop the run. |
+| 5 | PR #4469, @claude: the nats skip covers every non-Linux platform | service_message_ownership_tests.cpp | No change | The test reads /proc, which only Linux has, so every other platform must skip it. |
+
+* Result
+
+The first fixes worked: Windows set up its database, macOS compiled and ran its
+suites, the memcheck run completed and submitted to CDash, and the codegen and
+include hygiene checks are green. Each nightly then failed further on:
+
+| Failure | Run | Cause | Fix |
+|---------+-----+-------+-----|
+| Valgrind: 172 uses of uninitialised values | CDash 4468864 | =report_cashflow::value= had no initializer and the generator never set it, so the codec test wrote an uninitialised double. | The model gives it a default and a generator. The codec test runs clean under valgrind. |
+| MSVC: test mains | 42181208341 | =BOOST_SCOPE_EXIT= declares a local that hides a global of =boost/scope_exit.hpp=: C4459, an error. | A named guard in every test main, the digest suite, the shell and the template. |
+| clang-cl: hostname test | 42181208341 | The test included =unistd.h=. | It reads the host name portably, through =COMPUTERNAME= on Windows. |
+| MSVC: =std::getenv= | latent | The CRT deprecates it, and the build treats that as an error; five tests called it. | They read the environment through =ores::platform::environment=. |
+| gcc: redundant move | 42166109767 | A const condition made =std::move= a copy. | The condition is not const. |
+| Memcheck: marketdata core timeout | 42166109767 | The whole-corpus walk outgrows the suite's own 3600 s budget under valgrind. | It skips under valgrind; the sampled case takes the same path. |
+| Memcheck: feed loop deadline | 42166109767 | A test must store ticks within 60 s. | It skips under valgrind. |
+| macOS: nats memory test | 42191098938 | It reads =/proc=. | It skips off Linux. |
+| macOS: next fire unavailable | 42191098938 | Unknown: the read answers =internal_error=, and the log does not carry the message. | The test reports the message. |
+| macOS: http client hang | 42191098938 | Unknown: the log does not name the case. | The suite registers the timeout listener. |
+| macOS: linker warnings | 42191098938 | CMake repeats static libraries on purpose, and Apple's linker warns on each. | =-no_warn_duplicate_libraries= where the linker accepts it. |
+
+Two causes are still open and wait on the next macOS nightly to name them. A
+Windows build stops at its first error, so more may follow these.

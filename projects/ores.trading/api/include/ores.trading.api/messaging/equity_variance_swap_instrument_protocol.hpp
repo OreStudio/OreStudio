@@ -59,6 +59,9 @@ struct equity_variance_swap_instrument_write {
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;
     std::string long_short;
+    std::optional<std::string> calendar;
+    std::optional<std::string> moment_type;
+    std::optional<bool> add_past_dividends;
     std::string description;
 
     friend bool operator==(const equity_variance_swap_instrument_write&,
@@ -423,6 +426,10 @@ wire_fields(std::type_identity<equity_variance_swap_instrument_write>) {
         utility::codec::field{"maturity_date",
                               &equity_variance_swap_instrument_write::maturity_date},
         utility::codec::field{"long_short", &equity_variance_swap_instrument_write::long_short},
+        utility::codec::field{"calendar", &equity_variance_swap_instrument_write::calendar},
+        utility::codec::field{"moment_type", &equity_variance_swap_instrument_write::moment_type},
+        utility::codec::field{"add_past_dividends",
+                              &equity_variance_swap_instrument_write::add_past_dividends},
         utility::codec::field{"description", &equity_variance_swap_instrument_write::description},
     };
 }

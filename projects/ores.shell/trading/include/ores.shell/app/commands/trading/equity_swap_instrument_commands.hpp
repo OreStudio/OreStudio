@@ -89,7 +89,9 @@ public:
     /**
      * @brief add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency>
      * <notional> <return_type> <start_date> <maturity_date> <long_short> <payment_frequency_code>
-     * <description> <reason> <commentary>
+     * <fixed_rate> <floating_index> <floating_spread> <floating_day_count_fraction>
+     * <initial_fixed_rate> <knock_in_level> <bermudan_knock_in> <accruing_fixed_coupons>
+     * <accumulating_fixed_coupons> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -98,7 +100,9 @@ public:
     /**
      * @brief set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency>
      * <notional> <return_type> <start_date> <maturity_date> <long_short> <payment_frequency_code>
-     * <description> <reason> <commentary> [--version <n>]
+     * <fixed_rate> <floating_index> <floating_spread> <floating_day_count_fraction>
+     * <initial_fixed_rate> <knock_in_level> <bermudan_knock_in> <accruing_fixed_coupons>
+     * <accumulating_fixed_coupons> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +111,9 @@ public:
     /**
      * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id>
      * <underlying_name> <currency> <notional> <return_type> <start_date> <maturity_date>
-     * <long_short> <payment_frequency_code> <description> <reason> <commentary>
+     * <long_short> <payment_frequency_code> <fixed_rate> <floating_index> <floating_spread>
+     * <floating_day_count_fraction> <initial_fixed_rate> <knock_in_level> <bermudan_knock_in>
+     * <accruing_fixed_coupons> <accumulating_fixed_coupons> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

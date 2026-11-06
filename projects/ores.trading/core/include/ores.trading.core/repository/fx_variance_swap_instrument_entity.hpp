@@ -65,6 +65,8 @@ struct fx_variance_swap_instrument_entity {
     double strike = 0.0;
     ores::utility::decimal::decimal notional;
     std::string moment_type;
+    std::optional<std::string> calendar;
+    std::optional<bool> add_past_dividends;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -93,6 +95,8 @@ struct fx_variance_swap_instrument_entity {
                query_builder::bind("strike", &e::strike) |
                query_builder::bind("notional", &e::notional) |
                query_builder::bind("moment_type", &e::moment_type) |
+               query_builder::bind("calendar", &e::calendar) |
+               query_builder::bind("add_past_dividends", &e::add_past_dividends) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

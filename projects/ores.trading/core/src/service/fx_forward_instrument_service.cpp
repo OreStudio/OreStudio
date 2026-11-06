@@ -112,6 +112,15 @@ fx_forward_instrument_to_domain(const messaging::fx_forward_instrument_write& wr
     v.sold_amount = write.sold_amount;
     v.value_date = write.value_date;
     v.settlement = write.settlement;
+    v.settlement_currency = write.settlement_currency;
+    v.settlement_fx_index = write.settlement_fx_index;
+    v.settlement_date = write.settlement_date;
+    v.settlement_payment_lag = write.settlement_payment_lag;
+    v.settlement_payment_calendar = write.settlement_payment_calendar;
+    v.settlement_payment_convention = write.settlement_payment_convention;
+    v.far_date = write.far_date;
+    v.far_bought_amount = write.far_bought_amount;
+    v.far_sold_amount = write.far_sold_amount;
     v.description = write.description;
     return v;
 }

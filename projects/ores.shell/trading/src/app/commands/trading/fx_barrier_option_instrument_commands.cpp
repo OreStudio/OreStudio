@@ -144,7 +144,9 @@ void fx_barrier_option_instrument_commands::register_commands(cli::Menu& root_me
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount> "
         "<sold_currency> <sold_amount> <option_type> <expiry_date> <settlement> <barrier_type> "
-        "<lower_barrier> <upper_barrier> <underlying_code> <description> <reason> <commentary>");
+        "<lower_barrier> <upper_barrier> <underlying_code> <barrier_start_date> <barrier_calendar> "
+        "<barrier_fixing_index> <quantity> <strike> <amount> <settlement_date> <kiko_type> "
+        "<description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -153,8 +155,9 @@ void fx_barrier_option_instrument_commands::register_commands(cli::Menu& root_me
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> <bought_amount> "
         "<sold_currency> <sold_amount> <option_type> <expiry_date> <settlement> <barrier_type> "
-        "<lower_barrier> <upper_barrier> <underlying_code> <description> <reason> <commentary> "
-        "[--version <n>]");
+        "<lower_barrier> <upper_barrier> <underlying_code> <barrier_start_date> <barrier_calendar> "
+        "<barrier_fixing_index> <quantity> <strike> <amount> <settlement_date> <kiko_type> "
+        "<description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -163,8 +166,9 @@ void fx_barrier_option_instrument_commands::register_commands(cli::Menu& root_me
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <bought_currency> "
         "<bought_amount> <sold_currency> <sold_amount> <option_type> <expiry_date> <settlement> "
-        "<barrier_type> <lower_barrier> <upper_barrier> <underlying_code> <description> <reason> "
-        "<commentary>");
+        "<barrier_type> <lower_barrier> <upper_barrier> <underlying_code> <barrier_start_date> "
+        "<barrier_calendar> <barrier_fixing_index> <quantity> <strike> <amount> <settlement_date> "
+        "<kiko_type> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -367,8 +371,8 @@ void fx_barrier_option_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 23 + 2) {
+            fail(out) << "Expected " << (23 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -400,6 +404,23 @@ void fx_barrier_option_instrument_commands::process_add(std::ostream& out,
             req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
         fx_barrier_option_instrument_read_token(
             req.change.write.underlying_code, parsed->positionals[next++], "underlying_code");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.barrier_start_date, parsed->positionals[next++], "barrier_start_date");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.barrier_calendar, parsed->positionals[next++], "barrier_calendar");
+        fx_barrier_option_instrument_read_token(req.change.write.barrier_fixing_index,
+                                                parsed->positionals[next++],
+                                                "barrier_fixing_index");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.quantity, parsed->positionals[next++], "quantity");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.strike, parsed->positionals[next++], "strike");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.amount, parsed->positionals[next++], "amount");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.settlement_date, parsed->positionals[next++], "settlement_date");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.kiko_type, parsed->positionals[next++], "kiko_type");
         fx_barrier_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -446,8 +467,8 @@ void fx_barrier_option_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 23 + 2) {
+            fail(out) << "Expected " << (23 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -479,6 +500,23 @@ void fx_barrier_option_instrument_commands::process_set(std::ostream& out,
             req.change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
         fx_barrier_option_instrument_read_token(
             req.change.write.underlying_code, parsed->positionals[next++], "underlying_code");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.barrier_start_date, parsed->positionals[next++], "barrier_start_date");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.barrier_calendar, parsed->positionals[next++], "barrier_calendar");
+        fx_barrier_option_instrument_read_token(req.change.write.barrier_fixing_index,
+                                                parsed->positionals[next++],
+                                                "barrier_fixing_index");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.quantity, parsed->positionals[next++], "quantity");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.strike, parsed->positionals[next++], "strike");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.amount, parsed->positionals[next++], "amount");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.settlement_date, parsed->positionals[next++], "settlement_date");
+        fx_barrier_option_instrument_read_token(
+            req.change.write.kiko_type, parsed->positionals[next++], "kiko_type");
         fx_barrier_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -537,8 +575,8 @@ void fx_barrier_option_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 15 + 2) {
-            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 23 + 2) {
+            fail(out) << "Expected " << (change_count * 23 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -572,6 +610,23 @@ void fx_barrier_option_instrument_commands::process_put_many(std::ostream& out,
                 change.write.upper_barrier, parsed->positionals[next++], "upper_barrier");
             fx_barrier_option_instrument_read_token(
                 change.write.underlying_code, parsed->positionals[next++], "underlying_code");
+            fx_barrier_option_instrument_read_token(
+                change.write.barrier_start_date, parsed->positionals[next++], "barrier_start_date");
+            fx_barrier_option_instrument_read_token(
+                change.write.barrier_calendar, parsed->positionals[next++], "barrier_calendar");
+            fx_barrier_option_instrument_read_token(change.write.barrier_fixing_index,
+                                                    parsed->positionals[next++],
+                                                    "barrier_fixing_index");
+            fx_barrier_option_instrument_read_token(
+                change.write.quantity, parsed->positionals[next++], "quantity");
+            fx_barrier_option_instrument_read_token(
+                change.write.strike, parsed->positionals[next++], "strike");
+            fx_barrier_option_instrument_read_token(
+                change.write.amount, parsed->positionals[next++], "amount");
+            fx_barrier_option_instrument_read_token(
+                change.write.settlement_date, parsed->positionals[next++], "settlement_date");
+            fx_barrier_option_instrument_read_token(
+                change.write.kiko_type, parsed->positionals[next++], "kiko_type");
             fx_barrier_option_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

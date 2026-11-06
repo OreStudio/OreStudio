@@ -240,6 +240,87 @@ the lower level. A product that states two levels holds one in each.
 
 Optional underlying identifier.
 
+
+** barrier_start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The date the barrier starts to be monitored, as =StartDate= states it.
+
+** barrier_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar the barrier is monitored in, as =Calendar= states it.
+
+** barrier_fixing_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The index the barrier is observed against, as =FXIndex= states it.
+
+** quantity
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A generic barrier option's quantity, as =Quantity= states it.
+
+** strike
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A generic barrier option's strike, as =Strike= states it.
+
+** amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A cash-or-nothing generic barrier option's amount, as =Amount= states it.
+
+** settlement_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+A generic barrier option's settlement date, as =SettlementDate= states it.
+
+** kiko_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How a generic barrier option's knock-in and knock-out barriers combine, as =Barriers/KikoType= states it. Its monitoring schedule is the product schedule under the role barrier_schedule.
+
 ** description
 :PROPERTIES:
 :type:     text
@@ -350,10 +431,10 @@ refused on write.
 
 | expression |
 |---|
-| "bought_amount" > 0 |
-| "sold_amount" > 0 |
+| "trade_type_code" = 'FxGenericBarrierOption' or "bought_amount" > 0 |
+| "trade_type_code" = 'FxGenericBarrierOption' or "sold_amount" > 0 |
 | "bought_currency" <> '' |
-| "sold_currency" <> '' |
+| "trade_type_code" = 'FxGenericBarrierOption' or "sold_currency" <> '' |
 | "lower_barrier" is null or "lower_barrier" > 0 |
 | "upper_barrier" is null or "upper_barrier" > 0 |
 | "lower_barrier" is not null or "upper_barrier" is not null |

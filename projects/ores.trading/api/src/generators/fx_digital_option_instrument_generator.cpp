@@ -63,6 +63,8 @@ generate_synthetic_fx_digital_option_instrument(utility::generation::generation_
     r.upper_barrier = ores::utility::decimal::decimal::from_string(
                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                           .value();
+    r.barrier_start_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

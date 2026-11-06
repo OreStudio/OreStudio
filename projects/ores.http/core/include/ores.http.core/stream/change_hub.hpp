@@ -33,46 +33,101 @@
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <limits>
+#include <list>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 namespace ores::http::stream {
 
+namespace detail {
+
+/**
+ * @brief The mark a hub puts on every id it issues.
+ *
+ * The process start, in nanoseconds, because an id from an earlier process must
+ * never look like one of ours: a client that reconnects across a restart would
+ * otherwise be replayed a gap that is not its own, and sequence numbers restart
+ * with the process. A restart is exactly what this mark changes.
+ */
+inline std::string make_epoch() {
+    const auto started = std::chrono::system_clock::now().time_since_epoch();
+    return std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(started).count());
+}
+
+}
+
+/**
+ * @brief Whose changes one stream hears.
+ *
+ * The tenant is the boundary a session may never cross. The party narrows it
+ * within the tenant: a change to a party's data is the business of that party and
+ * of an administrator; a tenant-wide change, which names no party, is everyone's.
+ */
+struct stream_scope final {
+    std::string tenant;
+    std::string party;
+    bool sees_all_parties = false;
+};
+
 /**
  * @brief What one stream has been given and not yet written.
  *
- * The queue is bounded because a stream nobody reads must not grow without limit: a
- * client that has stopped reading, or a market that outpaces it, drops its oldest
- * frames instead of the server's memory. Dropping the oldest keeps the newest, which
- * is the half a screen can still use.
+ * One frame is held per collection, not per publication. A stream that fell behind
+ * has missed the intermediate states of a collection but not the fact that it moved,
+ * so a newer frame for a collection replaces the pending one rather than queueing
+ * behind it. That is conflation: the payload says a collection moved, the client
+ * refetches it, and the intermediate frames carried nothing the client could use.
+ *
+ * The batch is still bounded. When more collections are pending than the stream may
+ * hold, the oldest one goes, because it is the frame the reader is least able to
+ * use. A replaced frame moves to the back, so the ids a client reads keep ascending
+ * and its Last-Event-ID stays a statement it can rely on.
  *
  * A reader that is waiting for a frame registers a waker. A publisher that finds one
  * calls it, so a frame does not wait out a keep-alive interval before it is written.
  */
 class change_subscription final {
 public:
-    explicit change_subscription(std::string tenant, std::size_t capacity)
-        : tenant_(std::move(tenant))
+    explicit change_subscription(stream_scope scope, std::size_t capacity)
+        : scope_(std::move(scope))
         , capacity_(capacity) {}
 
     change_subscription(const change_subscription&) = delete;
     change_subscription& operator=(const change_subscription&) = delete;
 
-    /// Queues one frame, dropping the oldest when the queue is full.
-    void push(std::string frame) {
+    /**
+     * @brief Holds one frame for its collection, replacing one that is still pending.
+     *
+     * @param collection What the frame is about. Two frames for the same collection
+     *        and the same tenancy are two views of one fact, and the newer is the
+     *        true one.
+     */
+    void push(std::string collection, std::string frame) {
         std::function<void()> waker;
         {
             const std::lock_guard lock(mu_);
             if (closed_)
                 return;
-            if (queue_.size() >= capacity_)
-                queue_.pop_front();
-            queue_.push_back(std::move(frame));
+            if (const auto replaced = pending_by_collection_.find(collection);
+                replaced != pending_by_collection_.end()) {
+                replaced->second->text = std::move(frame);
+                pending_.splice(pending_.end(), pending_, replaced->second);
+            } else {
+                if (pending_.size() >= capacity_ && !pending_.empty()) {
+                    pending_by_collection_.erase(pending_.front().collection);
+                    pending_.pop_front();
+                }
+                pending_.push_back(pending_frame{std::move(collection), std::move(frame)});
+                pending_by_collection_[pending_.back().collection] = std::prev(pending_.end());
+            }
             waker = waker_;
         }
         if (waker)
@@ -82,10 +137,11 @@ public:
     /// Takes the next frame, or nothing when none is waiting.
     std::optional<std::string> try_pop() {
         const std::lock_guard lock(mu_);
-        if (queue_.empty())
+        if (pending_.empty())
             return std::nullopt;
-        auto frame = std::move(queue_.front());
-        queue_.pop_front();
+        auto frame = std::move(pending_.front().text);
+        pending_by_collection_.erase(pending_.front().collection);
+        pending_.pop_front();
         return frame;
     }
 
@@ -106,7 +162,8 @@ public:
         {
             const std::lock_guard lock(mu_);
             closed_ = true;
-            queue_.clear();
+            pending_.clear();
+            pending_by_collection_.clear();
             waker = waker_;
             waker_ = nullptr;
         }
@@ -114,9 +171,9 @@ public:
             waker();
     }
 
-    /// The tenant this stream was opened for.
-    [[nodiscard]] const std::string& tenant() const {
-        return tenant_;
+    /// Whose changes this stream hears.
+    [[nodiscard]] const stream_scope& scope() const {
+        return scope_;
     }
 
     [[nodiscard]] bool closed() const {
@@ -126,13 +183,19 @@ public:
 
     [[nodiscard]] std::size_t size() const {
         const std::lock_guard lock(mu_);
-        return queue_.size();
+        return pending_.size();
     }
 
 private:
-    std::string tenant_;
+    struct pending_frame final {
+        std::string collection;
+        std::string text;
+    };
+
+    stream_scope scope_;
     mutable std::mutex mu_;
-    std::deque<std::string> queue_;
+    std::list<pending_frame> pending_;
+    std::unordered_map<std::string, std::list<pending_frame>::iterator> pending_by_collection_;
     std::function<void()> waker_;
     std::size_t capacity_;
     bool closed_ = false;
@@ -143,42 +206,154 @@ private:
  *
  * One hub per process. A publisher calls publish from whatever thread it is on; a
  * stream reads its own subscription from the connection's executor. The two meet on
- * the subscription's queue and nowhere else, so a slow reader costs its own queue
- * and not the publisher's thread.
+ * the subscription's pending batch and nowhere else, so a slow reader costs its own
+ * buffer and not the publisher's thread.
  *
  * A frame is text the stream writes as it stands, because the framing belongs to the
- * route that knows it writes an event stream and not to the hub that fans out.
+ * route that knows it writes an event stream and not to the hub that fans out. The
+ * hub is told what each frame is about, and no more, because that is what decides
+ * which pending frame a newer one replaces.
  */
 class change_hub final {
 public:
+    /**
+     * @brief How many recent frames a reconnecting client may ask for.
+     *
+     * Core NATS has no replay, so the hub keeps a short window of what it
+     * published. A client that says where it stopped and is inside the window is
+     * given the frames it missed; one that is outside it is told to resync.
+     */
+    static constexpr std::size_t default_retention = 64;
+
+    /// What a client's Last-Event-ID asks of the hub.
+    struct resume_point final {
+        /// The mark of the process that issued the id the client last saw.
+        std::string epoch;
+        /// How many frames that process had given the client when it stopped.
+        std::uint64_t last_seen = 0;
+    };
+
+    /// The event-stream id this hub gives its @p sequence'th frame.
+    [[nodiscard]] std::string id_of(std::uint64_t sequence) const {
+        return epoch_ + '-' + std::to_string(sequence);
+    }
+
+    /**
+     * @brief Reads an event-stream id, or nothing when it is not one of this form.
+     *
+     * An id is the mark of the process that issued it, a dash, and the frame's
+     * sequence within that process. Anything else names no frame this hub could
+     * place, so the caller answers it as it answers a gap: with one resync.
+     */
+    static std::optional<resume_point> read_id(std::string_view id) {
+        const auto dash = id.find('-');
+        if (dash == std::string_view::npos || dash == 0 || dash + 1 == id.size())
+            return std::nullopt;
+
+        std::uint64_t sequence = 0;
+        for (const auto ch : id.substr(dash + 1)) {
+            if (ch < '0' || ch > '9')
+                return std::nullopt;
+            const auto digit = static_cast<std::uint64_t>(ch - '0');
+            if (sequence > (std::numeric_limits<std::uint64_t>::max() - digit) / 10)
+                return std::nullopt;
+            sequence = sequence * 10 + digit;
+        }
+        return resume_point{std::string(id.substr(0, dash)), sequence};
+    }
     /**
      * @param system_tenant The tenant whose changes every stream hears, because they
      *        are the catalogue every tenant shares.
      */
     explicit change_hub(std::string system_tenant, std::size_t per_stream_capacity = 256)
         : system_tenant_(std::move(system_tenant))
+        , epoch_(detail::make_epoch())
         , capacity_(per_stream_capacity) {}
 
     /// Opens a stream for @p tenant, which also hears the system tenant.
-    [[nodiscard]] std::shared_ptr<change_subscription> subscribe(std::string tenant) {
+    /**
+     * @param resumed The id the client last saw, when it reconnects. A client
+     *        inside the retention window is given the frames it missed; one that
+     *        is outside it, or that names an id this process never issued, is
+     *        given one =resync= frame so it knows to reload rather than trust a
+     *        silent gap.
+     */
+    [[nodiscard]] std::shared_ptr<change_subscription>
+    subscribe(stream_scope scope, std::optional<resume_point> resumed = std::nullopt) {
         const std::lock_guard lock(mu_);
-        auto subscription = std::make_shared<change_subscription>(std::move(tenant), capacity_);
+        auto subscription = std::make_shared<change_subscription>(scope, capacity_);
+
+        const auto hears = [&](const std::string& tenant, const std::string& party) {
+            if (tenant != scope.tenant && tenant != system_tenant_)
+                return false;
+            return party.empty() || scope.sees_all_parties || party == scope.party;
+        };
+
+        if (resumed) {
+            const auto eligible = [&](const retained_frame& frame) {
+                return frame.id > resumed->last_seen && hears(frame.tenant, frame.party);
+            };
+            const auto oldest = retained_.empty() ? 0 : retained_.front().id;
+            const auto newest = retained_.empty() ? 0 : retained_.back().id;
+            const auto missed = static_cast<std::size_t>(
+                std::count_if(retained_.begin(), retained_.end(), eligible));
+            /*
+             * A replay the stream cannot hold whole would lose its oldest
+             * collections without saying so, which is the gap a resync exists to
+             * prevent, so half a replay is answered as no replay at all.
+             */
+            const auto inside = resumed->epoch == epoch_ && resumed->last_seen <= newest &&
+                                (oldest == 0 || resumed->last_seen + 1 >= oldest) &&
+                                missed <= capacity_;
+            if (inside) {
+                for (const auto& frame : retained_) {
+                    if (eligible(frame))
+                        subscription->push(
+                            conflation_key(frame.tenant, frame.party, frame.collection),
+                            "id: " + id_of(frame.id) + "\n" + frame.text);
+                }
+            } else {
+                // No publish builds this key: every one it builds holds a separator.
+                subscription->push("resync", "event: resync\ndata: {}\n\n");
+            }
+        }
+
         subscriptions_.push_back(subscription);
         return subscription;
     }
 
-    /// Gives the frame to every open stream that hears what owns it.
-    void publish(const std::string& tenant, std::string frame) {
+    /**
+     * @brief Gives the frame to every open stream that hears what owns it.
+     *
+     * @param collection What the frame is about, as the component and the
+     *        collection it names. A stream holds one pending frame per
+     *        collection, so a frame is the newest statement about its collection
+     *        and not one of a series.
+     */
+    void publish(const std::string& tenant,
+                 const std::string& party,
+                 const std::string& collection,
+                 std::string frame) {
         std::vector<std::shared_ptr<change_subscription>> open;
+        std::uint64_t id = 0;
         {
             const std::lock_guard lock(mu_);
             std::erase_if(subscriptions_,
                           [](const auto& subscription) { return subscription->closed(); });
+            id = next_id_++;
+            retained_.push_back(retained_frame{id, tenant, party, collection, frame});
+            while (retained_.size() > retention_)
+                retained_.pop_front();
             open = subscriptions_;
         }
+        auto stamped = "id: " + id_of(id) + "\n" + frame;
+        const auto key = conflation_key(tenant, party, collection);
         for (auto& subscription : open) {
-            if (subscription->tenant() == tenant || tenant == system_tenant_)
-                subscription->push(frame);
+            const auto& scope = subscription->scope();
+            const auto hears = (tenant == scope.tenant || tenant == system_tenant_) &&
+                               (party.empty() || scope.sees_all_parties || party == scope.party);
+            if (hears)
+                subscription->push(key, stamped);
         }
     }
 
@@ -193,10 +368,36 @@ public:
     }
 
 private:
+    struct retained_frame final {
+        std::uint64_t id = 0;
+        std::string tenant;
+        std::string party;
+        std::string collection;
+        std::string text;
+    };
+
+    /**
+     * @brief What makes two frames the same fact.
+     *
+     * A stream may hear two tenants and several parties, so the collection alone
+     * would let one tenant's frame replace another's. The parts cannot contain the
+     * separator: a tenant and a party are identifiers and a collection is a
+     * component and a name.
+     */
+    static std::string conflation_key(const std::string& tenant,
+                                      const std::string& party,
+                                      const std::string& collection) {
+        return tenant + '/' + party + '/' + collection;
+    }
+
     std::string system_tenant_;
+    std::string epoch_;
     mutable std::mutex mu_;
     std::vector<std::shared_ptr<change_subscription>> subscriptions_;
     std::size_t capacity_;
+    std::size_t retention_ = default_retention;
+    std::uint64_t next_id_ = 1;
+    std::deque<retained_frame> retained_;
 };
 
 /**

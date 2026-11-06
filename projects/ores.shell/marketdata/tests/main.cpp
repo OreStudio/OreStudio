@@ -19,7 +19,6 @@
  */
 #include "ores.testing/logging_listener.hpp"
 #include "ores.testing/test_timeout_listener.hpp"
-#include <boost/scope_exit.hpp>
 #include <catch2/catch_session.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <openssl/crypto.h>
@@ -28,10 +27,12 @@ CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
 CATCH_REGISTER_LISTENER(ores::testing::test_timeout_listener)
 
 int main(int argc, char* argv[]) {
-    BOOST_SCOPE_EXIT(void) {
-        OPENSSL_cleanup();
-    }
-    BOOST_SCOPE_EXIT_END
+    // Runs OPENSSL_cleanup() however main returns.
+    struct openssl_cleanup final {
+        ~openssl_cleanup() {
+            OPENSSL_cleanup();
+        }
+    } cleanup;
 
     ores::testing::logging_listener::set_test_module_name("ores.shell.marketdata.tests");
     return Catch::Session().run(argc, argv);

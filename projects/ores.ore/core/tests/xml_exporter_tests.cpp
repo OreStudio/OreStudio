@@ -572,8 +572,9 @@ TEST_CASE("a_vanilla_option_exports_its_expiry_and_style", "[ore][xml][exporter]
     const auto xml = exporter::export_portfolio({f.item}, f.instruments);
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
     CHECK(xml.contains("<FxOptionData>"));
-    // ORE implies European exercise on an FxOption, so the document states no
-    // style and the expiry is what says when the option ends.
+    // ORE refuses an FxOption that states no style, so the row's style is
+    // written beside the expiry.
+    CHECK(xml.contains("<Style>European</Style>"));
     CHECK(xml.contains("2026-07-15"));
 }
 

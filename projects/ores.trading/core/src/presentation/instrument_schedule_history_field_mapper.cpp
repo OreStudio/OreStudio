@@ -77,6 +77,8 @@ render_instrument_schedule_fields(const domain::instrument_schedule& v) {
          .value = v.remove_last_date ? (*v.remove_last_date ? "true" : "false") : std::string{}});
     fields.push_back({.name = "Include Duplicate Dates",
                       .value = v.include_duplicate_dates.value_or(std::string{})});
+    fields.push_back({.name = "Base Schedule", .value = v.base_schedule.value_or(std::string{})});
+    fields.push_back({.name = "Shift", .value = v.shift.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

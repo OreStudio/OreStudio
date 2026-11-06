@@ -40,5 +40,6 @@ export interface ScriptedInstrument {
     underlyings_json: string;
     parameters_json: string;
     description: string;
+    data_element: string | null;
     audit: AuditRecord;
 }

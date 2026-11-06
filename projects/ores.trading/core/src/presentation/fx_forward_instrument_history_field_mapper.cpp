@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -49,6 +50,29 @@ render_fx_forward_instrument_fields(const domain::fx_forward_instrument& v) {
     fields.push_back({.name = "Value Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.value_date)});
     fields.push_back({.name = "Settlement", .value = v.settlement});
+    fields.push_back(
+        {.name = "Settlement Currency", .value = v.settlement_currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Settlement FX Index", .value = v.settlement_fx_index.value_or(std::string{})});
+    fields.push_back({.name = "Settlement Date",
+                      .value = v.settlement_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                       *v.settlement_date) :
+                                                   std::string{}});
+    fields.push_back({.name = "Settlement Payment Lag",
+                      .value = v.settlement_payment_lag.value_or(std::string{})});
+    fields.push_back({.name = "Settlement Payment Calendar",
+                      .value = v.settlement_payment_calendar.value_or(std::string{})});
+    fields.push_back({.name = "Settlement Payment Convention",
+                      .value = v.settlement_payment_convention.value_or(std::string{})});
+    fields.push_back({.name = "Far Date",
+                      .value = v.far_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.far_date) :
+                                   std::string{}});
+    fields.push_back(
+        {.name = "Far Bought Amount",
+         .value = v.far_bought_amount ? v.far_bought_amount->to_string() : std::string{}});
+    fields.push_back({.name = "Far Sold Amount",
+                      .value = v.far_sold_amount ? v.far_sold_amount->to_string() : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

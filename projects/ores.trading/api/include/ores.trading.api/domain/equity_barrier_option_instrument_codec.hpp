@@ -65,6 +65,12 @@ namespace ores::trading::domain {
         utility::codec::field{"upper_barrier_type",
                               &equity_barrier_option_instrument::upper_barrier_type},
         utility::codec::field{"rebate", &equity_barrier_option_instrument::rebate},
+        utility::codec::field{"barrier_start_date",
+                              &equity_barrier_option_instrument::barrier_start_date},
+        utility::codec::field{"barrier_calendar",
+                              &equity_barrier_option_instrument::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &equity_barrier_option_instrument::barrier_fixing_index},
         utility::codec::field{"description", &equity_barrier_option_instrument::description},
         utility::codec::field{"audit", &equity_barrier_option_instrument::audit},
     };

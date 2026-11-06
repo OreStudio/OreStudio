@@ -34,10 +34,8 @@ namespace ores::service::service {
 
 namespace detail {
 
-using register_with_signer =
-    std::function<std::vector<ores::nats::service::subscription>(ores::nats::service::client&,
-                                                                 ores::database::context,
-                                                                 ores::security::jwt::jwt_authenticator)>;
+using register_with_signer = std::function<std::vector<ores::nats::service::subscription>(
+    ores::nats::service::client&, ores::database::context, ores::security::jwt::jwt_authenticator)>;
 
 /*
  * The coroutine behind run_signing(). It takes the register function as a
@@ -68,9 +66,14 @@ run_signing_service(boost::asio::io_context& io_ctx,
         [&nats, ctx = std::move(ctx), signer = std::move(signer), &register_fn]() mutable {
             return register_fn(nats, std::move(ctx), std::move(signer));
         };
-    co_await announce_ready_and_drain(
-        io_ctx, nats, name, signals, std::move(bound), std::move(on_started),
-        std::move(on_shutdown), lg);
+    co_await announce_ready_and_drain(io_ctx,
+                                      nats,
+                                      name,
+                                      signals,
+                                      std::move(bound),
+                                      std::move(on_started),
+                                      std::move(on_shutdown),
+                                      lg);
 }
 
 }

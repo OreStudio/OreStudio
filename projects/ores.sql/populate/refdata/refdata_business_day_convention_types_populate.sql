@@ -30,6 +30,11 @@
 
 \echo '--- Business Day Convention Types ---'
 
+-- ORE accepts several spellings of each convention and the trade states the
+-- one it was written with, so each spelling is a code of its own, as the day
+-- count fractions do with A360 and Actual/360. A roundtrip then writes back
+-- the spelling the document used.
+
 insert into ores_refdata_business_day_convention_types_tbl (
     tenant_id, code, version, name, description, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
@@ -55,7 +60,64 @@ values
      6, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
     (ores_utility_system_tenant_id_fn(), 'NEAREST', 0, 'Nearest',
      'Adjust to the nearest good business day, forward or backward',
-     7, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types')
+     7, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'F', 0, 'Following',
+     'Adjust to the next good business day. ORE''s spelling F of Following.',
+     8, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'FOLLOWING', 0, 'Following',
+     'Adjust to the next good business day. ORE''s spelling FOLLOWING of Following.',
+     9, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'MF', 0, 'Modified Following',
+     'Next good business day unless it crosses a month end, in which case the previous good day. ORE''s spelling MF of ModifiedFollowing.',
+     10, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'Modified Following', 0, 'Modified Following',
+     'Next good business day unless it crosses a month end, in which case the previous good day. ORE''s spelling Modified Following of ModifiedFollowing.',
+     11, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'MODIFIEDF', 0, 'Modified Following',
+     'Next good business day unless it crosses a month end, in which case the previous good day. ORE''s spelling MODIFIEDF of ModifiedFollowing.',
+     12, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'MODFOLLOWING', 0, 'Modified Following',
+     'Next good business day unless it crosses a month end, in which case the previous good day. ORE''s spelling MODFOLLOWING of ModifiedFollowing.',
+     13, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'P', 0, 'Preceding',
+     'Adjust to the previous good business day. ORE''s spelling P of Preceding.',
+     14, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'PRECEDING', 0, 'Preceding',
+     'Adjust to the previous good business day. ORE''s spelling PRECEDING of Preceding.',
+     15, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'MP', 0, 'Modified Preceding',
+     'Previous good business day unless it crosses a month start, in which case the next good day. ORE''s spelling MP of ModifiedPreceding.',
+     16, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'Modified Preceding', 0, 'Modified Preceding',
+     'Previous good business day unless it crosses a month start, in which case the next good day. ORE''s spelling Modified Preceding of ModifiedPreceding.',
+     17, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'MODIFIEDP', 0, 'Modified Preceding',
+     'Previous good business day unless it crosses a month start, in which case the next good day. ORE''s spelling MODIFIEDP of ModifiedPreceding.',
+     18, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'U', 0, 'Unadjusted',
+     'No business day adjustment applied. ORE''s spelling U of Unadjusted.',
+     19, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'INDIFF', 0, 'Unadjusted',
+     'No business day adjustment applied. ORE''s spelling INDIFF of Unadjusted.',
+     20, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'NONE', 0, 'Unadjusted',
+     'No business day adjustment applied. ORE''s spelling NONE of Unadjusted.',
+     21, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'NotApplicable', 0, 'Unadjusted',
+     'No business day adjustment applied. ORE''s spelling NotApplicable of Unadjusted.',
+     22, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'HMMF', 0, 'Half-Month Modified Following',
+     'Modified Following, additionally rolled back within the same half-month period. ORE''s spelling HMMF of HalfMonthModifiedFollowing.',
+     23, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'HalfMonthMF', 0, 'Half-Month Modified Following',
+     'Modified Following, additionally rolled back within the same half-month period. ORE''s spelling HalfMonthMF of HalfMonthModifiedFollowing.',
+     24, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'Half Month Modified Following', 0, 'Half-Month Modified Following',
+     'Modified Following, additionally rolled back within the same half-month period. ORE''s spelling Half Month Modified Following of HalfMonthModifiedFollowing.',
+     25, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types'),
+    (ores_utility_system_tenant_id_fn(), 'HALFMONTHMF', 0, 'Half-Month Modified Following',
+     'Modified Following, additionally rolled back within the same half-month period. ORE''s spelling HALFMONTHMF of HalfMonthModifiedFollowing.',
+     26, current_user, current_user, 'system.initial_load', 'Initial population of business day convention types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do update set

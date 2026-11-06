@@ -20,6 +20,7 @@
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.testing/conventions_rows.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.utility/crypto/sha256.hpp"
@@ -906,7 +907,9 @@ TEST_CASE("the exported conventions corpus matches its recorded digests",
     const auto root = xml_roundtrip_conventions_corpus_root();
     const auto recorded = read_digests(digests_path());
     REQUIRE_FALSE(recorded.empty());
-    const bool regenerate = std::getenv("ORES_REGEN_CONVENTIONS_DIGESTS") != nullptr;
+    const bool regenerate =
+        ores::platform::environment::environment::get_value("ORES_REGEN_CONVENTIONS_DIGESTS")
+            .has_value();
     std::map<std::string, std::string> computed;
 
     int compared = 0;

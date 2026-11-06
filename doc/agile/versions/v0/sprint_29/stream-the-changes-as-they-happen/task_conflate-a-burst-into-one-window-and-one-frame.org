@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: FAA6AA8A-0545-49D6-8BEE-6733A64F6994
+:END:
+#+title: Task: Conflate a burst into one window and one frame
+#+description: The window is a fixed tick, so a burst that starts just after one is split in two, and a stream that is behind queues a frame per window. Arm the window with the first change, and let a newer frame replace the pending one for its collection.
+#+type: task
+#+level: s1
+#+filetags: :stream-the-changes-as-they-happen:sprint_29:v0:
+#+owner: marco
+#+branch: feature/give-every-frame-an-identity
+#+pr: 4460
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A burst costs one frame however it falls across a tick, and a stream that was
+too slow to read holds one frame per collection rather than one per window.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:16667B92-64FB-4BF7-86CA-B5696163EB2E][Stream the changes as they happen]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-04                               |
+
+* Acceptance
+
+- [X] A change opens the window; a quiet system opens none.
+- [X] A burst that starts between ticks is one frame, not two.
+- [X] A stream that was not read holds one frame for its collection, the newest.
+- [X] Two collections a stream missed are still two frames.
+
+* Plan
+
+Two halves of one property, so they change together.
+
+*The window opens on the first change.* The ticker re-arms a fixed interval
+whatever happened, so a burst that starts just after a tick is cut in two: the
+screen redraws twice for one import. The coalescer calls a hook when its dirty
+set goes from empty to non-empty, the ticker arms its own timer from that call,
+and a tick that finds nothing to arm does not pump. A long burst is still a
+series of windows, because a window is never extended by what arrives inside it;
+what changes is that the burst's first window begins with the burst.
+
+The change arrives on the NATS dispatch thread and the timer belongs to the
+server's, so the arm is a post: one allocation per change and no timer touched
+from two threads.
+
+*The pending frame for a collection is overwritten.* A slow stream queues every
+window it missed, and the bytes it holds are for a collection that has moved
+again since. The subscription keeps one pending frame per collection and a new
+frame for the same collection replaces it, moved to the back so the ids a client
+sees stay ascending. That is a small map of collection to frame plus a list for
+the order, not a second queue.
+
+The capacity keeps its meaning as "collections pending", and the drop policy
+stays drop-oldest: a stream that is behind loses the frame it is least able to
+use.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Coalescer, pump, stream and ticker cases | 62 cases, 232 assertions, all passing | =./compass.sh test run -- -R "ores.http.core.tests" -VV= | 3ea4a2eb53 |
+| The window a burst opens | the 100 ms window closes 140 ms after the first change even though a second change landed at 80 ms | =./ores.http.core.tests "[change_ticker]"= | 3ea4a2eb53 |
+
+* Notes
+
+- The arm is a post because the change arrives on the publishing thread and the
+  timer belongs to the server's. A change recorded before =run= has started finds
+  no executor to post to, so the loop's first pass reads =pending()= and arms the
+  window itself; the case that records before the loop runs covers that path.
+- The loop's idle sleep is one hour and is not a policy: it only bounds how long
+  a quiet server stays asleep, because a change expires the timer as it arms.
+- The conflation key is tenant, party and collection joined with a separator the
+  parts cannot contain. It is built by the hub, so a publisher states the
+  collection its frame is about and nothing more, and a stream that hears two
+  tenants cannot have one replaced by the other.
+- A replay conflates too: a client that missed three frames of one collection is
+  given the newest, which is the same answer it would have reached by refetching.
+- The capacity still means collections pending, and the drop policy is still
+  drop-oldest.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4460][#4460]] | [http] Complete the change stream: identity, party, conflation |
+
+* Review
+
+Review round 1, on PR #4460: one bot review with five points and four minor
+notes. Every comment has a decision; the ones taken are in the commits after the
+first push.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Frame ids restart with the process, so a stale Last-Event-ID can replay wrongly | change_hub.hpp, change_routes.cpp | Applied | An id now carries the mark of the process that issued it: the process start in nanoseconds, a dash, and the sequence. A mark this process did not issue is answered with one resync, which is the gap case. Three cases pin it: the id grammar, a stranger's mark, and the replay bound. |
+| 2 | publish() reads next_id_ outside the lock | change_hub.hpp | Applied | The id is taken inside the locked block and used after it, so two publishers cannot stamp the same frame. |
+| 3 | A burst larger than the subscription capacity is dropped without a resync | change_hub.hpp | Applied for a replay, declined for a live drop | A replay the stream cannot hold whole is answered as no replay at all: one resync, one case. A live drop still follows the design's policy, drop the oldest and let the client refetch, and the policy's other half, marking the collection dirty again, belongs with the coalescer and is not built. |
+| 4 | stop() before run() leaves the loop running forever | change_ticker.cpp | Applied | run() reads the owner's stop as well as the window's, so a stop with no executor to post to is honoured. One case calls stop() before the loop starts. |
+| 5 | window fields are unsynchronised, so they depend on a single-threaded executor | change_ticker.hpp | Applied | The class states the requirement: one thread at a time, a single-threaded io_context or a strand. The flags stay plain, because the design gives each core one thread. |
+| 6 | TenantAdmin and SuperAdmin are string literals | change_routes.cpp | Declined | ores.http.core depends on ores.iam.core, not ores.iam.api, where those constants live. Adding the API library to the core for two names is the wrong direction, and the names are the token's contract; if they should be shared, the constants belong where both may include them. |
+| 7 | stoull("-1") wraps, and 12abc reads as 12 | change_routes.cpp | Applied | The hub parses the id grammar itself and refuses anything else, so the route hands an unreadable id to the hub as a gap instead of guessing a number. |
+| 8 | The resync frame carries no id | change_hub.hpp | Declined | A resync is not a change. Stamping it would move the client's Last-Event-ID past frames it never saw, which is worse than answering a second reconnect with a second resync. |
+| 9 | No live stream was run against a deployment | | Accepted as a limitation | Already recorded on the PR. Points 1 and 3 are the ones a live run would settle, and neither is reachable from the suites alone. |
+
+* Result
+
+A burst is one frame per collection however it falls across the clock, because the
+window is armed by the burst's first change and nothing inside it extends the
+window. A stream that fell behind holds the newest frame for each collection it
+missed, with the ids still ascending, so a client that resumed from the last id it
+read is never told to go backwards.

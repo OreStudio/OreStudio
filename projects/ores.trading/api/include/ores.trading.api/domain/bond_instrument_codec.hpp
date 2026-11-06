@@ -50,6 +50,7 @@ namespace ores::trading::domain {
     return std::tuple{
         utility::codec::field{"identity", &bond_instrument::identity},
         utility::codec::field{"issue_id", &bond_instrument::issue_id},
+        utility::codec::field{"position_identifier", &bond_instrument::position_identifier},
         utility::codec::field{"notional", &bond_instrument::notional},
         utility::codec::field{"audit", &bond_instrument::audit},
     };

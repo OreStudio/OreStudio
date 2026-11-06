@@ -25,13 +25,20 @@
 #include "ores.trading.core/repository/balance_guaranteed_swap_tranche_repository.hpp"
 #include "ores.trading.core/repository/callable_swap_call_date_repository.hpp"
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
-#include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/credit_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
+#include "ores.trading.core/repository/instrument_barrier_level_repository.hpp"
+#include "ores.trading.core/repository/instrument_barrier_repository.hpp"
+#include "ores.trading.core/repository/instrument_underlying_repository.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
+#include "ores.trading.core/repository/scripted_parameter_repository.hpp"
+#include "ores.trading.core/repository/scripted_parameter_value_repository.hpp"
+#include "ores.trading.core/repository/structure_member_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_amortization_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_indexing_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_rate_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
@@ -124,6 +131,7 @@ void populate_instruments_for_trades(const Ctx& ctx,
         rate_ids, fxfwd_ids, fxopt_ids, fxbar_ids, fxdig_ids, fxasn_ids, fxacc_ids, fxvar_ids,
         eq_opt_ids, eq_fwd_ids, eq_swp_ids, eq_var_ids, eq_bar_ids, eq_asn_ids, eq_dig_ids,
         eq_acc_ids, eq_pos_ids;
+    std::vector<std::string> all_ids;
 
     for (const auto& item : items) {
         const auto& t = item.anchor;
@@ -135,6 +143,10 @@ void populate_instruments_for_trades(const Ctx& ctx,
         // The instrument is keyed by the trade it belongs to, so the
         // trade's own id is the key the product tables are read by.
         const auto id = boost::uuids::to_string(t.id);
+        // A bond's reader reads its own children, so the bond is left out of
+        // the shared reads that would carry them a second time.
+        if (*table != instrument_table::bond_instrument)
+            all_ids.push_back(id);
         switch (*table) {
             case instrument_table::bond_instrument:
                 bond_ids.push_back(id);
@@ -214,31 +226,79 @@ void populate_instruments_for_trades(const Ctx& ctx,
 
     // Phase 2: the children, one read per table over the whole page. A child
     // carries the trade id its instrument does, so the reads need no pairing.
-    {
-        // The legs are shared tables keyed by the trade, so a credit trade's
-        // legs are read with the rates family's.
-        std::vector<std::string> all_swap = rate_ids;
-        all_swap.insert(all_swap.end(), credit_ids.begin(), credit_ids.end());
-        if (!all_swap.empty()) {
-            repository::swap_leg_repository leg_repo;
-            auto legs = leg_repo.read_by_instruments_batch(ctx, all_swap);
-            take(legs, batch.swap_legs);
-            repository::swap_leg_amount_repository amount_repo;
-            auto amounts = amount_repo.read_by_instruments_batch(ctx, all_swap);
-            take(amounts, batch.swap_leg_amounts);
-            repository::swap_leg_rate_repository rate_repo;
-            auto rates = rate_repo.read_by_instruments_batch(ctx, all_swap);
-            take(rates, batch.swap_leg_rates);
-        }
+    //
+    // The shared children (legs, schedules, the option block, strikes and
+    // range bounds) are keyed by the trade whatever its family, and every
+    // family may write them, so they are read once over the whole page. A read
+    // per family drops the rows of any family the read forgets.
+    if (!all_ids.empty()) {
+        repository::swap_leg_repository leg_repo;
+        auto legs = leg_repo.read_by_instruments_batch(ctx, all_ids);
+        take(legs, batch.swap_legs);
+        repository::swap_leg_amount_repository amount_repo;
+        auto amounts = amount_repo.read_by_instruments_batch(ctx, all_ids);
+        take(amounts, batch.swap_leg_amounts);
+        repository::swap_leg_rate_repository rate_repo;
+        auto rates = rate_repo.read_by_instruments_batch(ctx, all_ids);
+        take(rates, batch.swap_leg_rates);
+        repository::swap_leg_amortization_repository amortization_repo;
+        auto amortizations = amortization_repo.read_by_instruments_batch(ctx, all_ids);
+        take(amortizations, batch.swap_leg_amortizations);
+        repository::swap_leg_indexing_repository indexing_repo;
+        auto indexings = indexing_repo.read_by_instruments_batch(ctx, all_ids);
+        take(indexings, batch.swap_leg_indexings);
+
+        auto schedules = repository::read_schedules_by_trade_ids(ctx, all_ids);
+        take(schedules, batch.instrument_schedules);
+        auto schedule_dates = repository::read_schedule_dates_by_trade_ids(ctx, all_ids);
+        take(schedule_dates, batch.instrument_schedule_dates);
+        auto options = repository::read_options_by_trade_ids(ctx, all_ids);
+        take(options, batch.instrument_options);
+        auto premiums = repository::read_option_premiums_by_trade_ids(ctx, all_ids);
+        take(premiums, batch.instrument_option_premiums);
+        auto fees = repository::read_option_exercise_fees_by_trade_ids(ctx, all_ids);
+        take(fees, batch.instrument_option_exercise_fees);
+        auto payment_dates = repository::read_option_payment_dates_by_trade_ids(ctx, all_ids);
+        take(payment_dates, batch.instrument_option_payment_dates);
+        auto exercise_prices = repository::read_option_exercise_prices_by_trade_ids(ctx, all_ids);
+        take(exercise_prices, batch.instrument_option_exercise_prices);
+        auto strikes = repository::read_strikes_by_trade_ids(ctx, all_ids);
+        take(strikes, batch.instrument_strikes);
+
+        repository::range_bound_repository bound_repo;
+        auto bounds = bound_repo.read_by_instruments_batch(ctx, all_ids);
+        take(bounds, batch.range_bounds);
+
+        repository::instrument_barrier_repository barrier_repo;
+        auto barriers = barrier_repo.read_by_instruments_batch(ctx, all_ids);
+        take(barriers, batch.instrument_barriers);
+        repository::instrument_barrier_level_repository barrier_level_repo;
+        auto levels = barrier_level_repo.read_by_instruments_batch(ctx, all_ids);
+        take(levels, batch.instrument_barrier_levels);
+
+        repository::instrument_underlying_repository underlying_repo;
+        auto underlyings = underlying_repo.read_by_instruments_batch(ctx, all_ids);
+        take(underlyings, batch.instrument_underlyings);
     }
-    if (!composite_ids.empty()) {
-        repository::composite_leg_repository comp_leg_repo;
-        const std::unordered_set<std::string> wanted(composite_ids.begin(), composite_ids.end());
-        for (auto& leg : comp_leg_repo.read_latest(ctx)) {
-            const auto key = boost::uuids::to_string(leg.identity.trade_id);
-            if (wanted.contains(key))
-                batch.composite_legs.push_back(std::move(leg));
-        }
+
+    // A composite trade's components are joined to it by a structure, and the
+    // writer nests them back by its members. A bond can be a component too, so
+    // the members are read for every trade on the page.
+    {
+        std::vector<std::string> page_ids;
+        page_ids.reserve(items.size());
+        for (const auto& item : items)
+            page_ids.push_back(boost::uuids::to_string(item.anchor.id));
+        auto members = repository::structure_member_repository().read_latest(ctx, page_ids);
+        take(members, batch.structure_members);
+    }
+    if (!scripted_ids.empty()) {
+        repository::scripted_parameter_repository parameter_repo;
+        auto parameters = parameter_repo.read_by_instruments_batch(ctx, scripted_ids);
+        take(parameters, batch.scripted_parameters);
+        repository::scripted_parameter_value_repository value_repo;
+        auto values = value_repo.read_by_instruments_batch(ctx, scripted_ids);
+        take(values, batch.scripted_parameter_values);
     }
     if (!rate_ids.empty()) {
         repository::callable_swap_call_date_repository call_date_repo;
@@ -253,49 +313,11 @@ void populate_instruments_for_trades(const Ctx& ctx,
         repository::balance_guaranteed_swap_tranche_notional_repository tranche_notional_repo;
         auto tranche_notionals = tranche_notional_repo.read_by_instruments_batch(ctx, rate_ids);
         take(tranche_notionals, batch.balance_guaranteed_swap_tranche_notionals);
-        // The shared children the rates family writes: the strikes, the
-        // schedules and the option block, read for the same trade ids.
-        auto schedules = repository::read_schedules_by_trade_ids(ctx, rate_ids);
-        take(schedules, batch.instrument_schedules);
-        auto schedule_dates = repository::read_schedule_dates_by_trade_ids(ctx, rate_ids);
-        take(schedule_dates, batch.instrument_schedule_dates);
-        auto options = repository::read_options_by_trade_ids(ctx, rate_ids);
-        take(options, batch.instrument_options);
-        auto premiums = repository::read_option_premiums_by_trade_ids(ctx, rate_ids);
-        take(premiums, batch.instrument_option_premiums);
-        auto fees = repository::read_option_exercise_fees_by_trade_ids(ctx, rate_ids);
-        take(fees, batch.instrument_option_exercise_fees);
-        auto payment_dates = repository::read_option_payment_dates_by_trade_ids(ctx, rate_ids);
-        take(payment_dates, batch.instrument_option_payment_dates);
-        auto exercise_prices = repository::read_option_exercise_prices_by_trade_ids(ctx, rate_ids);
-        take(exercise_prices, batch.instrument_option_exercise_prices);
-        auto strikes = repository::read_strikes_by_trade_ids(ctx, rate_ids);
-        take(strikes, batch.instrument_strikes);
     }
     if (!credit_ids.empty()) {
         repository::credit_basket_constituent_repository constituent_repo;
         auto constituents = constituent_repo.read_by_instruments_batch(ctx, credit_ids);
         take(constituents, batch.credit_basket_constituents);
-
-        // The shared strikes and schedules the credit family writes, read for
-        // the same trade ids.
-        auto strikes = repository::read_strikes_by_trade_ids(ctx, credit_ids);
-        take(strikes, batch.instrument_strikes);
-        auto schedules = repository::read_schedules_by_trade_ids(ctx, credit_ids);
-        take(schedules, batch.instrument_schedules);
-        auto schedule_dates = repository::read_schedule_dates_by_trade_ids(ctx, credit_ids);
-        take(schedule_dates, batch.instrument_schedule_dates);
-        auto options = repository::read_options_by_trade_ids(ctx, credit_ids);
-        take(options, batch.instrument_options);
-        auto premiums = repository::read_option_premiums_by_trade_ids(ctx, credit_ids);
-        take(premiums, batch.instrument_option_premiums);
-        auto fees = repository::read_option_exercise_fees_by_trade_ids(ctx, credit_ids);
-        take(fees, batch.instrument_option_exercise_fees);
-        auto payment_dates = repository::read_option_payment_dates_by_trade_ids(ctx, credit_ids);
-        take(payment_dates, batch.instrument_option_payment_dates);
-        auto exercise_prices =
-            repository::read_option_exercise_prices_by_trade_ids(ctx, credit_ids);
-        take(exercise_prices, batch.instrument_option_exercise_prices);
     }
     if (!commodity_ids.empty()) {
         repository::commodity_basket_constituent_repository constituent_repo;
@@ -454,10 +476,6 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::fx_accumulator_instrument_service svc(ctx);
         auto rows = svc.get_fx_accumulator_instruments(fxacc_ids);
         take(rows, batch.fx_accumulator_instruments);
-
-        repository::range_bound_repository bound_repo;
-        auto bounds = bound_repo.read_by_instruments_batch(ctx, fxacc_ids);
-        take(bounds, batch.range_bounds);
     }
     if (!fxvar_ids.empty()) {
         service::fx_variance_swap_instrument_service svc(ctx);
@@ -581,11 +599,39 @@ trade_export_service::export_books(const std::vector<std::string>& book_ids,
 }
 
 std::vector<trade_export_item>
-trade_export_service::export_trades(const std::vector<std::string>& trade_ids,
+trade_export_service::export_trades(const std::vector<std::string>& page_ids,
                                     domain::instrument_batch& instruments) const {
     using database::repository::execute_parameterized_multi_column_query;
-    if (trade_ids.empty())
+    using database::repository::execute_parameterized_string_query;
+    if (page_ids.empty())
         return {};
+
+    /*
+     * A composite trade is written with its components inside it, and a total
+     * return swap or a contract for difference with its underlyings, so a page
+     * that holds such a parent reads the trades it states too, wherever they
+     * are paged. One whose parent is on another page is written there, nested,
+     * and the writer leaves it out of this one.
+     */
+    auto trade_ids = page_ids;
+    for (auto& id : execute_parameterized_string_query(
+             ctx_,
+             "SELECT DISTINCT component.trade_id::text "
+             "FROM ores_trading_structure_members_tbl composite "
+             "JOIN ores_trading_structure_members_tbl component "
+             "ON component.tenant_id = composite.tenant_id "
+             "AND component.structure_id = composite.structure_id "
+             "AND component.valid_to = ores_utility_infinity_timestamp_fn() "
+             "WHERE composite.tenant_id = ores_iam_current_tenant_id_fn() "
+             "AND composite.role IN ('composite', 'total_return_swap') "
+             "AND composite.valid_to = ores_utility_infinity_timestamp_fn() "
+             "AND composite.trade_id = ANY($1::uuid[]) "
+             "AND component.role NOT IN ('composite', 'total_return_swap')",
+             {to_uuid_array(page_ids)},
+             lg(),
+             "Reading the components of the page's composite trades."))
+        if (std::ranges::find(trade_ids, id) == trade_ids.end())
+            trade_ids.push_back(std::move(id));
 
     std::unordered_map<std::string, std::string> ore_ids;
     for (const auto& row : execute_parameterized_multi_column_query(

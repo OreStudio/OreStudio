@@ -36,9 +36,9 @@
  * Drives the xml facet's round trip over directories under
  * external/ore/examples and asserts that the walk accounts for every file it
  * sees, that each written document reads back as a document of the same kind,
- * and that every mapped trade reaches an output. The per-document suites
- * assert deep field fidelity for the products they name; this suite asserts
- * the walk itself, over the whole corpus, which nothing else does.
+ * and that every mapped trade reaches an output. It asserts the walk, not what
+ * the documents say: xml_portfolio_corpus_content_roundtrip_tests.cpp compares
+ * every trade the walk writes with the trade it read.
  */
 
 namespace {
@@ -117,7 +117,7 @@ void check_no_conversion_failures(const ores::ore::xml::roundtrip_summary& summa
 
 } // namespace
 
-TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus",
+TEST_CASE("the roundtrip walk accounts for every portfolio in the ORE example corpus",
           "[ore][xml][roundtrip][exporter][external]") {
     using ores::platform::filesystem::file;
 

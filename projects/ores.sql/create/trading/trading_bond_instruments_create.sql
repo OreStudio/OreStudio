@@ -57,7 +57,8 @@ create table if not exists "ores_trading_bond_instruments_tbl" (
     "trade_type_code" text not null,
     "party_id" uuid not null,
     "trade_activity_id" uuid not null,
-    "issue_id" uuid not null,
+    "issue_id" uuid null,
+    "position_identifier" text null,
     "notional" numeric(38, 12) null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -73,7 +74,8 @@ create table if not exists "ores_trading_bond_instruments_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
-    check ("trade_type_code" in ('Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot'))
+    check ("trade_type_code" in ('Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot')),
+    check ("issue_id" is not null or "trade_type_code" = 'BondPosition')
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -130,15 +132,17 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate issue_id (soft FK to ores_trading_bond_issues_tbl)
-    if not exists (
-        select 1 from ores_trading_bond_issues_tbl
-        where tenant_id = NEW.tenant_id
-          and issue_id = NEW.issue_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid issue_id: %. The bond issue must exist for tenant.', NEW.issue_id
-            using errcode = '23503';
+    -- Validate issue_id (optional soft FK to ores_trading_bond_issues_tbl)
+    if NEW.issue_id is not null then
+        if not exists (
+            select 1 from ores_trading_bond_issues_tbl
+            where tenant_id = NEW.tenant_id
+              and issue_id = NEW.issue_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid issue_id: %. The bond issue must exist for tenant.', NEW.issue_id
+                using errcode = '23503';
+        end if;
     end if;
 
     -- Validate change_reason_code
@@ -246,6 +250,9 @@ begin
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
     delete from "ores_trading_instrument_schedule_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_underlyings_tbl"
     where tenant_id = p_row.tenant_id
       and trade_id = p_row.trade_id;
     delete from "ores_trading_instrument_options_tbl"

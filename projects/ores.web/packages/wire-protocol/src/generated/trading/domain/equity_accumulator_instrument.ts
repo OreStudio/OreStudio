@@ -46,6 +46,9 @@ export interface EquityAccumulatorInstrument {
     target_amount: string | null;
     target_type: string;
     payoff_type: string;
+    settlement_lag: string | null;
+    settlement_calendar: string | null;
+    settlement_convention: string | null;
     description: string;
     audit: AuditRecord;
 }

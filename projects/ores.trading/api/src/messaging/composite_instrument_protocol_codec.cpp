@@ -23,7 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/domain/composite_instrument_codec.hpp"
-#include "ores.trading.api/domain/composite_leg_codec.hpp"
 #include "ores.trading.api/messaging/composite_instrument_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/domain/protocol_codec.hpp"
@@ -670,109 +669,6 @@ wire_traits<ores::trading::messaging::get_composite_instrument_version_response>
     std::span<const std::byte> data) {
     return object::read_msgpack<
         ores::trading::messaging::get_composite_instrument_version_response>(data);
-}
-
-std::string
-wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_request>::write_json(
-    const ores::trading::messaging::put_composite_instrument_with_legs_request& v) {
-    return object::write_json(v);
-}
-
-ores::trading::messaging::put_composite_instrument_with_legs_request
-wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_request>::read_json(
-    std::string_view text) {
-    return object::read_json<ores::trading::messaging::put_composite_instrument_with_legs_request>(
-        text);
-}
-
-std::string
-wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_request>::write_msgpack(
-    const ores::trading::messaging::put_composite_instrument_with_legs_request& v) {
-    return object::write_msgpack(v);
-}
-
-ores::trading::messaging::put_composite_instrument_with_legs_request
-wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_request>::read_msgpack(
-    std::span<const std::byte> data) {
-    return object::read_msgpack<
-        ores::trading::messaging::put_composite_instrument_with_legs_request>(data);
-}
-
-std::string
-wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_response>::write_json(
-    const ores::trading::messaging::put_composite_instrument_with_legs_response& v) {
-    return object::write_json(v);
-}
-
-ores::trading::messaging::put_composite_instrument_with_legs_response
-wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_response>::read_json(
-    std::string_view text) {
-    return object::read_json<ores::trading::messaging::put_composite_instrument_with_legs_response>(
-        text);
-}
-
-std::string
-wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_response>::write_msgpack(
-    const ores::trading::messaging::put_composite_instrument_with_legs_response& v) {
-    return object::write_msgpack(v);
-}
-
-ores::trading::messaging::put_composite_instrument_with_legs_response
-wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_response>::read_msgpack(
-    std::span<const std::byte> data) {
-    return object::read_msgpack<
-        ores::trading::messaging::put_composite_instrument_with_legs_response>(data);
-}
-
-std::string
-wire_traits<ores::trading::messaging::get_composite_instrument_legs_request>::write_json(
-    const ores::trading::messaging::get_composite_instrument_legs_request& v) {
-    return object::write_json(v);
-}
-
-ores::trading::messaging::get_composite_instrument_legs_request
-wire_traits<ores::trading::messaging::get_composite_instrument_legs_request>::read_json(
-    std::string_view text) {
-    return object::read_json<ores::trading::messaging::get_composite_instrument_legs_request>(text);
-}
-
-std::string
-wire_traits<ores::trading::messaging::get_composite_instrument_legs_request>::write_msgpack(
-    const ores::trading::messaging::get_composite_instrument_legs_request& v) {
-    return object::write_msgpack(v);
-}
-
-ores::trading::messaging::get_composite_instrument_legs_request
-wire_traits<ores::trading::messaging::get_composite_instrument_legs_request>::read_msgpack(
-    std::span<const std::byte> data) {
-    return object::read_msgpack<ores::trading::messaging::get_composite_instrument_legs_request>(
-        data);
-}
-
-std::string
-wire_traits<ores::trading::messaging::get_composite_instrument_legs_response>::write_json(
-    const ores::trading::messaging::get_composite_instrument_legs_response& v) {
-    return object::write_json(v);
-}
-
-ores::trading::messaging::get_composite_instrument_legs_response
-wire_traits<ores::trading::messaging::get_composite_instrument_legs_response>::read_json(
-    std::string_view text) {
-    return object::read_json<ores::trading::messaging::get_composite_instrument_legs_response>(
-        text);
-}
-
-std::string
-wire_traits<ores::trading::messaging::get_composite_instrument_legs_response>::write_msgpack(
-    const ores::trading::messaging::get_composite_instrument_legs_response& v) {
-    return object::write_msgpack(v);
-}
-
-ores::trading::messaging::get_composite_instrument_legs_response
-wire_traits<ores::trading::messaging::get_composite_instrument_legs_response>::read_msgpack(
-    std::span<const std::byte> data) {
-    return object::read_msgpack<ores::trading::messaging::get_composite_instrument_legs_response>(
-        data);
 }
 
 }

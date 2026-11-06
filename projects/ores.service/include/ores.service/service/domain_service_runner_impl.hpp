@@ -95,9 +95,14 @@ run_domain_service(boost::asio::io_context& io_ctx,
         [&nats, ctx = std::move(ctx), verifier = std::move(verifier), &register_fn]() mutable {
             return register_fn(nats, std::move(ctx), std::move(verifier));
         };
-    co_await announce_ready_and_drain(
-        io_ctx, nats, name, signals, std::move(bound), std::move(on_started),
-        std::move(on_shutdown), lg);
+    co_await announce_ready_and_drain(io_ctx,
+                                      nats,
+                                      name,
+                                      signals,
+                                      std::move(bound),
+                                      std::move(on_started),
+                                      std::move(on_shutdown),
+                                      lg);
 }
 
 inline boost::asio::awaitable<void>
@@ -119,9 +124,14 @@ run_domain_service(boost::asio::io_context& io_ctx,
         [&nats, verifier = std::move(verifier), &register_fn]() mutable {
             return register_fn(nats, std::move(verifier));
         };
-    co_await announce_ready_and_drain(
-        io_ctx, nats, name, signals, std::move(bound), std::move(on_started),
-        std::move(on_shutdown), lg);
+    co_await announce_ready_and_drain(io_ctx,
+                                      nats,
+                                      name,
+                                      signals,
+                                      std::move(bound),
+                                      std::move(on_started),
+                                      std::move(on_shutdown),
+                                      lg);
 }
 
 }
@@ -139,14 +149,14 @@ boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
                                  RegisterFn&& register_fn,
                                  std::function<void(boost::asio::io_context&)> on_started,
                                  std::function<void()> on_shutdown) {
-    return detail::run_domain_service(io_ctx,
-                                      nats,
-                                      std::move(ctx),
-                                      name,
-                                      detail::register_with_context(
-                                          std::forward<RegisterFn>(register_fn)),
-                                      std::move(on_started),
-                                      std::move(on_shutdown));
+    return detail::run_domain_service(
+        io_ctx,
+        nats,
+        std::move(ctx),
+        name,
+        detail::register_with_context(std::forward<RegisterFn>(register_fn)),
+        std::move(on_started),
+        std::move(on_shutdown));
 }
 
 template <typename RegisterFn>
@@ -156,13 +166,13 @@ boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
                                  RegisterFn&& register_fn,
                                  std::function<void(boost::asio::io_context&)> on_started,
                                  std::function<void()> on_shutdown) {
-    return detail::run_domain_service(io_ctx,
-                                      nats,
-                                      name,
-                                      detail::register_without_context(
-                                          std::forward<RegisterFn>(register_fn)),
-                                      std::move(on_started),
-                                      std::move(on_shutdown));
+    return detail::run_domain_service(
+        io_ctx,
+        nats,
+        name,
+        detail::register_without_context(std::forward<RegisterFn>(register_fn)),
+        std::move(on_started),
+        std::move(on_shutdown));
 }
 
 }

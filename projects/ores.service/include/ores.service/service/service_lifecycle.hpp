@@ -133,15 +133,15 @@ fetch_public_key_or_shutdown(boost::asio::io_context& io_ctx,
  * linkage, and a frame holding one is what gcc refuses under
  * -Wsubobject-linkage.
  */
-inline boost::asio::awaitable<void>
-announce_ready_and_drain(boost::asio::io_context& io_ctx,
-                         ores::nats::service::client& nats,
-                         std::string_view name,
-                         boost::asio::signal_set& signals,
-                         std::function<std::vector<ores::nats::service::subscription>()> register_fn,
-                         std::function<void(boost::asio::io_context&)> on_started,
-                         std::function<void()> on_shutdown,
-                         ores::logging::logger_t& lg) {
+inline boost::asio::awaitable<void> announce_ready_and_drain(
+    boost::asio::io_context& io_ctx,
+    ores::nats::service::client& nats,
+    std::string_view name,
+    boost::asio::signal_set& signals,
+    std::function<std::vector<ores::nats::service::subscription>()> register_fn,
+    std::function<void(boost::asio::io_context&)> on_started,
+    std::function<void()> on_shutdown,
+    ores::logging::logger_t& lg) {
     using namespace ores::logging;
 
     auto subs = register_fn();

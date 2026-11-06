@@ -458,8 +458,8 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", "[ore][planner][im
                     CHECK(r.instrument.identity.trade_id == item.anchor.id);
                     ++checked;
                 } else {
-                    // scripted — identity at the top level.
-                    CHECK(r.identity.trade_id == item.anchor.id);
+                    // scripted — the script's row carries the identity.
+                    CHECK(r.instrument.identity.trade_id == item.anchor.id);
                     ++checked;
                 }
             },

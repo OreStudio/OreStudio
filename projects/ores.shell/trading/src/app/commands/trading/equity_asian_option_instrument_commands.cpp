@@ -144,8 +144,8 @@ void equity_asian_option_instrument_commands::register_commands(cli::Menu& root_
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
-        "<average_type> <averaging_start_date> <averaging_end_date> <description> <reason> "
-        "<commentary>");
+        "<average_type> <averaging_start_date> <averaging_end_date> <settlement> <strike_currency> "
+        "<description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -154,8 +154,8 @@ void equity_asian_option_instrument_commands::register_commands(cli::Menu& root_
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
-        "<average_type> <averaging_start_date> <averaging_end_date> <description> <reason> "
-        "<commentary> [--version <n>]");
+        "<average_type> <averaging_start_date> <averaging_end_date> <settlement> <strike_currency> "
+        "<description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -164,8 +164,8 @@ void equity_asian_option_instrument_commands::register_commands(cli::Menu& root_
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> "
         "<currency> <notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
-        "<average_type> <averaging_start_date> <averaging_end_date> <description> <reason> "
-        "<commentary>");
+        "<average_type> <averaging_start_date> <averaging_end_date> <settlement> <strike_currency> "
+        "<description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -367,8 +367,8 @@ void equity_asian_option_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -401,6 +401,10 @@ void equity_asian_option_instrument_commands::process_add(std::ostream& out,
                                                   "averaging_start_date");
         equity_asian_option_instrument_read_token(
             req.change.write.averaging_end_date, parsed->positionals[next++], "averaging_end_date");
+        equity_asian_option_instrument_read_token(
+            req.change.write.settlement, parsed->positionals[next++], "settlement");
+        equity_asian_option_instrument_read_token(
+            req.change.write.strike_currency, parsed->positionals[next++], "strike_currency");
         equity_asian_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -447,8 +451,8 @@ void equity_asian_option_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 15 + 2) {
-            fail(out) << "Expected " << (15 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -481,6 +485,10 @@ void equity_asian_option_instrument_commands::process_set(std::ostream& out,
                                                   "averaging_start_date");
         equity_asian_option_instrument_read_token(
             req.change.write.averaging_end_date, parsed->positionals[next++], "averaging_end_date");
+        equity_asian_option_instrument_read_token(
+            req.change.write.settlement, parsed->positionals[next++], "settlement");
+        equity_asian_option_instrument_read_token(
+            req.change.write.strike_currency, parsed->positionals[next++], "strike_currency");
         equity_asian_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -538,8 +546,8 @@ void equity_asian_option_instrument_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 15 + 2) {
-            fail(out) << "Expected " << (change_count * 15 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 17 + 2) {
+            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -574,6 +582,10 @@ void equity_asian_option_instrument_commands::process_put_many(
                                                       "averaging_start_date");
             equity_asian_option_instrument_read_token(
                 change.write.averaging_end_date, parsed->positionals[next++], "averaging_end_date");
+            equity_asian_option_instrument_read_token(
+                change.write.settlement, parsed->positionals[next++], "settlement");
+            equity_asian_option_instrument_read_token(
+                change.write.strike_currency, parsed->positionals[next++], "strike_currency");
             equity_asian_option_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

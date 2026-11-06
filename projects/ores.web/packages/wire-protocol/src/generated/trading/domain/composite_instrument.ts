@@ -35,5 +35,26 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
 export interface CompositeInstrument {
     identity: InstrumentIdentity;
     description: string;
+    currency: string | null;
+    notional_calculation: string | null;
+    notional_override: string | null;
+    portfolio_basket: string | null;
+    index_quantity: string | null;
+    return_payer: string | null;
+    return_currency: string | null;
+    return_observation_lag: string | null;
+    return_observation_convention: string | null;
+    return_observation_calendar: string | null;
+    return_payment_lag: string | null;
+    return_payment_convention: string | null;
+    return_payment_calendar: string | null;
+    return_initial_price: string | null;
+    return_initial_price_currency: string | null;
+    return_fx_index: string | null;
+    return_pay_underlying_cash_flows_immediately: string | null;
+    funding_notional_types: string | null;
+    underlying_basket_name: string | null;
+    underlying_index_quantity: string | null;
+    underlying_price_is_per_unit: string | null;
     audit: AuditRecord;
 }

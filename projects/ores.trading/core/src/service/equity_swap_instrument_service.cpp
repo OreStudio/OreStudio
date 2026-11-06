@@ -114,6 +114,15 @@ equity_swap_instrument_to_domain(const messaging::equity_swap_instrument_write& 
     v.maturity_date = write.maturity_date;
     v.long_short = write.long_short;
     v.payment_frequency_code = write.payment_frequency_code;
+    v.fixed_rate = write.fixed_rate;
+    v.floating_index = write.floating_index;
+    v.floating_spread = write.floating_spread;
+    v.floating_day_count_fraction = write.floating_day_count_fraction;
+    v.initial_fixed_rate = write.initial_fixed_rate;
+    v.knock_in_level = write.knock_in_level;
+    v.bermudan_knock_in = write.bermudan_knock_in;
+    v.accruing_fixed_coupons = write.accruing_fixed_coupons;
+    v.accumulating_fixed_coupons = write.accumulating_fixed_coupons;
     v.description = write.description;
     return v;
 }

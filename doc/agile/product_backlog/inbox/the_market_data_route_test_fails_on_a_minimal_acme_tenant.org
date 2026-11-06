@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 44281404-4FBE-4769-B95F-6B248D32144B
+:END:
+#+title: The market data route test fails on a minimal Acme tenant
+#+description: marketdata_route_visibility_test.sql assumes a tenant that people set up holds market data routes and subscriptions, so it fails tests 8 and 10 on a database provisioned from acme_minimal, which subscribes no market data. It passes on an unprovisioned database. The test should find a tenant that has routes, or skip when none does.
+#+type: capture
+#+level: cross
+#+filetags: :pgtap:marketdata:test:acme:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=marketdata_route_visibility_test.sql= picks the first tenant that people
+set up and asserts that it holds market data routes and subscriptions. On a
+database provisioned from =acme_minimal=, which subscribes no market data,
+tests 8 and 10 fail. On an unprovisioned database the test skips them and
+passes.
+
+* Why
+
+A test that passes or fails by which profile provisioned the database
+does not test the routes' visibility. It should find a tenant that holds
+routes, or skip when none does.
+
+* References
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] — where it was found.
+- =projects/ores.sql/test/marketdata_route_visibility_test.sql=.
+
+* See also
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]]

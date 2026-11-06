@@ -1,0 +1,10 @@
+# How do I provision a minimal Acme Corporation for development?
+# Provision the Acme Corporation tenant with only its group entity, books and the ORE sample counterparties, for a fast import and export loop.
+#
+# GENERATED from doc/recipes/shell/provisioning/how_do_i_provision_a_minimal_acme_corporation_for_development.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+
+bootstrap setup super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation --profile acme_minimal
+logout

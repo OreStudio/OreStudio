@@ -58,6 +58,35 @@ generate_synthetic_equity_option_instrument(utility::generation::generation_cont
     r.exercise_type = std::string("European");
     r.long_short = std::string("Long");
     r.settlement_type = std::string("Cash");
+    r.local_cap = ores::utility::decimal::decimal::from_string(
+                      std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                      .value();
+    r.local_floor = ores::utility::decimal::decimal::from_string(
+                        std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                        .value();
+    r.global_cap = ores::utility::decimal::decimal::from_string(
+                       std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                       .value();
+    r.global_floor = ores::utility::decimal::decimal::from_string(
+                         std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                         .value();
+    r.premium = ores::utility::decimal::decimal::from_string(
+                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                    .value();
+    r.premium_payment_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
+    r.initial_price_1 = ores::utility::decimal::decimal::from_string(
+                            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                            .value();
+    r.initial_price_2 = ores::utility::decimal::decimal::from_string(
+                            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                            .value();
+    r.knock_in_price = ores::utility::decimal::decimal::from_string(
+                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                           .value();
+    r.knock_out_price = ores::utility::decimal::decimal::from_string(
+                            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                            .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

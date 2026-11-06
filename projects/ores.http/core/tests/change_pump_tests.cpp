@@ -21,6 +21,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <optional>
 #include <string>
 
 using namespace ores::http::stream;
@@ -56,8 +57,8 @@ TEST_CASE("a_pump_gives_every_open_stream_the_window", "[change_pump]") {
 
     change_coalescer coalescer;
     change_hub hub(pump_system_tenant);
-    auto first = hub.subscribe("acme");
-    auto second = hub.subscribe("acme");
+    auto first = hub.subscribe({.tenant = "acme", .party = "ops"});
+    auto second = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_pump pump(coalescer, hub);
 
     coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
@@ -75,7 +76,7 @@ TEST_CASE("a_window_with_nothing_in_it_publishes_nothing", "[change_pump]") {
 
     change_coalescer coalescer;
     change_hub hub(pump_system_tenant);
-    auto stream = hub.subscribe("acme");
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_pump pump(coalescer, hub);
 
     REQUIRE(pump.pump() == 0);
@@ -88,8 +89,8 @@ TEST_CASE("a_stream_that_ended_is_not_given_the_next_window", "[change_pump]") {
 
     change_coalescer coalescer;
     change_hub hub(pump_system_tenant);
-    auto ended = hub.subscribe("acme");
-    auto open = hub.subscribe("acme");
+    auto ended = hub.subscribe({.tenant = "acme", .party = "ops"});
+    auto open = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_pump pump(coalescer, hub);
 
     ended->close();
@@ -113,4 +114,29 @@ TEST_CASE("a_change_with_no_party_builds_its_message", "[change_pump]") {
     };
 
     REQUIRE(frame_text(frame).find("\"party\":\"\"") != std::string::npos);
+}
+
+TEST_CASE("two_windows_for_one_collection_leave_one_pending_frame", "[change_pump]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info)
+        << "Testing that a stream that fell behind holds one frame per collection";
+
+    change_coalescer coalescer;
+    change_hub hub(pump_system_tenant);
+    auto slow = hub.subscribe({.tenant = "acme", .party = "ops"});
+    change_pump pump(coalescer, hub);
+
+    // The stream is never read, so both windows are still pending, and the second
+    // window says the same thing as the first: the collection moved.
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    REQUIRE(pump.pump() == 1);
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    REQUIRE(pump.pump() == 1);
+
+    REQUIRE(slow->size() == 1);
+    REQUIRE(slow->try_pop() ==
+            std::optional<std::string>(
+                "id: " + hub.id_of(2) +
+                "\nevent: iam.book\ndata: {\"tenant\":\"acme\",\"party\":\"ops\","
+                "\"component\":\"iam\",\"entity\":\"book\"}\n\n"));
 }

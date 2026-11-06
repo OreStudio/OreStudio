@@ -38,6 +38,7 @@ create table if not exists "ores_trading_cap_floor_instruments_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
+    "long_short" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

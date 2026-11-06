@@ -68,11 +68,18 @@ struct bond_instrument final {
     /**
      * @brief UUID of the bond issue this instrument trades (FK to ores_trading_bond_issues_tbl).
      *
-     * NOT NULL: a bond product row with no issue is not a bond product. The issue holds the bond's
-     * terms; the instrument row reads them through a temporal join on this key, so an amended term
-     * reads as of the instrument row's own validity.
+     * A bond product row states its issue: a row with no issue is not a bond product. The one
+     * exception is a bond position on a basket, which holds several bonds and states them as
+     * instrument_underlying rows, so it names no single issue. The issue holds the bond's terms;
+     * the instrument row reads them through a temporal join on this key, so an amended term reads
+     * as of the instrument row's own validity.
      */
     boost::uuids::uuid issue_id;
+
+    /**
+     * @brief The name a bond position gives its basket, as BondBasketData/Identifier states it.
+     */
+    std::optional<std::string> position_identifier;
 
     /**
      * @brief The trade's own amount for its bond, which ORE holds on bondData and we keep on the

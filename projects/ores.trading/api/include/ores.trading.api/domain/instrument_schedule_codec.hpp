@@ -74,6 +74,8 @@ namespace ores::trading::domain {
         utility::codec::field{"remove_last_date", &instrument_schedule::remove_last_date},
         utility::codec::field{"include_duplicate_dates",
                               &instrument_schedule::include_duplicate_dates},
+        utility::codec::field{"base_schedule", &instrument_schedule::base_schedule},
+        utility::codec::field{"shift", &instrument_schedule::shift},
         utility::codec::field{"modified_by", &instrument_schedule::modified_by},
         utility::codec::field{"performed_by", &instrument_schedule::performed_by},
         utility::codec::field{"change_reason_code", &instrument_schedule::change_reason_code},

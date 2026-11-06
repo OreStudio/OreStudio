@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -43,6 +44,49 @@ render_composite_instrument_fields(const domain::composite_instrument& v) {
     fields.push_back({.name = "Trade Activity ID",
                       .value = boost::uuids::to_string(v.identity.trade_activity_id)});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Currency", .value = v.currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Notional Calculation", .value = v.notional_calculation.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Notional Override",
+         .value = v.notional_override ? v.notional_override->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Portfolio Basket", .value = v.portfolio_basket.value_or(std::string{})});
+    fields.push_back({.name = "Index Quantity",
+                      .value = v.index_quantity ? v.index_quantity->to_string() : std::string{}});
+    fields.push_back({.name = "Return Payer", .value = v.return_payer.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Return Currency", .value = v.return_currency.value_or(std::string{})});
+    fields.push_back({.name = "Return Observation Lag",
+                      .value = v.return_observation_lag.value_or(std::string{})});
+    fields.push_back({.name = "Return Observation Convention",
+                      .value = v.return_observation_convention.value_or(std::string{})});
+    fields.push_back({.name = "Return Observation Calendar",
+                      .value = v.return_observation_calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Return Payment Lag", .value = v.return_payment_lag.value_or(std::string{})});
+    fields.push_back({.name = "Return Payment Convention",
+                      .value = v.return_payment_convention.value_or(std::string{})});
+    fields.push_back({.name = "Return Payment Calendar",
+                      .value = v.return_payment_calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Return Initial Price",
+         .value = v.return_initial_price ? v.return_initial_price->to_string() : std::string{}});
+    fields.push_back({.name = "Return Initial Price Currency",
+                      .value = v.return_initial_price_currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Return FX Index", .value = v.return_fx_index.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Return Pay Underlying Cash Flows Immediately",
+         .value = v.return_pay_underlying_cash_flows_immediately.value_or(std::string{})});
+    fields.push_back({.name = "Funding Notional Types",
+                      .value = v.funding_notional_types.value_or(std::string{})});
+    fields.push_back({.name = "Underlying Basket Name",
+                      .value = v.underlying_basket_name.value_or(std::string{})});
+    fields.push_back({.name = "Underlying Index Quantity",
+                      .value = v.underlying_index_quantity.value_or(std::string{})});
+    fields.push_back({.name = "Underlying Price Is Per Unit",
+                      .value = v.underlying_price_is_per_unit.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});

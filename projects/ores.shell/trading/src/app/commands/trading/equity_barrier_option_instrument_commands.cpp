@@ -145,7 +145,8 @@ void equity_barrier_option_instrument_commands::register_commands(cli::Menu& roo
         "add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
         "<lower_barrier> <lower_barrier_type> <upper_barrier> <upper_barrier_type> <rebate> "
-        "<description> <reason> <commentary>");
+        "<barrier_start_date> <barrier_calendar> <barrier_fixing_index> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
@@ -155,7 +156,8 @@ void equity_barrier_option_instrument_commands::register_commands(cli::Menu& roo
         "set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
         "<lower_barrier> <lower_barrier_type> <upper_barrier> <upper_barrier_type> <rebate> "
-        "<description> <reason> <commentary> [--version <n>]");
+        "<barrier_start_date> <barrier_calendar> <barrier_fixing_index> <description> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -165,7 +167,8 @@ void equity_barrier_option_instrument_commands::register_commands(cli::Menu& roo
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> "
         "<currency> <notional> <option_type> <strike> <expiry_date> <exercise_type> <long_short> "
         "<lower_barrier> <lower_barrier_type> <upper_barrier> <upper_barrier_type> <rebate> "
-        "<description> <reason> <commentary>");
+        "<barrier_start_date> <barrier_calendar> <barrier_fixing_index> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -367,8 +370,8 @@ void equity_barrier_option_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 20 + 2) {
+            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -404,6 +407,13 @@ void equity_barrier_option_instrument_commands::process_add(std::ostream& out,
             req.change.write.upper_barrier_type, parsed->positionals[next++], "upper_barrier_type");
         equity_barrier_option_instrument_read_token(
             req.change.write.rebate, parsed->positionals[next++], "rebate");
+        equity_barrier_option_instrument_read_token(
+            req.change.write.barrier_start_date, parsed->positionals[next++], "barrier_start_date");
+        equity_barrier_option_instrument_read_token(
+            req.change.write.barrier_calendar, parsed->positionals[next++], "barrier_calendar");
+        equity_barrier_option_instrument_read_token(req.change.write.barrier_fixing_index,
+                                                    parsed->positionals[next++],
+                                                    "barrier_fixing_index");
         equity_barrier_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -450,8 +460,8 @@ void equity_barrier_option_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 20 + 2) {
+            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -487,6 +497,13 @@ void equity_barrier_option_instrument_commands::process_set(std::ostream& out,
             req.change.write.upper_barrier_type, parsed->positionals[next++], "upper_barrier_type");
         equity_barrier_option_instrument_read_token(
             req.change.write.rebate, parsed->positionals[next++], "rebate");
+        equity_barrier_option_instrument_read_token(
+            req.change.write.barrier_start_date, parsed->positionals[next++], "barrier_start_date");
+        equity_barrier_option_instrument_read_token(
+            req.change.write.barrier_calendar, parsed->positionals[next++], "barrier_calendar");
+        equity_barrier_option_instrument_read_token(req.change.write.barrier_fixing_index,
+                                                    parsed->positionals[next++],
+                                                    "barrier_fixing_index");
         equity_barrier_option_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -544,8 +561,8 @@ void equity_barrier_option_instrument_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 17 + 2) {
-            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 20 + 2) {
+            fail(out) << "Expected " << (change_count * 20 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -583,6 +600,13 @@ void equity_barrier_option_instrument_commands::process_put_many(
                 change.write.upper_barrier_type, parsed->positionals[next++], "upper_barrier_type");
             equity_barrier_option_instrument_read_token(
                 change.write.rebate, parsed->positionals[next++], "rebate");
+            equity_barrier_option_instrument_read_token(
+                change.write.barrier_start_date, parsed->positionals[next++], "barrier_start_date");
+            equity_barrier_option_instrument_read_token(
+                change.write.barrier_calendar, parsed->positionals[next++], "barrier_calendar");
+            equity_barrier_option_instrument_read_token(change.write.barrier_fixing_index,
+                                                        parsed->positionals[next++],
+                                                        "barrier_fixing_index");
             equity_barrier_option_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

@@ -92,6 +92,12 @@ struct equity_basket_constituent final {
     std::string underlying_name;
 
     /**
+     * @brief The scheme the constituent's name is stated in, as Underlying/IdentifierType states
+     * it.
+     */
+    std::optional<std::string> identifier_type;
+
+    /**
      * @brief The vocabulary the constituent's code belongs to.
      *
      * ORE states the kind beside the name, as Underlying/Type, and the kind is not implied by the

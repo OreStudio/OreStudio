@@ -69,6 +69,9 @@ struct equity_accumulator_instrument_entity {
     std::optional<ores::utility::decimal::decimal> target_amount;
     std::optional<std::string> target_type;
     std::string payoff_type;
+    std::optional<std::string> settlement_lag;
+    std::optional<std::string> settlement_calendar;
+    std::optional<std::string> settlement_convention;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -101,6 +104,9 @@ struct equity_accumulator_instrument_entity {
                query_builder::bind("target_amount", &e::target_amount) |
                query_builder::bind("target_type", &e::target_type) |
                query_builder::bind("payoff_type", &e::payoff_type) |
+               query_builder::bind("settlement_lag", &e::settlement_lag) |
+               query_builder::bind("settlement_calendar", &e::settlement_calendar) |
+               query_builder::bind("settlement_convention", &e::settlement_convention) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

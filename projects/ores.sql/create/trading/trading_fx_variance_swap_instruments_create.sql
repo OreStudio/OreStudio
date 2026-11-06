@@ -43,6 +43,8 @@ create table if not exists "ores_trading_fx_variance_swap_instruments_tbl" (
     "strike" double precision not null,
     "notional" numeric(38, 12) not null,
     "moment_type" text not null,
+    "calendar" text null,
+    "add_past_dividends" boolean null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,

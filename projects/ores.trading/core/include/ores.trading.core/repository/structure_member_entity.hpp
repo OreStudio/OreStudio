@@ -56,6 +56,7 @@ struct structure_member_entity {
     boost::uuids::uuid structure_id;
     std::string role;
     int sequence_number = 0;
+    std::optional<std::string> member_label;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -75,6 +76,7 @@ struct structure_member_entity {
                query_builder::bind("structure_id", &e::structure_id) |
                query_builder::bind("role", &e::role) |
                query_builder::bind("sequence_number", &e::sequence_number) |
+               query_builder::bind("member_label", &e::member_label) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

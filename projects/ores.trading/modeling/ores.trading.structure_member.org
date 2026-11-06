@@ -93,6 +93,17 @@ The leg's ordinal within its role, counting from one.
 1
 #+end_src
 
+** member_label
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The name the parent states the member by, when it is not the member's own
+id: a total return swap names each underlying by its =Derivative/Id=, while the
+trade inside states an id of its own.
+
 * SQL
 
 ** Flags

@@ -63,6 +63,14 @@ struct fx_barrier_option_instrument_write {
     std::optional<ores::utility::decimal::decimal> lower_barrier;
     std::optional<ores::utility::decimal::decimal> upper_barrier;
     std::string underlying_code;
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+    std::optional<std::string> barrier_calendar;
+    std::optional<std::string> barrier_fixing_index;
+    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<ores::utility::decimal::decimal> strike;
+    std::optional<ores::utility::decimal::decimal> amount;
+    std::optional<std::chrono::year_month_day> settlement_date;
+    std::optional<std::string> kiko_type;
     std::string description;
 
     friend bool operator==(const fx_barrier_option_instrument_write&,
@@ -422,6 +430,18 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"upper_barrier", &fx_barrier_option_instrument_write::upper_barrier},
         utility::codec::field{"underlying_code",
                               &fx_barrier_option_instrument_write::underlying_code},
+        utility::codec::field{"barrier_start_date",
+                              &fx_barrier_option_instrument_write::barrier_start_date},
+        utility::codec::field{"barrier_calendar",
+                              &fx_barrier_option_instrument_write::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &fx_barrier_option_instrument_write::barrier_fixing_index},
+        utility::codec::field{"quantity", &fx_barrier_option_instrument_write::quantity},
+        utility::codec::field{"strike", &fx_barrier_option_instrument_write::strike},
+        utility::codec::field{"amount", &fx_barrier_option_instrument_write::amount},
+        utility::codec::field{"settlement_date",
+                              &fx_barrier_option_instrument_write::settlement_date},
+        utility::codec::field{"kiko_type", &fx_barrier_option_instrument_write::kiko_type},
         utility::codec::field{"description", &fx_barrier_option_instrument_write::description},
     };
 }

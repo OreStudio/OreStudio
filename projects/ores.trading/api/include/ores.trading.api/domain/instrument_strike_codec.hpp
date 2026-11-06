@@ -59,6 +59,7 @@ namespace ores::trading::domain {
         utility::codec::field{"yield_compounding", &instrument_strike::yield_compounding},
         utility::codec::field{"bare_value", &instrument_strike::bare_value},
         utility::codec::field{"bare_currency", &instrument_strike::bare_currency},
+        utility::codec::field{"long_short", &instrument_strike::long_short},
         utility::codec::field{"modified_by", &instrument_strike::modified_by},
         utility::codec::field{"performed_by", &instrument_strike::performed_by},
         utility::codec::field{"change_reason_code", &instrument_strike::change_reason_code},

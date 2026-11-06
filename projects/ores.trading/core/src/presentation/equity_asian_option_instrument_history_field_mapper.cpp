@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -58,6 +59,9 @@ render_equity_asian_option_instrument_fields(const domain::equity_asian_option_i
     fields.push_back(
         {.name = "Averaging End Date",
          .value = ores::platform::time::datetime::to_iso8601_date(v.averaging_end_date)});
+    fields.push_back({.name = "Settlement", .value = v.settlement.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Strike Currency", .value = v.strike_currency.value_or(std::string{})});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

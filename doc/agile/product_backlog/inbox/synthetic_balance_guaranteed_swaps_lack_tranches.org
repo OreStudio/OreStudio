@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: 14F18AD6-BB84-4B4E-B100-C580AF9CDCED
+:END:
+#+title: Synthetic balance guaranteed swaps have no tranches, so an export of them fails
+#+description: Trade population books BalanceGuaranteedSwaps with no tranche rows, and the ORE writer requires at least one Tranche, so exporting a tenant after Acme provisioning stops with 'required element Tranche is absent from tranches'. Seen on a recreated database in the trade representation story; to fix when the work turns to trade population.
+#+type: capture
+#+level: cross
+#+filetags: :synthetic:trade-population:ore:export:rates:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Trade population books BalanceGuaranteedSwaps with no tranche rows. The
+ORE writer requires at least one Tranche, so an export that reaches one of
+them stops: =required element 'Tranche' is absent from 'tranches'=.
+
+* Why
+
+After Acme provisioning, an export of the whole tenant fails on these
+trades, so no portfolio can be exported until they are filtered out. A
+generated trade should be one ORE can read.
+
+* References
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] — where the export failed.
+
+* See also
+
+-

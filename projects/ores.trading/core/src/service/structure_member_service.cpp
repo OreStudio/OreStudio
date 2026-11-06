@@ -106,6 +106,7 @@ structure_member_to_domain(const messaging::structure_member_write& write) {
     v.structure_id = write.structure_id;
     v.role = write.role;
     v.sequence_number = write.sequence_number;
+    v.member_label = write.member_label;
     return v;
 }
 

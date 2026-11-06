@@ -52,6 +52,7 @@ struct structure_member_write {
     boost::uuids::uuid structure_id;
     std::string role;
     int sequence_number;
+    std::optional<std::string> member_label;
 
     friend bool operator==(const structure_member_write&, const structure_member_write&) = default;
 };
@@ -384,6 +385,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.structure_members
         utility::codec::field{"structure_id", &structure_member_write::structure_id},
         utility::codec::field{"role", &structure_member_write::role},
         utility::codec::field{"sequence_number", &structure_member_write::sequence_number},
+        utility::codec::field{"member_label", &structure_member_write::member_label},
     };
 }
 

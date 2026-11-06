@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -53,6 +54,34 @@ render_equity_option_instrument_fields(const domain::equity_option_instrument& v
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Settlement Type", .value = v.settlement_type});
     fields.push_back({.name = "Cliquet Frequency", .value = v.cliquet_frequency});
+    fields.push_back(
+        {.name = "Strike Currency", .value = v.strike_currency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Local Cap", .value = v.local_cap ? v.local_cap->to_string() : std::string{}});
+    fields.push_back({.name = "Local Floor",
+                      .value = v.local_floor ? v.local_floor->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Global Cap", .value = v.global_cap ? v.global_cap->to_string() : std::string{}});
+    fields.push_back({.name = "Global Floor",
+                      .value = v.global_floor ? v.global_floor->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Settlement Days",
+         .value = v.settlement_days ? std::to_string(*v.settlement_days) : std::string{}});
+    fields.push_back(
+        {.name = "Premium", .value = v.premium ? v.premium->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Premium Payment Date",
+         .value = v.premium_payment_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.premium_payment_date) :
+                      std::string{}});
+    fields.push_back({.name = "Initial Price 1",
+                      .value = v.initial_price_1 ? v.initial_price_1->to_string() : std::string{}});
+    fields.push_back({.name = "Initial Price 2",
+                      .value = v.initial_price_2 ? v.initial_price_2->to_string() : std::string{}});
+    fields.push_back({.name = "Knock In Price",
+                      .value = v.knock_in_price ? v.knock_in_price->to_string() : std::string{}});
+    fields.push_back({.name = "Knock Out Price",
+                      .value = v.knock_out_price ? v.knock_out_price->to_string() : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

@@ -18,9 +18,7 @@
  *
  */
 #include "ores.trading.core/messaging/composite_instrument_registrar.hpp"
-#include "ores.trading.core/messaging/composite_leg_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
-#include <iterator>
 
 namespace ores::trading::messaging::detail {
 
@@ -28,12 +26,7 @@ std::vector<ores::nats::service::subscription>
 register_composite_handlers(ores::nats::service::client& nats,
                             ores::database::context ctx,
                             std::optional<ores::security::jwt::jwt_authenticator> verifier) {
-    auto subs = register_composite_instrument_handlers(nats, ctx, verifier);
-    auto leg_subs = register_composite_leg_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(),
-                std::make_move_iterator(leg_subs.begin()),
-                std::make_move_iterator(leg_subs.end()));
-    return subs;
+    return register_composite_instrument_handlers(nats, ctx, verifier);
 }
 
 }

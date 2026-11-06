@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 8897A0BD-A542-4C65-BF90-F5F8BD1491CB
+:END:
+#+title: The minimal Acme tenant lacks reference data some example trades need
+#+description: On a tenant provisioned from acme_minimal, an ORE example bond is refused for its reference curve BENCHMARK-EUR, and an FX worst-of basket swap's constituents are refused because the FX catalogue does not hold TR20H-USD-CAD. The minimal profile should publish the reference data the ORE examples name, or the import should say what to provision.
+#+type: capture
+#+level: cross
+#+filetags: :acme:provisioning:ore:import:marketdata:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+On a tenant provisioned from =acme_minimal=, two ORE example trades are
+refused for reference data the profile does not publish. The formula based
+bond in =Exotic_Formula_Based_Coupon.xml= names the reference curve
+=BENCHMARK-EUR=, which no curve series of the tenant holds. The FX worst-of
+basket swap in =Exotic_FXWorstOfBasketSwap.xml= names =TR20H-USD-CAD=, which
+the FX catalogue does not hold, so its constituents are refused.
+
+* Why
+
+The minimal profile exists to roundtrip the ORE examples quickly. The
+profile should publish what they name, or the import should say what to
+provision rather than refuse the rows.
+
+* References
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] — where it was found.
+- =iam_seed_profiles_populate.sql=, the =acme_minimal= steps.
+
+* See also
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]]

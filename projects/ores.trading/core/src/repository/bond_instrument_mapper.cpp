@@ -51,7 +51,8 @@ domain::bond_instrument bond_instrument_mapper::map(const bond_instrument_entity
     r.identity.trade_type_code = v.trade_type_code;
     r.identity.party_id = v.party_id;
     r.identity.trade_activity_id = v.trade_activity_id;
-    r.issue_id = v.issue_id;
+    r.issue_id = v.issue_id.has_value() ? *v.issue_id : boost::uuids::uuid{};
+    r.position_identifier = v.position_identifier;
     r.notional = v.notional;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -73,7 +74,8 @@ bond_instrument_entity bond_instrument_mapper::map(const domain::bond_instrument
     r.trade_type_code = v.identity.trade_type_code;
     r.party_id = v.identity.party_id;
     r.trade_activity_id = v.identity.trade_activity_id;
-    r.issue_id = v.issue_id;
+    r.issue_id = v.issue_id == boost::uuids::uuid{} ? std::nullopt : std::optional(v.issue_id);
+    r.position_identifier = v.position_identifier;
     r.notional = v.notional;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

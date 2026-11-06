@@ -265,6 +265,36 @@ tightens the soft reference into a real foreign key.
 std::string("Decumulator")
 #+end_src
 
+** settlement_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The lag from a fixing to its settlement, as =SettlementLag= states it.
+
+** settlement_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar the settlement lag counts in, as =SettlementCalendar= states it.
+
+** settlement_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The convention the settlement date is adjusted by, as =SettlementConvention= states it.
+
 ** description
 :PROPERTIES:
 :type:     text
@@ -343,7 +373,7 @@ is immutable.
 | "fixing_amount" > 0 |
 | "underlying_name" <> '' |
 | "currency" <> '' |
-| ("trade_type_code" = 'EquityTaRF' and "target_amount" is not null and "target_type" is not null) or ("trade_type_code" = 'EquityAccumulator' and "target_amount" is null and "target_type" is null) |
+| "trade_type_code" = 'EquityTaRF' or ("target_amount" is null and "target_type" is null) |
 | "payoff_type" in ('Accumulator', 'Asian', 'AverageStrike', 'Decumulator', 'TargetExact', 'TargetFull', 'Vanilla') |
 | "target_type" is null or "target_type" in ('TargetFull', 'TargetExact') |
 

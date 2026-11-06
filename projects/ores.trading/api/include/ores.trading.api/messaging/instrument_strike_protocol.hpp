@@ -60,6 +60,7 @@ struct instrument_strike_write {
     std::optional<std::string> yield_compounding;
     std::optional<ores::utility::decimal::decimal> bare_value;
     std::optional<std::string> bare_currency;
+    std::optional<std::string> long_short;
 
     friend bool operator==(const instrument_strike_write&,
                            const instrument_strike_write&) = default;
@@ -394,6 +395,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_strike
         utility::codec::field{"yield_compounding", &instrument_strike_write::yield_compounding},
         utility::codec::field{"bare_value", &instrument_strike_write::bare_value},
         utility::codec::field{"bare_currency", &instrument_strike_write::bare_currency},
+        utility::codec::field{"long_short", &instrument_strike_write::long_short},
     };
 }
 

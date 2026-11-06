@@ -167,7 +167,7 @@ TEST_CASE("equity_position_option_underlying_commands_process_add_requires_a_ses
 
     command_feedback::reset();
     equity_position_option_underlying_commands::process_add(
-        out, session, equity_position_option_underlying_tokens(10));
+        out, session, equity_position_option_underlying_tokens(12));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -204,7 +204,7 @@ TEST_CASE("equity_position_option_underlying_commands_process_set_requires_a_ses
 
     command_feedback::reset();
     equity_position_option_underlying_commands::process_set(
-        out, session, equity_position_option_underlying_tokens(10));
+        out, session, equity_position_option_underlying_tokens(12));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -241,7 +241,7 @@ TEST_CASE("equity_position_option_underlying_commands_process_put_many_requires_
 
     command_feedback::reset();
     equity_position_option_underlying_commands::process_put_many(
-        out, session, equity_position_option_underlying_tokens(10));
+        out, session, equity_position_option_underlying_tokens(12));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

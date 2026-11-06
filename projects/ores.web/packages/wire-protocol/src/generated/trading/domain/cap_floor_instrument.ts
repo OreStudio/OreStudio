@@ -35,6 +35,7 @@ export interface CapFloorInstrument {
     tenant_id: string;
     trade_id: string;
     trade_activity_id: string;
+    long_short: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

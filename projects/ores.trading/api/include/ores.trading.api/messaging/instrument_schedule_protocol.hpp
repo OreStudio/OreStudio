@@ -75,6 +75,8 @@ struct instrument_schedule_write {
     std::optional<bool> remove_first_date;
     std::optional<bool> remove_last_date;
     std::optional<std::string> include_duplicate_dates;
+    std::optional<std::string> base_schedule;
+    std::optional<std::string> shift;
 
     friend bool operator==(const instrument_schedule_write&,
                            const instrument_schedule_write&) = default;
@@ -467,6 +469,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
         utility::codec::field{"remove_last_date", &instrument_schedule_write::remove_last_date},
         utility::codec::field{"include_duplicate_dates",
                               &instrument_schedule_write::include_duplicate_dates},
+        utility::codec::field{"base_schedule", &instrument_schedule_write::base_schedule},
+        utility::codec::field{"shift", &instrument_schedule_write::shift},
     };
 }
 

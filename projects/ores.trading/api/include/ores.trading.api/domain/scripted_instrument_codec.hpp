@@ -55,6 +55,7 @@ namespace ores::trading::domain {
         utility::codec::field{"underlyings_json", &scripted_instrument::underlyings_json},
         utility::codec::field{"parameters_json", &scripted_instrument::parameters_json},
         utility::codec::field{"description", &scripted_instrument::description},
+        utility::codec::field{"data_element", &scripted_instrument::data_element},
         utility::codec::field{"audit", &scripted_instrument::audit},
     };
 }

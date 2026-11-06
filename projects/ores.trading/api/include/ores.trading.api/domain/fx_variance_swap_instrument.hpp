@@ -102,6 +102,16 @@ struct fx_variance_swap_instrument final {
     std::string moment_type;
 
     /**
+     * @brief The calendar the swap observes in, as Calendar states it.
+     */
+    std::optional<std::string> calendar;
+
+    /**
+     * @brief Whether past dividends count, as AddPastDividends states it.
+     */
+    std::optional<bool> add_past_dividends;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -138,6 +148,8 @@ struct fx_variance_swap_instrument final {
     ores::utility::digest::append_member(out, "strike", v.strike);
     ores::utility::digest::append_member(out, "notional", v.notional);
     ores::utility::digest::append_member(out, "moment_type", v.moment_type);
+    ores::utility::digest::append_member(out, "calendar", v.calendar);
+    ores::utility::digest::append_member(out, "add_past_dividends", v.add_past_dividends);
     out.push_back('}');
     return out;
 }

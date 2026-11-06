@@ -49,6 +49,9 @@ vanilla_swap_instrument_mapper::map(const vanilla_swap_instrument_entity& v) {
     r.trade_id = v.trade_id;
     r.trade_activity_id = v.trade_activity_id;
     r.settlement_lag = v.settlement_lag;
+    r.settlement = v.settlement;
+    r.round_netted_floating_legs = v.round_netted_floating_legs;
+    r.netting_precision = v.netting_precision;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -69,6 +72,9 @@ vanilla_swap_instrument_mapper::map(const domain::vanilla_swap_instrument& v) {
     r.version = v.version;
     r.trade_activity_id = v.trade_activity_id;
     r.settlement_lag = v.settlement_lag;
+    r.settlement = v.settlement;
+    r.round_netted_floating_legs = v.round_netted_floating_legs;
+    r.netting_precision = v.netting_precision;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

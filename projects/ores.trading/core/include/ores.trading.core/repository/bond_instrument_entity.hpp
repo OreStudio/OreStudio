@@ -57,7 +57,8 @@ struct bond_instrument_entity {
     std::string trade_type_code;
     boost::uuids::uuid party_id;
     boost::uuids::uuid trade_activity_id;
-    boost::uuids::uuid issue_id;
+    std::optional<boost::uuids::uuid> issue_id;
+    std::optional<std::string> position_identifier;
     std::optional<ores::utility::decimal::decimal> notional;
     std::string modified_by;
     std::string performed_by;
@@ -79,6 +80,7 @@ struct bond_instrument_entity {
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("trade_activity_id", &e::trade_activity_id) |
                query_builder::bind("issue_id", &e::issue_id) |
+               query_builder::bind("position_identifier", &e::position_identifier) |
                query_builder::bind("notional", &e::notional) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

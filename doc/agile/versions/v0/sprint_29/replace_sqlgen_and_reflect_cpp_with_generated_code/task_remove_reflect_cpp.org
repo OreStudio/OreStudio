@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
-#+branch: feature/remove-reflect-cpp
-#+pr: 4470
+#+branch:
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -54,7 +54,7 @@ Step 7 of 7. reflect-cpp is gone from the build. Starts after every component ha
 A survey at fc4f559dfb found 193 files that name rfl, 6 of them generated.
 Each step below is one PR that ends in a green build.
 
-1. Shapes first. Turn the generated wire codec on for the seven operation
+1. Shapes first. Moved to [[id:B95A38D7-5ADA-46A2-934A-176B6D84CB7F][Give every encoded type a stated shape]], PR 4470. Turn the generated wire codec on for the seven operation
    models in the notes, and state a shape for every other type a hand-written
    call encodes, so no type falls back to the reflect-cpp primary of
    =wire_traits=.
@@ -132,7 +132,6 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/4470][#4470]] | [codegen] Give every encoded type a stated shape before reflect-cpp goes |
 
 * Review
 

@@ -102,6 +102,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:25A1EEA1-7804-4A1F-9BAF-603800868260][Fix the market series identity RLS refusal and the bundle fixing pgTAP test]] | DONE | | 2026-11-01 | On main at f4cf29c82c, provisioning acme_demo fails in marketdata.fx_driver_rates_2026 with an RLS refusal on ores_marketdata_market_series_identity_tbl, and synthetic_system_bundle_fixing_test.sql reads s.provider_code, which no longer exists. |
 | [[id:FB94E9A6-5286-464B-A944-8E5668FAB16F][Compile ores.storage.api and generate its codecs]] | DONE | 2026-11-02 | 2026-11-02 | Make ores.storage.api a compiled library so the objects protocol gets a generated wire codec and leaves the reflect-cpp fallback. |
 | [[id:6F2E7BDC-CE4B-4C4F-B2CB-B2F0737054D9][State the shared options shapes through codegen]] | DONE | 2026-11-05 | 2026-11-05 | The logging, nats, database, telemetry and http_server options types state their wire shapes through codegen, so no hand-written wire_fields remains for an options type. |
+| [[id:B95A38D7-5ADA-46A2-934A-176B6D84CB7F][Give every encoded type a stated shape]] | DONE | | 2026-11-06 | Step 1 of Remove reflect-cpp: the seven operation models and the four diff types that still fell back to reflect-cpp get generated wire codecs. |
 
 * Decisions
 

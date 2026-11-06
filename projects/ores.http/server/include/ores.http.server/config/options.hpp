@@ -75,6 +75,14 @@ struct options final {
      */
     std::string web_session_name{"ores_web_session"};
     /**
+     * @brief The path the session cookie is scoped to.
+     *
+     * A screen served under a prefix keeps its own session, so the cookie's path is
+     * that prefix. Without it two sessions of one deployment, one from this server and
+     * one from the BFF, would be stored under the same name and overwrite each other.
+     */
+    std::string web_session_path{"/"};
+    /**
      * @brief The built browser bundle this server answers for, when there is one.
      *
      * The directory a build wrote: index.html, the assets/ it names, and the
@@ -98,6 +106,7 @@ struct options final {
         ::ores::utility::codec::field{"nats", &options::nats},
         ::ores::utility::codec::field{"storage_dir", &options::storage_dir},
         ::ores::utility::codec::field{"web_session_name", &options::web_session_name},
+        ::ores::utility::codec::field{"web_session_path", &options::web_session_path},
         ::ores::utility::codec::field{"web_dir", &options::web_dir},
         ::ores::utility::codec::field{"http_base_url", &options::http_base_url},
     };

@@ -38,6 +38,7 @@ The public overnight rates the survey finds usable are stored as fixings in the 
 - Each usable source is a catalogued provider with an adapter and a session, and its terms are accepted at setup like the FX sources.
 - A fresh environment stores each source's history as fixings within minutes of provisioning, and the log names each source and the count it stored.
 - A source whose terms are not accepted is skipped and reported, not failed.
+- The depth of each source's history is measured and written into the calibration sources note, since the survey did not check it.
 
 * Plan
 

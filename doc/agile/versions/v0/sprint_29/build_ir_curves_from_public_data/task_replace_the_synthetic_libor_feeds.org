@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 4B5701D6-16C6-445B-BDD4-C60050FED95C
 :END:
-#+title: Task: Replace the synthetic LIBOR feeds of USD, GBP, JPY and CHF
-#+description: The system tenant still runs synthetic LIBOR feeds for USD, GBP, JPY and CHF, whose publication has ceased; decide per currency what replaces each, such as a term rate or nothing, and remove or replace the feed.
+#+title: Task: Replace the synthetic feeds of ceased or misnamed indices
+#+description: The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed.
 #+type: task
 #+level: s1
 #+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-No synthetic feed quotes an index that is no longer published, unless a reason is recorded. For each of USD, GBP, JPY and CHF the decision names the replacement, or none, and the feeds, their templates and anything that reads them follow it.
+No synthetic feed quotes an index that is no longer published, or names a term rate as a currency's overnight index, unless a reason is recorded. The survey in the calibration sources note found: LIBOR for USD, GBP, JPY and CHF, ceased; TELBOR for ILS, ceased after 30 June 2025 and replaced by SHIR; HIBOR for CNH and TAIBOR for TWD, term rates; and the BUBOR overnight quote for HUF, where HUFONIA is the overnight average. The PLN index is unresolved. For each currency the decision names the replacement, or none, and the feeds, their templates and anything that reads them follow it.
 
 * Status
 
@@ -35,9 +35,9 @@ No synthetic feed quotes an index that is no longer published, unless a reason i
 
 * Acceptance
 
-- The decision for each of the four currencies is recorded in the story's Decisions with its reason.
-- Each LIBOR feed is removed or replaced, and anything that read it reads its replacement or is changed.
-- A fresh environment provisions with no LIBOR feed, or with the ones the decision keeps.
+- The decision for each of these currencies, and for PLN, is recorded in the story's Decisions with its reason.
+- Each such feed is removed or replaced, and anything that read it reads its replacement or is changed.
+- A fresh environment provisions with no such feed, or with the ones the decision keeps.
 
 * Plan
 

@@ -43,7 +43,16 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     "start_date" date not null,
     "maturity_date" date not null,
     "long_short" text not null,
-    "payment_frequency_code" text not null,
+    "payment_frequency_code" text null,
+    "fixed_rate" numeric(38, 12) null,
+    "floating_index" text null,
+    "floating_spread" numeric(38, 12) null,
+    "floating_day_count_fraction" text null,
+    "initial_fixed_rate" numeric(38, 12) null,
+    "knock_in_level" numeric(38, 12) null,
+    "bermudan_knock_in" boolean null,
+    "accruing_fixed_coupons" boolean null,
+    "accumulating_fixed_coupons" boolean null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -60,10 +69,10 @@ create table if not exists "ores_trading_equity_swap_instruments_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("trade_type_code" in ('EquitySwap', 'EquityWorstOfBasketSwap')),
-    check (("trade_type_code" = 'EquityWorstOfBasketSwap' and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null)),
+    check ("trade_type_code" = 'EquityWorstOfBasketSwap' or "underlying_name" is not null),
     check ("notional" > 0),
     check ("currency" <> ''),
-    check ("return_type" in ('Total', 'Price'))
+    check ("trade_type_code" = 'EquityWorstOfBasketSwap' or "return_type" in ('Total', 'Price'))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -120,8 +129,10 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate payment_frequency_code
-    NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
+    -- Validate payment_frequency_code (optional field -- skip validation when null)
+    if NEW.payment_frequency_code is not null then
+        NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
+    end if;
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);

@@ -63,6 +63,9 @@ render_fx_asian_forward_instrument_fields(const domain::fx_asian_forward_instrum
     fields.push_back({.name = "Target Amount",
                       .value = v.target_amount ? v.target_amount->to_string() : std::string{}});
     fields.push_back({.name = "Strike", .value = v.strike ? v.strike->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Fixed Payer",
+         .value = v.fixed_payer ? (*v.fixed_payer ? "true" : "false") : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

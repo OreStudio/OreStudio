@@ -117,6 +117,7 @@ fx_asian_forward_instrument_to_domain(const messaging::fx_asian_forward_instrume
     v.fixing_amount = write.fixing_amount;
     v.target_amount = write.target_amount;
     v.strike = write.strike;
+    v.fixed_payer = write.fixed_payer;
     v.description = write.description;
     return v;
 }

@@ -139,15 +139,28 @@ void composite_instrument_commands::register_commands(cli::Menu& root_menu, nats
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <trade_id> <trade_type_code> <trade_activity_id> <description> <reason> <commentary>");
+        "add <trade_id> <trade_type_code> <trade_activity_id> <description> <currency> "
+        "<notional_calculation> <notional_override> <portfolio_basket> <index_quantity> "
+        "<return_payer> <return_currency> <return_observation_lag> <return_observation_convention> "
+        "<return_observation_calendar> <return_payment_lag> <return_payment_convention> "
+        "<return_payment_calendar> <return_initial_price> <return_initial_price_currency> "
+        "<return_fx_index> <return_pay_underlying_cash_flows_immediately> <funding_notional_types> "
+        "<underlying_basket_name> <underlying_index_quantity> <underlying_price_is_per_unit> "
+        "<reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <trade_id> <trade_type_code> <trade_activity_id> <description> <reason> <commentary> "
-        "[--version <n>]");
+        "set <trade_id> <trade_type_code> <trade_activity_id> <description> <currency> "
+        "<notional_calculation> <notional_override> <portfolio_basket> <index_quantity> "
+        "<return_payer> <return_currency> <return_observation_lag> <return_observation_convention> "
+        "<return_observation_calendar> <return_payment_lag> <return_payment_convention> "
+        "<return_payment_calendar> <return_initial_price> <return_initial_price_currency> "
+        "<return_fx_index> <return_pay_underlying_cash_flows_immediately> <funding_notional_types> "
+        "<underlying_basket_name> <underlying_index_quantity> <underlying_price_is_per_unit> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -155,6 +168,12 @@ void composite_instrument_commands::register_commands(cli::Menu& root_menu, nats
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <description> "
+        "<currency> <notional_calculation> <notional_override> <portfolio_basket> <index_quantity> "
+        "<return_payer> <return_currency> <return_observation_lag> <return_observation_convention> "
+        "<return_observation_calendar> <return_payment_lag> <return_payment_convention> "
+        "<return_payment_calendar> <return_initial_price> <return_initial_price_currency> "
+        "<return_fx_index> <return_pay_underlying_cash_flows_immediately> <funding_notional_types> "
+        "<underlying_basket_name> <underlying_index_quantity> <underlying_price_is_per_unit> "
         "<reason> <commentary>");
 
     menu->Insert(
@@ -356,8 +375,8 @@ void composite_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 25 + 2) {
+            fail(out) << "Expected " << (25 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -369,6 +388,62 @@ void composite_instrument_commands::process_add(std::ostream& out,
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         composite_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
+        composite_instrument_read_token(
+            req.change.write.currency, parsed->positionals[next++], "currency");
+        composite_instrument_read_token(req.change.write.notional_calculation,
+                                        parsed->positionals[next++],
+                                        "notional_calculation");
+        composite_instrument_read_token(
+            req.change.write.notional_override, parsed->positionals[next++], "notional_override");
+        composite_instrument_read_token(
+            req.change.write.portfolio_basket, parsed->positionals[next++], "portfolio_basket");
+        composite_instrument_read_token(
+            req.change.write.index_quantity, parsed->positionals[next++], "index_quantity");
+        composite_instrument_read_token(
+            req.change.write.return_payer, parsed->positionals[next++], "return_payer");
+        composite_instrument_read_token(
+            req.change.write.return_currency, parsed->positionals[next++], "return_currency");
+        composite_instrument_read_token(req.change.write.return_observation_lag,
+                                        parsed->positionals[next++],
+                                        "return_observation_lag");
+        composite_instrument_read_token(req.change.write.return_observation_convention,
+                                        parsed->positionals[next++],
+                                        "return_observation_convention");
+        composite_instrument_read_token(req.change.write.return_observation_calendar,
+                                        parsed->positionals[next++],
+                                        "return_observation_calendar");
+        composite_instrument_read_token(
+            req.change.write.return_payment_lag, parsed->positionals[next++], "return_payment_lag");
+        composite_instrument_read_token(req.change.write.return_payment_convention,
+                                        parsed->positionals[next++],
+                                        "return_payment_convention");
+        composite_instrument_read_token(req.change.write.return_payment_calendar,
+                                        parsed->positionals[next++],
+                                        "return_payment_calendar");
+        composite_instrument_read_token(req.change.write.return_initial_price,
+                                        parsed->positionals[next++],
+                                        "return_initial_price");
+        composite_instrument_read_token(req.change.write.return_initial_price_currency,
+                                        parsed->positionals[next++],
+                                        "return_initial_price_currency");
+        composite_instrument_read_token(
+            req.change.write.return_fx_index, parsed->positionals[next++], "return_fx_index");
+        composite_instrument_read_token(
+            req.change.write.return_pay_underlying_cash_flows_immediately,
+            parsed->positionals[next++],
+            "return_pay_underlying_cash_flows_immediately");
+        composite_instrument_read_token(req.change.write.funding_notional_types,
+                                        parsed->positionals[next++],
+                                        "funding_notional_types");
+        composite_instrument_read_token(req.change.write.underlying_basket_name,
+                                        parsed->positionals[next++],
+                                        "underlying_basket_name");
+        composite_instrument_read_token(req.change.write.underlying_index_quantity,
+                                        parsed->positionals[next++],
+                                        "underlying_index_quantity");
+        composite_instrument_read_token(req.change.write.underlying_price_is_per_unit,
+                                        parsed->positionals[next++],
+                                        "underlying_price_is_per_unit");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -413,8 +488,8 @@ void composite_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 25 + 2) {
+            fail(out) << "Expected " << (25 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -426,6 +501,62 @@ void composite_instrument_commands::process_set(std::ostream& out,
             req.change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
         composite_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
+        composite_instrument_read_token(
+            req.change.write.currency, parsed->positionals[next++], "currency");
+        composite_instrument_read_token(req.change.write.notional_calculation,
+                                        parsed->positionals[next++],
+                                        "notional_calculation");
+        composite_instrument_read_token(
+            req.change.write.notional_override, parsed->positionals[next++], "notional_override");
+        composite_instrument_read_token(
+            req.change.write.portfolio_basket, parsed->positionals[next++], "portfolio_basket");
+        composite_instrument_read_token(
+            req.change.write.index_quantity, parsed->positionals[next++], "index_quantity");
+        composite_instrument_read_token(
+            req.change.write.return_payer, parsed->positionals[next++], "return_payer");
+        composite_instrument_read_token(
+            req.change.write.return_currency, parsed->positionals[next++], "return_currency");
+        composite_instrument_read_token(req.change.write.return_observation_lag,
+                                        parsed->positionals[next++],
+                                        "return_observation_lag");
+        composite_instrument_read_token(req.change.write.return_observation_convention,
+                                        parsed->positionals[next++],
+                                        "return_observation_convention");
+        composite_instrument_read_token(req.change.write.return_observation_calendar,
+                                        parsed->positionals[next++],
+                                        "return_observation_calendar");
+        composite_instrument_read_token(
+            req.change.write.return_payment_lag, parsed->positionals[next++], "return_payment_lag");
+        composite_instrument_read_token(req.change.write.return_payment_convention,
+                                        parsed->positionals[next++],
+                                        "return_payment_convention");
+        composite_instrument_read_token(req.change.write.return_payment_calendar,
+                                        parsed->positionals[next++],
+                                        "return_payment_calendar");
+        composite_instrument_read_token(req.change.write.return_initial_price,
+                                        parsed->positionals[next++],
+                                        "return_initial_price");
+        composite_instrument_read_token(req.change.write.return_initial_price_currency,
+                                        parsed->positionals[next++],
+                                        "return_initial_price_currency");
+        composite_instrument_read_token(
+            req.change.write.return_fx_index, parsed->positionals[next++], "return_fx_index");
+        composite_instrument_read_token(
+            req.change.write.return_pay_underlying_cash_flows_immediately,
+            parsed->positionals[next++],
+            "return_pay_underlying_cash_flows_immediately");
+        composite_instrument_read_token(req.change.write.funding_notional_types,
+                                        parsed->positionals[next++],
+                                        "funding_notional_types");
+        composite_instrument_read_token(req.change.write.underlying_basket_name,
+                                        parsed->positionals[next++],
+                                        "underlying_basket_name");
+        composite_instrument_read_token(req.change.write.underlying_index_quantity,
+                                        parsed->positionals[next++],
+                                        "underlying_index_quantity");
+        composite_instrument_read_token(req.change.write.underlying_price_is_per_unit,
+                                        parsed->positionals[next++],
+                                        "underlying_price_is_per_unit");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -482,8 +613,8 @@ void composite_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 4 + 2) {
-            fail(out) << "Expected " << (change_count * 4 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 25 + 2) {
+            fail(out) << "Expected " << (change_count * 25 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -497,6 +628,62 @@ void composite_instrument_commands::process_put_many(std::ostream& out,
                 change.write.trade_activity_id, parsed->positionals[next++], "trade_activity_id");
             composite_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
+            composite_instrument_read_token(
+                change.write.currency, parsed->positionals[next++], "currency");
+            composite_instrument_read_token(change.write.notional_calculation,
+                                            parsed->positionals[next++],
+                                            "notional_calculation");
+            composite_instrument_read_token(
+                change.write.notional_override, parsed->positionals[next++], "notional_override");
+            composite_instrument_read_token(
+                change.write.portfolio_basket, parsed->positionals[next++], "portfolio_basket");
+            composite_instrument_read_token(
+                change.write.index_quantity, parsed->positionals[next++], "index_quantity");
+            composite_instrument_read_token(
+                change.write.return_payer, parsed->positionals[next++], "return_payer");
+            composite_instrument_read_token(
+                change.write.return_currency, parsed->positionals[next++], "return_currency");
+            composite_instrument_read_token(change.write.return_observation_lag,
+                                            parsed->positionals[next++],
+                                            "return_observation_lag");
+            composite_instrument_read_token(change.write.return_observation_convention,
+                                            parsed->positionals[next++],
+                                            "return_observation_convention");
+            composite_instrument_read_token(change.write.return_observation_calendar,
+                                            parsed->positionals[next++],
+                                            "return_observation_calendar");
+            composite_instrument_read_token(
+                change.write.return_payment_lag, parsed->positionals[next++], "return_payment_lag");
+            composite_instrument_read_token(change.write.return_payment_convention,
+                                            parsed->positionals[next++],
+                                            "return_payment_convention");
+            composite_instrument_read_token(change.write.return_payment_calendar,
+                                            parsed->positionals[next++],
+                                            "return_payment_calendar");
+            composite_instrument_read_token(change.write.return_initial_price,
+                                            parsed->positionals[next++],
+                                            "return_initial_price");
+            composite_instrument_read_token(change.write.return_initial_price_currency,
+                                            parsed->positionals[next++],
+                                            "return_initial_price_currency");
+            composite_instrument_read_token(
+                change.write.return_fx_index, parsed->positionals[next++], "return_fx_index");
+            composite_instrument_read_token(
+                change.write.return_pay_underlying_cash_flows_immediately,
+                parsed->positionals[next++],
+                "return_pay_underlying_cash_flows_immediately");
+            composite_instrument_read_token(change.write.funding_notional_types,
+                                            parsed->positionals[next++],
+                                            "funding_notional_types");
+            composite_instrument_read_token(change.write.underlying_basket_name,
+                                            parsed->positionals[next++],
+                                            "underlying_basket_name");
+            composite_instrument_read_token(change.write.underlying_index_quantity,
+                                            parsed->positionals[next++],
+                                            "underlying_index_quantity");
+            composite_instrument_read_token(change.write.underlying_price_is_per_unit,
+                                            parsed->positionals[next++],
+                                            "underlying_price_is_per_unit");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

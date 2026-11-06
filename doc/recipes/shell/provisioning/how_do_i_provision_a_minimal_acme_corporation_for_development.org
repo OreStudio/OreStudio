@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: 93C23A49-CC87-4DE0-82DA-932B3CF9E8A5
+:END:
+#+title: How do I provision a minimal Acme Corporation for development?
+#+description: Provision the Acme Corporation tenant with only its group entity, books and the ORE sample counterparties, for a fast import and export loop.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:provisioning:acme:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+
+The =acme_minimal= starting point is a smaller form of the demonstration
+in [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]].
+It makes the same tenant and the same tenant administrator, so the scripts
+that log in as =tenant_admin@acme_corporation= work against both.
+
+* Question
+
+How do I provision only the Acme Corporation data that an ORE import and
+export needs, so a development loop does not wait for the full
+demonstration?
+
+* Answer
+
+Bootstrap =super_admin= and install the =Acme Corporation= tenant from the
+=acme_minimal= starting point. Its steps publish the base bundle and the
+ORE counterparty aliases, import the Acme LEI hierarchy, provision the
+party, and load the group party's bundle, which holds its portfolios and
+books, together with the ORE sample counterparties.
+
+It does not load the subsidiaries' staff, set the staff passwords, attach
+photographs, subscribe to market data, schedule reports or generate the
+synthetic trade population. It does not publish the ORE engine packages,
+so a compute job cannot run against this tenant. Use the full
+demonstration for that.
+
+Expectations: the services are up (=compass services start=) and the
+database is fresh (=compass db recreate -y -k=, which leaves it in
+bootstrap mode).
+
+#+name: acme-corporation-minimal-provision
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+
+bootstrap setup super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation --profile acme_minimal
+logout
+
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<acme-corporation-minimal-provision>>
+EOF
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/provisioning/how_do_i_provision_a_minimal_acme_corporation_for_development.ores=
+— generated from this recipe by =compass build --direct
+tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f
+how_do_i_provision_a_minimal_acme_corporation_for_development.ores=
+against a freshly recreated database, then the ORE round trip into the
+group's =Group FX Hedges= book.
+
+* See also
+
+- [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]] — the full demonstration.

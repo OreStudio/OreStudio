@@ -52,6 +52,7 @@ struct bond_instrument_write {
     std::string trade_type_code;
     boost::uuids::uuid trade_activity_id;
     boost::uuids::uuid issue_id;
+    std::optional<std::string> position_identifier;
     std::optional<ores::utility::decimal::decimal> notional;
 
     friend bool operator==(const bond_instrument_write&, const bond_instrument_write&) = default;
@@ -383,6 +384,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_instruments.
         utility::codec::field{"trade_type_code", &bond_instrument_write::trade_type_code},
         utility::codec::field{"trade_activity_id", &bond_instrument_write::trade_activity_id},
         utility::codec::field{"issue_id", &bond_instrument_write::issue_id},
+        utility::codec::field{"position_identifier", &bond_instrument_write::position_identifier},
         utility::codec::field{"notional", &bond_instrument_write::notional},
     };
 }

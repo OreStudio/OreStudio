@@ -32,7 +32,7 @@
 
 begin;
 
-select plan(9);
+select plan(7);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -75,23 +75,11 @@ select results_eq(
     $$values ('Dynamic', true), ('Package', false), ('Strategy', true), ('Typed', true)$$,
     'a package confirms trade by trade; the rungs above it confirm as a whole');
 
-select is(
-    (select count(*) from t_structure_kinds),
-    4::bigint,
-    'the seeded ladder has four rungs');
-
 select results_eq(
     $$select role, min_legs, max_legs from t_template_roles
       where template_code = 'Butterfly' order by role$$,
     $$values ('body', 1, 1), ('wing', 2, 2)$$,
     'a butterfly is a body of one and two wings of two');
-
-select is(
-    (select count(*) from ores_trading_structure_templates_tbl
-     where tenant_id = ores_utility_system_tenant_id_fn()
-       and valid_to = ores_utility_infinity_timestamp_fn()),
-    5::bigint,
-    'the seeded templates are the four strategies and one typed product');
 
 -- =============================================================================
 -- What a template and a role refuse

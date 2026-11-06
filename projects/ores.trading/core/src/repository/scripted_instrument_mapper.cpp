@@ -56,6 +56,7 @@ domain::scripted_instrument scripted_instrument_mapper::map(const scripted_instr
     r.underlyings_json = v.underlyings_json.value_or("");
     r.parameters_json = v.parameters_json.value_or("");
     r.description = v.description.value_or("");
+    r.data_element = v.data_element;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -83,6 +84,7 @@ scripted_instrument_entity scripted_instrument_mapper::map(const domain::scripte
         v.underlyings_json.empty() ? std::nullopt : std::optional(v.underlyings_json);
     r.parameters_json = v.parameters_json.empty() ? std::nullopt : std::optional(v.parameters_json);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.data_element = v.data_element;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

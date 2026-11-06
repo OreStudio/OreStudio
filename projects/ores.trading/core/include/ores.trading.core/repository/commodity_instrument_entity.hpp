@@ -60,7 +60,7 @@ struct commodity_instrument_entity {
     std::string commodity_code;
     std::string currency;
     double quantity = 0.0;
-    std::string unit;
+    std::optional<std::string> unit;
     std::optional<std::chrono::year_month_day> start_date;
     std::optional<std::chrono::year_month_day> maturity_date;
     std::optional<ores::utility::decimal::decimal> fixed_price;
@@ -82,6 +82,15 @@ struct commodity_instrument_entity {
     std::optional<std::string> day_count_fraction_code;
     std::optional<std::string> payment_frequency_code;
     std::optional<std::chrono::year_month_day> swaption_expiry_date;
+    std::optional<std::string> calendar;
+    std::optional<std::string> moment_type;
+    std::optional<bool> add_past_dividends;
+    std::optional<std::string> pay_relative_to;
+    std::optional<std::string> quantity_frequency;
+    std::optional<int> delivery_roll_days;
+    std::optional<int> future_month_offset;
+    std::optional<bool> include_period_end;
+    std::optional<std::string> position;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -127,6 +136,15 @@ struct commodity_instrument_entity {
                query_builder::bind("day_count_fraction_code", &e::day_count_fraction_code) |
                query_builder::bind("payment_frequency_code", &e::payment_frequency_code) |
                query_builder::bind("swaption_expiry_date", &e::swaption_expiry_date) |
+               query_builder::bind("calendar", &e::calendar) |
+               query_builder::bind("moment_type", &e::moment_type) |
+               query_builder::bind("add_past_dividends", &e::add_past_dividends) |
+               query_builder::bind("pay_relative_to", &e::pay_relative_to) |
+               query_builder::bind("quantity_frequency", &e::quantity_frequency) |
+               query_builder::bind("delivery_roll_days", &e::delivery_roll_days) |
+               query_builder::bind("future_month_offset", &e::future_month_offset) |
+               query_builder::bind("include_period_end", &e::include_period_end) |
+               query_builder::bind("position", &e::position) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

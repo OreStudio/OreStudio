@@ -184,6 +184,26 @@ The ORE element is =OptionData/Settlement=.
 
 Soft FK to ores_trading_settlement_types_tbl: the values are the closed ORE settlementType set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
 
+** identifier_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The scheme the entry's underlying is named in, as =Underlying/IdentifierType=
+states it.
+
+** exercise_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+The entry's option exercise date, as =OptionData/ExerciseDates/ExerciseDate=
+states it.
+
 * Foreign keys
 
 ** trade_id
@@ -277,6 +297,7 @@ is immutable.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>

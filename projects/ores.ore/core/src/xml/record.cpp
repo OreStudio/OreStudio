@@ -530,6 +530,23 @@ auto record_writer::child(std::string_view name) -> record_writer {
     return record_writer(*f.type, slot_of(f), record_columns_held(record_, f));
 }
 
+auto record_writer::chosen_child(std::string_view name) -> std::optional<record_writer> {
+    const auto& f = require_field(*type_, name);
+    if (!bit_is_set(record_, f))
+        return std::nullopt;
+    if (f.kind == field_kind::column_nested) {
+        if (columns_ == nullptr || f.repeated == nullptr || f.arena_offset == no_arena)
+            return std::nullopt;
+        const auto* rows = static_cast<const std::byte*>(columns_) + f.arena_offset;
+        const auto index = *static_cast<const std::uint32_t*>(slot_of(f));
+        // The row belongs to this writer's record, so writing to it is writing
+        // to the record the writer was given.
+        return record_writer(*f.type, const_cast<void*>(f.repeated->at(rows, index)));
+    }
+    require_kind(*type_, name, field_kind::nested, "a child element");
+    return record_writer(*f.type, slot_of(f), record_columns_held(record_, f));
+}
+
 void record_writer::append_value(std::string_view name, std::string_view value) {
     const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
     if (f.scalar != scalar_kind::text)

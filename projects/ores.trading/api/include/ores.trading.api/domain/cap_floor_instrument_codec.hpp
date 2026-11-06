@@ -51,6 +51,7 @@ namespace ores::trading::domain {
         utility::codec::field{"tenant_id", &cap_floor_instrument::tenant_id},
         utility::codec::field{"trade_id", &cap_floor_instrument::trade_id},
         utility::codec::field{"trade_activity_id", &cap_floor_instrument::trade_activity_id},
+        utility::codec::field{"long_short", &cap_floor_instrument::long_short},
         utility::codec::field{"modified_by", &cap_floor_instrument::modified_by},
         utility::codec::field{"performed_by", &cap_floor_instrument::performed_by},
         utility::codec::field{"change_reason_code", &cap_floor_instrument::change_reason_code},

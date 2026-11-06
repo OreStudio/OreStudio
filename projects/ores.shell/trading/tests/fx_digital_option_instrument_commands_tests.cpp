@@ -163,7 +163,7 @@ TEST_CASE("fx_digital_option_instrument_commands_process_add_requires_a_session"
 
     command_feedback::reset();
     fx_digital_option_instrument_commands::process_add(
-        out, session, fx_digital_option_instrument_tokens(15));
+        out, session, fx_digital_option_instrument_tokens(18));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -199,7 +199,7 @@ TEST_CASE("fx_digital_option_instrument_commands_process_set_requires_a_session"
 
     command_feedback::reset();
     fx_digital_option_instrument_commands::process_set(
-        out, session, fx_digital_option_instrument_tokens(15));
+        out, session, fx_digital_option_instrument_tokens(18));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -236,7 +236,7 @@ TEST_CASE("fx_digital_option_instrument_commands_process_put_many_requires_a_ses
 
     command_feedback::reset();
     fx_digital_option_instrument_commands::process_put_many(
-        out, session, fx_digital_option_instrument_tokens(15));
+        out, session, fx_digital_option_instrument_tokens(18));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

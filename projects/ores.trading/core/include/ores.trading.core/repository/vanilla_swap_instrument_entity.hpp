@@ -55,6 +55,9 @@ struct vanilla_swap_instrument_entity {
     int version = 0;
     boost::uuids::uuid trade_activity_id;
     std::optional<int> settlement_lag;
+    std::optional<std::string> settlement;
+    std::optional<bool> round_netted_floating_legs;
+    std::optional<int> netting_precision;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -73,6 +76,9 @@ struct vanilla_swap_instrument_entity {
                query_builder::bind("version", &e::version) |
                query_builder::bind("trade_activity_id", &e::trade_activity_id) |
                query_builder::bind("settlement_lag", &e::settlement_lag) |
+               query_builder::bind("settlement", &e::settlement) |
+               query_builder::bind("round_netted_floating_legs", &e::round_netted_floating_legs) |
+               query_builder::bind("netting_precision", &e::netting_precision) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

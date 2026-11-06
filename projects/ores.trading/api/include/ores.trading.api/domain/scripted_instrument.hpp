@@ -93,6 +93,14 @@ struct scripted_instrument final {
      */
     std::string description;
 
+    /**
+     * @brief The element of the trade that states the parameters: ScriptedTradeData for a generic
+     * scripted trade, or the named product's element, such as MovingMaxYYIISData. The parameters
+     * are scripted_parameter rows, and the element tells the writer which of the two forms to state
+     * them in.
+     */
+    std::optional<std::string> data_element;
+
     ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.
@@ -121,6 +129,7 @@ struct scripted_instrument final {
     ores::utility::digest::append_member(out, "events_json", v.events_json);
     ores::utility::digest::append_member(out, "underlyings_json", v.underlyings_json);
     ores::utility::digest::append_member(out, "parameters_json", v.parameters_json);
+    ores::utility::digest::append_member(out, "data_element", v.data_element);
     out.push_back('}');
     return out;
 }

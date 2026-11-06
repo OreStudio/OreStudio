@@ -58,6 +58,7 @@ struct scripted_instrument_write {
     std::string underlyings_json;
     std::string parameters_json;
     std::string description;
+    std::optional<std::string> data_element;
 
     friend bool operator==(const scripted_instrument_write&,
                            const scripted_instrument_write&) = default;
@@ -398,6 +399,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.scripted_instrume
         utility::codec::field{"underlyings_json", &scripted_instrument_write::underlyings_json},
         utility::codec::field{"parameters_json", &scripted_instrument_write::parameters_json},
         utility::codec::field{"description", &scripted_instrument_write::description},
+        utility::codec::field{"data_element", &scripted_instrument_write::data_element},
     };
 }
 

@@ -58,7 +58,8 @@ struct equity_position_instrument final {
     std::string underlying_name;
 
     /**
-     * @brief ISO 4217 currency code.
+     * @brief ISO 4217 currency code, when the position states one. ORE's EquityPositionData states
+     * only a quantity and its underlyings, so a position read from ORE has none.
      *
      * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
      * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real

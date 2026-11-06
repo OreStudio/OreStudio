@@ -53,6 +53,7 @@ equity_basket_constituent_mapper::map(const equity_basket_constituent_entity& v)
     r.sequence_number = v.sequence_number;
     r.trade_activity_id = v.trade_activity_id;
     r.underlying_name = v.underlying_name;
+    r.identifier_type = v.identifier_type;
     r.underlying_kind = v.underlying_kind;
     r.weight = v.weight;
     r.initial_price = v.initial_price;
@@ -77,6 +78,7 @@ equity_basket_constituent_mapper::map(const domain::equity_basket_constituent& v
     r.version = v.version;
     r.trade_activity_id = v.trade_activity_id;
     r.underlying_name = v.underlying_name;
+    r.identifier_type = v.identifier_type;
     r.underlying_kind = v.underlying_kind;
     r.weight = v.weight;
     r.initial_price = v.initial_price;

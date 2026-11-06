@@ -141,7 +141,22 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "add <leg_number> <trade_activity_id> <payer> <leg_type_code> <day_count_fraction_code> "
         "<business_day_convention_code> <payment_frequency_code> <floating_index_code> <currency> "
-        "<leg_group> <reason> <commentary>");
+        "<leg_group> <fixing_days> <is_in_arrears> <include_spread> <is_averaged> "
+        "<has_sub_periods> <notional_initial_exchange> <notional_final_exchange> <payment_lag> "
+        "<payment_calendar> <commodity_price_type> <future_month_offset> <daily_expiry_offset> "
+        "<pricing_calendar> <equity_return_type> <equity_name> <equity_underlying_type> "
+        "<equity_underlying_identifier_type> <equity_quantity> <equity_initial_price> "
+        "<equity_initial_price_currency> <equity_dividend_factor> <equity_notional_reset> "
+        "<equity_currency> <fx_index> <fx_reset_foreign_currency> <fx_reset_start_date> "
+        "<fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days> "
+        "<fx_reset_fixing_calendar> <fixing_calendar> <digital_call_position> "
+        "<digital_is_call_atm_included> <digital_put_position> <digital_is_put_atm_included> "
+        "<equity_margin_initial_margin_factor> <equity_margin_multiplier> "
+        "<commodity_pay_relative_to> <commodity_quantity_frequency> <pricing_date_rule> "
+        "<indexings_from_asset_leg> <floating_index_code_2> <cms_duration> <naked_option> "
+        "<lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> "
+        "<cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
+        "<zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,7 +165,23 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "set <trade_id> <leg_number> <trade_activity_id> <payer> <leg_type_code> "
         "<day_count_fraction_code> <business_day_convention_code> <payment_frequency_code> "
-        "<floating_index_code> <currency> <leg_group> <reason> <commentary> [--version <n>]");
+        "<floating_index_code> <currency> <leg_group> <fixing_days> <is_in_arrears> "
+        "<include_spread> <is_averaged> <has_sub_periods> <notional_initial_exchange> "
+        "<notional_final_exchange> <payment_lag> <payment_calendar> <commodity_price_type> "
+        "<future_month_offset> <daily_expiry_offset> <pricing_calendar> <equity_return_type> "
+        "<equity_name> <equity_underlying_type> <equity_underlying_identifier_type> "
+        "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
+        "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> "
+        "<fx_reset_foreign_currency> <fx_reset_start_date> <fx_reset_foreign_amount> "
+        "<fx_reset_fx_index> <fx_reset_fixing_days> <fx_reset_fixing_calendar> <fixing_calendar> "
+        "<digital_call_position> <digital_is_call_atm_included> <digital_put_position> "
+        "<digital_is_put_atm_included> <equity_margin_initial_margin_factor> "
+        "<equity_margin_multiplier> <commodity_pay_relative_to> <commodity_quantity_frequency> "
+        "<pricing_date_rule> <indexings_from_asset_leg> <floating_index_code_2> <cms_duration> "
+        "<naked_option> <lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> "
+        "<cpi_start_date> <cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
+        "<zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +190,22 @@ void swap_leg_commands::register_commands(cli::Menu& root_menu, nats_client& ses
         },
         "put-many --count <n> <trade_id> <leg_number> <trade_activity_id> <payer> <leg_type_code> "
         "<day_count_fraction_code> <business_day_convention_code> <payment_frequency_code> "
-        "<floating_index_code> <currency> <leg_group> <reason> <commentary>");
+        "<floating_index_code> <currency> <leg_group> <fixing_days> <is_in_arrears> "
+        "<include_spread> <is_averaged> <has_sub_periods> <notional_initial_exchange> "
+        "<notional_final_exchange> <payment_lag> <payment_calendar> <commodity_price_type> "
+        "<future_month_offset> <daily_expiry_offset> <pricing_calendar> <equity_return_type> "
+        "<equity_name> <equity_underlying_type> <equity_underlying_identifier_type> "
+        "<equity_quantity> <equity_initial_price> <equity_initial_price_currency> "
+        "<equity_dividend_factor> <equity_notional_reset> <equity_currency> <fx_index> "
+        "<fx_reset_foreign_currency> <fx_reset_start_date> <fx_reset_foreign_amount> "
+        "<fx_reset_fx_index> <fx_reset_fixing_days> <fx_reset_fixing_calendar> <fixing_calendar> "
+        "<digital_call_position> <digital_is_call_atm_included> <digital_put_position> "
+        "<digital_is_put_atm_included> <equity_margin_initial_margin_factor> "
+        "<equity_margin_multiplier> <commodity_pay_relative_to> <commodity_quantity_frequency> "
+        "<pricing_date_rule> <indexings_from_asset_leg> <floating_index_code_2> <cms_duration> "
+        "<naked_option> <lookback> <rate_cutoff> <local_cap_floor> <observation_lag> <cpi_base> "
+        "<cpi_start_date> <cpi_interpolation> <cpi_interpolated> <subtract_inflation_notional> "
+        "<zero_coupon_compounding> <zero_coupon_subtract_notional> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -369,8 +415,8 @@ void swap_leg_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 65 + 2) {
+            fail(out) << "Expected " << (65 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -395,6 +441,142 @@ void swap_leg_commands::process_add(std::ostream& out,
                             "floating_index_code");
         swap_leg_read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         swap_leg_read_token(req.change.write.leg_group, parsed->positionals[next++], "leg_group");
+        swap_leg_read_token(
+            req.change.write.fixing_days, parsed->positionals[next++], "fixing_days");
+        swap_leg_read_token(
+            req.change.write.is_in_arrears, parsed->positionals[next++], "is_in_arrears");
+        swap_leg_read_token(
+            req.change.write.include_spread, parsed->positionals[next++], "include_spread");
+        swap_leg_read_token(
+            req.change.write.is_averaged, parsed->positionals[next++], "is_averaged");
+        swap_leg_read_token(
+            req.change.write.has_sub_periods, parsed->positionals[next++], "has_sub_periods");
+        swap_leg_read_token(req.change.write.notional_initial_exchange,
+                            parsed->positionals[next++],
+                            "notional_initial_exchange");
+        swap_leg_read_token(req.change.write.notional_final_exchange,
+                            parsed->positionals[next++],
+                            "notional_final_exchange");
+        swap_leg_read_token(
+            req.change.write.payment_lag, parsed->positionals[next++], "payment_lag");
+        swap_leg_read_token(
+            req.change.write.payment_calendar, parsed->positionals[next++], "payment_calendar");
+        swap_leg_read_token(req.change.write.commodity_price_type,
+                            parsed->positionals[next++],
+                            "commodity_price_type");
+        swap_leg_read_token(req.change.write.future_month_offset,
+                            parsed->positionals[next++],
+                            "future_month_offset");
+        swap_leg_read_token(req.change.write.daily_expiry_offset,
+                            parsed->positionals[next++],
+                            "daily_expiry_offset");
+        swap_leg_read_token(
+            req.change.write.pricing_calendar, parsed->positionals[next++], "pricing_calendar");
+        swap_leg_read_token(
+            req.change.write.equity_return_type, parsed->positionals[next++], "equity_return_type");
+        swap_leg_read_token(
+            req.change.write.equity_name, parsed->positionals[next++], "equity_name");
+        swap_leg_read_token(req.change.write.equity_underlying_type,
+                            parsed->positionals[next++],
+                            "equity_underlying_type");
+        swap_leg_read_token(req.change.write.equity_underlying_identifier_type,
+                            parsed->positionals[next++],
+                            "equity_underlying_identifier_type");
+        swap_leg_read_token(
+            req.change.write.equity_quantity, parsed->positionals[next++], "equity_quantity");
+        swap_leg_read_token(req.change.write.equity_initial_price,
+                            parsed->positionals[next++],
+                            "equity_initial_price");
+        swap_leg_read_token(req.change.write.equity_initial_price_currency,
+                            parsed->positionals[next++],
+                            "equity_initial_price_currency");
+        swap_leg_read_token(req.change.write.equity_dividend_factor,
+                            parsed->positionals[next++],
+                            "equity_dividend_factor");
+        swap_leg_read_token(req.change.write.equity_notional_reset,
+                            parsed->positionals[next++],
+                            "equity_notional_reset");
+        swap_leg_read_token(
+            req.change.write.equity_currency, parsed->positionals[next++], "equity_currency");
+        swap_leg_read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
+        swap_leg_read_token(req.change.write.fx_reset_foreign_currency,
+                            parsed->positionals[next++],
+                            "fx_reset_foreign_currency");
+        swap_leg_read_token(req.change.write.fx_reset_start_date,
+                            parsed->positionals[next++],
+                            "fx_reset_start_date");
+        swap_leg_read_token(req.change.write.fx_reset_foreign_amount,
+                            parsed->positionals[next++],
+                            "fx_reset_foreign_amount");
+        swap_leg_read_token(
+            req.change.write.fx_reset_fx_index, parsed->positionals[next++], "fx_reset_fx_index");
+        swap_leg_read_token(req.change.write.fx_reset_fixing_days,
+                            parsed->positionals[next++],
+                            "fx_reset_fixing_days");
+        swap_leg_read_token(req.change.write.fx_reset_fixing_calendar,
+                            parsed->positionals[next++],
+                            "fx_reset_fixing_calendar");
+        swap_leg_read_token(
+            req.change.write.fixing_calendar, parsed->positionals[next++], "fixing_calendar");
+        swap_leg_read_token(req.change.write.digital_call_position,
+                            parsed->positionals[next++],
+                            "digital_call_position");
+        swap_leg_read_token(req.change.write.digital_is_call_atm_included,
+                            parsed->positionals[next++],
+                            "digital_is_call_atm_included");
+        swap_leg_read_token(req.change.write.digital_put_position,
+                            parsed->positionals[next++],
+                            "digital_put_position");
+        swap_leg_read_token(req.change.write.digital_is_put_atm_included,
+                            parsed->positionals[next++],
+                            "digital_is_put_atm_included");
+        swap_leg_read_token(req.change.write.equity_margin_initial_margin_factor,
+                            parsed->positionals[next++],
+                            "equity_margin_initial_margin_factor");
+        swap_leg_read_token(req.change.write.equity_margin_multiplier,
+                            parsed->positionals[next++],
+                            "equity_margin_multiplier");
+        swap_leg_read_token(req.change.write.commodity_pay_relative_to,
+                            parsed->positionals[next++],
+                            "commodity_pay_relative_to");
+        swap_leg_read_token(req.change.write.commodity_quantity_frequency,
+                            parsed->positionals[next++],
+                            "commodity_quantity_frequency");
+        swap_leg_read_token(
+            req.change.write.pricing_date_rule, parsed->positionals[next++], "pricing_date_rule");
+        swap_leg_read_token(req.change.write.indexings_from_asset_leg,
+                            parsed->positionals[next++],
+                            "indexings_from_asset_leg");
+        swap_leg_read_token(req.change.write.floating_index_code_2,
+                            parsed->positionals[next++],
+                            "floating_index_code_2");
+        swap_leg_read_token(
+            req.change.write.cms_duration, parsed->positionals[next++], "cms_duration");
+        swap_leg_read_token(
+            req.change.write.naked_option, parsed->positionals[next++], "naked_option");
+        swap_leg_read_token(req.change.write.lookback, parsed->positionals[next++], "lookback");
+        swap_leg_read_token(
+            req.change.write.rate_cutoff, parsed->positionals[next++], "rate_cutoff");
+        swap_leg_read_token(
+            req.change.write.local_cap_floor, parsed->positionals[next++], "local_cap_floor");
+        swap_leg_read_token(
+            req.change.write.observation_lag, parsed->positionals[next++], "observation_lag");
+        swap_leg_read_token(req.change.write.cpi_base, parsed->positionals[next++], "cpi_base");
+        swap_leg_read_token(
+            req.change.write.cpi_start_date, parsed->positionals[next++], "cpi_start_date");
+        swap_leg_read_token(
+            req.change.write.cpi_interpolation, parsed->positionals[next++], "cpi_interpolation");
+        swap_leg_read_token(
+            req.change.write.cpi_interpolated, parsed->positionals[next++], "cpi_interpolated");
+        swap_leg_read_token(req.change.write.subtract_inflation_notional,
+                            parsed->positionals[next++],
+                            "subtract_inflation_notional");
+        swap_leg_read_token(req.change.write.zero_coupon_compounding,
+                            parsed->positionals[next++],
+                            "zero_coupon_compounding");
+        swap_leg_read_token(req.change.write.zero_coupon_subtract_notional,
+                            parsed->positionals[next++],
+                            "zero_coupon_subtract_notional");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -439,8 +621,8 @@ void swap_leg_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 66 + 2) {
+            fail(out) << "Expected " << (66 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -465,6 +647,142 @@ void swap_leg_commands::process_set(std::ostream& out,
                             "floating_index_code");
         swap_leg_read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         swap_leg_read_token(req.change.write.leg_group, parsed->positionals[next++], "leg_group");
+        swap_leg_read_token(
+            req.change.write.fixing_days, parsed->positionals[next++], "fixing_days");
+        swap_leg_read_token(
+            req.change.write.is_in_arrears, parsed->positionals[next++], "is_in_arrears");
+        swap_leg_read_token(
+            req.change.write.include_spread, parsed->positionals[next++], "include_spread");
+        swap_leg_read_token(
+            req.change.write.is_averaged, parsed->positionals[next++], "is_averaged");
+        swap_leg_read_token(
+            req.change.write.has_sub_periods, parsed->positionals[next++], "has_sub_periods");
+        swap_leg_read_token(req.change.write.notional_initial_exchange,
+                            parsed->positionals[next++],
+                            "notional_initial_exchange");
+        swap_leg_read_token(req.change.write.notional_final_exchange,
+                            parsed->positionals[next++],
+                            "notional_final_exchange");
+        swap_leg_read_token(
+            req.change.write.payment_lag, parsed->positionals[next++], "payment_lag");
+        swap_leg_read_token(
+            req.change.write.payment_calendar, parsed->positionals[next++], "payment_calendar");
+        swap_leg_read_token(req.change.write.commodity_price_type,
+                            parsed->positionals[next++],
+                            "commodity_price_type");
+        swap_leg_read_token(req.change.write.future_month_offset,
+                            parsed->positionals[next++],
+                            "future_month_offset");
+        swap_leg_read_token(req.change.write.daily_expiry_offset,
+                            parsed->positionals[next++],
+                            "daily_expiry_offset");
+        swap_leg_read_token(
+            req.change.write.pricing_calendar, parsed->positionals[next++], "pricing_calendar");
+        swap_leg_read_token(
+            req.change.write.equity_return_type, parsed->positionals[next++], "equity_return_type");
+        swap_leg_read_token(
+            req.change.write.equity_name, parsed->positionals[next++], "equity_name");
+        swap_leg_read_token(req.change.write.equity_underlying_type,
+                            parsed->positionals[next++],
+                            "equity_underlying_type");
+        swap_leg_read_token(req.change.write.equity_underlying_identifier_type,
+                            parsed->positionals[next++],
+                            "equity_underlying_identifier_type");
+        swap_leg_read_token(
+            req.change.write.equity_quantity, parsed->positionals[next++], "equity_quantity");
+        swap_leg_read_token(req.change.write.equity_initial_price,
+                            parsed->positionals[next++],
+                            "equity_initial_price");
+        swap_leg_read_token(req.change.write.equity_initial_price_currency,
+                            parsed->positionals[next++],
+                            "equity_initial_price_currency");
+        swap_leg_read_token(req.change.write.equity_dividend_factor,
+                            parsed->positionals[next++],
+                            "equity_dividend_factor");
+        swap_leg_read_token(req.change.write.equity_notional_reset,
+                            parsed->positionals[next++],
+                            "equity_notional_reset");
+        swap_leg_read_token(
+            req.change.write.equity_currency, parsed->positionals[next++], "equity_currency");
+        swap_leg_read_token(req.change.write.fx_index, parsed->positionals[next++], "fx_index");
+        swap_leg_read_token(req.change.write.fx_reset_foreign_currency,
+                            parsed->positionals[next++],
+                            "fx_reset_foreign_currency");
+        swap_leg_read_token(req.change.write.fx_reset_start_date,
+                            parsed->positionals[next++],
+                            "fx_reset_start_date");
+        swap_leg_read_token(req.change.write.fx_reset_foreign_amount,
+                            parsed->positionals[next++],
+                            "fx_reset_foreign_amount");
+        swap_leg_read_token(
+            req.change.write.fx_reset_fx_index, parsed->positionals[next++], "fx_reset_fx_index");
+        swap_leg_read_token(req.change.write.fx_reset_fixing_days,
+                            parsed->positionals[next++],
+                            "fx_reset_fixing_days");
+        swap_leg_read_token(req.change.write.fx_reset_fixing_calendar,
+                            parsed->positionals[next++],
+                            "fx_reset_fixing_calendar");
+        swap_leg_read_token(
+            req.change.write.fixing_calendar, parsed->positionals[next++], "fixing_calendar");
+        swap_leg_read_token(req.change.write.digital_call_position,
+                            parsed->positionals[next++],
+                            "digital_call_position");
+        swap_leg_read_token(req.change.write.digital_is_call_atm_included,
+                            parsed->positionals[next++],
+                            "digital_is_call_atm_included");
+        swap_leg_read_token(req.change.write.digital_put_position,
+                            parsed->positionals[next++],
+                            "digital_put_position");
+        swap_leg_read_token(req.change.write.digital_is_put_atm_included,
+                            parsed->positionals[next++],
+                            "digital_is_put_atm_included");
+        swap_leg_read_token(req.change.write.equity_margin_initial_margin_factor,
+                            parsed->positionals[next++],
+                            "equity_margin_initial_margin_factor");
+        swap_leg_read_token(req.change.write.equity_margin_multiplier,
+                            parsed->positionals[next++],
+                            "equity_margin_multiplier");
+        swap_leg_read_token(req.change.write.commodity_pay_relative_to,
+                            parsed->positionals[next++],
+                            "commodity_pay_relative_to");
+        swap_leg_read_token(req.change.write.commodity_quantity_frequency,
+                            parsed->positionals[next++],
+                            "commodity_quantity_frequency");
+        swap_leg_read_token(
+            req.change.write.pricing_date_rule, parsed->positionals[next++], "pricing_date_rule");
+        swap_leg_read_token(req.change.write.indexings_from_asset_leg,
+                            parsed->positionals[next++],
+                            "indexings_from_asset_leg");
+        swap_leg_read_token(req.change.write.floating_index_code_2,
+                            parsed->positionals[next++],
+                            "floating_index_code_2");
+        swap_leg_read_token(
+            req.change.write.cms_duration, parsed->positionals[next++], "cms_duration");
+        swap_leg_read_token(
+            req.change.write.naked_option, parsed->positionals[next++], "naked_option");
+        swap_leg_read_token(req.change.write.lookback, parsed->positionals[next++], "lookback");
+        swap_leg_read_token(
+            req.change.write.rate_cutoff, parsed->positionals[next++], "rate_cutoff");
+        swap_leg_read_token(
+            req.change.write.local_cap_floor, parsed->positionals[next++], "local_cap_floor");
+        swap_leg_read_token(
+            req.change.write.observation_lag, parsed->positionals[next++], "observation_lag");
+        swap_leg_read_token(req.change.write.cpi_base, parsed->positionals[next++], "cpi_base");
+        swap_leg_read_token(
+            req.change.write.cpi_start_date, parsed->positionals[next++], "cpi_start_date");
+        swap_leg_read_token(
+            req.change.write.cpi_interpolation, parsed->positionals[next++], "cpi_interpolation");
+        swap_leg_read_token(
+            req.change.write.cpi_interpolated, parsed->positionals[next++], "cpi_interpolated");
+        swap_leg_read_token(req.change.write.subtract_inflation_notional,
+                            parsed->positionals[next++],
+                            "subtract_inflation_notional");
+        swap_leg_read_token(req.change.write.zero_coupon_compounding,
+                            parsed->positionals[next++],
+                            "zero_coupon_compounding");
+        swap_leg_read_token(req.change.write.zero_coupon_subtract_notional,
+                            parsed->positionals[next++],
+                            "zero_coupon_subtract_notional");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -521,8 +839,8 @@ void swap_leg_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 66 + 2) {
+            fail(out) << "Expected " << (change_count * 66 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -549,6 +867,142 @@ void swap_leg_commands::process_put_many(std::ostream& out,
                                 "floating_index_code");
             swap_leg_read_token(change.write.currency, parsed->positionals[next++], "currency");
             swap_leg_read_token(change.write.leg_group, parsed->positionals[next++], "leg_group");
+            swap_leg_read_token(
+                change.write.fixing_days, parsed->positionals[next++], "fixing_days");
+            swap_leg_read_token(
+                change.write.is_in_arrears, parsed->positionals[next++], "is_in_arrears");
+            swap_leg_read_token(
+                change.write.include_spread, parsed->positionals[next++], "include_spread");
+            swap_leg_read_token(
+                change.write.is_averaged, parsed->positionals[next++], "is_averaged");
+            swap_leg_read_token(
+                change.write.has_sub_periods, parsed->positionals[next++], "has_sub_periods");
+            swap_leg_read_token(change.write.notional_initial_exchange,
+                                parsed->positionals[next++],
+                                "notional_initial_exchange");
+            swap_leg_read_token(change.write.notional_final_exchange,
+                                parsed->positionals[next++],
+                                "notional_final_exchange");
+            swap_leg_read_token(
+                change.write.payment_lag, parsed->positionals[next++], "payment_lag");
+            swap_leg_read_token(
+                change.write.payment_calendar, parsed->positionals[next++], "payment_calendar");
+            swap_leg_read_token(change.write.commodity_price_type,
+                                parsed->positionals[next++],
+                                "commodity_price_type");
+            swap_leg_read_token(change.write.future_month_offset,
+                                parsed->positionals[next++],
+                                "future_month_offset");
+            swap_leg_read_token(change.write.daily_expiry_offset,
+                                parsed->positionals[next++],
+                                "daily_expiry_offset");
+            swap_leg_read_token(
+                change.write.pricing_calendar, parsed->positionals[next++], "pricing_calendar");
+            swap_leg_read_token(
+                change.write.equity_return_type, parsed->positionals[next++], "equity_return_type");
+            swap_leg_read_token(
+                change.write.equity_name, parsed->positionals[next++], "equity_name");
+            swap_leg_read_token(change.write.equity_underlying_type,
+                                parsed->positionals[next++],
+                                "equity_underlying_type");
+            swap_leg_read_token(change.write.equity_underlying_identifier_type,
+                                parsed->positionals[next++],
+                                "equity_underlying_identifier_type");
+            swap_leg_read_token(
+                change.write.equity_quantity, parsed->positionals[next++], "equity_quantity");
+            swap_leg_read_token(change.write.equity_initial_price,
+                                parsed->positionals[next++],
+                                "equity_initial_price");
+            swap_leg_read_token(change.write.equity_initial_price_currency,
+                                parsed->positionals[next++],
+                                "equity_initial_price_currency");
+            swap_leg_read_token(change.write.equity_dividend_factor,
+                                parsed->positionals[next++],
+                                "equity_dividend_factor");
+            swap_leg_read_token(change.write.equity_notional_reset,
+                                parsed->positionals[next++],
+                                "equity_notional_reset");
+            swap_leg_read_token(
+                change.write.equity_currency, parsed->positionals[next++], "equity_currency");
+            swap_leg_read_token(change.write.fx_index, parsed->positionals[next++], "fx_index");
+            swap_leg_read_token(change.write.fx_reset_foreign_currency,
+                                parsed->positionals[next++],
+                                "fx_reset_foreign_currency");
+            swap_leg_read_token(change.write.fx_reset_start_date,
+                                parsed->positionals[next++],
+                                "fx_reset_start_date");
+            swap_leg_read_token(change.write.fx_reset_foreign_amount,
+                                parsed->positionals[next++],
+                                "fx_reset_foreign_amount");
+            swap_leg_read_token(
+                change.write.fx_reset_fx_index, parsed->positionals[next++], "fx_reset_fx_index");
+            swap_leg_read_token(change.write.fx_reset_fixing_days,
+                                parsed->positionals[next++],
+                                "fx_reset_fixing_days");
+            swap_leg_read_token(change.write.fx_reset_fixing_calendar,
+                                parsed->positionals[next++],
+                                "fx_reset_fixing_calendar");
+            swap_leg_read_token(
+                change.write.fixing_calendar, parsed->positionals[next++], "fixing_calendar");
+            swap_leg_read_token(change.write.digital_call_position,
+                                parsed->positionals[next++],
+                                "digital_call_position");
+            swap_leg_read_token(change.write.digital_is_call_atm_included,
+                                parsed->positionals[next++],
+                                "digital_is_call_atm_included");
+            swap_leg_read_token(change.write.digital_put_position,
+                                parsed->positionals[next++],
+                                "digital_put_position");
+            swap_leg_read_token(change.write.digital_is_put_atm_included,
+                                parsed->positionals[next++],
+                                "digital_is_put_atm_included");
+            swap_leg_read_token(change.write.equity_margin_initial_margin_factor,
+                                parsed->positionals[next++],
+                                "equity_margin_initial_margin_factor");
+            swap_leg_read_token(change.write.equity_margin_multiplier,
+                                parsed->positionals[next++],
+                                "equity_margin_multiplier");
+            swap_leg_read_token(change.write.commodity_pay_relative_to,
+                                parsed->positionals[next++],
+                                "commodity_pay_relative_to");
+            swap_leg_read_token(change.write.commodity_quantity_frequency,
+                                parsed->positionals[next++],
+                                "commodity_quantity_frequency");
+            swap_leg_read_token(
+                change.write.pricing_date_rule, parsed->positionals[next++], "pricing_date_rule");
+            swap_leg_read_token(change.write.indexings_from_asset_leg,
+                                parsed->positionals[next++],
+                                "indexings_from_asset_leg");
+            swap_leg_read_token(change.write.floating_index_code_2,
+                                parsed->positionals[next++],
+                                "floating_index_code_2");
+            swap_leg_read_token(
+                change.write.cms_duration, parsed->positionals[next++], "cms_duration");
+            swap_leg_read_token(
+                change.write.naked_option, parsed->positionals[next++], "naked_option");
+            swap_leg_read_token(change.write.lookback, parsed->positionals[next++], "lookback");
+            swap_leg_read_token(
+                change.write.rate_cutoff, parsed->positionals[next++], "rate_cutoff");
+            swap_leg_read_token(
+                change.write.local_cap_floor, parsed->positionals[next++], "local_cap_floor");
+            swap_leg_read_token(
+                change.write.observation_lag, parsed->positionals[next++], "observation_lag");
+            swap_leg_read_token(change.write.cpi_base, parsed->positionals[next++], "cpi_base");
+            swap_leg_read_token(
+                change.write.cpi_start_date, parsed->positionals[next++], "cpi_start_date");
+            swap_leg_read_token(
+                change.write.cpi_interpolation, parsed->positionals[next++], "cpi_interpolation");
+            swap_leg_read_token(
+                change.write.cpi_interpolated, parsed->positionals[next++], "cpi_interpolated");
+            swap_leg_read_token(change.write.subtract_inflation_notional,
+                                parsed->positionals[next++],
+                                "subtract_inflation_notional");
+            swap_leg_read_token(change.write.zero_coupon_compounding,
+                                parsed->positionals[next++],
+                                "zero_coupon_compounding");
+            swap_leg_read_token(change.write.zero_coupon_subtract_notional,
+                                parsed->positionals[next++],
+                                "zero_coupon_subtract_notional");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

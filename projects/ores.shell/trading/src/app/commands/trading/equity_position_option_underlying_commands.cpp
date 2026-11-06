@@ -143,7 +143,8 @@ void equity_position_option_underlying_commands::register_commands(cli::Menu& ro
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike> <weight> "
-        "<long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary>");
+        "<long_short> <option_type> <exercise_type> <settlement_type> <identifier_type> "
+        "<exercise_date> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -151,8 +152,8 @@ void equity_position_option_underlying_commands::register_commands(cli::Menu& ro
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <trade_id> <sequence_number> <trade_activity_id> <underlying_name> <strike> <weight> "
-        "<long_short> <option_type> <exercise_type> <settlement_type> <reason> <commentary> "
-        "[--version <n>]");
+        "<long_short> <option_type> <exercise_type> <settlement_type> <identifier_type> "
+        "<exercise_date> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -160,8 +161,8 @@ void equity_position_option_underlying_commands::register_commands(cli::Menu& ro
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <sequence_number> <trade_activity_id> <underlying_name> "
-        "<strike> <weight> <long_short> <option_type> <exercise_type> <settlement_type> <reason> "
-        "<commentary>");
+        "<strike> <weight> <long_short> <option_type> <exercise_type> <settlement_type> "
+        "<identifier_type> <exercise_date> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -374,8 +375,8 @@ void equity_position_option_underlying_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -399,6 +400,10 @@ void equity_position_option_underlying_commands::process_add(std::ostream& out,
             req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
         equity_position_option_underlying_read_token(
             req.change.write.settlement_type, parsed->positionals[next++], "settlement_type");
+        equity_position_option_underlying_read_token(
+            req.change.write.identifier_type, parsed->positionals[next++], "identifier_type");
+        equity_position_option_underlying_read_token(
+            req.change.write.exercise_date, parsed->positionals[next++], "exercise_date");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -443,8 +448,8 @@ void equity_position_option_underlying_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -468,6 +473,10 @@ void equity_position_option_underlying_commands::process_set(std::ostream& out,
             req.change.write.exercise_type, parsed->positionals[next++], "exercise_type");
         equity_position_option_underlying_read_token(
             req.change.write.settlement_type, parsed->positionals[next++], "settlement_type");
+        equity_position_option_underlying_read_token(
+            req.change.write.identifier_type, parsed->positionals[next++], "identifier_type");
+        equity_position_option_underlying_read_token(
+            req.change.write.exercise_date, parsed->positionals[next++], "exercise_date");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -523,8 +532,8 @@ void equity_position_option_underlying_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 10 + 2) {
-            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -550,6 +559,10 @@ void equity_position_option_underlying_commands::process_put_many(
                 change.write.exercise_type, parsed->positionals[next++], "exercise_type");
             equity_position_option_underlying_read_token(
                 change.write.settlement_type, parsed->positionals[next++], "settlement_type");
+            equity_position_option_underlying_read_token(
+                change.write.identifier_type, parsed->positionals[next++], "identifier_type");
+            equity_position_option_underlying_read_token(
+                change.write.exercise_date, parsed->positionals[next++], "exercise_date");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

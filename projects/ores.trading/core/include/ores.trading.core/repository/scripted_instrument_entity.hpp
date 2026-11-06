@@ -62,6 +62,7 @@ struct scripted_instrument_entity {
     std::optional<std::string> underlyings_json;
     std::optional<std::string> parameters_json;
     std::optional<std::string> description;
+    std::optional<std::string> data_element;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -87,6 +88,7 @@ struct scripted_instrument_entity {
                query_builder::bind("underlyings_json", &e::underlyings_json) |
                query_builder::bind("parameters_json", &e::parameters_json) |
                query_builder::bind("description", &e::description) |
+               query_builder::bind("data_element", &e::data_element) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

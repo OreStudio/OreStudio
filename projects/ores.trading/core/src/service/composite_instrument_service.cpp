@@ -44,10 +44,7 @@
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
-#include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
 
 using ores::service::messaging::stamp;
@@ -110,6 +107,28 @@ composite_instrument_to_domain(const messaging::composite_instrument_write& writ
     v.identity.trade_type_code = write.trade_type_code;
     v.identity.trade_activity_id = write.trade_activity_id;
     v.description = write.description;
+    v.currency = write.currency;
+    v.notional_calculation = write.notional_calculation;
+    v.notional_override = write.notional_override;
+    v.portfolio_basket = write.portfolio_basket;
+    v.index_quantity = write.index_quantity;
+    v.return_payer = write.return_payer;
+    v.return_currency = write.return_currency;
+    v.return_observation_lag = write.return_observation_lag;
+    v.return_observation_convention = write.return_observation_convention;
+    v.return_observation_calendar = write.return_observation_calendar;
+    v.return_payment_lag = write.return_payment_lag;
+    v.return_payment_convention = write.return_payment_convention;
+    v.return_payment_calendar = write.return_payment_calendar;
+    v.return_initial_price = write.return_initial_price;
+    v.return_initial_price_currency = write.return_initial_price_currency;
+    v.return_fx_index = write.return_fx_index;
+    v.return_pay_underlying_cash_flows_immediately =
+        write.return_pay_underlying_cash_flows_immediately;
+    v.funding_notional_types = write.funding_notional_types;
+    v.underlying_basket_name = write.underlying_basket_name;
+    v.underlying_index_quantity = write.underlying_index_quantity;
+    v.underlying_price_is_per_unit = write.underlying_price_is_per_unit;
     return v;
 }
 
@@ -480,38 +499,4 @@ composite_instrument_service::get_composite_instrument_history(const std::string
     return repo_.read_all(ctx_, trade_id);
 }
 
-std::vector<domain::composite_leg>
-composite_instrument_service::get_legs(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting legs for composite instrument: " << trade_id;
-    repository::composite_leg_repository leg_repo;
-    return leg_repo.read_latest(ctx_, std::vector<std::string>{trade_id});
-}
-
-void composite_instrument_service::save_composite_instrument(
-    const domain::composite_instrument& v, const std::vector<domain::composite_leg>& legs) {
-    auto t = v;
-    if (t.identity.trade_id.is_nil()) {
-        static boost::uuids::random_generator gen;
-        t.identity.trade_id = gen();
-    }
-    const auto id_str = boost::uuids::to_string(t.identity.trade_id);
-    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.identity.trade_id << " with "
-                               << legs.size() << " legs";
-    stamp(t.identity, ctx_);
-    stamp(t.audit, ctx_);
-    repository::composite_leg_repository leg_repo;
-    repository::composite_instrument_repository instrument_repo;
-    std::vector<std::string> stale_leg_ids;
-    for (const auto& existing : leg_repo.read_latest(ctx_, std::vector<std::string>{id_str}))
-        stale_leg_ids.push_back(boost::uuids::to_string(existing.identity.id));
-    if (!stale_leg_ids.empty())
-        leg_repo.remove(ctx_, stale_leg_ids);
-    instrument_repo.write(ctx_, t);
-    for (auto leg : legs) {
-        leg.identity.trade_id = t.identity.trade_id;
-        stamp(leg, ctx_);
-        leg_repo.write(ctx_, leg);
-    }
-    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.identity.trade_id;
-}
 }

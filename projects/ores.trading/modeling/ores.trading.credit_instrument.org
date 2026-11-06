@@ -284,6 +284,30 @@ widening them.
 :column: trade_id
 :END:
 
+** swap_leg_amortizations
+:PROPERTIES:
+:table:  ores_trading_swap_leg_amortizations_tbl
+:column: trade_id
+:END:
+
+** swap_leg_indexings
+:PROPERTIES:
+:table:  ores_trading_swap_leg_indexings_tbl
+:column: trade_id
+:END:
+
+** instrument_barriers
+:PROPERTIES:
+:table:  ores_trading_instrument_barriers_tbl
+:column: trade_id
+:END:
+
+** instrument_barrier_levels
+:PROPERTIES:
+:table:  ores_trading_instrument_barrier_levels_tbl
+:column: trade_id
+:END:
+
 ** instrument_strikes
 :PROPERTIES:
 :table:  ores_trading_instrument_strikes_tbl

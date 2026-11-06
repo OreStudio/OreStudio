@@ -181,7 +181,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/2/20}
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :economic: true
 :END:
 
@@ -234,6 +234,126 @@ std::string("Cash")
 Cliquet only: e.g. Annual, Quarterly; empty for EquityOption.
 
 Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+
+** strike_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The currency the strike is stated in, as =StrikeCurrency= states it.
+
+** local_cap
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A cliquet's cap on each period's return, as =LocalCap= states it.
+
+** local_floor
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A cliquet's floor on each period's return, as =LocalFloor= states it.
+
+** global_cap
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A cliquet's cap on the summed return, as =GlobalCap= states it.
+
+** global_floor
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A cliquet's floor on the summed return, as =GlobalFloor= states it.
+
+** settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:economic: true
+:END:
+
+The days from a cliquet's last fixing to its settlement, as =SettlementDays= states it.
+
+** premium
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A cliquet's premium, as =Premium= states it.
+
+** premium_payment_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The date a cliquet's premium is paid, as =PremiumPaymentDate= states it.
+
+** initial_price_1
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+An outperformance option's first initial price, as =InitialPrice1= states it.
+
+** initial_price_2
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+An outperformance option's second initial price, as =InitialPrice2= states it.
+
+** knock_in_price
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+An outperformance option's knock-in price, as =KnockInPrice= states it.
+
+** knock_out_price
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+An outperformance option's knock-out price, as =KnockOutPrice= states it.
 
 ** description
 :PROPERTIES:
@@ -313,9 +433,9 @@ is immutable.
 | "strike" >= 0 |
 | "underlying_name" <> '' |
 | "currency" <> '' |
-| ("trade_type_code" = 'EquityCliquetOption' and "cliquet_frequency" is not null) or ("trade_type_code" = 'EquityOption' and "cliquet_frequency" is null) |
+| "trade_type_code" = 'EquityCliquetOption' or "cliquet_frequency" is null |
 | "option_type" in ('Call', 'Put') |
-| "exercise_type" in ('European', 'Bermudan', 'American') |
+| "exercise_type" is null or "exercise_type" in ('European', 'Bermudan', 'American') |
 | "settlement_type" is null or "settlement_type" in ('Physical', 'Cash') |
 
 ** Indexes

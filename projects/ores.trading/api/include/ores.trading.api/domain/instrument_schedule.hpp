@@ -98,10 +98,11 @@ struct instrument_schedule final {
 
     /**
      * @brief Which list of the instrument states this schedule: tranches, trs_funding, repo,
-     * ascot_swap, swap, option or trs.
+     * ascot_swap, swap, option, trs or scripted.
      *
      * The first five name a leg list. option is the exercise schedule an option block states, and
-     * trs is the return schedule a total return swap states. Neither is a leg, so the column names
+     * trs is the return schedule a total return swap states. scripted is a scripted trade's event
+     * parameter, numbered by the parameter's ordinal. None of these is a leg, so the column names
      * an owner rather than a leg.
      */
     std::string owner_role;
@@ -140,7 +141,8 @@ struct instrument_schedule final {
     boost::uuids::uuid trade_activity_id;
 
     /**
-     * @brief Which arm of the schema's choice the document stated: rules or dates.
+     * @brief Which arm of the schema's choice the document stated: rules, dates or derived, a
+     * schedule shifted from another the product states.
      *
      * The arm decides which members are meaningful. A rules row carries the rule block's scalars
      * and its dates are derived, so it has no child rows; a dates row carries the date list in the
@@ -247,6 +249,18 @@ struct instrument_schedule final {
     std::optional<std::string> include_duplicate_dates;
 
     /**
+     * @brief The element name of the schedule a derived row shifts, as DerivedSchedule/BaseSchedule
+     * states it.
+     */
+    std::optional<std::string> base_schedule;
+
+    /**
+     * @brief The period a derived row shifts its base schedule by, as DerivedSchedule/Shift states
+     * it.
+     */
+    std::optional<std::string> shift;
+
+    /**
      * @brief Username of the person who last modified this instrument schedule.
      */
     std::string modified_by;
@@ -322,6 +336,8 @@ struct instrument_schedule final {
     ores::utility::digest::append_member(out, "remove_first_date", v.remove_first_date);
     ores::utility::digest::append_member(out, "remove_last_date", v.remove_last_date);
     ores::utility::digest::append_member(out, "include_duplicate_dates", v.include_duplicate_dates);
+    ores::utility::digest::append_member(out, "base_schedule", v.base_schedule);
+    ores::utility::digest::append_member(out, "shift", v.shift);
     out.push_back('}');
     return out;
 }

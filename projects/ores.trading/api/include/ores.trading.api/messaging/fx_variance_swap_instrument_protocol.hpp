@@ -60,6 +60,8 @@ struct fx_variance_swap_instrument_write {
     double strike;
     ores::utility::decimal::decimal notional;
     std::string moment_type;
+    std::optional<std::string> calendar;
+    std::optional<bool> add_past_dividends;
     std::string description;
 
     friend bool operator==(const fx_variance_swap_instrument_write&,
@@ -414,6 +416,9 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"strike", &fx_variance_swap_instrument_write::strike},
         utility::codec::field{"notional", &fx_variance_swap_instrument_write::notional},
         utility::codec::field{"moment_type", &fx_variance_swap_instrument_write::moment_type},
+        utility::codec::field{"calendar", &fx_variance_swap_instrument_write::calendar},
+        utility::codec::field{"add_past_dividends",
+                              &fx_variance_swap_instrument_write::add_past_dividends},
         utility::codec::field{"description", &fx_variance_swap_instrument_write::description},
     };
 }

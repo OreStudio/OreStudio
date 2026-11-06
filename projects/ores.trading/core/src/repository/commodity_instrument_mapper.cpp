@@ -57,7 +57,7 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
     r.commodity_code = v.commodity_code;
     r.currency = v.currency;
     r.quantity = v.quantity;
-    r.unit = v.unit;
+    r.unit = v.unit.value_or("");
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.fixed_price = v.fixed_price;
@@ -79,6 +79,15 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
     r.day_count_fraction_code = v.day_count_fraction_code.value_or("");
     r.payment_frequency_code = v.payment_frequency_code.value_or("");
     r.swaption_expiry_date = v.swaption_expiry_date;
+    r.calendar = v.calendar;
+    r.moment_type = v.moment_type;
+    r.add_past_dividends = v.add_past_dividends;
+    r.pay_relative_to = v.pay_relative_to;
+    r.quantity_frequency = v.quantity_frequency;
+    r.delivery_roll_days = v.delivery_roll_days;
+    r.future_month_offset = v.future_month_offset;
+    r.include_period_end = v.include_period_end;
+    r.position = v.position;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -104,7 +113,7 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.commodity_code = v.commodity_code;
     r.currency = v.currency;
     r.quantity = v.quantity;
-    r.unit = v.unit;
+    r.unit = v.unit.empty() ? std::nullopt : std::optional(v.unit);
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.fixed_price = v.fixed_price;
@@ -130,6 +139,15 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.payment_frequency_code =
         v.payment_frequency_code.empty() ? std::nullopt : std::optional(v.payment_frequency_code);
     r.swaption_expiry_date = v.swaption_expiry_date;
+    r.calendar = v.calendar;
+    r.moment_type = v.moment_type;
+    r.add_past_dividends = v.add_past_dividends;
+    r.pay_relative_to = v.pay_relative_to;
+    r.quantity_frequency = v.quantity_frequency;
+    r.delivery_roll_days = v.delivery_roll_days;
+    r.future_month_offset = v.future_month_offset;
+    r.include_period_end = v.include_period_end;
+    r.position = v.position;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

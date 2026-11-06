@@ -142,7 +142,10 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<notional> <return_type> <start_date> <maturity_date> <long_short> "
-        "<payment_frequency_code> <description> <reason> <commentary>");
+        "<payment_frequency_code> <fixed_rate> <floating_index> <floating_spread> "
+        "<floating_day_count_fraction> <initial_fixed_rate> <knock_in_level> <bermudan_knock_in> "
+        "<accruing_fixed_coupons> <accumulating_fixed_coupons> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "set",
@@ -151,7 +154,10 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<notional> <return_type> <start_date> <maturity_date> <long_short> "
-        "<payment_frequency_code> <description> <reason> <commentary> [--version <n>]");
+        "<payment_frequency_code> <fixed_rate> <floating_index> <floating_spread> "
+        "<floating_day_count_fraction> <initial_fixed_rate> <knock_in_level> <bermudan_knock_in> "
+        "<accruing_fixed_coupons> <accumulating_fixed_coupons> <description> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -160,7 +166,10 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> "
         "<currency> <notional> <return_type> <start_date> <maturity_date> <long_short> "
-        "<payment_frequency_code> <description> <reason> <commentary>");
+        "<payment_frequency_code> <fixed_rate> <floating_index> <floating_spread> "
+        "<floating_day_count_fraction> <initial_fixed_rate> <knock_in_level> <bermudan_knock_in> "
+        "<accruing_fixed_coupons> <accumulating_fixed_coupons> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -362,8 +371,8 @@ void equity_swap_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 21 + 2) {
+            fail(out) << "Expected " << (21 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -390,6 +399,27 @@ void equity_swap_instrument_commands::process_add(std::ostream& out,
         equity_swap_instrument_read_token(req.change.write.payment_frequency_code,
                                           parsed->positionals[next++],
                                           "payment_frequency_code");
+        equity_swap_instrument_read_token(
+            req.change.write.fixed_rate, parsed->positionals[next++], "fixed_rate");
+        equity_swap_instrument_read_token(
+            req.change.write.floating_index, parsed->positionals[next++], "floating_index");
+        equity_swap_instrument_read_token(
+            req.change.write.floating_spread, parsed->positionals[next++], "floating_spread");
+        equity_swap_instrument_read_token(req.change.write.floating_day_count_fraction,
+                                          parsed->positionals[next++],
+                                          "floating_day_count_fraction");
+        equity_swap_instrument_read_token(
+            req.change.write.initial_fixed_rate, parsed->positionals[next++], "initial_fixed_rate");
+        equity_swap_instrument_read_token(
+            req.change.write.knock_in_level, parsed->positionals[next++], "knock_in_level");
+        equity_swap_instrument_read_token(
+            req.change.write.bermudan_knock_in, parsed->positionals[next++], "bermudan_knock_in");
+        equity_swap_instrument_read_token(req.change.write.accruing_fixed_coupons,
+                                          parsed->positionals[next++],
+                                          "accruing_fixed_coupons");
+        equity_swap_instrument_read_token(req.change.write.accumulating_fixed_coupons,
+                                          parsed->positionals[next++],
+                                          "accumulating_fixed_coupons");
         equity_swap_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -436,8 +466,8 @@ void equity_swap_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 21 + 2) {
+            fail(out) << "Expected " << (21 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -464,6 +494,27 @@ void equity_swap_instrument_commands::process_set(std::ostream& out,
         equity_swap_instrument_read_token(req.change.write.payment_frequency_code,
                                           parsed->positionals[next++],
                                           "payment_frequency_code");
+        equity_swap_instrument_read_token(
+            req.change.write.fixed_rate, parsed->positionals[next++], "fixed_rate");
+        equity_swap_instrument_read_token(
+            req.change.write.floating_index, parsed->positionals[next++], "floating_index");
+        equity_swap_instrument_read_token(
+            req.change.write.floating_spread, parsed->positionals[next++], "floating_spread");
+        equity_swap_instrument_read_token(req.change.write.floating_day_count_fraction,
+                                          parsed->positionals[next++],
+                                          "floating_day_count_fraction");
+        equity_swap_instrument_read_token(
+            req.change.write.initial_fixed_rate, parsed->positionals[next++], "initial_fixed_rate");
+        equity_swap_instrument_read_token(
+            req.change.write.knock_in_level, parsed->positionals[next++], "knock_in_level");
+        equity_swap_instrument_read_token(
+            req.change.write.bermudan_knock_in, parsed->positionals[next++], "bermudan_knock_in");
+        equity_swap_instrument_read_token(req.change.write.accruing_fixed_coupons,
+                                          parsed->positionals[next++],
+                                          "accruing_fixed_coupons");
+        equity_swap_instrument_read_token(req.change.write.accumulating_fixed_coupons,
+                                          parsed->positionals[next++],
+                                          "accumulating_fixed_coupons");
         equity_swap_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -522,8 +573,8 @@ void equity_swap_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 21 + 2) {
+            fail(out) << "Expected " << (change_count * 21 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -552,6 +603,27 @@ void equity_swap_instrument_commands::process_put_many(std::ostream& out,
             equity_swap_instrument_read_token(change.write.payment_frequency_code,
                                               parsed->positionals[next++],
                                               "payment_frequency_code");
+            equity_swap_instrument_read_token(
+                change.write.fixed_rate, parsed->positionals[next++], "fixed_rate");
+            equity_swap_instrument_read_token(
+                change.write.floating_index, parsed->positionals[next++], "floating_index");
+            equity_swap_instrument_read_token(
+                change.write.floating_spread, parsed->positionals[next++], "floating_spread");
+            equity_swap_instrument_read_token(change.write.floating_day_count_fraction,
+                                              parsed->positionals[next++],
+                                              "floating_day_count_fraction");
+            equity_swap_instrument_read_token(
+                change.write.initial_fixed_rate, parsed->positionals[next++], "initial_fixed_rate");
+            equity_swap_instrument_read_token(
+                change.write.knock_in_level, parsed->positionals[next++], "knock_in_level");
+            equity_swap_instrument_read_token(
+                change.write.bermudan_knock_in, parsed->positionals[next++], "bermudan_knock_in");
+            equity_swap_instrument_read_token(change.write.accruing_fixed_coupons,
+                                              parsed->positionals[next++],
+                                              "accruing_fixed_coupons");
+            equity_swap_instrument_read_token(change.write.accumulating_fixed_coupons,
+                                              parsed->positionals[next++],
+                                              "accumulating_fixed_coupons");
             equity_swap_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

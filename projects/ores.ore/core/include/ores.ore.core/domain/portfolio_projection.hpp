@@ -27,6 +27,7 @@
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include <string>
+#include <optional>
 #include <string_view>
 #include <vector>
 
@@ -47,6 +48,17 @@ struct refused_trade {
 struct written_portfolio {
     std::string xml;
     std::vector<refused_trade> refused;
+};
+
+/**
+ * @brief How a trade that states other trades inline is joined to them.
+ *
+ * Each embedded trade is booked as a trade of its own, and a structure of the
+ * template joins it to its parent, which holds the parent role.
+ */
+struct parent_structure {
+    std::string_view template_code;
+    std::string_view parent_role;
 };
 
 /**
@@ -107,6 +119,12 @@ public:
      * @param origin The file the text came from, named in the log.
      */
     static std::vector<xml::trade_import_item> map(const document& v, std::string_view origin = {});
+
+    /**
+     * @brief The structure a trade of this type joins the trades it states
+     * inline in, or nothing for a type that states none.
+     */
+    static std::optional<parent_structure> structure_of(std::string_view trade_type);
 
     /**
      * @brief Builds a Portfolio document from the trades and the instruments.

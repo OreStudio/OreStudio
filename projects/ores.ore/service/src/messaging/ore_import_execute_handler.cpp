@@ -21,6 +21,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
+#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.ore.core/scanner/ore_directory_scanner.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
@@ -36,6 +37,8 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/bond_document_ops.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include "ores.trading.api/messaging/instrument_underlying_protocol.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_notional_protocol.hpp"
@@ -108,6 +111,8 @@
 #include "ores.trading.api/messaging/swap_leg_amount_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_rate_protocol.hpp"
+#include "ores.trading.api/messaging/structure_member_protocol.hpp"
+#include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/synthetic_cdo_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_additional_field_protocol.hpp"
@@ -119,6 +124,7 @@
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -602,6 +608,124 @@ std::string write_imported_components(Nats& nats,
  *
  * @return An empty string on success, or the first failure.
  */
+/**
+ * @brief The id of the structure that joins a composite trade to its
+ * components.
+ *
+ * Named after the composite's own id, which the planner names after the
+ * document, so a second run of the import finds the structure it made rather
+ * than making another.
+ */
+boost::uuids::uuid composite_structure_id(const boost::uuids::uuid& composite_id) {
+    static const auto name_space =
+        boost::uuids::string_generator()("a3c1d6f2-5b8e-4c71-9f20-6e4d2b8a1c53");
+    const auto name = boost::uuids::to_string(composite_id);
+    const boost::uuids::name_generator_sha1 generate(name_space);
+    return generate(name.c_str(), name.size());
+}
+
+/**
+ * @brief Joins each booked parent trade to the trades it states inline.
+ *
+ * A composite trade states its components, and a total return swap or a
+ * contract for difference its underlyings. The import books each as a trade
+ * of its own. A structure of the parent type's template holds the parent in
+ * its parent role and each embedded trade in the role and place it held in
+ * the document, which is what the export nests them back by.
+ */
+template <typename Nats>
+std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
+    Nats& nats,
+    const std::vector<ores::ore::xml::trade_import_item>& trades,
+    const std::unordered_map<std::string, std::optional<boost::uuids::uuid>>& booked) {
+    using ores::utility::domain::outcome;
+    std::vector<ores::ore::messaging::ore_import_item_error> errors;
+    std::unordered_map<std::string, const ores::ore::xml::trade_import_item*> composite_of;
+    for (const auto& item : trades)
+        if (!item.membership &&
+            ores::ore::domain::portfolio_projection::structure_of(item.anchor.trade_type))
+            composite_of.emplace(item.ore_id, &item);
+
+    const auto intent = ores::utility::domain::change_intent{
+        .reason_code = "system.import", .commentary = "Imported from an ORE directory"};
+    std::unordered_set<std::string> made;
+    const auto join = [&](const boost::uuids::uuid& trade_id,
+                          const boost::uuids::uuid& structure_id,
+                          const std::string& role,
+                          int sequence_number,
+                          const std::optional<std::string>& label) -> std::string {
+        ores::trading::messaging::put_structure_member_request req;
+        req.change.write.trade_id = trade_id;
+        req.change.write.structure_id = structure_id;
+        req.change.write.role = role;
+        req.change.write.sequence_number = sequence_number;
+        req.change.write.member_label = label;
+        req.intent = intent;
+        std::string error;
+        auto resp = nats_call(nats, req, error);
+        if (resp && resp->result.outcome == outcome::ok)
+            return {};
+        return error.empty() ? resp ? resp->result.message : "put_structure_member failed" : error;
+    };
+
+    for (const auto& item : trades) {
+        if (!item.membership)
+            continue;
+        const auto tid = boost::uuids::to_string(item.anchor.id);
+        if (!booked.contains(tid))
+            continue;
+        const auto found = composite_of.find(item.membership->parent_ore_id);
+        const auto failed = [&](std::string message) {
+            errors.push_back({.source_file = item.source_file.string(),
+                              .item_id = item.ore_id.empty() ? tid : item.ore_id,
+                              .message = std::move(message)});
+        };
+        if (found == composite_of.end()) {
+            failed("The trade " + item.membership->parent_ore_id +
+                   " this one is stated inside is not in the import.");
+            continue;
+        }
+        const auto& composite = *found->second;
+        const auto composite_tid = boost::uuids::to_string(composite.anchor.id);
+        const auto counterparty = booked.find(composite_tid);
+        if (counterparty == booked.end()) {
+            failed("The trade " + composite.ore_id + " this one is stated inside was not booked.");
+            continue;
+        }
+        const auto structure_id = composite_structure_id(composite.anchor.id);
+        const auto joined =
+            ores::ore::domain::portfolio_projection::structure_of(composite.anchor.trade_type);
+        if (made.insert(composite_tid).second) {
+            ores::trading::messaging::put_structure_request req;
+            req.change.write.id = structure_id;
+            req.change.write.counterparty_id = counterparty->second.value_or(boost::uuids::nil_uuid());
+            req.change.write.kind = "Typed";
+            req.change.write.template_code = std::string(joined->template_code);
+            req.intent = intent;
+            std::string error;
+            auto resp = nats_call(nats, req, error);
+            if (!resp || resp->result.outcome != outcome::ok) {
+                failed(error.empty() ? resp ? resp->result.message : "put_structure failed" : error);
+                continue;
+            }
+            if (auto error =
+                    join(composite.anchor.id, structure_id, std::string(joined->parent_role), 1, std::nullopt);
+                !error.empty()) {
+                failed(error);
+                continue;
+            }
+        }
+        if (auto error = join(item.anchor.id,
+                              structure_id,
+                              item.membership->role,
+                              item.membership->sequence_number,
+                              item.membership->label);
+            !error.empty())
+            failed(error);
+    }
+    return errors;
+}
+
 template <typename Nats>
 std::string book_imported_trade(Nats& nats,
                                 ores::ore::xml::trade_import_item& item,
@@ -632,6 +756,12 @@ std::string book_imported_trade(Nats& nats,
     book_req.booking.netting_set_identifier_id = resolved.netting_set_identifier_id;
     book_req.booking.change_reason_code = "system.external_data_import";
     book_req.activity_type_code = item.activity_type_code;
+    // The instrument is booked with the trade, through the writer every booking
+    // uses, so each row of every family lands with it. A bond is the exception:
+    // its issue is shared by every trade of the security, and the import
+    // reconciles it below.
+    if (!std::holds_alternative<bond_instrument_data>(item.instrument))
+        append_instrument(book_req.instruments, item.instrument);
     auto booked = nats_call(nats, book_req, error);
     if (!booked || booked->result.outcome != outcome::ok || !booked->activity_id)
         return error.empty() ? "book_trade failed" : error;
@@ -1693,6 +1823,49 @@ std::string save_bond_instrument(
     auto instrument = data.instrument;
     auto issue = data.issue;
 
+    // A bond position on a basket names no issue: its bonds are underlying
+    // rows, written after the instrument they belong to.
+    if (instrument.identity.trade_type_code == "BondPosition" &&
+        instrument.issue_id == boost::uuids::uuid{}) {
+        put_bond_instrument_request position_req;
+        position_req.change.write.trade_id = instrument.identity.trade_id;
+        position_req.change.write.trade_activity_id = instrument.identity.trade_activity_id;
+        position_req.change.write.trade_type_code = instrument.identity.trade_type_code;
+        position_req.change.write.issue_id = instrument.issue_id;
+        position_req.change.write.notional = instrument.notional;
+        position_req.change.write.position_identifier = instrument.position_identifier;
+        auto position_resp = nats_call(nats, position_req, error);
+        if (!position_resp || position_resp->result.outcome != ores::utility::domain::outcome::ok)
+            return error.empty() ? "save_bond_instrument failed" : error;
+        for (const auto& row : data.instrument_underlyings) {
+            ores::trading::messaging::put_instrument_underlying_request underlying_req;
+            auto& w = underlying_req.change.write;
+            w.trade_id = instrument.identity.trade_id;
+            w.trade_activity_id = instrument.identity.trade_activity_id;
+            w.underlying_role = row.underlying_role;
+            w.sequence_number = row.sequence_number;
+            w.underlying_type = row.underlying_type;
+            w.name = row.name;
+            w.identifier_type = row.identifier_type;
+            w.currency = row.currency;
+            w.exchange = row.exchange;
+            w.weight = row.weight;
+            w.price_type = row.price_type;
+            w.future_month_offset = row.future_month_offset;
+            w.delivery_roll_days = row.delivery_roll_days;
+            w.delivery_roll_calendar = row.delivery_roll_calendar;
+            w.future_expiry_date = row.future_expiry_date;
+            w.future_contract_month = row.future_contract_month;
+            w.interpolation = row.interpolation;
+            w.bid_ask_adjustment = row.bid_ask_adjustment;
+            auto underlying_resp = nats_call(nats, underlying_req, error);
+            if (!underlying_resp ||
+                underlying_resp->result.outcome != ores::utility::domain::outcome::ok)
+                return error.empty() ? "save_instrument_underlying failed" : error;
+        }
+        return {};
+    }
+
     // A package the system writes names a security by its issue's id. The
     // issue the tenant holds under that id keeps its own security id.
     if (const auto id = uuid_named(issue.security_id)) {
@@ -1770,6 +1943,7 @@ std::string save_bond_instrument(
     instrument_req.change.write.trade_type_code = instrument.identity.trade_type_code;
     instrument_req.change.write.issue_id = instrument.issue_id;
     instrument_req.change.write.notional = instrument.notional;
+    instrument_req.change.write.position_identifier = instrument.position_identifier;
     auto resp = nats_call(nats, instrument_req, error);
     if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
         return error.empty() ? "save_bond_instrument failed" : error;
@@ -2251,10 +2425,39 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // -------------------------------------------------------------------------
     // Step 7: save trades (failures collected; saga continues)
     // -------------------------------------------------------------------------
+    std::unordered_map<std::string, std::optional<boost::uuids::uuid>> booked_counterparty;
+    // A parent is its embedded trades as much as its own terms, so they are
+    // booked first and a parent any of them failed is not booked at all.
+    std::ranges::stable_partition(plan.trades,
+                                  [](const auto& item) { return item.membership.has_value(); });
+    std::unordered_map<std::string, std::vector<std::string>> members_of;
+    for (const auto& item : plan.trades)
+        if (item.membership)
+            members_of[item.membership->parent_ore_id].push_back(
+                boost::uuids::to_string(item.anchor.id));
     for (auto& item : plan.trades) {
         const auto tid = boost::uuids::to_string(item.anchor.id);
         const auto src = item.source_file.string();
         const auto& ext_id = item.ore_id;
+
+        if (!item.membership) {
+            if (const auto members = members_of.find(ext_id); members != members_of.end()) {
+                const auto unbooked = std::ranges::count_if(
+                    members->second, [&](const auto& id) { return !booked_counterparty.contains(id); });
+                if (unbooked > 0) {
+                    const auto failure = std::format(
+                        "{} of the trades stated inside this one were not booked, so it is not "
+                        "booked either: see their errors.",
+                        unbooked);
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "ore.import.execute trade save failed | corr=" << req.correlation_id
+                        << " trade_id=" << tid << " source=" << src << " error=" << failure;
+                    result.item_errors.push_back(
+                        {.source_file = src, .item_id = ext_id, .message = failure});
+                    continue;
+                }
+            }
+        }
 
         // The ORE trade id becomes the trade's ORE identifier, the name the
         // export writes back. A trade without one is reported as an item
@@ -2359,11 +2562,23 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             continue;
         }
         result.saved_trade_ids.push_back(tid);
+        booked_counterparty.emplace(tid, resolved.counterparty_id);
     }
 
     BOOST_LOG_SEV(lg(), info) << "ore.import.execute step 7 complete | corr=" << req.correlation_id
                               << " saved=" << result.saved_trade_ids.size()
                               << " failed=" << result.item_errors.size();
+
+    // -------------------------------------------------------------------------
+    // Step 7b: join each composite trade to its components in a structure
+    // -------------------------------------------------------------------------
+    const auto structure_errors =
+        join_composites(delegated_nats, plan.trades, booked_counterparty);
+    for (const auto& error : structure_errors) {
+        BOOST_LOG_SEV(lg(), warn) << "ore.import.execute structure failed | corr="
+                                  << req.correlation_id << " error=" << error.message;
+        result.item_errors.push_back(error);
+    }
 
     // -------------------------------------------------------------------------
     // Step 8: save instruments (non-fatal — collect errors, continue)
@@ -2385,7 +2600,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         using ores::trading::domain::equity_instrument_data;
         using ores::trading::domain::commodity_instrument_data;
         using ores::trading::domain::composite_instrument_data;
-        using ores::trading::domain::scripted_instrument;
+        using ores::trading::domain::scripted_instrument_data;
         std::string instr_error;
 
         const auto save_ok = std::visit(
@@ -2393,563 +2608,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 using T = std::decay_t<decltype(r)>;
                 if constexpr (std::is_same_v<T, std::monostate>) {
                     return true; // no instrument for this trade type
-                } else if constexpr (std::is_same_v<T, swap_instrument_data>) {
-                    // The header is written first: the fact row carries the
-                    // product's own fields only, and the header owns the
-                    // identity, the dates and the description. A fact row
-                    // without its header has no party and no trade type.
-                    put_rate_instrument_request header_req;
-                    header_req.change.write.trade_id = r.header.identity.trade_id;
-                    header_req.change.write.trade_activity_id = r.header.identity.trade_activity_id;
-                    header_req.change.write.trade_type_code = r.header.identity.trade_type_code;
-                    header_req.change.write.start_date = r.header.start_date;
-                    header_req.change.write.maturity_date = r.header.maturity_date;
-                    header_req.change.write.description = r.header.description;
-                    auto header_resp = nats_call(delegated_nats, header_req, instr_error);
-                    if (!header_resp ||
-                        header_resp->result.outcome != ores::utility::domain::outcome::ok)
-                        return false;
-
-                    // The fact row is written next and its legs beside it: a
-                    // swap's economics are its leg rows, so the item is written
-                    // only when all succeed.
-                    const bool instrument_ok = std::visit(
-                        [&](const auto& instr) -> bool {
-                            using InstrT = std::decay_t<decltype(instr)>;
-                            using namespace ores::trading::domain;
-                            if constexpr (std::is_same_v<InstrT, fra_instrument>) {
-                                put_fra_instrument_request req;
-                                req.change.write.trade_id = instr.trade_id;
-                                req.change.write.trade_activity_id = instr.trade_activity_id;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.rate_index = instr.rate_index;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.notional = instr.notional;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT, vanilla_swap_instrument>) {
-                                put_vanilla_swap_instrument_request req;
-                                req.change.write.trade_id = instr.trade_id;
-                                req.change.write.trade_activity_id = instr.trade_activity_id;
-                                req.change.write.settlement_lag = instr.settlement_lag;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT, cap_floor_instrument>) {
-                                put_cap_floor_instrument_request req;
-                                req.change.write.trade_id = instr.trade_id;
-                                req.change.write.trade_activity_id = instr.trade_activity_id;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT, swaption_instrument>) {
-                                put_swaption_instrument_request req;
-                                req.change.write.trade_id = instr.trade_id;
-                                req.change.write.trade_activity_id = instr.trade_activity_id;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.exercise_type = instr.exercise_type;
-                                req.change.write.settlement_type = instr.settlement_type;
-                                req.change.write.long_short = instr.long_short;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<
-                                                     InstrT,
-                                                     balance_guaranteed_swap_instrument>) {
-                                put_balance_guaranteed_swap_instrument_request req;
-                                req.change.write.trade_id = instr.trade_id;
-                                req.change.write.trade_activity_id = instr.trade_activity_id;
-                                req.change.write.reference_security = instr.reference_security;
-                                req.change.write.lockout_days = instr.lockout_days;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT, flexi_swap_instrument>) {
-                                put_flexi_swap_instrument_request req;
-                                req.change.write.trade_id = instr.trade_id;
-                                req.change.write.trade_activity_id = instr.trade_activity_id;
-                                req.change.write.option_long_short = instr.option_long_short;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT, callable_swap_instrument>) {
-                                put_callable_swap_instrument_request req;
-                                req.change.write.trade_id = instr.trade_id;
-                                req.change.write.trade_activity_id = instr.trade_activity_id;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                if (!resp ||
-                                    resp->result.outcome != ores::utility::domain::outcome::ok)
-                                    return false;
-                                int sequence_number = 0;
-                                for (const auto& call_date : r.call_dates) {
-                                    put_callable_swap_call_date_request date_req;
-                                    date_req.change.write.trade_id = r.header.identity.trade_id;
-                                    date_req.change.write.trade_activity_id =
-                                        instr.trade_activity_id;
-                                    date_req.change.write.sequence_number = ++sequence_number;
-                                    date_req.change.write.call_date = call_date.call_date;
-                                    auto date_resp =
-                                        nats_call(delegated_nats, date_req, instr_error);
-                                    if (!date_resp || date_resp->result.outcome !=
-                                                          ores::utility::domain::outcome::ok)
-                                        return false;
-                                }
-                                return true;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                knock_out_swap_instrument>) {
-                                put_knock_out_swap_instrument_request req;
-                                req.change.write.trade_id = instr.trade_id;
-                                req.change.write.trade_activity_id = instr.trade_activity_id;
-                                req.change.write.barrier_start_date = instr.barrier_start_date;
-                                req.change.write.barrier_level = instr.barrier_level;
-                                req.change.write.barrier_type = instr.barrier_type;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                inflation_swap_instrument>) {
-                                put_inflation_swap_instrument_request req;
-                                req.change.write.trade_id = instr.trade_id;
-                                req.change.write.trade_activity_id = instr.trade_activity_id;
-                                req.change.write.inflation_index_code = instr.inflation_index_code;
-                                req.change.write.base_cpi = instr.base_cpi;
-                                req.change.write.lag_convention = instr.lag_convention;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else {
-                                return true;
-                            }
-                        },
-                        r.facts);
-                    if (!instrument_ok)
-                        return false;
-                    for (const auto& leg : r.legs) {
-                        put_swap_leg_request leg_req;
-                        leg_req.change.write.trade_id = leg.identity.trade_id;
-                        leg_req.change.write.leg_number = leg.identity.leg_number;
-                        leg_req.change.write.trade_activity_id = leg.identity.trade_activity_id;
-                        leg_req.change.write.payer = leg.payer;
-                        leg_req.change.write.leg_type_code = leg.leg_type_code;
-                        leg_req.change.write.day_count_fraction_code = leg.day_count_fraction_code;
-                        leg_req.change.write.business_day_convention_code =
-                            leg.business_day_convention_code;
-                        leg_req.change.write.payment_frequency_code = leg.payment_frequency_code;
-                        leg_req.change.write.floating_index_code = leg.floating_index_code;
-                        leg_req.change.write.currency = leg.currency;
-                        auto leg_resp = nats_call(delegated_nats, leg_req, instr_error);
-                        if (!leg_resp ||
-                            leg_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-                    for (const auto& amount : r.leg_amounts) {
-                        put_swap_leg_amount_request amount_req;
-                        amount_req.change.write.trade_id = amount.trade_id;
-                        amount_req.change.write.leg_number = amount.leg_number;
-                        amount_req.change.write.sequence_number = amount.sequence_number;
-                        amount_req.change.write.trade_activity_id = amount.trade_activity_id;
-                        amount_req.change.write.start_date = amount.start_date;
-                        amount_req.change.write.amount = amount.amount;
-                        auto amount_resp = nats_call(delegated_nats, amount_req, instr_error);
-                        if (!amount_resp ||
-                            amount_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-                    for (const auto& rate : r.leg_rates) {
-                        put_swap_leg_rate_request rate_req;
-                        rate_req.change.write.trade_id = rate.trade_id;
-                        rate_req.change.write.leg_number = rate.leg_number;
-                        rate_req.change.write.rate_role = rate.rate_role;
-                        rate_req.change.write.sequence_number = rate.sequence_number;
-                        rate_req.change.write.trade_activity_id = rate.trade_activity_id;
-                        rate_req.change.write.start_date = rate.start_date;
-                        rate_req.change.write.value = rate.value;
-                        auto rate_resp = nats_call(delegated_nats, rate_req, instr_error);
-                        if (!rate_resp ||
-                            rate_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    // The shared children: the cap/floor's strike and its
-                    // underlying swap's schedules, and the swaption's option
-                    // block and its children.
-                    for (const auto& strike : r.strikes) {
-                        instr_error = save_instrument_strike(delegated_nats, strike);
-                        if (!instr_error.empty())
-                            return false;
-                    }
-
-                    for (const auto& schedule : r.schedules) {
-                        put_instrument_schedule_request schedule_req;
-                        auto& w = schedule_req.change.write;
-                        w.trade_id = schedule.trade_id;
-                        w.owner_role = schedule.owner_role;
-                        w.owner_number = schedule.owner_number;
-                        w.schedule_role = schedule.schedule_role;
-                        w.sequence_number = schedule.sequence_number;
-                        w.trade_activity_id = schedule.trade_activity_id;
-                        w.schedule_kind = schedule.schedule_kind;
-                        w.start_date = schedule.start_date;
-                        w.end_date = schedule.end_date;
-                        w.adjust_end_date_to_previous_month_end =
-                            schedule.adjust_end_date_to_previous_month_end;
-                        w.tenor = schedule.tenor;
-                        w.calendar = schedule.calendar;
-                        w.convention = schedule.convention;
-                        w.term_convention = schedule.term_convention;
-                        w.rule = schedule.rule;
-                        w.end_of_month = schedule.end_of_month;
-                        w.end_of_month_convention = schedule.end_of_month_convention;
-                        w.first_date = schedule.first_date;
-                        w.last_date = schedule.last_date;
-                        w.remove_first_date = schedule.remove_first_date;
-                        w.remove_last_date = schedule.remove_last_date;
-                        w.include_duplicate_dates = schedule.include_duplicate_dates;
-                        auto schedule_resp = nats_call(delegated_nats, schedule_req, instr_error);
-                        if (!schedule_resp ||
-                            schedule_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& lower : r.lower_notionals) {
-                        put_flexi_swap_lower_notional_request lower_req;
-                        auto& w = lower_req.change.write;
-                        w.trade_id = lower.trade_id;
-                        w.trade_activity_id = lower.trade_activity_id;
-                        w.sequence_number = lower.sequence_number;
-                        w.bound_number = lower.bound_number;
-                        w.currency = lower.currency;
-                        w.start_date = lower.start_date;
-                        w.notional = lower.notional;
-                        auto lower_resp = nats_call(delegated_nats, lower_req, instr_error);
-                        if (!lower_resp ||
-                            lower_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& tranche : r.tranches) {
-                        put_balance_guaranteed_swap_tranche_request tranche_req;
-                        auto& w = tranche_req.change.write;
-                        w.trade_id = tranche.trade_id;
-                        w.trade_activity_id = tranche.trade_activity_id;
-                        w.sequence_number = tranche.sequence_number;
-                        w.description = tranche.description;
-                        w.security_id = tranche.security_id;
-                        w.seniority = tranche.seniority;
-                        auto tranche_resp = nats_call(delegated_nats, tranche_req, instr_error);
-                        if (!tranche_resp ||
-                            tranche_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& notional : r.tranche_notionals) {
-                        put_balance_guaranteed_swap_tranche_notional_request notional_req;
-                        auto& w = notional_req.change.write;
-                        w.trade_id = notional.trade_id;
-                        w.trade_activity_id = notional.trade_activity_id;
-                        w.tranche_number = notional.tranche_number;
-                        w.sequence_number = notional.sequence_number;
-                        w.start_date = notional.start_date;
-                        w.notional = notional.notional;
-                        auto notional_resp = nats_call(delegated_nats, notional_req, instr_error);
-                        if (!notional_resp ||
-                            notional_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& date_row : r.schedule_dates) {
-                        put_instrument_schedule_date_request date_req;
-                        date_req.change.write.trade_id = date_row.trade_id;
-                        date_req.change.write.owner_role = date_row.owner_role;
-                        date_req.change.write.owner_number = date_row.owner_number;
-                        date_req.change.write.schedule_role = date_row.schedule_role;
-                        date_req.change.write.schedule_sequence_number =
-                            date_row.schedule_sequence_number;
-                        date_req.change.write.sequence_number = date_row.sequence_number;
-                        date_req.change.write.trade_activity_id = date_row.trade_activity_id;
-                        date_req.change.write.schedule_date = date_row.schedule_date;
-                        auto date_resp = nats_call(delegated_nats, date_req, instr_error);
-                        if (!date_resp ||
-                            date_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& option : r.options) {
-                        put_instrument_option_request option_req;
-                        auto& w = option_req.change.write;
-                        w.trade_id = option.trade_id;
-                        w.trade_activity_id = option.trade_activity_id;
-                        w.long_short = option.long_short;
-                        w.option_type = option.option_type;
-                        w.payoff_type = option.payoff_type;
-                        w.payoff_type_2 = option.payoff_type_2;
-                        w.style = option.style;
-                        w.notice_period = option.notice_period;
-                        w.notice_calendar = option.notice_calendar;
-                        w.notice_convention = option.notice_convention;
-                        w.mid_coupon_exercise = option.mid_coupon_exercise;
-                        w.settlement = option.settlement;
-                        w.settlement_method = option.settlement_method;
-                        w.pay_off_at_expiry = option.pay_off_at_expiry;
-                        w.premium_amount = option.premium_amount;
-                        w.premium_currency = option.premium_currency;
-                        w.premium_pay_date = option.premium_pay_date;
-                        w.exercise_fee_settlement_period = option.exercise_fee_settlement_period;
-                        w.exercise_fee_settlement_calendar =
-                            option.exercise_fee_settlement_calendar;
-                        w.exercise_fee_settlement_convention =
-                            option.exercise_fee_settlement_convention;
-                        w.automatic_exercise = option.automatic_exercise;
-                        w.has_exercise_data = option.has_exercise_data;
-                        w.exercise_date = option.exercise_date;
-                        w.exercise_price = option.exercise_price;
-                        w.has_payment_data = option.has_payment_data;
-                        w.payment_lag = option.payment_lag;
-                        w.payment_calendar = option.payment_calendar;
-                        w.payment_convention = option.payment_convention;
-                        w.payment_relative_to = option.payment_relative_to;
-                        w.has_settlement_data = option.has_settlement_data;
-                        w.settlement_pay_currency = option.settlement_pay_currency;
-                        w.settlement_fx_index = option.settlement_fx_index;
-                        w.settlement_fixing_date = option.settlement_fixing_date;
-                        auto option_resp = nats_call(delegated_nats, option_req, instr_error);
-                        if (!option_resp ||
-                            option_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& premium : r.option_premiums) {
-                        put_instrument_option_premium_request premium_req;
-                        auto& w = premium_req.change.write;
-                        w.trade_id = premium.trade_id;
-                        w.sequence_number = premium.sequence_number;
-                        w.trade_activity_id = premium.trade_activity_id;
-                        w.amount = premium.amount;
-                        w.currency = premium.currency;
-                        w.pay_date = premium.pay_date;
-                        w.has_settlement = premium.has_settlement;
-                        w.settlement_pay_currency = premium.settlement_pay_currency;
-                        w.settlement_fx_index = premium.settlement_fx_index;
-                        w.settlement_fixing_date = premium.settlement_fixing_date;
-                        auto premium_resp = nats_call(delegated_nats, premium_req, instr_error);
-                        if (!premium_resp ||
-                            premium_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& fee : r.option_exercise_fees) {
-                        put_instrument_option_exercise_fee_request fee_req;
-                        auto& w = fee_req.change.write;
-                        w.trade_id = fee.trade_id;
-                        w.sequence_number = fee.sequence_number;
-                        w.trade_activity_id = fee.trade_activity_id;
-                        w.amount = fee.amount;
-                        w.type = fee.type;
-                        w.start_date = fee.start_date;
-                        w.currency = fee.currency;
-                        auto fee_resp = nats_call(delegated_nats, fee_req, instr_error);
-                        if (!fee_resp ||
-                            fee_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& payment : r.option_payment_dates) {
-                        put_instrument_option_payment_date_request payment_req;
-                        payment_req.change.write.trade_id = payment.trade_id;
-                        payment_req.change.write.sequence_number = payment.sequence_number;
-                        payment_req.change.write.trade_activity_id = payment.trade_activity_id;
-                        payment_req.change.write.payment_date = payment.payment_date;
-                        auto payment_resp = nats_call(delegated_nats, payment_req, instr_error);
-                        if (!payment_resp ||
-                            payment_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& price : r.option_exercise_prices) {
-                        put_instrument_option_exercise_price_request price_req;
-                        price_req.change.write.trade_id = price.trade_id;
-                        price_req.change.write.sequence_number = price.sequence_number;
-                        price_req.change.write.trade_activity_id = price.trade_activity_id;
-                        price_req.change.write.exercise_date = price.exercise_date;
-                        price_req.change.write.price = price.price;
-                        auto price_resp = nats_call(delegated_nats, price_req, instr_error);
-                        if (!price_resp ||
-                            price_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    return true;
-                } else if constexpr (std::is_same_v<T, fx_instrument_data>) {
-                    return ores::trading::domain::visit_fx_products(
-                        [&](const auto& instr) -> bool {
-                            using InstrT = std::decay_t<decltype(instr)>;
-                            using namespace ores::trading::domain;
-                            if constexpr (std::is_same_v<InstrT, fx_forward_instrument>) {
-                                put_fx_forward_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.bought_currency = instr.bought_currency;
-                                req.change.write.bought_amount = instr.bought_amount;
-                                req.change.write.sold_currency = instr.sold_currency;
-                                req.change.write.sold_amount = instr.sold_amount;
-                                req.change.write.value_date = instr.value_date;
-                                req.change.write.settlement = instr.settlement;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                fx_vanilla_option_instrument>) {
-                                put_fx_vanilla_option_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.bought_currency = instr.bought_currency;
-                                req.change.write.bought_amount = instr.bought_amount;
-                                req.change.write.sold_currency = instr.sold_currency;
-                                req.change.write.sold_amount = instr.sold_amount;
-                                req.change.write.option_type = instr.option_type;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.exercise_style = instr.exercise_style;
-                                req.change.write.settlement = instr.settlement;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                fx_barrier_option_instrument>) {
-                                put_fx_barrier_option_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.bought_currency = instr.bought_currency;
-                                req.change.write.bought_amount = instr.bought_amount;
-                                req.change.write.sold_currency = instr.sold_currency;
-                                req.change.write.sold_amount = instr.sold_amount;
-                                req.change.write.option_type = instr.option_type;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.settlement = instr.settlement;
-                                req.change.write.barrier_type = instr.barrier_type;
-                                req.change.write.lower_barrier = instr.lower_barrier;
-                                req.change.write.upper_barrier = instr.upper_barrier;
-                                req.change.write.underlying_code = instr.underlying_code;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                fx_digital_option_instrument>) {
-                                put_fx_digital_option_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.foreign_currency = instr.foreign_currency;
-                                req.change.write.domestic_currency = instr.domestic_currency;
-                                req.change.write.payoff_currency = instr.payoff_currency;
-                                req.change.write.payoff_amount = instr.payoff_amount;
-                                req.change.write.option_type = instr.option_type;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.barrier_type = instr.barrier_type;
-                                req.change.write.lower_barrier = instr.lower_barrier;
-                                req.change.write.upper_barrier = instr.upper_barrier;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                fx_asian_forward_instrument>) {
-                                put_fx_asian_forward_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.fx_index = instr.fx_index;
-                                req.change.write.reference_currency = instr.reference_currency;
-                                req.change.write.reference_notional = instr.reference_notional;
-                                req.change.write.settlement_currency = instr.settlement_currency;
-                                req.change.write.settlement_notional = instr.settlement_notional;
-                                req.change.write.payment_date = instr.payment_date;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.fixing_amount = instr.fixing_amount;
-                                req.change.write.target_amount = instr.target_amount;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                fx_accumulator_instrument>) {
-                                put_fx_accumulator_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.fixing_amount = instr.fixing_amount;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.underlying_code = instr.underlying_code;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.knock_out_barrier = instr.knock_out_barrier;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                if (!resp ||
-                                    resp->result.outcome != ores::utility::domain::outcome::ok)
-                                    return false;
-                                for (const auto& bound : r.range_bounds) {
-                                    put_range_bound_request bound_req;
-                                    bound_req.change.write.trade_id = bound.trade_id;
-                                    bound_req.change.write.trade_activity_id =
-                                        bound.trade_activity_id;
-                                    bound_req.change.write.sequence_number = bound.sequence_number;
-                                    bound_req.change.write.start_date = bound.start_date;
-                                    bound_req.change.write.range_from = bound.range_from;
-                                    bound_req.change.write.range_to = bound.range_to;
-                                    bound_req.change.write.leverage = bound.leverage;
-                                    bound_req.change.write.strike = bound.strike;
-                                    bound_req.change.write.strike_adjustment =
-                                        bound.strike_adjustment;
-                                    auto bound_resp =
-                                        nats_call(delegated_nats, bound_req, instr_error);
-                                    if (!bound_resp || bound_resp->result.outcome !=
-                                                           ores::utility::domain::outcome::ok)
-                                        return false;
-                                }
-                                return true;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                fx_variance_swap_instrument>) {
-                                put_fx_variance_swap_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.end_date = instr.end_date;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.underlying_code = instr.underlying_code;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.notional = instr.notional;
-                                req.change.write.moment_type = instr.moment_type;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else {
-                                return true;
-                            }
-                        },
-                        r);
                 } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
                     if (!bond_issues_loaded) {
                         bond_issues_loaded = true;
@@ -2960,658 +2618,6 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     instr_error =
                         save_bond_instrument(delegated_nats, r, security_terms, import_warnings);
                     return instr_error.empty();
-                } else if constexpr (std::is_same_v<T, credit_instrument_data>) {
-                    const auto& instr = r.instrument;
-                    // The header is written first: the fact row carries the
-                    // product's own fields only, and the header owns the
-                    // identity, the reference entity, the dates and the
-                    // description.
-                    put_credit_instrument_request req;
-                    req.change.write.trade_id = instr.identity.trade_id;
-                    req.change.write.trade_activity_id = instr.identity.trade_activity_id;
-                    req.change.write.trade_type_code = instr.identity.trade_type_code;
-                    req.change.write.reference_entity_id_type = instr.reference_entity_id_type;
-                    req.change.write.reference_entity_id = instr.reference_entity_id;
-                    req.change.write.start_date = instr.start_date;
-                    req.change.write.maturity_date = instr.maturity_date;
-                    req.change.write.description = instr.description;
-                    auto resp = nats_call(delegated_nats, req, instr_error);
-                    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-                        return false;
-
-                    const auto write_fact = [&](const auto& fact) -> bool {
-                        using FactT = std::decay_t<decltype(fact)>;
-                        using namespace ores::trading::domain;
-                        if constexpr (std::is_same_v<FactT, credit_default_swap_instrument>) {
-                            put_credit_default_swap_instrument_request fact_req;
-                            fact_req.change.write.trade_id = fact.trade_id;
-                            fact_req.change.write.trade_activity_id = fact.trade_activity_id;
-                            fact_req.change.write.credit_curve_id = fact.credit_curve_id;
-                            fact_req.change.write.issuer_id = fact.issuer_id;
-                            fact_req.change.write.reference_obligation = fact.reference_obligation;
-                            fact_req.change.write.settles_accrual = fact.settles_accrual;
-                            fact_req.change.write.rebates_accrual = fact.rebates_accrual;
-                            fact_req.change.write.pays_at_default_time = fact.pays_at_default_time;
-                            fact_req.change.write.protection_payment_time =
-                                fact.protection_payment_time;
-                            fact_req.change.write.protection_start_date =
-                                fact.protection_start_date;
-                            fact_req.change.write.upfront_date = fact.upfront_date;
-                            fact_req.change.write.upfront_fee = fact.upfront_fee;
-                            fact_req.change.write.recovery_rate = fact.recovery_rate;
-                            fact_req.change.write.trade_date = fact.trade_date;
-                            fact_req.change.write.cash_settlement_days = fact.cash_settlement_days;
-                            auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
-                            return fact_resp &&
-                                   fact_resp->result.outcome == ores::utility::domain::outcome::ok;
-                        } else if constexpr (std::is_same_v<FactT,
-                                                            index_credit_default_swap_instrument>) {
-                            put_index_credit_default_swap_instrument_request fact_req;
-                            fact_req.change.write.trade_id = fact.trade_id;
-                            fact_req.change.write.trade_activity_id = fact.trade_activity_id;
-                            fact_req.change.write.credit_curve_id = fact.credit_curve_id;
-                            fact_req.change.write.issuer_id = fact.issuer_id;
-                            fact_req.change.write.settles_accrual = fact.settles_accrual;
-                            fact_req.change.write.rebates_accrual = fact.rebates_accrual;
-                            fact_req.change.write.pays_at_default_time = fact.pays_at_default_time;
-                            fact_req.change.write.protection_payment_time =
-                                fact.protection_payment_time;
-                            fact_req.change.write.protection_start_date =
-                                fact.protection_start_date;
-                            fact_req.change.write.upfront_date = fact.upfront_date;
-                            fact_req.change.write.upfront_fee = fact.upfront_fee;
-                            fact_req.change.write.trade_date = fact.trade_date;
-                            fact_req.change.write.cash_settlement_days = fact.cash_settlement_days;
-                            auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
-                            return fact_resp &&
-                                   fact_resp->result.outcome == ores::utility::domain::outcome::ok;
-                        } else if constexpr (std::is_same_v<
-                                                 FactT,
-                                                 index_credit_default_swap_option_instrument>) {
-                            put_index_credit_default_swap_option_instrument_request fact_req;
-                            fact_req.change.write.trade_id = fact.trade_id;
-                            fact_req.change.write.trade_activity_id = fact.trade_activity_id;
-                            fact_req.change.write.knock_out = fact.knock_out;
-                            fact_req.change.write.index_term = fact.index_term;
-                            fact_req.change.write.strike_type = fact.strike_type;
-                            fact_req.change.write.trade_date = fact.trade_date;
-                            fact_req.change.write.front_end_protection_start_date =
-                                fact.front_end_protection_start_date;
-                            auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
-                            return fact_resp &&
-                                   fact_resp->result.outcome == ores::utility::domain::outcome::ok;
-                        } else if constexpr (std::is_same_v<FactT, synthetic_cdo_instrument>) {
-                            put_synthetic_cdo_instrument_request fact_req;
-                            fact_req.change.write.trade_id = fact.trade_id;
-                            fact_req.change.write.trade_activity_id = fact.trade_activity_id;
-                            fact_req.change.write.qualifier = fact.qualifier;
-                            fact_req.change.write.protection_start_date =
-                                fact.protection_start_date;
-                            fact_req.change.write.upfront_date = fact.upfront_date;
-                            fact_req.change.write.upfront_fee = fact.upfront_fee;
-                            fact_req.change.write.settles_accrual = fact.settles_accrual;
-                            fact_req.change.write.rebates_accrual = fact.rebates_accrual;
-                            fact_req.change.write.pays_at_default_time = fact.pays_at_default_time;
-                            fact_req.change.write.protection_payment_time =
-                                fact.protection_payment_time;
-                            fact_req.change.write.recovery_rate = fact.recovery_rate;
-                            fact_req.change.write.attachment_point = fact.attachment_point;
-                            fact_req.change.write.detachment_point = fact.detachment_point;
-                            auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
-                            return fact_resp &&
-                                   fact_resp->result.outcome == ores::utility::domain::outcome::ok;
-                        } else if constexpr (std::is_same_v<FactT, credit_linked_swap_instrument>) {
-                            put_credit_linked_swap_instrument_request fact_req;
-                            fact_req.change.write.trade_id = fact.trade_id;
-                            fact_req.change.write.trade_activity_id = fact.trade_activity_id;
-                            fact_req.change.write.credit_curve_id = fact.credit_curve_id;
-                            fact_req.change.write.settles_accrual = fact.settles_accrual;
-                            fact_req.change.write.recovery_rate = fact.recovery_rate;
-                            fact_req.change.write.default_payment_time = fact.default_payment_time;
-                            auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
-                            return fact_resp &&
-                                   fact_resp->result.outcome == ores::utility::domain::outcome::ok;
-                        } else if constexpr (std::is_same_v<
-                                                 FactT,
-                                                 risk_participation_agreement_instrument>) {
-                            put_risk_participation_agreement_instrument_request fact_req;
-                            fact_req.change.write.trade_id = fact.trade_id;
-                            fact_req.change.write.trade_activity_id = fact.trade_activity_id;
-                            fact_req.change.write.participation_rate = fact.participation_rate;
-                            fact_req.change.write.credit_curve_id = fact.credit_curve_id;
-                            fact_req.change.write.issuer_id = fact.issuer_id;
-                            fact_req.change.write.settles_accrual = fact.settles_accrual;
-                            fact_req.change.write.recovery_rate = fact.recovery_rate;
-                            fact_req.change.write.naked_option = fact.naked_option;
-                            auto fact_resp = nats_call(delegated_nats, fact_req, instr_error);
-                            return fact_resp &&
-                                   fact_resp->result.outcome == ores::utility::domain::outcome::ok;
-                        } else {
-                            static_assert(sizeof(FactT) == 0,
-                                          "a credit fact type has no import branch");
-                        }
-                    };
-                    const auto fact_written =
-                        ores::trading::domain::visit_credit_facts(write_fact, r);
-                    if (!fact_written) {
-                        instr_error = "a credit trade states no fact row";
-                        return false;
-                    }
-                    if (!*fact_written)
-                        return false;
-                    if (r.wrapped_index_swap && !write_fact(*r.wrapped_index_swap))
-                        return false;
-                    for (const auto& leg : r.legs) {
-                        put_swap_leg_request leg_req;
-                        leg_req.change.write.trade_id = leg.identity.trade_id;
-                        leg_req.change.write.leg_number = leg.identity.leg_number;
-                        leg_req.change.write.trade_activity_id = leg.identity.trade_activity_id;
-                        leg_req.change.write.payer = leg.payer;
-                        leg_req.change.write.leg_type_code = leg.leg_type_code;
-                        leg_req.change.write.day_count_fraction_code = leg.day_count_fraction_code;
-                        leg_req.change.write.business_day_convention_code =
-                            leg.business_day_convention_code;
-                        leg_req.change.write.payment_frequency_code = leg.payment_frequency_code;
-                        leg_req.change.write.floating_index_code = leg.floating_index_code;
-                        leg_req.change.write.currency = leg.currency;
-                        leg_req.change.write.leg_group = leg.leg_group;
-                        auto leg_resp = nats_call(delegated_nats, leg_req, instr_error);
-                        if (!leg_resp ||
-                            leg_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-                    for (const auto& amount : r.leg_amounts) {
-                        put_swap_leg_amount_request amount_req;
-                        amount_req.change.write.trade_id = amount.trade_id;
-                        amount_req.change.write.leg_number = amount.leg_number;
-                        amount_req.change.write.sequence_number = amount.sequence_number;
-                        amount_req.change.write.trade_activity_id = amount.trade_activity_id;
-                        amount_req.change.write.start_date = amount.start_date;
-                        amount_req.change.write.amount = amount.amount;
-                        auto amount_resp = nats_call(delegated_nats, amount_req, instr_error);
-                        if (!amount_resp ||
-                            amount_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-                    for (const auto& rate : r.leg_rates) {
-                        put_swap_leg_rate_request rate_req;
-                        rate_req.change.write.trade_id = rate.trade_id;
-                        rate_req.change.write.leg_number = rate.leg_number;
-                        rate_req.change.write.rate_role = rate.rate_role;
-                        rate_req.change.write.sequence_number = rate.sequence_number;
-                        rate_req.change.write.trade_activity_id = rate.trade_activity_id;
-                        rate_req.change.write.start_date = rate.start_date;
-                        rate_req.change.write.value = rate.value;
-                        auto rate_resp = nats_call(delegated_nats, rate_req, instr_error);
-                        if (!rate_resp ||
-                            rate_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-                    for (const auto& name : r.constituents) {
-                        put_credit_basket_constituent_request name_req;
-                        name_req.change.write.trade_id = name.trade_id;
-                        name_req.change.write.trade_activity_id = name.trade_activity_id;
-                        name_req.change.write.sequence_number = name.sequence_number;
-                        name_req.change.write.issuer_id = name.issuer_id;
-                        name_req.change.write.qualifier = name.qualifier;
-                        name_req.change.write.credit_curve_id = name.credit_curve_id;
-                        name_req.change.write.notional = name.notional;
-                        name_req.change.write.weight = name.weight;
-                        name_req.change.write.currency = name.currency;
-                        auto name_resp = nats_call(delegated_nats, name_req, instr_error);
-                        if (!name_resp ||
-                            name_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-                    for (const auto& strike : r.strikes) {
-                        instr_error = save_instrument_strike(delegated_nats, strike);
-                        if (!instr_error.empty())
-                            return false;
-                    }
-                    for (const auto& schedule : r.schedules) {
-                        put_instrument_schedule_request schedule_req;
-                        auto& w = schedule_req.change.write;
-                        w.trade_id = schedule.trade_id;
-                        w.owner_role = schedule.owner_role;
-                        w.owner_number = schedule.owner_number;
-                        w.schedule_role = schedule.schedule_role;
-                        w.sequence_number = schedule.sequence_number;
-                        w.trade_activity_id = schedule.trade_activity_id;
-                        w.schedule_kind = schedule.schedule_kind;
-                        w.start_date = schedule.start_date;
-                        w.end_date = schedule.end_date;
-                        w.adjust_end_date_to_previous_month_end =
-                            schedule.adjust_end_date_to_previous_month_end;
-                        w.tenor = schedule.tenor;
-                        w.calendar = schedule.calendar;
-                        w.convention = schedule.convention;
-                        w.term_convention = schedule.term_convention;
-                        w.rule = schedule.rule;
-                        w.end_of_month = schedule.end_of_month;
-                        w.end_of_month_convention = schedule.end_of_month_convention;
-                        w.first_date = schedule.first_date;
-                        w.last_date = schedule.last_date;
-                        w.remove_first_date = schedule.remove_first_date;
-                        w.remove_last_date = schedule.remove_last_date;
-                        w.include_duplicate_dates = schedule.include_duplicate_dates;
-                        auto schedule_resp = nats_call(delegated_nats, schedule_req, instr_error);
-                        if (!schedule_resp ||
-                            schedule_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-                    for (const auto& date_row : r.schedule_dates) {
-                        put_instrument_schedule_date_request date_req;
-                        date_req.change.write.trade_id = date_row.trade_id;
-                        date_req.change.write.owner_role = date_row.owner_role;
-                        date_req.change.write.owner_number = date_row.owner_number;
-                        date_req.change.write.schedule_role = date_row.schedule_role;
-                        date_req.change.write.schedule_sequence_number =
-                            date_row.schedule_sequence_number;
-                        date_req.change.write.sequence_number = date_row.sequence_number;
-                        date_req.change.write.trade_activity_id = date_row.trade_activity_id;
-                        date_req.change.write.schedule_date = date_row.schedule_date;
-                        auto date_resp = nats_call(delegated_nats, date_req, instr_error);
-                        if (!date_resp ||
-                            date_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& option : r.options) {
-                        put_instrument_option_request option_req;
-                        auto& w = option_req.change.write;
-                        w.trade_id = option.trade_id;
-                        w.trade_activity_id = option.trade_activity_id;
-                        w.long_short = option.long_short;
-                        w.option_type = option.option_type;
-                        w.payoff_type = option.payoff_type;
-                        w.payoff_type_2 = option.payoff_type_2;
-                        w.style = option.style;
-                        w.notice_period = option.notice_period;
-                        w.notice_calendar = option.notice_calendar;
-                        w.notice_convention = option.notice_convention;
-                        w.mid_coupon_exercise = option.mid_coupon_exercise;
-                        w.settlement = option.settlement;
-                        w.settlement_method = option.settlement_method;
-                        w.pay_off_at_expiry = option.pay_off_at_expiry;
-                        w.premium_amount = option.premium_amount;
-                        w.premium_currency = option.premium_currency;
-                        w.premium_pay_date = option.premium_pay_date;
-                        w.exercise_fee_settlement_period = option.exercise_fee_settlement_period;
-                        w.exercise_fee_settlement_calendar =
-                            option.exercise_fee_settlement_calendar;
-                        w.exercise_fee_settlement_convention =
-                            option.exercise_fee_settlement_convention;
-                        w.automatic_exercise = option.automatic_exercise;
-                        w.has_exercise_data = option.has_exercise_data;
-                        w.exercise_date = option.exercise_date;
-                        w.exercise_price = option.exercise_price;
-                        w.has_payment_data = option.has_payment_data;
-                        w.payment_lag = option.payment_lag;
-                        w.payment_calendar = option.payment_calendar;
-                        w.payment_convention = option.payment_convention;
-                        w.payment_relative_to = option.payment_relative_to;
-                        w.has_settlement_data = option.has_settlement_data;
-                        w.settlement_pay_currency = option.settlement_pay_currency;
-                        w.settlement_fx_index = option.settlement_fx_index;
-                        w.settlement_fixing_date = option.settlement_fixing_date;
-                        auto option_resp = nats_call(delegated_nats, option_req, instr_error);
-                        if (!option_resp ||
-                            option_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& premium : r.option_premiums) {
-                        put_instrument_option_premium_request premium_req;
-                        auto& w = premium_req.change.write;
-                        w.trade_id = premium.trade_id;
-                        w.sequence_number = premium.sequence_number;
-                        w.trade_activity_id = premium.trade_activity_id;
-                        w.amount = premium.amount;
-                        w.currency = premium.currency;
-                        w.pay_date = premium.pay_date;
-                        w.has_settlement = premium.has_settlement;
-                        w.settlement_pay_currency = premium.settlement_pay_currency;
-                        w.settlement_fx_index = premium.settlement_fx_index;
-                        w.settlement_fixing_date = premium.settlement_fixing_date;
-                        auto premium_resp = nats_call(delegated_nats, premium_req, instr_error);
-                        if (!premium_resp ||
-                            premium_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& fee : r.option_exercise_fees) {
-                        put_instrument_option_exercise_fee_request fee_req;
-                        auto& w = fee_req.change.write;
-                        w.trade_id = fee.trade_id;
-                        w.sequence_number = fee.sequence_number;
-                        w.trade_activity_id = fee.trade_activity_id;
-                        w.amount = fee.amount;
-                        w.type = fee.type;
-                        w.start_date = fee.start_date;
-                        w.currency = fee.currency;
-                        auto fee_resp = nats_call(delegated_nats, fee_req, instr_error);
-                        if (!fee_resp ||
-                            fee_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& payment : r.option_payment_dates) {
-                        put_instrument_option_payment_date_request payment_req;
-                        payment_req.change.write.trade_id = payment.trade_id;
-                        payment_req.change.write.sequence_number = payment.sequence_number;
-                        payment_req.change.write.trade_activity_id = payment.trade_activity_id;
-                        payment_req.change.write.payment_date = payment.payment_date;
-                        auto payment_resp = nats_call(delegated_nats, payment_req, instr_error);
-                        if (!payment_resp ||
-                            payment_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    for (const auto& price : r.option_exercise_prices) {
-                        put_instrument_option_exercise_price_request price_req;
-                        price_req.change.write.trade_id = price.trade_id;
-                        price_req.change.write.sequence_number = price.sequence_number;
-                        price_req.change.write.trade_activity_id = price.trade_activity_id;
-                        price_req.change.write.exercise_date = price.exercise_date;
-                        price_req.change.write.price = price.price;
-                        auto price_resp = nats_call(delegated_nats, price_req, instr_error);
-                        if (!price_resp ||
-                            price_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-
-                    return true;
-                } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
-                    boost::uuids::uuid equity_trade_id{};
-                    boost::uuids::uuid equity_trade_activity_id{};
-                    const auto equity_saved = std::visit(
-                        [&](const auto& instr) -> bool {
-                            using InstrT = std::decay_t<decltype(instr)>;
-                            using namespace ores::trading::domain;
-                            equity_trade_id = instr.identity.trade_id;
-                            equity_trade_activity_id = instr.identity.trade_activity_id;
-                            if constexpr (std::is_same_v<InstrT, equity_option_instrument>) {
-                                put_equity_option_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.notional = instr.notional;
-                                req.change.write.option_type = instr.option_type;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.exercise_type = instr.exercise_type;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.settlement_type = instr.settlement_type;
-                                req.change.write.cliquet_frequency = instr.cliquet_frequency;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                equity_digital_option_instrument>) {
-                                put_equity_digital_option_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.notional = instr.notional;
-                                req.change.write.option_type = instr.option_type;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.barrier_level = instr.barrier_level;
-                                req.change.write.barrier_type = instr.barrier_type;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.payout_amount = instr.payout_amount;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                equity_barrier_option_instrument>) {
-                                put_equity_barrier_option_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.notional = instr.notional;
-                                req.change.write.option_type = instr.option_type;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.exercise_type = instr.exercise_type;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.lower_barrier = instr.lower_barrier;
-                                req.change.write.lower_barrier_type = instr.lower_barrier_type;
-                                req.change.write.upper_barrier = instr.upper_barrier;
-                                req.change.write.upper_barrier_type = instr.upper_barrier_type;
-                                req.change.write.rebate = instr.rebate;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                equity_asian_option_instrument>) {
-                                put_equity_asian_option_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.notional = instr.notional;
-                                req.change.write.option_type = instr.option_type;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.exercise_type = instr.exercise_type;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.average_type = instr.average_type;
-                                req.change.write.averaging_start_date = instr.averaging_start_date;
-                                req.change.write.averaging_end_date = instr.averaging_end_date;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                equity_forward_instrument>) {
-                                put_equity_forward_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.quantity = instr.quantity;
-                                req.change.write.forward_price = instr.forward_price;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.settlement_type = instr.settlement_type;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                equity_variance_swap_instrument>) {
-                                put_equity_variance_swap_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.notional = instr.notional;
-                                req.change.write.variance_strike = instr.variance_strike;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT, equity_swap_instrument>) {
-                                put_equity_swap_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.notional = instr.notional;
-                                req.change.write.return_type = instr.return_type;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.maturity_date = instr.maturity_date;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.payment_frequency_code =
-                                    instr.payment_frequency_code;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                equity_accumulator_instrument>) {
-                                put_equity_accumulator_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.strike = instr.strike;
-                                req.change.write.fixing_amount = instr.fixing_amount;
-                                req.change.write.start_date = instr.start_date;
-                                req.change.write.expiry_date = instr.expiry_date;
-                                req.change.write.fixing_frequency = instr.fixing_frequency;
-                                req.change.write.long_short = instr.long_short;
-                                req.change.write.knock_out_level = instr.knock_out_level;
-                                req.change.write.target_amount = instr.target_amount;
-                                req.change.write.target_type = instr.target_type;
-                                req.change.write.payoff_type = instr.payoff_type;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else if constexpr (std::is_same_v<InstrT,
-                                                                equity_position_instrument>) {
-                                put_equity_position_instrument_request req;
-                                req.change.write.trade_id = instr.identity.trade_id;
-                                req.change.write.trade_activity_id =
-                                    instr.identity.trade_activity_id;
-                                req.change.write.trade_type_code = instr.identity.trade_type_code;
-                                req.change.write.underlying_name = instr.underlying_name;
-                                req.change.write.currency = instr.currency;
-                                req.change.write.quantity = instr.quantity;
-                                req.change.write.price = instr.price;
-                                req.change.write.description = instr.description;
-                                auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
-                            } else {
-                                // Unknown per-type alternative — fail loudly so a new
-                                // variant added without updating this dispatch surfaces
-                                // at import time instead of silently skipping saves.
-                                instr_error = "equity variant alternative not handled "
-                                              "by import dispatch";
-                                return false;
-                            }
-                        },
-                        r.instrument);
-                    if (!equity_saved)
-                        return false;
-                    int equity_sequence_number = 0;
-                    for (const auto& underlying : r.underlyings) {
-                        put_equity_position_option_underlying_request underlying_req;
-                        underlying_req.change.write.trade_id = equity_trade_id;
-                        underlying_req.change.write.trade_activity_id = equity_trade_activity_id;
-                        underlying_req.change.write.sequence_number = ++equity_sequence_number;
-                        underlying_req.change.write.underlying_name = underlying.underlying_name;
-                        underlying_req.change.write.strike = underlying.strike;
-                        underlying_req.change.write.weight = underlying.weight;
-                        underlying_req.change.write.long_short = underlying.long_short;
-                        underlying_req.change.write.option_type = underlying.option_type;
-                        underlying_req.change.write.exercise_type = underlying.exercise_type;
-                        underlying_req.change.write.settlement_type = underlying.settlement_type;
-                        auto underlying_resp =
-                            nats_call(delegated_nats, underlying_req, instr_error);
-                        if (!underlying_resp ||
-                            underlying_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-                    return true;
-                } else if constexpr (std::is_same_v<T, commodity_instrument_data>) {
-                    const auto& instr = r.instrument;
-                    put_commodity_instrument_request req;
-                    req.change.write.trade_id = instr.identity.trade_id;
-                    req.change.write.trade_activity_id = instr.identity.trade_activity_id;
-                    req.change.write.trade_type_code = instr.identity.trade_type_code;
-                    req.change.write.commodity_code = instr.commodity_code;
-                    req.change.write.currency = instr.currency;
-                    req.change.write.quantity = instr.quantity;
-                    req.change.write.unit = instr.unit;
-                    req.change.write.start_date = instr.start_date;
-                    req.change.write.maturity_date = instr.maturity_date;
-                    req.change.write.fixed_price = instr.fixed_price;
-                    req.change.write.option_type = instr.option_type;
-                    req.change.write.strike_price = instr.strike_price;
-                    req.change.write.exercise_type = instr.exercise_type;
-                    req.change.write.average_type = instr.average_type;
-                    req.change.write.averaging_start_date = instr.averaging_start_date;
-                    req.change.write.averaging_end_date = instr.averaging_end_date;
-                    req.change.write.spread_commodity_code = instr.spread_commodity_code;
-                    req.change.write.spread_amount = instr.spread_amount;
-                    req.change.write.strip_frequency_code = instr.strip_frequency_code;
-                    req.change.write.variance_strike = instr.variance_strike;
-                    req.change.write.accumulation_amount = instr.accumulation_amount;
-                    req.change.write.knock_out_barrier = instr.knock_out_barrier;
-                    req.change.write.barrier_type = instr.barrier_type;
-                    req.change.write.lower_barrier = instr.lower_barrier;
-                    req.change.write.upper_barrier = instr.upper_barrier;
-                    req.change.write.day_count_fraction_code = instr.day_count_fraction_code;
-                    req.change.write.payment_frequency_code = instr.payment_frequency_code;
-                    req.change.write.swaption_expiry_date = instr.swaption_expiry_date;
-                    req.change.write.description = instr.description;
-                    auto resp = nats_call(delegated_nats, req, instr_error);
-                    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-                        return false;
-                    int sequence_number = 0;
-                    for (const auto& constituent : r.constituents) {
-                        put_commodity_basket_constituent_request constituent_req;
-                        constituent_req.change.write.trade_id = instr.identity.trade_id;
-                        constituent_req.change.write.trade_activity_id =
-                            instr.identity.trade_activity_id;
-                        constituent_req.change.write.sequence_number = ++sequence_number;
-                        constituent_req.change.write.underlying_code = constituent.underlying_code;
-                        constituent_req.change.write.weight = constituent.weight;
-                        auto constituent_resp =
-                            nats_call(delegated_nats, constituent_req, instr_error);
-                        if (!constituent_resp ||
-                            constituent_resp->result.outcome != ores::utility::domain::outcome::ok)
-                            return false;
-                    }
-                    return true;
-                } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
-                    put_composite_instrument_with_legs_request req;
-                    req.instrument = r.instrument;
-                    req.legs = r.legs;
-                    auto resp = nats_call(delegated_nats, req, instr_error);
-                    return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
-                } else if constexpr (std::is_same_v<T, scripted_instrument>) {
-                    put_scripted_instrument_request req;
-                    req.change.write.trade_id = r.identity.trade_id;
-                    req.change.write.trade_activity_id = r.identity.trade_activity_id;
-                    req.change.write.trade_type_code = r.identity.trade_type_code;
-                    req.change.write.script_name = r.script_name;
-                    req.change.write.script_body = r.script_body;
-                    req.change.write.events_json = r.events_json;
-                    req.change.write.underlyings_json = r.underlyings_json;
-                    req.change.write.parameters_json = r.parameters_json;
-                    req.change.write.description = r.description;
-                    auto resp = nats_call(delegated_nats, req, instr_error);
-                    return resp && resp->result.outcome == ores::utility::domain::outcome::ok;
                 } else {
                     return true;
                 }

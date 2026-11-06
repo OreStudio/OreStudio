@@ -64,7 +64,16 @@ struct equity_swap_instrument_entity {
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;
     std::string long_short;
-    std::string payment_frequency_code;
+    std::optional<std::string> payment_frequency_code;
+    std::optional<ores::utility::decimal::decimal> fixed_rate;
+    std::optional<std::string> floating_index;
+    std::optional<ores::utility::decimal::decimal> floating_spread;
+    std::optional<std::string> floating_day_count_fraction;
+    std::optional<ores::utility::decimal::decimal> initial_fixed_rate;
+    std::optional<ores::utility::decimal::decimal> knock_in_level;
+    std::optional<bool> bermudan_knock_in;
+    std::optional<bool> accruing_fixed_coupons;
+    std::optional<bool> accumulating_fixed_coupons;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -93,6 +102,15 @@ struct equity_swap_instrument_entity {
                query_builder::bind("maturity_date", &e::maturity_date) |
                query_builder::bind("long_short", &e::long_short) |
                query_builder::bind("payment_frequency_code", &e::payment_frequency_code) |
+               query_builder::bind("fixed_rate", &e::fixed_rate) |
+               query_builder::bind("floating_index", &e::floating_index) |
+               query_builder::bind("floating_spread", &e::floating_spread) |
+               query_builder::bind("floating_day_count_fraction", &e::floating_day_count_fraction) |
+               query_builder::bind("initial_fixed_rate", &e::initial_fixed_rate) |
+               query_builder::bind("knock_in_level", &e::knock_in_level) |
+               query_builder::bind("bermudan_knock_in", &e::bermudan_knock_in) |
+               query_builder::bind("accruing_fixed_coupons", &e::accruing_fixed_coupons) |
+               query_builder::bind("accumulating_fixed_coupons", &e::accumulating_fixed_coupons) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

@@ -105,6 +105,7 @@ cap_floor_instrument_to_domain(const messaging::cap_floor_instrument_write& writ
     domain::cap_floor_instrument v;
     v.trade_id = write.trade_id;
     v.trade_activity_id = write.trade_activity_id;
+    v.long_short = write.long_short;
     return v;
 }
 

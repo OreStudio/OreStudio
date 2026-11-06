@@ -116,6 +116,18 @@ equity_option_instrument_to_domain(const messaging::equity_option_instrument_wri
     v.long_short = write.long_short;
     v.settlement_type = write.settlement_type;
     v.cliquet_frequency = write.cliquet_frequency;
+    v.strike_currency = write.strike_currency;
+    v.local_cap = write.local_cap;
+    v.local_floor = write.local_floor;
+    v.global_cap = write.global_cap;
+    v.global_floor = write.global_floor;
+    v.settlement_days = write.settlement_days;
+    v.premium = write.premium;
+    v.premium_payment_date = write.premium_payment_date;
+    v.initial_price_1 = write.initial_price_1;
+    v.initial_price_2 = write.initial_price_2;
+    v.knock_in_price = write.knock_in_price;
+    v.knock_out_price = write.knock_out_price;
     v.description = write.description;
     return v;
 }

@@ -98,6 +98,54 @@ struct equity_swap_instrument final {
     std::string payment_frequency_code;
 
     /**
+     * @brief A worst-of basket swap's funding fixed rate, as FixedRate states it.
+     */
+    std::optional<ores::utility::decimal::decimal> fixed_rate;
+
+    /**
+     * @brief A worst-of basket swap's funding index, as FloatingIndex states it.
+     */
+    std::optional<std::string> floating_index;
+
+    /**
+     * @brief A worst-of basket swap's spread over its funding index, as FloatingSpread states it.
+     */
+    std::optional<ores::utility::decimal::decimal> floating_spread;
+
+    /**
+     * @brief A worst-of basket swap's funding day count, as FloatingDayCountFraction states it.
+     */
+    std::optional<std::string> floating_day_count_fraction;
+
+    /**
+     * @brief A worst-of basket swap's first period fixed rate, as InitialFixedRate states it.
+     */
+    std::optional<ores::utility::decimal::decimal> initial_fixed_rate;
+
+    /**
+     * @brief A worst-of basket swap's knock-in level, as KnockInLevel states it.
+     */
+    std::optional<ores::utility::decimal::decimal> knock_in_level;
+
+    /**
+     * @brief Whether a worst-of basket swap knocks in only on its determination dates, as
+     * BermudanKnockIn states it.
+     */
+    std::optional<bool> bermudan_knock_in;
+
+    /**
+     * @brief Whether a worst-of basket swap's fixed coupons accrue, as AccruingFixedCoupons states
+     * it.
+     */
+    std::optional<bool> accruing_fixed_coupons;
+
+    /**
+     * @brief Whether a worst-of basket swap's missed fixed coupons accumulate, as
+     * AccumulatingFixedCoupons states it.
+     */
+    std::optional<bool> accumulating_fixed_coupons;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -133,6 +181,17 @@ struct equity_swap_instrument final {
     ores::utility::digest::append_member(out, "maturity_date", v.maturity_date);
     ores::utility::digest::append_member(out, "long_short", v.long_short);
     ores::utility::digest::append_member(out, "payment_frequency_code", v.payment_frequency_code);
+    ores::utility::digest::append_member(out, "fixed_rate", v.fixed_rate);
+    ores::utility::digest::append_member(out, "floating_index", v.floating_index);
+    ores::utility::digest::append_member(out, "floating_spread", v.floating_spread);
+    ores::utility::digest::append_member(
+        out, "floating_day_count_fraction", v.floating_day_count_fraction);
+    ores::utility::digest::append_member(out, "initial_fixed_rate", v.initial_fixed_rate);
+    ores::utility::digest::append_member(out, "knock_in_level", v.knock_in_level);
+    ores::utility::digest::append_member(out, "bermudan_knock_in", v.bermudan_knock_in);
+    ores::utility::digest::append_member(out, "accruing_fixed_coupons", v.accruing_fixed_coupons);
+    ores::utility::digest::append_member(
+        out, "accumulating_fixed_coupons", v.accumulating_fixed_coupons);
     out.push_back('}');
     return out;
 }

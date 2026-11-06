@@ -63,6 +63,8 @@ struct equity_asian_option_instrument_write {
     std::string average_type;
     std::chrono::year_month_day averaging_start_date;
     std::chrono::year_month_day averaging_end_date;
+    std::optional<std::string> settlement;
+    std::optional<std::string> strike_currency;
     std::string description;
 
     friend bool operator==(const equity_asian_option_instrument_write&,
@@ -431,6 +433,9 @@ inline constexpr std::string_view deleted =
                               &equity_asian_option_instrument_write::averaging_start_date},
         utility::codec::field{"averaging_end_date",
                               &equity_asian_option_instrument_write::averaging_end_date},
+        utility::codec::field{"settlement", &equity_asian_option_instrument_write::settlement},
+        utility::codec::field{"strike_currency",
+                              &equity_asian_option_instrument_write::strike_currency},
         utility::codec::field{"description", &equity_asian_option_instrument_write::description},
     };
 }

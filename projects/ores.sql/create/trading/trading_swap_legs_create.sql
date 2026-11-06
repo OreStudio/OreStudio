@@ -71,12 +71,67 @@ create table if not exists "ores_trading_swap_legs_tbl" (
     "trade_activity_id" uuid not null,
     "payer" boolean null,
     "leg_type_code" text not null,
-    "day_count_fraction_code" text not null,
-    "business_day_convention_code" text not null,
-    "payment_frequency_code" text not null,
+    "day_count_fraction_code" text null,
+    "business_day_convention_code" text null,
+    "payment_frequency_code" text null,
     "floating_index_code" text null,
     "currency" text not null,
     "leg_group" text null,
+    "fixing_days" integer null,
+    "is_in_arrears" boolean null,
+    "include_spread" boolean null,
+    "is_averaged" boolean null,
+    "has_sub_periods" boolean null,
+    "notional_initial_exchange" boolean null,
+    "notional_final_exchange" boolean null,
+    "payment_lag" text null,
+    "payment_calendar" text null,
+    "commodity_price_type" text null,
+    "future_month_offset" integer null,
+    "daily_expiry_offset" integer null,
+    "pricing_calendar" text null,
+    "equity_return_type" text null,
+    "equity_name" text null,
+    "equity_underlying_type" text null,
+    "equity_underlying_identifier_type" text null,
+    "equity_quantity" numeric(38, 12) null,
+    "equity_initial_price" numeric(38, 12) null,
+    "equity_initial_price_currency" text null,
+    "equity_dividend_factor" numeric(38, 12) null,
+    "equity_notional_reset" boolean null,
+    "equity_currency" text null,
+    "fx_index" text null,
+    "fx_reset_foreign_currency" text null,
+    "fx_reset_start_date" text null,
+    "fx_reset_foreign_amount" numeric(38, 12) null,
+    "fx_reset_fx_index" text null,
+    "fx_reset_fixing_days" integer null,
+    "fx_reset_fixing_calendar" text null,
+    "fixing_calendar" text null,
+    "digital_call_position" text null,
+    "digital_is_call_atm_included" boolean null,
+    "digital_put_position" text null,
+    "digital_is_put_atm_included" boolean null,
+    "equity_margin_initial_margin_factor" numeric(38, 12) null,
+    "equity_margin_multiplier" numeric(38, 12) null,
+    "commodity_pay_relative_to" text null,
+    "commodity_quantity_frequency" text null,
+    "pricing_date_rule" text null,
+    "indexings_from_asset_leg" boolean null,
+    "floating_index_code_2" text null,
+    "cms_duration" integer null,
+    "naked_option" boolean null,
+    "lookback" text null,
+    "rate_cutoff" integer null,
+    "local_cap_floor" boolean null,
+    "observation_lag" text null,
+    "cpi_base" numeric(38, 12) null,
+    "cpi_start_date" date null,
+    "cpi_interpolation" text null,
+    "cpi_interpolated" boolean null,
+    "subtract_inflation_notional" boolean null,
+    "zero_coupon_compounding" text null,
+    "zero_coupon_subtract_notional" boolean null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -154,18 +209,19 @@ begin
     -- Validate leg_type_code
     NEW.leg_type_code := ores_refdata_validate_leg_type_fn(NEW.tenant_id, NEW.leg_type_code);
 
-    -- Validate day_count_fraction_code
-    NEW.day_count_fraction_code := ores_refdata_validate_day_count_fraction_type_fn(NEW.tenant_id, NEW.day_count_fraction_code);
+    -- Validate day_count_fraction_code (optional field -- skip validation when null)
+    if NEW.day_count_fraction_code is not null then
+        NEW.day_count_fraction_code := ores_refdata_validate_day_count_fraction_type_fn(NEW.tenant_id, NEW.day_count_fraction_code);
+    end if;
 
-    -- Validate business_day_convention_code
-    NEW.business_day_convention_code := ores_refdata_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention_code);
+    -- Validate business_day_convention_code (optional field -- skip validation when null)
+    if NEW.business_day_convention_code is not null then
+        NEW.business_day_convention_code := ores_refdata_validate_business_day_convention_type_fn(NEW.tenant_id, NEW.business_day_convention_code);
+    end if;
 
-    -- Validate payment_frequency_code
-    NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
-
-    -- Validate floating_index_code (optional field -- skip validation when null)
-    if NEW.floating_index_code is not null then
-        NEW.floating_index_code := ores_refdata_validate_floating_index_type_fn(NEW.tenant_id, NEW.floating_index_code);
+    -- Validate payment_frequency_code (optional field -- skip validation when null)
+    if NEW.payment_frequency_code is not null then
+        NEW.payment_frequency_code := ores_refdata_validate_payment_frequency_fn(NEW.tenant_id, NEW.payment_frequency_code);
     end if;
 
     -- Validate change_reason_code

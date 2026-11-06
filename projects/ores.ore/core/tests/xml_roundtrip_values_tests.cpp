@@ -33,6 +33,7 @@
 #include "ores.ore.core/xml/generated/stress_testing.hpp"
 #include "ores.ore.core/xml/generated/todays_market.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
+#include "ores.ore.core/xml/value_differ.hpp"
 #include "ores.ore.core/xml/value_fingerprint.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
@@ -75,24 +76,6 @@ auto xml_roundtrip_values_read_file(const fs::path& path) -> std::string {
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
 
-auto fingerprint_difference(const std::vector<value_entry>& left,
-                            const std::vector<value_entry>& right) -> std::optional<std::string> {
-    for (std::size_t at = 0; at < std::min(left.size(), right.size()); ++at) {
-        if (left[at].path != right[at].path)
-            return "the source states '" + left[at].path + "' where the writing states '" +
-                   right[at].path + "'";
-        if (left[at].value != right[at].value)
-            return left[at].path + ": '" + left[at].value + "' became '" + right[at].value + "'";
-    }
-    if (left.size() != right.size()) {
-        const auto& extra = left.size() > right.size() ? left : right;
-        const auto side = left.size() > right.size() ? "the source" : "the writing";
-        return side + std::string(" alone states '") +
-               extra[std::min(left.size(), right.size())].path + "'";
-    }
-    return {};
-}
-
 /**
  * @brief Binds, writes, binds the writing, and compares the two records.
  *
@@ -101,9 +84,8 @@ auto fingerprint_difference(const std::vector<value_entry>& left,
  * is allowed to order and spell things its own way; the records are.
  */
 template <typename Record>
-auto round_trip_values(const document_type& doc,
-                       std::string_view text,
-                       std::string& report) -> bool {
+auto round_trip_values(const document_type& doc, std::string_view text, std::string& report)
+    -> bool {
     Record first{};
     const auto bound = binder::bind(doc, text, &first);
     if (!bound) {
@@ -148,9 +130,11 @@ auto round_trip_values(const document_type& doc,
         report = "the writing does not read: " + written_document.error().message;
         return false;
     }
-    if (const auto lost = fingerprint_difference(value_fingerprint(*source),
-                                                 value_fingerprint(*written_document))) {
-        report = *lost;
+    const auto differences =
+        diff_values(value_fingerprint(*source), value_fingerprint(*written_document));
+    if (!differences.empty()) {
+        for (const auto& difference : differences)
+            report += (report.empty() ? "" : "; ") + describe(difference);
         return false;
     }
     return true;

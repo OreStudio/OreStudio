@@ -74,6 +74,8 @@ struct instrument_schedule_entity {
     std::optional<bool> remove_first_date;
     std::optional<bool> remove_last_date;
     std::optional<std::string> include_duplicate_dates;
+    std::optional<std::string> base_schedule;
+    std::optional<std::string> shift;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -112,6 +114,8 @@ struct instrument_schedule_entity {
                query_builder::bind("remove_first_date", &e::remove_first_date) |
                query_builder::bind("remove_last_date", &e::remove_last_date) |
                query_builder::bind("include_duplicate_dates", &e::include_duplicate_dates) |
+               query_builder::bind("base_schedule", &e::base_schedule) |
+               query_builder::bind("shift", &e::shift) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

@@ -158,6 +158,16 @@ struct equity_position_option_underlying final {
     std::string settlement_type;
 
     /**
+     * @brief The scheme the entry's underlying is named in, as Underlying/IdentifierType states it.
+     */
+    std::optional<std::string> identifier_type;
+
+    /**
+     * @brief The entry's option exercise date, as OptionData/ExerciseDates/ExerciseDate states it.
+     */
+    std::optional<std::chrono::year_month_day> exercise_date;
+
+    /**
      * @brief Username of the person who last modified this equity position option underlying.
      */
     std::string modified_by;

@@ -1,0 +1,329 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 4E73F73B-772B-4A04-83E0-020442D7D894
+:END:
+#+title: ores.trading.instrument_barrier
+#+description: Codegen entity model for the trading =instrument_barrier= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: instrument_barrier
+#+entity_plural: instrument_barriers
+#+entity_title: Instrument Barrier
+#+created: 2026-11-04
+#+updated: 2026-11-04
+
+One barrier of a product, keyed to the trade, the list that states it and
+the barrier's ordinal in that list.
+
+ORE states a barrier as a =BarrierData= block: a type, a style, a list of
+levels and an optional rebate. Fifteen products state one, some state a
+list of them, and a generic barrier option also states a transatlantic
+barrier. Every one of them is a row here, so a product with one barrier
+holds one row, a product with several holds several, and the type, style
+and rebate belong to each barrier rather than to the product.
+
+The levels are =instrument_barrier_level= rows: a single barrier states
+one level and a double barrier states two.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+The trade this barrier belongs to.
+
+** barrier_role
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Which list of the product states the barrier: =barrier= for the product's barrier or barriers, =transatlantic= for a generic barrier option's transatlantic barrier.
+
+#+begin_src cpp :name generator
+std::string("barrier")
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+1-based ordinal of this barrier within its list, in the order the document states it.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 3)
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:group:        identity
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+The activity that wrote this version.
+
+** barrier_type
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The barrier's type, as =Type= states it, such as =UpAndOut=, =KnockIn= or =FixingCap=.
+
+#+begin_src cpp :name generator
+std::string("UpAndOut")
+#+end_src
+
+** style
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+When the barrier is observed, as =Style= states it: =American= or =European=.
+
+** strict_comparison
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+Whether the barrier triggers at the level itself, as =StrictComparison= states it.
+
+** rebate
+:PROPERTIES:
+:type:         numeric(38, 12)
+:cpp_type:     std::optional<ores::utility::decimal::decimal>
+:nullable:     true
+:END:
+
+The amount paid when the barrier triggers, as =Rebate= states it.
+
+** rebate_currency
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The currency of the rebate, as =RebateCurrency= states it.
+
+** rebate_pay_time
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+When the rebate is paid, as =RebatePayTime= states it: =atHit= or =atExpiry=.
+
+** override_triggered
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+Whether the barrier is treated as already triggered, as =OverrideTriggered= states it.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:list_by:  true
+:END:
+
+The trade that carries this barrier.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_instrument_barriers_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "barrier_role" in ('barrier', 'transatlantic') |
+| "sequence_number" >= 1 |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| trade_id | tenant_id, trade_id | false | true | |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+The C++ domain class is flat: the row is narrow, so no sub-struct
+decomposition is needed.
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: instrument_barrier
+:entity_plural_short:   instrument_barriers
+:entity_singular_words: instrument barrier
+:entity_plural_words:   instrument barriers
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: row
+:END:
+
+** Table display
+
+| column                  | header      |
+|-------------------------+-------------|
+| trade_id                | Instrument  |
+| barrier_role            | Role        |
+| sequence_number         | Sequence    |
+| barrier_type            | Type        |
+| style                   | Style       |
+| rebate                  | Rebate      |
+| recorded_at             | Recorded At |
+
+** Custom repository methods
+
+The trade read path fetches the instrument barriers of many instruments at
+once, and no generated read covers that: the generated reads address one key
+group at a time. The batch read below is one statement over the instrument
+set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 46E1F8DD-2C20-44F5-A110-4A77EA0DD522
+:END:
+
+Reads every current instrument barrier of the given instruments, in one statement. An empty input
+reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::instrument_barrier>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::instrument_barrier>
+instrument_barrier_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<instrument_barrier_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max) |
+                       query_builder::order_by("trade_id"_c, "barrier_role"_c, "sequence_number"_c);
+    return query_builder::execute_read_query<instrument_barrier_entity,
+                                             domain::instrument_barrier>(
+        ctx,
+        query,
+        [](const auto& entities) { return instrument_barrier_mapper::map(entities); },
+        lg(),
+        "Reading instrument barriers for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:72F23DED-92F8-4E83-B929-493D1C90313C][ores.trading.instrument_barrier_level]] — the barrier's levels.

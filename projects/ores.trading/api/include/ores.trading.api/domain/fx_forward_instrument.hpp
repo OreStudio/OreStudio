@@ -86,6 +86,56 @@ struct fx_forward_instrument final {
     std::string settlement;
 
     /**
+     * @brief The currency a cash-settled forward pays in, as SettlementData/Currency states it. A
+     * forward with no SettlementData states none of the settlement terms.
+     */
+    std::optional<std::string> settlement_currency;
+
+    /**
+     * @brief The FX index a cash-settled forward fixes against, as SettlementData/FXIndex states
+     * it.
+     */
+    std::optional<std::string> settlement_fx_index;
+
+    /**
+     * @brief The settlement date, as SettlementData/Date states it.
+     */
+    std::optional<std::chrono::year_month_day> settlement_date;
+
+    /**
+     * @brief The lag from the value date to payment, as SettlementData/Rules/PaymentLag states it.
+     */
+    std::optional<std::string> settlement_payment_lag;
+
+    /**
+     * @brief The calendar the payment lag counts in, as SettlementData/Rules/PaymentCalendar states
+     * it.
+     */
+    std::optional<std::string> settlement_payment_calendar;
+
+    /**
+     * @brief The convention the payment date is adjusted by, as
+     * SettlementData/Rules/PaymentConvention states it.
+     */
+    std::optional<std::string> settlement_payment_convention;
+
+    /**
+     * @brief An FX swap's far leg date, as FarDate states it. The row's own date and amounts are
+     * the near leg.
+     */
+    std::optional<std::chrono::year_month_day> far_date;
+
+    /**
+     * @brief An FX swap's far leg bought amount, as FarBoughtAmount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> far_bought_amount;
+
+    /**
+     * @brief An FX swap's far leg sold amount, as FarSoldAmount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> far_sold_amount;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -119,6 +169,17 @@ struct fx_forward_instrument final {
     ores::utility::digest::append_member(out, "sold_amount", v.sold_amount);
     ores::utility::digest::append_member(out, "value_date", v.value_date);
     ores::utility::digest::append_member(out, "settlement", v.settlement);
+    ores::utility::digest::append_member(out, "settlement_currency", v.settlement_currency);
+    ores::utility::digest::append_member(out, "settlement_fx_index", v.settlement_fx_index);
+    ores::utility::digest::append_member(out, "settlement_date", v.settlement_date);
+    ores::utility::digest::append_member(out, "settlement_payment_lag", v.settlement_payment_lag);
+    ores::utility::digest::append_member(
+        out, "settlement_payment_calendar", v.settlement_payment_calendar);
+    ores::utility::digest::append_member(
+        out, "settlement_payment_convention", v.settlement_payment_convention);
+    ores::utility::digest::append_member(out, "far_date", v.far_date);
+    ores::utility::digest::append_member(out, "far_bought_amount", v.far_bought_amount);
+    ores::utility::digest::append_member(out, "far_sold_amount", v.far_sold_amount);
     out.push_back('}');
     return out;
 }

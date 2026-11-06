@@ -49,6 +49,12 @@ std::vector<ores::diff::domain::field_value> render_equity_position_option_under
     fields.push_back({.name = "Option Type", .value = v.option_type});
     fields.push_back({.name = "Exercise Type", .value = v.exercise_type});
     fields.push_back({.name = "Settlement Type", .value = v.settlement_type});
+    fields.push_back(
+        {.name = "Identifier Type", .value = v.identifier_type.value_or(std::string{})});
+    fields.push_back({.name = "Exercise Date",
+                      .value = v.exercise_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                     *v.exercise_date) :
+                                                 std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

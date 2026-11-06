@@ -189,6 +189,36 @@ Long or Short.
 std::string("Long")
 #+end_src
 
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar the swap observes in, as =Calendar= states it.
+
+** moment_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the swap pays on variance or volatility, as =MomentType= states it.
+
+** add_past_dividends
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether dividends already paid count, as =AddPastDividends= states it.
+
 ** description
 :PROPERTIES:
 :type:     text

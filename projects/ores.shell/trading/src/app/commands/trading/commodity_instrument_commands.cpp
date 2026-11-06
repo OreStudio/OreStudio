@@ -144,7 +144,9 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<exercise_type> <average_type> <averaging_start_date> <averaging_end_date> "
         "<spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike> "
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
-        "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description> "
+        "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
+        "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
+        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> <description> "
         "<reason> <commentary>");
 
     menu->Insert(
@@ -157,7 +159,9 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<exercise_type> <average_type> <averaging_start_date> <averaging_end_date> "
         "<spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike> "
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
-        "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description> "
+        "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
+        "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
+        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> <description> "
         "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -170,7 +174,9 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<strike_price> <exercise_type> <average_type> <averaging_start_date> <averaging_end_date> "
         "<spread_commodity_code> <spread_amount> <strip_frequency_code> <variance_strike> "
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
-        "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <description> "
+        "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
+        "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
+        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> <description> "
         "<reason> <commentary>");
 
     menu->Insert(
@@ -372,8 +378,8 @@ void commodity_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 29 + 2) {
-            fail(out) << "Expected " << (29 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 38 + 2) {
+            fail(out) << "Expected " << (38 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -439,6 +445,25 @@ void commodity_instrument_commands::process_add(std::ostream& out,
         commodity_instrument_read_token(req.change.write.swaption_expiry_date,
                                         parsed->positionals[next++],
                                         "swaption_expiry_date");
+        commodity_instrument_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        commodity_instrument_read_token(
+            req.change.write.moment_type, parsed->positionals[next++], "moment_type");
+        commodity_instrument_read_token(
+            req.change.write.add_past_dividends, parsed->positionals[next++], "add_past_dividends");
+        commodity_instrument_read_token(
+            req.change.write.pay_relative_to, parsed->positionals[next++], "pay_relative_to");
+        commodity_instrument_read_token(
+            req.change.write.quantity_frequency, parsed->positionals[next++], "quantity_frequency");
+        commodity_instrument_read_token(
+            req.change.write.delivery_roll_days, parsed->positionals[next++], "delivery_roll_days");
+        commodity_instrument_read_token(req.change.write.future_month_offset,
+                                        parsed->positionals[next++],
+                                        "future_month_offset");
+        commodity_instrument_read_token(
+            req.change.write.include_period_end, parsed->positionals[next++], "include_period_end");
+        commodity_instrument_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         commodity_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -485,8 +510,8 @@ void commodity_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 29 + 2) {
-            fail(out) << "Expected " << (29 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 38 + 2) {
+            fail(out) << "Expected " << (38 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -552,6 +577,25 @@ void commodity_instrument_commands::process_set(std::ostream& out,
         commodity_instrument_read_token(req.change.write.swaption_expiry_date,
                                         parsed->positionals[next++],
                                         "swaption_expiry_date");
+        commodity_instrument_read_token(
+            req.change.write.calendar, parsed->positionals[next++], "calendar");
+        commodity_instrument_read_token(
+            req.change.write.moment_type, parsed->positionals[next++], "moment_type");
+        commodity_instrument_read_token(
+            req.change.write.add_past_dividends, parsed->positionals[next++], "add_past_dividends");
+        commodity_instrument_read_token(
+            req.change.write.pay_relative_to, parsed->positionals[next++], "pay_relative_to");
+        commodity_instrument_read_token(
+            req.change.write.quantity_frequency, parsed->positionals[next++], "quantity_frequency");
+        commodity_instrument_read_token(
+            req.change.write.delivery_roll_days, parsed->positionals[next++], "delivery_roll_days");
+        commodity_instrument_read_token(req.change.write.future_month_offset,
+                                        parsed->positionals[next++],
+                                        "future_month_offset");
+        commodity_instrument_read_token(
+            req.change.write.include_period_end, parsed->positionals[next++], "include_period_end");
+        commodity_instrument_read_token(
+            req.change.write.position, parsed->positionals[next++], "position");
         commodity_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -610,8 +654,8 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 29 + 2) {
-            fail(out) << "Expected " << (change_count * 29 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 38 + 2) {
+            fail(out) << "Expected " << (change_count * 38 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -679,6 +723,25 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             commodity_instrument_read_token(change.write.swaption_expiry_date,
                                             parsed->positionals[next++],
                                             "swaption_expiry_date");
+            commodity_instrument_read_token(
+                change.write.calendar, parsed->positionals[next++], "calendar");
+            commodity_instrument_read_token(
+                change.write.moment_type, parsed->positionals[next++], "moment_type");
+            commodity_instrument_read_token(
+                change.write.add_past_dividends, parsed->positionals[next++], "add_past_dividends");
+            commodity_instrument_read_token(
+                change.write.pay_relative_to, parsed->positionals[next++], "pay_relative_to");
+            commodity_instrument_read_token(
+                change.write.quantity_frequency, parsed->positionals[next++], "quantity_frequency");
+            commodity_instrument_read_token(
+                change.write.delivery_roll_days, parsed->positionals[next++], "delivery_roll_days");
+            commodity_instrument_read_token(change.write.future_month_offset,
+                                            parsed->positionals[next++],
+                                            "future_month_offset");
+            commodity_instrument_read_token(
+                change.write.include_period_end, parsed->positionals[next++], "include_period_end");
+            commodity_instrument_read_token(
+                change.write.position, parsed->positionals[next++], "position");
             commodity_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

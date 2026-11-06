@@ -23,6 +23,7 @@
 #include "ores.ore.core/xml/document_kind.hpp"
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::ore::xml {
@@ -76,6 +77,32 @@ struct roundtrip_summary {
  */
 ORES_ORE_CORE_EXPORT roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
                                                  const std::filesystem::path& output_dir);
+
+/**
+ * @brief What one portfolio's round trip wrote.
+ */
+struct portfolio_roundtrip {
+    /// The portfolio as the export writes it back.
+    std::string xml;
+    /// The trades a family mapped into the domain and wrote from it.
+    int trades_mapped = 0;
+    /// The ORE trade types of the trades no family mapped. Each is written back
+    /// as its type and envelope alone, so it carries none of its product.
+    std::vector<std::string> passthrough_types;
+};
+
+/**
+ * @brief Imports a portfolio into the domain and exports it back, in memory.
+ *
+ * This is the round trip the directory walk makes for each portfolio, with no
+ * file on either side, so a test can compare what it wrote with what it read.
+ *
+ * @param text The portfolio document.
+ * @param origin Where the text came from, named in a failure.
+ * @throws std::invalid_argument when the document does not bind.
+ */
+ORES_ORE_CORE_EXPORT portfolio_roundtrip roundtrip_portfolio(std::string_view text,
+                                                             std::string_view origin = {});
 
 }
 

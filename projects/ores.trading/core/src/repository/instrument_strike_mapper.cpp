@@ -58,6 +58,7 @@ domain::instrument_strike instrument_strike_mapper::map(const instrument_strike_
     r.yield_compounding = v.yield_compounding;
     r.bare_value = v.bare_value;
     r.bare_currency = v.bare_currency;
+    r.long_short = v.long_short;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -84,6 +85,7 @@ instrument_strike_entity instrument_strike_mapper::map(const domain::instrument_
     r.yield_compounding = v.yield_compounding;
     r.bare_value = v.bare_value;
     r.bare_currency = v.bare_currency;
+    r.long_short = v.long_short;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

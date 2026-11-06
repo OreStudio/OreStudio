@@ -110,6 +110,26 @@ struct equity_digital_option_instrument final {
     std::optional<ores::utility::decimal::decimal> payout_amount;
 
     /**
+     * @brief The date the barrier starts to be monitored, as StartDate states it.
+     */
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+
+    /**
+     * @brief The calendar the barrier is monitored in, as Calendar states it.
+     */
+    std::optional<std::string> barrier_calendar;
+
+    /**
+     * @brief The index the barrier is observed against, as EQIndex states it.
+     */
+    std::optional<std::string> barrier_fixing_index;
+
+    /**
+     * @brief The number of units the option pays on, as Quantity states it.
+     */
+    std::optional<ores::utility::decimal::decimal> quantity;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -149,6 +169,10 @@ struct equity_digital_option_instrument final {
     ores::utility::digest::append_member(out, "expiry_date", v.expiry_date);
     ores::utility::digest::append_member(out, "long_short", v.long_short);
     ores::utility::digest::append_member(out, "payout_amount", v.payout_amount);
+    ores::utility::digest::append_member(out, "barrier_start_date", v.barrier_start_date);
+    ores::utility::digest::append_member(out, "barrier_calendar", v.barrier_calendar);
+    ores::utility::digest::append_member(out, "barrier_fixing_index", v.barrier_fixing_index);
+    ores::utility::digest::append_member(out, "quantity", v.quantity);
     out.push_back('}');
     return out;
 }

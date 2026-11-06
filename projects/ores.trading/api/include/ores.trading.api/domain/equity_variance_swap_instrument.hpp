@@ -88,6 +88,21 @@ struct equity_variance_swap_instrument final {
     std::string long_short;
 
     /**
+     * @brief The calendar the swap observes in, as Calendar states it.
+     */
+    std::optional<std::string> calendar;
+
+    /**
+     * @brief Whether the swap pays on variance or volatility, as MomentType states it.
+     */
+    std::optional<std::string> moment_type;
+
+    /**
+     * @brief Whether dividends already paid count, as AddPastDividends states it.
+     */
+    std::optional<bool> add_past_dividends;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -124,6 +139,9 @@ struct equity_variance_swap_instrument final {
     ores::utility::digest::append_member(out, "start_date", v.start_date);
     ores::utility::digest::append_member(out, "maturity_date", v.maturity_date);
     ores::utility::digest::append_member(out, "long_short", v.long_short);
+    ores::utility::digest::append_member(out, "calendar", v.calendar);
+    ores::utility::digest::append_member(out, "moment_type", v.moment_type);
+    ores::utility::digest::append_member(out, "add_past_dividends", v.add_past_dividends);
     out.push_back('}');
     return out;
 }

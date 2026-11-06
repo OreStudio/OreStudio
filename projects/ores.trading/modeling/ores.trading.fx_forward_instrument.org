@@ -169,6 +169,96 @@ std::chrono::year_month_day{std::chrono::year{2024}/6/15}
 
 Optional settlement method (e.g. Cash, Physical).
 
+** settlement_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The currency a cash-settled forward pays in, as =SettlementData/Currency= states it. A forward with no SettlementData states none of the settlement terms.
+
+** settlement_fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The FX index a cash-settled forward fixes against, as =SettlementData/FXIndex= states it.
+
+** settlement_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The settlement date, as =SettlementData/Date= states it.
+
+** settlement_payment_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The lag from the value date to payment, as =SettlementData/Rules/PaymentLag= states it.
+
+** settlement_payment_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar the payment lag counts in, as =SettlementData/Rules/PaymentCalendar= states it.
+
+** settlement_payment_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The convention the payment date is adjusted by, as =SettlementData/Rules/PaymentConvention= states it.
+
+** far_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+An FX swap's far leg date, as =FarDate= states it. The row's own date and amounts are the near leg.
+
+** far_bought_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+An FX swap's far leg bought amount, as =FarBoughtAmount= states it.
+
+** far_sold_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+An FX swap's far leg sold amount, as =FarSoldAmount= states it.
+
 ** description
 :PROPERTIES:
 :type:     text

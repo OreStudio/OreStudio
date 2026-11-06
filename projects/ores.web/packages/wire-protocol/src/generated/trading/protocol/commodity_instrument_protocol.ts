@@ -61,6 +61,15 @@ export interface CommodityInstrumentWrite {
     day_count_fraction_code: string;
     payment_frequency_code: string;
     swaption_expiry_date: string | null;
+    calendar: string | null;
+    moment_type: string | null;
+    add_past_dividends: boolean | null;
+    pay_relative_to: string | null;
+    quantity_frequency: string | null;
+    delivery_roll_days: number | null;
+    future_month_offset: number | null;
+    include_period_end: boolean | null;
+    position: string | null;
     description: string;
 }
 

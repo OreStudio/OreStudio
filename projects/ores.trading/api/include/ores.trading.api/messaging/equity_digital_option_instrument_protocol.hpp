@@ -62,6 +62,10 @@ struct equity_digital_option_instrument_write {
     std::chrono::year_month_day expiry_date;
     std::string long_short;
     std::optional<ores::utility::decimal::decimal> payout_amount;
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+    std::optional<std::string> barrier_calendar;
+    std::optional<std::string> barrier_fixing_index;
+    std::optional<ores::utility::decimal::decimal> quantity;
     std::string description;
 
     friend bool operator==(const equity_digital_option_instrument_write&,
@@ -431,6 +435,13 @@ wire_fields(std::type_identity<equity_digital_option_instrument_write>) {
         utility::codec::field{"long_short", &equity_digital_option_instrument_write::long_short},
         utility::codec::field{"payout_amount",
                               &equity_digital_option_instrument_write::payout_amount},
+        utility::codec::field{"barrier_start_date",
+                              &equity_digital_option_instrument_write::barrier_start_date},
+        utility::codec::field{"barrier_calendar",
+                              &equity_digital_option_instrument_write::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &equity_digital_option_instrument_write::barrier_fixing_index},
+        utility::codec::field{"quantity", &equity_digital_option_instrument_write::quantity},
         utility::codec::field{"description", &equity_digital_option_instrument_write::description},
     };
 }

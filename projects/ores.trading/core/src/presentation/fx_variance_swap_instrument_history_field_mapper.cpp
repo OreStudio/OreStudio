@@ -53,6 +53,10 @@ render_fx_variance_swap_instrument_fields(const domain::fx_variance_swap_instrum
     fields.push_back({.name = "Strike", .value = std::to_string(v.strike)});
     fields.push_back({.name = "Notional", .value = v.notional.to_string()});
     fields.push_back({.name = "Moment Type", .value = v.moment_type});
+    fields.push_back({.name = "Calendar", .value = v.calendar.value_or(std::string{})});
+    fields.push_back({.name = "Add Past Dividends",
+                      .value = v.add_past_dividends ? (*v.add_past_dividends ? "true" : "false") :
+                                                      std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

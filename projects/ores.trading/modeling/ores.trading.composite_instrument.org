@@ -17,13 +17,15 @@
 #+updated: 2026-09-27
 
 Represents the composite product types ORE states. =trade_type_code=
-discriminates the exact product, and the constituent trades live in the
-=composite_legs= child table keyed by this instrument's =trade_id=.
+discriminates the exact product.
 
-The parent row carries only the basket identity and its optional free-text
-description: the basket's constituents are child rows, so there is no
-per-leg block to hold here. The table is bi-temporal and audited, so the
-model takes the ordinary audited shape and needs no shape flag.
+A composite trade's components are trades of their own, joined to the
+composite by a structure of the =CompositeTrade= template: the composite
+holds the =composite= role and each component the =trade= or =sub_trade=
+role it held in the document. This row keeps the composite's own terms:
+its currency, how its notional is formed, the basket's name and index
+quantity. The table is bi-temporal and audited, so the model takes the
+ordinary audited shape and needs no shape flag.
 
 * Flags
 :PROPERTIES:
@@ -107,6 +109,216 @@ Optional free-text description.
 std::string(faker::lorem::sentence())
 #+end_src
 
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The currency a composite trade is priced in, as =Currency= states it. Null for a total return swap or a contract for difference, which state no such field.
+
+** notional_calculation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How the composite's notional is formed from its components', as =NotionalCalculation= states it: =Sum=, =Mean=, =First=, =Last=, =Min=, =Max= or =Override=.
+
+** notional_override
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The notional the composite states outright, as =NotionalOverride= states it, when the calculation is =Override=.
+
+** portfolio_basket
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the composite is a portfolio basket, as =PortfolioBasket= states it.
+
+** index_quantity
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The quantity of a portfolio basket's index, as =IndexQuantity= states it.
+
+** return_payer
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the trade pays the underlying's return, as =ReturnData/Payer= states it.
+
+** return_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The currency the return is paid in, as =ReturnData/Currency= states it.
+
+** return_observation_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How far before each period the return is observed, as =ReturnData/ObservationLag= states it.
+
+** return_observation_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The business day convention of the observations, as =ReturnData/ObservationConvention= states it.
+
+** return_observation_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar the observations are adjusted on, as =ReturnData/ObservationCalendar= states it.
+
+** return_payment_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How far after each period the return is paid, as =ReturnData/PaymentLag= states it.
+
+** return_payment_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The business day convention of the return payments, as =ReturnData/PaymentConvention= states it.
+
+** return_payment_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar the return payments are adjusted on, as =ReturnData/PaymentCalendar= states it.
+
+** return_initial_price
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The underlying's price at the start, as =ReturnData/InitialPrice= states it.
+
+** return_initial_price_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The currency of the initial price, as =ReturnData/InitialPriceCurrency= states it.
+
+** return_fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The FX indices that convert the underlyings' currencies into the return's, as =ReturnData/FXTerms/FXIndex= states them, in order and separated by spaces.
+
+** return_pay_underlying_cash_flows_immediately
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the underlying's cash flows are paid when they occur, as =ReturnData/PayUnderlyingCashFlowsImmediately= states it.
+
+** funding_notional_types
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The notional type of each funding leg, as =FundingData/NotionalType= states them, in order and separated by spaces.
+
+** underlying_basket_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The name of the portfolio index the trade pays the return of, as =UnderlyingData/PortfolioIndexTradeData/BasketName= states it.
+
+** underlying_index_quantity
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The quantity of that index, as =PortfolioIndexTradeData/IndexQuantity= states it.
+
+** underlying_price_is_per_unit
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the index's price is per unit, as =PortfolioIndexTradeData/PriceIsPerUnit= states it.
+
 * Foreign keys
 
 ** trade_id
@@ -158,6 +370,54 @@ is immutable.
     }
 #+end_src
 
+* Delete cascade
+
+The rows a total return swap or a contract for difference owns: its funding
+legs and their children, and its return schedule and payment dates. Each is
+keyed by the trade, so the delete rule closes them with the instrument.
+
+** swap_legs
+:PROPERTIES:
+:table:  ores_trading_swap_legs_tbl
+:column: trade_id
+:END:
+
+** swap_leg_amounts
+:PROPERTIES:
+:table:  ores_trading_swap_leg_amounts_tbl
+:column: trade_id
+:END:
+
+** swap_leg_rates
+:PROPERTIES:
+:table:  ores_trading_swap_leg_rates_tbl
+:column: trade_id
+:END:
+
+** swap_leg_amortizations
+:PROPERTIES:
+:table:  ores_trading_swap_leg_amortizations_tbl
+:column: trade_id
+:END:
+
+** swap_leg_indexings
+:PROPERTIES:
+:table:  ores_trading_swap_leg_indexings_tbl
+:column: trade_id
+:END:
+
+** instrument_schedules
+:PROPERTIES:
+:table:  ores_trading_instrument_schedules_tbl
+:column: trade_id
+:END:
+
+** instrument_schedule_dates
+:PROPERTIES:
+:table:  ores_trading_instrument_schedule_dates_tbl
+:column: trade_id
+:END:
+
 * SQL
 
 ** Flags
@@ -188,181 +448,6 @@ unaffected -- only the domain class and the mapper's domain-side accesses
 nest. The entity templates consume these annotations; domain and
 repository profiles regenerate correctly.
 
-** Protocol includes
-The composed write states its legs with the leg type, and the derived
-instrument type is already included by the template.
-
-#+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
-#include "ores.trading.api/domain/composite_leg.hpp"
-#+end_src
-
-** Service declarations
-The composed service writes the instrument first, then its leg set,
-because the leg table's trigger refuses a leg whose parent is not
-current. The generated surface serves one entity at a time, so the two
-calls that express the composition are carried here. Both bodies build
-their own repositories, so the service holds no member the generated
-class does not already state.
-
-#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
-    /**
-     * @brief Reads the legs of one composite instrument, ordered by leg sequence.
-     */
-    std::vector<domain::composite_leg> get_legs(const std::string& trade_id);
-
-    /**
-     * @brief Writes the instrument and replaces its whole leg set.
-     *
-     * One transaction from the caller's view: the instrument row is written
-     * first, then every leg the request states. The legs the instrument
-     * carried before are removed first, so a save states the whole basket
-     * rather than appending to it.
-     */
-    void save_composite_instrument(const domain::composite_instrument& v,
-                                   const std::vector<domain::composite_leg>& legs);
-#+end_src
-
-** Service implementations
-#+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
-std::vector<domain::composite_leg>
-composite_instrument_service::get_legs(const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting legs for composite instrument: " << trade_id;
-    repository::composite_leg_repository leg_repo;
-    return leg_repo.read_latest(ctx_, std::vector<std::string>{trade_id});
-}
-
-void composite_instrument_service::save_composite_instrument(
-    const domain::composite_instrument& v, const std::vector<domain::composite_leg>& legs) {
-    auto t = v;
-    if (t.identity.trade_id.is_nil()) {
-        static boost::uuids::random_generator gen;
-        t.identity.trade_id = gen();
-    }
-    const auto id_str = boost::uuids::to_string(t.identity.trade_id);
-    BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.identity.trade_id
-                               << " with " << legs.size() << " legs";
-    stamp(t.identity, ctx_);
-    stamp(t.audit, ctx_);
-    repository::composite_leg_repository leg_repo;
-    repository::composite_instrument_repository instrument_repo;
-    std::vector<std::string> stale_leg_ids;
-    for (const auto& existing : leg_repo.read_latest(ctx_, std::vector<std::string>{id_str}))
-        stale_leg_ids.push_back(boost::uuids::to_string(existing.identity.id));
-    if (!stale_leg_ids.empty())
-        leg_repo.remove(ctx_, stale_leg_ids);
-    instrument_repo.write(ctx_, t);
-    for (auto leg : legs) {
-        leg.identity.trade_id = t.identity.trade_id;
-        stamp(leg, ctx_);
-        leg_repo.write(ctx_, leg);
-    }
-    BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.identity.trade_id;
-}
-#+end_src
-
-** Service includes
-#+begin_src cpp :name service_includes :implements A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
-#include "ores.trading.api/domain/composite_leg.hpp"
-#include "ores.trading.core/repository/composite_leg_repository.hpp"
-#include <boost/uuid/random_generator.hpp>
-#+end_src
-
-** Handler methods
-
-The composed write reads and writes legs through the instrument service,
-which owns both repositories. The registrar subscribes these subjects, so
-the methods sit on the handler's public surface.
-
-#+begin_src cpp :name handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
-    void put_with_legs(ores::nats::message msg) {
-        BOOST_LOG_SEV(composite_instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "trading::composite_instruments:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<put_composite_instrument_with_legs_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(composite_instrument_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        put_composite_instrument_with_legs_response resp;
-        try {
-            service::composite_instrument_service svc(req_ctx);
-            auto instrument = req->instrument;
-            svc.save_composite_instrument(instrument, req->legs);
-            resp.instrument = std::move(instrument);
-            resp.result.outcome = ores::utility::domain::outcome::ok;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(composite_instrument_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.result.outcome = ores::utility::domain::outcome::failed;
-            resp.result.code = "internal_error";
-            resp.result.message = e.what();
-        }
-        reply(nats_, msg, resp);
-    }
-
-    void get_legs_read(ores::nats::message msg) {
-        BOOST_LOG_SEV(composite_instrument_handler_lg(), debug)
-            << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!req_ctx_expected) {
-            error_reply(nats_, msg, req_ctx_expected.error());
-            return;
-        }
-        const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "trading::composite_instruments:read")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        auto req = decode<get_composite_instrument_legs_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(composite_instrument_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
-            error_reply(nats_, msg, ores::service::error_code::bad_request);
-            return;
-        }
-        get_composite_instrument_legs_response resp;
-        try {
-            service::composite_instrument_service svc(req_ctx);
-            resp.legs = svc.get_legs(req->trade_id);
-            resp.result.outcome = ores::utility::domain::outcome::ok;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(composite_instrument_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.result.outcome = ores::utility::domain::outcome::failed;
-            resp.result.code = "internal_error";
-            resp.result.message = e.what();
-        }
-        reply(nats_, msg, resp);
-    }
-#+end_src
-
-** Registrar subscriptions
-
-The two declared subjects are subscribed beside the derived ones, because
-the derivation owns only the CRUD surface.
-
-#+begin_src cpp :name registrar :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
-    subs.push_back(nats.queue_subscribe(
-        put_composite_instrument_with_legs_request::nats_subject, composite_instrument_queue_group,
-        [h](ores::nats::message msg) { h->put_with_legs(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_composite_instrument_legs_request::nats_subject, composite_instrument_queue_group,
-        [h](ores::nats::message msg) { h->get_legs_read(std::move(msg)); }));
-#+end_src
-
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
@@ -383,7 +468,9 @@ the derivation owns only the CRUD surface.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #+end_src
 
 ** Conventions
@@ -412,81 +499,6 @@ repository includes it.
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
 #include "ores.trading.core/repository/trade_write_observation.hpp"
 #+end_src
-
-* Messages
-
-The basket and its constituent legs are one user-visible write: a basket
-is meaningless without its legs, and the leg table's insert trigger
-refuses a leg whose parent is not current yet. The derived write carries
-the instrument alone, so the composed write and the by-instrument leg
-read are stated here, beside the derived protocol, and the handler serves
-them from this same model.
-
-** put_composite_instrument_with_legs_request
-:PROPERTIES:
-:subject:  trading.v1.ops.put_composite_instrument_with_legs
-:response: put_composite_instrument_with_legs_response
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief Writes a composite instrument and replaces its whole leg set.
- *
- * One request rather than two, because the store refuses a leg whose
- * parent is not current: the instrument row and its legs have to reach
- * one handler in order. The leg set the request states replaces whatever
- * the instrument carried before.
- */
-#+end_src
-
-*** instrument
-:PROPERTIES:
-:cpp_type: ores::trading::domain::composite_instrument
-:END:
-
-*** legs
-:PROPERTIES:
-:cpp_type: std::vector<ores::trading::domain::composite_leg>
-:END:
-
-** put_composite_instrument_with_legs_response
-:PROPERTIES:
-:END:
-
-*** result
-:PROPERTIES:
-:cpp_type: ores::utility::domain::result
-:END:
-
-*** instrument
-:PROPERTIES:
-:cpp_type: ores::trading::domain::composite_instrument
-:END:
-
-** get_composite_instrument_legs_request
-:PROPERTIES:
-:subject:  trading.v1.ops.get_composite_instrument_legs
-:response: get_composite_instrument_legs_response
-:END:
-
-*** trade_id
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-** get_composite_instrument_legs_response
-:PROPERTIES:
-:END:
-
-*** result
-:PROPERTIES:
-:cpp_type: ores::utility::domain::result
-:END:
-
-*** legs
-:PROPERTIES:
-:cpp_type: std::vector<ores::trading::domain::composite_leg>
-:END:
 
 * See also
 

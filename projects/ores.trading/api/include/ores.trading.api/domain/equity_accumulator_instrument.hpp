@@ -125,6 +125,21 @@ struct equity_accumulator_instrument final {
     std::string payoff_type;
 
     /**
+     * @brief The lag from a fixing to its settlement, as SettlementLag states it.
+     */
+    std::optional<std::string> settlement_lag;
+
+    /**
+     * @brief The calendar the settlement lag counts in, as SettlementCalendar states it.
+     */
+    std::optional<std::string> settlement_calendar;
+
+    /**
+     * @brief The convention the settlement date is adjusted by, as SettlementConvention states it.
+     */
+    std::optional<std::string> settlement_convention;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -165,6 +180,9 @@ struct equity_accumulator_instrument final {
     ores::utility::digest::append_member(out, "target_amount", v.target_amount);
     ores::utility::digest::append_member(out, "target_type", v.target_type);
     ores::utility::digest::append_member(out, "payoff_type", v.payoff_type);
+    ores::utility::digest::append_member(out, "settlement_lag", v.settlement_lag);
+    ores::utility::digest::append_member(out, "settlement_calendar", v.settlement_calendar);
+    ores::utility::digest::append_member(out, "settlement_convention", v.settlement_convention);
     out.push_back('}');
     return out;
 }

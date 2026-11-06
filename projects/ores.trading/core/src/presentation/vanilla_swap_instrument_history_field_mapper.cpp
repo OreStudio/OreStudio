@@ -44,6 +44,14 @@ render_vanilla_swap_instrument_fields(const domain::vanilla_swap_instrument& v) 
     fields.push_back(
         {.name = "Settlement Lag",
          .value = v.settlement_lag ? std::to_string(*v.settlement_lag) : std::string{}});
+    fields.push_back({.name = "Settlement", .value = v.settlement.value_or(std::string{})});
+    fields.push_back({.name = "Round Netted Floating Legs",
+                      .value = v.round_netted_floating_legs ?
+                                   (*v.round_netted_floating_legs ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back(
+        {.name = "Netting Precision",
+         .value = v.netting_precision ? std::to_string(*v.netting_precision) : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

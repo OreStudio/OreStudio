@@ -63,10 +63,22 @@ struct equity_option_instrument_entity {
     std::string option_type;
     ores::utility::decimal::decimal strike;
     std::chrono::year_month_day expiry_date;
-    std::string exercise_type;
+    std::optional<std::string> exercise_type;
     std::string long_short;
     std::optional<std::string> settlement_type;
     std::optional<std::string> cliquet_frequency;
+    std::optional<std::string> strike_currency;
+    std::optional<ores::utility::decimal::decimal> local_cap;
+    std::optional<ores::utility::decimal::decimal> local_floor;
+    std::optional<ores::utility::decimal::decimal> global_cap;
+    std::optional<ores::utility::decimal::decimal> global_floor;
+    std::optional<int> settlement_days;
+    std::optional<ores::utility::decimal::decimal> premium;
+    std::optional<std::chrono::year_month_day> premium_payment_date;
+    std::optional<ores::utility::decimal::decimal> initial_price_1;
+    std::optional<ores::utility::decimal::decimal> initial_price_2;
+    std::optional<ores::utility::decimal::decimal> knock_in_price;
+    std::optional<ores::utility::decimal::decimal> knock_out_price;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -97,6 +109,18 @@ struct equity_option_instrument_entity {
                query_builder::bind("long_short", &e::long_short) |
                query_builder::bind("settlement_type", &e::settlement_type) |
                query_builder::bind("cliquet_frequency", &e::cliquet_frequency) |
+               query_builder::bind("strike_currency", &e::strike_currency) |
+               query_builder::bind("local_cap", &e::local_cap) |
+               query_builder::bind("local_floor", &e::local_floor) |
+               query_builder::bind("global_cap", &e::global_cap) |
+               query_builder::bind("global_floor", &e::global_floor) |
+               query_builder::bind("settlement_days", &e::settlement_days) |
+               query_builder::bind("premium", &e::premium) |
+               query_builder::bind("premium_payment_date", &e::premium_payment_date) |
+               query_builder::bind("initial_price_1", &e::initial_price_1) |
+               query_builder::bind("initial_price_2", &e::initial_price_2) |
+               query_builder::bind("knock_in_price", &e::knock_in_price) |
+               query_builder::bind("knock_out_price", &e::knock_out_price) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

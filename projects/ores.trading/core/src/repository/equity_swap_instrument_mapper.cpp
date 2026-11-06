@@ -61,7 +61,16 @@ equity_swap_instrument_mapper::map(const equity_swap_instrument_entity& v) {
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.long_short = v.long_short;
-    r.payment_frequency_code = v.payment_frequency_code;
+    r.payment_frequency_code = v.payment_frequency_code.value_or("");
+    r.fixed_rate = v.fixed_rate;
+    r.floating_index = v.floating_index;
+    r.floating_spread = v.floating_spread;
+    r.floating_day_count_fraction = v.floating_day_count_fraction;
+    r.initial_fixed_rate = v.initial_fixed_rate;
+    r.knock_in_level = v.knock_in_level;
+    r.bermudan_knock_in = v.bermudan_knock_in;
+    r.accruing_fixed_coupons = v.accruing_fixed_coupons;
+    r.accumulating_fixed_coupons = v.accumulating_fixed_coupons;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -91,7 +100,17 @@ equity_swap_instrument_mapper::map(const domain::equity_swap_instrument& v) {
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.long_short = v.long_short;
-    r.payment_frequency_code = v.payment_frequency_code;
+    r.payment_frequency_code =
+        v.payment_frequency_code.empty() ? std::nullopt : std::optional(v.payment_frequency_code);
+    r.fixed_rate = v.fixed_rate;
+    r.floating_index = v.floating_index;
+    r.floating_spread = v.floating_spread;
+    r.floating_day_count_fraction = v.floating_day_count_fraction;
+    r.initial_fixed_rate = v.initial_fixed_rate;
+    r.knock_in_level = v.knock_in_level;
+    r.bermudan_knock_in = v.bermudan_knock_in;
+    r.accruing_fixed_coupons = v.accruing_fixed_coupons;
+    r.accumulating_fixed_coupons = v.accumulating_fixed_coupons;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

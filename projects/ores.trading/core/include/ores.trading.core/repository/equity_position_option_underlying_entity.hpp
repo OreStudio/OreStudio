@@ -63,6 +63,8 @@ struct equity_position_option_underlying_entity {
     std::optional<std::string> option_type;
     std::optional<std::string> exercise_type;
     std::optional<std::string> settlement_type;
+    std::optional<std::string> identifier_type;
+    std::optional<std::chrono::year_month_day> exercise_date;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -88,6 +90,8 @@ struct equity_position_option_underlying_entity {
                query_builder::bind("option_type", &e::option_type) |
                query_builder::bind("exercise_type", &e::exercise_type) |
                query_builder::bind("settlement_type", &e::settlement_type) |
+               query_builder::bind("identifier_type", &e::identifier_type) |
+               query_builder::bind("exercise_date", &e::exercise_date) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

@@ -43,6 +43,9 @@ export interface EquityVarianceSwapInstrumentWrite {
     start_date: string;
     maturity_date: string;
     long_short: string;
+    calendar: string | null;
+    moment_type: string | null;
+    add_past_dividends: boolean | null;
     description: string;
 }
 

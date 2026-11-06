@@ -55,6 +55,10 @@ namespace ores::trading::domain {
         utility::codec::field{"start_date", &equity_variance_swap_instrument::start_date},
         utility::codec::field{"maturity_date", &equity_variance_swap_instrument::maturity_date},
         utility::codec::field{"long_short", &equity_variance_swap_instrument::long_short},
+        utility::codec::field{"calendar", &equity_variance_swap_instrument::calendar},
+        utility::codec::field{"moment_type", &equity_variance_swap_instrument::moment_type},
+        utility::codec::field{"add_past_dividends",
+                              &equity_variance_swap_instrument::add_past_dividends},
         utility::codec::field{"description", &equity_variance_swap_instrument::description},
         utility::codec::field{"audit", &equity_variance_swap_instrument::audit},
     };

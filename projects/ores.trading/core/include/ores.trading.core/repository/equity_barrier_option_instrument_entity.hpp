@@ -70,6 +70,9 @@ struct equity_barrier_option_instrument_entity {
     std::optional<ores::utility::decimal::decimal> upper_barrier;
     std::optional<std::string> upper_barrier_type;
     std::optional<ores::utility::decimal::decimal> rebate;
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+    std::optional<std::string> barrier_calendar;
+    std::optional<std::string> barrier_fixing_index;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -103,6 +106,9 @@ struct equity_barrier_option_instrument_entity {
                query_builder::bind("upper_barrier", &e::upper_barrier) |
                query_builder::bind("upper_barrier_type", &e::upper_barrier_type) |
                query_builder::bind("rebate", &e::rebate) |
+               query_builder::bind("barrier_start_date", &e::barrier_start_date) |
+               query_builder::bind("barrier_calendar", &e::barrier_calendar) |
+               query_builder::bind("barrier_fixing_index", &e::barrier_fixing_index) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

@@ -52,6 +52,7 @@ create table if not exists "ores_trading_fx_asian_forward_instruments_tbl" (
     "fixing_amount" numeric(38, 12) null,
     "target_amount" numeric(38, 12) null,
     "strike" numeric(38, 12) null,
+    "fixed_payer" boolean null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,

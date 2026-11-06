@@ -1,0 +1,396 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: F01A62A4-060A-4AA3-B24B-2A3675477D4D
+:END:
+#+title: ores.trading.instrument_underlying
+#+description: Codegen entity model for the trading =instrument_underlying= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: instrument_underlying
+#+entity_plural: instrument_underlyings
+#+entity_title: Instrument Underlying
+#+created: 2026-11-04
+#+updated: 2026-11-04
+
+One underlying of a product, keyed to the trade, the list that states it and
+the underlying's ordinal in that list.
+
+ORE states an underlying as an =Underlying= block of its =underlying= type:
+a type and a name, and optionally an identifier type, a currency, an
+exchange, a weight, a price type and the commodity future terms. Twenty-four
+places in ORE's schema state one, some once and some as a list. Every block
+is a row here, so a product with one underlying holds one row and a basket
+or a position holds one per member.
+
+A product's fact row keeps the first underlying's name as its summary; the
+rows keep everything the document states.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+The trade this underlying belongs to.
+
+** underlying_role
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Which list of the product states the underlying: =underlying= for the product's =Underlying= or =Underlyings=.
+
+#+begin_src cpp :name generator
+std::string("underlying")
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:END:
+
+1-based ordinal of this underlying within its list, in the order the document states it.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 3)
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:group:        identity
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:END:
+
+The activity that wrote this version.
+
+** underlying_type
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The kind of underlying, as =Type= states it, such as =Equity=, =FX=, =Commodity= or =Bond=.
+
+#+begin_src cpp :name generator
+std::string("Equity")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+The underlying's name, as =Name= states it.
+
+#+begin_src cpp :name generator
+std::string("RIC:.SPX")
+#+end_src
+
+** identifier_type
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The scheme the name is stated in, as =IdentifierType= states it, such as =RIC= or =ISIN=.
+
+** currency
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The underlying's currency, as =Currency= states it.
+
+** exchange
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The exchange the underlying trades on, as =Exchange= states it.
+
+** weight
+:PROPERTIES:
+:type:         numeric(38, 12)
+:cpp_type:     std::optional<ores::utility::decimal::decimal>
+:nullable:     true
+:END:
+
+The underlying's weight in its list, as =Weight= states it.
+
+** price_type
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The commodity price the underlying is observed at, as =PriceType= states it: =Spot= or =FutureSettlement=.
+
+** future_month_offset
+:PROPERTIES:
+:type:         integer
+:cpp_type:     std::optional<int>
+:nullable:     true
+:END:
+
+The commodity future contract months ahead of the observation, as =FutureMonthOffset= states it.
+
+** delivery_roll_days
+:PROPERTIES:
+:type:         integer
+:cpp_type:     std::optional<int>
+:nullable:     true
+:END:
+
+The days before expiry the commodity future rolls, as =DeliveryRollDays= states it.
+
+** delivery_roll_calendar
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The calendar the roll days count in, as =DeliveryRollCalendar= states it.
+
+** future_expiry_date
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The commodity future's expiry date, as =FutureExpiryDate= states it.
+
+** future_contract_month
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The commodity future's contract month, as =FutureContractMonth= states it.
+
+** interpolation
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+How a commodity price between contracts is interpolated, as =Interpolation= states it.
+
+** bid_ask_adjustment
+:PROPERTIES:
+:type:         numeric(38, 12)
+:cpp_type:     std::optional<ores::utility::decimal::decimal>
+:nullable:     true
+:END:
+
+The adjustment applied to the bond price, as =BidAskAdjustment= states it.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:list_by:  true
+:END:
+
+The trade that carries this underlying.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_instrument_underlyings_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|---|
+| "underlying_role" in ('underlying') |
+| "sequence_number" >= 1 |
+
+** Indexes
+
+| name | columns | unique | current_only | where_extra |
+|------+---------+--------+--------------+-------------|
+| trade_id | tenant_id, trade_id | false | true | |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function |
+|--------+----------------------|
+
+* C++
+
+The C++ domain class is flat: the row is narrow, so no sub-struct
+decomposition is needed.
+
+** Flags
+:PROPERTIES:
+:subcomponent:         api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: instrument_underlying
+:entity_plural_short:   instrument_underlyings
+:entity_singular_words: instrument underlying
+:entity_plural_words:   instrument underlyings
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: row
+:END:
+
+** Table display
+
+| column                  | header      |
+|-------------------------+-------------|
+| trade_id                | Instrument  |
+| underlying_role         | Role        |
+| sequence_number         | Sequence    |
+| underlying_type         | Type        |
+| name                    | Name        |
+| weight                  | Weight      |
+| recorded_at             | Recorded At |
+
+** Custom repository methods
+
+The trade read path fetches the instrument underlyings of many instruments at
+once, and no generated read covers that: the generated reads address one key
+group at a time. The batch read below is one statement over the instrument
+set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: EA991EE0-0AFD-474B-903C-E52BAF895BDB
+:END:
+
+Reads every current instrument underlying of the given instruments, in one statement. An empty input
+reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::instrument_underlying>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::instrument_underlying>
+instrument_underlying_repository::read_by_instruments_batch(
+    context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<instrument_underlying_entity>> |
+                       query_builder::where("tenant_id"_c == tid &&
+                             "trade_id"_c.in(trade_ids) && "valid_to"_c == max) |
+                       query_builder::order_by("trade_id"_c, "underlying_role"_c, "sequence_number"_c);
+    return query_builder::execute_read_query<instrument_underlying_entity,
+                                             domain::instrument_underlying>(
+        ctx,
+        query,
+        [](const auto& entities) { return instrument_underlying_mapper::map(entities); },
+        lg(),
+        "Reading instrument underlyings for multiple instruments.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:4E73F73B-772B-4A04-83E0-020442D7D894][ores.trading.instrument_barrier]] — the barrier rows this entity is shaped after.

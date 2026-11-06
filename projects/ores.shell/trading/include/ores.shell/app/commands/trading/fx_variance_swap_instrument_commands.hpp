@@ -88,8 +88,8 @@ public:
 
     /**
      * @brief add <trade_id> <trade_type_code> <trade_activity_id> <start_date> <end_date>
-     * <currency> <underlying_code> <long_short> <strike> <notional> <moment_type> <description>
-     * <reason> <commentary>
+     * <currency> <underlying_code> <long_short> <strike> <notional> <moment_type> <calendar>
+     * <add_past_dividends> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +97,8 @@ public:
 
     /**
      * @brief set <trade_id> <trade_type_code> <trade_activity_id> <start_date> <end_date>
-     * <currency> <underlying_code> <long_short> <strike> <notional> <moment_type> <description>
-     * <reason> <commentary> [--version <n>]
+     * <currency> <underlying_code> <long_short> <strike> <notional> <moment_type> <calendar>
+     * <add_past_dividends> <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +107,7 @@ public:
     /**
      * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <start_date>
      * <end_date> <currency> <underlying_code> <long_short> <strike> <notional> <moment_type>
-     * <description> <reason> <commentary>
+     * <calendar> <add_past_dividends> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

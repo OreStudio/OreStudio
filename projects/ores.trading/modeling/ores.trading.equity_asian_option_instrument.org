@@ -181,7 +181,7 @@ std::chrono::year_month_day{std::chrono::year{2026}/1/28}
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :economic: true
 :END:
 
@@ -252,6 +252,26 @@ Averaging period end (ISO 8601 date string).
 #+begin_src cpp :name generator
 std::chrono::year_month_day{std::chrono::year{2026}/1/19}
 #+end_src
+
+** settlement
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+How the option settles, as =Settlement= states it.
+
+** strike_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The currency the strike is stated in, as =StrikeData/Currency= states it.
 
 ** description
 :PROPERTIES:
@@ -333,7 +353,7 @@ is immutable.
 | "underlying_name" <> '' |
 | "currency" <> '' |
 | "option_type" in ('Call', 'Put') |
-| "exercise_type" in ('European', 'Bermudan', 'American') |
+| "exercise_type" is null or "exercise_type" in ('European', 'Bermudan', 'American') |
 
 ** Indexes
 

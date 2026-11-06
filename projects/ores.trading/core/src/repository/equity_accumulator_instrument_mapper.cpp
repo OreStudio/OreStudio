@@ -66,6 +66,9 @@ equity_accumulator_instrument_mapper::map(const equity_accumulator_instrument_en
     r.target_amount = v.target_amount;
     r.target_type = v.target_type.value_or("");
     r.payoff_type = v.payoff_type;
+    r.settlement_lag = v.settlement_lag;
+    r.settlement_calendar = v.settlement_calendar;
+    r.settlement_convention = v.settlement_convention;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -100,6 +103,9 @@ equity_accumulator_instrument_mapper::map(const domain::equity_accumulator_instr
     r.target_amount = v.target_amount;
     r.target_type = v.target_type.empty() ? std::nullopt : std::optional(v.target_type);
     r.payoff_type = v.payoff_type;
+    r.settlement_lag = v.settlement_lag;
+    r.settlement_calendar = v.settlement_calendar;
+    r.settlement_convention = v.settlement_convention;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

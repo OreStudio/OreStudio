@@ -88,6 +88,8 @@ create table if not exists "ores_trading_instrument_schedules_tbl" (
     "remove_first_date" boolean null,
     "remove_last_date" boolean null,
     "include_duplicate_dates" text null,
+    "base_schedule" text null,
+    "shift" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -108,8 +110,8 @@ create table if not exists "ores_trading_instrument_schedules_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("owner_role" <> ''),
     check ("schedule_role" <> ''),
-    check ("schedule_kind" in ('rules', 'dates')),
-    check ("owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap', 'tranches')),
+    check ("schedule_kind" in ('rules', 'dates', 'derived')),
+    check ("owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap', 'tranches', 'scripted')),
     check ("owner_number" > 0),
     check ("sequence_number" > 0)
 );

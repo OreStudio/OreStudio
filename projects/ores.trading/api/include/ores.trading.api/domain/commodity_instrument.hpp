@@ -210,6 +210,58 @@ struct commodity_instrument final {
     std::optional<std::chrono::year_month_day> swaption_expiry_date;
 
     /**
+     * @brief The calendar a commodity variance swap observes in, as Calendar states it.
+     */
+    std::optional<std::string> calendar;
+
+    /**
+     * @brief Whether a commodity variance swap pays on variance or volatility, as MomentType states
+     * it.
+     */
+    std::optional<std::string> moment_type;
+
+    /**
+     * @brief Whether a commodity variance swap counts past dividends, as AddPastDividends states
+     * it.
+     */
+    std::optional<bool> add_past_dividends;
+
+    /**
+     * @brief What an average price option's payment date is relative to, as CommodityPayRelativeTo
+     * states it.
+     */
+    std::optional<std::string> pay_relative_to;
+
+    /**
+     * @brief How often an average price option's quantity applies, as CommodityQuantityFrequency
+     * states it.
+     */
+    std::optional<std::string> quantity_frequency;
+
+    /**
+     * @brief The days before expiry an average price option rolls to the next future, as
+     * DeliveryRollDays states it.
+     */
+    std::optional<int> delivery_roll_days;
+
+    /**
+     * @brief The future months ahead an average price option observes, as FutureMonthOffset states
+     * it.
+     */
+    std::optional<int> future_month_offset;
+
+    /**
+     * @brief Whether an average price option's averaging includes its period end, as
+     * IncludePeriodEnd states it.
+     */
+    std::optional<bool> include_period_end;
+
+    /**
+     * @brief Whether a commodity forward is long or short, as Position states it.
+     */
+    std::optional<std::string> position;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -262,6 +314,15 @@ struct commodity_instrument final {
     ores::utility::digest::append_member(out, "day_count_fraction_code", v.day_count_fraction_code);
     ores::utility::digest::append_member(out, "payment_frequency_code", v.payment_frequency_code);
     ores::utility::digest::append_member(out, "swaption_expiry_date", v.swaption_expiry_date);
+    ores::utility::digest::append_member(out, "calendar", v.calendar);
+    ores::utility::digest::append_member(out, "moment_type", v.moment_type);
+    ores::utility::digest::append_member(out, "add_past_dividends", v.add_past_dividends);
+    ores::utility::digest::append_member(out, "pay_relative_to", v.pay_relative_to);
+    ores::utility::digest::append_member(out, "quantity_frequency", v.quantity_frequency);
+    ores::utility::digest::append_member(out, "delivery_roll_days", v.delivery_roll_days);
+    ores::utility::digest::append_member(out, "future_month_offset", v.future_month_offset);
+    ores::utility::digest::append_member(out, "include_period_end", v.include_period_end);
+    ores::utility::digest::append_member(out, "position", v.position);
     out.push_back('}');
     return out;
 }

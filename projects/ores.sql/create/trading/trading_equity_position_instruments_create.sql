@@ -43,7 +43,7 @@ create table if not exists "ores_trading_equity_position_instruments_tbl" (
     "party_id" uuid not null,
     "trade_activity_id" uuid not null,
     "underlying_name" text not null,
-    "currency" text not null,
+    "currency" text null,
     "quantity" double precision not null,
     "price" numeric(38, 12) null,
     "description" text null,
@@ -63,7 +63,7 @@ create table if not exists "ores_trading_equity_position_instruments_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("trade_type_code" in ('EquityPosition', 'EquityOptionPosition')),
     check ("underlying_name" <> ''),
-    check ("currency" <> '')
+    check ("currency" is null or "currency" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency

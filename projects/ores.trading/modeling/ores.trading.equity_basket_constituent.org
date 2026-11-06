@@ -87,6 +87,15 @@ Name of the equity underlying this constituent names.
 The ORE document states it in the =Underlying/Name= element; the column
 refuses an empty name.
 
+
+** identifier_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The scheme the constituent's name is stated in, as =Underlying/IdentifierType= states it.
 ** underlying_kind
 :PROPERTIES:
 :type:     text

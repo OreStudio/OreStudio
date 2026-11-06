@@ -48,7 +48,7 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "commodity_code" text not null,
     "currency" text not null,
     "quantity" double precision not null,
-    "unit" text not null,
+    "unit" text null,
     "start_date" date null,
     "maturity_date" date null,
     "fixed_price" numeric(38, 12) null,
@@ -70,6 +70,15 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     "day_count_fraction_code" text null,
     "payment_frequency_code" text null,
     "swaption_expiry_date" date null,
+    "calendar" text null,
+    "moment_type" text null,
+    "add_past_dividends" boolean null,
+    "pay_relative_to" text null,
+    "quantity_frequency" text null,
+    "delivery_roll_days" integer null,
+    "future_month_offset" integer null,
+    "include_period_end" boolean null,
+    "position" text null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,
@@ -89,7 +98,7 @@ create table if not exists "ores_trading_commodity_instruments_tbl" (
     check ("quantity" > 0),
     check ("commodity_code" <> ''),
     check ("currency" <> ''),
-    check ("unit" <> ''),
+    check ("unit" is null or "unit" <> ''),
     check ("option_type" is null or "option_type" in ('Call', 'Put')),
     check ("exercise_type" is null or "exercise_type" in ('European', 'American')),
     check ("average_type" is null or "average_type" in ('Arithmetic', 'Geometric')),
@@ -215,8 +224,55 @@ create or replace trigger ores_trading_commodity_instruments_insert_trg
 before insert on "ores_trading_commodity_instruments_tbl"
 for each row execute function ores_trading_commodity_instruments_insert_fn();
 
+-- The rows this row owns, closed when it is deleted. A function and not a
+-- rule body, because the rule resolves the tables it names when it is
+-- created and a child may be created after its parent; a plpgsql body
+-- resolves them when it runs.
+create or replace function ores_trading_commodity_instruments_cascade_delete_fn(
+    p_row "ores_trading_commodity_instruments_tbl")
+returns void as $$
+begin
+    -- Close every row this row owns, so one delete removes the family and
+    -- not the header alone. The store enforces it, so every caller gets it.
+    delete from "ores_trading_swap_legs_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_amounts_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_rates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_amortizations_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_swap_leg_indexings_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_barriers_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_barrier_levels_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_underlyings_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_strikes_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedules_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+    delete from "ores_trading_instrument_schedule_dates_tbl"
+    where tenant_id = p_row.tenant_id
+      and trade_id = p_row.trade_id;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
 create or replace rule ores_trading_commodity_instruments_delete_rule as
 on delete to "ores_trading_commodity_instruments_tbl" do instead (
+    select ores_trading_commodity_instruments_cascade_delete_fn(OLD);
     update "ores_trading_commodity_instruments_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id

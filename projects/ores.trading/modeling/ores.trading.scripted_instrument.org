@@ -171,6 +171,19 @@ Optional JSON object of script parameters. Empty when not applicable.
 
 Optional free-text description.
 
+** data_element
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The element of the trade that states the parameters: =ScriptedTradeData= for
+a generic scripted trade, or the named product's element, such as
+=MovingMaxYYIISData=. The parameters are =scripted_parameter= rows, and the
+element tells the writer which of the two forms to state them in.
+
 * Foreign keys
 
 ** trade_id
@@ -221,6 +234,36 @@ is immutable.
         v.identity.trade_activity_id = activity.id;
     }
 #+end_src
+
+* Delete cascade
+
+The rows a scripted instrument owns: its parameters, their list values and
+the schedules its event parameters state. Each is keyed by the trade, so
+the delete rule closes them with the instrument.
+
+** scripted_parameters
+:PROPERTIES:
+:table:  ores_trading_scripted_parameters_tbl
+:column: trade_id
+:END:
+
+** scripted_parameter_values
+:PROPERTIES:
+:table:  ores_trading_scripted_parameter_values_tbl
+:column: trade_id
+:END:
+
+** instrument_schedules
+:PROPERTIES:
+:table:  ores_trading_instrument_schedules_tbl
+:column: trade_id
+:END:
+
+** instrument_schedule_dates
+:PROPERTIES:
+:table:  ores_trading_instrument_schedule_dates_tbl
+:column: trade_id
+:END:
 
 * SQL
 

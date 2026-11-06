@@ -60,6 +60,18 @@ trade it names gives the instrument its scope.
 
 The activity that wrote this version.
 
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+Whether the trade buys or sells the cap or floor, as =LongShort= states it.
+Null for a row written before the direction was kept, which the writer
+states as =Long=.
+
 * Foreign keys
 
 ** trade_id
@@ -149,6 +161,8 @@ annotations; domain and repository profiles regenerate correctly.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
+#include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src
 

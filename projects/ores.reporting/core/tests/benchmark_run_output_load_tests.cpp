@@ -18,6 +18,7 @@
  *
  */
 #include "ores.database/repository/unit_of_work.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.reporting.core/repository/report_metric_repository.hpp"
 #include "ores.reporting.core/results/run_output_reader.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -42,8 +43,8 @@ using ores::reporting::results::run_output_sinks;
 using ores::reporting::tests::a_run_stamp;
 
 std::size_t rows_wanted() {
-    const auto* text = std::getenv("ORES_BENCH_ROWS");
-    return text == nullptr ? 500000 : std::stoul(text);
+    const auto text = ores::platform::environment::environment::get_value("ORES_BENCH_ROWS");
+    return text ? std::stoul(*text) : 500000;
 }
 
 /**

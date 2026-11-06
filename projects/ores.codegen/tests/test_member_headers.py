@@ -10,6 +10,8 @@ Run::
     python3 -m pytest projects/ores.codegen/tests/test_member_headers.py
 """
 import sys
+
+import pytest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -81,11 +83,42 @@ def test_the_root_carries_the_product_prefix(tmp_path):
     assert headers == ["ores.x.api/domain/widget_role_codec.hpp"]
 
 
+def _foreign_tree(tmp_path, headers):
+    """A projects tree holding the model and the given foreign headers."""
+    for header in headers:
+        path = tmp_path / "projects" / header
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("", encoding="utf-8")
+    modeling = tmp_path / "projects" / "ores.x" / "modeling"
+    modeling.mkdir(parents=True, exist_ok=True)
+    return a_model_dir(modeling)
+
+
 def test_a_foreign_type_keeps_its_own_component(tmp_path):
     """A member from another component is not looked for in this one."""
-    headers = _member_headers(
-        ["ores::dq::domain::audit_record"], a_model_dir(tmp_path), a_model())
+    model = _foreign_tree(tmp_path, ["ores.dq/api/include/ores.dq.api/domain/audit_record.hpp"])
+    headers = _member_headers(["ores::dq::domain::audit_record"], model, a_model())
     assert headers == ["ores.dq.api/domain/audit_record.hpp"]
+
+
+def test_a_flat_component_keeps_its_types_at_its_own_root(tmp_path):
+    model = _foreign_tree(tmp_path, ["ores.diff/include/ores.diff/domain/diff_result.hpp"])
+    headers = _member_headers(["ores::diff::domain::diff_result"], model, a_model())
+    assert headers == ["ores.diff/domain/diff_result.hpp"]
+
+
+def test_a_foreign_type_with_a_codec_names_its_codec_header(tmp_path):
+    model = _foreign_tree(tmp_path, [
+        "ores.diff/include/ores.diff/domain/diff_result.hpp",
+        "ores.diff/include/ores.diff/domain/diff_result_codec.hpp"])
+    headers = _member_headers(["ores::diff::domain::diff_result"], model, a_model())
+    assert headers == ["ores.diff/domain/diff_result_codec.hpp"]
+
+
+def test_a_foreign_type_with_no_header_is_refused(tmp_path):
+    model = _foreign_tree(tmp_path, [])
+    with pytest.raises(ValueError, match="exactly one domain header, found 0"):
+        _member_headers(["ores::diff::domain::diff_result"], model, a_model())
 
 
 def test_the_envelopes_own_types_are_left_to_the_envelope_header(tmp_path):

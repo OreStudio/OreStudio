@@ -68,6 +68,10 @@ consumers are unaffected.
 - [[id:34DDEE6A-915F-404B-8721-01376903D3E4][ores.assets.api]] — a sibling leaf contract component with the same
   dependency discipline.
 
+ores.utility is a public dependency because the generated codec headers of the
+four diff types include its codec headers: a component that encodes a diff
+result reads them too.
+
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
     PUBLIC

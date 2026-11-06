@@ -1704,18 +1704,24 @@ def _foreign_root(model_path, owner, name):
 
     Most components keep their domain types in their api part, and a flat
     component, such as ores.diff, keeps them at its own root. The header that
-    exists decides, so the generator never guesses an include that is not
-    there.
+    exists decides, and a type with no header or with two is refused, so the
+    generator never writes an include that is not there.
     """
     projects = next((q for q in Path(model_path).resolve().parents if q.name == "projects"),
                     None)
     if projects is None:
-        return f"{owner}.api", False
-    for root, base in ((owner, projects / owner / "include" / owner),
-                       (f"{owner}.api", projects / owner / "api" / "include" / f"{owner}.api")):
-        if (base / "domain" / f"{name}.hpp").is_file():
-            return root, (base / "domain" / f"{name}_codec.hpp").is_file()
-    return f"{owner}.api", False
+        raise ValueError(f"{model_path}: no projects folder above the model, so the "
+                         f"header of {owner}'s {name} cannot be found")
+    candidates = ((owner, projects / owner / "include" / owner),
+                  (f"{owner}.api", projects / owner / "api" / "include" / f"{owner}.api"))
+    found = [(root, base) for root, base in candidates
+             if (base / "domain" / f"{name}.hpp").is_file()]
+    if len(found) != 1:
+        raise ValueError(
+            f"{model_path}: {owner}'s {name} needs exactly one domain header, found "
+            f"{len(found)} among {[str(b / 'domain' / (name + '.hpp')) for _, b in candidates]}")
+    root, base = found[0]
+    return root, (base / "domain" / f"{name}_codec.hpp").is_file()
 
 
 def _member_headers(cpp_types, model_path, domain_entity):

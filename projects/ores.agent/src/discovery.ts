@@ -52,7 +52,7 @@ export class Discovery {
             const r = await request('counterparties', { offset: 0, limit: 50, order: { field: '', descending: false }, filter: { id_one_of: [id] }, as_of: snapshot }); accepted(r);
             const list = z.object({ total: z.number().int().min(0).max(1), counterparties: z.array(counterparty).max(1) }).parse(r);
             if (list.total !== list.counterparties.length) throw new AppError('incomplete_discovery', 'Counterparty read is incomplete.', 422);
-            return list.counterparties.find(c => own(c) && c.id === id) ?? null;
+            return list.counterparties.find(c => own(c) && c.id.toLowerCase() === id.toLowerCase()) ?? null;
         };
         if (name === 'find_counterparties') {
             const query = String(args.query);
@@ -78,7 +78,7 @@ export class Discovery {
                 catalogueScope: 'entitled_tenant_catalogue_page', totalVisible: list.total, nextOffset: next < list.total ? next : null };
         }
         const resolve = async (resource: 'books' | 'portfolios', value: string, field: string) => {
-            const rows = await scan(resource), exact = rows.filter(r => r.id === value || String(r.name).toLowerCase() === value.toLowerCase());
+            const rows = await scan(resource), exact = rows.filter(r => String(r.id).toLowerCase() === value.toLowerCase() || String(r.name).toLowerCase() === value.toLowerCase());
             const choices = exact.length ? exact : rows.filter(r => matches(r, value));
             if (choices.length !== 1) return { result: { ...base, status: choices.length ? 'ambiguous' : 'not_found', field, candidates: choices.slice(0, 25).map(r => ({ id: r.id, name: r.name })), reason: 'Choose an exact selected-party name or ID; no entity was selected automatically.' } };
             return { row: choices[0]! };
@@ -87,6 +87,7 @@ export class Discovery {
             const response = await request('trade', { key: { id: args.tradeId } });
             if (missing(response)) return { ...base, status: 'not_found', reason: 'Trade is not available in the selected party.' }; accepted(response);
             const anchor = z.object({ trade: trade.nullable() }).parse(response).trade;
+            if (anchor && anchor.id.toLowerCase() !== String(args.tradeId).toLowerCase()) throw new AppError('invalid_reply', 'Backend returned a different trade identity.');
             if (!anchor || !own(anchor)) return { ...base, status: 'not_found', reason: 'Trade is not available in the selected party.' };
             const bookingRaw = await request('tradeBooking', { key: { trade_id: anchor.id } }); if (!missing(bookingRaw)) accepted(bookingRaw);
             const booking = missing(bookingRaw) ? null : z.object({ trade_booking: z.object({ tenant_id: marketId, trade_id: marketId, book_id: marketId, trade_date: z.string().nullable(), execution_timestamp: z.string().nullable() }).nullable() }).parse(bookingRaw).trade_booking;

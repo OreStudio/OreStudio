@@ -60,6 +60,12 @@ test('wrong-party trades stop before fetching economics; wrong instrument scope 
     f.backend.request = async (op, ...args) => { const r = await original(op, ...args); if (op === 'trade' && ++read === 2) return { ...r, trade: { ...r.trade, version: 2 } }; return r; };
     await assert.rejects(() => f.discovery.execute('read_trade', { tradeId: id(10) }, f.session), /changed/);
 });
+test('an incorrect same-party trade identity cannot satisfy an exact trade read', async () => {
+    const f = fixture(), original = f.backend.request;
+    f.backend.request = async (op, args, context) => original(op, op === 'trade' ? { key: { id: id(10) } } : args, context);
+    await assert.rejects(() => f.discovery.execute('read_trade', { tradeId: id(11) }, f.session), /different trade identity/);
+    assert.equal(f.calls.length, 1);
+});
 test('counterparty exact IDs/codes are complete while name pages remain explicitly partial', async () => {
     const f = fixture(); assert.equal((await f.discovery.execute('find_counterparties', { query: 'ALPHA' }, f.session)).matchedBy, 'exact_short_code');
     assert.equal((await f.discovery.execute('find_counterparties', { query: id(40) }, f.session)).searchComplete, true);

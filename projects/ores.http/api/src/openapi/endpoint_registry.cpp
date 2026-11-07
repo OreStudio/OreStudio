@@ -18,110 +18,108 @@
  *
  */
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include <algorithm>
+#include "ores.utility/codec/json_document.hpp"
 #include <map>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <set>
 #include <sstream>
+#include <string>
+#include <string_view>
+#include <utility>
 
 namespace ores::http::openapi {
 
 using namespace ores::logging;
 
-// OpenAPI spec structures for JSON serialization
-// Note: These need external linkage for rfl reflection to work properly
-
-namespace detail {
-
-struct openapi_contact final {
-    std::optional<std::string> name;
-    std::optional<std::string> email;
-};
-
-struct openapi_license final {
-    std::string name;
-    std::optional<std::string> url;
-};
-
-struct openapi_info final {
-    std::string title;
-    std::string description;
-    std::string version;
-    std::optional<openapi_contact> contact;
-    std::optional<openapi_license> license;
-};
-
-struct openapi_server final {
-    std::string url;
-    std::string description;
-};
-
-struct openapi_security_scheme final {
-    std::string type;
-    std::string scheme;
-    rfl::Rename<"bearerFormat", std::string> bearer_format;
-};
-
-struct openapi_security_schemes final {
-    rfl::Rename<"bearerAuth", openapi_security_scheme> bearer_auth;
-};
-
-struct openapi_components final {
-    rfl::Rename<"securitySchemes", openapi_security_schemes> security_schemes;
-};
-
-struct openapi_parameter final {
-    std::string name;
-    std::string in;
-    bool required;
-    rfl::Object<std::string> schema;
-};
-
-struct openapi_media_type final {
-    rfl::Generic schema;
-    std::optional<rfl::Generic> example;
-};
-
-struct openapi_response final {
-    std::string description;
-    std::optional<std::map<std::string, openapi_media_type>> content;
-};
-
-struct openapi_request_body final {
-    std::optional<std::string> description;
-    bool required = true;
-    std::map<std::string, openapi_media_type> content;
-};
-
-struct openapi_operation final {
-    std::optional<std::vector<std::string>> tags;
-    std::optional<std::string> summary;
-    std::optional<std::string> description;
-    std::optional<std::vector<openapi_parameter>> parameters;
-    std::optional<openapi_request_body> requestBody;
-    std::optional<std::vector<rfl::Object<std::vector<std::string>>>> security;
-    std::map<std::string, openapi_response> responses;
-};
-
-struct openapi_spec final {
-    std::string openapi;
-    openapi_info info;
-    std::vector<openapi_server> servers;
-    openapi_components components;
-    std::map<std::string, std::map<std::string, openapi_operation>> paths;
-};
-
-} // namespace detail
-
-using namespace detail;
+using ores::utility::codec::json_document;
+using ores::utility::codec::json_value;
 
 namespace {
 
-// Forward declaration
-rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
-                                    const rfl::Object<rfl::Generic>& defs,
-                                    std::set<std::string>& visited);
+/**
+ * @brief Where a resolved value goes: the root of the document being built, a
+ * member of an object in it, or an element of an array in it.
+ *
+ * A schema that states an object or an array needs a fresh place to be filled.
+ * A schema that states any other value is copied to its place whole.
+ */
+class destination final {
+public:
+    static destination root(json_value value) {
+        return destination{value, std::string{}, kind::root};
+    }
+
+    static destination member(json_value parent, std::string name) {
+        return destination{parent, std::move(name), kind::member};
+    }
+
+    static destination element(json_value parent) {
+        return destination{parent, std::string{}, kind::element};
+    }
+
+    void copy(const json_value& value) {
+        if (kind_ == kind::member) {
+            parent_.add(name_, value);
+        } else if (kind_ == kind::element) {
+            parent_.push(value);
+        }
+    }
+
+    json_value object() {
+        switch (kind_) {
+            case kind::root:
+                return parent_;
+            case kind::member:
+                return parent_.add_object(name_);
+            case kind::element:
+                return parent_.push_object();
+        }
+        return {};
+    }
+
+    json_value array() {
+        switch (kind_) {
+            case kind::root:
+                return parent_;
+            case kind::member:
+                return parent_.add_array(name_);
+            case kind::element:
+                return parent_.push_array();
+        }
+        return {};
+    }
+
+private:
+    enum class kind { root, member, element };
+
+    destination(json_value parent, std::string name, kind where)
+        : parent_(parent)
+        , name_(std::move(name))
+        , kind_(where) {}
+
+    json_value parent_;
+    std::string name_;
+    kind kind_;
+};
+
+/**
+ * @brief A response that states only a description, as the standard errors do.
+ */
+json_document make_response(std::string_view description) {
+    auto response = json_document::make_object();
+    response.root().set("description", description);
+    return response;
+}
+
+/**
+ * @brief States the example a route carries, when it states one.
+ */
+void add_example(json_value media_type, const std::string& example_json) {
+    if (example_json.empty())
+        return;
+    auto example = json_document::parse(example_json);
+    if (example)
+        media_type.add("example", example->root());
+}
 
 /**
  * @brief Recursively resolves all $ref values in a schema by inlining them.
@@ -130,114 +128,98 @@ rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
  * schema object. This function walks through the schema and replaces all
  * $ref values with the actual type definitions from $defs.
  *
- * @param schema The schema object to process
- * @param defs The $defs object containing type definitions
+ * @param schema The schema value to process
+ * @param defs The $defs value containing type definitions
  * @param visited Set of type names being resolved (for cycle detection)
- * @return A new schema with all $refs resolved
+ * @param where Where the resolved value goes in the document being built
  */
-rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
-                                    const rfl::Object<rfl::Generic>& defs,
-                                    std::set<std::string>& visited) {
-
-    auto* obj = std::get_if<rfl::Object<rfl::Generic>>(&schema.get());
-    if (!obj) {
+void resolve_refs_recursive(json_value schema,
+                            json_value defs,
+                            std::set<std::string>& visited,
+                            destination where) {
+    if (schema.is_array()) {
         // Handle arrays
-        if (auto* arr = std::get_if<std::vector<rfl::Generic>>(&schema.get())) {
-            std::vector<rfl::Generic> new_arr;
-            for (const auto& item : *arr) {
-                new_arr.push_back(resolve_refs_recursive(item, defs, visited));
-            }
-            return rfl::Generic{new_arr};
+        auto resolved = where.array();
+        for (const auto& item : schema.elements()) {
+            resolve_refs_recursive(item, defs, visited, destination::element(resolved));
         }
-        return schema;
+        return;
+    }
+
+    if (!schema.is_object()) {
+        where.copy(schema);
+        return;
     }
 
     // Check if this object is a $ref
-    const rfl::Generic* ref_val = nullptr;
-    for (const auto& [key, val] : *obj) {
-        if (key == "$ref") {
-            ref_val = &val;
-            break;
-        }
-    }
+    const auto ref = schema.member("$ref");
+    if (ref.exists()) {
+        constexpr std::string_view defs_prefix = "#/$defs/";
+        const auto ref_text = ref.text();
+        if (ref_text && ref_text->starts_with(defs_prefix)) {
+            const auto type_name = std::string(ref_text->substr(defs_prefix.size()));
 
-    if (ref_val) {
-        if (auto* ref_str = std::get_if<std::string>(&ref_val->get())) {
-            const std::string prefix = "#/$defs/";
-            if (ref_str->starts_with(prefix)) {
-                std::string type_name = ref_str->substr(prefix.size());
+            // Prevent infinite recursion
+            if (visited.contains(type_name)) {
+                // Already resolving this type - return a simple object type
+                where.object().set("type", "object");
+                return;
+            }
 
-                // Prevent infinite recursion
-                if (visited.count(type_name) > 0) {
-                    // Already resolving this type - return a simple object type
-                    rfl::Object<rfl::Generic> fallback;
-                    fallback["type"] = rfl::Generic{"object"};
-                    return rfl::Generic{fallback};
+            // Find the type in $defs
+            const auto definition = defs.member(type_name);
+            if (definition.is_object()) {
+                // Mark as being visited
+                visited.insert(type_name);
+
+                // Create new object with resolved contents
+                const auto resolved = where.object();
+                for (const auto& [name, value] : definition.members()) {
+                    resolve_refs_recursive(
+                        value, defs, visited, destination::member(resolved, name));
                 }
 
-                // Find the type in $defs
-                for (const auto& [def_name, def_val] : defs) {
-                    if (def_name == type_name) {
-                        if (auto* def_obj =
-                                std::get_if<rfl::Object<rfl::Generic>>(&def_val.get())) {
-                            // Mark as being visited
-                            visited.insert(type_name);
-
-                            // Create new object with resolved contents
-                            rfl::Object<rfl::Generic> result;
-                            for (const auto& [k, v] : *def_obj) {
-                                result[k] = resolve_refs_recursive(v, defs, visited);
-                            }
-
-                            visited.erase(type_name);
-                            return rfl::Generic{result};
-                        }
-                        break;
-                    }
-                }
+                visited.erase(type_name);
+                return;
             }
         }
         // Couldn't resolve - return original
-        return schema;
+        where.copy(schema);
+        return;
     }
 
     // No $ref - recursively process all values in this object
-    rfl::Object<rfl::Generic> result;
-    for (const auto& [key, val] : *obj) {
-        if (key == "$defs" || key == "$schema")
+    const auto resolved = where.object();
+    for (const auto& [name, value] : schema.members()) {
+        if (name == "$defs" || name == "$schema")
             continue;
-        result[key] = resolve_refs_recursive(val, defs, visited);
+        resolve_refs_recursive(value, defs, visited, destination::member(resolved, name));
     }
-    return rfl::Generic{result};
 }
 
 /**
- * @brief Processes a JSON schema from rfl, resolving $refs and removing $defs.
+ * @brief Processes a JSON schema, resolving $refs and removing $defs.
  *
- * @param schema The schema to process
+ * @param schema The schema document to process
  * @return The processed schema with all $refs inlined
  */
-rfl::Generic process_schema(const rfl::Generic& schema) {
-    auto* obj = std::get_if<rfl::Object<rfl::Generic>>(&schema.get());
-    if (!obj)
+json_document process_schema(json_document schema) {
+    const auto root = schema.root();
+    if (!root.is_object())
         return schema;
 
     // Find $defs if present
-    const rfl::Object<rfl::Generic>* defs_ptr = nullptr;
-    for (const auto& [key, val] : *obj) {
-        if (key == "$defs") {
-            defs_ptr = std::get_if<rfl::Object<rfl::Generic>>(&val.get());
-            break;
-        }
-    }
+    const auto defs = root.member("$defs");
 
     // Nothing to resolve when the document declares no definitions.
-    if (!defs_ptr)
+    if (!defs.is_object())
         return schema;
 
     // Use the recursive resolver which handles everything
     std::set<std::string> visited;
-    return resolve_refs_recursive(schema, *defs_ptr, visited);
+    auto processed = json_document::make_object();
+    resolve_refs_recursive(root, defs, visited, destination::root(processed.root()));
+    return processed;
 }
 
 } // anonymous namespace
@@ -287,175 +269,181 @@ std::string endpoint_registry::generate_openapi_json() const {
     BOOST_LOG_SEV(lg(), debug) << "Generating OpenAPI JSON spec with " << routes_.size()
                                << " routes";
 
-    openapi_spec spec;
-    spec.openapi = "3.0.3";
+    auto spec = json_document::make_object();
+    auto root = spec.root();
+    root.set("openapi", "3.0.3");
 
     // Build info section
-    spec.info.title = info_.title;
-    spec.info.description = info_.description;
-    spec.info.version = info_.version;
+    auto info = root.add_object("info");
+    info.set("title", info_.title);
+    info.set("description", info_.description);
+    info.set("version", info_.version);
 
     if (!info_.contact_name.empty() || !info_.contact_email.empty()) {
-        openapi_contact contact;
+        auto contact = info.add_object("contact");
         if (!info_.contact_name.empty()) {
-            contact.name = info_.contact_name;
+            contact.set("name", info_.contact_name);
         }
         if (!info_.contact_email.empty()) {
-            contact.email = info_.contact_email;
+            contact.set("email", info_.contact_email);
         }
-        spec.info.contact = contact;
     }
 
     if (!info_.license_name.empty()) {
-        openapi_license license;
-        license.name = info_.license_name;
+        auto license = info.add_object("license");
+        license.set("name", info_.license_name);
         if (!info_.license_url.empty()) {
-            license.url = info_.license_url;
+            license.set("url", info_.license_url);
         }
-        spec.info.license = license;
     }
 
     // Build servers section
+    auto servers = root.add_array("servers");
+    const auto add_server = [&servers](const server_info& server) {
+        auto entry = servers.push_object();
+        entry.set("url", server.url);
+        entry.set("description", server.description);
+    };
     if (servers_.empty()) {
-        spec.servers.push_back(openapi_server{"/", "Default server"});
+        add_server(server_info{"/", "Default server"});
     } else {
         for (const auto& server : servers_) {
-            spec.servers.push_back(openapi_server{server.url, server.description});
+            add_server(server);
         }
     }
 
     // Build components section
-    spec.components = openapi_components{
-        openapi_security_schemes{openapi_security_scheme{"http", "bearer", "JWT"}}};
+    auto components = root.add_object("components");
+    auto security_schemes = components.add_object("securitySchemes");
+    auto bearer_auth = security_schemes.add_object("bearerAuth");
+    bearer_auth.set("type", "http");
+    bearer_auth.set("scheme", "bearer");
+    bearer_auth.set("bearerFormat", "JWT");
 
     // Build paths section
+    std::map<std::string, std::map<std::string, json_document>> paths;
     for (const auto& route : routes_) {
-        std::string method = method_to_string(route.method);
+        const auto method = method_to_string(route.method);
 
-        openapi_operation operation;
+        auto operation_document = json_document::make_object();
+        auto operation = operation_document.root();
 
         if (!route.tags.empty()) {
-            operation.tags = route.tags;
+            auto tags = operation.add_array("tags");
+            for (const auto& tag : route.tags) {
+                tags.push(tag);
+            }
         }
 
         if (!route.summary.empty()) {
-            operation.summary = route.summary;
+            operation.set("summary", route.summary);
         }
 
         if (!route.description.empty()) {
-            operation.description = route.description;
+            operation.set("description", route.description);
         }
 
         // Parameters (path + query)
-        std::vector<openapi_parameter> params;
+        if (!route.param_names.empty() || !route.query_params.empty()) {
+            auto parameters = operation.add_array("parameters");
 
-        // Path parameters
-        for (const auto& param_name : route.param_names) {
-            rfl::Object<std::string> schema;
-            schema["type"] = "string";
-            params.push_back(openapi_parameter{param_name, "path", true, schema});
-        }
-
-        // Query parameters
-        for (const auto& qp : route.query_params) {
-            rfl::Object<std::string> schema;
-            schema["type"] = qp.type;
-            if (!qp.format.empty()) {
-                schema["format"] = qp.format;
+            // Path parameters
+            for (const auto& param_name : route.param_names) {
+                auto parameter = parameters.push_object();
+                parameter.set("name", param_name);
+                parameter.set("in", "path");
+                parameter.set("required", true);
+                parameter.add_object("schema").set("type", "string");
             }
-            openapi_parameter param;
-            param.name = qp.name;
-            param.in = "query";
-            param.required = qp.required;
-            param.schema = schema;
-            params.push_back(param);
+
+            // Query parameters
+            for (const auto& query_param : route.query_params) {
+                auto parameter = parameters.push_object();
+                parameter.set("name", query_param.name);
+                parameter.set("in", "query");
+                parameter.set("required", query_param.required);
+                auto schema = parameter.add_object("schema");
+                schema.set("type", query_param.type);
+                if (!query_param.format.empty()) {
+                    schema.set("format", query_param.format);
+                }
+            }
         }
 
-        if (!params.empty()) {
-            operation.parameters = params;
-        }
+        // The schema a route states, with its $refs inlined. A schema that is
+        // not JSON becomes an empty one, as it always has.
+        const auto schema_from = [&](const std::string& json_schema, std::string_view what) {
+            auto parsed = json_document::parse(json_schema);
+            if (!parsed) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Failed to parse " << what << " for route: " << route.pattern;
+                return json_document::make_object();
+            }
+            return process_schema(std::move(*parsed));
+        };
 
         // Request body
         if (route.body_schema.has_value()) {
             const auto& body = route.body_schema.value();
 
-            openapi_media_type media_type;
+            auto request_body = operation.add_object("requestBody");
+            request_body.set("required", body.required);
 
-            auto schema_result = rfl::json::read<rfl::Generic>(body.json_schema);
-            if (schema_result) {
-                media_type.schema = process_schema(*schema_result);
-            } else {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Failed to parse JSON schema for route: " << route.pattern;
-                media_type.schema = rfl::Generic{rfl::Object<rfl::Generic>{}};
-            }
-
-            if (!body.example_json.empty()) {
-                auto example_result = rfl::json::read<rfl::Generic>(body.example_json);
-                if (example_result) {
-                    media_type.example = *example_result;
-                }
-            }
-
-            openapi_request_body request_body;
-            request_body.required = body.required;
-            request_body.content[body.content_type] = media_type;
-
-            operation.requestBody = request_body;
+            auto media_type = request_body.add_object("content").add_object(body.content_type);
+            media_type.add("schema", schema_from(body.json_schema, "JSON schema").root());
+            add_example(media_type, body.example_json);
         }
 
         // Security
         if (route.requires_auth) {
-            rfl::Object<std::vector<std::string>> bearer_auth;
-            bearer_auth["bearerAuth"] = std::vector<std::string>{};
-            operation.security = std::vector<rfl::Object<std::vector<std::string>>>{bearer_auth};
+            auto security = operation.add_array("security");
+            security.push_object().add_array("bearerAuth");
         }
 
         // Responses
+        std::map<std::string, json_document> responses;
         if (route.success_response_schema.has_value()) {
-            const auto& resp_schema = route.success_response_schema.value();
+            const auto& response_schema = route.success_response_schema.value();
 
-            openapi_response success_response;
-            success_response.description = resp_schema.description;
+            auto response_document = json_document::make_object();
+            auto response = response_document.root();
+            response.set("description", response_schema.description);
 
-            openapi_media_type media_type;
+            auto media_type =
+                response.add_object("content").add_object(response_schema.content_type);
+            media_type.add("schema",
+                           schema_from(response_schema.json_schema, "response JSON schema").root());
+            add_example(media_type, response_schema.example_json);
 
-            auto schema_result = rfl::json::read<rfl::Generic>(resp_schema.json_schema);
-            if (schema_result) {
-                media_type.schema = process_schema(*schema_result);
-            } else {
-                BOOST_LOG_SEV(lg(), warn)
-                    << "Failed to parse response JSON schema for route: " << route.pattern;
-                media_type.schema = rfl::Generic{rfl::Object<rfl::Generic>{}};
-            }
-
-            if (!resp_schema.example_json.empty()) {
-                auto example_result = rfl::json::read<rfl::Generic>(resp_schema.example_json);
-                if (example_result) {
-                    media_type.example = *example_result;
-                }
-            }
-
-            std::map<std::string, openapi_media_type> content;
-            content[resp_schema.content_type] = media_type;
-            success_response.content = content;
-
-            operation.responses["200"] = success_response;
+            responses.emplace("200", std::move(response_document));
         } else {
-            operation.responses["200"] = openapi_response{"Successful response", std::nullopt};
+            responses.emplace("200", make_response("Successful response"));
         }
 
         if (route.requires_auth) {
-            operation.responses["401"] = openapi_response{"Unauthorized", std::nullopt};
-            operation.responses["403"] = openapi_response{"Forbidden", std::nullopt};
+            responses.emplace("401", make_response("Unauthorized"));
+            responses.emplace("403", make_response("Forbidden"));
         }
-        operation.responses["500"] = openapi_response{"Internal server error", std::nullopt};
+        responses.emplace("500", make_response("Internal server error"));
 
-        spec.paths[route.pattern][method] = operation;
+        auto response_members = operation.add_object("responses");
+        for (const auto& [status, response] : responses) {
+            response_members.add(status, response.root());
+        }
+
+        paths[route.pattern][method] = std::move(operation_document);
+    }
+
+    auto paths_members = root.add_object("paths");
+    for (const auto& [pattern, operations] : paths) {
+        auto path = paths_members.add_object(pattern);
+        for (const auto& [method, operation] : operations) {
+            path.add(method, operation.root());
+        }
     }
 
     BOOST_LOG_SEV(lg(), debug) << "OpenAPI JSON spec generated";
-    return rfl::json::write(spec);
+    return spec.write();
 }
 
 std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_url) const {

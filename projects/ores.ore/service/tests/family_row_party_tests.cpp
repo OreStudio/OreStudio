@@ -18,17 +18,17 @@
  *
  */
 #include "ores.ore.service/messaging/family_row_party.hpp"
+#include "ores.utility/codec/json_document.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace {
 
 const std::string tags("[messaging][family_row_party]");
 
-rfl::Generic row_of(const std::string& json) {
-    return rfl::json::read<rfl::Generic>(json).value();
+ores::utility::codec::json_document row_of(const std::string& json) {
+    return std::move(*ores::utility::codec::json_document::parse(json));
 }
 
 }
@@ -36,7 +36,8 @@ rfl::Generic row_of(const std::string& json) {
 using ores::ore::service::messaging::party_of_family_row;
 
 TEST_CASE("a flat family row states its own party", tags) {
-    CHECK(party_of_family_row(row_of(R"({"id":"p1","convention_id":"c1","party_id":"party-a"})")) ==
+    CHECK(party_of_family_row(
+              row_of(R"({"id":"p1","convention_id":"c1","party_id":"party-a"})").root()) ==
           "party-a");
 }
 
@@ -45,15 +46,16 @@ TEST_CASE("a grouped family row states its party in its identity", tags) {
     // so their party is stated inside it.
     CHECK(party_of_family_row(row_of(
               R"({"identity":{"id":"c1","party_id":"party-a","kind_code":"COMMODITY_FUTURE"},)"
-              R"("payload":{"name":"XLME:OP"}})")) == "party-a");
+              R"("payload":{"name":"XLME:OP"}})").root()) == "party-a");
 }
 
 TEST_CASE("a null party at the top of a row defers to its identity", tags) {
-    CHECK(party_of_family_row(row_of(R"({"party_id":null,"identity":{"party_id":"party-a"}})")) ==
+    CHECK(party_of_family_row(
+              row_of(R"({"party_id":null,"identity":{"party_id":"party-a"}})").root()) ==
           "party-a");
 }
 
 TEST_CASE("a family row that names no party has none", tags) {
-    CHECK(party_of_family_row(row_of(R"({"id":"x","payload":{"name":"n"}})")).empty());
-    CHECK(party_of_family_row(row_of(R"({"identity":{"id":"x"}})")).empty());
+    CHECK(party_of_family_row(row_of(R"({"id":"x","payload":{"name":"n"}})").root()).empty());
+    CHECK(party_of_family_row(row_of(R"({"identity":{"id":"x"}})").root()).empty());
 }

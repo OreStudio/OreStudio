@@ -23,31 +23,19 @@ namespace ores::ore::service::messaging {
 
 namespace {
 
-const rfl::Generic* member_named(const rfl::Generic& value, const std::string& key) {
-    const auto* object = std::get_if<rfl::Generic::Object>(&value.get());
-    if (object == nullptr)
-        return nullptr;
-    for (const auto& [name, member] : *object)
-        if (name == key)
-            return &member;
-    return nullptr;
-}
+using ores::utility::codec::json_value;
 
-std::string text_of(const rfl::Generic* value) {
-    if (value == nullptr)
-        return {};
-    const auto* text = std::get_if<std::string>(&value->get());
-    return text == nullptr ? std::string{} : *text;
+std::string text_of(const json_value& value) {
+    return value.text_or();
 }
 
 }
 
-std::string party_of_family_row(const rfl::Generic& row) {
-    if (auto own = text_of(member_named(row, "party_id")); !own.empty())
+
+std::string party_of_family_row(const json_value& row) {
+    if (auto own = text_of(row.member("party_id")); !own.empty())
         return own;
-    if (const auto* identity = member_named(row, "identity"); identity != nullptr)
-        return text_of(member_named(*identity, "party_id"));
-    return {};
+    return text_of(row.member("identity").member("party_id"));
 }
 
 }

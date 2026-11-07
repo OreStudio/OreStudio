@@ -35,6 +35,7 @@ Every trade type the generator books is built by its trade builder, and the repo
 
 * Acceptance
 
+- =convention_lookup= answers what each family's builder asks: the CDS convention for credit, the equity and commodity underlyings for theirs. Moved here from [[id:4435202D-6074-47F6-8BEB-85E25CF70BEF][Look up an oresmd identifier's conventions and project it for ORE]].
 - Each family's planner draws its values and calls the builders; its =construct_*= functions and =*_terms= structs are deleted.
 - Each family's entries leave the recorded trades' known lists, its recorded files change in the same commit, and the lists end empty or with a stated reason per entry.
 - A tagged test runs the ORE engine on each recorded portfolio, with ORE's example configuration, and fails on an error ORE raises reading or building a trade, unless a known list asserted exactly names it; a Trade error caused by missing market data is counted apart. Moved here from [[id:63FF92C8-3E18-49BB-93FA-B0862B5FD4B2][Test that every generated trade builds in ORE]].

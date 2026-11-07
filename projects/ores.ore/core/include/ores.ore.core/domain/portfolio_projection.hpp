@@ -26,8 +26,8 @@
 #include "ores.ore.core/xml/trade_import_item.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include <string>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -139,7 +139,7 @@ public:
      */
     static document reverse(const std::vector<trading::messaging::trade_export_item>& items,
                             const trading::domain::instrument_batch& instruments,
-                            const portfolio_reference_curves& reference_curves = {});
+                            const ores::marketdata::projection::ore_projection& projection = {});
 };
 
 }

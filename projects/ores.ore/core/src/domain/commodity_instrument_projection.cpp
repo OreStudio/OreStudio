@@ -94,22 +94,22 @@ auto commodity_instrument_projection_to_ore_date(
     return ores::platform::time::datetime::to_iso8601_date(*d);
 }
 
-auto commodity_instrument_projection_text_of(const record_reader& r,
-                                             std::string_view name) -> std::string {
+auto commodity_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto commodity_instrument_projection_spelling_of(const record_reader& r,
-                                                 std::string_view name) -> std::string {
+auto commodity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
-auto optional_date_of(const record_reader& r,
-                      std::string_view name) -> std::optional<std::chrono::year_month_day> {
+auto optional_date_of(const record_reader& r, std::string_view name)
+    -> std::optional<std::chrono::year_month_day> {
     return commodity_instrument_projection_to_domain_date(
         commodity_instrument_projection_text_of(r, name));
 }
@@ -118,8 +118,8 @@ auto optional_decimal_of(const record_reader& r, std::string_view name) -> std::
     return r.decimal(name);
 }
 
-auto commodity_instrument_projection_decimal_of(const record_reader& r,
-                                                std::string_view name) -> decimal {
+auto commodity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
@@ -533,10 +533,8 @@ void write_commodity_swaption(record_writer& trade, const commodity_instrument_d
 void write_commodity_swap(record_writer& trade, const commodity_instrument_data& carrier) {
     auto data = trade.child("SwapData");
     if (!carrier.legs.empty()) {
-        leg_block::write_legs(data,
-                              carrier.instrument.start_date,
-                              carrier.instrument.maturity_date,
-                              carrier);
+        leg_block::write_legs(
+            data, carrier.instrument.start_date, carrier.instrument.maturity_date, carrier);
         return;
     }
 
@@ -792,7 +790,7 @@ auto read_commodity_instrument(xml::record_reader trade, std::string_view trade_
 auto write_commodity_instrument(xml::record_writer& trade,
                                 std::string_view trade_type,
                                 const trading::domain::trade_instrument& instrument,
-                                const portfolio_reference_curves&) -> bool {
+                                const ores::marketdata::projection::ore_projection&) -> bool {
     const auto* v = std::get_if<commodity_instrument_data>(&instrument);
     if (v == nullptr || !is_commodity_trade_type(trade_type))
         return false;

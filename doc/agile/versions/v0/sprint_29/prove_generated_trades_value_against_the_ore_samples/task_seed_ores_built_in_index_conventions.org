@@ -2,7 +2,7 @@
 :ID: 014A3FB0-36D9-44A5-8236-E60EFF7C1CA8
 :END:
 #+title: Task: Seed ORE's built-in index conventions
-#+description: Population seeds the Ibor and overnight index conventions ORE defines in code (indexparser.cpp), each with its oresmd address, so a resolver can answer for EURIBOR, SOFR and the rest in every tenant.
+#+description: Population seeds the Ibor and overnight index conventions ORE defines in code (indexparser.cpp), each with its oresmd address, so a convention lookup can answer for EURIBOR, SOFR and the rest in every tenant.
 #+type: task
 #+level: s1
 #+filetags: :refdata:oresmd:seed:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every tenant holds the Ibor and overnight index conventions ORE defines in code, each with its oresmd address, so a resolver answers for them.
+Every tenant holds the Ibor and overnight index conventions ORE defines in code, each with its oresmd address, so a convention lookup answers for them.
 
 * Status
 
@@ -36,7 +36,7 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
 * Acceptance
 
 - A script mines ORE's =ored/utilities/indexparser.cpp= into seed rows of =ibor_index_convention= and =overnight_index_convention=: day count, fixing calendar, settlement days, business day convention, end of month and the oresmd address. The seed names the ORE version it was mined from.
-- Population loads the seed; a provisioned tenant resolves =EUR-EURIBOR-6M= and =USD-SOFR= through =reference_resolver=.
+- Population loads the seed; a provisioned tenant finds the conventions of =EUR-EURIBOR-6M= and =USD-SOFR= through =convention_lookup=.
 - A tenant may override a seeded convention with its own.
 
 * Plan
@@ -58,6 +58,13 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- Found while starting the convention lookup (2026-11-06): the conventions
+  seed (=refdata_conventions_seed_populate.sql=) already holds Ibor and
+  overnight index conventions with their family addresses (EURIBOR, ESTER,
+  EONIA, SOFR, HONIA, FedFunds, BoEBASE, ...) and swap conventions addressed
+  per tenor. This task may reduce to checking that seed against ORE's
+  =indexparser.cpp= and filling the gaps.
 
 * Test Scenarios
 

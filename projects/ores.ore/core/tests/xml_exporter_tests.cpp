@@ -18,6 +18,9 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/datum/market_reference.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
@@ -52,6 +55,23 @@
 #include <vector>
 
 namespace {
+
+/// @p text as the emitter writes it in an element: the markup characters escaped.
+std::string escaped_text(const std::string& text) {
+    std::string escaped;
+    for (const char c : text) {
+        if (c == '&')
+            escaped += "&amp;";
+        else if (c == '<')
+            escaped += "&lt;";
+        else if (c == '>')
+            escaped += "&gt;";
+        else
+            escaped += c;
+    }
+    return escaped;
+}
+
 
 /**
  * @brief Turns imported trades into the payload the exporter consumes.
@@ -916,21 +936,35 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
 
     auto [items, instruments] = make_export_payload(imported);
 
-    const auto xml = exporter::export_portfolio(items, instruments);
-    REQUIRE(xml.contains("EUR-EURIBOR-6M"));
+    const auto quote = ores::marketdata::datum::ore_key_codec::read("ZERO/RATE/EUR/EUR6M/A365/5Y");
+    REQUIRE(quote);
+    const auto curve =
+        ores::marketdata::datum::market_reference::of(ores::marketdata::datum::series_of(*quote));
+    REQUIRE(curve);
+    for (auto& bond : instruments.bond_instruments)
+        if (bond.issue.reference_curve_id == std::optional<std::string>("EUR-EURIBOR-6M"))
+            bond.issue.reference_curve_id = curve->uri();
 
-    const auto translated =
-        exporter::export_portfolio(items, instruments, [](const std::string& uri) -> std::string {
-            return uri == "EUR-EURIBOR-6M" ? "EUR-ESTER" : uri;
-        });
+    /*
+     * The emitter escapes text, and an oresmd address carries an ampersand for
+     * every query key, so the element is asserted in its escaped spelling.
+     */
+    const auto curve_id = "<ReferenceCurveId>" + escaped_text(curve->uri()) + "</ReferenceCurveId>";
+
+    const auto xml = exporter::export_portfolio(items, instruments);
+    REQUIRE(xml.contains(curve_id));
+
+    const auto translated = exporter::export_portfolio(
+        items,
+        instruments,
+        ores::marketdata::projection::ore_projection({{curve->uri(), "EUR-ESTER"}}));
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << translated;
 
     /*
-     * Only the reference curve is translated: the same name is also the
-     * documents' index and income curve, and those are not the run's to
-     * rename.
+     * Only the reference curve is translated: the documents' index and income
+     * curve keep their names, which are not the run's to rename.
      */
-    CHECK(!translated.contains("<ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>"));
+    CHECK(!translated.contains(curve_id));
     CHECK(translated.contains("<ReferenceCurveId>EUR-ESTER</ReferenceCurveId>"));
     CHECK(translated.contains("<IncomeCurveId>EUR-EURIBOR-6M</IncomeCurveId>"));
 }

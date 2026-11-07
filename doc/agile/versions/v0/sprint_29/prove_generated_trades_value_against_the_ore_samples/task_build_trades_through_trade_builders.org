@@ -36,7 +36,7 @@ A caller builds a complete swap by stating its economic terms; the builder resol
 * Acceptance
 
 - =required<T>=, =build_error{term, message}= and the registry: each builder states its trade type, and a test fails when the builders and the trade type catalogue differ.
-- The fixed and floating leg sub-builders derive frequency, day count, calendar, adjustment and fixing days from the swap and index conventions found through =reference_resolver=, and emit each leg's schedule row.
+- The fixed and floating leg sub-builders derive frequency, day count, calendar, adjustment and fixing days from the swap and index conventions found through =convention_lookup=, and emit each leg's schedule row.
 - A vanilla swap built on EUR-EURIBOR-6M from ORE's example conventions writes the same XML as ORE's own sample, up to the economic terms.
 
 * Plan

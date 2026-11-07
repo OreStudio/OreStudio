@@ -4,11 +4,14 @@ Build and package in the component checkout, using Node 22.11+:
 
 ```text
 npm ci --ignore-scripts
-npm test
+npm run verify
 npm run package
 ```
 
-These commands never invoke CMake, install models or start services. The package
+These commands never invoke CMake, install models or start services. Verification
+includes complete offline replay handling gates; blocked business
+capabilities remain explicitly blocked. See [reproducible evaluation](reproducible-evaluation.md).
+The package
 contains a bundled `agent.mjs`, dependency-free `service.mjs` and a manifest
 with source revision and file checksums. Transfer that artifact to the target
 Windows or Linux host. No npm installation is required there; Node is required.

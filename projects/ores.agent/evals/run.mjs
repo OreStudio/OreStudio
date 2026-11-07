@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { readFile,writeFile,mkdir } from 'node:fs/promises';
+import { readFile,writeFile,mkdir,readdir } from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import { createHash,randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -14,20 +14,21 @@ import { loadConfig } from '../dist/config.js';
 import { fixtureBackend,fixtureSession } from './fixtures.mjs';
 import { validateCorpus,summarize,redactor,strictFailed } from './grade.mjs';
 import { evaluateCase,digest,readOnlyBackend } from './engine.mjs';
+import { metrics } from './metrics.mjs';
 const component=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const options={profile:'replay',repeat:1};
-const switches=new Set(['strict','live-read','help']);
+const switches=new Set(['strict','require-handling','live-read','help']);
 const valued=new Set(['profile','repeat','cases','corpus','out','config','credentials','party','other-party','inference-root','min-pass','timeout-ms']);
 for(let index=2;index<process.argv.length;index++){
  const name=process.argv[index].replace(/^--/,'');if(!process.argv[index].startsWith('--')||!switches.has(name)&&!valued.has(name))throw Error('Unknown evaluation option. Use --help.');
  if(switches.has(name))options[name]=true;else{const value=process.argv[++index];if(!value||value.startsWith('--'))throw Error('Missing evaluation option value.');options[name]=value;}
 }
-if(options.help){console.log('npm run eval -- --profile replay|model|live [--cases id,id] [--corpus PATH] [--repeat 1..5] [--timeout-ms 100..120000] [--out NEW_DIRECTORY] [--strict --min-pass 0..1]\nmodel: --config AGENT_CONFIG [--inference-root ROOT]\nlive: --live-read --config AGENT_CONFIG --credentials PRIVATE_JSON --party UUID [--other-party UUID] [--inference-root ROOT]');process.exit(0);}
+if(options.help){console.log('npm run eval -- --profile replay|model|live [--cases id,id] [--corpus PATH] [--repeat 1..5] [--timeout-ms 100..120000] [--out NEW_DIRECTORY] [--strict --min-pass 0..1 --require-handling]\nmodel: --config AGENT_CONFIG [--inference-root ROOT]\nlive: --live-read --config AGENT_CONFIG --credentials PRIVATE_JSON --party UUID [--other-party UUID] [--inference-root ROOT]');process.exit(0);}
 async function hashFile(path){const hash=createHash('sha256');for await(const chunk of createReadStream(path))hash.update(chunk);return hash.digest('hex');}
 function markdown(report){
  const s=report.summary,rows=report.results.map(r=>`| ${r.id} | ${r.repetition} | ${r.outcome} | ${r.handling} | ${r.capability} | ${Math.round(r.durationMs??0)} |`);
  const findings=report.results.filter(r=>r.outcome!=='pass').map(r=>`- ${r.id} (${r.repetition}): ${r.outcome}. ${r.capabilityReason??''} ${(r.turns??[]).flatMap(t=>t.failures??[]).join(' ')} ${r.error?.code??''}`);
- return `# Agent evaluation report\n\nProfile: ${report.profile}. Data: ${report.metadata.dataMode}.\nInference: ${report.metadata.inferenceMode}\nCorpus: ${report.corpusVersion}; revision: ${report.metadata.agentRevision}.\n\nRunner completion does not imply model accuracy or business capability fulfillment.\n\nTotal: ${s.total}. Outcomes: ${JSON.stringify(s.outcomes)}.\nHandling: ${JSON.stringify(s.handling)}. Capability: ${JSON.stringify(s.capability)}.\nOverall pass rate: ${(100*s.overallPassRate).toFixed(1)}%; handling pass rate: ${(100*s.handlingPassRate).toFixed(1)}%.\nDenominator: ${s.denominator}\n\n| Case | Repetition | Overall | Handling | Business capability | Milliseconds |\n| --- | ---: | --- | --- | --- | ---: |\n${rows.join('\n')}\n\n## Findings\n\n${findings.join('\n')||'No failed or blocked cases in this selection.'}\n\nSee results.json for expected/actual evidence, redacted traces, failures and provenance.\nLexical answer checks are bounded oracles, not comprehensive semantic or financial certification.\n`;
+ return `# Agent evaluation report\n\nProfile: ${report.profile}. Data: ${report.metadata.dataMode}.\nInference: ${report.metadata.inferenceMode}\nCorpus: ${report.corpusVersion}; revision: ${report.metadata.agentRevision}.\n\nRunner completion does not imply model accuracy or business capability fulfillment.\n\nTotal: ${s.total}. Outcomes: ${JSON.stringify(s.outcomes)}.\nHandling: ${JSON.stringify(s.handling)}. Capability: ${JSON.stringify(s.capability)}.\nOverall pass rate: ${(100*s.overallPassRate).toFixed(1)}%; handling pass rate: ${(100*s.handlingPassRate).toFixed(1)}%.\nDenominator: ${s.denominator}\n\n| Case | Repetition | Overall | Handling | Business capability | Milliseconds |\n| --- | ---: | --- | --- | --- | ---: |\n${rows.join('\n')}\n\n## Findings\n\n${findings.join('\n')||'No failed or blocked cases in this selection.'}\n\nMetrics: ${JSON.stringify(report.metrics.scores)}.\nTruncation turns: ${report.metrics.truncationTurns}. Timing sample counts and percentile eligibility: see results.json.\n\nSee results.json for expected/actual evidence, redacted traces, failures and provenance.\nLexical answer checks are bounded oracles, not comprehensive semantic or financial certification.\n`;
 }
 async function main(){
  if(!['replay','model','live'].includes(options.profile))throw Error('Invalid evaluation profile.');
@@ -35,6 +36,7 @@ async function main(){
  if(!Number.isInteger(repeat)||repeat<1||repeat>5||!Number.isFinite(minimum)||minimum<0||minimum>1)throw Error('Invalid repetition count or threshold.');
  if(!Number.isInteger(timeoutMs)||timeoutMs<100||timeoutMs>120000)throw Error('Invalid per-turn deadline.');
  if(options['min-pass']!==undefined&&!options.strict)throw Error('--min-pass requires --strict.');
+ if(options['require-handling']&&!options.strict)throw Error('--require-handling requires --strict.');
  if(options.profile==='live'&&!options['live-read'])throw Error('Live reads require explicit --live-read.');
  if(options.profile!=='replay'&&!options.config)throw Error('Model/live profile requires --config.');
  if(options.profile==='live'&&(!options.credentials||!options.party))throw Error('Live profile requires credentials and a selected party UUID.');
@@ -53,7 +55,9 @@ async function main(){
  if(config?.inference.apiKeyFile)redact.add((await readFile(config.inference.apiKeyFile,'utf8')).trim());
  const inference=config?new HttpInference(config.inference):null;
  let revision='unknown',dirty=true;try{revision=execFileSync('git',['rev-parse','HEAD'],{cwd:component,encoding:'utf8'}).trim();dirty=Boolean(execFileSync('git',['status','--porcelain','--','.'],{cwd:component,encoding:'utf8'}).trim());}catch{}
- const fingerprints={};for(const name of ['src/agent.ts','src/intent.ts','src/tools.ts','src/backend.ts','src/inference.ts','src/scope-reporting.ts','src/sensitivity.ts','evals/cases.json','evals/fixtures.mjs','evals/engine.mjs','evals/grade.mjs','evals/run.mjs','package-lock.json'])fingerprints[name]=await hashFile(join(component,name));
+ const sourceFiles=['package.json','package-lock.json'];
+ for(const folder of ['src','evals'])for(const entry of await readdir(join(component,folder),{withFileTypes:true}))if(entry.isFile()&&/\.(ts|mjs|json)$/.test(entry.name))sourceFiles.push(folder+'/'+entry.name);
+ const fingerprints={};for(const name of sourceFiles.sort())fingerprints[name]=await hashFile(join(component,name));
  const metadata={agentRevision:revision,componentDirty:dirty,fingerprints,backendContract:backendRevision,node:process.version,platform:process.platform,
   dataMode:options.profile==='live'?'Existing backend records; no business mutations.':'LABELLED FIXTURE DATA; not live OreStudio.',
   inferenceMode:options.profile==='replay'?'SCRIPTED REPLAY; not a model-quality score.':'Actual configured local model.',perTurnDeadlineMs:timeoutMs,
@@ -88,10 +92,10 @@ async function main(){
    await writeFile(join(output,'progress.json'),JSON.stringify(redact.clean({completed:results.length,total:selected.length*repeat,last:result.id}))+'\n',{mode:0o600});
   }
  }finally{await sessions?.close();await backend?.close();}
- const report=redact.clean({schemaVersion:1,corpusVersion:corpus.version,corpusSha256:digest(corpusText),profile:options.profile,startedAt,completedAt:new Date().toISOString(),metadata,summary:summarize(results),results});
+ const report=redact.clean({schemaVersion:1,corpusVersion:corpus.version,corpusSha256:digest(corpusText),profile:options.profile,startedAt,completedAt:new Date().toISOString(),metadata,summary:summarize(results),metrics:metrics(results),results});
  await writeFile(join(output,'results.json'),JSON.stringify(report,null,2)+'\n',{flag:'wx',mode:0o600});
  await writeFile(join(output,'summary.md'),markdown(report),{flag:'wx',mode:0o600});
  console.log(JSON.stringify({reportDirectory:output,...report.summary}));
- return options.strict&&strictFailed(report.summary,minimum)?2:0;
+ return options.strict&&(strictFailed(report.summary,minimum)||options['require-handling']&&report.summary.handling.pass!==report.summary.total)?2:0;
 }
 main().then(code=>{process.exitCode=code;}).catch(()=>{console.error('Evaluation harness could not initialise or write a valid report. Check options, private paths and corpus validity; use --help.');process.exitCode=1;});

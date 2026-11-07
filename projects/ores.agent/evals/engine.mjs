@@ -4,6 +4,7 @@ import { Agent } from '../dist/agent.js';
 import { ToolExecutor } from '../dist/tools.js';
 import { gradeTurn } from './grade.mjs';
 import { replayInference } from './fixtures.mjs';
+import { tracedBackend } from '../dist/telemetry.js';
 export const readOperations=new Set(['currencies','series','observations','trades','books','portfolios','reportDefinitions','reportInstances','runResults','runHealth','reportMetrics','counterparties','trade','tradeBooking','tradePortfolios','tradeBookings','exportPortfolio','fxForward','bond','counterparty']);
 const authOperations=new Set(['login','logout','selectParty']);
 export function readOnlyBackend(backend,onRead=()=>{}){
@@ -16,7 +17,7 @@ export const digest=value=>createHash('sha256').update(typeof value==='string'?v
 export async function evaluateCase(spec,{profile,backend,session,inference,redact,timeoutMs=60000}){
  const trace=[],turns=[],started=performance.now(),promptHashes=new Set(),catalogueHashes=new Set();
  let currentTurn=0,replay;
- const guarded=readOnlyBackend(backend,event=>trace.push({...event,turn:currentTurn}));
+ const guarded=readOnlyBackend(tracedBackend(backend),event=>trace.push({...event,turn:currentTurn}));
  const executor=new ToolExecutor(guarded,()=>{});
  const wrappedExecutor={execute:async(name,args,s,signal)=>{
   const record={type:'tool',turn:currentTurn,name,arguments:structuredClone(args),outcome:'pending'},start=performance.now();trace.push(record);
@@ -31,7 +32,7 @@ export async function evaluateCase(spec,{profile,backend,session,inference,redac
    event.proposedCalls=(result.tool_calls??[]).map(c=>({name:c.function.name,arguments:c.function.arguments}));return result;
   }catch(error){event.errorCode=error.code??'inference_error';throw error;}finally{event.durationMs=performance.now()-start;}
  }};
- const agent=new Agent(wrappedInference,wrappedExecutor);
+ const agent=new Agent(wrappedInference,wrappedExecutor,event=>trace.push({...event,turn:currentTurn}));
  for(const [index,turn] of spec.turns.entries()){
   currentTurn=index;replay=replayInference(turn);const traceStart=trace.length,control=new AbortController();if(turn.cancelBefore)control.abort();
   const signal=AbortSignal.any([control.signal,AbortSignal.timeout(timeoutMs)]),start=performance.now();let result,error;

@@ -21,9 +21,15 @@ jobs:
           cache: npm
           cache-dependency-path: projects/ores.agent/package-lock.json
       - run: npm ci --ignore-scripts
-      - run: npm test
+      - run: npm run verify
       - run: npm run package
       - uses: actions/upload-artifact@v4
         with:
           name: ores-agent-${{ matrix.os }}-node${{ matrix.node }}
           path: projects/ores.agent/artifacts/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ores-agent-replay-${{ matrix.os }}-node${{ matrix.node }}
+          path: build/output/agent-checks/
+          if-no-files-found: ignore

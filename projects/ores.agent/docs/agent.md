@@ -37,6 +37,11 @@ catalogue routing, preservation of explicit dates/bucket selectors, deterministi
 command refusal and identity-bound clarification state. Invalid units/provenance
 withhold the requested result explicitly instead of substituting another lookup.
 
+Version 0.1.7 adds private correlated timing for chat selection, inference,
+tool/adapter reads and formatting. The response `x-request-id` links its timing
+spans without including request text, arguments, identities, data or exception
+messages. See [reproduction and measurement definitions](reproducible-evaluation.md).
+
 Limits: 2,000-character input, four model rounds, six tool calls, at most four
 proposed calls per response, one active inference request globally, two active
 tools per session, 60 tool calls per minute per session, 32 KiB tool output,

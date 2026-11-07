@@ -31,12 +31,13 @@ target bump. Exact factor/bump/scenario/currency buckets remain separate;
 missing members withhold that bucket's total.
 Version 0.1.6 adds [bounded intent and conversation improvements](docs/intent-workflows.md)
 measured against the frozen Stage 4 evaluations and separate paraphrases.
+Version 0.1.7 adds [reproducible verification/comparison and private timing](docs/reproducible-evaluation.md).
 
 Requires Node 22.11+. From this component directory:
 
 ```sh
 npm ci --ignore-scripts
-npm test
+npm run verify
 npm run package
 ```
 

@@ -10,6 +10,7 @@ import { Agent } from './agent.js';
 import { HttpInference } from './inference.js';
 import { serveUi } from './ui.js';
 import { version } from './version.js';
+import { tracedBackend } from './telemetry.js';
 
 export function json(res: ServerResponse, status: number, body: unknown): void {
     res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
@@ -27,10 +28,11 @@ export async function body(req: IncomingMessage): Promise<unknown> {
 }
 
 export function createApp(config: Config, backend?: Backend) {
+    if (backend) backend = tracedBackend(backend);
     const sessions = backend ? new Sessions(backend) : undefined;
     const executor = backend ? new ToolExecutor(backend) : undefined;
     const mcp = sessions && executor ? createMcp(sessions, executor) : undefined;
-    const agent = executor ? new Agent(new HttpInference(config.inference), executor) : undefined;
+    const agent = executor ? new Agent(new HttpInference(config.inference), executor, event => console.log(JSON.stringify(event))) : undefined;
     const server = createServer((req, res) => { void (async () => {
         const requestId = randomUUID();
         res.setHeader('x-request-id', requestId);
@@ -48,7 +50,7 @@ export function createApp(config: Config, backend?: Backend) {
         if (req.method === 'POST' && req.url === '/chat' && agent) {
             const abort = new AbortController();
             res.on('close', () => { if (!res.writableFinished) abort.abort(); });
-            return json(res, 200, await agent.chat(await body(req), session, abort.signal));
+            return json(res, 200, await agent.chat(await body(req), session, abort.signal, requestId));
         }
         if (req.method === 'GET' && req.url === '/tools') return json(res, 200, Object.entries(tools).map(([name, t]) => ({ name, description: t.description, inputSchema: z.toJSONSchema(t.schema, { io: 'input' }) })));
         if (req.method === 'POST' && req.url?.startsWith('/tools/')) {

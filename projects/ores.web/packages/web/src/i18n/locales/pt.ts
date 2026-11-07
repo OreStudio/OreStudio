@@ -3818,6 +3818,9 @@ const pt: SourceCatalogue = {
         Finish: 'Concluir',
         'Marks the tenant ready: it stops bootstrapping and becomes active.':
             'Marca o inquilino como pronto: sai do modo de arranque e fica ativo.',
+        "Publish the system's curves": 'Publicar as curvas do sistema',
+        'Bootstraps each IR curve the system tenant holds a config for from its quotes and publishes it, so forwards can be read at once. A curve whose quotes have not arrived in time is named with its reason, and the run goes on.':
+            'Bootstraps each IR curve the system tenant holds a config for from its quotes and publishes it, so forwards can be read at once. A curve whose quotes have not arrived in time is named with its reason, and the run goes on.',
     },
 
     trading: {

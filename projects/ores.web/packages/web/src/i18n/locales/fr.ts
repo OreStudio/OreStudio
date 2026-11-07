@@ -3833,6 +3833,9 @@ const fr: SourceCatalogue = {
         Finish: 'Terminer',
         'Marks the tenant ready: it stops bootstrapping and becomes active.':
             'Marque le locataire comme prêt : il quitte le mode amorçage et devient actif.',
+        "Publish the system's curves": 'Publier les courbes du système',
+        'Bootstraps each IR curve the system tenant holds a config for from its quotes and publishes it, so forwards can be read at once. A curve whose quotes have not arrived in time is named with its reason, and the run goes on.':
+            'Bootstraps each IR curve the system tenant holds a config for from its quotes and publishes it, so forwards can be read at once. A curve whose quotes have not arrived in time is named with its reason, and the run goes on.',
     },
 
     trading: {

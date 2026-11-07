@@ -3789,6 +3789,9 @@ export const en: SourceCatalogue = {
         Finish: 'Finish',
         'Marks the tenant ready: it stops bootstrapping and becomes active.':
             'Marks the tenant ready: it stops bootstrapping and becomes active.',
+        "Publish the system's curves": "Publish the system's curves",
+        'Bootstraps each IR curve the system tenant holds a config for from its quotes and publishes it, so forwards can be read at once. A curve whose quotes have not arrived in time is named with its reason, and the run goes on.':
+            'Bootstraps each IR curve the system tenant holds a config for from its quotes and publishes it, so forwards can be read at once. A curve whose quotes have not arrived in time is named with its reason, and the run goes on.',
     },
 
     trading: {

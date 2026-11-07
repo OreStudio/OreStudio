@@ -752,6 +752,16 @@ RULES = (
          CPP, RESOURCE, "access",
          "The roles one account holds and the permissions one role grants, read or written"
          " through an RPC-shaped verb."),
+    Rule("a tenancy collection",
+         ("regex", r"^GET /api/v1/tenancy/\w"),
+         CPP, RESOURCE, "tenancy",
+         "A generated tenancy collection: the list, one row by key, its versions and the"
+         " bulk get, published under the area a tenant's own rows answer on."),
+    Rule("a tenancy collection write",
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/tenancy/\w"),
+         CPP, RESOURCE, "tenancy",
+         "A generated write of a tenancy collection: create, replace, remove, or one of the"
+         " bulk put and delete calls."),
     Rule("the bootstrap operations",
          ("regex", r"^POST /api/v1/iam/ops/(bootstrap_status|create_initial_admin)$"),
          CPP, RESOURCE, "tenancy",

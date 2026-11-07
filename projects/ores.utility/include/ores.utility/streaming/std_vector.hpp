@@ -28,18 +28,32 @@
 #include <ostream>
 #include <vector>
 
+namespace ores::utility::streaming {
+
+template <typename Containee>
+concept codec_writes_whole = ores::utility::codec::states_wire_form<Containee> ||
+                             requires { sizeof(ores::utility::codec::text_form<Containee>); };
+
+template <typename Containee>
+concept prints_itself = requires(std::ostream& s, const Containee& c) { s << c; };
+
+}
+
 namespace std {
+
 
 /*
  * A type the codec can write whole is written as one JSON array. Any other
  * element is written by its own operator<<, which for a generated domain type
  * writes the same JSON through its compiled codec, so the caller need not have
- * the element's shape in view.
+ * the element's shape in view. A vector of anything else has no operator<< here,
+ * so a test framework falls back to its own range printer.
  */
 template <typename Containee>
+    requires(ores::utility::streaming::codec_writes_whole<Containee> ||
+             ores::utility::streaming::prints_itself<Containee>)
 inline ostream& operator<<(ostream& s, const vector<Containee>& v) {
-    if constexpr (ores::utility::codec::states_wire_form<Containee> ||
-                  requires { sizeof(ores::utility::codec::text_form<Containee>); }) {
+    if constexpr (ores::utility::streaming::codec_writes_whole<Containee>) {
         s << ores::utility::codec::json::write(v);
     } else {
         s << '[';

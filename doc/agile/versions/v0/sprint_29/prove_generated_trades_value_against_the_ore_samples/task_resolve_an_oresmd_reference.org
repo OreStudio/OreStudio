@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
-#+updated: 2026-11-06
+#+updated: 2026-11-07
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ A builder can look up the conventions an oresmd identifier needs, and the export
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-11-06                               |
+| Last touched | 2026-11-07                               |
 
 * Acceptance
 
@@ -58,6 +58,7 @@ task and name that file in the Command column.
 | ores.marketdata.api.tests | 4588 assertions in 932 cases pass; lookup 35 in 6, projection 16 in 4 | =ores.marketdata.api.tests= | 597d7e8ca4 |
 | ores.ore.core.tests, ores.ore.service.tests | 520008 in 516; 54 in 10 pass | the two suites | 597d7e8ca4 |
 | ores.synthetic.core.tests | 2610 in 112 pass; no recorded trade changes | =ores.synthetic.core.tests= | 597d7e8ca4 |
+| Re-run at review: ores.marketdata.api.tests, its two tags, and the portfolio export | 4588 in 932; 35 in 6; 16 in 4; 72 in 10 all pass | the suites | fa3248b6e0 |
 
 * Notes
 
@@ -86,6 +87,16 @@ via its "Verifies task" field.
 | L2 | The marketdata API links the refdata API publicly | ores.marketdata/api/src/CMakeLists.txt | Accepted | The agreed placement; its consumers compile against refdata. |
 | L3 | The lookup copies its convention set | convention_lookup.hpp | No change | It owns the data; callers build it once. |
 | L4 | misspell-fixer on the changed files; validate_docs.sh | — | Clean | |
+| L5 | The format gate is red on five lines this branch wrote | xml_exporter_tests.cpp, run_configuration_operations.cpp | Open | Both files are clean at main; 25 more violations sit in two files the branch touched. |
+| L6 | @param projection states the opposite of what the code does | xml/exporter.hpp | Open | A default projection still projects an index or a quote; only an unnamed curve is written as stored. |
+| L7 | ore_name_or_stored swallows the key codec's refusal | projection/ore_projection.cpp | Open | The curve fallback is intended; a datum ORE cannot key must surface its error. |
+| L8 | Stored addresses are compared as text, not as parsed references | conventions/convention_lookup.cpp | Open | A column written in another field order never matches, and the seed task writes it in SQL. |
+| L9 | The family address drops the tenor for every family | conventions/convention_lookup.cpp | Open | A CMS or bond-yield index is refused as "it addresses no index", which is false. |
+| L10 | The exporter test asserts a ten-character prefix | tests/xml_exporter_tests.cpp | Open | Assert the ReferenceCurveId element instead of the URI's first ten characters. |
+| L11 | Dead <functional> and the orphan portfolio_reference_curves doc block | exporter.hpp, portfolio_instrument_projection.hpp | Open | |
+| L12 | The acceptance still promises reading an ORE name back | task_resolve_an_oresmd_reference.org | Open | The Result explains the amendment; the bullet must say the same. The design page still names reference_resolver and ore_naming. |
+| L13 | A component link has no class in the check tree | build/scripts/local_checks.py | Open | Both links land in the unknown class, so the gate runs all 81 checks. |
+| L14 | No test reaches the Ibor and overnight conflict | conventions/convention_lookup.cpp | Open | The six cases cover a two-swap conflict only. |
 
 * Result
 

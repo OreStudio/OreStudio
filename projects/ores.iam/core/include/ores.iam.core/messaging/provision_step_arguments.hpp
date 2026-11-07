@@ -22,6 +22,7 @@
 
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/json_document.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
@@ -30,7 +31,6 @@
 #include <cstdint>
 #include <optional>
 #include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -104,95 +104,92 @@ enum class provision_step_action {
 
 namespace detail {
 
-[[nodiscard]] inline rfl::Object<rfl::Generic>
-read_step_arguments(const std::string& arguments_json) {
-    if (arguments_json.empty())
-        return {};
+using ores::utility::codec::json_document;
+using ores::utility::codec::json_value;
 
-    auto parsed = rfl::json::read<rfl::Generic>(arguments_json);
+/**
+ * @brief The step's arguments as a document, or an empty object when it states
+ * none.
+ *
+ * A step whose arguments are not a JSON object is refused here, once, so every
+ * reader below can state what it needs from an object without repeating that
+ * check.
+ */
+[[nodiscard]] inline json_document read_step_arguments(const std::string& arguments_json) {
+    if (arguments_json.empty())
+        return json_document::make_object();
+
+    auto parsed = json_document::parse(arguments_json);
     if (!parsed)
         throw std::runtime_error("The step's arguments are not JSON.");
-
-    const auto* object = std::get_if<rfl::Object<rfl::Generic>>(&parsed->get());
-    if (object == nullptr)
+    if (!parsed->root().is_object())
         throw std::runtime_error("The step's arguments are not a JSON object.");
-    return *object;
+    return std::move(*parsed);
 }
 
-[[nodiscard]] inline std::vector<std::string> read_string_list(const rfl::Generic& value,
+/// The member an object states under the field, or a value that does not exist.
+[[nodiscard]] inline json_value member(const json_value& arguments, std::string_view field) {
+    return arguments.member(field);
+}
+
+[[nodiscard]] inline std::vector<std::string> read_string_list(const json_value& value,
                                                                std::string_view field) {
-    const auto* list = std::get_if<std::vector<rfl::Generic>>(&value.get());
-    if (list == nullptr)
+    if (!value.is_array())
         throw std::runtime_error("The step's argument '" + std::string(field) +
                                  "' is not a list of strings.");
 
     std::vector<std::string> result;
-    result.reserve(list->size());
-    for (const auto& element : *list) {
-        const auto* text = std::get_if<std::string>(&element.get());
-        if (text == nullptr)
+    result.reserve(value.size());
+    for (const auto& element : value.elements()) {
+        if (!element.is_string())
             throw std::runtime_error("The step's argument '" + std::string(field) +
                                      "' is not a list of strings.");
-        result.push_back(*text);
+        result.push_back(element.text_or());
     }
     return result;
 }
 
-[[nodiscard]] inline const rfl::Generic* member(const rfl::Object<rfl::Generic>& arguments,
-                                                std::string_view field) {
-    if (arguments.count(std::string(field)) == 0)
-        return nullptr;
-    return &arguments.at(std::string(field));
-}
-
-[[nodiscard]] inline std::string read_string(const rfl::Object<rfl::Generic>& arguments,
-                                             std::string_view field) {
-    const auto* value = member(arguments, field);
-    if (value == nullptr)
+[[nodiscard]] inline std::string read_string(const json_value& arguments, std::string_view field) {
+    const auto value = member(arguments, field);
+    if (!value.exists())
         return {};
-
-    const auto* text = std::get_if<std::string>(&value->get());
-    if (text == nullptr)
+    if (!value.is_string())
         throw std::runtime_error("The step's argument '" + std::string(field) +
                                  "' is not a string.");
-    return *text;
+    return value.text_or();
 }
 
-[[nodiscard]] inline bool read_bool(const rfl::Object<rfl::Generic>& arguments,
-                                    std::string_view field) {
-    const auto* value = member(arguments, field);
-    if (value == nullptr)
+[[nodiscard]] inline bool read_bool(const json_value& arguments, std::string_view field) {
+    const auto value = member(arguments, field);
+    if (!value.exists())
         return false;
-
-    const auto* flag = std::get_if<bool>(&value->get());
-    if (flag == nullptr)
+    const auto flag = value.flag();
+    if (!flag)
         throw std::runtime_error("The step's argument '" + std::string(field) +
                                  "' is not a boolean.");
     return *flag;
 }
 
-[[nodiscard]] inline std::vector<rfl::Object<rfl::Generic>>
-read_object_list(const rfl::Generic& value, std::string_view field) {
-    const auto* list = std::get_if<std::vector<rfl::Generic>>(&value.get());
-    if (list == nullptr)
+[[nodiscard]] inline std::vector<json_value> read_object_list(const json_value& value,
+                                                              std::string_view field) {
+    if (!value.is_array())
         throw std::runtime_error("The step's argument '" + std::string(field) +
                                  "' is not a list of objects.");
 
-    std::vector<rfl::Object<rfl::Generic>> result;
-    result.reserve(list->size());
-    for (const auto& element : *list) {
-        const auto* object = std::get_if<rfl::Object<rfl::Generic>>(&element.get());
-        if (object == nullptr)
+    std::vector<json_value> result;
+    result.reserve(value.size());
+    for (const auto& element : value.elements()) {
+        if (!element.is_object())
             throw std::runtime_error("The step's argument '" + std::string(field) +
                                      "' is not a list of objects.");
-        result.push_back(*object);
+        result.push_back(element);
     }
     return result;
 }
 
 /// A string a kind cannot act without. The context names what carries the field,
 /// so the message says which entry of a list has to be fixed.
-[[nodiscard]] inline std::string read_required_string(const rfl::Object<rfl::Generic>& arguments,
+[[nodiscard]] inline std::string read_required_string(const json_value& arguments,
                                                       std::string_view field,
                                                       std::string_view context) {
     auto value = read_string(arguments, field);
@@ -205,13 +202,12 @@ read_object_list(const rfl::Generic& value, std::string_view field) {
 /// The bundle codes a step's arguments name. A step that names no bundle is a
 /// profile row that asked for no data, so the field is required rather than
 /// treated as a no-op.
-[[nodiscard]] inline std::vector<std::string>
-read_bundles(const rfl::Object<rfl::Generic>& arguments) {
-    const auto* found = member(arguments, "bundles");
-    if (found == nullptr)
+[[nodiscard]] inline std::vector<std::string> read_bundles(const json_value& arguments) {
+    const auto found = member(arguments, "bundles");
+    if (!found.exists())
         throw std::runtime_error("The step names no 'bundles' argument.");
 
-    auto bundles = read_string_list(*found, "bundles");
+    auto bundles = read_string_list(found, "bundles");
     if (bundles.empty())
         throw std::runtime_error("The step names no bundle in its 'bundles' argument.");
     return bundles;
@@ -237,7 +233,7 @@ parameter_value(const std::vector<ores::iam::workflow::provision_tenant_paramete
  */
 [[nodiscard]] inline std::vector<std::string>
 parse_step_bundles(const std::string& arguments_json) {
-    return detail::read_bundles(detail::read_step_arguments(arguments_json));
+    return detail::read_bundles(detail::read_step_arguments(arguments_json).root());
 }
 
 /**
@@ -300,8 +296,8 @@ struct publish_bundle_step_arguments {
     result.bundles = parse_step_bundles(arguments_json);
 
     const auto arguments = detail::read_step_arguments(arguments_json);
-    if (const auto* found = detail::member(arguments, "opted_in_datasets"))
-        result.opted_in_datasets = detail::read_string_list(*found, "opted_in_datasets");
+    if (const auto found = detail::member(arguments.root(), "opted_in_datasets"))
+        result.opted_in_datasets = detail::read_string_list(found, "opted_in_datasets");
 
     for (auto& dataset : result.opted_in_datasets)
         dataset = resolve_parameter_references(dataset, parameters);
@@ -341,8 +337,8 @@ parse_provision_party_arguments(const std::string& arguments_json) {
     result.bundles = parse_step_bundles(arguments_json);
 
     const auto arguments = detail::read_step_arguments(arguments_json);
-    result.party = detail::read_string(arguments, "party");
-    result.lei = detail::read_string(arguments, "lei");
+    result.party = detail::read_string(arguments.root(), "party");
+    result.lei = detail::read_string(arguments.root(), "lei");
     return result;
 }
 
@@ -372,7 +368,7 @@ struct lei_hierarchy_step_arguments {
     result.bundles = parse_step_bundles(arguments_json);
 
     const auto arguments = detail::read_step_arguments(arguments_json);
-    result.root_lei = detail::read_string(arguments, "root_lei");
+    result.root_lei = detail::read_string(arguments.root(), "root_lei");
     if (result.root_lei.empty())
         result.root_lei = detail::parameter_value(parameters, "root_lei");
 
@@ -398,11 +394,11 @@ struct staff_party_assignment {
 [[nodiscard]] inline std::vector<staff_party_assignment>
 parse_staff_assignments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
-    const auto* found = detail::member(arguments, "parties");
-    if (found == nullptr)
+    const auto found = detail::member(arguments.root(), "parties");
+    if (!found.exists())
         throw std::runtime_error("The step names no 'parties' argument.");
 
-    auto entries = detail::read_object_list(*found, "parties");
+    auto entries = detail::read_object_list(found, "parties");
     if (entries.empty())
         throw std::runtime_error("The step names no party in its 'parties' argument.");
 
@@ -435,7 +431,7 @@ struct set_staff_passwords_step_arguments {
 parse_set_staff_passwords_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
     set_staff_passwords_step_arguments result;
-    result.password = detail::read_string(arguments, "password");
+    result.password = detail::read_string(arguments.root(), "password");
     if (result.password.empty())
         throw std::runtime_error("The step names no 'password' argument.");
     return result;
@@ -463,16 +459,16 @@ struct photo_step_arguments {
  */
 [[nodiscard]] inline photo_step_arguments parse_photo_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
-    const auto* found = detail::member(arguments, "parties");
-    if (found == nullptr)
+    const auto found = detail::member(arguments.root(), "parties");
+    if (!found.exists())
         throw std::runtime_error("The step names no 'parties' argument.");
 
-    auto entries = detail::read_object_list(*found, "parties");
+    auto entries = detail::read_object_list(found, "parties");
     if (entries.empty())
         throw std::runtime_error("The step names no party in its 'parties' argument.");
 
     photo_step_arguments result;
-    result.party_logo = detail::read_string(arguments, "party_logo");
+    result.party_logo = detail::read_string(arguments.root(), "party_logo");
     result.parties.reserve(entries.size());
     for (const auto& entry : entries) {
         photo_party_assignment assignment;
@@ -522,15 +518,15 @@ struct market_data_step_arguments {
 parse_market_data_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
     market_data_step_arguments result;
-    result.provider = detail::read_string(arguments, "provider");
+    result.provider = detail::read_string(arguments.root(), "provider");
     if (result.provider.empty())
         throw std::runtime_error("The step names no 'provider' argument.");
-    result.source = detail::read_string(arguments, "source");
+    result.source = detail::read_string(arguments.root(), "source");
     if (result.source.empty())
         throw std::runtime_error("The step names no 'source' argument.");
 
-    if (const auto* found = detail::member(arguments, "parties")) {
-        for (const auto& entry : detail::read_object_list(*found, "parties")) {
+    if (const auto found = detail::member(arguments.root(), "parties")) {
+        for (const auto& entry : detail::read_object_list(found, "parties")) {
             market_data_party_assignment assignment;
             assignment.party = detail::read_required_string(entry, "party", "'parties' entry");
             assignment.provider = detail::read_string(entry, "provider");
@@ -688,12 +684,12 @@ struct report_schedule_step_arguments {
 [[nodiscard]] inline report_schedule_step_arguments
 parse_report_schedule_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
-    const auto* found = detail::member(arguments, "parties");
-    if (found == nullptr)
+    const auto found = detail::member(arguments.root(), "parties");
+    if (!found.exists())
         throw std::runtime_error("The step names no 'parties' argument.");
 
     report_schedule_step_arguments result;
-    result.parties = detail::read_string_list(*found, "parties");
+    result.parties = detail::read_string_list(found, "parties");
     if (result.parties.empty())
         throw std::runtime_error("The step names no party in its 'parties' argument.");
     for (const auto& party : result.parties)

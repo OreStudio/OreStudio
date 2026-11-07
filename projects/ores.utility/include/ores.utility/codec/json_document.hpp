@@ -57,6 +57,11 @@ public:
         return val_ != nullptr;
     }
 
+    /// The same in a condition, as an optional reads.
+    explicit operator bool() const {
+        return exists();
+    }
+
     [[nodiscard]] bool is_object() const {
         return val_ != nullptr && yyjson_mut_is_obj(val_);
     }

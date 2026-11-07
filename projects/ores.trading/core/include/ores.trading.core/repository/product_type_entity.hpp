@@ -56,6 +56,7 @@ struct product_type_entity {
     std::optional<std::string> description;
     std::optional<std::string> source;
     std::optional<std::string> source_ref;
+    std::optional<std::string> deal_class;
     std::optional<std::string> product_family_code;
     std::string construction;
     bool has_options = false;
@@ -82,6 +83,7 @@ struct product_type_entity {
                query_builder::bind("description", &e::description) |
                query_builder::bind("source", &e::source) |
                query_builder::bind("source_ref", &e::source_ref) |
+               query_builder::bind("deal_class", &e::deal_class) |
                query_builder::bind("product_family_code", &e::product_family_code) |
                query_builder::bind("construction", &e::construction) |
                query_builder::bind("has_options", &e::has_options) |

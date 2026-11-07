@@ -42,6 +42,7 @@ render_product_type_fields(const domain::product_type& v) {
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Source", .value = v.source});
     fields.push_back({.name = "Source Ref", .value = v.source_ref});
+    fields.push_back({.name = "Deal Class", .value = v.deal_class});
     fields.push_back({.name = "Product Family Code", .value = v.product_family_code});
     fields.push_back({.name = "Construction", .value = v.construction});
     fields.push_back({.name = "Has Options", .value = v.has_options ? "true" : "false"});

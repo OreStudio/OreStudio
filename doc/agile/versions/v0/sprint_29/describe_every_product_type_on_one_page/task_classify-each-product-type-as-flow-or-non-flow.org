@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/classify-each-product-type-as-flow-or-non-flow
+#+pr: 4471
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
@@ -26,12 +26,12 @@ The authorisation queue reads a deal class from the store, and no trade type cod
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | Not yet started.                       |
+| Now          | The class is on the catalogue, a party may override it, and the queue reads it. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-31                               |
+| Next         | Review the pull request, then merge. |
+| Last touched | 2026-11-04                               |
 
 * Acceptance
 
@@ -42,9 +42,31 @@ The authorisation queue reads a deal class from the store, and no trade type cod
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The division is configuration: a class on the product type row, a party override
+beside it, and a read that states the default.
+
+- Two classes, =flow= and =non_flow=. The capture notes a third in the way desks
+  speak — a type the desk does not book at all — and leaves it open. It is not a
+  class of the same question: the queue's two halves are worked differently, while
+  "we do not book this" is about eligibility, which is where the book's allowed
+  list belongs. So the class is a two-value column, and the third question waits
+  for a case that needs it.
+- The class lives on the product type row, =ores_trading_product_types_tbl.deal_class=:
+  the catalogue is one copy in the system tenant, so a tenant admin classifies a
+  type once and every party reads it. The column is nullable, and the read states
+  =non_flow= when it is null: a type nobody has classified draws the closer look,
+  which is the safe direction.
+- A party that draws the line elsewhere gets an override row: party, product type
+  code, class. It lives in refdata, beside the party that names it, and names the
+  catalogue by code as the other junctions do.
+- The read is three steps, in order: the party's override, the product type's own
+  class, and the stated default. The queue's read already loads the product types
+  and the trades, so it gains one page-sized read of the overrides, and loses the
+  set of eight codes.
+- The seed states the division once: the catalogue's own table names the codes it
+  classifies as flow, and every other code the catalogue holds is seeded
+  =non_flow=. A fresh database arrives with the division the queue had in code,
+  and moving a code is a row edit.
 
 * Measurements
 
@@ -58,9 +80,33 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Product types the seed classifies | 121: 8 flow, 113 non_flow | =select deal_class, count(*) from ores_trading_product_types_tbl where tenant_id = ores_utility_system_tenant_id_fn() and valid_to = ores_utility_infinity_timestamp_fn() group by 1= | c8543bccae |
+| Trade type codes left in the BFF | 0 | a read of =projects/ores.web/packages/bff/src/inbox.ts= | c8543bccae |
+| Rows a party states for one type | 1, enforced by a unique index on the pair | =pg_prove ... test/trading_product_type_deal_class_test.sql= | c8543bccae |
 
 * Notes
+
+** 2026-11-04 — two classes, and the third question is a different one
+
+The capture notes that desks also speak of a type they do not book at all, and
+leaves it open. It is not a third class of the same question: the queue's two
+halves are worked differently, while "we do not book this" is about eligibility,
+which is what the book's allowed list already says. So the store holds two
+values, =flow= and =non_flow=, and the eligibility question waits for a case.
+
+The column is nullable and the read states =non_flow= for a null. That is the
+safe direction — a type nobody has called routine draws the closer look — and it
+lets a new type arrive before anybody classifies it.
+
+** 2026-11-04 — the read is three steps, in one order
+
+The party's own class wins, then the catalogue's, then the default. The queue
+already reads the product types for their names and the trades for their books,
+so it gains one page-sized read of the overrides for the parties on the page,
+and loses the set of eight codes. The wire language of the queue keeps
+=flow= / =non-flow=: the store says =non_flow=, the screen says "Non-flow", and
+the BFF is the one place that translates, so the screen's vocabulary does not
+change because a column changed.
 
 * Test Scenarios
 
@@ -77,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4471][#4471]] | [trading] Read the queue's deal class from the catalogue |
 
 * Review
 
@@ -86,3 +132,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The division is configuration: the queue reads a deal's class from the store, and
+no trade type code appears in the BFF.
+
+** What a reader can now see
+
+- Every product type states whether a desk works it as =flow= or =non_flow=.
+  A type nobody has classified states nothing, and the queue reads that as
+  =non_flow=, the direction that gives a new deal the closer look.
+- A party that draws the line elsewhere states its own class for a type, and its
+  row wins over the catalogue's.
+- The queue's read is the party's class, then the catalogue's, then the default.
+  The eight-code set is gone from the web layer.
+
+** How it is proved
+
+- A pgTAP suite, =trading_product_type_deal_class_test.sql=, states the seed's
+  division (the eight plain trades flow, nothing else), the null an unclassified
+  type carries, the refusal of a class outside the two, a party's override read
+  back, and a second override for the same pair refused.
+- The BFF's queue suite proves the read order, including a case where a party's
+  =non_flow= beats the catalogue's =flow= for a plain swap.
+- The codegen suite refuses a class it cannot honour — an unknown code, a bad
+  class, a code classified twice — and refuses a catalogue whose classes table
+  is missing.
+- All 85 pgTAP suites pass, the 98 ctest suites pass, the codegen suite passes,
+  and every local check passes.
+
+** What is left
+
+- The screen the capture asks for, to edit the class and a party's override,
+  belongs to the product type page and the configuration screens, not here: the
+  store answers, and the shell and the generated handlers already write it.
+- The capture's third value — a type the desk does not book at all — is stated
+  in the notes as a different question, about eligibility, which the book's
+  allowed list owns.

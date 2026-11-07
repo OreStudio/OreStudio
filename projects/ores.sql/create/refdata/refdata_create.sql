@@ -202,6 +202,8 @@
 -- Party and counterparty identifiers
 \ir ./refdata_party_identifiers_create.sql
 \ir ./refdata_party_identifiers_notify_trigger_create.sql
+\ir ./refdata_party_product_type_deal_classes_create.sql
+\ir ./refdata_party_product_type_deal_classes_notify_trigger_create.sql
 \ir ./refdata_counterparty_identifiers_create.sql
 \ir ./refdata_counterparty_identifiers_notify_trigger_create.sql
 

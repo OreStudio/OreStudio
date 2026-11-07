@@ -38,6 +38,7 @@ export interface ProductType {
     description: string;
     source: string;
     source_ref: string;
+    deal_class: string;
     product_family_code: string;
     construction: string;
     has_options: boolean;

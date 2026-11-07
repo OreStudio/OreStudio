@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 031ED9D1-C6DD-5FAD-952B-DF1C069CD510
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the party_product_type_deal_classes commands from the shell?
+#+description: Every command the party_product_type_deal_classes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:party_product_type_deal_classes:
+
+This file documents the party_product_type_deal_classes resource at the shell, one section per command. Every command is a subcommand of =party_product_type_deal_classes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: A07ADA23-3098-5049-AE84-2D3648EFB0E0
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes.list=.
+
+#+name: party_product_type_deal_classes-list
+#+begin_src ores-shell :tangle party_product_type_deal_classes-list.ores :exports none
+party_product_type_deal_classes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 7291EEAE-4771-58A5-B444-E2DD74B3E63D
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes get <id>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes.get=.
+
+#+name: party_product_type_deal_classes-get
+#+begin_src ores-shell :tangle party_product_type_deal_classes-get.ores :exports none
+party_product_type_deal_classes get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: A910752C-7739-5FC3-9EF0-D666423A77E6
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes get-many <id>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes.get_many=.
+
+#+name: party_product_type_deal_classes-get-many
+#+begin_src ores-shell :tangle party_product_type_deal_classes-get-many.ores :exports none
+party_product_type_deal_classes get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: FC3898F5-38C3-5342-B70E-4E215FA77788
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes add <party_id> <product_type_code> <deal_class> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes.put=.
+
+#+name: party_product_type_deal_classes-add
+#+begin_src ores-shell :tangle party_product_type_deal_classes-add.ores :exports none
+party_product_type_deal_classes add 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: A82D1B46-3767-5C16-A4D9-02512FC82C60
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes set <id> <party_id> <product_type_code> <deal_class> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes.put=.
+
+#+name: party_product_type_deal_classes-set
+#+begin_src ores-shell :tangle party_product_type_deal_classes-set.ores :exports none
+party_product_type_deal_classes set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 6A9B1F86-DEFE-57A5-9C03-4E10B66B7775
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes put-many --count <n> <id> <party_id> <product_type_code> <deal_class> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes.put_many=.
+
+#+name: party_product_type_deal_classes-put-many
+#+begin_src ores-shell :tangle party_product_type_deal_classes-put-many.ores :exports none
+party_product_type_deal_classes put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: CF39073F-47C3-544F-8E66-6A37E728758B
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes.delete=.
+
+#+name: party_product_type_deal_classes-delete
+#+begin_src ores-shell :tangle party_product_type_deal_classes-delete.ores :exports none
+party_product_type_deal_classes delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7053AC50-713A-5788-89ED-EA55E1D41179
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes.delete_many=.
+
+#+name: party_product_type_deal_classes-delete-many
+#+begin_src ores-shell :tangle party_product_type_deal_classes-delete-many.ores :exports none
+party_product_type_deal_classes delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =by-party-id=
+:PROPERTIES:
+:ID: B32EC347-8E81-57F5-A0EF-0341729BE59B
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes by-party-id <party_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes.list_by_party_id=.
+
+#+name: party_product_type_deal_classes-by-party-id
+#+begin_src ores-shell :tangle party_product_type_deal_classes-by-party-id.ores :exports none
+party_product_type_deal_classes by-party-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 8F4414D5-CB85-5424-8951-346542FDE853
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes_versions.list=.
+
+#+name: party_product_type_deal_classes-versions
+#+begin_src ores-shell :tangle party_product_type_deal_classes-versions.ores :exports none
+party_product_type_deal_classes versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 6EEF161F-3A81-5263-9173-058D54C3776D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_type_deal_classes version <id> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_type_deal_classes_versions.get=.
+
+#+name: party_product_type_deal_classes-version
+#+begin_src ores-shell :tangle party_product_type_deal_classes-version.ores :exports none
+party_product_type_deal_classes version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

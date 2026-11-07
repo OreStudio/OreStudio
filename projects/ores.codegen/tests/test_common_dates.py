@@ -137,6 +137,8 @@ def _tree(tmp_path, header_cols, fact_cols, vocabulary=None, shared="| "):
         "| code | description | source | source_ref |\n"
         "|------+-------------+--------+------------|\n"
         "| Swap | A swap. | ORE User Guide | swap.tex |\n\n"
+        "* Classes\n\n| code | deal_class |\n|------+------------|\n"
+        "| Swap | flow |\n\n"
         "* Common dates\n\n| name | description | shared_entity | shared_column |\n"
         "|------+-------------+---------------+---------------|\n"
         f"{rows}\n", encoding="utf-8")

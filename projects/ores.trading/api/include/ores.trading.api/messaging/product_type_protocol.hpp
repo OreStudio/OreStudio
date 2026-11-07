@@ -53,6 +53,7 @@ struct product_type_write {
     std::string description;
     std::string source;
     std::string source_ref;
+    std::string deal_class;
     std::string product_family_code;
     std::string construction;
     bool has_options;
@@ -389,6 +390,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.product_types.del
         utility::codec::field{"description", &product_type_write::description},
         utility::codec::field{"source", &product_type_write::source},
         utility::codec::field{"source_ref", &product_type_write::source_ref},
+        utility::codec::field{"deal_class", &product_type_write::deal_class},
         utility::codec::field{"product_family_code", &product_type_write::product_family_code},
         utility::codec::field{"construction", &product_type_write::construction},
         utility::codec::field{"has_options", &product_type_write::has_options},

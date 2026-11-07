@@ -47,7 +47,9 @@ business capabilities and cannot be completed solely by adding prompts/tools.
 ## Stage 0 — capability and data baseline
 
 Inspection delivered: see [live Stage 0 findings](business-baseline.md). Discovery
-data is available; the clean trade-NPV and populated-IR data gates remain open.
+data is available. The clean trade-NPV gate passed on 2026-11-07 through the
+separately prepared [live validation run](valuation-validation.md); the
+populated-IR gate remains open.
 
 Inspect the deployed NATS contracts, permissions and actual selected-party data.
 Record available trade types, books/portfolios, report definitions, runs, result
@@ -88,8 +90,9 @@ first user's resolution or results. No mutation subjects are enabled.
 ## Stage 2 — single-trade valuation results
 
 Read-only code slice delivered in 0.1.3; see [reporting behaviour](reporting.md)
-and [validation](validation.md). The clean live trade-NPV acceptance gate
-remains open: current applicable runs completed with errors.
+and [validation](validation.md). The clean live trade-NPV acceptance gate passed
+on 2026-11-07 after an isolated NPV-only run and the separately declared backend
+scope-copy prerequisite; see [live evidence](valuation-validation.md).
 
 Question: “What is the NPV of trade X?” Proposed tools: `find_report_runs`,
 `read_run_status`, `read_trade_results`.
@@ -266,8 +269,9 @@ pass; an unverified or backend-blocked stage is not complete.
 
 ## Immediate next checkpoint
 
-Carry out stage 0, then stage 1 and the single-trade NPV slice of stage 2.
-The demonstration should be: find a real trade in an authorised book, select a
-valid completed report, and answer its NPV with currency, actual pricing date,
-run identity and provenance. This is the next useful business delivery; it does
-not require booking or two-way-pricing work to be enabled first.
+Stages 0/1 inspection and discovery, and Stage 2's clean single-trade NPV
+demonstration, are delivered with the limitations above. Next is Stage 3:
+reconcile one book/portfolio's complete population and additive, consistently
+denominated results within one run. Verify available Greek dimensions/units
+before exposing them; do not infer them from measure names. Report editing,
+execution and trading writes remain separate approval/security stages.

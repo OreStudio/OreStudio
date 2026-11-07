@@ -23,12 +23,22 @@ Discovery/book clarification/trade economics and market/provider/currency
 regressions passed. Native backend, NATS and inference PID sets were unchanged;
 the main app remained HTTP 200. Only the standalone agent release changed.
 
-The clean live NPV acceptance gate is **still open**. Clean success, zero,
-staleness and ambiguity are verified using labelled fixtures/MCP tests; actual
-live data proves health, withholding and partial inspection, not a clean
-valuation. Prepare or repair one approved clean run as a separate declared
-action before claiming that business gate or proceeding to reconciled portfolio
-aggregation. See [stored reporting](reporting.md).
+The separately declared live NPV gate **passed on 2026-11-07**. An isolated
+NPV-only report completed clean for 73 actual trades across two books. Run
+`884d0bc9-932d-4c4c-9b66-ee97d2b810bb` gives the example trade's NPV of
+GBP -7,998,696.427339, priced at 2026-11-06, source `npv.csv`. The new clean
+smoke reconciles direct authenticated NATS, independent MCP and GPU-backed chat
+(5,327 ms sample); the updated existing reporting smoke passes clean-default,
+partial-output and second-party regressions.
+
+Preparing that dataset required a declared backend scope-copy addition, a
+focused Windows reporting DLL build and a temporary validation instance. The
+temporary instance was stopped before the corrected run; the main fleet was
+not restarted or replaced. No broker configuration/ACL changes were required.
+The new backend subject is not permanently deployed in the original fleet;
+native Linux validation of that addition remains open. See the complete
+[setup, failed first attempt, API observations and evidence](valuation-validation.md).
+The installed agent artifact and its read contracts remain unchanged.
 
 ## Previous release: 0.1.2 discovery
 

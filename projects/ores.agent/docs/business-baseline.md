@@ -6,6 +6,12 @@ Context: existing Acme Corporation demo tenant, Acme Corporation Plc party
 `b29db53d-325b-407f-9c47-8d229e4a111b`, signed in as the tenant administrator.
 This proves that account's reads, not least-privilege or cross-tenant policy.
 
+Follow-up, 2026-11-07: the historical findings below are unchanged, but the
+clean single-trade NPV gate has since passed using a separately prepared,
+isolated NPV report. See [live validation](valuation-validation.md) for the
+backend prerequisite, both execution attempts and reconciled result. The IR
+observation gap remains open.
+
 ## Reproduce
 
 From `projects/ores.agent`, with the existing backend running:

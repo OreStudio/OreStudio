@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :agent:mcp:local-ai:sprint_29:v0:
 #+created: 2026-11-06
-#+updated: 2026-11-06
+#+updated: 2026-11-07
 #+environment: OreStudio
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,10 +23,10 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Version 0.1.1 FX/IR lookups deployed; 24 Windows/Linux tests pass.                       |
-| Waiting on    | Linux NVIDIA host for remaining native GPU validation.                               |
-| Next          | Validate native Linux CUDA; review hosted auth and broker ACL hardening.            |
-| Last touched  | 2026-11-06                               |
+| Now           | Version 0.1.3 reporting deployed; clean live trade NPV reconciled.                       |
+| Waiting on    | Native Linux backend/GPU checks; hosted auth and broker ACL hardening.                               |
+| Next          | Stage 3: complete scoped book/portfolio summaries; verify available Greek units.            |
+| Last touched  | 2026-11-07                               |
 
 * Acceptance
 
@@ -99,3 +99,14 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 - Discovery and market regression scripts pass. Native backend, NATS and inference PIDs remain unchanged; main web app HTTP 200. No report execution, server build, broker change or business data import was introduced.
 - Clean live valuation acceptance remains open. Existing applicable runs completed with errors; fixture success is not substituted for that gate. Diagnose/prepare one approved clean run separately before claiming full Stage 2 business acceptance or reconciled aggregates.
 - Reproduction and limits: =projects/ores.agent/docs/reporting.md=; evidence summary in =projects/ores.agent/docs/validation.md=.
+
+* Business use cases: Stage 2 clean live acceptance
+
+- Passed on 2026-11-07 using installed agent =0.1.3-5b23d543cb79=; no new agent deployment.
+- Isolated definition =39eb7b57-db88-4669-ae7e-fbe3dbf40016=; clean run =884d0bc9-932d-4c4c-9b66-ee97d2b810bb= priced at 2026-11-06 and completed 2026-11-06 21:43:39.214032 UTC.
+- Example trade =05dcc4f0-4af9-597f-8e20-94c3018c6b4c=: NPV GBP -7,998,696.427339, source =npv.csv=. Direct authenticated NATS, independent MCP and GPU chat reconcile; second-party access is refused. Existing clean/partial/status reporting smoke passes.
+- Original regulatory output failed on Bond SA-CCR/netting data. A first isolated attempt failed on absent scope and remains failed. The corrected report gathered 73 trades from two books.
+- Declared backend prerequisite: =reporting.v1.ops.copy_run_scope=, ownership/permission gated, atomic, empty/unshared destination only. Five reporting compilation units and its DLL rebuilt with two jobs. A temporary instance verified unauthenticated/wrong-party/same-configuration/populated-shared/replay refusals, copied the scope and was stopped before the corrected run.
+- Main fleet not restarted/replaced; no broker ACL/configuration changes or queue purge. Original fleet does not permanently serve the new subject; native Linux validation of this backend addition remains open. Agent remains read-only.
+- The existing 48 Windows agent tests passed; the unchanged artifact had already passed 48 tests/packaging on Linux. No native Linux backend or least-privilege/cross-tenant proof is claimed.
+- Evidence, reproduction, warnings and backend API observations: =projects/ores.agent/docs/valuation-validation.md=. Next: Stage 3 scoped summaries and available Greeks, with explicit completeness and units.

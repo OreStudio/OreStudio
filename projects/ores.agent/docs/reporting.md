@@ -3,7 +3,10 @@
 Version 0.1.3 adds `find_report_runs`, `read_run_status`, and
 `read_trade_results`. They use existing NATS read operations already verified
 by Stage 0. No server source/build, broker configuration, pricing call, report
-trigger or data import is required. This release does not execute reports.
+trigger or data import is required by these reads. Preparing the clean live
+acceptance dataset required a separate backend scope-copy addition and operator
+report execution; see [validation setup](valuation-validation.md). This release
+does not execute reports.
 
 ## Examples
 
@@ -67,10 +70,10 @@ to be one atomic snapshot across mutable backend tables.
 
 ## Live data gate
 
-The actual Acme dataset currently supplies NPV rows for the example trade from
-Leverage Ratio and Large Exposures runs, both **completed with errors**. Default
-requests withhold their figures. Explicit inspection of the Leverage Ratio
-run returns a partial row with actual pricing date 2026-11-06 and source
+At initial rollout, the Acme dataset supplied NPV rows for the example trade from
+Leverage Ratio and Large Exposures runs, both **completed with errors**.
+Requests naming either run without partial opt-in withhold their figures.
+Explicit inspection of the Leverage Ratio run returns a partial row with actual pricing date 2026-11-06 and source
 `npv.csv`, including the incomplete/errored warning. This proves the partial
 and provenance paths, not a clean valuation scenario.
 
@@ -86,8 +89,12 @@ Run the existing-demo smoke without creating reports:
 node scripts/smoke-reporting.mjs <agent-url> <private-credentials.json> <Acme-Plc-party-id> <optional-other-party-id>
 ```
 
-The Stage 2 code slice can be delivered independently, but its clean live NPV
-acceptance gate remains open until one approved valuation run is prepared or
-repaired and reconciled against the report UI/backend. Such work must be
-declared separately. This release does not silently fix reports, trigger jobs,
-change market data, or implement Greeks/book/portfolio aggregation.
+The separately declared clean live acceptance gate passed on 2026-11-07:
+run `884d0bc9-932d-4c4c-9b66-ee97d2b810bb` completed clean and supplied the
+example trade's NPV of GBP -7,998,696.427339, priced at 2026-11-06. Direct NATS,
+external MCP and GPU-backed chat agree; second-party isolation and existing
+partial-output regressions pass. The required backend scope-copy addition and
+both operator execution attempts are documented in
+[live validation](valuation-validation.md). This release still does not
+silently fix reports, trigger jobs, change market data, or implement
+Greeks/book/portfolio aggregation.

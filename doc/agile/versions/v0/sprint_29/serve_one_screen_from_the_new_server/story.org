@@ -24,10 +24,40 @@ it lands, and the browser keeps calling the BFF until the last one does.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The layer's first two gaps are closed: search on a generated list, and the reference data catalogue. |
+| Now           | Six areas answer on the new server: access, auth, assets, changes, reference data and tenancy. |
 | Waiting on    | Nothing.                               |
-| Next          | The next functionality, one pull request at a time, measured against the route inventory. |
+| Next          | The next area by resource count: reporting, market data, simulation or trading. |
 | Last touched  | 2026-11-06                               |
+
+* Coverage, counted from the inventory
+
+The route inventory is the measure, not a claim, and reading it on 2026-11-07 gives the
+picture below. The count is of routes and not of collections: a generated collection
+answers seven verbs where the BFF answers one or two, so a C++ count above the BFF's is
+what parity looks like from this angle, not a surplus.
+
+| Area | BFF routes | New server's routes |
+|------+------------+---------------------|
+| access | 31 | 33 |
+| auth | 18 | 31 |
+| assets | 5 | 29 |
+| changes | 2 | 1 |
+| reference-data | 30 | 247 |
+| tenancy | 21 | 42 |
+| analytics | 6 | 0 |
+| agile | 6 | 0 |
+| grid | 14 | 0 |
+| market-data | 30 | 0 |
+| operations | 5 | 1 |
+| qa | 6 | 0 |
+| reporting | 44 | 0 |
+| simulation | 28 | 0 |
+| trading | 24 | 0 |
+| workflow | 17 | 0 |
+
+The five areas at the top are served; the rest are untouched. Two of the served areas
+are only partly so: the access area's views and the tenancy area's views are composed
+views, which the V increments own.
 
 * Acceptance
 

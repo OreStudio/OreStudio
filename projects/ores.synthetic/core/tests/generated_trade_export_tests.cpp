@@ -100,8 +100,8 @@ domain::trade_generation_scope scope_of(const std::string& asset_class_code) {
     scope.max_notional = 10000000.0;
     scope.as_of_date = std::chrono::year{2026} / 1 / 2;
     scope.seed = 7;
-    scope.trades_per_book = trades_per_type *
-        static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
+    scope.trades_per_book =
+        trades_per_type * static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
     scope.book_ids = {book};
     scope.counterparty_ids = {export_bank, export_second_bank};
     scope.issuer_ids = {export_bank, export_second_bank};
@@ -196,8 +196,8 @@ const std::map<std::string, recorded_type>& generated() {
                  * type does not route, or whose children have no header, so
                  * such a trade is never stored and never exported.
                  */
-                auto refusals = ores::trading::service::misrouted_arrays(
-                    request.instruments, slot.trade_type_code);
+                auto refusals = ores::trading::service::misrouted_arrays(request.instruments,
+                                                                         slot.trade_type_code);
                 for (auto& orphan : ores::trading::service::orphan_arrays(request.instruments))
                     refusals.push_back(std::move(orphan));
                 if (!refusals.empty()) {

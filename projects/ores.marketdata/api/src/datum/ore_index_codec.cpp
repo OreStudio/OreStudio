@@ -126,8 +126,9 @@ std::expected<market_index, std::string> refuse_index(std::string_view why) {
 std::expected<market_index, std::string> read_power(std::string_view rest) {
     const auto t = split_on_dash(rest);
     if (t.size() == 1)
-        return refuse_index("a power index with no delivery date takes ORE's evaluation date, which the "
-                      "name cannot keep");
+        return refuse_index(
+            "a power index with no delivery date takes ORE's evaluation date, which the "
+            "name cannot keep");
     if (t.size() != 4 && t.size() != 6)
         return refuse_index("a power index is POWER-NAME-YYYY-MM-DD[-START-END]");
     const auto delivery = rest.substr(t[0].size() + 1, 10);

@@ -16,10 +16,13 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         if (op === 'login') return { success: true, token: 'private-backend-token', session_id: 'session', username: 'alice', tenant_id: tenant, selected_party_id: party };
         if (op === 'logout') return {};
         if (op === 'trade') return { result: { outcome: 'ok' }, trade: { id: seriesId, tenant_id: tenant, party_id: party } };
-        if (op === 'reportInstances') return { result: { outcome: 'ok' }, total: 1, instances: [{ id: runId, tenant_id: tenant, party_id: party, name: 'labelled fixture run', definition_id: runId, priced_at: '2016-12-30', price_note: '', completed_at: '2016-12-30T12:00:00Z', cut_id: null, cut_label: null, cut_timepoint: null, engine_settings_id: null, engine_settings_version: null }] };
+        if (op === 'reportInstances') return { result: { outcome: 'ok' }, total: 1, instances: [{ id: runId, tenant_id: tenant, party_id: party, name: 'labelled fixture run', definition_id: runId, started_at: '2016-12-30T10:00:00Z', priced_at: '2016-12-30', price_note: '', completed_at: '2016-12-30T12:00:00Z', cut_id: null, cut_label: null, cut_timepoint: null, engine_settings_id: null, engine_settings_version: null }] };
         if (op === 'runHealth') return { result: { outcome: 'ok' }, health: 'completed clean', state_name: 'completed' };
-        if (op === 'runResults') return { result: { outcome: 'ok' }, total: 1, results: [{ id: runId, tenant_id: tenant, party_id: party, report_instance_id: runId, report_definition_id: runId, as_of: '2016-12-30', subject_type: 'trade', subject_id: seriesId, measure: 'npv', currency: 'GBP', figure: 0, source: 'labelled.fixture' }] };
-        if (op === 'books') return { result: { outcome: 'ok' }, total: 1, books: [{ id: seriesId, tenant_id: tenant, party_id: party, name: 'fixture book', parent_portfolio_id: seriesId, functional_currency: 'GBP' }] };
+        if (op === 'runResults') return { result: { outcome: 'ok' }, total: 1, results: [{ id: runId, tenant_id: tenant, party_id: party, report_instance_id: runId, report_definition_id: runId, as_of: '2016-12-30', subject_type: 'trade', subject_id: seriesId, measure: args.filter?.measure ?? 'npv', currency: 'GBP', figure: 0, source: 'npv.csv' }] };
+        if (op === 'books') return { result: { outcome: 'ok' }, total: 1, books: [{ id: seriesId, tenant_id: tenant, party_id: party, name: 'fixture book', parent_portfolio_id: seriesId, functional_currency: 'GBP', recorded_at: '2016-12-29T00:00:00Z' }] };
+        if (op === 'trades') return { result: { outcome: 'ok' }, total: 1, trades: [{ id: seriesId, tenant_id: tenant, party_id: party, recorded_at: '2016-12-29T00:00:00Z' }] };
+        if (op === 'tradeBookings') return { result: { outcome: 'ok' }, total: 1, trade_bookings: [{ tenant_id: tenant, trade_id: seriesId, book_id: seriesId, recorded_at: '2016-12-29T00:00:00Z' }] };
+        if (op === 'reportMetrics') return { result: { outcome: 'ok' }, total: 1, metrics: [{ id: runId, tenant_id: tenant, party_id: party, report_instance_id: runId, report_definition_id: runId, as_of: '2016-12-30', subject_type: 'trade', subject_id: seriesId, measure: 'NPV(Base)', family: 'npv_report', source: 'npv.csv', value: 0, currency: 'GBP', scenario: '', factor: '', qualifiers: '{"BaseCurrency":"GBP"}' }] };
         if (op === 'series') return { result: { outcome: 'ok' }, total: 1, market_series: [{ id: seriesId, tenant_id: tenant, party_id: party, provider_code: 'fixture', oresmd_uri: uri, series_subclass: 'fixture' }] };
         if (op === 'observations') return { result: { outcome: 'ok' }, total: 1, market_observations: [{ series_id: seriesId, tenant_id: tenant, party_id: party, oresmd_uri: uri.replace('type=series', 'type=quote'), value: '1.0552', observation_datetime: '2016-12-30 00:00:00.000000Z', source: 'labelled.fixture' }] };
         return { result: { outcome: 'ok' }, currencies: [{ iso_code: 'GBP', name: 'test fixture' }], total: 1 };
@@ -32,7 +35,7 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         const login = await (await fetch(base + '/auth/login', { method: 'POST', body: JSON.stringify({ principal: 'alice', password: 'fixture' }) })).json();
         const headers = { Authorization: 'Bearer ' + login.accessToken };
         await client.connect(new StreamableHTTPClientTransport(new URL(base + '/mcp'), { requestInit: { headers } }));
-        const catalog = await client.listTools(); assert.deepEqual(catalog.tools.map(t => t.name).sort(), ['list_currencies', 'list_market_series', 'read_market_observations', 'read_fx_spot', 'read_ir_rate', 'find_trades', 'read_trade', 'find_books', 'find_portfolios', 'find_counterparties', 'find_report_runs', 'read_run_status', 'read_trade_results'].sort());
+        const catalog = await client.listTools(); assert.deepEqual(catalog.tools.map(t => t.name).sort(), ['list_currencies', 'list_market_series', 'read_market_observations', 'read_fx_spot', 'read_ir_rate', 'find_trades', 'read_trade', 'find_books', 'find_portfolios', 'find_counterparties', 'find_report_runs', 'read_run_status', 'read_trade_results', 'summarize_scope_results'].sort());
         const result = await client.callTool({ name: 'list_currencies', arguments: { limit: 1 } });
         assert.equal(JSON.parse(result.content[0].text).rows[0].iso_code, 'GBP');
         assert.ok(!JSON.stringify(result).includes('private-backend-token'));
@@ -44,6 +47,11 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         assert.equal(JSON.parse(books.content[0].text).rows[0].name, 'fixture book');
         const npv = await client.callTool({ name: 'read_trade_results', arguments: { tradeId: seriesId } });
         assert.equal(JSON.parse(npv.content[0].text).status, 'stale'); assert.equal(JSON.parse(npv.content[0].text).result.figure, 0);
+        const summary = await client.callTool({ name: 'summarize_scope_results', arguments: { scopeType: 'book', scope: 'fixture book', runId } });
+        assert.ok(!summary.isError, JSON.stringify(summary));
+        const scoped = JSON.parse(summary.content[0].text); assert.equal(scoped.status, 'stale'); assert.equal(scoped.total.figure, '0'); assert.equal(scoped.coverage.expectedTradeCount, 1);
+        const greek = await client.callTool({ name: 'summarize_scope_results', arguments: { scopeType: 'book', scope: 'fixture book', runId, measure: 'delta' } });
+        assert.equal(JSON.parse(greek.content[0].text).status, 'unsupported');
         const denied = await client.callTool({ name: 'list_currencies', arguments: { tenantId: 'other' } });
         assert.equal(denied.isError, true);
         await fetch(base + '/auth/logout', { method: 'POST', headers });

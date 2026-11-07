@@ -72,3 +72,30 @@ test('the model cannot opt into partial results when the user did not request th
     const r = await agent.chat({ message: 'What is the NPV of my trade?' }, makeSession(), new AbortController().signal);
     assert.equal(r.evidence.length, 0);
 });
+
+test('scope run selection is private to its session and resumes the literal historical scope', async () => {
+    const runId = '22222222-2222-4222-8222-222222222222'; let modelCalls = 0; const calls = [];
+    const agent = new Agent({ complete: async (messages, catalogue) => {
+        modelCalls++; assert.ok(catalogue.length <= 6);
+        if (messages.at(-1).content === runId) return { role: 'assistant', content: 'No pending scope for this session.' };
+        return toolCall('{"scopeType":"book","scope":"FX Book"}', 'summarize_scope_results');
+    } }, { execute: async (name, args) => { calls.push(args); return { tool: name, request: args, status: args.runId ? 'unavailable' : 'selection_required', field: 'runId', reason: args.runId ? 'labelled fixture unavailable' : 'Choose a run.' }; } });
+    const session = makeSession(); await agent.chat({ message: 'What is the NPV of book FX Book?' }, session, new AbortController().signal);
+    await agent.chat({ message: runId }, makeSession(), new AbortController().signal); assert.equal(calls.length, 1);
+    assert.match((await agent.chat({ message: runId }, session, new AbortController().signal)).answer, /fixture unavailable/);
+    assert.equal(modelCalls, 2); assert.equal(calls.at(-1).scope, 'FX Book'); assert.equal(calls.at(-1).runId, runId);
+});
+
+test('scope Greeks cannot be replaced by an NPV measure proposed by the model', async () => {
+    const agent = new Agent({ complete: async () => toolCall('{"scopeType":"book","scope":"FX Book","measure":"npv_base"}', 'summarize_scope_results') }, {
+        execute: async (name, args) => { assert.equal(args.measure, 'delta'); return { tool: name, status: 'unsupported', reason: 'Greek units are not verified.' }; },
+    });
+    const r = await agent.chat({ message: 'Show delta for book FX Book' }, makeSession(), new AbortController().signal);
+    assert.match(r.answer, /not verified/); assert.equal(r.evidence[0].status, 'unsupported');
+});
+
+test('a model-invented scope run cannot execute without a user selection', async () => {
+    let round = 0;
+    const agent = new Agent({ complete: async () => ++round === 1 ? toolCall('{"scopeType":"book","scope":"FX Book","runId":"22222222-2222-4222-8222-222222222222"}', 'summarize_scope_results') : { role: 'assistant', content: 'Select a report run.' } }, { execute: async () => assert.fail('Invented run selection must not execute') });
+    assert.equal((await agent.chat({ message: 'Show NPV for book FX Book' }, makeSession(), new AbortController().signal)).evidence.length, 0);
+});

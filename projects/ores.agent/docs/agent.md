@@ -23,6 +23,12 @@ the agent invokes `ToolExecutor.execute` directly in this process. It never
 creates an MCP client or calls its own HTTP listener. Both entry paths use
 the same validation, user/party identity, budgets and NATS adapter.
 
+Version 0.1.4 adds [scope summaries](scope-reporting.md). Book/portfolio NPV
+questions receive a narrow catalogue, use a literal historical scope and
+require an explicitly selected run. Pending run/scope choices are private to
+the session for five minutes. Totals and contributor figures render directly
+from validated results. Greek requests cannot be silently changed to NPV.
+
 Limits: 2,000-character input, four model rounds, six tool calls, at most four
 proposed calls per response, one active inference request globally, two active
 tools per session, 60 tool calls per minute per session, 32 KiB tool output,

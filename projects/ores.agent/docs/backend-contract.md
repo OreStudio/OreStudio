@@ -16,6 +16,14 @@ operation is assumed.
 Only selected DTO fields leave the adapter. Backend result envelopes and
 authorization remain authoritative.
 
+Version 0.1.4 adds existing `trading.v1.trade_bookings.list` historical reads
+and `reporting.v1.report_metrics.list` reads for explicit CSV base-currency
+metadata. Historical membership is anchored to a user-selected run's start,
+with complete bounded pagination and selected-party checks. The new subjects
+are adapter allowlist entries, not new server handlers or broker ACL changes.
+See [scope reporting](scope-reporting.md) for the per-trade currency join and
+the absence of any agent HTTP/SQL fallback.
+
 Agent access tokens are random, short-lived opaque credentials, hashed in
 memory. Backend credentials/tokens remain server-side. Sessions have separate
 tenant/party identities and tool budgets. Logout revokes the local token

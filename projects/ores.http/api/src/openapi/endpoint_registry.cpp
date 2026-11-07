@@ -18,7 +18,6 @@
  *
  */
 #include "ores.http.api/openapi/endpoint_registry.hpp"
-#include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
 #include <map>
 #include <rfl.hpp>
@@ -456,7 +455,7 @@ std::string endpoint_registry::generate_openapi_json() const {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "OpenAPI JSON spec generated";
-    return ores::utility::codec::json::write(spec);
+    return rfl::json::write(spec);
 }
 
 std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_url) const {

@@ -760,6 +760,7 @@ private:
     };
 
     /// The result a step reports, so the run's record says what it acted on.
+public:
     struct provision_step_result {
         /// What one party's report definitions came to when the step scheduled
         /// them. Read together, the entries say how much of the catalogue a
@@ -795,6 +796,7 @@ private:
         std::vector<party_report_schedule> report_schedules;
     };
 
+private:
     /**
      * @brief How long a step waits on the publication it started.
      *

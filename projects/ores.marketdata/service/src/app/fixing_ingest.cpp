@@ -18,9 +18,9 @@
  *
  */
 #include "ores.marketdata.service/app/fixing_ingest.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/market_fixing.hpp"
 #include "ores.marketdata.core/classification/series_classifier.hpp"
-#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_classification_rule_repository.hpp"

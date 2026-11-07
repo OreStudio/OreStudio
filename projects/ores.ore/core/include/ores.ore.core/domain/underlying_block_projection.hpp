@@ -55,15 +55,15 @@ bool states_a_list(const Record& holder, std::string_view element) {
     return f != nullptr && f->kind == xml::field_kind::repeated_nested;
 }
 
-inline auto optional_text(const record_reader& block, std::string_view name)
-    -> std::optional<std::string> {
+inline auto optional_text(const record_reader& block,
+                          std::string_view name) -> std::optional<std::string> {
     if (!block.declares(name) || !block.has(name))
         return std::nullopt;
     return block.text(name);
 }
 
-inline auto optional_integer(const record_reader& block, std::string_view name)
-    -> std::optional<int> {
+inline auto optional_integer(const record_reader& block,
+                             std::string_view name) -> std::optional<int> {
     if (!block.declares(name) || !block.has(name))
         return std::nullopt;
     if (const auto value = block.integer(name))

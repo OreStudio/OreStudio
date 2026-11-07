@@ -63,34 +63,34 @@ struct term {
 };
 
 /// The element's value as written, whichever kind the record declares.
-inline auto read_text(const record_reader& product, std::string_view element)
-    -> std::optional<std::string> {
+inline auto read_text(const record_reader& product,
+                      std::string_view element) -> std::optional<std::string> {
     const auto* f = xml::find_field(product.type(), element, false);
     if (f == nullptr)
         return std::nullopt;
     switch (f->kind) {
-    case xml::field_kind::repeated_leaf: {
-        const auto values = f->scalar == xml::scalar_kind::enumeration ?
-                                product.spellings(element) :
-                                product.values(element);
-        if (values.empty())
+        case xml::field_kind::repeated_leaf: {
+            const auto values = f->scalar == xml::scalar_kind::enumeration ?
+                                    product.spellings(element) :
+                                    product.values(element);
+            if (values.empty())
+                return std::nullopt;
+            return values.front();
+        }
+        case xml::field_kind::enumeration:
+            return product.spelling(element);
+        case xml::field_kind::text:
+            return product.text(element);
+        case xml::field_kind::integer:
+            if (const auto value = product.integer(element))
+                return std::to_string(*value);
             return std::nullopt;
-        return values.front();
-    }
-    case xml::field_kind::enumeration:
-        return product.spelling(element);
-    case xml::field_kind::text:
-        return product.text(element);
-    case xml::field_kind::integer:
-        if (const auto value = product.integer(element))
-            return std::to_string(*value);
-        return std::nullopt;
-    case xml::field_kind::decimal:
-        if (const auto value = product.decimal(element))
-            return value->to_string();
-        return std::nullopt;
-    default:
-        return std::nullopt;
+        case xml::field_kind::decimal:
+            if (const auto value = product.decimal(element))
+                return value->to_string();
+            return std::nullopt;
+        default:
+            return std::nullopt;
     }
 }
 
@@ -100,27 +100,27 @@ inline void write_text(record_writer& product, std::string_view element, const s
     if (f == nullptr)
         return;
     switch (f->kind) {
-    case xml::field_kind::repeated_leaf:
-        if (f->scalar == xml::scalar_kind::enumeration)
-            product.append_spelling(element, value, element);
-        else
-            product.append_value(element, value);
-        return;
-    case xml::field_kind::enumeration:
-        product.set_spelling(element, value, element);
-        return;
-    case xml::field_kind::text:
-        product.set_text(element, value);
-        return;
-    case xml::field_kind::integer:
-        product.set_integer(element, std::stoll(value));
-        return;
-    case xml::field_kind::decimal:
-        if (const auto parsed = decimal::from_string(value))
-            product.set_decimal(element, *parsed);
-        return;
-    default:
-        return;
+        case xml::field_kind::repeated_leaf:
+            if (f->scalar == xml::scalar_kind::enumeration)
+                product.append_spelling(element, value, element);
+            else
+                product.append_value(element, value);
+            return;
+        case xml::field_kind::enumeration:
+            product.set_spelling(element, value, element);
+            return;
+        case xml::field_kind::text:
+            product.set_text(element, value);
+            return;
+        case xml::field_kind::integer:
+            product.set_integer(element, std::stoll(value));
+            return;
+        case xml::field_kind::decimal:
+            if (const auto parsed = decimal::from_string(value))
+                product.set_decimal(element, *parsed);
+            return;
+        default:
+            return;
     }
 }
 

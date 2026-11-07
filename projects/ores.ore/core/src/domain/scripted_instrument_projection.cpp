@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include <algorithm>
 #include <cctype>
@@ -346,8 +346,9 @@ constexpr derived_term derived_terms[] = {
     {"ShiftAnchor", &scripted_parameter::shift_anchor},
 };
 
-auto make_parameter(scripted_instrument_data& data, std::string name, std::string type)
-    -> scripted_parameter& {
+auto make_parameter(scripted_instrument_data& data,
+                    std::string name,
+                    std::string type) -> scripted_parameter& {
     scripted_parameter row;
     row.sequence_number = static_cast<int>(data.parameters.size()) + 1;
     row.name = std::move(name);
@@ -392,7 +393,8 @@ void read_event(scripted_instrument_data& data,
 void read_generic_parameters(scripted_instrument_data& data, const xml::record_reader& values) {
     for (const auto kind : generic_kinds) {
         for (const auto& entry : values.children(kind)) {
-            auto& parameter = make_parameter(data, entry.text("Name").value_or(""), std::string(kind));
+            auto& parameter =
+                make_parameter(data, entry.text("Name").value_or(""), std::string(kind));
             if (const auto value = scalar_text(entry, "Value"))
                 parameter.value = *value;
             if (kind == "Event") {
@@ -428,7 +430,8 @@ auto named_product_of(const xml::record_reader& trade) -> std::optional<std::str
         const auto& f = type.fields[i];
         // A trade states its product as one of many alternatives, so the
         // product's member is a column alternative rather than a plain child.
-        const bool child = f.kind == xml::field_kind::nested || f.kind == xml::field_kind::column_nested;
+        const bool child =
+            f.kind == xml::field_kind::nested || f.kind == xml::field_kind::column_nested;
         if (!child || f.type == nullptr || !is_named_product(*f.type))
             continue;
         if (trade.child(f.name))
@@ -457,8 +460,8 @@ void read_named_parameters(scripted_instrument_data& data, const xml::record_rea
     }
 }
 
-auto values_of(const scripted_instrument_data& data, int parameter_sequence_number)
-    -> std::vector<std::string> {
+auto values_of(const scripted_instrument_data& data,
+               int parameter_sequence_number) -> std::vector<std::string> {
     std::vector<const scripted_parameter_value*> rows;
     for (const auto& row : data.parameter_values)
         if (row.parameter_sequence_number == parameter_sequence_number)
@@ -538,8 +541,8 @@ void write_named_parameters(xml::record_writer& product, const scripted_instrume
 
 namespace {
 
-auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
-    -> std::optional<scripted_instrument> {
+auto read_scripted_row(xml::record_reader trade,
+                       std::string_view trade_type) -> std::optional<scripted_instrument> {
     if (trade_type == "ScriptedTrade") {
         auto r = scripted_instrument_projection_make_base(trade_type);
         if (const auto named = trade.child("AsianBasketOptionData")) {
@@ -675,7 +678,8 @@ auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
                 }
             }
             params += ",\"StrikePrices\":\"" + joined + "\"";
-            if (const auto included = scalar_terms::read_text(*d, "StrikeIncluded"); included && d->has("StrikeIncluded"))
+            if (const auto included = scalar_terms::read_text(*d, "StrikeIncluded");
+                included && d->has("StrikeIncluded"))
                 params += ",\"StrikeIncluded\":\"" + *included + "\"";
             for (std::size_t i = 0; i < types.size(); ++i)
                 if (!types[i].empty())

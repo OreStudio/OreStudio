@@ -23,8 +23,8 @@
 #include "ores.http.api/domain/route.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/codec/json_schema.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -111,7 +111,8 @@ public:
     /**
      * @brief Sets the request body schema from a C++ type using reflection.
      *
-     * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically.
+     * The schema comes from the type's wire shape, so it states the bytes the
+     * codec writes rather than a second description of them.
      * Optionally accepts a generator function to create example data.
      *
      * @tparam T The request body type (must be rfl-serializable)
@@ -127,7 +128,7 @@ public:
         domain::request_body_schema schema;
         schema.content_type = content_type;
         schema.required = required;
-        schema.json_schema = rfl::json::to_schema<T>();
+        schema.json_schema = ores::utility::codec::json_schema<T>();
 
         if (example_generator) {
             schema.example_json =
@@ -141,7 +142,8 @@ public:
     /**
      * @brief Sets the response schema from a C++ type using reflection.
      *
-     * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically.
+     * The schema comes from the type's wire shape, so it states the bytes the
+     * codec writes rather than a second description of them.
      * Optionally accepts a generator function to create example data.
      *
      * @tparam T The response body type (must be rfl-serializable)
@@ -158,7 +160,7 @@ public:
         schema.status_code = "200";
         schema.description = desc;
         schema.content_type = content_type;
-        schema.json_schema = rfl::json::to_schema<T>();
+        schema.json_schema = ores::utility::codec::json_schema<T>();
 
         if (example_generator) {
             schema.example_json =

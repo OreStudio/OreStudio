@@ -64,23 +64,12 @@ The full template source. Edit here and re-tangle with
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/timeouts.hpp"
-{{^has_generated_wire_codec}}
-#include "ores.utility/codec/json_codec.hpp"
-{{/has_generated_wire_codec}}
-{{#has_generated_wire_codec}}
 #include "ores.utility/codec/wire_traits_fwd.hpp"
-{{/has_generated_wire_codec}}
 #include <exception>
 #include <memory>
-{{#has_generated_wire_codec}}
 #include <optional>
-{{/has_generated_wire_codec}}
-{{^has_generated_wire_codec}}
-{{/has_generated_wire_codec}}
 #include <string>
-{{#has_generated_wire_codec}}
 #include <string_view>
-{{/has_generated_wire_codec}}
 #include <utility>
 
 namespace ores::http::routes::{{component}} {
@@ -93,7 +82,6 @@ namespace messaging = {{namespace}};
 
 namespace {
 
-{{#has_generated_wire_codec}}
 /**
  * @brief The request a body states, or nothing when it states none.
  *
@@ -108,7 +96,6 @@ std::optional<T> {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/enti
         return std::nullopt;
     }
 }
-{{/has_generated_wire_codec}}
 
 /**
  * @brief The HTTP response a service error names.

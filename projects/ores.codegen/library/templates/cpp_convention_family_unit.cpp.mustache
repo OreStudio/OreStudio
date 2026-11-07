@@ -7,10 +7,8 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 {{#has_wire_codec}}
 #include "{{codec_include}}"
+{{/has_wire_codec}}
 #include "ores.utility/codec/json_codec.hpp"
-{{/has_wire_codec}}
-{{^has_wire_codec}}
-{{/has_wire_codec}}
 #include <stdexcept>
 #include <utility>
 #include <vector>

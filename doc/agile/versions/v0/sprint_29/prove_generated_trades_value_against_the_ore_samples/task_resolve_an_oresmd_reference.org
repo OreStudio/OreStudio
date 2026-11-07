@@ -8,7 +8,7 @@
 #+filetags: :marketdata:oresmd:refdata:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
 #+owner: marco
 #+branch: feature/resolve-an-oresmd-reference
-#+pr:
+#+pr: 4477
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4477][#4477]] | [marketdata] Look up an identifier's conventions and project it to ORE |
 
 * Review
 

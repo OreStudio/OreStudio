@@ -17,11 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <boost/core/demangle.hpp>
-#include <iostream>
-#include <ored/configuration/conventions.hpp>
-#include <ored/utilities/indexparser.hpp>
-#include <ored/utilities/to_string.hpp>
 #include <ql/indexes/iborindex.hpp>
 #include <ql/indexes/inflationindex.hpp>
 #include <ql/indexes/swapindex.hpp>
@@ -32,6 +27,11 @@
 #include <qle/indexes/fxindex.hpp>
 #include <qle/indexes/genericindex.hpp>
 #include <qle/indexes/intradaypowerindex.hpp>
+#include <boost/core/demangle.hpp>
+#include <iostream>
+#include <ored/configuration/conventions.hpp>
+#include <ored/utilities/indexparser.hpp>
+#include <ored/utilities/to_string.hpp>
 #include <string>
 #include <typeinfo>
 #include <utility>

@@ -93,11 +93,29 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
   which is exactly what the hand-written =refdata_ibor_index_conventions_populate.sql=
   row states from the same class. So the 32 hand-written rows are the
   validation set for the miner.
-- Two mappings remain to curate, and they are the only judgement in the
-  miner: ORE's calendar name to refdata's calendar code (=TARGET= stays,
-  =SOFR fixing calendar= is =UnitedStates.SOFR=), and ORE's day counter name
-  to FpML's code (=Actual/360= is =ACT/360=). Both are checked against the 32
-  rows before they are trusted.
+- The names come from a script now: =tools/ore_conventions/extract_builtin_indices.py=
+  reads both maps and writes name, kind, class and the index name to probe
+  (an Ibor family is probed at 3M; four families are both kinds, USD-SOFR
+  among them, and the kind is part of the identity). 81 entries, and ORE
+  accepts every probe.
+  A family that is both an overnight index and a term rate is the one thing
+  the lookup cannot do: =index_definition_of= drops the tenor, so both rows
+  answer to one family address and the lookup reports a conflict. The kind
+  should decide: no tenor asks the overnight convention, a tenor the Ibor one.
+- The day counter mapping is 1:1 and derived, through =code_catalogue=, a new
+  harness tool that prints the name ORE reports for a code:
+  =ACT/360 -> Actual/360=, =ACT/365.FIXED -> Actual/365 (Fixed)=,
+  =ACT/ACT.ISDA -> Actual/Actual (ISDA)=, =ACT/ACT.ISMA -> Actual/Actual
+  (ISMA)=, =BUS/252 -> Business/252(Brazil)=. These are the only five the
+  81 built-ins need.
+- The calendar field is the one open question. refdata's calendar codes are
+  not ORE's calendar names: refdata holds =UnitedStates.SOFR=, and ORE's
+  parser refuses that string, building =US-SOFR= or =US= instead. So a row's
+  =fixing_calendar= needs a choice, and no translation between the two
+  vocabularies exists in the tree. Two of the 39 calendar names the built-ins
+  use have no ORE code at all (=JoinHolidays(London stock exchange, TARGET)=
+  and =Bratislava stock exchange=). Until that is settled the generated seed
+  cannot state a fixing calendar that both refdata and ORE accept.
 
 * Test Scenarios
 

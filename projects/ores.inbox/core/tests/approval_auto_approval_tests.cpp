@@ -150,7 +150,8 @@ private:
  */
 class approvals_mode {
 public:
-    approvals_mode(ores::testing::scoped_database_helper& h, std::string value) : ctx_(acting(h)) {
+    approvals_mode(ores::testing::scoped_database_helper& h, std::string value)
+        : ctx_(acting(h)) {
         write(std::move(value));
     }
 
@@ -274,8 +275,7 @@ TEST_CASE("a_kind_that_accepts_a_system_raise_closes_only_in_the_system_tenant",
     CHECK(raised.auto_approval_code.empty());
 }
 
-TEST_CASE("a_deployment_that_does_not_enforce_approvals_closes_every_kind",
-          "[approval][auto]") {
+TEST_CASE("a_deployment_that_does_not_enforce_approvals_closes_every_kind", "[approval][auto]") {
     ores::testing::scoped_database_helper h;
     const auto asker = seed_account(h);
     approvals_mode mode(h, "auto_approved");

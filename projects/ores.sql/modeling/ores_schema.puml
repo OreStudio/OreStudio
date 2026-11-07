@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-744 tables in 21 groups.
+750 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -584,7 +584,6 @@ entity "trading" as trading {
   ores_trading_commodity_basket_constituents_tbl
   ores_trading_commodity_instruments_tbl
   ores_trading_composite_instruments_tbl
-  ores_trading_composite_legs_tbl
   ores_trading_counterparty_scope_types_tbl
   ores_trading_credit_basket_constituents_tbl
   ores_trading_credit_instruments_tbl
@@ -622,6 +621,8 @@ entity "trading" as trading {
   ores_trading_index_cds_instruments_tbl
   ores_trading_index_cds_option_instruments_tbl
   ores_trading_inflation_swap_instruments_tbl
+  ores_trading_instrument_barrier_levels_tbl
+  ores_trading_instrument_barriers_tbl
   ores_trading_instrument_option_exercise_fees_tbl
   ores_trading_instrument_option_exercise_prices_tbl
   ores_trading_instrument_option_payment_dates_tbl
@@ -630,6 +631,7 @@ entity "trading" as trading {
   ores_trading_instrument_schedule_dates_tbl
   ores_trading_instrument_schedules_tbl
   ores_trading_instrument_strikes_tbl
+  ores_trading_instrument_underlyings_tbl
   ores_trading_knock_out_swap_instruments_tbl
   ores_trading_lifecycle_events_tbl
   ores_trading_long_short_types_tbl
@@ -647,6 +649,8 @@ entity "trading" as trading {
   ores_trading_return_types_tbl
   ores_trading_risk_participation_instruments_tbl
   ores_trading_scripted_instruments_tbl
+  ores_trading_scripted_parameter_values_tbl
+  ores_trading_scripted_parameters_tbl
   ores_trading_settlement_types_tbl
   ores_trading_structure_identifiers_tbl
   ores_trading_structure_kinds_tbl
@@ -654,7 +658,9 @@ entity "trading" as trading {
   ores_trading_structure_template_roles_tbl
   ores_trading_structure_templates_tbl
   ores_trading_structures_tbl
+  ores_trading_swap_leg_amortizations_tbl
   ores_trading_swap_leg_amounts_tbl
+  ores_trading_swap_leg_indexings_tbl
   ores_trading_swap_leg_rates_tbl
   ores_trading_swap_legs_tbl
   ores_trading_swaption_instruments_tbl
@@ -674,7 +680,7 @@ entity "trading" as trading {
 }
 note bottom of trading
 Trading & Lifecycle
-123 tables — ores_schema.trading.puml
+129 tables — ores_schema.trading.puml
 end note
 
 entity "mq" as mq {

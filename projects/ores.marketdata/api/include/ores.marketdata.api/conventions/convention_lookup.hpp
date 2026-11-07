@@ -131,6 +131,12 @@ using index_definition = std::variant<refdata::domain::ibor_index_convention,
  * answered. That is the difference the parse buys: a bad address is reported
  * as bad rather than as missing.
  *
+ * A few families are both: ORE builds USD-SOFR as the overnight index and
+ * USD-SOFR-3M as a term rate, from different classes. The index states which
+ * one it is by whether it carries a tenor, so the lookup answers with the kind
+ * the index states, and falls back to the other only when that kind has no
+ * convention for the family.
+ *
  * Each answer is the one convention that matches, or an error naming the
  * identifier and why: none matches, more than one does, or the index is of a
  * family this lookup does not answer for.

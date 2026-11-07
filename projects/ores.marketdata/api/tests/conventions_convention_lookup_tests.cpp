@@ -129,22 +129,33 @@ TEST_CASE("two conventions naming one address are refused, naming both",
           std::string::npos);
 }
 
-TEST_CASE("one address in both the Ibor and the overnight conventions is refused",
+TEST_CASE("a family both kinds state is answered by the tenor the index states",
           "[marketdata][conventions]") {
     auto lg(make_logger(test_suite));
+    /*
+     * ORE builds USD-SOFR as the overnight index and USD-SOFR-3M as a term
+     * rate: same family address, two conventions. The index that states a
+     * tenor is the term rate.
+     */
     convention_set set;
     set.ibor_indices.push_back(
-        convention_at<rd::ibor_index_convention>("USD-SOFR-IBOR", sofr_index));
+        convention_at<rd::ibor_index_convention>("USD-SOFR-TERM", sofr_index));
     set.overnight_indices.push_back(
         convention_at<rd::overnight_index_convention>("USD-SOFR-OVERNIGHT", sofr_index));
     const convention_lookup lookup(std::move(set));
 
-    const auto found = lookup.index_definition_of(identifier(sofr_index));
+    const auto overnight = lookup.index_definition_of(identifier(sofr_index));
+    REQUIRE(overnight);
+    const auto* overnight_convention = std::get_if<rd::overnight_index_convention>(&*overnight);
+    REQUIRE(overnight_convention != nullptr);
+    CHECK(overnight_convention->id == "USD-SOFR-OVERNIGHT");
 
-    REQUIRE(!found);
-    CHECK(found.error().kind == lookup_refusal_kind::more_than_one_match);
-    CHECK(found.error().reason.find("USD-SOFR-IBOR") != std::string::npos);
-    CHECK(found.error().reason.find("USD-SOFR-OVERNIGHT") != std::string::npos);
+    const auto term = lookup.index_definition_of(
+        identifier("oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=3M"));
+    REQUIRE(term);
+    const auto* ibor_convention = std::get_if<rd::ibor_index_convention>(&*term);
+    REQUIRE(ibor_convention != nullptr);
+    CHECK(ibor_convention->id == "USD-SOFR-TERM");
 }
 
 TEST_CASE("an index family with no defining convention is not this lookup's question",

@@ -21,12 +21,16 @@
 #define ORES_IAM_API_WORKFLOW_PROVISION_TENANT_WORKFLOW_HPP
 
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -278,12 +282,36 @@ struct provision_tenant_step {
 };
 
 /**
+ * @brief The members of provision_tenant_step, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_step>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"kind", &provision_tenant_step::kind},
+                      field{"arguments_json", &provision_tenant_step::arguments_json}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<provision_tenant_step>(),
+              "provision_tenant_step gained a member its wire_fields does not name.");
+
+/**
  * @brief One parameter value the run's steps read, by declared name.
  */
 struct provision_tenant_parameter {
     std::string name;
     std::string value;
 };
+
+/**
+ * @brief The members of provision_tenant_parameter, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_parameter>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"name", &provision_tenant_parameter::name},
+                      field{"value", &provision_tenant_parameter::value}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<provision_tenant_parameter>(),
+              "provision_tenant_parameter gained a member its wire_fields does not name.");
 
 /**
  * @brief What a provision tenant run works from.
@@ -314,6 +342,24 @@ struct provision_tenant_workflow_request {
 };
 
 /**
+ * @brief The members of provision_tenant_workflow_request, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_workflow_request>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{
+        field{"profile_code", &provision_tenant_workflow_request::profile_code},
+        field{"tenant_id", &provision_tenant_workflow_request::tenant_id},
+        field{"tenant_code", &provision_tenant_workflow_request::tenant_code},
+        field{"tenant_hostname", &provision_tenant_workflow_request::tenant_hostname},
+        field{"admin_account_id", &provision_tenant_workflow_request::admin_account_id},
+        field{"parameters", &provision_tenant_workflow_request::parameters},
+        field{"steps", &provision_tenant_workflow_request::steps}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<provision_tenant_workflow_request>(),
+              "provision_tenant_workflow_request gained a member its wire_fields does not name.");
+
+/**
  * @brief What one step of a provisioning run is asked to do.
  *
  * The step handler reads the kind from here, because the engine dispatches
@@ -335,6 +381,23 @@ struct provision_tenant_step_command {
     std::string arguments_json;
     std::vector<provision_tenant_parameter> parameters;
 };
+
+/**
+ * @brief The members of provision_tenant_step_command, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_step_command>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"kind", &provision_tenant_step_command::kind},
+                      field{"tenant_id", &provision_tenant_step_command::tenant_id},
+                      field{"tenant_code", &provision_tenant_step_command::tenant_code},
+                      field{"tenant_hostname", &provision_tenant_step_command::tenant_hostname},
+                      field{"admin_account_id", &provision_tenant_step_command::admin_account_id},
+                      field{"arguments_json", &provision_tenant_step_command::arguments_json},
+                      field{"parameters", &provision_tenant_step_command::parameters}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<provision_tenant_step_command>(),
+              "provision_tenant_step_command gained a member its wire_fields does not name.");
 
 namespace detail {
 

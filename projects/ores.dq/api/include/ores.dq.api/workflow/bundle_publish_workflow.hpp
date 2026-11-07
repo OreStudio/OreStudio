@@ -22,9 +22,13 @@
 
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 namespace ores::dq::workflow {
@@ -49,6 +53,21 @@ struct bundle_publish_workflow_dataset {
 };
 
 /**
+ * @brief The members of bundle_publish_workflow_dataset, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_publish_workflow_dataset>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"dataset_id", &bundle_publish_workflow_dataset::dataset_id},
+                      field{"dataset_code", &bundle_publish_workflow_dataset::dataset_code},
+                      field{"target_subject", &bundle_publish_workflow_dataset::target_subject},
+                      field{"mode", &bundle_publish_workflow_dataset::mode},
+                      field{"params_json", &bundle_publish_workflow_dataset::params_json}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<bundle_publish_workflow_dataset>(),
+              "bundle_publish_workflow_dataset gained a member its wire_fields does not name.");
+
+/**
  * @brief Workflow request for publishing an entire bundle.
  *
  * Serialised as request_json in start_workflow_message. The build_steps
@@ -60,6 +79,20 @@ struct bundle_publish_workflow_request {
     std::string published_by;
     std::vector<bundle_publish_workflow_dataset> datasets;
 };
+
+/**
+ * @brief The members of bundle_publish_workflow_request, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_publish_workflow_request>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"bundle_code", &bundle_publish_workflow_request::bundle_code},
+                      field{"tenant_id", &bundle_publish_workflow_request::tenant_id},
+                      field{"published_by", &bundle_publish_workflow_request::published_by},
+                      field{"datasets", &bundle_publish_workflow_request::datasets}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<bundle_publish_workflow_request>(),
+              "bundle_publish_workflow_request gained a member its wire_fields does not name.");
 
 /**
  * @brief Registers the bundle_publish_workflow definition.

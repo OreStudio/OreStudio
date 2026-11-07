@@ -21,8 +21,12 @@
 #define ORES_DQ_API_MESSAGING_PUBLISH_PARAMS_HPP
 
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <optional>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 namespace ores::dq::messaging {
@@ -33,6 +37,17 @@ namespace ores::dq::messaging {
 struct lei_parties_params {
     std::string root_lei;
 };
+
+/**
+ * @brief The members of lei_parties_params, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<lei_parties_params>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"root_lei", &lei_parties_params::root_lei}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<lei_parties_params>(),
+              "lei_parties_params gained a member its wire_fields does not name.");
 
 /**
  * @brief The per-dataset parameters a bundle publication carries.
@@ -47,6 +62,21 @@ struct publish_bundle_params {
     std::optional<std::string> tiers;
     std::optional<std::string> jurisdiction;
 };
+
+/**
+ * @brief The members of publish_bundle_params, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_bundle_params>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"opted_in_datasets", &publish_bundle_params::opted_in_datasets},
+                      field{"lei_parties", &publish_bundle_params::lei_parties},
+                      field{"party_id", &publish_bundle_params::party_id},
+                      field{"tiers", &publish_bundle_params::tiers},
+                      field{"jurisdiction", &publish_bundle_params::jurisdiction}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<publish_bundle_params>(),
+              "publish_bundle_params gained a member its wire_fields does not name.");
 
 /**
  * @brief Renders the parameters as the JSON the publish path carries.
@@ -65,6 +95,17 @@ inline std::string build_params_json(const publish_bundle_params& params) {
 struct dataset_publish_params {
     std::optional<std::string> party_id;
 };
+
+/**
+ * @brief The members of dataset_publish_params, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<dataset_publish_params>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"party_id", &dataset_publish_params::party_id}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<dataset_publish_params>(),
+              "dataset_publish_params gained a member its wire_fields does not name.");
 
 /**
  * @brief Renders the parameters as the JSON the publish path carries.

@@ -22,6 +22,8 @@
 
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
@@ -32,6 +34,8 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <type_traits>
 #include <variant>
 #include <vector>
 
@@ -570,10 +574,46 @@ struct trade_generation_assignment {
     std::vector<std::string> trade_type_codes = {};
 };
 
+/**
+ * @brief The members of trade_generation_assignment, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_assignment>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{
+        field{"party", &trade_generation_assignment::party},
+        field{"name", &trade_generation_assignment::name},
+        field{"description", &trade_generation_assignment::description},
+        field{"asset_class_code", &trade_generation_assignment::asset_class_code},
+        field{"book", &trade_generation_assignment::book},
+        field{"min_tenor_code", &trade_generation_assignment::min_tenor_code},
+        field{"max_tenor_code", &trade_generation_assignment::max_tenor_code},
+        field{"min_notional", &trade_generation_assignment::min_notional},
+        field{"max_notional", &trade_generation_assignment::max_notional},
+        field{"as_of_date", &trade_generation_assignment::as_of_date},
+        field{"seed", &trade_generation_assignment::seed},
+        field{"trades_per_book", &trade_generation_assignment::trades_per_book},
+        field{"structures_per_book", &trade_generation_assignment::structures_per_book},
+        field{"trade_type_codes", &trade_generation_assignment::trade_type_codes}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<trade_generation_assignment>(),
+              "trade_generation_assignment gained a member its wire_fields does not name.");
+
 /// The configs a generate_trades step records, in the order it records them.
 struct trade_generation_step_arguments {
     std::vector<trade_generation_assignment> configs = {};
 };
+
+/**
+ * @brief The members of trade_generation_step_arguments, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_generation_step_arguments>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"configs", &trade_generation_step_arguments::configs}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<trade_generation_step_arguments>(),
+              "trade_generation_step_arguments gained a member its wire_fields does not name.");
 
 /**
  * @brief Reads a generate_trades step's arguments.

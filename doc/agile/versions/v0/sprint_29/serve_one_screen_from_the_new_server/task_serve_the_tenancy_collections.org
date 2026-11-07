@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 114A065F-7B4B-4DF1-B339-84FC6FEF466F
+:END:
+#+title: Task: Serve the tenancy collections
+#+description: The tenants, their statuses and types, and the seed profiles the browser reads are answered by the BFF only. Serve them from the new server under the tenancy area, and classify the family in the inventory as one rule rather than a row at a time.
+#+type: task
+#+level: s1
+#+filetags: :sprint_29:v0:serve_one_screen_from_the_new_server:
+#+owner: marco
+#+branch: feature/serve-the-tenancy-collections
+#+pr: 4486
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The tenancy collections the browser reads are answered by the new server under their
+published area, so a tenancy screen has nothing left to ask the BFF for.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-07                               |
+
+* Acceptance
+
+- The tenant, tenant status, tenant type and seed profile collections are answered under /api/v1/tenancy/ by the new server.
+- Each unit is registered by the iam aggregate, which the reachability check proves.
+- The route inventory classifies the tenancy family with one rule and is current.
+- The iam suite passes with the four new units.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.http.iam= with the four units | 43 cases, 463 assertions, all passing | =./ores.http.iam.tests= | this branch |
+| The route inventory | 714 routes, current, and the tenancy family classified by one pair of rules | =python3 build/scripts/route_inventory.py --check= | this branch |
+| The checks the routes answer to | route-units, route inventory, route auth, handler permissions, published areas, CMake lists, format | =./compass.sh check --only ...= | this branch |
+
+* Notes
+
+- The four are the tenancy area's plain collections: the tenants, their statuses and
+  types, and the seed profiles. The area's views, such as the deployment overview and
+  the tenant setup flow, are the V increments and are not this task.
+- The inventory had no rule for the area's generated routes, so the family states two:
+  one for the reads and one for the writes, in the shape the reference data family uses.
+- The aggregate is hand-wired, and the reachability check added in the previous pull
+  request is what says so: it named the missing call while this branch was half done.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4486][#4486]] | [http] Serve the tenancy collections |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Four tenancy collections are served by the new server, registered by the iam aggregate,
+and the inventory classifies the family with one pair of rules. The area's views are
+left to the increments that own them.

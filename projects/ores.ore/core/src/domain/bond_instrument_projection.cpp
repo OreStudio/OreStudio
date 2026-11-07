@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -87,8 +87,7 @@ constexpr std::string_view change_commentary = "Imported from ORE XML";
 constexpr bool is_bond_trade_type(std::string_view type) {
     return type == "Bond" || type == "ForwardBond" || type == "CallableBond" ||
            type == "ConvertibleBond" || type == "BondOption" || type == "BondTRS" ||
-           type == "BondRepo" || type == "BondFuture" || type == "BondPosition" ||
-           type == "Ascot";
+           type == "BondRepo" || type == "BondFuture" || type == "BondPosition" || type == "Ascot";
 }
 
 template <typename Row>
@@ -138,8 +137,8 @@ auto to_ore_date(const std::chrono::year_month_day& d) -> std::string {
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto bond_instrument_projection_text_of(const record_reader& r,
-                                        std::string_view name) -> std::string {
+auto bond_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
@@ -167,8 +166,8 @@ auto decimal_text(const record_reader& r) -> decimal {
     return r.own_decimal().value_or(decimal{});
 }
 
-auto bond_instrument_projection_decimal_of(const record_reader& r,
-                                           std::string_view name) -> decimal {
+auto bond_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -965,9 +964,8 @@ auto read_ascot(const record_reader& trade) -> bond_instrument_data {
 // Writing: the spellings a table refuses
 // ---------------------------------------------------------------------------
 
-auto accepts_spelling(const record_writer& w,
-                      std::string_view name,
-                      std::string_view value) -> bool {
+auto accepts_spelling(const record_writer& w, std::string_view name, std::string_view value)
+    -> bool {
     const auto* f = xml::find_field(w.type(), name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;
@@ -1432,11 +1430,11 @@ void write_bond_terms(record_writer bd,
 
 /// The ORE curve name the run's mapping gives the issue's market series.
 auto reference_curve_of(const bond_instrument_data& data,
-                        const portfolio_reference_curves& reference_curves)
+                        const ores::marketdata::projection::ore_projection& projection)
     -> std::optional<std::string> {
     auto name = data.issue.reference_curve_id;
-    if (reference_curves && name && !name->empty())
-        name = reference_curves(*name);
+    if (name && !name->empty())
+        name = projection.ore_name_or_stored(*name);
     return name;
 }
 
@@ -1684,12 +1682,12 @@ auto read_bond_instrument(xml::record_reader trade, std::string_view trade_type)
 auto write_bond_instrument(xml::record_writer& trade,
                            std::string_view trade_type,
                            const trading::domain::trade_instrument& instrument,
-                           const portfolio_reference_curves& reference_curves) -> bool {
+                           const ores::marketdata::projection::ore_projection& projection) -> bool {
     const auto* data = std::get_if<bond_instrument_data>(&instrument);
     if (data == nullptr || !is_bond_trade_type(trade_type))
         return false;
 
-    const auto reference_curve = reference_curve_of(*data, reference_curves);
+    const auto reference_curve = reference_curve_of(*data, projection);
     if (trade_type == "Bond")
         write_bond(trade, *data, reference_curve);
     else if (trade_type == "ForwardBond")

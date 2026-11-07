@@ -50,6 +50,14 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
+The URI codec reads and writes an address with =boost::urls=, so the two
+sources that parse one need it.
+
+=ores.refdata.api= is public because =convention_lookup= hands out the
+convention types, so a caller that reads the answer compiles against them.
+=ores.logging= is private: the projection logs the reason it cannot name a
+stored reference, and no header states a logger.
+
 
 * See also
 
@@ -61,13 +69,18 @@ The suites link what the profile cannot know about.
 
 
 #+begin_src cmake :name extra_dependencies
+find_package(Boost REQUIRED COMPONENTS url)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.platform.lib
+        ores.refdata.api.lib
     PRIVATE
         ores.utility.lib
+        ores.logging.lib
         faker-cxx::faker-cxx
-        libfort::fort)
+        libfort::fort
+        Boost::url)
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 #+end_src

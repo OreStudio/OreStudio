@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_SERVICE_MESSAGING_RUN_CONFIGURATION_OPERATIONS_HPP
 #define ORES_ORE_SERVICE_MESSAGING_RUN_CONFIGURATION_OPERATIONS_HPP
 
+#include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
 #include <functional>
@@ -82,14 +83,12 @@ input_files export_run(ores::nats::service::nats_client& owners,
  * IndexForwardingCurves, and the two spell the same curve differently. The
  * mapping is read from the same two documents the run prices under -- its
  * curve configuration and its today's market -- so the export names exactly
- * the curves the run has. A curve the mapping does not hold reads back as the
- * URI it was given, so a run whose market forwards nothing writes what its
+ * the curves the run has. A curve the mapping does not hold is written as the
+ * trade states it, so a run whose market forwards nothing writes what its
  * trades state.
  */
-using reference_curve_names = std::function<std::string(const std::string&)>;
-
-reference_curve_names reference_curve_names_of(ores::nats::service::nats_client& owners,
-                                               const std::string& report_definition_id);
+marketdata::projection::ore_projection ore_projection_of(ores::nats::service::nats_client& owners,
+                                                         const std::string& report_definition_id);
 
 }
 

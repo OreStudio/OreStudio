@@ -37,7 +37,7 @@ No trade holds an ORE name: every column that names market data holds an oresmd 
 
 - Every trade column that names market data (indices, curves, underlyings, credit names) holds an oresmd address; the inventory of about 60 columns is in the design.
 - Each column is checked by a soft foreign key against the party's series catalogue, as =ores_marketdata_validate_curve_series_fn= checks a curve today.
-- The importer converts ORE names to addresses and the exporter converts back, both through =ore_naming=; the corpus roundtrip still loses nothing.
+- The importer converts ORE names to addresses and the exporter converts back, both through =ore_projection=; the corpus roundtrip still loses nothing.
 - Stored trades are migrated, family by family.
 
 * Plan

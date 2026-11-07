@@ -119,6 +119,7 @@ The suites link what the profile cannot know about.
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.analytics.api.lib
+        ores.marketdata.api.lib
         ores.ore.api.lib
         ores.refdata.api.lib
         ores.reporting.api.lib

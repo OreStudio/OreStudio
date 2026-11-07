@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "conventions/convention_lookup.cpp"
     "datum/market_datum.cpp"
     "datum/market_index.cpp"
     "datum/market_reference.cpp"
@@ -219,10 +220,12 @@ set(files
     "messaging/subscription_interval_protocol_codec.cpp"
     "messaging/subscription_protocol_codec.cpp"
     "messaging/supplier_protocol_codec.cpp"
+    "projection/ore_projection.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/conventions/convention_lookup.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/market_datum.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/market_index.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/market_reference.hpp"
@@ -476,4 +479,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/subscription_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/supplier_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/ores.marketdata.api.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/projection/ore_projection.hpp"
 )

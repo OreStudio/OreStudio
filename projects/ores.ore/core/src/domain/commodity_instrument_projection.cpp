@@ -792,7 +792,7 @@ auto read_commodity_instrument(xml::record_reader trade, std::string_view trade_
 auto write_commodity_instrument(xml::record_writer& trade,
                                 std::string_view trade_type,
                                 const trading::domain::trade_instrument& instrument,
-                                const portfolio_reference_curves&) -> bool {
+                                const ores::marketdata::projection::ore_projection&) -> bool {
     const auto* v = std::get_if<commodity_instrument_data>(&instrument);
     if (v == nullptr || !is_commodity_trade_type(trade_type))
         return false;

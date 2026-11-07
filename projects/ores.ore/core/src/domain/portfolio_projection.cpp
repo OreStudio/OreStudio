@@ -381,7 +381,7 @@ std::vector<xml::trade_import_item> portfolio_projection::map(const document& v,
 portfolio_projection::document
 portfolio_projection::reverse(const std::vector<trading::messaging::trade_export_item>& items,
                               const trading::domain::instrument_batch& instruments,
-                              const portfolio_reference_curves& reference_curves) {
+                              const ores::marketdata::projection::ore_projection& projection) {
     document doc;
     const auto& type = *pf::portfolio_document().root;
     xml::record_writer root(type, &doc);
@@ -413,7 +413,7 @@ portfolio_projection::reverse(const std::vector<trading::messaging::trade_export
         if (std::holds_alternative<std::monostate>(instrument))
             return;
         for (const auto& family : instrument_projections())
-            if (family.write(trade, item.anchor.trade_type, instrument, reference_curves))
+            if (family.write(trade, item.anchor.trade_type, instrument, projection))
                 break;
     };
 

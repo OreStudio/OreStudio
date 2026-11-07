@@ -277,10 +277,10 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             return;
         }
 
-        const auto reference_curves =
-            ores::ore::service::messaging::reference_curve_names_of(owners, req.definition_id);
+        const auto projection =
+            ores::ore::service::messaging::ore_projection_of(owners, req.definition_id);
         auto written = ores::ore::xml::exporter::export_portfolio_leaving_out(
-            rows.items, rows.instruments, reference_curves);
+            rows.items, rows.instruments, projection);
         const auto& portfolio = written.xml;
         {
             const auto target = stage_dir / places.portfolio;

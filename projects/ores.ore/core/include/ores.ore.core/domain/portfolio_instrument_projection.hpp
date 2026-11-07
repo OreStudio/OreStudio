@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_CORE_DOMAIN_PORTFOLIO_INSTRUMENT_PROJECTION_HPP
 #define ORES_ORE_CORE_DOMAIN_PORTFOLIO_INSTRUMENT_PROJECTION_HPP
 
+#include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
@@ -40,7 +41,7 @@ namespace ores::ore::domain {
  * ORE resolves that name through the market configuration the run prices under.
  * The mapping belongs to the run, not to the trade.
  */
-using portfolio_reference_curves = std::function<std::string(const std::string&)>;
+
 
 /**
  * @brief An exact decimal member as the double the trading domain stores.
@@ -98,7 +99,7 @@ struct instrument_projection final {
     bool (*write)(xml::record_writer& trade,
                   std::string_view trade_type,
                   const trading::domain::trade_instrument& instrument,
-                  const portfolio_reference_curves& reference_curves);
+                  const ores::marketdata::projection::ore_projection& projection);
 };
 
 /// The families the projection knows, in the order the old dispatcher tried.
@@ -113,7 +114,7 @@ ORES_ORE_CORE_EXPORT auto
 write_scripted_instrument(xml::record_writer& trade,
                           std::string_view trade_type,
                           const trading::domain::trade_instrument& instrument,
-                          const portfolio_reference_curves& reference_curves) -> bool;
+                          const ores::marketdata::projection::ore_projection& projection) -> bool;
 
 /**
  * @brief The rates family: a swap and the products built on one.
@@ -131,7 +132,7 @@ ORES_ORE_CORE_EXPORT auto
 write_rate_instrument(xml::record_writer& trade,
                       std::string_view trade_type,
                       const trading::domain::trade_instrument& instrument,
-                      const portfolio_reference_curves& reference_curves) -> bool;
+                      const ores::marketdata::projection::ore_projection& projection) -> bool;
 
 /**
  * @brief The bond family: an issue row shared by the products built on it.
@@ -149,7 +150,7 @@ ORES_ORE_CORE_EXPORT auto
 write_bond_instrument(xml::record_writer& trade,
                       std::string_view trade_type,
                       const trading::domain::trade_instrument& instrument,
-                      const portfolio_reference_curves& reference_curves) -> bool;
+                      const ores::marketdata::projection::ore_projection& projection) -> bool;
 
 /**
  * @brief The credit family: a routed header, one fact row per product and legs
@@ -168,7 +169,7 @@ ORES_ORE_CORE_EXPORT auto
 write_credit_instrument(xml::record_writer& trade,
                         std::string_view trade_type,
                         const trading::domain::trade_instrument& instrument,
-                        const portfolio_reference_curves& reference_curves) -> bool;
+                        const ores::marketdata::projection::ore_projection& projection) -> bool;
 
 /**
  * @brief The equity family: one product row, plus the entries a position owns.
@@ -187,7 +188,7 @@ ORES_ORE_CORE_EXPORT auto
 write_equity_instrument(xml::record_writer& trade,
                         std::string_view trade_type,
                         const trading::domain::trade_instrument& instrument,
-                        const portfolio_reference_curves& reference_curves) -> bool;
+                        const ores::marketdata::projection::ore_projection& projection) -> bool;
 
 /**
  * @brief The commodity family: one product row, plus the entries a basket owns.
@@ -207,7 +208,7 @@ ORES_ORE_CORE_EXPORT auto
 write_commodity_instrument(xml::record_writer& trade,
                            std::string_view trade_type,
                            const trading::domain::trade_instrument& instrument,
-                           const portfolio_reference_curves& reference_curves) -> bool;
+                           const ores::marketdata::projection::ore_projection& projection) -> bool;
 
 /**
  * @brief The FX family: one carrier holding a row per product, and no header.
@@ -224,7 +225,7 @@ ORES_ORE_CORE_EXPORT auto
 write_fx_instrument(xml::record_writer& trade,
                     std::string_view trade_type,
                     const trading::domain::trade_instrument& instrument,
-                    const portfolio_reference_curves& reference_curves) -> bool;
+                    const ores::marketdata::projection::ore_projection& projection) -> bool;
 
 /**
  * @brief The composite family: a basket of constituent trades.
@@ -244,7 +245,7 @@ ORES_ORE_CORE_EXPORT auto
 write_composite_instrument(xml::record_writer& trade,
                            std::string_view trade_type,
                            const trading::domain::trade_instrument& instrument,
-                           const portfolio_reference_curves& reference_curves) -> bool;
+                           const ores::marketdata::projection::ore_projection& projection) -> bool;
 
 }
 

@@ -715,7 +715,7 @@ auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_t
 auto write_scripted_instrument(xml::record_writer& trade,
                                std::string_view trade_type,
                                const trading::domain::trade_instrument& instrument,
-                               const portfolio_reference_curves&) -> bool {
+                               const ores::marketdata::projection::ore_projection&) -> bool {
     const auto* carrier = std::get_if<scripted_instrument_data>(&instrument);
     if (carrier == nullptr)
         return false;

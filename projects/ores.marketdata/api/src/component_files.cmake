@@ -220,6 +220,7 @@ set(files
     "messaging/subscription_interval_protocol_codec.cpp"
     "messaging/subscription_protocol_codec.cpp"
     "messaging/supplier_protocol_codec.cpp"
+    "projection/ore_projection.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -478,4 +479,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/subscription_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/supplier_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/ores.marketdata.api.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/projection/ore_projection.hpp"
 )

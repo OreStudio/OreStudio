@@ -75,6 +75,7 @@ set(files
     "observation_lineage_protocol_codec_roundtrip_tests.cpp"
     "observation_read_operations_protocol_codec_roundtrip_tests.cpp"
     "operations_protocol_codec_roundtrip_tests.cpp"
+    "projection_ore_projection_tests.cpp"
     "provider_codec_roundtrip_tests.cpp"
     "provider_protocol_codec_roundtrip_tests.cpp"
     "provider_terms_list_operations_protocol_codec_roundtrip_tests.cpp"

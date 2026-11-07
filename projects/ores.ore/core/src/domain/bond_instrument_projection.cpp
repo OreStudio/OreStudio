@@ -1432,11 +1432,11 @@ void write_bond_terms(record_writer bd,
 
 /// The ORE curve name the run's mapping gives the issue's market series.
 auto reference_curve_of(const bond_instrument_data& data,
-                        const portfolio_reference_curves& reference_curves)
+                        const ores::marketdata::projection::ore_projection& projection)
     -> std::optional<std::string> {
     auto name = data.issue.reference_curve_id;
-    if (reference_curves && name && !name->empty())
-        name = reference_curves(*name);
+    if (name && !name->empty())
+        name = projection.ore_name_or_stored(*name);
     return name;
 }
 
@@ -1684,12 +1684,12 @@ auto read_bond_instrument(xml::record_reader trade, std::string_view trade_type)
 auto write_bond_instrument(xml::record_writer& trade,
                            std::string_view trade_type,
                            const trading::domain::trade_instrument& instrument,
-                           const portfolio_reference_curves& reference_curves) -> bool {
+                           const ores::marketdata::projection::ore_projection& projection) -> bool {
     const auto* data = std::get_if<bond_instrument_data>(&instrument);
     if (data == nullptr || !is_bond_trade_type(trade_type))
         return false;
 
-    const auto reference_curve = reference_curve_of(*data, reference_curves);
+    const auto reference_curve = reference_curve_of(*data, projection);
     if (trade_type == "Bond")
         write_bond(trade, *data, reference_curve);
     else if (trade_type == "ForwardBond")

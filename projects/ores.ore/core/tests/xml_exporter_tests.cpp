@@ -18,6 +18,9 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/datum/market_reference.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
@@ -916,21 +919,28 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
 
     auto [items, instruments] = make_export_payload(imported);
 
-    const auto xml = exporter::export_portfolio(items, instruments);
-    REQUIRE(xml.contains("EUR-EURIBOR-6M"));
+    const auto quote =
+        ores::marketdata::datum::ore_key_codec::read("ZERO/RATE/EUR/EUR6M/A365/5Y");
+    REQUIRE(quote);
+    const auto curve =
+        ores::marketdata::datum::market_reference::of(ores::marketdata::datum::series_of(*quote));
+    REQUIRE(curve);
+    for (auto& bond : instruments.bond_instruments)
+        if (bond.issue.reference_curve_id == std::optional<std::string>("EUR-EURIBOR-6M"))
+            bond.issue.reference_curve_id = curve->uri();
 
-    const auto translated =
-        exporter::export_portfolio(items, instruments, [](const std::string& uri) -> std::string {
-            return uri == "EUR-EURIBOR-6M" ? "EUR-ESTER" : uri;
-        });
+    const auto xml = exporter::export_portfolio(items, instruments);
+    REQUIRE(xml.contains(curve->uri().substr(0, 10)));
+
+    const auto translated = exporter::export_portfolio(
+        items, instruments, ores::marketdata::projection::ore_projection({{curve->uri(), "EUR-ESTER"}}));
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << translated;
 
     /*
-     * Only the reference curve is translated: the same name is also the
-     * documents' index and income curve, and those are not the run's to
-     * rename.
+     * Only the reference curve is translated: the documents' index and income
+     * curve keep their names, which are not the run's to rename.
      */
-    CHECK(!translated.contains("<ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>"));
+    CHECK(!translated.contains(curve->uri().substr(0, 10)));
     CHECK(translated.contains("<ReferenceCurveId>EUR-ESTER</ReferenceCurveId>"));
     CHECK(translated.contains("<IncomeCurveId>EUR-EURIBOR-6M</IncomeCurveId>"));
 }

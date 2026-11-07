@@ -1,11 +1,13 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 5A1341B7-1501-456E-8D8D-2E46D1B7BF0A
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.business_centre
 #+description: Codegen entity model for the refdata business_centre table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
+#+http_area: reference-data
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: business_centre

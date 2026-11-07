@@ -37,4 +37,4 @@ Tenant 'curveprobe' provisioned from profile 'empty_operational' on 2026-11-07 1
             |                    | installation acting on its own behalf, so no person stands before it.                      |
 
 --- the deployment's own answer ---
- inbox.approvals.mode | enforced
+ system.approvals.mode | enforced

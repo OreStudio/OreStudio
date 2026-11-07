@@ -54,7 +54,7 @@ person about a different thing:
 1. *The deployment does not enforce approvals.* A development installation, a
    test bed, a demonstration being built: waiting on a click it will always be
    given costs time and proves nothing. This is an operator's decision about an
-   environment, so it is one setting, =inbox.approvals.mode=, seeded =enforced=
+   environment, so it is one setting, =system.approvals.mode=, seeded =enforced=
    and set to =auto_approved= where nobody's book is at stake.
 2. *The maker is the installation.* The system tenant is the installation: its
    curves are bootstrapped from the quotes its own feeds publish, which is no
@@ -85,7 +85,7 @@ Visibility: the request carries the rule and its decision says it in words; the
 request page draws an =Auto-approved= chip beside the state and the sentence under
 the asker; the queue carries the same chip; the kind's list in the shell shows
 the policy column; and an operator reads or changes the deployment mode with
-=system settings get|set inbox.approvals.mode=.
+=system settings get|set system.approvals.mode=.
 
 * Measurements
 
@@ -118,7 +118,7 @@ task and name that file in the Command column.
 - =system_setting= carries no system-tenant overlay, so every tenant reads the
   installation's row only when it has none of its own.
 - The development database was altered by hand: the column on each of the two
-  tables, the policy on the curve publish kind, and the =inbox.approvals.mode=
+  tables, the policy on the curve publish kind, and the =system.approvals.mode=
   row. The create and populate scripts carry all four, and a recreated database
   builds them from those files alone; a =compass db recreate= is still worth
   running before this is relied on.
@@ -151,7 +151,7 @@ via its "Verifies task" field.
 A request now closes without a person only where a policy says so, and both
 policies are data.
 
-- The inbox reads =inbox.approvals.mode= and the kind's =auto_approval_code= at
+- The inbox reads =system.approvals.mode= and the kind's =auto_approval_code= at
   the raise, closes the request approved in the same act as the system, writes
   the rule on the request, and says it in the decision in words. Six cases hold
   it: every-raise closes, a system-tenant raise closes only in the system

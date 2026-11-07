@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: B3B0EA78-48F0-4451-AC38-AFD45D849E07
+:END:
+#+title: The settings table hides the installation's rows from a tenant's party
+#+description: A tenant session cannot read a setting the installation states once, so a screen cannot say what the deployment enforces, and the wizard flag has read false for every tenant since it was written.
+#+type: capture
+#+level: cross
+#+filetags: :variability:settings:iam:party:onboarding:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A tenant session cannot read a setting the installation states once, in the
+system tenant, even where the read names the installation's system party. The
+settings table's party policy admits a row only when its party is one the caller
+may see, and a tenant's people see their own party's subtree, not the
+installation's. So the only settings a tenant reads are the ones provisioned
+into its own tenant, and one scoped to the tenant's system party is invisible to
+a person working in another of the tenant's parties.
+
+* Why
+
+Found while making the shell state whether the deployment enforces approvals.
+The mode is seeded once and read by the inbox on the system tenant's behalf,
+where it works; a browser session in a tenant reads nothing, so the screen could
+not say it. The same gap makes =onboarding.system= read false for every tenant
+session: the bootstrap answer has been reporting a flag it never read. A tenant
+administrator whose own setup flag lives under the tenant's system party is in
+the same position.
+
+The fix is a decision, not a patch: either the settings read resolves the
+tenant's system party the way the write does (=ores_variability_resolve_system_party_fn=),
+or installation settings are copied into each tenant at provisioning — which is
+what =ores_variability_seed_tenant_system_settings_fn= already does for names
+under =system.=, and why =system.approvals.mode= took that namespace. The second
+is the house rule today; whether a *tenant member* then reads a row under the
+tenant's system party is the part that does not work.
+
+* References
+
+- =projects/ores.sql/create/seed/upsert_functions_create.sql= — the copy of a
+  system setting into a new tenant, and the note that a =system.= setting must
+  be copied or it is invisible to every tenant but the installation.
+- =projects/ores.variability/modeling/ores.variability.system_setting.org= — the
+  table, its tenant and party isolation.
+- [[id:619AF477-DA8F-424F-8722-E1058F60FD68][Model auto-approval as a stated policy]] — where the read was needed.
+
+* See also
+
+-

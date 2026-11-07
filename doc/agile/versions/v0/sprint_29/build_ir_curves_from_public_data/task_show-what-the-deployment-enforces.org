@@ -26,9 +26,9 @@ A person reading the application, or the shell, can tell whether this deployment
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
-| Now          | Not yet started.                       |
+| Now          | Superseded by the capture named in the Result; no change was shipped. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-07                               |
@@ -85,3 +85,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned, with the reason written down rather than a half-working screen
+shipped.
+
+The screen needs the deployment's approvals mode, and a tenant session cannot
+read it: the setting is stated once, in the system tenant, and the settings
+table admits a row only when its party is one the caller may see. Reading it
+with the installation's tenant and its own system party did not help, and the
+same gap is why the bootstrap wizard flag has read false for every tenant
+session. Copying the setting into each tenant at provisioning — which is the
+house rule for names under =system.=, and why the setting took that namespace —
+does not reach a person working in another of the tenant's parties either.
+
+So the good part is kept and the rest is deferred:
+
+- =system.approvals.mode= is the setting's name, in the installation namespace,
+  so provisioning copies it to a tenant the way every other =system.= default
+  is copied.
+- A request states the rule that closed it and its decision says so in words,
+  which is what a person reads on the queue and on the request page; that
+  shipped with the policy itself and needs no further read.
+- The deployment-level notice waits on the capture
+  [[id:B3B0EA78-48F0-4451-AC38-AFD45D849E07][The settings table hides the installation's rows from a tenant's party]].

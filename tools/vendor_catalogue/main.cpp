@@ -70,7 +70,7 @@
  * With no --write the statements go to stdout. With no input file the quotes are read from stdin.
  */
 #include "ores.marketdata.api/datum/market_datum.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.marketdata.core/vendor/provider_notation.hpp"
 #include "ores.marketdata.core/vendor/quote_description.hpp"
@@ -218,9 +218,12 @@ std::string pair_datum_uri(const pair_feed& p) {
 /// The dates are passed because the builder takes them, and the pillar's term is the tenor its
 /// template names rather than a date, which is the case no notation refuses.
 std::string pillar_datum_uri(const pillar_feed& p, const std::string& index_tenor) {
-    const core::pillar_quote quote{
-        p.currency_code, index_tenor, p.start_tenor_code, p.end_tenor_code,
-        std::chrono::year{2026} / 1 / 1, std::chrono::year{2026} / 1 / 2};
+    const core::pillar_quote quote{p.currency_code,
+                                   index_tenor,
+                                   p.start_tenor_code,
+                                   p.end_tenor_code,
+                                   std::chrono::year{2026} / 1 / 1,
+                                   std::chrono::year{2026} / 1 / 2};
     const auto made = core::pillar_quote_datum(quote);
     if (!made)
         throw std::runtime_error("no datum for the pillar " + p.currency_code + " " +

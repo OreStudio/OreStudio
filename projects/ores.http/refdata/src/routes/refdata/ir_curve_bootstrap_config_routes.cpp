@@ -178,6 +178,25 @@ ir_curve_bootstrap_config_routes::handle_list(const http_request& req, nats_clie
             msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
             msg.filter->search = raw;
         }
+        if (const auto raw = req.get_query_param("f.currency_code"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->currency_code =
+                ir_curve_bootstrap_config_read_param<std::string>(raw, "f.currency_code");
+        }
+        if (const auto raw = req.get_query_param("f.curve_family_role"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->curve_family_role =
+                ir_curve_bootstrap_config_read_param<std::string>(raw, "f.curve_family_role");
+        }
+        if (const auto raw = req.get_query_param("f.discount_curve_config_id"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->discount_curve_config_id =
+                ir_curve_bootstrap_config_read_param<boost::uuids::uuid>(
+                    raw, "f.discount_curve_config_id");
+        }
         co_return co_await ir_curve_bootstrap_config_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -353,6 +372,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
             .query_param("search", "string", "", false, "Free text the rows must match")
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .response<messaging::list_ir_curve_bootstrap_configs_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -365,6 +396,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_configs.get operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .response<messaging::get_ir_curve_bootstrap_config_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
     const auto get_built = get_route.build();
@@ -378,6 +421,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_configs.get_many operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .body<messaging::get_many_ir_curve_bootstrap_configs_request>()
             .response<messaging::get_many_ir_curve_bootstrap_configs_response>()
             .handler([&session](const http_request& req) { return handle_get_many(req, session); });
@@ -391,6 +446,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_configs.put operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .body<messaging::put_ir_curve_bootstrap_config_request>()
             .response<messaging::put_ir_curve_bootstrap_config_response>()
             .handler([&session](const http_request& req) { return handle_add(req, session); });
@@ -404,6 +471,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_configs.put operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_ir_curve_bootstrap_config_request>()
             .response<messaging::put_ir_curve_bootstrap_config_response>()
@@ -419,6 +498,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_configs.put_many operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .body<messaging::put_many_ir_curve_bootstrap_configs_request>()
             .response<messaging::put_many_ir_curve_bootstrap_configs_response>()
             .handler([&session](const http_request& req) { return handle_put_many(req, session); });
@@ -432,6 +523,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_configs.delete operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
             .query_param("version", "integer", "", false, "Version")
@@ -448,6 +551,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_configs.delete_many operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .body<messaging::delete_many_ir_curve_bootstrap_configs_request>()
             .response<messaging::delete_many_ir_curve_bootstrap_configs_response>()
             .handler(
@@ -467,6 +582,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .response<messaging::list_ir_curve_bootstrap_config_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
     const auto versions_built = versions_route.build();
@@ -480,6 +607,18 @@ void ir_curve_bootstrap_config_routes::register_routes(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_configs_versions.get operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
+            .query_param("f.curve_family_role",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is this value")
+            .query_param("f.discount_curve_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose discount_curve_config_id is this value")
             .response<messaging::get_ir_curve_bootstrap_config_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });
     const auto version_built = version_route.build();

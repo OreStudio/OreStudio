@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: A441EC2F-9B64-445B-97A9-50A73A44ACDD
+:END:
+#+title: Task: Read a list's filter members
+#+description: The BFF's lists filter on the members a resource names, under an f.<member> parameter, and the generated C++ list route reads none of them. Read the single-valued filter members into the filter the request carries, and document each one where it is read.
+#+type: task
+#+level: s1
+#+filetags: :sprint_29:v0:serve_one_screen_from_the_new_server:
+#+owner: marco
+#+branch: feature/generate-the-route-aggregate
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A list route reads the filter members its record states, under the parameter name the
+BFF's lists use, so a screen loses no filter when its collection moves.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-07                               |
+
+* Acceptance
+
+- A list whose filter record states a single-valued member reads ?f.<member>= and hands the parsed value to the filter.
+- A member that takes a list or a pair of bounds states no single-valued parameter.
+- The parameter is documented on the route that reads it and on no other route of the unit.
+- A list with no filter record reads no filter parameter.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The route projection's cases | 30 cases, all passing | =python3 -m pytest projects/ores.codegen/tests/test_http_routes.py= | this branch |
+| =ores.http.iam= after the regeneration | 35 cases, 299 assertions, all passing | =./ores.http.iam.tests= | this branch |
+
+* Notes
+
+- The parameter is =f.<column>=, which is the BFF's own spelling, so a moved screen
+  sends the request it already sends.
+- Only the members the filter record models as a single value are read. A one-of member
+  takes a list and a range takes two bounds, and neither is a single query value; the
+  route states nothing for them rather than guessing an encoding, and the parity note
+  records the gap.
+- The parameter is documented inside the paged route only, because that is the handler
+  that reads it; a versions read or a key read states no filter it would ignore.
+- A nullable member's record wraps it twice, so the reader parses the type inside both
+  wrappers; that is why the member list now states the type a parameter parses into.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A generated list route reads the single-valued filter members its record states, under
+the BFF's own =f.<column>= spelling, and documents each one where it reads it. One-of and
+range members are left for the encoding they need, recorded rather than guessed.

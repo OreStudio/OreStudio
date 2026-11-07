@@ -173,6 +173,15 @@ boost::asio::awaitable<http_response>
             msg.filter->search = raw;
         }
 {{/has_search}}
+{{#domain_entity.filter_members}}
+{{#is_equals}}
+        if (const auto raw = req.get_query_param("f.{{column}}"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = {{{domain_entity.filter_type}}}{};
+            msg.filter->{{member}} = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_param<{{read_type}}>(raw, "f.{{column}}");
+        }
+{{/is_equals}}
+{{/domain_entity.filter_members}}
         co_return co_await {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -348,6 +357,14 @@ void {{entity_singular}}_routes::register_routes(
                                     .query_param("search", "string", "", false,
                                                  "Free text the rows must match")
 {{/has_search}}
+{{#is_paged}}
+{{#domain_entity.filter_members}}
+{{#is_equals}}
+                                    .query_param("f.{{column}}", "string", "", false,
+                                                 "Rows whose {{column}} is this value")
+{{/is_equals}}
+{{/domain_entity.filter_members}}
+{{/is_paged}}
 {{#has_scope}}
                                     .query_param("scope", "string", "", false, "direct or subtree")
 {{/has_scope}}

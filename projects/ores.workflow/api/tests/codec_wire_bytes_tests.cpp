@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/generation/generation_context.hpp"
@@ -63,7 +62,7 @@ void same_bytes_as_reflect_cpp(const T& v) {
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == ores::utility::codec::json::write(v));
+    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
@@ -122,9 +121,8 @@ TEST_CASE("a completed step with its log has reflect-cpp's bytes", codec_tags) {
     same_bytes_as_reflect_cpp(event);
 
     namespace json = ores::utility::codec::json;
-    CHECK(json::write(event.log) == ores::utility::codec::json::write(event.log));
-    const auto log =
-        json::try_read<std::vector<step_log_entry>>(ores::utility::codec::json::write(event.log));
+    CHECK(json::write(event.log) == rfl::json::write(event.log));
+    const auto log = json::try_read<std::vector<step_log_entry>>(rfl::json::write(event.log));
     REQUIRE(log);
     CHECK(json::write(*log) == json::write(event.log));
 }
@@ -143,7 +141,7 @@ TEST_CASE("the identity workflow's messages have reflect-cpp's bytes", codec_tag
         {identity_step_request{"a", std::string("warn"), true, 2},
          identity_step_request{"b", std::nullopt, std::nullopt, std::nullopt}}};
     const auto json = object::write_json(request);
-    CHECK(json == ores::utility::codec::json::write(request));
+    CHECK(json == rfl::json::write(request));
     CHECK(object::write_json(object::read_json<identity_workflow_request>(json)) == json);
     CHECK(object::write_msgpack(request) == their_msgpack(request));
 }

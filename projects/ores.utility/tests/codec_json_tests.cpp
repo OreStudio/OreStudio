@@ -40,7 +40,7 @@ namespace {
  */
 template <typename T>
 T through_rfl_json(const T& v) {
-    return rfl::json::read<T>(ores::utility::codec::json::write(v)).value();
+    return rfl::json::read<T>(rfl::json::write(v)).value();
 }
 
 /**
@@ -65,17 +65,17 @@ static_assert(::ores::utility::codec::names_every_member<keeps_its_defaults>(),
 TEST_CASE("a uuid's JSON is the string reflect-cpp writes", "[codec][json]") {
     const auto id = boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-    CHECK(wire_json::write(id) == ores::utility::codec::json::write(id));
+    CHECK(wire_json::write(id) == rfl::json::write(id));
     CHECK(wire_json::write(id) == "\"3f2504e0-4f89-11d3-9a0c-0305e82c3301\"");
 
-    CHECK(wire_json::read<boost::uuids::uuid>(ores::utility::codec::json::write(id)) == id);
+    CHECK(wire_json::read<boost::uuids::uuid>(rfl::json::write(id)) == id);
     CHECK(through_rfl_json(wire_json::read<boost::uuids::uuid>(wire_json::write(id))) == id);
 }
 
 TEST_CASE("a nil uuid keeps the all-zero spelling", "[codec][json]") {
     const boost::uuids::uuid nil{};
 
-    CHECK(wire_json::write(nil) == ores::utility::codec::json::write(nil));
+    CHECK(wire_json::write(nil) == rfl::json::write(nil));
     CHECK(wire_json::write(nil) == "\"00000000-0000-0000-0000-000000000000\"");
     CHECK(wire_json::read<boost::uuids::uuid>(wire_json::write(nil)) == nil);
 }
@@ -85,15 +85,13 @@ TEST_CASE("an absent uuid is the format's null", "[codec][json]") {
     const auto id =
         std::optional(boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301"));
 
-    CHECK(wire_json::write(absent) == ores::utility::codec::json::write(absent));
+    CHECK(wire_json::write(absent) == rfl::json::write(absent));
     CHECK(wire_json::write(absent) == "null");
-    CHECK(wire_json::write(id) == ores::utility::codec::json::write(id));
+    CHECK(wire_json::write(id) == rfl::json::write(id));
     CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(wire_json::write(absent)) == absent);
     CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(wire_json::write(id)) == id);
-    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(
-              ores::utility::codec::json::write(absent)) == absent);
-    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(
-              ores::utility::codec::json::write(id)) == id);
+    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(rfl::json::write(absent)) == absent);
+    CHECK(wire_json::read<std::optional<boost::uuids::uuid>>(rfl::json::write(id)) == id);
 }
 
 TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") {
@@ -101,10 +99,9 @@ TEST_CASE("an array of uuids is an array of the same strings", "[codec][json]") 
         boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301"),
         boost::uuids::string_generator{}("6ba7b810-9dad-11d1-80b4-00c04fd430c8")};
 
-    CHECK(wire_json::write(ids) == ores::utility::codec::json::write(ids));
+    CHECK(wire_json::write(ids) == rfl::json::write(ids));
     CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(wire_json::write(ids)) == ids);
-    CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(
-              ores::utility::codec::json::write(ids)) == ids);
+    CHECK(wire_json::read<std::vector<boost::uuids::uuid>>(rfl::json::write(ids)) == ids);
 }
 
 TEST_CASE("a tenant id, a date and a decimal are the strings reflect-cpp writes", "[codec][json]") {
@@ -114,10 +111,10 @@ TEST_CASE("a tenant id, a date and a decimal are the strings reflect-cpp writes"
     const auto absent_date = std::chrono::year_month_day{};
     const auto amount = *ores::utility::decimal::decimal::from_string("-1234.567890123456");
 
-    CHECK(wire_json::write(tenant) == ores::utility::codec::json::write(tenant));
-    CHECK(wire_json::write(date) == ores::utility::codec::json::write(date));
-    CHECK(wire_json::write(absent_date) == ores::utility::codec::json::write(absent_date));
-    CHECK(wire_json::write(amount) == ores::utility::codec::json::write(amount));
+    CHECK(wire_json::write(tenant) == rfl::json::write(tenant));
+    CHECK(wire_json::write(date) == rfl::json::write(date));
+    CHECK(wire_json::write(absent_date) == rfl::json::write(absent_date));
+    CHECK(wire_json::write(amount) == rfl::json::write(amount));
 
     CHECK(wire_json::read<ores::utility::uuid::tenant_id>(wire_json::write(tenant)) == tenant);
     CHECK(wire_json::read<std::chrono::year_month_day>(wire_json::write(date)) == date);
@@ -132,9 +129,9 @@ TEST_CASE("an address, an instant and an error code are what reflect-cpp writes"
         std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
     const auto code = ores::utility::serialization::error_code::limit_exceeded;
 
-    CHECK(wire_json::write(address) == ores::utility::codec::json::write(address));
-    CHECK(wire_json::write(instant) == ores::utility::codec::json::write(instant));
-    CHECK(wire_json::write(code) == ores::utility::codec::json::write(code));
+    CHECK(wire_json::write(address) == rfl::json::write(address));
+    CHECK(wire_json::write(instant) == rfl::json::write(instant));
+    CHECK(wire_json::write(code) == rfl::json::write(code));
 
     CHECK(wire_json::read<boost::asio::ip::address>(wire_json::write(address)) == address);
     CHECK(wire_json::read<std::chrono::system_clock::time_point>(wire_json::write(instant)) ==
@@ -152,7 +149,7 @@ TEST_CASE("an error code outside the enum is refused", "[codec][json]") {
 
 TEST_CASE("a string is its own JSON form", "[codec][json]") {
     CHECK(wire_json::write(std::string("zürich's \"quote\"")) ==
-          ores::utility::codec::json::write(std::string("zürich's \"quote\"")));
+          rfl::json::write(std::string("zürich's \"quote\"")));
     CHECK(wire_json::read<std::string>(wire_json::write(std::string("zürich's \"quote\""))) ==
           "zürich's \"quote\"");
 }
@@ -168,10 +165,10 @@ TEST_CASE("an integer is the number reflect-cpp writes", "[codec][json]") {
     const auto negative = -2;
     const auto wide = std::int64_t{4'294'967'296};
 
-    CHECK(wire_json::write(small) == ores::utility::codec::json::write(small));
+    CHECK(wire_json::write(small) == rfl::json::write(small));
     CHECK(wire_json::write(small) == "7");
-    CHECK(wire_json::write(negative) == ores::utility::codec::json::write(negative));
-    CHECK(wire_json::write(wide) == ores::utility::codec::json::write(wide));
+    CHECK(wire_json::write(negative) == rfl::json::write(negative));
+    CHECK(wire_json::write(wide) == rfl::json::write(wide));
 
     CHECK(wire_json::read<int>(wire_json::write(small)) == small);
     CHECK(wire_json::read<int>(wire_json::write(negative)) == negative);
@@ -179,8 +176,8 @@ TEST_CASE("an integer is the number reflect-cpp writes", "[codec][json]") {
 }
 
 TEST_CASE("a truth value is the word reflect-cpp writes", "[codec][json]") {
-    CHECK(wire_json::write(true) == ores::utility::codec::json::write(true));
-    CHECK(wire_json::write(false) == ores::utility::codec::json::write(false));
+    CHECK(wire_json::write(true) == rfl::json::write(true));
+    CHECK(wire_json::write(false) == rfl::json::write(false));
     CHECK(wire_json::read<bool>(wire_json::write(true)));
     CHECK_FALSE(wire_json::read<bool>(wire_json::write(false)));
 }
@@ -196,9 +193,9 @@ TEST_CASE("a floating-point number is the real reflect-cpp writes", "[codec][jso
     const auto negative = -2.5;
     const auto large = 1.0e300;
 
-    CHECK(wire_json::write(plain) == ores::utility::codec::json::write(plain));
-    CHECK(wire_json::write(negative) == ores::utility::codec::json::write(negative));
-    CHECK(wire_json::write(large) == ores::utility::codec::json::write(large));
+    CHECK(wire_json::write(plain) == rfl::json::write(plain));
+    CHECK(wire_json::write(negative) == rfl::json::write(negative));
+    CHECK(wire_json::write(large) == rfl::json::write(large));
     CHECK(wire_json::read<double>(wire_json::write(plain)) == plain);
     CHECK(wire_json::read<double>(wire_json::write(negative)) == negative);
 }

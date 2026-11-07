@@ -18,7 +18,6 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include "test_suite.hpp"
@@ -58,7 +57,7 @@ TEST_CASE("decimal_travels_as_a_json_string_not_a_number", "[rfl][decimal]") {
     auto lg(make_logger(test_suite));
 
     holds_amount sut{.label = "notional", .amount = decimal::from_string("0.1").value()};
-    const auto written = ores::utility::codec::json::write(sut);
+    const auto written = rfl::json::write(sut);
     BOOST_LOG_SEV(lg, info) << "Written: " << written;
     CHECK(written == R"({"label":"notional","amount":"0.1"})");
 
@@ -100,15 +99,15 @@ TEST_CASE("decimal_json_read_refuses_text_that_is_not_a_decimal", "[rfl][decimal
 TEST_CASE("optional_decimal_travels_as_an_omitted_field_when_absent", "[rfl][decimal]") {
     auto lg(make_logger(test_suite));
 
-    const auto absent = ores::utility::codec::json::write(maybe_holds_amount{});
+    const auto absent = rfl::json::write(maybe_holds_amount{});
     CHECK(absent == "{}");
 
     const auto back = rfl::json::read<maybe_holds_amount>(absent);
     REQUIRE(back.has_value());
     CHECK_FALSE(back->amount.has_value());
 
-    const auto present = ores::utility::codec::json::write(
-        maybe_holds_amount{.amount = decimal::from_string("1e-10").value()});
+    const auto present =
+        rfl::json::write(maybe_holds_amount{.amount = decimal::from_string("1e-10").value()});
     CHECK(present == R"({"amount":"0.0000000001"})");
 
     const auto read = rfl::json::read<maybe_holds_amount>(present);

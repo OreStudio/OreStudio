@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -43,7 +42,7 @@ TEST_CASE("an_fx_variance_swap_keeps_its_dates_across_the_wire", "[fx][wire]") {
     row.notional = *ores::utility::decimal::decimal::from_double(1000000.0);
     row.moment_type = "Variance";
 
-    const auto written = ores::utility::codec::json::write(row);
+    const auto written = rfl::json::write(row);
     INFO(written);
     const auto back = rfl::json::read<fx_variance_swap_instrument>(written);
     REQUIRE(back.has_value());

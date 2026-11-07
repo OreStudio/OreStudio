@@ -90,7 +90,7 @@ void same_bytes_as_reflect_cpp(const T& v) {
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == ores::utility::codec::json::write(v));
+    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
@@ -178,5 +178,5 @@ TEST_CASE("every inbox operation message's default has reflect-cpp's bytes", cod
 
 TEST_CASE("the apply step command has reflect-cpp's bytes", codec_tags) {
     const ores::inbox::workflow::apply_step_command command{"r1"};
-    CHECK(ores::utility::codec::json::write(command) == ores::utility::codec::json::write(command));
+    CHECK(ores::utility::codec::json::write(command) == rfl::json::write(command));
 }

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.utility/codec/json_codec.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <rfl/json.hpp>
@@ -77,7 +76,7 @@ TEST_CASE("a message with no generated codec keeps reflect-cpp", "[wire_codec]")
 
     const auto bytes = codec.encode(v);
     const auto text = std::string(reinterpret_cast<const char*>(bytes.data()), bytes.size());
-    CHECK(text == ores::utility::codec::json::write(v));
+    CHECK(text == rfl::json::write(v));
     CHECK(codec.decode<plain_message>(bytes).value().count == v.count);
 }
 

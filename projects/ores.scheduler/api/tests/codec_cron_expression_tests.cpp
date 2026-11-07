@@ -41,14 +41,14 @@ std::string rfl_msgpack_cron(const T& v) {
 TEST_CASE("a cron expression is the text reflect-cpp writes", "[codec]") {
     const auto expression = *ores::scheduler::domain::cron_expression::from_string("0 0 * * *");
 
-    CHECK(wire_json::write(expression) == ores::utility::codec::json::write(expression));
+    CHECK(wire_json::write(expression) == rfl::json::write(expression));
     CHECK(wire_msgpack::write(expression) == rfl_msgpack_cron(expression));
     CHECK(wire_json::read<ores::scheduler::domain::cron_expression>(wire_json::write(expression)) ==
           expression);
     CHECK(wire_msgpack::read<ores::scheduler::domain::cron_expression>(
               wire_msgpack::write(expression)) == expression);
-    CHECK(wire_json::read<ores::scheduler::domain::cron_expression>(
-              ores::utility::codec::json::write(expression)) == expression);
+    CHECK(wire_json::read<ores::scheduler::domain::cron_expression>(rfl::json::write(expression)) ==
+          expression);
     CHECK(wire_msgpack::read<ores::scheduler::domain::cron_expression>(
               rfl_msgpack_cron(expression)) == expression);
 }

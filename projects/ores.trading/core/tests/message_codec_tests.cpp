@@ -25,7 +25,6 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/repository/product_type_entity.hpp"
 #include "ores.trading.core/repository/product_type_mapper.hpp"
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -67,7 +66,7 @@ void same_bytes_as_reflect_cpp(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
 
     const auto json = codec::write_json(v);
-    CHECK(json == ores::utility::codec::json::write(v));
+    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);

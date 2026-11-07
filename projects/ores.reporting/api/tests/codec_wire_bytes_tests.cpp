@@ -111,7 +111,6 @@
 #include "ores.reporting.api/messaging/engine_settings_proposal_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/generation/generation_context.hpp"
@@ -146,7 +145,7 @@ void same_bytes_as_reflect_cpp(const T& v) {
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == ores::utility::codec::json::write(v));
+    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
@@ -319,7 +318,7 @@ TEST_CASE("a report definition template has reflect-cpp's bytes", codec_tags) {
     namespace object = ores::utility::codec::object;
     const ores::reporting::domain::report_definition_template t{
         "Daily risk", "End of day", "risk", "0 18 * * 1-5", "skip", 3};
-    CHECK(object::write_json(t) == ores::utility::codec::json::write(t));
+    CHECK(object::write_json(t) == rfl::json::write(t));
     CHECK(object::write_msgpack(t) == their_msgpack(t));
     CHECK(object::write_json(object::read_json<ores::reporting::domain::report_definition_template>(
               object::write_json(t))) == object::write_json(t));

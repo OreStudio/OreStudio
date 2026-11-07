@@ -23,7 +23,6 @@
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/generation/generation_context.hpp"
@@ -66,7 +65,7 @@ void same_message_bytes_as_reflect_cpp(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
 
     const auto json = codec::write_json(v);
-    CHECK(json == ores::utility::codec::json::write(v));
+    CHECK(json == rfl::json::write(v));
     // A message's reader is proved by writing back what it read: the messages
     // have no value equality, and what survives a round trip is the wire's own
     // resolution rather than the value the encoding started from.
@@ -182,7 +181,7 @@ TEST_CASE("a field group states its shape, so the type that holds it recurses",
     group.recorded_at =
         std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
 
-    CHECK(ores::utility::codec::json::write(group) == ores::utility::codec::json::write(group));
+    CHECK(ores::utility::codec::json::write(group) == rfl::json::write(group));
     CHECK(ores::utility::codec::msgpack::write(group) == their_message_msgpack(group));
     CHECK(ores::utility::codec::json::write(
               ores::utility::codec::json::read<ores::dq::domain::audit_record>(

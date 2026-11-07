@@ -58,5 +58,7 @@ test('runner writes complete non-overwriting reports; normal mode accepts qualit
   const strict=run(join(root,'strict'),'--strict');assert.equal(strict.status,2,strict.stderr);
   const previous=await readFile(join(root,'normal/results.json'),'utf8');assert.equal(run(join(root,'normal')).status,1);assert.equal(await readFile(join(root,'normal/results.json'),'utf8'),previous);
   assert.equal(run(join(root,'bad'),'--cases','not-a-case').status,1);
+  const heldout=run(join(root,'heldout'),'--corpus','evals/holdout-stage5.json','--cases','holdout-invalid-date,holdout-date-range');assert.equal(heldout.status,0,heldout.stderr);
+  const heldoutReport=JSON.parse(await readFile(join(root,'heldout/results.json'),'utf8'));assert.equal(heldoutReport.corpusVersion,'stage5-holdout-1.0.0');assert.equal(heldoutReport.summary.handling.pass,2);
  }finally{assert.equal(dirname(resolve(root)),resolve(tmpdir()));await rm(root,{recursive:true,force:true});}
 });

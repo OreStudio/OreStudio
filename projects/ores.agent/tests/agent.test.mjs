@@ -37,7 +37,7 @@ test('market facts are rendered from evidence; provider clarification stays in i
         request: { baseCurrency: 'EUR', quoteCurrency: 'USD' }, reason: 'Choose provider.', candidates: [{ provider: 'ore', seriesId: 'id-ore', instrument: 'fixture' }, { provider: 'vendor', seriesId: 'id-vendor', instrument: 'fixture' }] };
     const resolved = { ...ambiguous, status: 'stale', units: 'USD per 1 EUR', series: { provider: 'ore', seriesId: 'id-ore', instrument: 'fixture' },
         observation: { value: '1.0552', observedAt: '2016-12-30T00:00:00Z', source: 'labelled.fixture' } };
-    const agent = new Agent({ complete: async () => { modelCalls++; return { role: 'assistant', content: null, tool_calls: [{ id: 'm', type: 'function', function: { name: 'read_fx_spot', arguments: '{"baseCurrency":"EUR","quoteCurrency":"USD"}' } }] }; } }, {
+    const agent = new Agent({ complete: async messages => { modelCalls++; if (messages.at(-1).content === 'ore') return { role: 'assistant', content: 'Please specify a market request.' }; return { role: 'assistant', content: null, tool_calls: [{ id: 'm', type: 'function', function: { name: 'read_fx_spot', arguments: '{"baseCurrency":"EUR","quoteCurrency":"USD"}' } }] }; } }, {
         execute: async (name, args) => { calls.push(args); return args.provider ? resolved : ambiguous; },
     });
     const s = makeSession();

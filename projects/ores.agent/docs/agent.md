@@ -32,12 +32,17 @@ Version 0.1.5 adds [raw sensitivity buckets](greeks.md) for Delta/Gamma, vega
 at its stated volatility bump and signed ORE rate Delta at a 1bp target bump.
 Only complete buckets have full-scope totals; sparse results stay explicit.
 
+Version 0.1.6 adds [bounded read-intent workflows](intent-workflows.md): broader
+catalogue routing, preservation of explicit dates/bucket selectors, deterministic
+command refusal and identity-bound clarification state. Invalid units/provenance
+withhold the requested result explicitly instead of substituting another lookup.
+
 Limits: 2,000-character input, four model rounds, six tool calls, at most four
 proposed calls per response, one active inference request globally, two active
 tools per session, 60 tool calls per minute per session, 32 KiB tool output,
 64 KiB inference reply, 2048 generated tokens by default (configurable through
 `inference.maxOutputTokens`, 128–8192) and a two-minute overall deadline.
-Repeated identical calls do not execute again. Errors are returned to the model
+Repeated identical calls do not execute again. Recoverable errors are returned to the model
 without credentials/internal exception details. Expiry and logout are checked
 before accepting results. A prompt is guidance, not an authorization boundary.
 The evidence contains authoritative tool results; model prose can still be wrong.

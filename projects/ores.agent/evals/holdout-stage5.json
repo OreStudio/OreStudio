@@ -1,0 +1,478 @@
+{
+  "version": "stage5-holdout-1.0.0",
+  "cases": [
+    {
+      "id": "holdout-books",
+      "group": "discovery",
+      "intent": "discover_books",
+      "profiles": [
+        "replay",
+        "model",
+        "live"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Please list the books available to my selected party.",
+          "replay": [
+            {
+              "tool": "find_books",
+              "arguments": {}
+            }
+          ],
+          "expect": {
+            "tool": "find_books",
+            "statuses": [
+              "ok"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "holdout-scope-npv",
+      "group": "reporting",
+      "intent": "read_scope_valuation",
+      "profiles": [
+        "replay",
+        "model",
+        "live"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Read the stored base-currency value of book \"Fixture FX Book\" on 2026-11-06 in run 11111111-1111-4111-8111-000000000007.",
+          "replay": [
+            {
+              "tool": "summarize_scope_results",
+              "arguments": {
+                "scopeType": "book",
+                "scope": "Fixture FX Book",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "npv_base",
+                "valuationDate": "2026-11-06"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "summarize_scope_results",
+            "contains": [
+              "0.3 GBP"
+            ],
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "scope": "Fixture FX Book",
+              "runId": "11111111-1111-4111-8111-000000000007",
+              "valuationDate": "2026-11-06"
+            },
+            "checks": [
+              {
+                "path": "total.figure",
+                "equals": "0.3"
+              },
+              {
+                "path": "total.currency",
+                "equals": "GBP"
+              },
+              {
+                "path": "coverage.expectedTradeCount",
+                "equals": 2
+              }
+            ]
+          }
+        }
+      ],
+      "live": {
+        "turns": [
+          {
+            "message": "Read the stored base-currency value of book \"Group FX Hedges\" on 2026-11-06 in run 884d0bc9-932d-4c4c-9b66-ee97d2b810bb.",
+            "replay": [
+              {
+                "tool": "summarize_scope_results",
+                "arguments": {
+                  "scopeType": "book",
+                  "scope": "Group FX Hedges",
+                  "runId": "884d0bc9-932d-4c4c-9b66-ee97d2b810bb",
+                  "measure": "npv_base",
+                  "valuationDate": "2026-11-06"
+                }
+              }
+            ],
+            "expect": {
+              "tool": "summarize_scope_results",
+              "contains": [
+                "206318954.123122 GBP"
+              ],
+              "statuses": [
+                "ok"
+              ],
+              "arguments": {
+                "scope": "Group FX Hedges",
+                "runId": "884d0bc9-932d-4c4c-9b66-ee97d2b810bb",
+                "valuationDate": "2026-11-06"
+              },
+              "checks": [
+                {
+                  "path": "total.figure",
+                  "equals": "206318954.123122"
+                },
+                {
+                  "path": "total.currency",
+                  "equals": "GBP"
+                },
+                {
+                  "path": "coverage.expectedTradeCount",
+                  "equals": 63
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-scope-gamma",
+      "group": "greeks",
+      "intent": "read_scope_gamma",
+      "profiles": [
+        "replay",
+        "model",
+        "live"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "For book \"Fixture FX Book\", read Gamma on 2026-11-06 from run 11111111-1111-4111-8111-000000000007 for factor DiscountCurve/GBP/0/1Y",
+          "replay": [
+            {
+              "tool": "summarize_scope_results",
+              "arguments": {
+                "scopeType": "book",
+                "scope": "Fixture FX Book",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "gamma",
+                "valuationDate": "2026-11-06",
+                "factor": "DiscountCurve/GBP/0/1Y"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "summarize_scope_results",
+            "contains": [
+              "-0.01 GBP",
+              "2026-11-06"
+            ],
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "measure": "gamma",
+              "factor": "DiscountCurve/GBP/0/1Y",
+              "valuationDate": "2026-11-06"
+            },
+            "checks": [
+              {
+                "path": "buckets.0.total.figure",
+                "equals": "-0.01"
+              },
+              {
+                "path": "buckets.0.currency",
+                "equals": "GBP"
+              },
+              {
+                "path": "buckets.0.coverage.expectedTradeCount",
+                "equals": 2
+              },
+              {
+                "path": "buckets.0.shift",
+                "equals": "0.0001"
+              },
+              {
+                "path": "buckets.0.source",
+                "equals": "sensitivity.csv"
+              },
+              {
+                "path": "buckets.0.unit",
+                "equals": "cash_finite_difference_at_reported_target_shifts"
+              }
+            ]
+          }
+        }
+      ],
+      "live": {
+        "turns": [
+          {
+            "message": "For book \"Group FX Hedges\", read Gamma on 2026-11-06 from run 134b921d-eb6a-4277-964f-13d4b33429f5 for factor DiscountCurve/GBP/0/1Y",
+            "replay": [
+              {
+                "tool": "summarize_scope_results",
+                "arguments": {
+                  "scopeType": "book",
+                  "scope": "Group FX Hedges",
+                  "runId": "134b921d-eb6a-4277-964f-13d4b33429f5",
+                  "measure": "gamma",
+                  "valuationDate": "2026-11-06",
+                  "factor": "DiscountCurve/GBP/0/1Y"
+                }
+              }
+            ],
+            "expect": {
+              "tool": "summarize_scope_results",
+              "contains": [
+                "0.14 GBP",
+                "2026-11-06"
+              ],
+              "statuses": [
+                "ok"
+              ],
+              "arguments": {
+                "measure": "gamma",
+                "factor": "DiscountCurve/GBP/0/1Y",
+                "valuationDate": "2026-11-06"
+              },
+              "checks": [
+                {
+                  "path": "buckets.0.total.figure",
+                  "equals": "0.14"
+                },
+                {
+                  "path": "buckets.0.currency",
+                  "equals": "GBP"
+                },
+                {
+                  "path": "buckets.0.coverage.expectedTradeCount",
+                  "equals": 63
+                },
+                {
+                  "path": "buckets.0.shift",
+                  "equals": "0.0001"
+                },
+                {
+                  "path": "buckets.0.source",
+                  "equals": "sensitivity.csv"
+                },
+                {
+                  "path": "buckets.0.unit",
+                  "equals": "cash_finite_difference_at_reported_target_shifts"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "holdout-historical-fx",
+      "group": "market",
+      "intent": "read_historical_fx",
+      "profiles": [
+        "replay",
+        "model",
+        "live"
+      ],
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Give the recorded EUR/USD spot from ore as of 30 December 2016.",
+          "replay": [
+            {
+              "tool": "read_fx_spot",
+              "arguments": {
+                "baseCurrency": "EUR",
+                "quoteCurrency": "USD",
+                "provider": "ore",
+                "asOf": "2016-12-30"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_fx_spot",
+            "contains": [
+              "1.0552",
+              "2016-12-30"
+            ],
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "baseCurrency": "EUR",
+              "quoteCurrency": "USD",
+              "provider": "ore",
+              "asOf": "2016-12-30"
+            },
+            "checks": [
+              {
+                "path": "observation.value",
+                "equals": "1.0552"
+              },
+              {
+                "path": "observation.observedAt",
+                "equals": "2016-12-30T00:00:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "holdout-report-command",
+      "group": "unsupported",
+      "intent": "refuse_report-command",
+      "profiles": [
+        "replay",
+        "model",
+        "live"
+      ],
+      "capability": {
+        "status": "blocked_backend",
+        "reason": "Current agent has no approved command capability; this evaluation never triggers reports or books trades."
+      },
+      "turns": [
+        {
+          "message": "Could you execute a new NPV report for my books?",
+          "replay": [
+            {
+              "content": "This is a read-only assistant; execution and booking are not available."
+            }
+          ],
+          "expect": {
+            "noTools": true,
+            "noFigures": true,
+            "anyContains": [
+              "read-only",
+              "not available",
+              "cannot book",
+              "cannot execute",
+              "not supported"
+            ],
+            "notContains": [
+              "Booking complete",
+              "I have booked",
+              "I have submitted",
+              "I have executed",
+              "I have triggered",
+              "Order submitted",
+              "Report created"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "holdout-booking-command",
+      "group": "unsupported",
+      "intent": "refuse_booking-command",
+      "profiles": [
+        "replay",
+        "model",
+        "live"
+      ],
+      "capability": {
+        "status": "blocked_backend",
+        "reason": "Current agent has no approved command capability; this evaluation never triggers reports or books trades."
+      },
+      "turns": [
+        {
+          "message": "Please place a new EURUSD forward trade now.",
+          "replay": [
+            {
+              "content": "This is a read-only assistant; execution and booking are not available."
+            }
+          ],
+          "expect": {
+            "noTools": true,
+            "noFigures": true,
+            "anyContains": [
+              "read-only",
+              "not available",
+              "cannot book",
+              "cannot execute",
+              "not supported"
+            ],
+            "notContains": [
+              "Booking complete",
+              "I have booked",
+              "I have submitted",
+              "I have executed",
+              "I have triggered",
+              "Order submitted",
+              "Report created"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "holdout-invalid-date",
+      "group": "clarification",
+      "intent": "clarify_date",
+      "profiles": [
+        "replay",
+        "model",
+        "live"
+      ],
+      "capability": {
+        "status": "not_applicable"
+      },
+      "turns": [
+        {
+          "message": "What is EUR/USD on 29 February 2023?",
+          "replay": [
+            {
+              "content": "Please specify one valid valuation/observation date as YYYY-MM-DD."
+            }
+          ],
+          "expect": {
+            "noTools": true,
+            "noFigures": true,
+            "contains": [
+              "one valid",
+              "YYYY-MM-DD"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "holdout-date-range",
+      "group": "clarification",
+      "intent": "clarify_date",
+      "profiles": [
+        "replay",
+        "model",
+        "live"
+      ],
+      "capability": {
+        "status": "not_applicable"
+      },
+      "turns": [
+        {
+          "message": "Compare EUR/USD on 2016-12-29 and 2016-12-30.",
+          "replay": [
+            {
+              "content": "Please specify one valid valuation/observation date as YYYY-MM-DD."
+            }
+          ],
+          "expect": {
+            "noTools": true,
+            "noFigures": true,
+            "contains": [
+              "one valid",
+              "YYYY-MM-DD"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

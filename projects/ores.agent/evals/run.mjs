@@ -17,12 +17,12 @@ import { evaluateCase,digest,readOnlyBackend } from './engine.mjs';
 const component=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const options={profile:'replay',repeat:1};
 const switches=new Set(['strict','live-read','help']);
-const valued=new Set(['profile','repeat','cases','out','config','credentials','party','other-party','inference-root','min-pass','timeout-ms']);
+const valued=new Set(['profile','repeat','cases','corpus','out','config','credentials','party','other-party','inference-root','min-pass','timeout-ms']);
 for(let index=2;index<process.argv.length;index++){
  const name=process.argv[index].replace(/^--/,'');if(!process.argv[index].startsWith('--')||!switches.has(name)&&!valued.has(name))throw Error('Unknown evaluation option. Use --help.');
  if(switches.has(name))options[name]=true;else{const value=process.argv[++index];if(!value||value.startsWith('--'))throw Error('Missing evaluation option value.');options[name]=value;}
 }
-if(options.help){console.log('npm run eval -- --profile replay|model|live [--cases id,id] [--repeat 1..5] [--timeout-ms 100..120000] [--out NEW_DIRECTORY] [--strict --min-pass 0..1]\nmodel: --config AGENT_CONFIG [--inference-root ROOT]\nlive: --live-read --config AGENT_CONFIG --credentials PRIVATE_JSON --party UUID [--other-party UUID] [--inference-root ROOT]');process.exit(0);}
+if(options.help){console.log('npm run eval -- --profile replay|model|live [--cases id,id] [--corpus PATH] [--repeat 1..5] [--timeout-ms 100..120000] [--out NEW_DIRECTORY] [--strict --min-pass 0..1]\nmodel: --config AGENT_CONFIG [--inference-root ROOT]\nlive: --live-read --config AGENT_CONFIG --credentials PRIVATE_JSON --party UUID [--other-party UUID] [--inference-root ROOT]');process.exit(0);}
 async function hashFile(path){const hash=createHash('sha256');for await(const chunk of createReadStream(path))hash.update(chunk);return hash.digest('hex');}
 function markdown(report){
  const s=report.summary,rows=report.results.map(r=>`| ${r.id} | ${r.repetition} | ${r.outcome} | ${r.handling} | ${r.capability} | ${Math.round(r.durationMs??0)} |`);
@@ -38,7 +38,8 @@ async function main(){
  if(options.profile==='live'&&!options['live-read'])throw Error('Live reads require explicit --live-read.');
  if(options.profile!=='replay'&&!options.config)throw Error('Model/live profile requires --config.');
  if(options.profile==='live'&&(!options.credentials||!options.party))throw Error('Live profile requires credentials and a selected party UUID.');
- const corpusText=await readFile(join(component,'evals/cases.json'),'utf8'),corpus=validateCorpus(JSON.parse(corpusText));
+ const corpusPath=options.corpus?resolve(options.corpus):join(component,'evals/cases.json');
+ const corpusText=await readFile(corpusPath,'utf8'),corpus=validateCorpus(JSON.parse(corpusText));
  const requested=options.cases?.split(',');if(requested?.some(id=>!corpus.cases.some(c=>c.id===id&&c.profiles.includes(options.profile))))throw Error('Unknown case or case unavailable for selected profile.');
  const selected=corpus.cases.filter(c=>c.profiles.includes(options.profile)&&(!requested||requested.includes(c.id)));
  if(!selected.length)throw Error('No evaluation cases selected.');
@@ -52,7 +53,7 @@ async function main(){
  if(config?.inference.apiKeyFile)redact.add((await readFile(config.inference.apiKeyFile,'utf8')).trim());
  const inference=config?new HttpInference(config.inference):null;
  let revision='unknown',dirty=true;try{revision=execFileSync('git',['rev-parse','HEAD'],{cwd:component,encoding:'utf8'}).trim();dirty=Boolean(execFileSync('git',['status','--porcelain','--','.'],{cwd:component,encoding:'utf8'}).trim());}catch{}
- const fingerprints={};for(const name of ['src/agent.ts','src/tools.ts','src/backend.ts','src/inference.ts','src/scope-reporting.ts','src/sensitivity.ts','evals/cases.json','evals/fixtures.mjs','evals/engine.mjs','evals/grade.mjs','evals/run.mjs','package-lock.json'])fingerprints[name]=await hashFile(join(component,name));
+ const fingerprints={};for(const name of ['src/agent.ts','src/intent.ts','src/tools.ts','src/backend.ts','src/inference.ts','src/scope-reporting.ts','src/sensitivity.ts','evals/cases.json','evals/fixtures.mjs','evals/engine.mjs','evals/grade.mjs','evals/run.mjs','package-lock.json'])fingerprints[name]=await hashFile(join(component,name));
  const metadata={agentRevision:revision,componentDirty:dirty,fingerprints,backendContract:backendRevision,node:process.version,platform:process.platform,
   dataMode:options.profile==='live'?'Existing backend records; no business mutations.':'LABELLED FIXTURE DATA; not live OreStudio.',
   inferenceMode:options.profile==='replay'?'SCRIPTED REPLAY; not a model-quality score.':'Actual configured local model.',perTurnDeadlineMs:timeoutMs,

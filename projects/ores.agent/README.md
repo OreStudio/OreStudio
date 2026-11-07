@@ -29,6 +29,8 @@ Version 0.1.5 adds [stored raw Greek buckets](docs/greeks.md): Delta, Gamma,
 cash vega at its stated volatility bump, and signed ORE rate Delta at a 1bp
 target bump. Exact factor/bump/scenario/currency buckets remain separate;
 missing members withhold that bucket's total.
+Version 0.1.6 adds [bounded intent and conversation improvements](docs/intent-workflows.md)
+measured against the frozen Stage 4 evaluations and separate paraphrases.
 
 Requires Node 22.11+. From this component directory:
 

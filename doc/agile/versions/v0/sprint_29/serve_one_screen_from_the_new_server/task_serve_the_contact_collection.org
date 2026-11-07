@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 24983ABA-4F85-4776-A6D3-F02FBA336ED5
+:END:
+#+title: Task: Serve the contact collection, and guard an entity whose protocol another model owns
+#+description: The contact information the browser reads for a person is answered by the BFF alone. Serve it, and refuse the route facet for an entity whose protocol an operation model owns, which is how auth_event was caught: its generated unit included a header that does not exist.
+#+type: task
+#+level: s1
+#+filetags: :sprint_29:v0:serve_one_screen_from_the_new_server:
+#+owner: marco
+#+branch: feature/serve-the-contact-collection
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The contact information a person's record shows is answered by the new server, and an
+entity whose protocol another model owns can no longer produce a route unit that cannot
+compile.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-07                               |
+
+* Acceptance
+
+- Account contact information is answered under /api/v1/access/ by the new server, registered by the iam aggregate.
+- The route facet renders nothing for an entity whose protocol an operation model owns, instead of a unit that includes a header that does not exist.
+- The inventory classifies the access and auth collection families with one rule each.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =ores.http.iam= | 45 cases, 508 assertions, all passing | =./ores.http.iam.tests= | this branch |
+| The route and codegen checks | 8 of 8: reachability, inventory, route auth, handler permissions, published areas, CMake lists, format, codegen suite | =./compass.sh check --only ...= | this branch |
+| The route inventory | 725 routes, current | =python3 build/scripts/route_inventory.py --check= | this branch |
+
+* Notes
+
+- The first attempt opted =auth_event= into the route facet and the build refused it: its
+  derived protocol does not exist, because an operation model beside it owns the
+  protocol. The facet now reads the same ownership rule the protocol facet reads, so it
+  renders nothing for such an entity instead of a unit that includes a header nobody
+  writes. The operation model's own route unit already answers the reads.
+- The access and auth areas needed family rules for the generated collections beyond the
+  four each served first. The rules exclude the four by name so the specific rules keep
+  their precedence.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Account contact information is served under the access area, and the route facet reads the
+same protocol-ownership rule the protocol facet does: an entity whose protocol an operation
+model owns renders no route unit, which the build proved by refusing the one that did.

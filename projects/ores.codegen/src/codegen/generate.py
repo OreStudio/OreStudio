@@ -292,6 +292,12 @@ _PROTOCOL_FACETS = frozenset({
 # built. ``_PROTOCOL_FACETS`` above is the other half of the same dependency:
 # there an operation model owns the protocol, here nothing renders it at all.
 _PROTOCOL_DEPENDENT_FACETS = frozenset({
+    # The route unit includes the derived protocol and states the request types it
+    # names, so an entity whose protocol an operation model owns renders no route
+    # unit: the operation model's own route unit answers the reads, and a second one
+    # would include a header that does not exist.
+    "ores.cpp.http-route",
+    "ores.doc.http-recipe",
     "ores.cpp.nats-eventing",
     "ores.cpp.nats-event-registrar",
     "ores.cpp.eventing-integration-test",

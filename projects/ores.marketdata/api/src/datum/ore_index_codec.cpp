@@ -118,7 +118,7 @@ fields with_optional(fields fs, std::string_view name, std::string_view text) {
     return fs;
 }
 
-std::expected<market_index, std::string> refuse(std::string_view why) {
+std::expected<market_index, std::string> refuse_index(std::string_view why) {
     return std::unexpected(std::string(why));
 }
 
@@ -126,17 +126,17 @@ std::expected<market_index, std::string> refuse(std::string_view why) {
 std::expected<market_index, std::string> read_power(std::string_view rest) {
     const auto t = split_on_dash(rest);
     if (t.size() == 1)
-        return refuse("a power index with no delivery date takes ORE's evaluation date, which the "
+        return refuse_index("a power index with no delivery date takes ORE's evaluation date, which the "
                       "name cannot keep");
     if (t.size() != 4 && t.size() != 6)
-        return refuse("a power index is POWER-NAME-YYYY-MM-DD[-START-END]");
+        return refuse_index("a power index is POWER-NAME-YYYY-MM-DD[-START-END]");
     const auto delivery = rest.substr(t[0].size() + 1, 10);
     if (!is_iso_date(delivery))
-        return refuse("a power index's delivery is a date");
+        return refuse_index("a power index's delivery is a date");
     fields fs{{"delivery", std::string(delivery)}};
     if (t.size() == 6) {
         if (!all_digits(t[4]) || !all_digits(t[5]))
-            return refuse("a power index's delivery start and end are whole seconds");
+            return refuse_index("a power index's delivery start and end are whole seconds");
         fs.push_back({"start", std::string(t[4])});
         fs.push_back({"end", std::string(t[5])});
     }
@@ -147,12 +147,12 @@ std::expected<market_index, std::string> read_power(std::string_view rest) {
 std::expected<market_index, std::string> read_rate(std::string_view name) {
     const auto t = split_on_dash(name);
     if (!is_currency(t[0]))
-        return refuse("a rate index starts with a three-letter currency");
+        return refuse_index("a rate index starts with a three-letter currency");
     if (t.size() >= 2 && t[1] == "CMS") {
         if (t.size() != 3 && t.size() != 4)
-            return refuse("a CMS index is CCY-CMS[-TAG]-TENOR");
+            return refuse_index("a CMS index is CCY-CMS[-TAG]-TENOR");
         if (!is_period_term(t.back()))
-            return refuse("a CMS index ends in a tenor");
+            return refuse_index("a CMS index ends in a tenor");
         fields fs;
         if (t.size() == 4)
             fs.push_back({"tag", std::string(t[2])});
@@ -160,9 +160,9 @@ std::expected<market_index, std::string> read_rate(std::string_view name) {
         return make(f::swap, t[0], std::move(fs));
     }
     if (t.size() != 2 && t.size() != 3)
-        return refuse("an IBOR index is CCY-NAME[-TENOR]");
+        return refuse_index("an IBOR index is CCY-NAME[-TENOR]");
     if (t.size() == 3 && !is_period_term(t[2]))
-        return refuse("an IBOR index's tenor is a period");
+        return refuse_index("an IBOR index's tenor is a period");
     return make(f::ibor,
                 t[0],
                 with_optional({{"name", std::string(t[1])}}, "tenor", t.size() == 3 ? t[2] : ""));
@@ -211,7 +211,7 @@ std::expected<market_index, std::string> ore_index_codec::read(std::string_view 
         if (name.starts_with("FX-")) {
             const auto t = split_on_dash(name);
             if (t.size() != 4 || !is_currency(t[2]) || !is_currency(t[3]) || t[1].empty())
-                return refuse("an FX index is FX-SOURCE-CCY1-CCY2");
+                return refuse_index("an FX index is FX-SOURCE-CCY1-CCY2");
             return make(f::fx, t[2], {{"source", std::string(t[1])}, {"ccy", std::string(t[3])}});
         }
         if (name.starts_with("GENERIC-"))
@@ -219,7 +219,7 @@ std::expected<market_index, std::string> ore_index_codec::read(std::string_view 
         if (name.starts_with("CMB-")) {
             const auto t = split_on_dash(name);
             if (t.size() < 3 || !is_period_term(t.back()))
-                return refuse("a constant maturity bond index is CMB-FAMILY-TENOR");
+                return refuse_index("a constant maturity bond index is CMB-FAMILY-TENOR");
             const auto family = name.substr(4, name.size() - 4 - t.back().size() - 1);
             return make(f::cmb, family, {{"tenor", std::string(t.back())}});
         }

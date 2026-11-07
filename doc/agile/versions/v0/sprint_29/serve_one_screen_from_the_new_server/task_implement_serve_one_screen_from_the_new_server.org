@@ -106,6 +106,13 @@ task and name that file in the Command column.
   credential, so a screen on the prefix carries the C++ session and the rest of the
   application carries the BFF's, and both exist at once because their paths differ.
   Making them one is a decision for the cutover, not for this task.
+- The obvious screen is the people list, and it does not fit yet. =PeoplePage= reads
+  =/api/accounts= through a =ListSource= that searches, sorts and pages on the server;
+  the C++ route =/api/v1/access/accounts= takes =offset=, =limit=, =order= and =desc=
+  and no search, although the wire request it forwards to carries an
+  =accounts_filter=. So moving that screen would either drop the search box or need
+  the generated route to expose one. Neither belongs in a skeleton whose point is the
+  flag.
 - Which list is not yet settled. The C++ server answers the generated collections,
   such as =/api/v1/reference-data/currencies=, and the screen that shows currencies
   asks the BFF for =/api/refdata/currencies=, which is the generic router the

@@ -50,6 +50,7 @@ create table if not exists "ores_inbox_approval_kinds_tbl" (
     "apply_workflow_type" text null,
     "apply_window_hours" integer null,
     "approvals_required" integer not null default 1,
+    "auto_approval_code" text not null default 'none',
     "display_order" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,

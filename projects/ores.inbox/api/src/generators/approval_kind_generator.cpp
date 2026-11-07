@@ -52,6 +52,7 @@ generate_synthetic_approval_kind(utility::generation::generation_context& ctx) {
     r.decide_permission_code = std::string("iam::roles:assign");
     r.raise_permission_code = std::nullopt;
     r.approvals_required = faker::number::integer(1, 2);
+    r.auto_approval_code = std::string(faker::word::noun());
     r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;

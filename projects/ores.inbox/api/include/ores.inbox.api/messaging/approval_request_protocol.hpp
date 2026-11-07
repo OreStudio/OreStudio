@@ -51,6 +51,7 @@ struct approval_request_write {
     boost::uuids::uuid id;
     std::string kind_code;
     std::string state_code;
+    std::string auto_approval_code;
     boost::uuids::uuid requested_by;
     std::chrono::system_clock::time_point requested_at;
     std::string reason;
@@ -86,10 +87,12 @@ struct approval_request_lookup {
 struct approval_requests_filter {
     std::optional<std::string> kind_code;
     std::optional<std::string> state_code;
+    std::optional<std::string> auto_approval_code;
     std::optional<boost::uuids::uuid> requested_by;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> kind_code_one_of;
     std::optional<std::vector<std::string>> state_code_one_of;
+    std::optional<std::vector<std::string>> auto_approval_code_one_of;
     std::optional<std::vector<boost::uuids::uuid>> requested_by_one_of;
 
     friend bool operator==(const approval_requests_filter&,
@@ -422,6 +425,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_requests.d
         utility::codec::field{"id", &approval_request_write::id},
         utility::codec::field{"kind_code", &approval_request_write::kind_code},
         utility::codec::field{"state_code", &approval_request_write::state_code},
+        utility::codec::field{"auto_approval_code", &approval_request_write::auto_approval_code},
         utility::codec::field{"requested_by", &approval_request_write::requested_by},
         utility::codec::field{"requested_at", &approval_request_write::requested_at},
         utility::codec::field{"reason", &approval_request_write::reason},
@@ -486,10 +490,13 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_requests.d
     return std::tuple{
         utility::codec::field{"kind_code", &approval_requests_filter::kind_code},
         utility::codec::field{"state_code", &approval_requests_filter::state_code},
+        utility::codec::field{"auto_approval_code", &approval_requests_filter::auto_approval_code},
         utility::codec::field{"requested_by", &approval_requests_filter::requested_by},
         utility::codec::field{"id_one_of", &approval_requests_filter::id_one_of},
         utility::codec::field{"kind_code_one_of", &approval_requests_filter::kind_code_one_of},
         utility::codec::field{"state_code_one_of", &approval_requests_filter::state_code_one_of},
+        utility::codec::field{"auto_approval_code_one_of",
+                              &approval_requests_filter::auto_approval_code_one_of},
         utility::codec::field{"requested_by_one_of",
                               &approval_requests_filter::requested_by_one_of},
     };

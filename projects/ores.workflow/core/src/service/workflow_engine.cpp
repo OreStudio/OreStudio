@@ -939,7 +939,11 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     using outcome = ores::workflow::messaging::step_outcome;
     switch (event.outcome) {
         case outcome::completed:
-            set_step_state(step, step_states_.require("completed"), event.result_json, "", "");
+            // A step that finished may still have something to say about how it
+            // got there: a wait it rode out, a retry that worked. The record
+            // keeps those entries, and the status stays the clean one.
+            set_step_state(
+                step, step_states_.require("completed"), event.result_json, "", log_json);
             break;
         case outcome::completed_with_warnings:
             set_step_state(step,

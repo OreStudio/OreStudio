@@ -53,6 +53,7 @@ domain::approval_kind approval_kind_mapper::map(const approval_kind_entity& v) {
     r.apply_workflow_type = v.apply_workflow_type;
     r.apply_window_hours = v.apply_window_hours;
     r.approvals_required = v.approvals_required;
+    r.auto_approval_code = v.auto_approval_code;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -81,6 +82,7 @@ approval_kind_entity approval_kind_mapper::map(const domain::approval_kind& v) {
     r.apply_workflow_type = v.apply_workflow_type;
     r.apply_window_hours = v.apply_window_hours;
     r.approvals_required = v.approvals_required;
+    r.auto_approval_code = v.auto_approval_code;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

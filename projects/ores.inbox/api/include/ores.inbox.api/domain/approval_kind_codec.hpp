@@ -60,6 +60,7 @@ namespace ores::inbox::domain {
         utility::codec::field{"apply_workflow_type", &approval_kind::apply_workflow_type},
         utility::codec::field{"apply_window_hours", &approval_kind::apply_window_hours},
         utility::codec::field{"approvals_required", &approval_kind::approvals_required},
+        utility::codec::field{"auto_approval_code", &approval_kind::auto_approval_code},
         utility::codec::field{"display_order", &approval_kind::display_order},
         utility::codec::field{"modified_by", &approval_kind::modified_by},
         utility::codec::field{"performed_by", &approval_kind::performed_by},

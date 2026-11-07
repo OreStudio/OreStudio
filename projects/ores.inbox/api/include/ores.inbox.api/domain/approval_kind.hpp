@@ -129,9 +129,39 @@ struct approval_kind final {
     std::optional<int> apply_window_hours;
 
     /**
-     * @brief How many approvals, each by a different person, close a request as approved.
+     * @brief How many approvals, each by a different person, close a request as approved. It is the
+     * count of people, and never a way to say that nobody decides: a kind that needs nobody says so
+     * through auto_approval_code.
      */
     int approvals_required = 0;
+
+    /**
+     * @brief Which raises of this kind close without a person, and so which acts the installation
+     * does on its own behalf.
+     *
+     * A maker and checker pair exists to put a second person in front of a consequential act a
+     * person proposed. Where no person is the maker, there is no judgement to check, and the
+     * request closes approved in the same act, with the system as its decider and a decision that
+     * says a policy closed it.
+     *
+     * The values, and what each covers:
+     *
+     * - none -- a person decides, as the kind's count says. The default. - system_tenant -- a raise
+     * in the system tenant closes at once. The system tenant is the installation, so its own curves
+     * and datasets are the installation's own acts, done before any person would be on shift. A
+     * raise in any other tenant is somebody's book and waits. - every_request -- every raise of
+     * this kind closes at once, whatever the tenant. For kinds that record rather than control, and
+     * for a demonstration that must not wait on a click.
+     *
+     * A raise that names parts is decided by its parts however this column reads: the parts are
+     * people answering, and a policy that skipped them would leave the parts open forever.
+     *
+     * The policy is the kind's, so it is a versioned data change with who turned it on and why
+     * beside it, and the request and its decision state it in words. A deployment states whether it
+     * enforces approvals at all through inbox.approvals.mode, which closes every kind's requests at
+     * once when it is auto_approved.
+     */
+    std::string auto_approval_code;
 
     /**
      * @brief Order for UI display purposes.

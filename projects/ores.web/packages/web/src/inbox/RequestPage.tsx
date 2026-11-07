@@ -44,7 +44,7 @@ import { ChecksPanel } from './ChecksPanel.js';
 import { descriptorFor, summaryOf } from './kinds.js';
 import { PartsPanel } from './PartsPanel.js';
 import { RequestStateChip } from './RequestStateChip.js';
-import { partLabel, stateLabel } from './words.js';
+import { autoApprovalRule, partLabel, stateLabel } from './words.js';
 
 /**
  * One request, and the answer to it, whichever kind it is.
@@ -170,8 +170,20 @@ function Request({
                 <div className="min-w-0">
                     <div className="flex items-center gap-2 text-sm font-medium">
                         {self ? t('inbox.request.you') : <PersonRef who={request.requestedBy} />}
-                        <RequestStateChip stateCode={request.stateCode} />
+                        <RequestStateChip
+                            stateCode={request.stateCode}
+                            autoApprovalCode={request.autoApprovalCode}
+                        />
                     </div>
+                    {/* A decision nobody signed says so in words and not only
+                        in a hover: who closed it, and by which rule. */}
+                    {request.autoApprovalCode !== '' && (
+                        <div className="text-xs text-ink-muted">
+                            {t('inbox.autoApproval.why', {
+                                rule: autoApprovalRule(t, request.autoApprovalCode),
+                            })}
+                        </div>
+                    )}
                     {/* A deadline only means something while the request is
                         still waiting. Once it has an answer the deadline has
                         passed out of the story, and showing it says the

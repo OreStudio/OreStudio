@@ -49,6 +49,7 @@
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
+#include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -59,8 +60,10 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
@@ -794,6 +797,10 @@ public:
         std::uint32_t trades_already_present = 0;
         /// What a schedule_reports step did for each party it named.
         std::vector<party_report_schedule> report_schedules;
+        /// The curves a publish_system_curves step published, by config name,
+        /// and the ones it could not, each with the reason it was last refused.
+        std::vector<std::string> curves;
+        std::vector<std::string> curves_not_published;
     };
 
 private:
@@ -893,6 +900,9 @@ private:
             case provision_step_action::system_provision:
                 system_provision_step(wf, command);
                 return;
+            case provision_step_action::publish_system_curves:
+                publish_system_curves_step(wf, command);
+                return;
             case provision_step_action::publish_bundle:
                 publish_bundle_step(wf, command, resolve_step_actor(command));
                 return;
@@ -970,31 +980,197 @@ private:
     /// the account that writes them must be one of its own.
     void system_provision_step(const ores::service::messaging::workflow_step_context& wf,
                                const ores::iam::workflow::provision_tenant_step_command& command) {
-        auto sys_ctx = tenant_context::with_system_tenant(ctx_);
-        ores::iam::service::account_service system_accounts(sys_ctx);
-        boost::uuids::string_generator parse;
-
         dq::messaging::publish_bundle_params params;
         const auto params_json = dq::messaging::build_params_json(params);
         const auto bundle_code = std::string(ores::iam::workflow::system_core_bundle_code);
 
-        for (const auto& id : super_admin_account_ids(sys_ctx)) {
-            const auto account = system_accounts.get_account(parse(id));
-            if (!account)
-                continue;
-            const auto super_actor = actor_of(sys_ctx, *account);
-            auto admin_client = make_step_client(tenant_context::system_tenant_id,
-                                                 super_actor.account_id,
-                                                 super_actor.party_id,
-                                                 super_actor.username);
-            publish_bundle_or_throw(
-                admin_client, bundle_code, super_actor.username, params_json, command.kind);
-            complete_system_onboarding(admin_client);
-            wf.complete(ores::utility::codec::json::write(
-                provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
+        const auto super_actor = system_administrator();
+        if (!super_actor) {
+            wf.fail("The system tenant holds no administrator to publish '" + bundle_code +
+                    "' as.");
             return;
         }
-        wf.fail("The system tenant holds no administrator to publish '" + bundle_code + "' as.");
+        auto admin_client = make_step_client(tenant_context::system_tenant_id,
+                                             super_actor->account_id,
+                                             super_actor->party_id,
+                                             super_actor->username);
+        publish_bundle_or_throw(
+            admin_client, bundle_code, super_actor->username, params_json, command.kind);
+        complete_system_onboarding(admin_client);
+        wf.complete(ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
+    }
+
+    /// The first super administrator of the system tenant, as the actor a
+    /// system-scoped step writes as. None when the tenant holds no such account.
+    std::optional<step_actor> system_administrator() {
+        auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+        ores::iam::service::account_service system_accounts(sys_ctx);
+        boost::uuids::string_generator parse;
+        for (const auto& id : super_admin_account_ids(sys_ctx)) {
+            const auto account = system_accounts.get_account(parse(id));
+            if (account)
+                return actor_of(sys_ctx, *account);
+        }
+        return std::nullopt;
+    }
+
+    /**
+     * @brief Bootstraps and publishes each IR curve the system tenant holds a
+     * config for.
+     *
+     * The curves read the quotes of the synthetic feeds the system data starts,
+     * and a feed's first quotes arrive some time after it starts, so a curve the
+     * marketdata service cannot bootstrap yet is asked again every
+     * curve_retry_interval until curve_quote_patience has passed. A curve still
+     * refused then is named with its last reason, and the step completes: one
+     * currency's missing quotes do not hold back the system's other curves or the
+     * tenant's own setup. Each round of waiting is recorded in the step's own log,
+     * so the run says why the step is taking the time it takes rather than looking
+     * stalled.
+     *
+     * A curve is published and not merely republished: the publish goes through
+     * marketdata.v1.ops.publish_curve, so the set is recorded against the request
+     * that authorised it, and the published-curves list and the reads a surface or
+     * a price take see it. The raise is the publish in the system tenant, which
+     * is the installation, so no person has to answer first. Each attempt
+     * previews the bootstrap with
+     * marketdata.v1.ops.compute_curve and publishes only what that preview
+     * accepted, so a retry costs no approval request.
+     */
+    void
+    publish_system_curves_step(const ores::service::messaging::workflow_step_context& wf,
+                               const ores::iam::workflow::provision_tenant_step_command& command) {
+        constexpr auto curve_quote_patience = std::chrono::minutes{2};
+        constexpr auto curve_retry_interval = std::chrono::seconds{10};
+        constexpr std::string_view publish_reason =
+            "The provisioning system run bootstraps the system's curves from the quotes the "
+            "system's own feeds publish, so forwards can be read at once.";
+
+        const auto admin = system_administrator();
+        if (!admin) {
+            wf.fail("The system tenant holds no administrator to publish its curves as.");
+            return;
+        }
+        auto client = make_step_client(
+            tenant_context::system_tenant_id, admin->account_id, admin->party_id, admin->username);
+
+        ores::refdata::messaging::list_ir_curve_bootstrap_configs_request list;
+        list.limit = 1000;
+        const auto configs = client.request(list).bootstrap_configs;
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "publish_system_curves: " << configs.size()
+            << " curve config(s) to publish, waiting up to "
+            << std::chrono::duration_cast<std::chrono::seconds>(curve_quote_patience).count()
+            << "s for their quotes";
+
+        std::map<std::string, std::string> pending;
+        std::map<std::string, std::string> names;
+        for (const auto& config : configs) {
+            const auto id = boost::uuids::to_string(config.id);
+            pending.emplace(id, "not yet asked");
+            names.emplace(id, config.name);
+        }
+
+        provision_step_result result;
+        result.kind = command.kind;
+        std::vector<ores::workflow::messaging::step_log_entry> step_log;
+        const auto started = std::chrono::steady_clock::now();
+        const auto give_up = started + curve_quote_patience;
+        while (!pending.empty()) {
+            for (auto it = pending.begin(); it != pending.end();) {
+                // The as-of moves with each attempt, so quotes a feed writes
+                // while the step waits are inside the snapshot the next attempt
+                // reads. A preview and its publish state the same instant.
+                const auto as_of = std::chrono::system_clock::now();
+
+                ores::marketdata::messaging::compute_curve_request preview;
+                preview.bootstrap_config_id = it->first;
+                preview.as_of = as_of;
+                const auto computed = client.request(preview);
+                if (!computed.success) {
+                    it->second = computed.message;
+                    ++it;
+                    continue;
+                }
+
+                ores::marketdata::messaging::publish_curve_request publish;
+                publish.bootstrap_config_id = it->first;
+                publish.as_of = as_of;
+                publish.reason = std::string(publish_reason);
+                const auto published = client.request(publish);
+                if (published.success && published.published_at) {
+                    BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                        << "publish_system_curves: published " << names.at(it->first) << " at "
+                        << ores::platform::time::datetime::to_iso8601_utc(*published.published_at)
+                        << " by " << published.published_by << ", " << computed.points.size()
+                        << " point(s)";
+                    result.curves.push_back(names.at(it->first) + " as of " +
+                                            ores::platform::time::datetime::to_iso8601_utc(as_of));
+                } else if (published.success) {
+                    // The policy let the request wait instead of closing it, so
+                    // asking again would raise a second request for one act.
+                    BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                        << "publish_system_curves: " << names.at(it->first)
+                        << " waits for approval: request " << published.approval_request_id
+                        << " is " << published.state_code;
+                    result.curves_not_published.push_back(
+                        names.at(it->first) + ": the request " + published.approval_request_id +
+                        " is " + published.state_code + " and no person has answered it");
+                } else {
+                    // The preview passed and the publish did not, which no wait
+                    // puts right: the reason is reported and the curve is done.
+                    BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                        << "publish_system_curves: did not publish " << names.at(it->first) << ": "
+                        << published.message;
+                    result.curves_not_published.push_back(names.at(it->first) + ": " +
+                                                          published.message);
+                }
+                it = pending.erase(it);
+            }
+            if (pending.empty() || std::chrono::steady_clock::now() >= give_up)
+                break;
+            const auto waited = std::chrono::duration_cast<std::chrono::seconds>(
+                                    std::chrono::steady_clock::now() - started)
+                                    .count();
+            const auto waiting = std::to_string(pending.size()) + " curve(s) have no quotes yet (" +
+                                 std::to_string(waited) + "s of " +
+                                 std::to_string(curve_quote_patience.count() * 60) +
+                                 "s), asking again in " +
+                                 std::to_string(curve_retry_interval.count()) + "s";
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "publish_system_curves: " << waiting;
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                .message = waiting,
+                                .context = {}});
+            std::this_thread::sleep_for(curve_retry_interval);
+        }
+
+        for (const auto& [id, last_reason] : pending) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                << "publish_system_curves: did not publish " << names.at(id) << ": " << last_reason;
+            result.curves_not_published.push_back(names.at(id) + ": " + last_reason);
+        }
+
+        const auto summary = std::string{"published "} + std::to_string(result.curves.size()) +
+                             " of " + std::to_string(configs.size()) + " curve(s)";
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "publish_system_curves: " << summary;
+        for (const auto& not_published : result.curves_not_published)
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
+                                .message = not_published,
+                                .context = {}});
+        step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                            .message = summary,
+                            .context = {}});
+
+        // A curve that was not published leaves the installation without the
+        // forwards a surface reads, so the step says so in its own status rather
+        // than passing as a clean run. The run still advances.
+        if (result.curves_not_published.empty())
+            wf.complete(ores::utility::codec::json::write(result), step_log);
+        else
+            wf.warn(ores::utility::codec::json::write(result), step_log);
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports
@@ -2794,7 +2970,9 @@ wire_fields(std::type_identity<tenant_provisioning_handler::provision_step_resul
                       field{"trades_planned", &result::trades_planned},
                       field{"trades_written", &result::trades_written},
                       field{"trades_already_present", &result::trades_already_present},
-                      field{"report_schedules", &result::report_schedules}};
+                      field{"report_schedules", &result::report_schedules},
+                      field{"curves", &result::curves},
+                      field{"curves_not_published", &result::curves_not_published}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<

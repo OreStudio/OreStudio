@@ -72,13 +72,14 @@ namespace {
 using ores::inbox::service::approval_lifecycle;
 
 /**
- * @brief The seeded curve publish kind, with its count set to zero for one test.
+ * @brief The seeded curve publish kind, approving every raise for one test.
  *
- * A tenant sets a kind's approval count, so a zero count is a version of the
- * kind's own row and not a new kind: the publish operation names the code
- * =marketdata.curve_publish=, and only that code publishes a curve. The row is
- * put back to the count it was read at when the test ends, even when the test
- * fails, because the suites that read the kind expect the seeded value.
+ * A kind states through its =auto_approval_code= which raises close without a
+ * person, so the test states a version of the kind's own row and not a new kind:
+ * the publish operation names the code =marketdata.curve_publish=, and only that
+ * code publishes a curve. The row is put back as it was read when the test ends,
+ * even when the test fails, because the suites that read the kind expect the
+ * seeded value.
  */
 class zero_approval_kind {
 public:
@@ -90,9 +91,11 @@ public:
             throw std::runtime_error("The curve publish kind is not seeded.");
         was_ = *found;
         auto zeroed = *found;
-        zeroed.approvals_required = 0;
+        // The policy is how a kind says that nobody decides it; a count of zero
+        // would only write a request no person could ever answer.
+        zeroed.auto_approval_code = "every_request";
         zeroed.change_reason_code = "system.test";
-        zeroed.change_commentary = "Zero approvals, for the zero-approval test";
+        zeroed.change_commentary = "Every raise approved, for the zero-approval test";
         ores::inbox::repository::approval_kind_repository repo;
         repo.write(ctx_, zeroed);
     }

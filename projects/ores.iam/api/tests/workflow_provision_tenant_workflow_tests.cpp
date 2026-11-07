@@ -48,6 +48,7 @@ using ores::iam::workflow::provision_party_workflow_type;
 using ores::iam::workflow::provision_step_kinds;
 using ores::iam::workflow::provision_tenant_step;
 using ores::iam::workflow::provision_tenant_step_command;
+using ores::iam::workflow::publish_system_curves_step_kind;
 using ores::iam::workflow::provision_tenant_step_subject;
 using ores::iam::workflow::provision_tenant_workflow_request;
 using ores::iam::workflow::provision_tenant_workflow_type;
@@ -132,13 +133,32 @@ TEST_CASE("the catalogue refuses the steps a run appends and an unknown kind", "
     CHECK_FALSE(is_declared_step_kind("publish_everything"));
 }
 
-TEST_CASE("only the system step is system-scoped", "[workflow]") {
+TEST_CASE("only the system data and the system curves are system-scoped", "[workflow]") {
     for (const auto kind : provision_step_kinds)
-        CHECK(is_system_scoped_step_kind(kind) == (kind == system_provision_step_kind));
+        CHECK(is_system_scoped_step_kind(kind) ==
+              (kind == system_provision_step_kind || kind == publish_system_curves_step_kind));
 
     CHECK(is_system_scoped_step_kind(system_provision_step_kind));
+    CHECK(is_system_scoped_step_kind(publish_system_curves_step_kind));
     CHECK_FALSE(is_system_scoped_step_kind(start_tenant_setup_step_kind));
     CHECK_FALSE(is_system_scoped_step_kind(complete_provisioning_step_kind));
+}
+
+TEST_CASE("the system curves follow the system data, and the hand-over does not wait for them",
+          "[workflow]") {
+    const auto def = definition();
+    const auto steps = def.build_steps(request_json({declared("system_provision"),
+                                                     declared("publish_system_curves"),
+                                                     declared("provision_party")}),
+                                       tenant_id,
+                                       correlation_id);
+
+    REQUIRE(steps.size() == 3);
+    CHECK(steps[0].name == "system_provision");
+    CHECK(steps[1].name == "publish_system_curves");
+    CHECK(steps[1].consumes == std::vector<std::string>{"system_provision"});
+    CHECK(steps[2].name == start_tenant_setup_step_kind);
+    CHECK(steps[2].consumes == std::vector<std::string>{"system_provision"});
 }
 
 TEST_CASE("a step name is made unique within its run", "[workflow]") {

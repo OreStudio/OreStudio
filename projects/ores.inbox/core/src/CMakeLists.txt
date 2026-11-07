@@ -70,6 +70,7 @@ target_link_libraries(${lib_target_name}
         ores.history.core.lib
         ores.diff.lib
         ores.iam.core.lib
+        ores.variability.core.lib
         ores.service.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

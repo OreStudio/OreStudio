@@ -52,6 +52,7 @@ domain::approval_request approval_request_mapper::map(const approval_request_ent
     r.id = v.id;
     r.kind_code = v.kind_code;
     r.state_code = v.state_code;
+    r.auto_approval_code = v.auto_approval_code;
     r.requested_by = v.requested_by;
     r.requested_at = v.requested_at;
     r.reason = v.reason;
@@ -75,6 +76,7 @@ approval_request_entity approval_request_mapper::map(const domain::approval_requ
     r.version = v.version;
     r.kind_code = v.kind_code;
     r.state_code = v.state_code;
+    r.auto_approval_code = v.auto_approval_code;
     r.requested_by = v.requested_by;
     r.requested_at = v.requested_at;
     r.reason = v.reason;

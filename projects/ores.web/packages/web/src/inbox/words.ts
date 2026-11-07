@@ -56,6 +56,20 @@ export function stateTone(stateCode: string): Tone {
     return STATE_TONES[stateCode] ?? 'muted';
 }
 
+/**
+ * Why a request closed without a person, or empty when a person decided it.
+ *
+ * The server states the rule that closed the request as a code, and the screen
+ * says it in the person's words: an auto-approved act must never read as one
+ * somebody signed, so the chip and the sentence are drawn together.
+ */
+export function autoApprovalRule(t: (key: string) => string, code: string): string {
+    if (code === '') return '';
+    const key = `inbox.autoApproval.${code}`;
+    const label = t(key);
+    return label === key ? code : label;
+}
+
 /** A request kind's name in the person's language, or its code when it has none. */
 export function kindLabel(t: (key: string) => string, kindCode: string): string {
     const key = `inbox.kind.${kindCode}`;

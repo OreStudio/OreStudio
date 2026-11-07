@@ -42,6 +42,7 @@ create table if not exists "ores_inbox_approval_requests_tbl" (
     "version" integer not null,
     "kind_code" text not null,
     "state_code" text not null,
+    "auto_approval_code" text not null default '',
     "requested_by" uuid not null,
     "requested_at" timestamp with time zone not null,
     "reason" text not null,

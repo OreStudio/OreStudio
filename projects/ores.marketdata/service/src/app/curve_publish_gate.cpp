@@ -181,6 +181,9 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     const auto me = lifecycle.actor_account_id();
     if (!me)
         throw std::runtime_error("The signed-in account was not found.");
+    // Whether this raise closes without a person is the kind's policy and the
+    // deployment's, and the inbox reads both. A gate that decided it here would
+    // put a control where nobody looking at the approvals could see it.
     const auto raised = lifecycle.raise(*kind, reason, *me);
 
     domain::curve_publish record;

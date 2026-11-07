@@ -169,6 +169,7 @@ package "inbox" #FCE4EC {
           apply_workflow_type : text
           apply_window_hours : integer
         * approvals_required : integer
+        * auto_approval_code : text
         * display_order : integer
         * modified_by : text
         * performed_by : text
@@ -333,6 +334,7 @@ package "inbox" #FCE4EC {
         * version : integer
         * kind_code : text <<FK>>
         * state_code : text <<FK>>
+        * auto_approval_code : text
         * requested_by : uuid <<FK>>
         * requested_at : timestamptz
         * reason : text

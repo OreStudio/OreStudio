@@ -66,17 +66,17 @@ using namespace ores::synthetic::service;
 using ores::ore::xml::document;
 using ores::platform::filesystem::file;
 
-const boost::uuids::uuid config_id =
+const boost::uuids::uuid export_config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
-const boost::uuids::uuid party_id =
+const boost::uuids::uuid export_party_id =
     boost::uuids::string_generator()("11111111-1111-1111-1111-111111111111");
 const boost::uuids::uuid book =
     boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
-const boost::uuids::uuid bank =
+const boost::uuids::uuid export_bank =
     boost::uuids::string_generator()("44444444-4444-4444-4444-444444444444");
-const boost::uuids::uuid second_bank =
+const boost::uuids::uuid export_second_bank =
     boost::uuids::string_generator()("55555555-5555-5555-5555-555555555555");
-const boost::uuids::uuid trader_account =
+const boost::uuids::uuid export_trader_account =
     boost::uuids::string_generator()("66666666-6666-6666-6666-666666666666");
 
 /// How many trades of each type a recorded portfolio holds.
@@ -91,8 +91,8 @@ const std::vector<std::string> asset_classes = {
  */
 domain::trade_generation_scope scope_of(const std::string& asset_class_code) {
     domain::trade_generation_scope scope;
-    scope.config_id = config_id;
-    scope.party_id = party_id;
+    scope.config_id = export_config_id;
+    scope.party_id = export_party_id;
     scope.asset_class_code = asset_class_code;
     scope.min_tenor_code = "1Y";
     scope.max_tenor_code = "10Y";
@@ -100,12 +100,12 @@ domain::trade_generation_scope scope_of(const std::string& asset_class_code) {
     scope.max_notional = 10000000.0;
     scope.as_of_date = std::chrono::year{2026} / 1 / 2;
     scope.seed = 7;
-    scope.trades_per_book = trades_per_type *
-        static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
+    scope.trades_per_book =
+        trades_per_type * static_cast<std::uint32_t>(planner_for(asset_class_code).code_count());
     scope.book_ids = {book};
-    scope.counterparty_ids = {bank, second_bank};
-    scope.issuer_ids = {bank, second_bank};
-    scope.traders = {domain::trade_population_trader{trader_account, "trader.one"}};
+    scope.counterparty_ids = {export_bank, export_second_bank};
+    scope.issuer_ids = {export_bank, export_second_bank};
+    scope.traders = {domain::trade_population_trader{export_trader_account, "trader.one"}};
     scope.currency_code = "EUR";
     scope.equity_underlyings = {
         domain::equity_underlying_reference{.code = ".SPX", .kind = "index", .currency = "USD"},
@@ -196,8 +196,8 @@ const std::map<std::string, recorded_type>& generated() {
                  * type does not route, or whose children have no header, so
                  * such a trade is never stored and never exported.
                  */
-                auto refusals = ores::trading::service::misrouted_arrays(
-                    request.instruments, slot.trade_type_code);
+                auto refusals = ores::trading::service::misrouted_arrays(request.instruments,
+                                                                         slot.trade_type_code);
                 for (auto& orphan : ores::trading::service::orphan_arrays(request.instruments))
                     refusals.push_back(std::move(orphan));
                 if (!refusals.empty()) {

@@ -77,7 +77,7 @@ struct swap_leg_write {
     std::optional<std::string> equity_name;
     std::optional<std::string> equity_underlying_type;
     std::optional<std::string> equity_underlying_identifier_type;
-    std::optional<ores::utility::decimal::decimal> equity_quantity;
+    std::optional<double> equity_quantity;
     std::optional<ores::utility::decimal::decimal> equity_initial_price;
     std::optional<std::string> equity_initial_price_currency;
     std::optional<ores::utility::decimal::decimal> equity_dividend_factor;
@@ -108,7 +108,7 @@ struct swap_leg_write {
     std::optional<int> rate_cutoff;
     std::optional<bool> local_cap_floor;
     std::optional<std::string> observation_lag;
-    std::optional<ores::utility::decimal::decimal> cpi_base;
+    std::optional<double> cpi_base;
     std::optional<std::chrono::year_month_day> cpi_start_date;
     std::optional<std::string> cpi_interpolation;
     std::optional<bool> cpi_interpolated;

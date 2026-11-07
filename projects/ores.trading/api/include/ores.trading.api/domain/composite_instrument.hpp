@@ -85,7 +85,7 @@ struct composite_instrument final {
     /**
      * @brief The quantity of a portfolio basket's index, as IndexQuantity states it.
      */
-    std::optional<ores::utility::decimal::decimal> index_quantity;
+    std::optional<double> index_quantity;
 
     /**
      * @brief Whether the trade pays the underlying's return, as ReturnData/Payer states it.

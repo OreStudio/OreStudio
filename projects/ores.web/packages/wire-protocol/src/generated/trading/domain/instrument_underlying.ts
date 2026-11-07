@@ -42,7 +42,7 @@ export interface InstrumentUnderlying {
     identifier_type: string | null;
     currency: string | null;
     exchange: string | null;
-    weight: string | null;
+    weight: number | null;
     price_type: string | null;
     future_month_offset: number | null;
     delivery_roll_days: number | null;

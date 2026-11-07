@@ -230,7 +230,7 @@ auto write_composite_trade(xml::record_writer& trade, const composite_instrument
     if (!r.description.empty())
         data.set_text("BasketName", r.description);
     if (r.index_quantity)
-        data.set_decimal("IndexQuantity", *r.index_quantity);
+        set_decimal_from_double(data, "IndexQuantity", *r.index_quantity);
 }
 
 }
@@ -251,7 +251,7 @@ auto read_composite_instrument(xml::record_reader trade, std::string_view trade_
             row.notional_calculation = data->spelling("NotionalCalculation");
             row.notional_override = data->decimal("NotionalOverride");
             row.portfolio_basket = data->text("PortfolioBasket");
-            row.index_quantity = data->decimal("IndexQuantity");
+            row.index_quantity = decimal_as_double(*data, "IndexQuantity");
         }
     } else {
         const auto element =

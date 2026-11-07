@@ -51,9 +51,6 @@ generate_synthetic_instrument_underlying(utility::generation::generation_context
     r.trade_activity_id = ctx.generate_uuid();
     r.underlying_type = std::string("Equity");
     r.name = std::string("RIC:.SPX");
-    r.weight = ores::utility::decimal::decimal::from_string(
-                   std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
-                   .value();
     r.bid_ask_adjustment = ores::utility::decimal::decimal::from_string(
                                std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                                .value();

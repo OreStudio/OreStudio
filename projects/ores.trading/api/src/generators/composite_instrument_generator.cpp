@@ -53,9 +53,6 @@ generate_synthetic_composite_instrument(utility::generation::generation_context&
     r.notional_override = ores::utility::decimal::decimal::from_string(
                               std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                               .value();
-    r.index_quantity = ores::utility::decimal::decimal::from_string(
-                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
-                           .value();
     r.return_initial_price = ores::utility::decimal::decimal::from_string(
                                  std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                                  .value();

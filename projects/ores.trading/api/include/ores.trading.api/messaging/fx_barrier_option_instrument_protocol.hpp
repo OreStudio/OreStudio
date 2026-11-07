@@ -66,7 +66,7 @@ struct fx_barrier_option_instrument_write {
     std::optional<std::chrono::year_month_day> barrier_start_date;
     std::optional<std::string> barrier_calendar;
     std::optional<std::string> barrier_fixing_index;
-    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<double> quantity;
     std::optional<ores::utility::decimal::decimal> strike;
     std::optional<ores::utility::decimal::decimal> amount;
     std::optional<std::chrono::year_month_day> settlement_date;

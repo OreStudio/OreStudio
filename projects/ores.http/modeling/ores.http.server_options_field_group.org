@@ -82,6 +82,18 @@ Carries this deployment's environment, so two deployments on one host cannot
 overwrite each other's session. Over TLS the server adds the =__Host-= prefix a
 Secure cookie requires.
 
+** web_session_path
+:PROPERTIES:
+:cpp_type: std::string
+:default_value: "/"
+:END:
+
+The path the session cookie is scoped to.
+
+A screen served under a prefix keeps its own session, so the cookie's path is
+that prefix. Without it two sessions of one deployment, one from this server and
+one from the BFF, would be stored under the same name and overwrite each other.
+
 ** web_dir
 :PROPERTIES:
 :cpp_type: std::string

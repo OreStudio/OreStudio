@@ -47,7 +47,7 @@ export interface EquityDigitalOptionInstrument {
     barrier_start_date: string | null;
     barrier_calendar: string | null;
     barrier_fixing_index: string | null;
-    quantity: string | null;
+    quantity: number | null;
     description: string;
     audit: AuditRecord;
 }

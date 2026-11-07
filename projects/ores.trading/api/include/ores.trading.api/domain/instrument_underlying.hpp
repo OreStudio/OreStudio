@@ -112,7 +112,7 @@ struct instrument_underlying final {
     /**
      * @brief The underlying's weight in its list, as Weight states it.
      */
-    std::optional<ores::utility::decimal::decimal> weight;
+    std::optional<double> weight;
 
     /**
      * @brief The commodity price the underlying is observed at, as PriceType states it: Spot or

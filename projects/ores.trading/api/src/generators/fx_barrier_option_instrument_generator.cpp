@@ -60,9 +60,6 @@ generate_synthetic_fx_barrier_option_instrument(utility::generation::generation_
     r.upper_barrier = ores::utility::decimal::decimal::from_string("1.2").value();
     r.barrier_start_date =
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
-    r.quantity = ores::utility::decimal::decimal::from_string(
-                     std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
-                     .value();
     r.strike = ores::utility::decimal::decimal::from_string(
                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                    .value();

@@ -37,6 +37,7 @@ import type { BondRepo } from './bond_repo.js';
 import type { BondScheduleData } from './bond_schedule_data.js';
 import type { BondStrikeData } from './bond_strike_data.js';
 import type { BondTrs } from './bond_trs.js';
+import type { InstrumentUnderlying } from './instrument_underlying.js';
 
 /**
  * The BondInstrumentData wire shape.
@@ -72,4 +73,5 @@ export interface BondInstrumentData {
     trs_funding_leg: BondLegData;
     repo_leg: BondLegData;
     ascot_swap_leg: BondLegData;
+    instrument_underlyings: InstrumentUnderlying[];
 }

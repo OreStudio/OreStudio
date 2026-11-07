@@ -209,9 +209,9 @@ struct bond_instrument_data {
 
     /**
      * @brief A bond position's basket, one row per Underlying bond.
-     *
-     * A basket position names no single issue, so its bonds are the shared
-     * underlying rows, as an equity position's are.
+
+A basket position names no single issue, so its bonds are the shared underlying
+rows, as an equity position's are.
      */
     std::vector<instrument_underlying> instrument_underlyings;
 

@@ -58,7 +58,7 @@ struct swap_leg_indexing_entity {
     int version = 0;
     boost::uuids::uuid trade_activity_id;
     std::string index_name;
-    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<double> quantity;
     std::optional<ores::utility::decimal::decimal> initial_fixing;
     std::optional<int> fixing_days;
     std::optional<std::string> fixing_calendar;

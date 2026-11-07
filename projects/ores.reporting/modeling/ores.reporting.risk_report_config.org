@@ -13,7 +13,7 @@
 #+entity_plural: risk_report_configs
 #+entity_title: Risk Report Config
 #+created: 2026-09-17
-#+updated: 2026-09-17
+#+updated: 2026-11-07
 
 The ORE-level run settings that risk report definitions of a party share: the base currency, the market data of the run and the folders and log file of the package. The engine settings are not here. They are a named configuration of their own, =engine_settings=, that the definition binds in its own slot. A report definition binds this configuration through report_configurations, in the slot of configuration type risk_report_config, as it binds its pricing engines. The analytics it runs, and their parameters, are rows of configuration_analytic and configuration_analytic_parameter. Portfolio and book scope live in separate temporal junction tables keyed by this row.
 
@@ -416,8 +416,8 @@ find_by_definition_id(context ctx, const std::string& definition_id);
 
 Resolves the full set of book UUIDs in scope by calling
 =ores_reporting_resolve_book_ids_for_config_fn=, which checks explicit
-book scope, then portfolio scope with subtree expansion, then falls back
-to all tenant books. The fallback chain lives in SQL, so it cannot be
+book scope and portfolio scope with subtree expansion. Both sets being empty
+means no books to read, not all tenant books. Resolution lives in SQL, so it cannot be
 templated. The definition the run belongs to is passed too: when it is
 typed, only the books of its regulatory book type are returned.
 =regulatory_book_type_of= reads that type, so a run can say why it has no
@@ -447,7 +447,8 @@ std::optional<std::string> regulatory_book_type_of(context ctx,
 :END:
 
 Returns the active book UUIDs explicitly scoped to a configuration. An
-empty vector means "all books within the selected portfolios".
+empty vector means no explicit book selections; portfolio scope may still
+provide books. Both scope sets being empty leaves the report with no trades.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<std::string> get_book_scope(context ctx, const std::string& config_id);
@@ -459,10 +460,14 @@ std::vector<std::string> get_book_scope(context ctx, const std::string& config_i
 :END:
 
 Returns the active portfolio UUIDs explicitly scoped to a configuration.
-An empty vector means "all portfolios visible to the tenant".
+An empty vector means no explicit portfolio selections, not all tenant
+portfolios. The scope-copy operation refuses a source with both scope sets empty.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<std::string> get_portfolio_scope(context ctx, const std::string& config_id);
+
+/** Atomically copies scope, refusing an empty source or nonempty/shared target. */
+void copy_scope(context ctx, const std::string& source_id, const std::string& target_id);
 #+end_src
 
 *** Additional out-of-class implementations
@@ -662,6 +667,68 @@ risk_report_config_repository::get_book_scope(context ctx, const std::string& co
 
     BOOST_LOG_SEV(lg(), debug) << "Found " << book_ids.size() << " book(s) in scope";
     return book_ids;
+}
+
+void risk_report_config_repository::copy_scope(context ctx,
+                                               const std::string& source_id,
+                                               const std::string& target_id) {
+    if (source_id == target_id || !ctx.party_id())
+        throw std::invalid_argument("Scope copy needs distinct configurations and a selected party.");
+    // One statement makes both association sets land together. Lock the target;
+    // the active-association constraints also reject concurrent duplicate copies.
+    // Ownership, sharing and emptiness are checked again at the write boundary.
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        R"sql(
+with target as materialized (
+    select id, configuration_id from ores_reporting_risk_report_configs_tbl
+    where tenant_id = $1::uuid and id = $3::uuid and party_id = $4::uuid
+      and valid_to = ores_utility_infinity_timestamp_fn() for update
+), eligible as materialized (
+    select t.id from target t
+    where exists (select 1 from ores_reporting_risk_report_configs_tbl s
+                  where s.tenant_id = $1::uuid and s.id = $2::uuid
+                    and s.party_id = $4::uuid
+                    and s.valid_to = ores_utility_infinity_timestamp_fn())
+      and (select count(*) from ores_reporting_report_configurations_tbl b
+           where b.tenant_id = $1::uuid and b.configuration_id = t.configuration_id
+             and b.valid_to = ores_utility_infinity_timestamp_fn()) = 1
+      and not exists (select 1 from ores_reporting_risk_report_config_books_tbl b
+                      where b.tenant_id = $1::uuid and b.risk_report_config_id = t.id
+                        and b.valid_to = ores_utility_infinity_timestamp_fn())
+      and not exists (select 1 from ores_reporting_risk_report_config_portfolios_tbl p
+                      where p.tenant_id = $1::uuid and p.risk_report_config_id = t.id
+                        and p.valid_to = ores_utility_infinity_timestamp_fn())
+      and (exists (select 1 from ores_reporting_risk_report_config_books_tbl b
+                   where b.tenant_id = $1::uuid and b.risk_report_config_id = $2::uuid
+                     and b.valid_to = ores_utility_infinity_timestamp_fn())
+           or exists (select 1 from ores_reporting_risk_report_config_portfolios_tbl p
+                      where p.tenant_id = $1::uuid and p.risk_report_config_id = $2::uuid
+                        and p.valid_to = ores_utility_infinity_timestamp_fn()))
+), books as (
+    insert into ores_reporting_risk_report_config_books_tbl
+        (tenant_id, risk_report_config_id, book_id, valid_from, valid_to)
+    select $1::uuid, e.id, b.book_id, current_timestamp, ores_utility_infinity_timestamp_fn()
+    from eligible e cross join ores_reporting_risk_report_config_books_tbl b
+    where b.tenant_id = $1::uuid and b.risk_report_config_id = $2::uuid
+      and b.valid_to = ores_utility_infinity_timestamp_fn() returning book_id
+), portfolios as (
+    insert into ores_reporting_risk_report_config_portfolios_tbl
+        (tenant_id, risk_report_config_id, portfolio_id, valid_from, valid_to)
+    select $1::uuid, e.id, p.portfolio_id, current_timestamp, ores_utility_infinity_timestamp_fn()
+    from eligible e cross join ores_reporting_risk_report_config_portfolios_tbl p
+    where p.tenant_id = $1::uuid and p.risk_report_config_id = $2::uuid
+      and p.valid_to = ores_utility_infinity_timestamp_fn() returning portfolio_id
+)
+select (select count(*) from eligible)::text,
+       (select count(*) from books)::text, (select count(*) from portfolios)::text
+)sql",
+        {ctx.tenant_id().to_string(), source_id, target_id,
+         boost::uuids::to_string(*ctx.party_id())},
+        lg(), "Copying an owned run scope into an empty configuration");
+    if (rows.size() != 1 || rows.front().size() != 3 || rows.front()[0] != "1")
+        throw std::invalid_argument(
+            "Scope not copied: source must be nonempty and owned; target must be owned, empty and unshared.");
 }
 #+end_src
 

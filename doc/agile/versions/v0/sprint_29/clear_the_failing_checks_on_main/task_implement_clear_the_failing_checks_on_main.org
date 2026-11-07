@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clear_the_failing_checks_on_main:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-clear-the-failing-checks-on-main
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
 #+updated: 2026-11-07
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:694694B1-82AE-464F-ABB0-B0786BFEAE0A][Hotfix: clear the six failing checks on main]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -132,11 +132,18 @@ no file left to render, =unity-collisions= with no name held twice, =er-diagram=
 and =ticks-smoke=. The build succeeds and every suite passes except one, and that
 one is not this work's: =ores.marketdata.service.tests= fails two of its
 ingest-loop cases only when three other heavy suites run beside it under =-j 4=.
-It passes when the suite is run alone, and it failed the same way on main
-before this branch started. Its two cases wait on a wall-clock deadline for a
+It passes when the suite is run alone, it failed the same way on main before
+this branch started, and it still fails that way after the rebase onto
+=4323f8e73e=. Its two cases wait on a wall-clock deadline for a
 loop that is competing for the machine, so the fix is in that suite's timing
 design and has its own capture.
 
 The capture the http work needed is filed: the test timeout listener belongs in
 the test-main template behind a per-component opt-in, not in one generated file.
+
+The rebase onto =4323f8e73e= moved the ORE projections into the marketdata api
+and touched the projection header the boundary conversions left, which resolved
+by keeping main's file and deleting the duplicate definitions. On that base the
+whole tree builds, =ticks-smoke= passes, the nine suites the change touches pass
+and the nine checks the fix turns on pass.
 

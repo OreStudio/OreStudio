@@ -245,8 +245,10 @@ For every stage: implement typed tools and deterministic fixture tests, exercise
 an independent MCP client, evaluate real LFM3 tool selection, and prove one
 real backend business scenario. Record limitations and reconcile numbers with
 backend evidence. Add only necessary subjects to the adapter allowlist. Keep
-the growing model-visible catalogue relevant to the request so the 4096-token
-test context is not overwhelmed; do not silently truncate tool contracts.
+the growing model-visible catalogue relevant to the request to reduce irrelevant
+tool choices; do not silently truncate tool contracts. The initial 4096-token
+test context was expanded to the model's full 262144 tokens on 2026-11-07;
+the agent's separate 512-token generated-output limit remains in place.
 
 Before enabling business commands or remote hosting, finish the applicable
 security gate: real low-privilege/cross-party tests, restricted broker subject

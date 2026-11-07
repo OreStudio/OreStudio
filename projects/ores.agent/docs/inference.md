@@ -32,10 +32,28 @@ database, broker configuration or main application deployment is touched.
 
 Set the agent's inference `apiKeyFile` to `<inference-root>/config/api-key.txt`.
 It reads the key server-side; never put it in browser configuration. Inference
-binds to 127.0.0.1:20010 with one slot, 4096 context tokens, four CPU threads,
+binds to 127.0.0.1:20010 with one slot, 262144 context tokens, four CPU threads,
 all model layers requested on CUDA, the GGUF's Jinja chat template, temperature
 0.1, top_k 50 and repeat penalty 1.1. Logs are private operational artifacts;
 verbose runtime logs may include prompt content. Use verbosity 3 after diagnosis.
+
+The initial smoke deployment used an explicit 4096-token context, which limited
+the model despite its advertised and GGUF-declared 262144-token capacity. The
+launcher now requests its full context. Context includes input and output;
+the agent separately sends `max_tokens: 512` to limit generated output per call.
+Increasing context does not remove that output budget or the agent's bounded
+tool-result and HTTP payload sizes. The configured context is capacity, not a
+requirement to fill each request; GPU memory and long-prompt latency must still
+be checked on each deployment host.
+
+Windows revalidation, 2026-11-07: the running b12172 server reports
+`n_ctx = 262144`, `n_ctx_seq = 262144` and all 25/25 layers offloaded.
+CUDA KV buffers are 3072.00 + 7.50 MiB; `nvidia-smi` reported 4548 MiB
+total device usage with 3401 MiB free. Plain generation, a structured tool
+call and fixture replay passed in 3.9 seconds combined. A separate request
+with 7225 prompt tokens completed normally in 2.9 seconds (365 output tokens),
+proving acceptance beyond the old limit. This verifies configuration and a
+longer request, not retrieval quality or latency at a fully occupied 256K window.
 
 Run `node scripts/smoke-inference.mjs <agent-config.json>` to check plain
 generation, a structured tool call and replay. Its replay data is explicitly

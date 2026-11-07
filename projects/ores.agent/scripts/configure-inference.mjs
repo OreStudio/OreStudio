@@ -18,7 +18,7 @@ await mkdir(dirname(key), { recursive: true });
 try { await writeFile(key, randomBytes(32).toString('base64url') + '\n', { flag: 'wx', mode: 0o600 }); } catch (e) { if (e.code !== 'EEXIST') throw e; }
 const model = join(root, 'models', lock.model.file); await access(model);
 const spec = { component: 'llama.cpp', command: exe, cwd: dirname(exe), stateDir: join(root, 'run'), healthUrl: 'http://127.0.0.1:20010/health',
-    args: ['--model', model, '--alias', 'lfm3-1.7b', '--host', '127.0.0.1', '--port', '20010', '--ctx-size', '4096', '--parallel', '1',
+    args: ['--model', model, '--alias', 'lfm3-1.7b', '--host', '127.0.0.1', '--port', '20010', '--ctx-size', '262144', '--parallel', '1',
         '--n-gpu-layers', '99', '--device', 'CUDA0', '--jinja', '--temp', '0.1', '--top-k', '50', '--repeat-penalty', '1.1', '--threads', '4', '--threads-batch', '4',
         '--no-ui', '--api-key-file', key, '--cors-origins', 'http://127.0.0.1:20100', '--log-colors', 'off', '--log-verbosity', '4'],
     env: process.platform === 'linux' ? { LD_LIBRARY_PATH: dirs.join(delimiter) } : {} };

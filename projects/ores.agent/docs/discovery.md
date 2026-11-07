@@ -65,9 +65,11 @@ not inferred. Missing instruments and unsupported products have explicit status.
 No NPV, valuation, draft creation or booking is performed by these tools.
 
 Only tools relevant to the question domain are sent to the small local model:
-business discovery or market-data tools, keeping the 4096-token context usable.
+business discovery or market-data tools, reducing irrelevant tool choices.
 External MCP still advertises the full catalogue. This selection is a context
-budget mechanism; authorization remains in the shared executor/backend.
+budget mechanism; authorization remains in the shared executor/backend. The
+initial 4096-token inference window was expanded to 262144 on 2026-11-07;
+see [inference deployment](inference.md). Domain selection remains useful.
 
 ## Validation
 

@@ -25,7 +25,9 @@
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
+#include <cstdint>
 #include <expected>
+#include <optional>
 #include <string>
 #include <variant>
 #include <vector>
@@ -46,11 +48,56 @@ struct convention_set final {
     std::vector<refdata::domain::ois_convention> ois_swaps;
 };
 
-/// Why no convention was found: the identifier and the reason.
+/// Why the lookup could not answer, kept apart because each is a different
+/// fault: the data is missing, or the question is not this lookup's.
+enum class lookup_refusal_kind : std::uint8_t {
+    /// The address names a datum, not an index.
+    addresses_no_index,
+    /// The index belongs to a family no convention here defines: this lookup
+    /// answers the reducing indexes, Ibor and overnight.
+    family_the_lookup_does_not_answer,
+    /// No convention states it. Conventions whose own address the grammar
+    /// refuses are named in the reason, so a bad address is not read as absent.
+    no_match,
+    /// More than one convention states it, so the lookup will not choose.
+    more_than_one_match
+};
+
+/// Why no convention was found: the identifier asked about, and the reason.
 struct lookup_error final {
+    lookup_refusal_kind kind;
     std::string reference;
     std::string reason;
 };
+
+namespace detail {
+
+/**
+ * @brief One convention type's addresses.
+ *
+ * A stored address the grammar reads is held as the reference it names, so the
+ * lookup compares values. One the grammar refuses is held aside with its id and
+ * the codec's reason, so a refusal can point at the bad row instead of reporting
+ * the address absent.
+ */
+template <typename Convention>
+struct answerable final {
+    struct stated final {
+        datum::market_reference reference;
+        Convention convention;
+    };
+
+    struct refused final {
+        std::string id;
+        std::string address;
+        std::string reason;
+    };
+
+    std::vector<stated> readable;
+    std::vector<refused> refused_addresses;
+};
+
+}
 
 /// The convention that defines an index: an Ibor index or an overnight one.
 using index_definition = std::variant<refdata::domain::ibor_index_convention,
@@ -76,8 +123,17 @@ using index_definition = std::variant<refdata::domain::ibor_index_convention,
  *   convention of =EUR-EURIBOR-6M= names the six-month tenor. It matches the
  *   identifier exactly.
  *
+ * A stored address is read into a market reference once, when the lookup is
+ * built, and the lookup then matches references by what they name rather than
+ * by their text. oresmd gives one datum one spelling and the grammar refuses
+ * every other, so a stored address in another spelling is not a reference at
+ * all: it is kept aside and named in the refusal of any question it could have
+ * answered. That is the difference the parse buys: a bad address is reported
+ * as bad rather than as missing.
+ *
  * Each answer is the one convention that matches, or an error naming the
- * identifier and why: none matches, or more than one does.
+ * identifier and why: none matches, more than one does, or the index is of a
+ * family this lookup does not answer for.
  */
 class ORES_MARKETDATA_API_EXPORT convention_lookup final {
 public:
@@ -96,7 +152,10 @@ public:
     ois_convention_of(const datum::market_reference& index) const;
 
 private:
-    convention_set conventions_;
+    detail::answerable<refdata::domain::ibor_index_convention> ibor_indices_;
+    detail::answerable<refdata::domain::overnight_index_convention> overnight_indices_;
+    detail::answerable<refdata::domain::swap_convention> swaps_;
+    detail::answerable<refdata::domain::ois_convention> ois_swaps_;
 };
 
 }

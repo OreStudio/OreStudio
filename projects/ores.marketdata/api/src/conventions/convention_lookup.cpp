@@ -25,101 +25,175 @@ namespace ores::marketdata::conventions {
 
 namespace {
 
+using datum::market_index;
 using datum::market_reference;
 
-std::unexpected<lookup_error> refuse(const market_reference& reference, std::string reason) {
-    return std::unexpected(lookup_error{reference.uri(), std::move(reason)});
+std::unexpected<lookup_error>
+refuse(lookup_refusal_kind kind, const market_reference& asked, std::string reason) {
+    return std::unexpected(lookup_error{kind, asked.uri(), std::move(reason)});
+}
+
+/// The refusals a lookup keeps aside, as the tail of a no-match reason.
+template <typename Convention>
+std::string refused_notes(const detail::answerable<Convention>& candidates, std::string_view what) {
+    std::string notes;
+    for (const auto& refused : candidates.refused_addresses)
+        notes += std::format("; the {} '{}' states '{}', which the grammar refuses: {}",
+                             what,
+                             refused.id,
+                             refused.address,
+                             refused.reason);
+    return notes;
+}
+
+template <typename Convention>
+detail::answerable<Convention> answerable_of(std::vector<Convention> conventions) {
+    detail::answerable<Convention> answerable;
+    for (auto& convention : conventions) {
+        if (!convention.oresmd_uri)
+            continue;
+        auto reference = market_reference::parse(*convention.oresmd_uri);
+        if (!reference) {
+            answerable.refused_addresses.push_back(typename detail::answerable<Convention>::refused{
+                convention.id, *convention.oresmd_uri, std::move(reference.error())});
+            continue;
+        }
+        answerable.readable.push_back(typename detail::answerable<Convention>::stated{
+            std::move(*reference), std::move(convention)});
+    }
+    return answerable;
 }
 
 /*
  * The address of the index's family: the index with its tenor dropped. An
  * index that states no tenor is its own family.
  */
-std::optional<std::string> family_address_of(const market_reference& reference) {
-    const auto* index = reference.index();
-    if (index == nullptr)
-        return std::nullopt;
-    std::vector<datum::market_index::field_text> fields;
-    for (const auto& field : index->fields())
+std::optional<market_index> family_address_of(const market_index& index) {
+    std::vector<market_index::field_text> fields;
+    for (const auto& field : index.fields())
         if (field.name != "tenor")
             fields.push_back(field);
-    auto family = datum::market_index::make(index->family(), index->subject(), std::move(fields));
+    auto family = market_index::make(index.family(), index.subject(), std::move(fields));
     if (!family)
         return std::nullopt;
-    auto reference_of_family = market_reference::of(std::move(*family));
-    if (!reference_of_family)
-        return std::nullopt;
-    return reference_of_family->uri();
+    return std::move(*family);
 }
 
 /*
- * The one convention of @p conventions whose address is @p address. Two that
- * state the same address are a conflict the caller must see, not a choice the
- * lookup makes.
+ * The one convention of @p candidates that names @p wanted. Two that name it
+ * are a conflict the caller must see, not a choice the lookup makes.
  */
 template <typename Convention>
-std::expected<Convention, lookup_error> the_one_at(const std::vector<Convention>& conventions,
-                                                   const std::string& address,
-                                                   const market_reference& reference,
+std::expected<Convention, lookup_error> the_one_at(const detail::answerable<Convention>& candidates,
+                                                   const market_index& wanted,
+                                                   const market_reference& asked,
                                                    std::string_view what) {
-    const Convention* found = nullptr;
-    for (const auto& convention : conventions) {
-        if (!convention.oresmd_uri || *convention.oresmd_uri != address)
+    const typename detail::answerable<Convention>::stated* found = nullptr;
+    for (const auto& candidate : candidates.readable) {
+        const auto* named = candidate.reference.index();
+        if (named == nullptr || !(*named == wanted))
             continue;
         if (found != nullptr)
-            return refuse(reference,
-                          std::format("more than one {} states {}: {} and {}",
+            return refuse(lookup_refusal_kind::more_than_one_match,
+                          asked,
+                          std::format("more than one {} names it: {} and {}",
                                       what,
-                                      address,
-                                      found->id,
-                                      convention.id));
-        found = &convention;
+                                      found->convention.id,
+                                      candidate.convention.id));
+        found = &candidate;
     }
     if (found == nullptr)
-        return refuse(reference, std::format("no {} states {}", what, address));
-    return *found;
+        return refuse(lookup_refusal_kind::no_match,
+                      asked,
+                      std::format("no {} names it{}", what, refused_notes(candidates, what)));
+    return found->convention;
 }
 
 }
 
 convention_lookup::convention_lookup(convention_set conventions)
-    : conventions_(std::move(conventions)) {}
+    : ibor_indices_(answerable_of(std::move(conventions.ibor_indices)))
+    , overnight_indices_(answerable_of(std::move(conventions.overnight_indices)))
+    , swaps_(answerable_of(std::move(conventions.swaps)))
+    , ois_swaps_(answerable_of(std::move(conventions.ois_swaps))) {}
 
 std::expected<index_definition, lookup_error>
 convention_lookup::index_definition_of(const market_reference& index) const {
-    const auto family = family_address_of(index);
-    if (!family)
-        return refuse(index, "it addresses no index");
+    const auto* named = index.index();
+    if (named == nullptr)
+        return refuse(lookup_refusal_kind::addresses_no_index,
+                      index,
+                      "the address names a datum, not an index");
 
-    auto ibor = the_one_at(conventions_.ibor_indices, *family, index, "Ibor index convention");
-    auto overnight =
-        the_one_at(conventions_.overnight_indices, *family, index, "overnight index convention");
+    /*
+     * Only the reducing indexes have a convention that defines them: an Ibor
+     * index states its name and a tenor, and the convention states the name.
+     * A CMS or a bond-yield index has no such convention, and its tenor cannot
+     * be dropped, so it is refused as a question this lookup does not answer
+     * rather than reported as a missing convention.
+     */
+    if (named->family() != datum::index_family::ibor)
+        return refuse(lookup_refusal_kind::family_the_lookup_does_not_answer,
+                      index,
+                      std::format("a {} index is not defined by an Ibor or overnight index "
+                                  "convention; this lookup answers the reducing indexes",
+                                  datum::name_of(named->family())));
+
+    const auto family = family_address_of(*named);
+    if (!family)
+        return refuse(lookup_refusal_kind::no_match,
+                      index,
+                      "its family address does not spell, so no convention can state it");
+
+    auto ibor = the_one_at(ibor_indices_, *family, index, "Ibor index convention");
+    auto overnight = the_one_at(overnight_indices_, *family, index, "overnight index convention");
+
+    /*
+     * Two conventions of one type that name the family are a fault the caller
+     * must see, even when the other type answers: taking the answer that
+     * happened to be unambiguous would hide it.
+     */
+    if (!ibor && ibor.error().kind == lookup_refusal_kind::more_than_one_match)
+        return std::unexpected(ibor.error());
+    if (!overnight && overnight.error().kind == lookup_refusal_kind::more_than_one_match)
+        return std::unexpected(overnight.error());
+
     if (ibor && overnight)
-        return refuse(index,
+        return refuse(lookup_refusal_kind::more_than_one_match,
+                      index,
                       std::format("both the Ibor index convention {} and the overnight index "
-                                  "convention {} state {}",
+                                  "convention {} state it",
                                   ibor->id,
-                                  overnight->id,
-                                  *family));
+                                  overnight->id));
     if (ibor)
         return index_definition{std::move(*ibor)};
     if (overnight)
         return index_definition{std::move(*overnight)};
-    return refuse(index, std::format("no Ibor or overnight index convention states {}", *family));
+    return refuse(lookup_refusal_kind::no_match,
+                  index,
+                  std::format("no Ibor or overnight index convention defines it{}",
+                              refused_notes(ibor_indices_, "Ibor index convention") +
+                                  refused_notes(overnight_indices_, "overnight index convention")));
 }
 
 std::expected<refdata::domain::swap_convention, lookup_error>
 convention_lookup::swap_convention_of(const market_reference& index) const {
-    if (index.index() == nullptr)
-        return refuse(index, "it addresses no index");
-    return the_one_at(conventions_.swaps, index.uri(), index, "swap convention");
+    const auto* named = index.index();
+    if (named == nullptr)
+        return refuse(lookup_refusal_kind::addresses_no_index,
+                      index,
+                      "the address names a datum, not an index");
+    return the_one_at(swaps_, *named, index, "swap convention");
 }
 
 std::expected<refdata::domain::ois_convention, lookup_error>
 convention_lookup::ois_convention_of(const market_reference& index) const {
-    if (index.index() == nullptr)
-        return refuse(index, "it addresses no index");
-    return the_one_at(conventions_.ois_swaps, index.uri(), index, "OIS convention");
+    const auto* named = index.index();
+    if (named == nullptr)
+        return refuse(lookup_refusal_kind::addresses_no_index,
+                      index,
+                      "the address names a datum, not an index");
+    return the_one_at(ois_swaps_, *named, index, "OIS convention");
 }
 
 }

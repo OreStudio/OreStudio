@@ -25,15 +25,17 @@
 namespace {
 
 using namespace ores::logging;
-using ores::marketdata::datum::market_reference;
-using ores::marketdata::conventions::convention_set;
 using ores::marketdata::conventions::convention_lookup;
+using ores::marketdata::conventions::convention_set;
+using ores::marketdata::conventions::lookup_refusal_kind;
+using ores::marketdata::datum::market_reference;
 namespace rd = ores::refdata::domain;
 
 constexpr auto euribor_family = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR";
 constexpr auto euribor_six_months = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M";
 constexpr auto euribor_three_months =
     "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M";
+constexpr auto cms_ten_years = "oresmd://ir/EUR?type=fixing&index=swap&tenor=10Y";
 constexpr auto sofr_index = "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR";
 
 market_reference identifier(const char* uri) {
@@ -102,16 +104,16 @@ TEST_CASE("a swap convention matches the index tenor it uses, not another",
 
     const auto three_months = lookup.swap_convention_of(identifier(euribor_three_months));
     REQUIRE(!three_months);
+    CHECK(three_months.error().kind == lookup_refusal_kind::no_match);
     CHECK(three_months.error().reference == euribor_three_months);
-    CHECK(three_months.error().reason ==
-          std::string("no swap convention states ") + euribor_three_months);
+    CHECK(three_months.error().reason == "no swap convention names it");
 
     const auto ois = lookup.ois_convention_of(identifier(sofr_index));
     REQUIRE(ois);
     CHECK(ois->id == "USD-SOFR-OIS");
 }
 
-TEST_CASE("two conventions stating one address are refused, naming both",
+TEST_CASE("two conventions naming one address are refused, naming both",
           "[marketdata][conventions]") {
     auto lg(make_logger(test_suite));
     auto set = conventions();
@@ -122,8 +124,58 @@ TEST_CASE("two conventions stating one address are refused, naming both",
     const auto found = lookup.swap_convention_of(identifier(euribor_six_months));
 
     REQUIRE(!found);
+    CHECK(found.error().kind == lookup_refusal_kind::more_than_one_match);
     CHECK(found.error().reason.find("EUR-EURIBOR-6M-SWAP and EUR-EURIBOR-6M-SWAP-OLD") !=
           std::string::npos);
+}
+
+TEST_CASE("one address in both the Ibor and the overnight conventions is refused",
+          "[marketdata][conventions]") {
+    auto lg(make_logger(test_suite));
+    convention_set set;
+    set.ibor_indices.push_back(
+        convention_at<rd::ibor_index_convention>("USD-SOFR-IBOR", sofr_index));
+    set.overnight_indices.push_back(
+        convention_at<rd::overnight_index_convention>("USD-SOFR-OVERNIGHT", sofr_index));
+    const convention_lookup lookup(std::move(set));
+
+    const auto found = lookup.index_definition_of(identifier(sofr_index));
+
+    REQUIRE(!found);
+    CHECK(found.error().kind == lookup_refusal_kind::more_than_one_match);
+    CHECK(found.error().reason.find("USD-SOFR-IBOR") != std::string::npos);
+    CHECK(found.error().reason.find("USD-SOFR-OVERNIGHT") != std::string::npos);
+}
+
+TEST_CASE("an index family with no defining convention is not this lookup's question",
+          "[marketdata][conventions]") {
+    auto lg(make_logger(test_suite));
+    const convention_lookup lookup(conventions());
+
+    const auto found = lookup.index_definition_of(identifier(cms_ten_years));
+
+    REQUIRE(!found);
+    CHECK(found.error().kind == lookup_refusal_kind::family_the_lookup_does_not_answer);
+    CHECK(found.error().reason.find("swap") != std::string::npos);
+}
+
+TEST_CASE("a convention whose address the grammar refuses is named, not read as absent",
+          "[marketdata][conventions]") {
+    auto lg(make_logger(test_suite));
+    auto set = conventions();
+    set.swaps.push_back(convention_at<rd::swap_convention>(
+        "EUR-EURIBOR-6M-SWAP-REORDERED",
+        "oresmd://ir/EUR?index=ibor&name=EURIBOR&type=fixing&tenor=6M"));
+    const convention_lookup lookup(std::move(set));
+
+    const auto found = lookup.swap_convention_of(identifier(euribor_six_months));
+
+    REQUIRE(found);
+    CHECK(found->id == "EUR-EURIBOR-6M-SWAP");
+    const auto missing = lookup.swap_convention_of(identifier(euribor_three_months));
+    REQUIRE(!missing);
+    CHECK(missing.error().reason.find("EUR-EURIBOR-6M-SWAP-REORDERED") != std::string::npos);
+    CHECK(missing.error().reason.find("the grammar refuses") != std::string::npos);
 }
 
 TEST_CASE("a reference to a datum has no index convention", "[marketdata][conventions]") {
@@ -134,7 +186,9 @@ TEST_CASE("a reference to a datum has no index convention", "[marketdata][conven
 
     CHECK(!lookup.index_definition_of(quote));
     CHECK(!lookup.swap_convention_of(quote));
-    CHECK(lookup.swap_convention_of(quote).error().reason == "it addresses no index");
+    CHECK(lookup.swap_convention_of(quote).error().kind == lookup_refusal_kind::addresses_no_index);
+    CHECK(lookup.swap_convention_of(quote).error().reason ==
+          "the address names a datum, not an index");
 }
 
 TEST_CASE("a convention with no address is never found", "[marketdata][conventions]") {

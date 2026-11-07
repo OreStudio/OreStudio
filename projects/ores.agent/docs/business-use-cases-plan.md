@@ -115,15 +115,23 @@ completed successfully. Unsupported Greeks are explicitly unavailable.
 
 ## Stage 3 — book/portfolio summaries and Greeks
 
-**NPV slice delivered in 0.1.4; Greek aggregation remains open.** Historical
+**NPV delivered in 0.1.4; available raw Greek buckets delivered in 0.1.5.** Historical
 booking populations, consistently denominated totals and every contributor
 reconcile for two real books and their parent portfolio. Independent MCP,
 GPU-backed chat, run selection, party isolation and partial-run withholding
 pass. See [scope behavior and limitations](scope-reporting.md) and
 [validation evidence](validation.md). Only existing NATS read subjects were
 added to the agent allowlist; no server handler or broker change was needed.
-Greek requests explicitly return unsupported until units, bump conventions
-and risk-factor dimensions have a verified additive contract.
+Greek reads preserve raw Delta/Gamma, full factors, exact target shifts,
+scenario and currency; only a bucket with one figure per expected trade has
+a full-scope total. Vega selects cash volatility Delta at its stated bump;
+DV01 selects signed ORE rate Delta at an exact 1bp target bump. No per-unit
+derivative, inferred zero, par conversion or cross-factor grand total is
+invented. Every available live Greek figure reconciles to the actual engine
+CSV; the complete FX-book GBP 1Y bucket and sparse parent-portfolio behavior
+pass external MCP and GPU checks. Positive live vega is not demonstrated by
+this non-option dataset. See [Greek contracts](greeks.md) and
+[operator setup and remaining automatic-execution dependencies](greek-validation.md).
 
 Questions: “What is this book's NPV?”; “Show available Greeks for portfolio X”;
 “Which trades contribute most to this result?”
@@ -283,10 +291,10 @@ pass; an unverified or backend-blocked stage is not complete.
 ## Immediate next checkpoint
 
 Stages 0/1 inspection and discovery, Stage 2's clean single-trade NPV
-demonstration, and Stage 3's book/portfolio NPV slice are delivered with the
-limitations above. Finish Stage 3 by verifying available Greek dimensions,
-units and bump conventions against stored report evidence and the NATS
-contract. If those dimensions cannot be established, declare the precise
-backend extension before implementing it; never infer them from measure names.
+demonstration, and Stage 3's NPV/available raw Greek reads are delivered with
+the explicit coverage and data limitations above. Next is Stage 4 contract
+inspection and its command/security gates. Automatic sensitivity execution
+needs simulation/sensitivity document packaging plus correct prepared-input
+lifecycle handling; neither is silently enabled by the read-only agent.
 Report editing, execution and trading writes remain separate approval/security
-stages. No command is enabled by the read-only NPV release.
+stages. No command is enabled by this read-only release.

@@ -1,8 +1,9 @@
 # Stored book and portfolio Greeks
 
 Version 0.1.5 extends `summarize_scope_results` with stored raw sensitivity
-buckets. This implementation checkpoint passes 76 Windows tests. Final deployed
-and Linux evidence will be recorded in [validation](validation.md).
+buckets. All 77 tests pass on Windows and Linux with identical artifacts.
+Deployed MCP, independent CSV/Decimal reconciliation and real GPU chat pass;
+see [validation](validation.md) and the [historical dataset setup](greek-validation.md).
 
 Use `measure: greeks`, `delta`, `gamma`, `vega` or `dv01`, the literal book or
 portfolio name/UUID, and an explicitly chosen run UUID. Historical booking

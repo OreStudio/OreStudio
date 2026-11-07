@@ -1,6 +1,75 @@
 # Implementation validation
 
-## Current release: 0.1.4 book/portfolio NPV
+## Current release: 0.1.5 stored raw Greek buckets
+
+Validated code: `753a54b4550b9b73a602fc19a7b42b9393e773ad`. Installed artifact:
+`0.1.5-cf24e13db443`, identical Windows/Linux manifests. All **77 tests pass**
+on both platforms, using the same pinned Node Linux image below. Evidence is
+`build/output/agent-greeks-windows-check.log` and `agent-greeks-linux-check.log`.
+No native Linux NVIDIA execution or remote CI is claimed.
+
+The clean historical run `134b921d-eb6a-4277-964f-13d4b33429f5` priced at
+2026-11-06 and records zero errors/one warning. A separate Python `Decimal`
+reference verified **all 510 stored Delta/Gamma figures against all 255 actual
+engine sensitivity.csv rows**, including source line, trade, measure, currency,
+factor and target shifts, then independently reconstructed historical scopes.
+No agent arithmetic is imported by that reference. See
+[operator setup, failed attempts and execution limitations](greek-validation.md).
+
+`scripts/smoke-greeks.mjs` passed on the installed release with the independent
+official MCP client. It enumerated all 16 FX-book buckets and all 16 parent
+portfolio buckets, then reconciled every paged contributor against that
+CSV-backed reference. The FX book has two complete 63-trade buckets:
+
+| Raw factor | Target shift | Stored measure | Full-scope cash finite difference |
+| --- | ---: | --- | ---: |
+| DiscountCurve/GBP/0/1Y | 0.0001 | Delta | GBP -6502.44 |
+| DiscountCurve/GBP/0/1Y | 0.0001 | Gamma | GBP 0.14 |
+
+Other buckets have sparse coverage and therefore no full-scope total. The
+loans book has no stored sensitivity rows; its missing contributions are not
+filled with zero to produce a parent total. Vega has no live volatility rows
+in this dataset and correctly reports unavailable. Positive volatility-Delta
+selection and cross-gamma behavior have fixture coverage, not a claimed live
+option/vega demonstration. Raw/par, factor/tenor, exact decimal shift, scenario,
+currency and duplicate/missing-member guards pass meaningful fixture tests.
+
+Actual GPU chat returned the verified Delta, Gamma and signed 1bp rate Delta
+(DV01 selector) in 5794, 10017 and 7657 ms respectively. Run clarification,
+same-session UUID continuation, cross-party denial, differently requested
+currency withholding and errored-run withholding passed. The comprehensive
+MCP contributor reconciliations took 85488 ms for the book and 84690 ms for
+the parent across many separate bounded calls; these are full smoke durations,
+not per-question latency. Final evidence is
+`build/output/agent-greeks-final-smoke.log`; the preceding full pass remains
+in `agent-greeks-smoke.log`. The final guard also prevents model-supplied empty
+selectors from silently dropping stress or cross-gamma buckets.
+
+Existing NPV scope, market, discovery and trade-reporting regressions passed
+during rollout; logs are `build/output/agent-greeks-npv-regression.log` and
+`agent-greeks-{market,discovery,reporting}-regression.log`. The new clean run
+also contains NPV output, so the trade-reporting smoke now verifies default
+multi-run ambiguity and exact clean-run selection instead of assuming only
+one clean run exists. No product behavior was changed to hide that ambiguity.
+
+Only the standalone agent release changed. The 19 inspected native service,
+broker and inference PIDs and private agent config hash remained unchanged
+across its switch. Main app, agent health and readiness returned HTTP 200.
+No new subject, native rebuild, temporary reporting instance, broker change,
+database reset or queue purge was ultimately needed. Operator validation did
+create fresh unscheduled definitions/runs and prepared input artifacts through
+existing authenticated NATS APIs; the agent itself remains read-only.
+
+Available raw Greek reads complete the declared read-only Stage 3 scope with
+these data/coverage limits. Per-unit Greeks, inferred par-risk conversion,
+zero filling and automatic report execution are not implemented. The normal
+packager's missing simulation/sensitivity export support and the existing
+prepared-input pending-to-running bug remain **execution** prerequisites;
+operator setup explicitly started fresh runs with version checks, never
+relabelled failed/errored runs. Hosted auth, broker hardening, role/cross-tenant
+proof and native Linux NVIDIA checks remain separate gates.
+
+## Previous release: 0.1.4 book/portfolio NPV
 
 Validated code: `558452611601852436ccb3820efc1b10e6b8d7a0` (NPV implementation
 begins at `fbded53408`). Installed artifact: `0.1.4-754c262be033`, identical on

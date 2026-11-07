@@ -2,8 +2,9 @@
 
 Version 0.1.4 adds `summarize_scope_results` to the shared agent/MCP executor.
 The NPV slice is deployed locally and validated with 68 tests on Windows and
-Linux, identical release artifacts and independent live MCP/GPU checks. Greek
-aggregation remains an open part of Stage 3; this is not full Greek delivery.
+Linux, identical release artifacts and independent live MCP/GPU checks.
+Version 0.1.5 adds [stored raw Greek buckets](greeks.md) with explicit units,
+dimension separation and per-bucket coverage requirements.
 See the [release evidence](validation.md) for the exact source and artifact.
 
 ## Scope and selection

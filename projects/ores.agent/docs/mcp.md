@@ -6,8 +6,8 @@ and 2025-11-25 (stateless Streamable HTTP compatibility). There is no separate
 gateway process and no MCP loopback in the built-in agent. SDK request
 cancellation reaches the same shared executor as local tool requests.
 Version 0.1.4 exposes 14 tools, including `summarize_scope_results` for historical
-book/portfolio NPV and bounded contributor drill-down. Greek measures return
-unsupported; see [scope reporting](scope-reporting.md).
+book/portfolio NPV and bounded contributor drill-down. Version 0.1.5 extends
+that tool with [raw Greek buckets](greeks.md) using existing metric reads.
 
 This first deployment uses an explicit **local bearer authentication profile**,
 not OAuth discovery. Sign in to `POST /auth/login` with `principal`, `password`

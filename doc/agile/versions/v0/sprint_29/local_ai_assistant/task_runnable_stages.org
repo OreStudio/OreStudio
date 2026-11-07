@@ -28,9 +28,9 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] |
-| Now          | Version 0.1.4 scoped NPV deployed; complete books/portfolio reconciled.                       |
+| Now          | Version 0.1.5 raw Greek buckets deployed; CSV/MCP/GPU evidence reconciled.                       |
 | Waiting on   | Native Linux backend/GPU checks; hosted auth and broker ACL hardening.                               |
-| Next         | Finish Stage 3 Greek units/bump/dimension verification; keep unsupported until proven.                  |
+| Next         | Stage 4 execution/security contract inspection; fix packaging/lifecycle prerequisites before commands.                  |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -44,6 +44,10 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 - [ ] Validate restricted broker subject ACLs and a hosted client-enrollment profile before claiming production isolation.
 
 * Plan
+
+- Business Stage 3 raw Greek checkpoint: =753a54b4550b9b73a602fc19a7b42b9393e773ad=, separate release =0.1.5-cf24e13db443=. Windows and pinned Linux =npm test= pass 77 tests; manifests match. =scripts/smoke-greeks.mjs= passes full external MCP/CSV reference reconciliation, GPU Delta/Gamma/DV01, run clarification and isolation checks.
+- The independent =scripts/reconcile-greek-reference.py= validates all 510 stored Delta/Gamma figures against actual CSV lines, using Decimal and no agent arithmetic. Complete FX-book GBP 1Y/0.0001 buckets give Delta GBP -6502.44 and Gamma GBP 0.14; sparse parent buckets withhold totals rather than inventing zero contributions. Positive live vega remains unavailable in this dataset.
+- Evidence: =build/output/agent-greeks-windows-check.log=, =agent-greeks-linux-check.log=, =agent-greeks-smoke.log= and =projects/ores.agent/docs/validation.md=. Operator setup, all attempts and automatic-execution gaps are in =greek-validation.md=. No server/broker deployment was ultimately required. Task remains STARTED for subsequent business/security/Linux gates.
 
 - Business Stage 3 NPV checkpoint: =558452611601852436ccb3820efc1b10e6b8d7a0=, independent release =0.1.4-754c262be033=. Windows and pinned Linux =npm test= pass 68 tests; manifests match.
 - Independent =scripts/smoke-scope-reporting.mjs= checks every contributor against Python Decimal for two books and their parent (63, 10 and 73 trades). GPU tool selection, run clarification, party isolation and partial-run withholding pass; Greeks remain unsupported.

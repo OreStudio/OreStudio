@@ -28,6 +28,9 @@ questions receive a narrow catalogue, use a literal historical scope and
 require an explicitly selected run. Pending run/scope choices are private to
 the session for five minutes. Totals and contributor figures render directly
 from validated results. Greek requests cannot be silently changed to NPV.
+Version 0.1.5 adds [raw sensitivity buckets](greeks.md) for Delta/Gamma, vega
+at its stated volatility bump and signed ORE rate Delta at a 1bp target bump.
+Only complete buckets have full-scope totals; sparse results stay explicit.
 
 Limits: 2,000-character input, four model rounds, six tool calls, at most four
 proposed calls per response, one active inference request globally, two active

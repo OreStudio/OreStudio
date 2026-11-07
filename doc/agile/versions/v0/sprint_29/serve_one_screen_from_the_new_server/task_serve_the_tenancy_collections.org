@@ -8,7 +8,7 @@
 #+filetags: :sprint_29:v0:serve_one_screen_from_the_new_server:
 #+owner: marco
 #+branch: feature/serve-the-tenancy-collections
-#+pr:
+#+pr: 4486
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4486][#4486]] | [http] Serve the tenancy collections |
 
 * Review
 

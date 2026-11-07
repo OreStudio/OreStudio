@@ -111,9 +111,10 @@ public:
      * trade has no instrument row, or whose type no reverse mapper handles,
      * are written as their type and envelope alone.
      *
-     * @param projection writes the oresmd identifiers a trade holds as ORE names them
-     *                        the series URI the trade states. Absent for an
-     *                        export that writes the trade's own value.
+     * @param projection writes the oresmd identifier a trade holds as ORE
+     * names it. A reference that is not an address is written as the trade
+     * states it, and so is a curve this projection gives no ORE name, so a
+     * default projection writes every curve as its trade holds it.
      */
     static std::string
     export_portfolio(const std::vector<trading::messaging::trade_export_item>& items,
@@ -127,10 +128,10 @@ public:
      * A run prices what it can: one trade the writer refuses would otherwise
      * refuse the whole portfolio, and with it every other trade of the run.
      */
-    static domain::written_portfolio
-    export_portfolio_leaving_out(const std::vector<trading::messaging::trade_export_item>& items,
-                                 const trading::domain::instrument_batch& instruments,
-                                 const ores::marketdata::projection::ore_projection& projection = {});
+    static domain::written_portfolio export_portfolio_leaving_out(
+        const std::vector<trading::messaging::trade_export_item>& items,
+        const trading::domain::instrument_batch& instruments,
+        const ores::marketdata::projection::ore_projection& projection = {});
 };
 
 }

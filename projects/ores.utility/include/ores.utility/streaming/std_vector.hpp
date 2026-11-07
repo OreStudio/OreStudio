@@ -24,14 +24,29 @@
 #include "ores.utility/rfl/time_point_parser.hpp"
 #include "ores.utility/streaming/tenant_id_parser.hpp"
 #include "ores.utility/streaming/uuid_parser.hpp"
+#include <cstddef>
 #include <ostream>
 #include <vector>
 
 namespace std {
 
+/*
+ * A type the codec can write whole is written as one JSON array. Any other
+ * element is written by its own operator<<, which for a generated domain type
+ * writes the same JSON through its compiled codec, so the caller need not have
+ * the element's shape in view.
+ */
 template <typename Containee>
 inline ostream& operator<<(ostream& s, const vector<Containee>& v) {
-    s << ores::utility::codec::json::write(v);
+    if constexpr (ores::utility::codec::states_wire_form<Containee> ||
+                  requires { sizeof(ores::utility::codec::text_form<Containee>); }) {
+        s << ores::utility::codec::json::write(v);
+    } else {
+        s << '[';
+        for (std::size_t i = 0; i < v.size(); ++i)
+            s << (i == 0 ? "" : ",") << v[i];
+        s << ']';
+    }
     return s;
 }
 

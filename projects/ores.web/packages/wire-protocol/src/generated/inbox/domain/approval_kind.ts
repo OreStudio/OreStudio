@@ -44,6 +44,7 @@ export interface ApprovalKind {
     apply_workflow_type: string | null;
     apply_window_hours: number | null;
     approvals_required: number;
+    auto_approval_code: string;
     display_order: number;
     modified_by: string;
     performed_by: string;

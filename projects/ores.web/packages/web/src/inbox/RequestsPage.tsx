@@ -144,7 +144,10 @@ function Queue(): ReactNode {
                                         </span>
                                         <span className="text-ink-muted">·</span>
                                         <span>{summaryOf(t, request)}</span>
-                                        <RequestStateChip stateCode={request.stateCode} />
+                                        <RequestStateChip
+                                            stateCode={request.stateCode}
+                                            autoApprovalCode={request.autoApprovalCode}
+                                        />
                                         {request.decision !== null && (
                                             <span className="text-xs text-ink-faint">
                                                 {t('inbox.queue.by', { decider: DECIDER_SLOT })
@@ -219,7 +222,10 @@ function QueueRow({ request }: { readonly request: InboxRequestView }): ReactNod
                 <span className="flex items-center gap-2">
                     <RelativeTime at={request.requestedAt} />
                     {request.stateCode !== 'waiting' && (
-                        <RequestStateChip stateCode={request.stateCode} />
+                        <RequestStateChip
+                            stateCode={request.stateCode}
+                            autoApprovalCode={request.autoApprovalCode}
+                        />
                     )}
                 </span>
             </td>

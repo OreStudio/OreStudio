@@ -59,17 +59,16 @@ Four decisions decided the shape of the step.
    the publisher and the instant the store holds.
 3. *No person in the act, without taking the control away from a desk.* A
    request needs a decider, and a provisioning run has nobody to ask. The
-   market data service reads the tenant as well as the kind: a publish in the
-   system tenant is the installation bootstrapping its own curves from the
-   quotes its own feeds publish, so no person's judgement is in it, and its
-   request closes approved in the same act with the system as the decider. A
-   publish in any other tenant is somebody's book and still waits for Market
-   Risk, whether the curve belongs to the tenant's own party or to a desk
-   inside it. The policy reads the tenant the publish happens in, so a caller
-   cannot choose the half it is in, and the seeded count stays one. The first
-   cut keyed the policy on the subject's party, which would have let any
-   tenant's own party publish without review; the tenant is the sharper line and
-   the one the bootstrap actually needs.
+   policy that closes such a raise is the inbox's, and it is stated as data:
+   the =marketdata.curve_publish= kind says through =auto_approval_code= that a
+   raise in the system tenant closes at once, because that tenant is the
+   installation bootstrapping its own curves from the quotes its own feeds
+   publish, and no person's judgement is in that. A raise in any other tenant is
+   somebody's book and waits for Market Risk, whether the curve belongs to the
+   tenant's own party or to a desk inside it. The gate that raises a publish
+   decides nothing: it reads no tenant and no party, so an auto-approved act is
+   visible where the kinds and the requests are read rather than buried in the
+   code that raised one. See [[id:619AF477-DA8F-424F-8722-E1058F60FD68][Model auto-approval as a stated policy]].
 4. *Patience, because quotes arrive after the feeds start.* Each attempt
    previews the bootstrap with =marketdata.v1.ops.compute_curve=, which writes
    nothing, and publishes only what the preview accepted. A curve without
@@ -180,8 +179,9 @@ environment whose feeds are slow is the case that will exercise them.
 
 The published sets are what the published-curves read, the screens and a price
 that reads a forward see. A publish in a tenant -- a desk's candidate, and the
-tenant's own party's curve no less -- still waits for Market Risk, which the
-gate suite states as a policy and not by accident.
+tenant's own party's curve no less -- still waits for Market Risk, because the
+kind's policy names the system tenant alone; the screens show which requests
+closed by policy and which a person signed.
 
 Open:
 

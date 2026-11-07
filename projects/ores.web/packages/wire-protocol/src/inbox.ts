@@ -133,6 +133,7 @@ const wireApprovalRequestSchema = z.object({
     id: uuidSchema,
     kind_code: z.string().default(''),
     state_code: z.string().default(''),
+    auto_approval_code: z.string().default(''),
     requested_by: z.string().default(''),
     requested_at: wireTimestampSchema,
     reason: z.string().default(''),
@@ -427,6 +428,15 @@ export const inboxRequestViewSchema = z.object({
     version: z.int().nonnegative().default(0),
     kindCode: z.string().default(''),
     stateCode: z.string().default(''),
+    /**
+     * The rule that closed this request without a person, or empty when a person
+     * decided it or nobody has yet.
+     *
+     * `deployment`, `system_tenant` and `every_request` are the three rules. The
+     * screen says which, so an auto-approved act never reads as one somebody
+     * signed, and a person reading the queue knows why it is already answered.
+     */
+    autoApprovalCode: z.string().default(''),
     requestedBy: z.string().default(''),
     requestedAt: wireTimestampSchema,
     reason: z.string().default(''),
@@ -847,6 +857,7 @@ function toRequestView(
         version: wire.version,
         kindCode: wire.kind_code,
         stateCode: wire.state_code,
+        autoApprovalCode: wire.auto_approval_code,
         requestedBy: join.usernameByAccount.get(accountId) ?? accountId,
         requestedAt: wire.requested_at,
         reason: wire.reason,

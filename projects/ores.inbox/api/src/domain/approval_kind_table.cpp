@@ -47,12 +47,12 @@ std::string convert_to_table(const std::vector<approval_kind>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header << "Code" << "Name" << "Decide Permission" << "Raise Permission"
-          << "Approvals Required" << "Modified By" << "Version" << fort::endr;
+          << "Approvals Required" << "Auto Approval" << "Modified By" << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& ak : v) {
         table << ak.code << ak.name << ak.decide_permission_code
               << approval_kind_opt_str(ak.raise_permission_code) << ak.approvals_required
-              << ak.modified_by << ak.version << fort::endr;
+              << ak.auto_approval_code << ak.modified_by << ak.version << fort::endr;
     }
     return table.to_string();
 }

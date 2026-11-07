@@ -72,13 +72,14 @@ namespace {
 using ores::inbox::service::approval_lifecycle;
 
 /**
- * @brief The seeded curve publish kind, with its count set to zero for one test.
+ * @brief The seeded curve publish kind, approving every raise for one test.
  *
- * A tenant sets a kind's approval count, so a zero count is a version of the
- * kind's own row and not a new kind: the publish operation names the code
- * =marketdata.curve_publish=, and only that code publishes a curve. The row is
- * put back to the count it was read at when the test ends, even when the test
- * fails, because the suites that read the kind expect the seeded value.
+ * A kind states through its =auto_approval_code= which raises close without a
+ * person, so the test states a version of the kind's own row and not a new kind:
+ * the publish operation names the code =marketdata.curve_publish=, and only that
+ * code publishes a curve. The row is put back as it was read when the test ends,
+ * even when the test fails, because the suites that read the kind expect the
+ * seeded value.
  */
 class zero_approval_kind {
 public:
@@ -90,9 +91,11 @@ public:
             throw std::runtime_error("The curve publish kind is not seeded.");
         was_ = *found;
         auto zeroed = *found;
-        zeroed.approvals_required = 0;
+        // The policy is how a kind says that nobody decides it; a count of zero
+        // would only write a request no person could ever answer.
+        zeroed.auto_approval_code = "every_request";
         zeroed.change_reason_code = "system.test";
-        zeroed.change_commentary = "Zero approvals, for the zero-approval test";
+        zeroed.change_commentary = "Every raise approved, for the zero-approval test";
         ores::inbox::repository::approval_kind_repository repo;
         repo.write(ctx_, zeroed);
     }
@@ -479,20 +482,6 @@ TEST_CASE("a_kind_that_needs_one_approval_publishes_nothing_until_a_person_answe
     CHECK(verdict.state_code == "waiting");
     CHECK(f.output_point_count() == 0);
     CHECK_FALSE(f.published().has_value());
-}
-
-TEST_CASE("only_the_installation_publishes_its_own_curves_without_a_person", tags) {
-    // The bootstrap needs no decider because the system tenant is the
-    // installation: its curves are built from the quotes its own feeds publish,
-    // and no person's judgement is in that act.
-    ores::testing::scoped_database_helper h;
-    CHECK(ores::marketdata::service::app::is_the_installations_own_publish(
-        h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user())));
-
-    // A tenant is somebody's book, and its curves are candidates it prices from
-    // whether the curve belongs to the tenant's own party or to a desk inside
-    // it, so a person still answers there.
-    CHECK_FALSE(ores::marketdata::service::app::is_the_installations_own_publish(h.context()));
 }
 
 TEST_CASE("the_maker_permission_a_publish_asks_for_is_the_kinds_own", tags) {

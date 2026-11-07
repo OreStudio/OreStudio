@@ -44,6 +44,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:619CE2BF-C972-47CF-8900-AC2742AC2CD9][Calibrate the synthetic IR feeds from the public rates]] | BACKLOG | | | The IR asset class gets a calibration policy, as FX has, so each synthetic overnight-index feed starts from its currency's latest public rate and its fit is reviewed like an FX fit. |
 | [[id:62D6A678-3B07-4A43-89C6-B79FA52500E6][Seed a bootstrap config for each currency's overnight-index curve]] | DONE | 2026-11-06 | 2026-11-06 | Each supported currency gets a bootstrap config, its pillars and its output series for its overnight-index curve, reading that currency's synthetic overnight-index feed, as USD-SOFR-FOMC does for USD; the eight currencies of the derived FX pairs come first. |
 | [[id:317DE09B-BE7B-4D47-B210-9D64B4558A97][Bootstrap and publish the curves in the provisioning system run]] | STARTED | 2026-11-06 | | The system run of provisioning bootstraps each seeded overnight-index curve from its quotes and publishes it, so a fresh environment holds a published curve per currency with no person acting. |
+| [[id:619AF477-DA8F-424F-8722-E1058F60FD68][Model auto-approval as a stated policy]] | STARTED | 2026-11-07 | | A request closes without a person only when the deployment does not enforce approvals or the kind states that a system act needs nobody, and each such decision is written on the request, said in words in its decision, and switchable as data. |
 | [[id:E033D8BF-BB5A-4AC1-A41F-49A722395694][Bootstrap the curves again as their quotes move]] | BACKLOG | | | The scheduler bootstraps and publishes each curve again on a stated cadence, so the published curves follow the synthetic quotes rather than stay at the provisioning as-of. |
 | [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]] | BACKLOG | | | The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed. |
 | [[id:37E35846-59E3-41E8-A9AF-6B9F1E167EB3][Keep the curve publishes of the integration tests out of the development database]] | BACKLOG | | | The integration tests leave curve publishes, withdrawals and supersessions in the development database under random users and a test as-of, so a provisioned tenant appears to hold published curves it never published. |
@@ -58,12 +59,15 @@ A curve this story publishes is the system's baseline, bootstrapped from the
 quotes its own feeds publish, and a fresh environment must hold it before any
 person arrives. So the provisioning step calls the approval-gated
 =publish_curve= and the request closes at once, with the system as its decider,
-because the publish happens in the system tenant, which is the installation.
-The maker and checker pair stays where it pays: a publish in a tenant is
-somebody's book -- a desk's candidate, and the tenant's own party's curve no
-less -- and it still waits for Market Risk. The policy reads the tenant the
-publish happens in, so a caller cannot choose which half it is in. See
-[[id:317DE09B-BE7B-4D47-B210-9D64B4558A97][Bootstrap and publish the curves in the provisioning system run]].
+because the curve publish kind states through =auto_approval_code= that a raise
+in the system tenant -- the installation acting on its own behalf -- needs
+nobody. The maker and checker pair stays where it pays: a raise in a tenant is
+somebody's book, a desk's candidate and the tenant's own party's curve no less,
+and it still waits for Market Risk. The policy is data of the inbox's, with a
+deployment switch beside it, so whoever reads the kinds or the requests sees
+what is enforced and what is not. See
+[[id:619AF477-DA8F-424F-8722-E1058F60FD68][Model auto-approval as a stated policy]]
+and [[id:317DE09B-BE7B-4D47-B210-9D64B4558A97][Bootstrap and publish the curves in the provisioning system run]].
 
 * Notes
 

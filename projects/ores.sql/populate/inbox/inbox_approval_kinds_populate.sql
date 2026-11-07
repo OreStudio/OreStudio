@@ -42,15 +42,14 @@
  * asker reads. It names no apply workflow: the trader applies an approved
  * request through marketdata.v1.ops.publish_curve, as the third journey draws it.
  *
- * The count is one, and the market data service reads the tenant as well as the
- * count: a publish in the system tenant is the installation bootstrapping its own
- * curves from the quotes its own feeds publish, so no person's judgement is in
- * it, and that publish asks the kind for zero approvals and closes at once with
- * the system as its decider. A publish in any other tenant is somebody's book, so
- * it waits here as this row states, whether the curve belongs to the tenant's own
- * party or to a desk inside it. So a fresh environment holds each currency's
- * curve published with no person acting, and a desk still asks Market Risk
- * before it prices from a curve of its own.
+ * Every kind asks one person, and every kind says through =auto_approval_code=
+ * which raises close without one. Only a curve publish does: the installation's
+ * own curves are bootstrapped from the quotes its own feeds publish, which is no
+ * person's judgement, so a raise in the system tenant closes at once and a raise
+ * in any other tenant -- a desk's candidate, and the tenant's own party's curve
+ * no less -- waits here for Market Risk. So a fresh environment holds each
+ * currency's curve published with no person acting, and a desk still asks before
+ * it prices from a curve of its own.
  *
  * A curve withdrawal is decided by Market Risk, as a publish is, because taking
  * a curve out of use is the same risk decision read backwards. It does not
@@ -90,60 +89,60 @@ insert into ores_inbox_approval_kinds_tbl (
     tenant_id, code, version, name, description, decide_permission_code,
     raise_permission_code,
     allows_hold, comment_on_approve, expires_after_days, apply_workflow_type,
-    apply_window_hours, approvals_required, display_order,
+    apply_window_hours, approvals_required, auto_approval_code, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
     (ores_utility_system_tenant_id_fn(), 'iam.role_grant', 0, 'Role request',
      'A person asks to be given a role', 'iam::roles:assign',
      null,
-     false, false, 14, null, null, 1, 10,
+     false, false, 14, null, null, 1, 'none', 10,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'refdata.book_change', 0, 'Book change',
      'A person proposes changes to books', 'inbox::approvals:decide_operations',
      null,
-     false, false, 14, 'book_apply_workflow', 24, 1, 20,
+     false, false, 14, 'book_apply_workflow', 24, 1, 'none', 20,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'refdata.counterparty_change', 0, 'Counterparty change',
      'A person proposes changes to counterparties, their identifiers and the parties that may trade with them',
      'inbox::approvals:decide_operations',
      null,
-     false, false, 14, 'counterparty_apply_workflow', 24, 1, 30,
+     false, false, 14, 'counterparty_apply_workflow', 24, 1, 'none', 30,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'marketdata.curve_publish', 0, 'Curve publish',
      'A trader asks for a candidate curve to become the one the desk prices from',
      'inbox::approvals:decide_market_risk',
      'marketdata::curve_bootstrap:publish',
-     true, false, 14, null, null, 1, 50,
+     true, false, 14, null, null, 1, 'system_tenant', 50,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'marketdata.curve_withdrawal', 0, 'Curve withdrawal',
      'A trader asks for a published curve to be taken out of use, with the reason kept against the act',
      'inbox::approvals:decide_market_risk',
      'marketdata::curve_bootstrap:publish',
-     true, false, null, null, null, 1, 51,
+     true, false, null, null, null, 1, 'none', 51,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'trading.operational_authorisation', 0, 'Operational authorisation',
      'Operations is asked to release a live trade',
      'inbox::approvals:decide_operations',
      null,
-     true, true, null, null, null, 1, 40,
+     true, true, null, null, null, 1, 'none', 40,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'reporting.eod_cut_authorisation', 0, 'End of day cut authorisation',
      'A person asks for a cut of an end of day occasion to become the body the firm signs off',
      'inbox::approvals:decide_finance',
      null,
-     true, false, 14, null, null, 1, 61,
+     true, false, 14, null, null, 1, 'none', 61,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'reporting.ipv_cut_authorisation', 0, 'Verification cut authorisation',
      'A person asks for an independent price verification cut to become the body the firm tests its marks against',
      'inbox::approvals:decide_market_risk',
      null,
-     true, false, 14, null, null, 1, 62,
+     true, false, 14, null, null, 1, 'none', 62,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds'),
     (ores_utility_system_tenant_id_fn(), 'reporting.engine_settings_change', 0, 'Engine run settings change',
      'A person proposes a change to a group of engine run settings that moves the numbers a run computes',
      'inbox::approvals:decide_market_risk',
      null,
-     true, false, 14, 'engine_settings_apply_workflow', 24, 1, 60,
+     true, false, 14, 'engine_settings_apply_workflow', 24, 1, 'none', 60,
      current_user, current_user, 'system.initial_load', 'Initial population of approval kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

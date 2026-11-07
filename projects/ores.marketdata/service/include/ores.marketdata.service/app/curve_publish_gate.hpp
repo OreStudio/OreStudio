@@ -73,19 +73,6 @@ struct publish_verdict {
 };
 
 /**
- * @brief Whether the publish is the installation bootstrapping its own curves.
- *
- * The system tenant is the installation. A curve it holds is bootstrapped from
- * the quotes its own feeds publish, so no person's judgement is in the act and
- * its publish needs nobody. Every other tenant is somebody's book, so its curves
- * wait for the decider the kind names -- a desk's candidate, and the tenant's own
- * party no less than any other. The policy reads the tenant the publish happens
- * in, so a caller cannot choose to be in the half that needs no approval.
- */
-ORES_MARKETDATA_SERVICE_EXPORT bool
-is_the_installations_own_publish(const ores::database::context& ctx);
-
-/**
  * @brief The permission the kind names for raising a request of it, or empty.
  *
  * The maker's half of the pair is the kind's, so the operation asks the kind and
@@ -122,12 +109,10 @@ resolve_publish_subject(const ores::database::context& ctx,
  * exist, and the request identifier is that row's natural key, so a request
  * authorises one publish and no second row can name it.
  *
- * A publish in the system tenant is the installation bootstrapping its own
- * curves from the quotes its own feeds publish, so no person's judgement is in
- * the act: its request closes approved in the same act, with the system as its
- * decider, and the caller applies it at once. A publish in any other tenant is
- * somebody's book, so it waits for the decider the kind names, whether the curve
- * belongs to the tenant's own party or to a desk inside it.
+ * Whether the raise closes without a person is never this gate's to say: it is
+ * the kind's policy and the deployment's, read by the inbox, so an auto-approved
+ * act is visible where the requests and the kinds are read rather than buried in
+ * the code that raises one.
  *
  * @throws std::invalid_argument when the kind, the account or the subject is
  * missing.

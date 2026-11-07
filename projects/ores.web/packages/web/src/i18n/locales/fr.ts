@@ -263,6 +263,13 @@ const fr: SourceCatalogue = {
         outsideView: 'Une personne hors de votre périmètre',
     },
     inbox: {
+        autoApproval: {
+            chip: 'Approuvée automatiquement',
+            deployment: "le déploiement n'exige pas d'approbation",
+            system_tenant: "un acte de l'installation",
+            every_request: 'le type approuve toute demande',
+            why: "Pourquoi personne n'a signé : {rule}.",
+        },
         state: {
             waiting: 'En attente',
             held: 'En suspens',

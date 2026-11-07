@@ -124,6 +124,37 @@ struct expiring_request {
 };
 
 /**
+ * @brief The setting that states whether this installation enforces approvals.
+ *
+ * The value is @c enforced or @c auto_approved. A deployment that answers
+ * @c auto_approved approves every request as it is raised, so a test bed or a
+ * demonstration never waits on a click it will always be given.
+ */
+inline constexpr std::string_view approvals_mode_setting_name = "inbox.approvals.mode";
+
+/// The value of @ref approvals_mode_setting_name that closes every raise.
+inline constexpr std::string_view auto_approved_mode = "auto_approved";
+
+/// The value that keeps the maker and checker pair.
+inline constexpr std::string_view enforced_mode = "enforced";
+
+/**
+ * @brief Which rule closed a request without a person.
+ *
+ * The rule is written on the request and named in its decision, so a reader
+ * always knows why nobody signed: the deployment does not enforce approvals, the
+ * kind accepts a raise in the system tenant, or the kind accepts every raise.
+ */
+enum class auto_approval_rule {
+    deployment,
+    system_tenant,
+    every_request,
+};
+
+/// The code @ref auto_approval_rule is written as, on the request and its decision.
+[[nodiscard]] ORES_INBOX_CORE_EXPORT std::string_view code_of(auto_approval_rule rule);
+
+/**
  * @brief The approval request lifecycle: raising, deciding and the two reads
  * a person works from.
  *
@@ -145,6 +176,27 @@ public:
      * @brief The account the context's actor signs in as, if any.
      */
     std::optional<boost::uuids::uuid> actor_account_id();
+
+    /**
+     * @brief Whether this installation enforces approvals.
+     *
+     * Read from @ref approvals_mode_setting_name, in the caller's tenant first
+     * and then in the installation's, so a tenant may state it for itself. A
+     * setting that cannot be read, or that names a value this build does not
+     * know, is the enforcing answer: a deployment that cannot say whether it
+     * enforces approvals keeps the pair.
+     */
+    [[nodiscard]] bool enforces_approvals() const;
+
+    /**
+     * @brief Which rule closes this raise without a person, or nothing when one decides it.
+     *
+     * A request that names parts is decided by its parts whatever the policy
+     * says: the parts are people answering, and a close that skipped them would
+     * leave them open forever.
+     */
+    [[nodiscard]] std::optional<auto_approval_rule>
+    auto_approval_of(const domain::approval_kind& kind, bool names_parts) const;
 
     /**
      * @brief A kind of request, read from the system tenant's catalogue.
@@ -214,17 +266,20 @@ public:
      * The request expires when the kind says, or never, and it starts waiting
      * on a decider.
      *
-     * A kind whose @c approvals_required is zero needs nobody: nobody decides
-     * it, and the raise is the decision. The request is written and then closed
-     * approved in the same act, with the system actor as its decider and a
-     * comment that names the kind and its zero count, so a reader of the record
-     * sees one approved request and not a silent write. The owning component
-     * applies it afterwards, as it applies any approved request.
+     * A raise a policy covers (see @ref auto_approval_of) needs nobody: the
+     * request is written and then closed approved in the same act, with the
+     * system actor as its decider, the rule on the request, and a comment that
+     * states the policy in words. A reader of the record therefore sees one
+     * approved request that says why nobody signed, and never a silent write.
+     * The owning component applies it afterwards, as it applies any approved
+     * request.
      *
      * A request that names parts is decided by part rather than by count, so
-     * the parts still answer it and no zero count closes it.
+     * the parts still answer it and no policy closes it.
      *
-     * @throws std::runtime_error when a kind needs no approval and the system
+     * @throws std::logic_error when a kind asks for no approvals and no policy
+     * covers the raise, because such a request could only ever wait.
+     * @throws std::runtime_error when a policy closes the raise and the system
      * actor cannot be named.
      */
     domain::approval_request raise(const domain::approval_kind& kind,
@@ -403,15 +458,17 @@ private:
     [[nodiscard]] bool holds(const std::string& permission_code) const;
 
     /**
-     * @brief Closes a request the kind needs no approval for, in one act.
+     * @brief Closes a request a policy covers, in one act.
      *
      * The decision, the state it moves the request to and the request's own
-     * write are one transaction: a request left waiting on a kind that needs
-     * nobody is a request no person can answer.
+     * write are one transaction: a request left waiting on a policy that closes
+     * it is a request no person can answer. The decision's comment states the
+     * rule in the words a person reads.
      */
     domain::approval_request close_without_approval(const domain::approval_request& request,
                                                     const domain::approval_kind& kind,
-                                                    const boost::uuids::uuid& system_actor);
+                                                    const boost::uuids::uuid& system_actor,
+                                                    auto_approval_rule rule);
 
     ores::database::context ctx_;
 };

@@ -27,3 +27,14 @@ Tenant 'curveprobe' provisioned from profile 'empty_operational' on 2026-11-07 1
 --------------------------------------+-------------+------------+-------------------------------
  ores_prime_origin_marketdata_service | super_admin | approved   | 2026-11-07 11:49:47.272699+00
 (1 row)
+
+--- the policy that closed each publish, and who decided ---
+ state_code | auto_approval_code |                                          comment                                           |              decided_by
+------------+--------------------+--------------------------------------------------------------------------------------------+--------------------------------------
+ approved   | system_tenant      | Approved by policy: a marketdata.curve_publish request raised in the system tenant is the   | ores_prime_origin_marketdata_service
+            |                    | installation acting on its own behalf, so no person stands before it.                      |
+ approved   | system_tenant      | Approved by policy: a marketdata.curve_publish request raised in the system tenant is the   | ores_prime_origin_marketdata_service
+            |                    | installation acting on its own behalf, so no person stands before it.                      |
+
+--- the deployment's own answer ---
+ inbox.approvals.mode | enforced

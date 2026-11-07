@@ -108,6 +108,7 @@ domain::approval_kind approval_kind_to_domain(const messaging::approval_kind_wri
     v.apply_workflow_type = write.apply_workflow_type;
     v.apply_window_hours = write.apply_window_hours;
     v.approvals_required = write.approvals_required;
+    v.auto_approval_code = write.auto_approval_code;
     v.display_order = write.display_order;
     return v;
 }

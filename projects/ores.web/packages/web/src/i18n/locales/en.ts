@@ -265,6 +265,13 @@ export const en: SourceCatalogue = {
         outsideView: 'Someone outside your view',
     },
     inbox: {
+        autoApproval: {
+            chip: 'Auto-approved',
+            deployment: 'the deployment does not enforce approvals',
+            system_tenant: "the installation's own act",
+            every_request: 'the kind approves every raise',
+            why: 'Why nobody signed: {rule}.',
+        },
         state: {
             waiting: 'Waiting',
             held: 'Held',

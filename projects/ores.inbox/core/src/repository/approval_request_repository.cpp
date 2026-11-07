@@ -97,6 +97,9 @@ std::optional<query_builder::condition> approval_request_filter_condition(
     if (filter->state_code)
         r.push_back(
             query_builder::equals("state_code", query_builder::filter_value(*filter->state_code)));
+    if (filter->auto_approval_code)
+        r.push_back(query_builder::equals(
+            "auto_approval_code", query_builder::filter_value(*filter->auto_approval_code)));
     if (filter->requested_by)
         r.push_back(query_builder::equals("requested_by",
                                           query_builder::filter_value(*filter->requested_by)));
@@ -117,6 +120,12 @@ std::optional<query_builder::condition> approval_request_filter_condition(
         for (const auto& v : *filter->state_code_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("state_code", std::move(values)));
+    }
+    if (filter->auto_approval_code_one_of) {
+        std::vector<query_builder::value> values;
+        for (const auto& v : *filter->auto_approval_code_one_of)
+            values.push_back(query_builder::filter_value(v));
+        r.push_back(query_builder::one_of("auto_approval_code", std::move(values)));
     }
     if (filter->requested_by_one_of) {
         std::vector<query_builder::value> values;

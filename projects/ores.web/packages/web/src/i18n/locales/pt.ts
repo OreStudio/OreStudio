@@ -265,6 +265,13 @@ const pt: SourceCatalogue = {
         outsideView: 'Alguém fora da sua vista',
     },
     inbox: {
+        autoApproval: {
+            chip: 'Aprovada automaticamente',
+            deployment: 'a instalação não exige aprovação',
+            system_tenant: 'um acto da instalação',
+            every_request: 'o tipo aprova todos os pedidos',
+            why: 'Porque ninguém assinou: {rule}.',
+        },
         state: {
             waiting: 'À espera',
             held: 'Suspenso',

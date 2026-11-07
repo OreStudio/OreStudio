@@ -52,6 +52,7 @@ namespace ores::inbox::domain {
         utility::codec::field{"id", &approval_request::id},
         utility::codec::field{"kind_code", &approval_request::kind_code},
         utility::codec::field{"state_code", &approval_request::state_code},
+        utility::codec::field{"auto_approval_code", &approval_request::auto_approval_code},
         utility::codec::field{"requested_by", &approval_request::requested_by},
         utility::codec::field{"requested_at", &approval_request::requested_at},
         utility::codec::field{"reason", &approval_request::reason},

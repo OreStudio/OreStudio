@@ -131,10 +131,6 @@ void end_previous_sets(const ores::database::context& ctx, const domain::curve_p
 
 }
 
-bool is_the_installations_own_publish(const ores::database::context& ctx) {
-    return ctx.tenant_id().is_system();
-}
-
 std::string raise_permission_of(const ores::database::context& ctx, std::string_view kind_code) {
     ores::inbox::service::approval_lifecycle lifecycle(ctx);
     const auto kind = lifecycle.kind(std::string(kind_code));
@@ -185,15 +181,10 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     const auto me = lifecycle.actor_account_id();
     if (!me)
         throw std::runtime_error("The signed-in account was not found.");
-    // The installation's own curve is the bootstrap and needs nobody, so the
-    // kind is asked with a count of zero and the system closes the request in
-    // the same act. The seeded count is left as it stands, so a curve in a
-    // tenant's book still waits for its decider.
-    const auto needs_nobody = is_the_installations_own_publish(ctx);
-    auto kind_to_raise = *kind;
-    if (needs_nobody)
-        kind_to_raise.approvals_required = 0;
-    const auto raised = lifecycle.raise(kind_to_raise, reason, *me);
+    // Whether this raise closes without a person is the kind's policy and the
+    // deployment's, and the inbox reads both. A gate that decided it here would
+    // put a control where nobody looking at the approvals could see it.
+    const auto raised = lifecycle.raise(*kind, reason, *me);
 
     domain::curve_publish record;
     record.id = boost::uuids::random_generator{}();
@@ -209,10 +200,7 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     record.performed_by = ctx.service_account();
     record.change_reason_code = "system.new_record";
     record.change_commentary =
-        "The subject that publish request " + boost::uuids::to_string(raised.id) + " authorises" +
-        (needs_nobody ? "; the installation's own curve needs no approval, so the request closed "
-                        "with the system as its decider" :
-                        "");
+        "The subject that publish request " + boost::uuids::to_string(raised.id) + " authorises";
     repository::curve_publish_repository repo;
     repo.write(ctx, record);
     return raised;

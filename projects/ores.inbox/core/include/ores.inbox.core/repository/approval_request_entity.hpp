@@ -55,6 +55,7 @@ struct approval_request_entity {
     int version = 0;
     std::string kind_code;
     std::string state_code;
+    std::string auto_approval_code;
     boost::uuids::uuid requested_by;
     db_timestamp requested_at;
     std::string reason;
@@ -77,6 +78,7 @@ struct approval_request_entity {
                query_builder::bind("version", &e::version) |
                query_builder::bind("kind_code", &e::kind_code) |
                query_builder::bind("state_code", &e::state_code) |
+               query_builder::bind("auto_approval_code", &e::auto_approval_code) |
                query_builder::bind("requested_by", &e::requested_by) |
                query_builder::bind("requested_at", &e::requested_at) |
                query_builder::bind("reason", &e::reason) |

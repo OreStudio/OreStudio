@@ -41,6 +41,7 @@ render_approval_request_fields(const domain::approval_request& v) {
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Kind Code", .value = v.kind_code});
     fields.push_back({.name = "State Code", .value = v.state_code});
+    fields.push_back({.name = "Auto Approval Code", .value = v.auto_approval_code});
     fields.push_back({.name = "Requested By", .value = boost::uuids::to_string(v.requested_by)});
     fields.push_back({.name = "Requested At",
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.requested_at)});

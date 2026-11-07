@@ -59,6 +59,7 @@ struct approval_kind_write {
     std::optional<std::string> apply_workflow_type;
     std::optional<int> apply_window_hours;
     int approvals_required;
+    std::string auto_approval_code;
     int display_order;
 
     friend bool operator==(const approval_kind_write&, const approval_kind_write&) = default;
@@ -396,6 +397,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_kinds.dele
         utility::codec::field{"apply_workflow_type", &approval_kind_write::apply_workflow_type},
         utility::codec::field{"apply_window_hours", &approval_kind_write::apply_window_hours},
         utility::codec::field{"approvals_required", &approval_kind_write::approvals_required},
+        utility::codec::field{"auto_approval_code", &approval_kind_write::auto_approval_code},
         utility::codec::field{"display_order", &approval_kind_write::display_order},
     };
 }

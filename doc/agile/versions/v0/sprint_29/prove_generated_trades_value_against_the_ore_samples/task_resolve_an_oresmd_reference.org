@@ -59,6 +59,7 @@ task and name that file in the Command column.
 | ores.ore.core.tests, ores.ore.service.tests | 520008 in 516; 54 in 10 pass | the two suites | 597d7e8ca4 |
 | ores.synthetic.core.tests | 2610 in 112 pass; no recorded trade changes | =ores.synthetic.core.tests= | 597d7e8ca4 |
 | Re-run at review: ores.marketdata.api.tests, its two tags, and the portfolio export | 4588 in 932; 35 in 6; 16 in 4; 72 in 10 all pass | the suites | fa3248b6e0 |
+| Re-run after the blockers: the marketdata API, ORE core and ORE service suites | 4588 in 932; 520008 in 516; 54 in 10 pass, and the format gate is green | the three suites, =compass check --only format= | 92ca349b4b |
 
 * Notes
 
@@ -87,8 +88,8 @@ via its "Verifies task" field.
 | L2 | The marketdata API links the refdata API publicly | ores.marketdata/api/src/CMakeLists.txt | Accepted | The agreed placement; its consumers compile against refdata. |
 | L3 | The lookup copies its convention set | convention_lookup.hpp | No change | It owns the data; callers build it once. |
 | L4 | misspell-fixer on the changed files; validate_docs.sh | — | Clean | |
-| L5 | The format gate is red on five lines this branch wrote | xml_exporter_tests.cpp, run_configuration_operations.cpp | Open | Both files are clean at main; 25 more violations sit in two files the branch touched. |
-| L6 | @param projection states the opposite of what the code does | xml/exporter.hpp | Open | A default projection still projects an index or a quote; only an unnamed curve is written as stored. |
+| L5 | The format gate is red on violations this branch carries | 15 changed C++ files | Fixed | 86 violations, not 5: the new files carried their own. All of them formatted in 5d9c07e685; the gate is green. |
+| L6 | @param projection states the opposite of what the code does | xml/exporter.hpp | Fixed | Rewritten in 92ca349b4b: a default projection still writes an index or a quote by its ORE name. |
 | L7 | ore_name_or_stored swallows the key codec's refusal | projection/ore_projection.cpp | Open | The curve fallback is intended; a datum ORE cannot key must surface its error. |
 | L8 | Stored addresses are compared as text, not as parsed references | conventions/convention_lookup.cpp | Open | A column written in another field order never matches, and the seed task writes it in SQL. |
 | L9 | The family address drops the tenor for every family | conventions/convention_lookup.cpp | Open | A CMS or bond-yield index is refused as "it addresses no index", which is false. |

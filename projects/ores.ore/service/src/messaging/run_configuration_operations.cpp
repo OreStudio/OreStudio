@@ -34,7 +34,6 @@
 #include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
-#include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -218,7 +217,7 @@ domain::conventions_package read_conventions(nats_client& owners, const std::str
         int sequence = 0;
         for (const auto& row : read_family(owners, family, party_id))
             package.bundle.rows.push_back(
-                {std::string(family.key), sequence++, ores::utility::codec::json::write(row)});
+                {std::string(family.key), sequence++, rfl::json::write(row)});
     }
     // FX conventions have no store, as they have none on the write path.
     return package;

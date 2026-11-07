@@ -103,24 +103,12 @@ person seed_person(ores::testing::scoped_database_helper& h) {
  */
 class curve_fixture {
 public:
-    /// @brief Whose curve the fixture is.
-    enum class owner {
-        /// A party of the tenant's own, which is a desk: its publish waits for
-        /// the decider the kind names.
-        a_party,
-        /// The tenant's own party, whose curve is the tenant's baseline: its
-        /// publish is the raise itself.
-        the_tenants_own_party
-    };
-
-    explicit curve_fixture(owner who = owner::a_party)
+    curve_fixture()
         : gctx(ores::testing::make_generation_context(h))
-        , owner_(who)
-        , party_id(who == owner::the_tenants_own_party ? tenants_own_party() : uuid_gen())
+        , party_id(uuid_gen())
         , config_id(uuid_gen())
         , output_series_id(uuid_gen()) {
-        if (owner_ == owner::a_party)
-            write_party();
+        write_party();
         party = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
         write_series(output_series_id, output_series_uri());
         write_config();
@@ -175,7 +163,6 @@ public:
 
     ores::testing::scoped_database_helper h;
     ores::utility::generation::generation_context gctx;
-    owner owner_ = owner::a_party;
     boost::uuids::random_generator uuid_gen;
 
     boost::uuids::uuid party_id;
@@ -209,26 +196,6 @@ private:
         p.change_reason_code = "system.test";
         p.change_commentary = "curve publish gate test";
         repo.write(h.context(), p);
-    }
-
-    /// The tenant's own party, which the schema allows one of: the party whose
-    /// curves are the tenant's baseline and whose publish needs no second person.
-    boost::uuids::uuid tenants_own_party() {
-        ores::refdata::repository::party_repository repo;
-        const auto found = repo.read_system_party(h.context(), h.tenant_id().to_string());
-        if (!found.empty())
-            return found.front().id;
-
-        auto p = ores::refdata::generators::generate_synthetic_party(gctx);
-        p.id = uuid_gen();
-        p.version = 0;
-        p.party_category = "System";
-        p.parent_party_id = std::nullopt;
-        p.is_registration_default = false;
-        p.change_reason_code = "system.test";
-        p.change_commentary = "curve publish gate test";
-        repo.write(h.context(), p);
-        return p.id;
     }
 
     void write_series(const boost::uuids::uuid& id, const std::string& uri) {

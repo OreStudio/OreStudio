@@ -129,25 +129,10 @@ void end_previous_sets(const ores::database::context& ctx, const domain::curve_p
     }
 }
 
-/**
- * @brief Whether the subject is the tenant's own curve, which needs no second person.
- *
- * A curve the tenant's own party owns is the tenant's baseline: the system
- * bootstraps it from the quotes its own feeds publish, so no person's judgement
- * is in the act and the raise is the publish. A curve any other party owns is a
- * candidate a desk would price from, and its publish waits for the decider the
- * kind names. The policy reads the party the subject is owned by, so a caller
- * cannot choose it, and a curve of the tenant's own party is what a fresh
- * environment is provisioned with.
- */
-bool needs_no_second_person(const ores::database::context& ctx, const publish_subject& subject) {
-    if (subject.party_id.is_nil())
-        return false;
-    ores::refdata::repository::party_repository repo;
-    const auto system_party = repo.read_system_party(ctx, ctx.tenant_id().to_string());
-    return !system_party.empty() && system_party.front().id == subject.party_id;
 }
 
+bool is_the_installations_own_publish(const ores::database::context& ctx) {
+    return ctx.tenant_id().is_system();
 }
 
 std::string raise_permission_of(const ores::database::context& ctx, std::string_view kind_code) {
@@ -200,10 +185,11 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     const auto me = lifecycle.actor_account_id();
     if (!me)
         throw std::runtime_error("The signed-in account was not found.");
-    // The tenant's own curve needs nobody, so the kind is asked with a count of
-    // zero and the system closes the request in the same act. The seeded count
-    // is left as it stands, so a curve of any other party still waits.
-    const auto needs_nobody = needs_no_second_person(ctx, subject);
+    // The installation's own curve is the bootstrap and needs nobody, so the
+    // kind is asked with a count of zero and the system closes the request in
+    // the same act. The seeded count is left as it stands, so a curve in a
+    // tenant's book still waits for its decider.
+    const auto needs_nobody = is_the_installations_own_publish(ctx);
     auto kind_to_raise = *kind;
     if (needs_nobody)
         kind_to_raise.approvals_required = 0;
@@ -224,8 +210,8 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     record.change_reason_code = "system.new_record";
     record.change_commentary =
         "The subject that publish request " + boost::uuids::to_string(raised.id) + " authorises" +
-        (needs_nobody ? "; a curve of the tenant's own party needs no approval, so the request "
-                        "closed with the system as its decider" :
+        (needs_nobody ? "; the installation's own curve needs no approval, so the request closed "
+                        "with the system as its decider" :
                         "");
     repository::curve_publish_repository repo;
     repo.write(ctx, record);

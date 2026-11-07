@@ -57,11 +57,12 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 A curve this story publishes is the system's baseline, bootstrapped from the
 quotes its own feeds publish, and a fresh environment must hold it before any
 person arrives. So the provisioning step calls the approval-gated
-=publish_curve= and the request closes at once, with the system as its
-decider, for a curve the tenant's own party owns. The maker and checker pair
-stays where it pays: a curve of a desk's own party is a candidate that desk
-would price from, and it still waits for Market Risk. The policy reads the
-subject, so a caller cannot choose which half it is in. See
+=publish_curve= and the request closes at once, with the system as its decider,
+because the publish happens in the system tenant, which is the installation.
+The maker and checker pair stays where it pays: a publish in a tenant is
+somebody's book -- a desk's candidate, and the tenant's own party's curve no
+less -- and it still waits for Market Risk. The policy reads the tenant the
+publish happens in, so a caller cannot choose which half it is in. See
 [[id:317DE09B-BE7B-4D47-B210-9D64B4558A97][Bootstrap and publish the curves in the provisioning system run]].
 
 * Notes

@@ -1,43 +1,29 @@
-publish_system_curves, run 93e146ef-f151-4a90-a5a6-c192c32ea1f0, step ab76c2d7-4d76-4c27-b20a-14c158a315e4
-Provisioned tenant 'curvecheck' from profile 'empty_operational' on 2026-11-07
+publish_system_curves, the run after the step was tightened
+Tenant 'curveprobe' provisioned from profile 'empty_operational' on 2026-11-07 11:49
 
---- the step's result, as the run recorded it ---
-kind: publish_system_curves
-curves published: 20
-   KRW-KOFR as of 2026-11-07 09:59:28.219676Z
-   MXN-TIIE as of 2026-11-07 09:59:28.518951Z
-   COP-IBR as of 2026-11-07 09:59:28.828796Z
-   HKD-HONIA as of 2026-11-07 09:59:29.117862Z
-   CZK-CZEONIA as of 2026-11-07 09:59:29.463418Z
-   SEK-SWESTR as of 2026-11-07 09:59:29.775707Z
-   SGD-SORA as of 2026-11-07 09:59:30.112083Z
-   EUR-ESTR as of 2026-11-07 09:59:30.440631Z
-   AUD-AONIA as of 2026-11-07 09:59:30.763836Z
-   CHF-SARON as of 2026-11-07 09:59:31.053926Z
-   TRY-TLREF as of 2026-11-07 09:59:31.371090Z
-   GBP-SONIA as of 2026-11-07 09:59:31.739653Z
-   ZAR-ZARONIA as of 2026-11-07 09:59:32.016036Z
-   NZD-NZONIA as of 2026-11-07 09:59:32.307181Z
-   CAD-CORRA as of 2026-11-07 09:59:32.561375Z
-   DKK-DESTR as of 2026-11-07 09:59:32.843597Z
-   CLP-CAMARA as of 2026-11-07 09:59:33.139086Z
-   USD-SOFR-FOMC as of 2026-11-07 09:59:33.427249Z
-   INR-MIBOR as of 2026-11-07 09:59:33.713843Z
-   JPY-TONA as of 2026-11-07 09:59:34.007823Z
-curves not published: 0
+--- what the CLI printed under the step ---
+  [2/3] publish_system_curves: completed
+      info: published 20 of 20 curve(s)
 
---- every system curve config has a live published set ---
+--- the step's own record, and its log ---
+          started_at           |         completed_at          |      took       |                                step_log_json                                 
+-------------------------------+-------------------------------+-----------------+------------------------------------------------------------------------------
+ 2026-11-07 11:49:42.697955+00 | 2026-11-07 11:49:47.570221+00 | 00:00:04.872266 | [{"level": "info", "context": "", "message": "published 20 of 20 curve(s)"}]
+(1 row)
+
+
+--- the step's result payload ---
+{"kind": "publish_system_curves", "curves": ["KRW-KOFR as of 2026-11-07 11:49:42.828370Z", "MXN-TIIE as of 2026-11-07 11:49:43.105377Z", "COP-IBR as of 2026-11-07 11:49:43.326860Z", "HKD-HONIA as of 2026-11-07 11:49:43.547830Z", "CZK-CZEONIA as of 2026-11-07 11:49:43.771179Z", "SEK-SWESTR as of 2026-11-07 11:49:43.988615Z", "SGD-SORA as of 2026-11-07 11:49:44.199704Z", "EUR-ESTR as of 2026-11-07 11:49:44.395118Z", "AUD-AONIA as of 2026-11-07 11:49:44.602263Z", "CHF-SARON as of 2026-11-07 11:49:44.801314Z", "TRY-TLREF as of 2026-11-07 11:49:45.019113Z", "GBP-SONIA as of 2026-11-07 11:49:45.238382Z", "ZAR-ZARONIA as of 2026-11-07 11:49:45.460929Z", "NZD-NZONIA as of 2026-11-07 11:49:45.678523Z", "CAD-CORRA as of 2026-11-07 11:49:45.903836Z", "DKK-DESTR as of 2026-11-07 11:49:46.115202Z", "CLP-CAMARA as of 2026-11-07 11:49:46.332868Z", "USD-SOFR-FOMC as of 2026-11-07 11:49:46.623618Z", "INR-MIBOR as of 2026-11-07 11:49:46.936134Z", "JPY-TONA as of 2026-11-07 11:49:47.194486Z"], "images": [], "bundles": [], "configs": [], "parties": [], "accounts": [], "datasets": [], "root_lei": "", "tenant_id": "", "trades_planned": 0, "trades_written": 0, "report_schedules": [], "child_instance_id": "", "curves_not_published": [], "trades_already_present": 0}
+
+--- every system curve config has one live published set ---
  live_published | configs 
 ----------------+---------
              20 |      20
 (1 row)
 
 
---- one publish, read back: the request, the publisher and the instant ---
-    name     | published_by |      published_at      |              request_id              |   change_reason_code   
--------------+--------------+------------------------+--------------------------------------+------------------------
- KRW-KOFR    | super_admin  | 2026-11-07 09:59:28+00 | 01a1b572-e50f-7dad-8c12-ef72c1a17bf4 | system.curve_published
- MXN-TIIE    | super_admin  | 2026-11-07 09:59:28+00 | 01a1b572-e637-789b-bc22-1616aef0a5ff | system.curve_published
- CZK-CZEONIA | super_admin  | 2026-11-07 09:59:29+00 | 01a1b572-e9f7-740b-908c-f9a48365f7c8 | system.curve_published
-(3 rows)
-
+--- the actor of one publish: who asked, who decided ---
+              decided_by              |  asked_by   | state_code |          decided_at           
+--------------------------------------+-------------+------------+-------------------------------
+ ores_prime_origin_marketdata_service | super_admin | approved   | 2026-11-07 11:49:47.272699+00
+(1 row)

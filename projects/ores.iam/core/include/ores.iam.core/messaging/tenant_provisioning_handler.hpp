@@ -1021,21 +1021,23 @@ private:
      * curve_retry_interval until curve_quote_patience has passed. A curve still
      * refused then is named with its last reason, and the step completes: one
      * currency's missing quotes do not hold back the system's other curves or the
-     * tenant's own setup.
+     * tenant's own setup. Each round of waiting is recorded in the step's own log,
+     * so the run says why the step is taking the time it takes rather than looking
+     * stalled.
      *
      * A curve is published and not merely republished: the publish goes through
      * marketdata.v1.ops.publish_curve, so the set is recorded against the request
      * that authorised it, and the published-curves list and the reads a surface or
-     * a price take see it. The raise is the publish for a curve of the system
-     * tenant's own party, which is every curve this step names, so no person has
-     * to answer first. Each attempt previews the bootstrap with
+     * a price take see it. The raise is the publish in the system tenant, which
+     * is the installation, so no person has to answer first. Each attempt
+     * previews the bootstrap with
      * marketdata.v1.ops.compute_curve and publishes only what that preview
      * accepted, so a retry costs no approval request.
      */
     void
     publish_system_curves_step(const ores::service::messaging::workflow_step_context& wf,
                                const ores::iam::workflow::provision_tenant_step_command& command) {
-        constexpr auto curve_quote_patience = std::chrono::minutes{5};
+        constexpr auto curve_quote_patience = std::chrono::minutes{2};
         constexpr auto curve_retry_interval = std::chrono::seconds{10};
         constexpr std::string_view publish_reason =
             "The provisioning system run bootstraps the system's curves from the quotes the "
@@ -1068,6 +1070,7 @@ private:
 
         provision_step_result result;
         result.kind = command.kind;
+        std::vector<ores::workflow::messaging::step_log_entry> step_log;
         const auto started = std::chrono::steady_clock::now();
         const auto give_up = started + curve_quote_patience;
         while (!pending.empty()) {
@@ -1123,10 +1126,19 @@ private:
             }
             if (pending.empty() || std::chrono::steady_clock::now() >= give_up)
                 break;
+            const auto waited = std::chrono::duration_cast<std::chrono::seconds>(
+                                    std::chrono::steady_clock::now() - started)
+                                    .count();
+            const auto waiting = std::to_string(pending.size()) + " curve(s) have no quotes yet (" +
+                                 std::to_string(waited) + "s of " +
+                                 std::to_string(curve_quote_patience.count() * 60) +
+                                 "s), asking again in " +
+                                 std::to_string(curve_retry_interval.count()) + "s";
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-                << "publish_system_curves: " << pending.size()
-                << " curve(s) have no quotes yet, asking again in " << curve_retry_interval.count()
-                << "s";
+                << "publish_system_curves: " << waiting;
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                .message = waiting,
+                                .context = {}});
             std::this_thread::sleep_for(curve_retry_interval);
         }
 
@@ -1135,10 +1147,26 @@ private:
                 << "publish_system_curves: did not publish " << names.at(id) << ": " << last_reason;
             result.curves_not_published.push_back(names.at(id) + ": " + last_reason);
         }
+
+        const auto summary = std::string{"published "} + std::to_string(result.curves.size()) +
+                             " of " + std::to_string(configs.size()) + " curve(s)";
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
-            << "publish_system_curves: published " << result.curves.size() << " of "
-            << configs.size() << " curve(s)";
-        wf.complete(rfl::json::write(result));
+            << "publish_system_curves: " << summary;
+        for (const auto& not_published : result.curves_not_published)
+            step_log.push_back({.level = ores::workflow::messaging::step_log_level::warn,
+                                .message = not_published,
+                                .context = {}});
+        step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                            .message = summary,
+                            .context = {}});
+
+        // A curve that was not published leaves the installation without the
+        // forwards a surface reads, so the step says so in its own status rather
+        // than passing as a clean run. The run still advances.
+        if (result.curves_not_published.empty())
+            wf.complete(rfl::json::write(result), step_log);
+        else
+            wf.warn(rfl::json::write(result), step_log);
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports

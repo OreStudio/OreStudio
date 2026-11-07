@@ -54,7 +54,7 @@ Five dependencies decide it, and all but the curves have a failure behind them.
 - The system's curves come straight after the system data, because their quotes
   come from the feeds that data starts. The step runs beside the tenant's own
   setup rather than before it, and it asks again for a curve whose quotes have
-  not arrived yet, for up to five minutes.
+  not arrived yet, for up to two minutes.
 - The staff come after the parties, and the passwords and pictures after the
   staff, because a password or a picture names an account that must already
   exist. Attaching a picture to an account that is not there is the step failure

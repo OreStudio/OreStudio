@@ -59,19 +59,29 @@ Four decisions decided the shape of the step.
    the publisher and the instant the store holds.
 3. *No person in the act, without taking the control away from a desk.* A
    request needs a decider, and a provisioning run has nobody to ask. The
-   market data service reads the subject as well as the kind: a curve the
-   tenant's own party owns is the tenant's baseline, bootstrapped from the
+   market data service reads the tenant as well as the kind: a publish in the
+   system tenant is the installation bootstrapping its own curves from the
    quotes its own feeds publish, so no person's judgement is in it, and its
    request closes approved in the same act with the system as the decider. A
-   curve of any other party is a candidate a desk prices from, and it still
-   waits for Market Risk. The policy reads the party the subject is owned by,
-   so a caller cannot choose it, and the seeded count stays one.
+   publish in any other tenant is somebody's book and still waits for Market
+   Risk, whether the curve belongs to the tenant's own party or to a desk
+   inside it. The policy reads the tenant the publish happens in, so a caller
+   cannot choose the half it is in, and the seeded count stays one. The first
+   cut keyed the policy on the subject's party, which would have let any
+   tenant's own party publish without review; the tenant is the sharper line and
+   the one the bootstrap actually needs.
 4. *Patience, because quotes arrive after the feeds start.* Each attempt
    previews the bootstrap with =marketdata.v1.ops.compute_curve=, which writes
    nothing, and publishes only what the preview accepted. A curve without
-   quotes yet is asked again every ten seconds for up to five minutes, so a
+   quotes yet is asked again every ten seconds for up to two minutes, so a
    retry costs no approval request and a slow feed delays a curve rather than
-   failing it.
+   failing it. Two minutes and not five, because the wait is a backstop: the
+   quotes of a running feed arrive within seconds, and the caller of
+   =provision tenant= waits for this step before it reports the system run done.
+   Each round of waiting is written into the step's own log, so the run says why
+   it is taking the time it takes instead of looking stalled, and a curve that
+   is never published makes the step =completed_with_warnings= rather than a
+   clean pass.
 
 * Measurements
 
@@ -85,11 +95,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Curves a step run published | 20 of 20, none refused, each with its as-of | =evidence/publish_system_curves_run.txt= | =e80234c376= |
-| System curve configs with a live published set | 20 of 20 | =evidence/publish_system_curves_run.txt= | =e80234c376= |
-| Market data service suite | 208 cases, 0 failed | =compass test run -- -R ores.marketdata.service.tests= | =e80234c376= |
-| IAM API suite | 911 cases, 0 failed | =./publish/bin/ores.iam.api.tests= | =e80234c376= |
-| IAM core suite | 324 cases, 0 failed | =./publish/bin/ores.iam.core.tests= | =e80234c376= |
+| Curves a step run published | 20 of 20, none refused | =evidence/publish_system_curves_run.txt= | =e80234c376= |
+| Time a step run took | 4.87 s for 20 curves, no retry | =evidence/publish_system_curves_run.txt= | =HEAD= |
+| System curve configs with a live published set | 20 of 20 | =evidence/publish_system_curves_run.txt= | =HEAD= |
+| Market data service suite | 207 cases, 2 failed, both in the feed ingest loop and both failing at the branch point too | =./publish/bin/ores.marketdata.service.tests= | =HEAD= |
+| Market data curve publish suite | 26 cases, 0 failed | =./publish/bin/ores.marketdata.service.tests "[curve_publish]"= | =HEAD= |
+| IAM API suite | 911 cases, 0 failed | =./publish/bin/ores.iam.api.tests= | =HEAD= |
+| IAM core suite | 324 cases, 0 failed | =./publish/bin/ores.iam.core.tests= | =HEAD= |
 
 * Notes
 
@@ -114,17 +126,18 @@ drift is its own task.
 ** Where the policy lives
 
 The policy is the market data service's, not the inbox's: the service asks
-the kind for a count of zero for a subject the tenant's own party owns. The
+the kind for a count of zero when the publish is in the system tenant. The
 inbox keeps one rule, that a kind with no approvals closes with the system as
-the decider, and the seed's commentary states which curves that covers.
+the decider, and the seed's commentary states which publishes that covers.
 
 ** The tenant the run was proved on
 
 A tenant =curvecheck= was provisioned from =empty_operational= on the
-development environment at 09:59 on 2026-11-07, which ran =system_provision=,
-then =publish_system_curves=, then handed over to the tenant run. It is left
-in place as evidence; drop it with =compass db= when the demonstration is
-next recreated.
+development environment at 09:59 on 2026-11-07, and a second, =curveprobe=, at
+11:49 after the step was tightened. Each ran =system_provision=, then
+=publish_system_curves=, then handed over to the tenant run. They are left in
+place as evidence. Note that =compass db reset-tenant= clears a tenant's
+provisioned data but keeps the tenant, so a probe re-run needs a new code.
 
 * Test Scenarios
 
@@ -153,18 +166,29 @@ via its "Verifies task" field.
 
 The system run of provisioning now ends with every currency's curve
 published. A tenant provisioned from =empty_operational= on the development
-environment published all 20 of the system tenant's curves in one step, six
-seconds end to end, and each config holds one live published set with the
+environment published all 20 of the system tenant's curves in one step, 4.87 s
+end to end with no retry, and each config holds one live published set with the
 request that authorised it, the publisher, and the instant the store holds.
-None was refused, so the patience and the refusal path are unexercised by
-that run; the unit suite covers the refusal path through the preview.
+The step's own log states =published 20 of 20 curve(s)=, and the CLI prints it
+under the step, so the run says what happened without a person reading the
+service log.
 
-The published sets are what the published-curves read, the screens and a
-price that reads a forward see. A desk's own curve is untouched by the
-policy and still waits for Market Risk.
+None was refused, so the waiting path and the refusal path are unexercised by
+that run. The unit suite covers the preview's refusal; the wait and its log
+entry are covered by reading them out of the step's own code path, and a fresh
+environment whose feeds are slow is the case that will exercise them.
+
+The published sets are what the published-curves read, the screens and a price
+that reads a forward see. A publish in a tenant -- a desk's candidate, and the
+tenant's own party's curve no less -- still waits for Market Risk, which the
+gate suite states as a policy and not by accident.
 
 Open:
 
 - The four hand-added grants in the generated grants file have no model
   source, so a regeneration still deletes them. That drift is its own task.
-- The tenant =curvecheck= is left on the development environment.
+- The tenants =curvecheck= and =curveprobe= are left on the development
+  environment.
+- Two cases of the feed ingest loop suite fail on this environment, and they
+  fail at the branch point too, so they are not this task's. They count rows
+  in a burst and see a few hundred more than they sent.

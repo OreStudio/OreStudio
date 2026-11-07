@@ -116,6 +116,22 @@ struct workflow_step_context {
     }
 
     /**
+     * @brief Publishes a successful step-completed event with a record of the run.
+     *
+     * Use when the step succeeded but waited or recovered along the way, so the
+     * run's own record says why it took the time it took. A step that merely
+     * retried and then did its work is completed, not completed with warnings:
+     * only a step that left work undone says so through warn().
+     *
+     * @param result_json Serialised JSON result payload.
+     * @param log         Ordered list of entries recorded while the step ran.
+     */
+    void complete(const std::string& result_json,
+                  const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
+        publish(ores::workflow::messaging::step_outcome::completed, result_json, "", log);
+    }
+
+    /**
      * @brief Publishes a step-completed event with partial failures.
      *
      * Use when the step ran to completion but some items failed (e.g. some

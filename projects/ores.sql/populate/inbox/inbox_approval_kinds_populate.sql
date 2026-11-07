@@ -42,14 +42,15 @@
  * asker reads. It names no apply workflow: the trader applies an approved
  * request through marketdata.v1.ops.publish_curve, as the third journey draws it.
  *
- * The count is one, and the market data service reads the subject as well as the
- * count: a curve the tenant's own party owns is bootstrapped by the system from
- * the quotes its own feeds publish, so no person's judgement is in it, and that
- * publish asks the kind for zero approvals and closes at once with the system as
- * its decider. A curve of any other party is a candidate the desk prices from,
- * and it waits here as this row states. So a fresh environment holds each
- * currency's curve published with no person acting, and a desk still asks Market
- * Risk before it prices from a curve of its own.
+ * The count is one, and the market data service reads the tenant as well as the
+ * count: a publish in the system tenant is the installation bootstrapping its own
+ * curves from the quotes its own feeds publish, so no person's judgement is in
+ * it, and that publish asks the kind for zero approvals and closes at once with
+ * the system as its decider. A publish in any other tenant is somebody's book, so
+ * it waits here as this row states, whether the curve belongs to the tenant's own
+ * party or to a desk inside it. So a fresh environment holds each currency's
+ * curve published with no person acting, and a desk still asks Market Risk
+ * before it prices from a curve of its own.
  *
  * A curve withdrawal is decided by Market Risk, as a publish is, because taking
  * a curve out of use is the same risk decision read backwards. It does not

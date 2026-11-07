@@ -25,11 +25,12 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_OBSERVATION_LINEAGE_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_OBSERVATION_LINEAGE_PROTOCOL_HPP
 
-#include "ores.marketdata.api/domain/observation_lineage.hpp"
+#include "ores.marketdata.api/domain/observation_lineage_codec.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

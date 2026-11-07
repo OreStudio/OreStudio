@@ -25,11 +25,12 @@
 #ifndef ORES_INBOX_API_MESSAGING_APPROVAL_KIND_PROTOCOL_HPP
 #define ORES_INBOX_API_MESSAGING_APPROVAL_KIND_PROTOCOL_HPP
 
-#include "ores.inbox.api/domain/approval_kind.hpp"
+#include "ores.inbox.api/domain/approval_kind_codec.hpp"
 #include "ores.inbox.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

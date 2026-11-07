@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_EQUITY_SWAP_PERIOD_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_EQUITY_SWAP_PERIOD_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/equity_swap_period.hpp"
+#include "ores.trading.api/domain/equity_swap_period_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

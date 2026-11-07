@@ -25,11 +25,12 @@
 #ifndef ORES_SCHEDULER_API_MESSAGING_JOB_DEFINITION_PROTOCOL_HPP
 #define ORES_SCHEDULER_API_MESSAGING_JOB_DEFINITION_PROTOCOL_HPP
 
-#include "ores.scheduler.api/domain/job_definition.hpp"
+#include "ores.scheduler.api/domain/job_definition_codec.hpp"
 #include "ores.scheduler.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

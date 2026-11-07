@@ -25,11 +25,12 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_TODAYS_MARKET_COLLECTION_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_TODAYS_MARKET_COLLECTION_PROTOCOL_HPP
 
-#include "ores.analytics.api/domain/todays_market_collection.hpp"
+#include "ores.analytics.api/domain/todays_market_collection_codec.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

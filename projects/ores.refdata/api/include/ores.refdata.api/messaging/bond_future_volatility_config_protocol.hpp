@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_BOND_FUTURE_VOLATILITY_CONFIG_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_BOND_FUTURE_VOLATILITY_CONFIG_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
+#include "ores.refdata.api/domain/bond_future_volatility_config_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

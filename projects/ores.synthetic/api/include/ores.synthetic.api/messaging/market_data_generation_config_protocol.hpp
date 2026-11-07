@@ -25,11 +25,12 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_MARKET_DATA_GENERATION_CONFIG_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_MARKET_DATA_GENERATION_CONFIG_PROTOCOL_HPP
 
-#include "ores.synthetic.api/domain/market_data_generation_config.hpp"
+#include "ores.synthetic.api/domain/market_data_generation_config_codec.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

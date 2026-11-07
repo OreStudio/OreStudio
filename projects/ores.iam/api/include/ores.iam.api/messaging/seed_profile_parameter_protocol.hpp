@@ -25,11 +25,12 @@
 #ifndef ORES_IAM_API_MESSAGING_SEED_PROFILE_PARAMETER_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_SEED_PROFILE_PARAMETER_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/seed_profile_parameter.hpp"
+#include "ores.iam.api/domain/seed_profile_parameter_codec.hpp"
 #include "ores.iam.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

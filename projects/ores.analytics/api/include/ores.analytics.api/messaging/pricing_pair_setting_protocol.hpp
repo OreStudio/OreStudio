@@ -25,11 +25,12 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_PRICING_PAIR_SETTING_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_PRICING_PAIR_SETTING_PROTOCOL_HPP
 
-#include "ores.analytics.api/domain/pricing_pair_setting.hpp"
+#include "ores.analytics.api/domain/pricing_pair_setting_codec.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

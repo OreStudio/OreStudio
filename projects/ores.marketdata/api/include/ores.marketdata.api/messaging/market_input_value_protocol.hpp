@@ -25,11 +25,12 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_MARKET_INPUT_VALUE_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_INPUT_VALUE_PROTOCOL_HPP
 
-#include "ores.marketdata.api/domain/market_input_value.hpp"
+#include "ores.marketdata.api/domain/market_input_value_codec.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

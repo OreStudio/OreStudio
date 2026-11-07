@@ -25,11 +25,12 @@
 #ifndef ORES_DQ_API_MESSAGING_LEI_RELATIONSHIP_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_LEI_RELATIONSHIP_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/lei_relationship.hpp"
+#include "ores.dq.api/domain/lei_relationship_codec.hpp"
 #include "ores.dq.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

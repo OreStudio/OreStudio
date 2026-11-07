@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_BOOKING_NATURE_TYPE_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_BOOKING_NATURE_TYPE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/booking_nature_type.hpp"
+#include "ores.trading.api/domain/booking_nature_type_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

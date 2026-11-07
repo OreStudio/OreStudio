@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_INSTRUMENT_UNDERLYING_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_INSTRUMENT_UNDERLYING_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/instrument_underlying.hpp"
+#include "ores.trading.api/domain/instrument_underlying_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

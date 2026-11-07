@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CROSS_CURRENCY_FIX_FLOAT_FLOAT_LEG_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CROSS_CURRENCY_FIX_FLOAT_FLOAT_LEG_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/cross_currency_fix_float_float_leg.hpp"
+#include "ores.refdata.api/domain/cross_currency_fix_float_float_leg_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

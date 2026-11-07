@@ -26,11 +26,11 @@ A builder can look up the conventions an oresmd identifier needs, and the export
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-06                               |
 
 * Acceptance
@@ -55,7 +55,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.marketdata.api.tests | 4588 assertions in 932 cases pass; lookup 35 in 6, projection 16 in 4 | =ores.marketdata.api.tests= | 597d7e8ca4 |
+| ores.ore.core.tests, ores.ore.service.tests | 520008 in 516; 54 in 10 pass | the two suites | 597d7e8ca4 |
+| ores.synthetic.core.tests | 2610 in 112 pass; no recorded trade changes | =ores.synthetic.core.tests= | 597d7e8ca4 |
 
 * Notes
 
@@ -83,3 +85,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Two pieces in =ores.marketdata.api=, named as the market data requirements
+pages name them, after the owner asked that they follow those pages:
+
+- =convention_lookup= finds the conventions an oresmd identifier's index is
+  defined and used by: the defining Ibor or overnight index convention by the
+  family address (the tenor dropped), and the swap and OIS conventions that
+  use the index by the identifier itself. One match answers; none, or more
+  than one, is an error naming the identifier and why. It is not called a
+  resolver: the pages reserve resolution for mapping a requirement to an
+  identifier.
+- =ore_projection= is the vendor projection to ORE, one way as the pages
+  define it: an index by its ORE index name, a quote by its ORE key, a curve
+  series by the name the run's market configuration gives it. It replaces the
+  function the exporter threaded to name a bond's reference curve;
+  =reference_curve_names_of= is =ore_projection_of=. A column that is not an
+  identifier, or a curve the run does not name, is written as stored, so the
+  export is unchanged; the recorded trades do not move.
+
+Acceptance: the second and third criteria are met, the second amended to
+one direction as the pages define the projection (reading an ORE name back is
+the importer's, in
+[[id:639CEE8C-0586-4EEF-8F12-C450F956B00F][Store trade market references as oresmd addresses]]).
+The first is met for index definitions and swap and OIS conventions; the CDS
+convention and the equity and commodity underlyings move to
+[[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Generate every trade type through its builder]],
+where their families' builders need them, since no seeded CDS convention
+states an address yet.

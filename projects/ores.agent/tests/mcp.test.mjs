@@ -22,7 +22,7 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         if (op === 'books') return { result: { outcome: 'ok' }, total: 1, books: [{ id: seriesId, tenant_id: tenant, party_id: party, name: 'fixture book', parent_portfolio_id: seriesId, functional_currency: 'GBP', recorded_at: '2016-12-29T00:00:00Z' }] };
         if (op === 'trades') return { result: { outcome: 'ok' }, total: 1, trades: [{ id: seriesId, tenant_id: tenant, party_id: party, recorded_at: '2016-12-29T00:00:00Z' }] };
         if (op === 'tradeBookings') return { result: { outcome: 'ok' }, total: 1, trade_bookings: [{ tenant_id: tenant, trade_id: seriesId, book_id: seriesId, recorded_at: '2016-12-29T00:00:00Z' }] };
-        if (op === 'reportMetrics') return { result: { outcome: 'ok' }, total: 1, metrics: [{ id: runId, tenant_id: tenant, party_id: party, report_instance_id: runId, report_definition_id: runId, as_of: '2016-12-30', subject_type: 'trade', subject_id: seriesId, measure: 'NPV(Base)', family: 'npv_report', source: 'npv.csv', value: 0, currency: 'GBP', scenario: '', factor: '', qualifiers: '{"BaseCurrency":"GBP"}' }] };
+        if (op === 'reportMetrics') return { result: { outcome: 'ok' }, total: 1, metrics: [{ id: runId, tenant_id: tenant, party_id: party, report_instance_id: runId, report_definition_id: runId, result_id: runId, line: 2, as_of: '2016-12-30T00:00:00Z', subject_type: 'trade', subject_id: seriesId, measure: args.filter.family === 'sensitivity_report' ? 'Delta' : 'NPV(Base)', family: args.filter.family, source: args.filter.family === 'sensitivity_report' ? 'sensitivity.csv' : 'npv.csv', value: 0, currency: 'GBP', scenario: '', factor: '', qualifiers: args.filter.family === 'sensitivity_report' ? '{"IsPar":"false","Factor_1":"DiscountCurve/GBP/0/1Y","ShiftSize_1":"0.0001","Currency":"GBP"}' : '{"BaseCurrency":"GBP"}' }] };
         if (op === 'series') return { result: { outcome: 'ok' }, total: 1, market_series: [{ id: seriesId, tenant_id: tenant, party_id: party, provider_code: 'fixture', oresmd_uri: uri, series_subclass: 'fixture' }] };
         if (op === 'observations') return { result: { outcome: 'ok' }, total: 1, market_observations: [{ series_id: seriesId, tenant_id: tenant, party_id: party, oresmd_uri: uri.replace('type=series', 'type=quote'), value: '1.0552', observation_datetime: '2016-12-30 00:00:00.000000Z', source: 'labelled.fixture' }] };
         return { result: { outcome: 'ok' }, currencies: [{ iso_code: 'GBP', name: 'test fixture' }], total: 1 };
@@ -51,7 +51,7 @@ test('independent official MCP client discovers/calls tools; denied calls and re
         assert.ok(!summary.isError, JSON.stringify(summary));
         const scoped = JSON.parse(summary.content[0].text); assert.equal(scoped.status, 'stale'); assert.equal(scoped.total.figure, '0'); assert.equal(scoped.coverage.expectedTradeCount, 1);
         const greek = await client.callTool({ name: 'summarize_scope_results', arguments: { scopeType: 'book', scope: 'fixture book', runId, measure: 'delta' } });
-        assert.equal(JSON.parse(greek.content[0].text).status, 'unsupported');
+        const risk = JSON.parse(greek.content[0].text); assert.ok(!greek.isError, JSON.stringify(greek)); assert.equal(risk.status, 'ok'); assert.equal(risk.stale, true); assert.equal(risk.buckets[0].total.figure, '0');
         const denied = await client.callTool({ name: 'list_currencies', arguments: { tenantId: 'other' } });
         assert.equal(denied.isError, true);
         await fetch(base + '/auth/logout', { method: 'POST', headers });

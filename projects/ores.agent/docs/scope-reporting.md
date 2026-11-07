@@ -66,10 +66,11 @@ than three days as stale; an explicit historical date must match the run.
 
 ## Greeks and bounds
 
-`greeks`, `delta`, `gamma`, `vega` and `dv01` return **unsupported** without a
-figure. Verified risk-factor dimensions, units and bump/scenario contracts are
-not enabled by this release. The NPV slice of Stage 3 is separate from that
-remaining Greek delivery; no sensitivity is inferred from a measure name.
+The 0.1.4 release did not enable Greeks. Version 0.1.5 adds
+[stored raw sensitivity buckets](greeks.md) through the same tool for `greeks`,
+`delta`, `gamma`, `vega` and `dv01`, preserving factor/bump/scenario/currency
+dimensions. Incomplete or unverified buckets have no full-scope total. No
+sensitivity or zero value is inferred from an NPV or an absent row.
 
 Each historical/result scan is bounded at 2,000 rows. Booking requests use
 500-trade batches; a result scope is limited to 1,000 expected trades and a

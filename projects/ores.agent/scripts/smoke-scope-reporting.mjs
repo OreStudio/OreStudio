@@ -33,7 +33,7 @@ try {
         console.log(JSON.stringify({ externalMcp: true, independentDecimalReference: true, scope: ref.scope, total: ref.total, currency: ref.currency, reconciledContributors: found.size, durationMs: Date.now() - started }));
     }
     const first = reference[0], selected = { scopeType: first.scopeType, scope: first.scope, runId: first.runId };
-    const greek = await call({ ...selected, measure: 'delta' }); assert.equal(greek.status, 'unsupported'); assert.equal(greek.total, undefined);
+    const greek = await call({ ...selected, measure: 'delta' }); assert.equal(greek.status, 'unavailable'); assert.equal(greek.total, undefined);
     const wrongCurrency = await call({ ...selected, currency: first.currency === 'USD' ? 'GBP' : 'USD' }); assert.equal(wrongCurrency.total, undefined);
     if (partialRunId) { const partial = await call({ ...selected, runId: partialRunId }); assert.equal(partial.status, 'unavailable'); assert.equal(partial.total, undefined); }
     if (otherPartyId) {
@@ -52,6 +52,6 @@ try {
     const selectedReply = await post('/chat', { message: first.runId }, token);
     assert.ok(selectedReply.evidence.some(e => e.total?.figure === first.total));
     const unsupported = await post('/chat', { message: `Show delta for ${first.scopeType} "${first.scope}" from run ${first.runId}` }, token);
-    assert.ok(unsupported.evidence.some(e => e.tool === 'summarize_scope_results' && e.status === 'unsupported'), JSON.stringify(unsupported));
+    assert.ok(unsupported.evidence.some(e => e.tool === 'summarize_scope_results' && e.status === 'unavailable' && !e.total), JSON.stringify(unsupported));
     console.log(JSON.stringify({ runClarification: true, greekSubstitutionPrevented: true, otherPartyDenied: Boolean(otherPartyId), partialRunWithheld: Boolean(partialRunId) }));
 } finally { try { await client.close(); } finally { await post('/auth/logout', {}, token); } }

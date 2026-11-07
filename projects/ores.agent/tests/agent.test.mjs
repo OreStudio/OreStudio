@@ -91,7 +91,7 @@ test('scope Greeks cannot be replaced by an NPV measure proposed by the model', 
     const agent = new Agent({ complete: async () => toolCall('{"scopeType":"book","scope":"FX Book","measure":"npv_base"}', 'summarize_scope_results') }, {
         execute: async (name, args) => { assert.equal(args.measure, 'delta'); return { tool: name, status: 'unsupported', reason: 'Greek units are not verified.' }; },
     });
-    const r = await agent.chat({ message: 'Show delta for book FX Book' }, makeSession(), new AbortController().signal);
+    const r = await agent.chat({ message: 'Show delta for book FX Book from run 11111111-1111-4111-8111-111111111111' }, makeSession(), new AbortController().signal);
     assert.match(r.answer, /not verified/); assert.equal(r.evidence[0].status, 'unsupported');
 });
 
@@ -99,4 +99,12 @@ test('a model-invented scope run cannot execute without a user selection', async
     let round = 0;
     const agent = new Agent({ complete: async () => ++round === 1 ? toolCall('{"scopeType":"book","scope":"FX Book","runId":"22222222-2222-4222-8222-222222222222"}', 'summarize_scope_results') : { role: 'assistant', content: 'Select a report run.' } }, { execute: async () => assert.fail('Invented run selection must not execute') });
     assert.equal((await agent.chat({ message: 'Show NPV for book FX Book from run 44444444-4444-4444-8444-444444444444' }, makeSession(), new AbortController().signal)).evidence.length, 0);
+});
+
+test('Greek questions ask for a run before inference and cannot invent factor selection', async () => {
+    let modelCalls=0;
+    const agent = new Agent({ complete: async () => { modelCalls++; return toolCall('{"scopeType":"book","scope":"FX Book","measure":"delta","factor":"DiscountCurve/GBP/0/1Y"}', 'summarize_scope_results'); } }, { execute: async () => assert.fail('Unrequested factor must not execute') });
+    const missing=await agent.chat({message:'Show Greeks for book FX Book'},makeSession(),new AbortController().signal);
+    assert.equal(missing.selectionRequired,'runId');assert.equal(modelCalls,0);
+    await assert.rejects(()=>agent.chat({message:'Show delta for book FX Book from run 11111111-1111-4111-8111-111111111111'},makeSession(),new AbortController().signal));
 });

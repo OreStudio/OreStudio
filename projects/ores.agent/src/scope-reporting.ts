@@ -3,31 +3,17 @@ import { z } from 'zod';
 import { AppError, type Backend, type Operation } from './backend.js';
 import type { Session } from './auth.js';
 import { marketId, observationTime } from './market.js';
+import { summarizeSensitivities, formatSensitivities } from './sensitivity.js';
+import { decimalSum, decimalParts } from './decimal.js';
+export { decimalSum, decimalParts } from './decimal.js';
 
 export const scopeTools = {
     summarize_scope_results: {
-        description: 'Sum stored NPV for a book or booking-portfolio subtree using historical membership at the named run start. Preserve the literal scope name/UUID. Supply the user-selected runId, or omit it to ask for one. Requires clean completion and one canonical npv.csv row per expected trade. npv_base is the common-base measure; no FX conversion. Returns coverage, dated total and paginated contributors. Greek measures are explicitly unsupported until their units/bump contracts are verified.',
-        schema: z.object({ scopeType: z.enum(['book', 'portfolio']), scope: z.string().min(1).max(120), runId: marketId.transform(v => v.toLowerCase()).optional(), measure: z.enum(['npv', 'npv_base', 'greeks', 'delta', 'gamma', 'vega', 'dv01']).default('npv_base'), currency: z.string().regex(/^[A-Za-z]{3}$/).transform(s => s.toUpperCase()).optional(), offset: z.number().int().min(0).max(1000).default(0), limit: z.number().int().min(1).max(25).default(10), valuationDate: z.iso.date().optional(), maxAgeDays: z.number().int().min(0).max(365).default(3) }).strict(),
+        description: 'Read stored NPV or raw Greek buckets for a book/booking-portfolio subtree at an explicit run start. Preserve literal scope and run UUID. Default npv_base uses npv.csv and explicit base units. Greeks/delta/gamma/vega/dv01 use sensitivity.csv cash finite differences grouped by exact factor, target shifts, scenario and currency. Never sum different buckets or infer missing as zero. Vega selects volatility Delta; dv01 selects rate Delta at a 0.0001 bump with signed engine convention. Optional literal factor/factor2/scenario select buckets; bucketOffset/bucketLimit page buckets; offset/limit page contributors. Totals require one figure per expected trade in a bucket.',
+        schema: z.object({ scopeType: z.enum(['book', 'portfolio']), scope: z.string().min(1).max(120), runId: marketId.transform(v => v.toLowerCase()).optional(), measure: z.enum(['npv', 'npv_base', 'greeks', 'delta', 'gamma', 'vega', 'dv01']).default('npv_base'), currency: z.string().regex(/^[A-Za-z]{3}$/).transform(s => s.toUpperCase()).optional(), factor: z.string().min(1).max(256).optional(), factor2: z.string().max(256).optional(), scenario: z.string().max(120).optional(), bucketOffset: z.number().int().min(0).max(2000).default(0), bucketLimit: z.number().int().min(1).max(10).default(5), offset: z.number().int().min(0).max(1000).default(0), limit: z.number().int().min(1).max(25).default(10), valuationDate: z.iso.date().optional(), maxAgeDays: z.number().int().min(0).max(365).default(3) }).strict(),
     },
 } as const;
 
-// Exact decimal arithmetic over the canonical decimal renderings of backend doubles.
-// This cannot recover precision already lost by the backend's double storage.
-export function decimalParts(value: number): { coefficient: bigint; scale: number } {
-    if (!Number.isFinite(value)) throw new AppError('invalid_figure', 'Non-finite stored figure.');
-    const match = /^(-?)(\d+)(?:\.(\d+))?(?:e([+-]?\d+))?$/.exec(String(value))!;
-    let coefficient = BigInt((match[1] || '') + match[2] + (match[3] || ''));
-    let scale = (match[3]?.length ?? 0) - Number(match[4] ?? 0);
-    if (scale < 0) { coefficient *= 10n ** BigInt(-scale); scale = 0; }
-    return { coefficient, scale };
-}
-export function decimalSum(values: number[]): string {
-    const parts = values.map(decimalParts), scale = Math.max(0, ...parts.map(p => p.scale));
-    const sum = parts.reduce((total, p) => total + p.coefficient * 10n ** BigInt(scale - p.scale), 0n);
-    const digits = (sum < 0n ? -sum : sum).toString().padStart(scale + 1, '0');
-    const text = scale ? (digits.slice(0, -scale) + '.' + digits.slice(-scale)).replace(/\.?0+$/, '') : digits;
-    return (sum < 0n ? '-' : '') + text;
-}
 const uuid = marketId.transform(v => v.toLowerCase());
 const scoped = { id: uuid, tenant_id: uuid, party_id: uuid };
 const dated = { recorded_at: z.string() };
@@ -53,13 +39,13 @@ export class ScopeReporting {
     constructor(private backend: Backend, private now: () => number = Date.now) {}
     async execute(raw: unknown, session: Session, signal?: AbortSignal): Promise<unknown> {
         const args = scopeTools.summarize_scope_results.schema.parse(raw);
+        if (['npv','npv_base'].includes(args.measure) && [args.factor,args.factor2,args.scenario].some(v => v !== undefined)) throw new AppError('invalid_arguments', 'Factor/scenario selectors apply only to Greek buckets.', 400);
         const deadline = AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(30000)]), now = this.now(), retrievedAt = new Date(now).toISOString();
         const check = () => { deadline.throwIfAborted(); if (!session.active || session.expires <= Date.now()) throw new AppError('session_expired', 'Sign in again.', 401); };
         check();
         const request = async (op: Operation, payload: unknown) => { check(); const r = await this.backend.request(op, payload, session, deadline); check(); accepted(r); return r; };
         const own = (r: { tenant_id: string; party_id: string }) => r.tenant_id === session.tenantId && r.party_id === session.partyId;
         const base = { tool: 'summarize_scope_results', request: args, source: 'OreStudio', partyId: session.partyId, retrievedAt };
-        if (!['npv', 'npv_base'].includes(args.measure)) return { ...base, status: 'unsupported', reason: 'Greek aggregation is not enabled: verified units, bump conventions and risk-factor/scenario contracts are required. No NPV is substituted and no Greek value is inferred.' };
         if (!args.runId) return { ...base, status: 'selection_required', field: 'runId', reason: 'Select an exact stored report run UUID from the report list or UI, then reply with it. No total was calculated.' };
         if (args.valuationDate && args.valuationDate > retrievedAt.slice(0, 10)) throw new AppError('future_date', 'Future valuation dates are not supported.', 400);
         const scan = async <T extends z.ZodType>(op: Operation, key: string, schema: T, filter: unknown, asOf?: string, identityKey = 'id'): Promise<z.infer<T>[]> => {
@@ -124,6 +110,15 @@ export class ScopeReporting {
         const expected = new Set(bookings.filter(r => includedBooks.has(r.book_id)).map(r => r.trade_id));
         if (!expected.size) return { ...context, status: 'empty_scope', reason: 'No booked trades at this run-start timestamp. An empty scope is not a zero valuation.' };
         if (expected.size > 1000) return { ...context, status: 'incomplete', reason: 'Scope exceeds the 1,000-trade result-filter bound; narrow to a smaller book/portfolio. No total calculated.' };
+        if (!['npv', 'npv_base'].includes(args.measure)) {
+            const metrics = await scan('reportMetrics', 'metrics', metricSchema.extend({ result_id: uuid, line: z.number().int().positive() }), { report_instance_id: run.id, family: 'sensitivity_report', subject_id_one_of: [...expected], measure_one_of: ['Delta', 'Gamma'] });
+            for (const metric of metrics) observationTime(metric.as_of);
+            const summarized = summarizeSensitivities(metrics, expected, args, { tenantId: session.tenantId, partyId: session.partyId!, runId: run.id, definitionId: run.definition_id, pricedAt });
+            const reread = await readRun(new Date(this.now()).toISOString());
+            if (JSON.stringify(reread) !== JSON.stringify(run) || (await health()).health !== state.health) return { ...context, status: 'incomplete', reason: 'Run health or provenance changed during reading; retry. No Greek figures returned.' };
+            const stale = !args.valuationDate && (Date.parse(retrievedAt.slice(0, 10)) - Date.parse(pricedAt)) / 86400000 > args.maxAgeDays;
+            return { ...context, ...summarized, stale, historicalRequest: Boolean(args.valuationDate), warning: stale ? 'Stored historical sensitivities, not a current risk calculation.' : null };
+        }
         const filter = Object.fromEntries(['party_id', 'report_instance_id', 'report_definition_id', 'subject_type', 'subject_id', 'measure', 'currency', 'counterparty_id', 'id_one_of', 'party_id_one_of', 'report_instance_id_one_of', 'report_definition_id_one_of', 'subject_type_one_of', 'subject_id_one_of', 'measure_one_of', 'currency_one_of', 'counterparty_id_one_of'].map(k => [k, null]));
         Object.assign(filter, { party_id: session.partyId, report_instance_id: run.id, subject_type: 'trade', subject_id_one_of: [...expected], measure: args.measure });
         const rows = await scan('runResults', 'results', resultSchema, filter);
@@ -170,6 +165,7 @@ export class ScopeReporting {
 export function formatScopeReporting(raw: unknown): string | undefined {
     if (!raw || typeof raw !== 'object' || (raw as any).tool !== 'summarize_scope_results') return;
     const r = raw as any;
+    if (r.buckets) return formatSensitivities(r);
     if (!r.total) return `${r.reason}${r.health ? '\nRun health: ' + r.health : ''}${r.coverage ? `\nCoverage: ${r.coverage.valuedTradeCount}/${r.coverage.expectedTradeCount}; missing ${r.coverage.missingTradeCount}; duplicates ${r.coverage.duplicateTradeCount}.` : ''}${r.candidates?.length ? '\n' + r.candidates.map((c: any) => `${c.name} [${c.id}]`).join('\n') : ''}${r.currencies?.length ? '\nCurrencies: ' + r.currencies.join(', ') : ''}`;
     return `${r.warning ? r.warning + '\n' : ''}${r.scope.type} ${r.scope.name} [${r.scope.id}]\n${r.total.measure === 'npv_base' ? 'Base NPV' : 'NPV'}: ${r.total.figure} ${r.total.currency}\nCoverage: ${r.coverage.valuedTradeCount}/${r.coverage.expectedTradeCount} trades; missing 0; duplicates 0.\nMembership: bookings at ${r.membershipAt}${r.scope.type === 'portfolio' ? ' in the booking-portfolio subtree; direct trade assignments are separate' : ''}.\nRun: ${r.run.name} [${r.run.id}]\nHealth: ${r.health}; actual pricing date: ${r.run.priced_at}\nCompleted: ${r.run.completed_at}\nMarket cut: ${r.run.cut_label ?? 'not supplied'} (${r.run.cut_timepoint ?? 'time not supplied'})\nPricing-date note: ${r.run.price_note || 'none'}\nSource: ${r.total.source}\nContributors by absolute value; showing ${r.contributors.length} from offset ${r.offset} of ${r.contributorCount}:\n${r.contributors.map((c: any) => `${c.tradeId}: ${c.figure} ${c.currency}`).join('\n')}${r.nextOffset !== null ? '\nNext contributor offset: ' + r.nextOffset : ''}\nStored results only; no repricing or currency conversion.`;
 }

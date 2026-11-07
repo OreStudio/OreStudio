@@ -20,6 +20,7 @@ function fixture() {
         const ok = value => ({ result: { outcome: 'ok' }, ...value });
         if (op === 'runHealth') return ok({ health: f.health, state_name: 'completed' });
         if (op === 'reportMetrics') {
+            if (args.filter.family === 'sensitivity_report') return ok({ total: (f.greekMetrics ?? []).length, metrics: (f.greekMetrics ?? []).slice(args.offset, args.offset + args.limit) });
             const metrics = rows.filter(r => args.filter.subject_id_one_of.includes(r.subject_id)).map(r => ({ ...r, measure: 'NPV(Base)', family: 'npv_report', scenario: '', factor: '', qualifiers: JSON.stringify({ BaseCurrency: f.metricCurrency ?? r.currency }), value: r.figure }));
             return ok({ total: metrics.length, metrics: metrics.slice(args.offset, args.offset + args.limit) });
         }
@@ -62,13 +63,27 @@ test('portfolio booking subtrees reconcile with books and do not use direct assi
     assert.equal(child.total.figure, '0.3'); assert.match(formatScopeReporting(parent), /direct trade assignments are separate/);
     assert.ok(!f.calls.some(c => ['exportPortfolio', 'tradePortfolios'].includes(c.op)));
 });
-test('run selection and unsupported Greeks never silently substitute a total', async () => {
+test('run selection and unavailable Greeks never silently substitute an NPV total', async () => {
     const f = fixture(); const { runId: _, ...noRun } = args;
     assert.equal((await f.report.execute(noRun, f.session)).status, 'selection_required');
     for (const measure of ['greeks', 'delta', 'gamma', 'vega', 'dv01']) {
-        const r = await f.report.execute({ ...args, measure }, f.session); assert.equal(r.status, 'unsupported'); assert.equal(r.total, undefined); assert.match(formatScopeReporting(r), /No NPV is substituted/);
+        const r = await f.report.execute({ ...args, measure }, f.session); assert.equal(r.status, 'unavailable'); assert.equal(r.total, undefined); assert.match(formatScopeReporting(r), /Missing or suppressed sensitivities are not zero/);
     }
-    assert.equal(f.calls.length, 0);
+    assert.ok(f.calls.some(c => c.op === 'reportMetrics')); assert.ok(!f.calls.some(c => c.op === 'runResults'));
+});
+
+test('Greek scope reads preserve historical identity, full coverage, source evidence and deterministic formatting', async () => {
+    const f = fixture();
+    f.greekMetrics = f.trades.slice(0,2).map((t,i) => ({ ...f.rows[i], id:id(70+i), result_id:id(90), line:i+2, value:[0.1,0.2][i], measure:'Delta', family:'sensitivity_report', source:'sensitivity.csv', currency:'GBP', scenario:'', factor:'', qualifiers:JSON.stringify({ IsPar:'false', Factor_1:'DiscountCurve/GBP/0/1Y', ShiftSize_1:'0.000100', ShiftSize_2:'0.000000', Currency:'GBP' }) }));
+    const r = await f.report.execute({ ...args, measure:'dv01', factor:'DiscountCurve/GBP/0/1Y', limit:1 }, f.session);
+    assert.equal(r.status,'ok'); assert.equal(r.buckets[0].total.figure,'0.3'); assert.equal(r.buckets[0].coverage.expectedTradeCount,2);
+    assert.equal(r.buckets[0].contributors[0].tradeId,id(11)); assert.equal(r.buckets[0].nextOffset,1);
+    assert.match(formatScopeReporting(r),/cash finite difference: 0.3 GBP/); assert.match(formatScopeReporting(r),/target shift 0.0001/);
+    assert.ok(!f.calls.some(c => c.op === 'runResults'));
+    f.greekMetrics.pop(); const missing=await f.report.execute({ ...args, measure:'delta' },f.session);
+    assert.equal(missing.status,'incomplete'); assert.equal(missing.buckets[0].total,null);
+    f.greekMetrics[0].party_id=id(99);
+    await assert.rejects(()=>f.report.execute({...args,measure:'delta'},f.session),/identity/);
 });
 test('failed, running and partial runs cannot produce scope totals', async () => {
     for (const state of ['failed', 'running', 'completed with errors']) {

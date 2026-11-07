@@ -4,7 +4,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { loadConfig } from '../dist/config.js';
 import { NatsBackend } from '../dist/backend.js';
 import { Sessions } from '../dist/auth.js';
-const [configPath, credentialsPath, partyId, runId, outputPath] = process.argv.slice(2);
+const [configPath, credentialsPath, partyId, runId, outputPath, mode = 'npv'] = process.argv.slice(2);
+if (!['npv','greeks'].includes(mode)) throw Error('Capture mode must be npv or greeks.');
 if (!outputPath || !configPath || !credentialsPath || !partyId || !runId) throw Error('Pass config, private credentials JSON, party UUID, run UUID and private output path.');
 const config = await loadConfig(configPath), credentials = JSON.parse(await readFile(credentialsPath, 'utf8'));
 const backend = await NatsBackend.open(config.nats), sessions = new Sessions(backend);
@@ -27,7 +28,7 @@ try {
     const health = await backend.request('runHealth', { report_instance_id: runId }, session); assert.equal(health.result.outcome, 'ok'); assert.equal(health.health, 'completed clean');
     const output = { run };
     for (const [op, key] of [['books', 'books'], ['portfolios', 'portfolios'], ['trades', 'trades'], ['tradeBookings', 'trade_bookings']]) output[op] = await read(op, key, null, run.started_at);
-    output.metrics = await read('reportMetrics', 'metrics', { report_instance_id: runId, measure: 'NPV(Base)', family: 'npv_report' });
+    output.metrics = await read('reportMetrics', 'metrics', mode === 'greeks' ? { report_instance_id: runId, family: 'sensitivity_report', measure_one_of: ['Delta','Gamma'] } : { report_instance_id: runId, measure: 'NPV(Base)', family: 'npv_report' });
     await writeFile(outputPath, JSON.stringify(output, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify({ outputPath, runId, rawMetricCount: output.metrics.length }));
 } finally { try { await sessions.close(); } finally { await backend.close(); } }

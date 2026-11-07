@@ -20,22 +20,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Main compiles again: the vendor catalogue names the header the ORE metadata
+URI codec now lives in, so the tool and everything the build orders after it
+build.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
-| Parent story | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now          | Not yet started.                       |
+| State        | DONE                              |
+| Parent story | [[id:AE947749-7D9D-4336-BED9-78F69187AD4D][Build the bindings screen and clear the oresmd snags — the remaining work]] |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
 
--
+- =./compass.sh build ores.marketdata.vendor-catalogue= exits 0.
+- The format gate passes for the file the commit touches.
 
 * Plan
 
@@ -69,6 +72,24 @@ via its "Verifies task" field.
 | Scenario | State | Notes |
 |----------+-------+-------|
 |          |       |       |
+
+* Result
+
+=ores.marketdata.core/datum/oresmd_uri_codec.hpp= no longer exists: the ORE
+metadata codec moved into the marketdata api component. =tools/vendor_catalogue=
+still included the old path, so the target and everything after it in the build
+failed with
+
+#+begin_example
+fatal error: 'ores.marketdata.core/datum/oresmd_uri_codec.hpp' file not found
+#+end_example
+
+The include now names =ores.marketdata.api/datum/oresmd_uri_codec.hpp=. The
+target builds, and the file is brought to clang-format because the format gate
+refused the pillar quote initialiser it inherited.
+
+Verified: =./compass.sh build ores.marketdata.vendor-catalogue= exits 0;
+=./compass.sh check --only format= passes.
 
 * PRs
 

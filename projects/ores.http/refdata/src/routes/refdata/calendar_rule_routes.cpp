@@ -173,6 +173,12 @@ boost::asio::awaitable<http_response> calendar_rule_routes::handle_list(const ht
     try {
         request_type msg;
         calendar_rule_apply_page(msg, req);
+        if (const auto raw = req.get_query_param("f.calendar_code"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::calendar_rules_filter{};
+            msg.filter->calendar_code =
+                calendar_rule_read_param<std::string>(raw, "f.calendar_code");
+        }
         co_return co_await calendar_rule_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -361,6 +367,8 @@ void calendar_rule_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .response<messaging::list_calendar_rules_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -373,6 +381,8 @@ void calendar_rule_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_rules.get operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .response<messaging::get_calendar_rule_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
     const auto get_built = get_route.build();
@@ -385,6 +395,8 @@ void calendar_rule_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_rules.get_many operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .body<messaging::get_many_calendar_rules_request>()
             .response<messaging::get_many_calendar_rules_response>()
             .handler([&session](const http_request& req) { return handle_get_many(req, session); });
@@ -398,6 +410,8 @@ void calendar_rule_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_rules.put operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .body<messaging::put_calendar_rule_request>()
             .response<messaging::put_calendar_rule_response>()
             .handler([&session](const http_request& req) { return handle_add(req, session); });
@@ -411,6 +425,8 @@ void calendar_rule_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_rules.put operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_calendar_rule_request>()
             .response<messaging::put_calendar_rule_response>()
@@ -425,6 +441,8 @@ void calendar_rule_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_rules.put_many operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .body<messaging::put_many_calendar_rules_request>()
             .response<messaging::put_many_calendar_rules_response>()
             .handler([&session](const http_request& req) { return handle_put_many(req, session); });
@@ -438,6 +456,8 @@ void calendar_rule_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_rules.delete operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
             .query_param("version", "integer", "", false, "Version")
@@ -453,6 +473,8 @@ void calendar_rule_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_rules.delete_many operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .body<messaging::delete_many_calendar_rules_request>()
             .response<messaging::delete_many_calendar_rules_response>()
             .handler(
@@ -472,6 +494,8 @@ void calendar_rule_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .query_param("scope", "string", "", false, "direct or subtree")
             .response<messaging::list_by_calendar_code_calendar_rules_response>()
             .handler([&session](const http_request& req) {
@@ -491,6 +515,8 @@ void calendar_rule_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .response<messaging::list_calendar_rule_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
     const auto versions_built = versions_route.build();
@@ -503,6 +529,8 @@ void calendar_rule_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_rules_versions.get operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param(
+                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .response<messaging::get_calendar_rule_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });
     const auto version_built = version_route.build();

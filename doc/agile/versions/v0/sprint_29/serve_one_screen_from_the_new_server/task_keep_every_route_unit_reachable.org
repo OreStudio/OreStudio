@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: B914EAE1-E73B-424C-8196-F9C68EEFDB54
+:END:
+#+title: Task: Keep every route unit reachable
+#+description: A route unit the component aggregate never registers compiles, links, passes its cases and answers nothing, and nothing reports it. Gate the link: every model that opts into the route facet has its unit called by its component's aggregate, once.
+#+type: task
+#+level: s1
+#+filetags: :sprint_29:v0:serve_one_screen_from_the_new_server:
+#+owner: marco
+#+branch: feature/generate-the-route-aggregate
+#+pr: 4483
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A route unit that a component aggregate never registers cannot reach the gateway
+unnoticed, because the gate names it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-07                               |
+
+* Acceptance
+
+- A model that opts into the route facet and whose unit the aggregate never calls fails the gate, and the failure names both.
+- A unit the aggregate registers twice fails the gate.
+- The three components that answer routes today pass the check unchanged.
+- The check runs in the local gate for a change to the adapter, the models or the check itself.
+
+* Plan
+
+The port has one silent failure. A resource is served in five steps, and the fourth,
+adding its unit to the component's hand-written aggregate, is the one no generator
+covers. Skip it and the unit compiles, links, passes its own registration cases and is
+never called, so the gateway answers nothing for that collection and nothing anywhere
+says so. The route inventory cannot see it either: it reads the unit's own router
+calls, and they exist.
+
+So the link gets a check, in the shape the repository already uses for the same trap in
+the shell's command units. It reads the components under =projects/ores.http/=, takes
+each model that opts into the route facet in the matching =projects/ores.<component>/modeling/=,
+and asserts the aggregate calls that unit once. A unit registered twice is a second
+problem, because the second registration claims routes the first stated.
+
+The check reads the models rather than the generated files, so it holds for a model
+whose unit has not been generated yet, which is the state a branch is in between the
+opt-in and the regeneration.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The check on the tree | 3 component aggregates, 0 problems | =python3 build/scripts/check_route_units.py= | this branch |
+| Its cases | 5 cases, all passing | =python3 -m pytest build/scripts/tests/test_check_route_units.py= | this branch |
+| The probe | dropping one registration makes the check exit 1 and name the unit and the model | =check_route_units.py= with the call removed | this branch |
+
+* Notes
+
+- The check names the aggregate, the unit and the model that opted in, because the
+  three are what a person needs: where to add the call, what to add, and why it is
+  expected.
+- A unit the aggregate calls but which does not exist is a problem too, so a deleted
+  unit cannot leave a stale registration behind.
+- The aggregate itself is still hand-written. Generating it is the alternative, and it
+  would remove the step rather than guard it; that is a larger change to the facet and
+  is not what this task does.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4483][#4483]] | [codegen] Read filter members, and gate the route aggregate |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A component's route units are reachable or the gate says which one is not. The check
+reads the models for the opt-in and the aggregate for the call, so the silent step of
+the five that the port takes is now the one that fails loudly.

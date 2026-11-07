@@ -174,6 +174,13 @@ ir_curve_bootstrap_pillar_routes::handle_list(const http_request& req, nats_clie
     try {
         request_type msg;
         ir_curve_bootstrap_pillar_apply_page(msg, req);
+        if (const auto raw = req.get_query_param("f.bootstrap_config_id"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_pillars_filter{};
+            msg.filter->bootstrap_config_id =
+                ir_curve_bootstrap_pillar_read_param<boost::uuids::uuid>(raw,
+                                                                         "f.bootstrap_config_id");
+        }
         co_return co_await ir_curve_bootstrap_pillar_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -348,6 +355,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .response<messaging::list_ir_curve_bootstrap_pillars_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -360,6 +372,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_pillars.get operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .response<messaging::get_ir_curve_bootstrap_pillar_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
     const auto get_built = get_route.build();
@@ -373,6 +390,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_pillars.get_many operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .body<messaging::get_many_ir_curve_bootstrap_pillars_request>()
             .response<messaging::get_many_ir_curve_bootstrap_pillars_response>()
             .handler([&session](const http_request& req) { return handle_get_many(req, session); });
@@ -386,6 +408,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_pillars.put operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .body<messaging::put_ir_curve_bootstrap_pillar_request>()
             .response<messaging::put_ir_curve_bootstrap_pillar_response>()
             .handler([&session](const http_request& req) { return handle_add(req, session); });
@@ -399,6 +426,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_pillars.put operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_ir_curve_bootstrap_pillar_request>()
             .response<messaging::put_ir_curve_bootstrap_pillar_response>()
@@ -414,6 +446,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_pillars.put_many operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .body<messaging::put_many_ir_curve_bootstrap_pillars_request>()
             .response<messaging::put_many_ir_curve_bootstrap_pillars_response>()
             .handler([&session](const http_request& req) { return handle_put_many(req, session); });
@@ -427,6 +464,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .description("Forwards to the refdata.v1.ir_curve_bootstrap_pillars.delete operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
             .query_param("version", "integer", "", false, "Version")
@@ -443,6 +485,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_pillars.delete_many operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .body<messaging::delete_many_ir_curve_bootstrap_pillars_request>()
             .response<messaging::delete_many_ir_curve_bootstrap_pillars_response>()
             .handler(
@@ -462,6 +509,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .response<messaging::list_ir_curve_bootstrap_pillar_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
     const auto versions_built = versions_route.build();
@@ -475,6 +527,11 @@ void ir_curve_bootstrap_pillar_routes::register_routes(
                 "Forwards to the refdata.v1.ir_curve_bootstrap_pillars_versions.get operation.")
             .tags({"refdata"})
             .auth_required()
+            .query_param("f.bootstrap_config_id",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose bootstrap_config_id is this value")
             .response<messaging::get_ir_curve_bootstrap_pillar_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });
     const auto version_built = version_route.build();

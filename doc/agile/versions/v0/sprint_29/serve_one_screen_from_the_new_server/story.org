@@ -46,6 +46,8 @@ it lands, and the browser keeps calling the BFF until the last one does.
 |------+-------+-------+-----+-------------|
 | [[id:18835766-D75B-4438-BF90-4B6A148631E4][Scaffold story: Serve one screen from the new server]] | DONE | 2026-11-06 | 2026-11-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:506FB5FA-42AD-4F95-BFC2-CB2E52079DD7][Serve the reference data catalogue, and let a list be searched]] | DONE | 2026-11-06 | 2026-11-07 | Port the BFF's generic reference data router to generated routes, and let a searchable list be searched. |
+| [[id:B914EAE1-E73B-424C-8196-F9C68EEFDB54][Keep every route unit reachable]] | DONE | 2026-11-07 | 2026-11-07 | A route unit the component aggregate never registers compiles, links, passes its cases and answers nothing, and nothing reports it. Gate the link: every model that opts into the route facet has its unit called by its component's aggregate, once. |
+| [[id:A441EC2F-9B64-445B-97A9-50A73A44ACDD][Read a list's filter members]] | DONE | 2026-11-07 | 2026-11-07 | The BFF's lists filter on the members a resource names, under an f.<member> parameter, and the generated C++ list route reads none of them. Read the single-valued filter members into the filter the request carries, and document each one where it is read. |
 
 * Decisions
 

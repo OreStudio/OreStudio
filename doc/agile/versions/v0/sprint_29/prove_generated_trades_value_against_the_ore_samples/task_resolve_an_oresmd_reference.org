@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
-#+updated: 2026-11-07
+#+updated: 2026-11-08
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -60,6 +60,7 @@ task and name that file in the Command column.
 | ores.synthetic.core.tests | 2610 in 112 pass; no recorded trade changes | =ores.synthetic.core.tests= | 597d7e8ca4 |
 | Re-run at review: ores.marketdata.api.tests, its two tags, and the portfolio export | 4588 in 932; 35 in 6; 16 in 4; 72 in 10 all pass | the suites | fa3248b6e0 |
 | Re-run after the blockers: the marketdata API, ORE core and ORE service suites | 4588 in 932; 520008 in 516; 54 in 10 pass, and the format gate is green | the three suites, =compass check --only format= | 92ca349b4b |
+| Re-run after the refusal and lookup rework | 4622 in 938; 520008 in 516; 54 in 10; 2610 in 112 pass | =ores.marketdata.api.tests=, =ores.ore.core.tests=, =ores.ore.service.tests=, =ores.synthetic.core.tests= | 28d7bc3382 |
 
 * Notes
 
@@ -90,14 +91,15 @@ via its "Verifies task" field.
 | L4 | misspell-fixer on the changed files; validate_docs.sh | — | Clean | |
 | L5 | The format gate is red on violations this branch carries | 15 changed C++ files | Fixed | 86 violations, not 5: the new files carried their own. All of them formatted in 5d9c07e685; the gate is green. |
 | L6 | @param projection states the opposite of what the code does | xml/exporter.hpp | Fixed | Rewritten in 92ca349b4b: a default projection still writes an index or a quote by its ORE name. |
-| L7 | ore_name_or_stored swallows the key codec's refusal | projection/ore_projection.cpp | Open | The curve fallback is intended; a datum ORE cannot key must surface its error. |
-| L8 | Stored addresses are compared as text, not as parsed references | conventions/convention_lookup.cpp | Open | A column written in another field order never matches, and the seed task writes it in SQL. |
-| L9 | The family address drops the tenor for every family | conventions/convention_lookup.cpp | Open | A CMS or bond-yield index is refused as "it addresses no index", which is false. |
+| L7 | ore_name_or_stored swallows the key codec's refusal | projection/ore_projection.cpp | Fixed | One kind per refusal, logged apart: no address stays silent, an unnamed curve warns and is kept, a refused address and a datum ORE cannot key throw ore_projection_error naming the value and the codec's reason. b5974f0fd3, e1e6a9394b. |
+| L8 | Stored addresses are compared as text, not as parsed references | conventions/convention_lookup.cpp | Fixed, not as stated | Each stored address is read into a market_reference once and matched by what it names, so the match rests on the identity model and not on every writer spelling the address the codec's way. It does not accept a reordered address, and cannot: the codec refuses every spelling but its own. The gain is the diagnosis: a refused row is named with the codec's reason rather than read as absent. 28d7bc3382. |
+| L9 | The family address drops the tenor for every family | conventions/convention_lookup.cpp | Fixed | The tenor is dropped only for the reducing family; a CMS or bond-yield index is refused as a question this lookup does not answer, and names the family. 28d7bc3382. |
 | L10 | The exporter test asserts a ten-character prefix | tests/xml_exporter_tests.cpp | Open | Assert the ReferenceCurveId element instead of the URI's first ten characters. |
 | L11 | Dead <functional> and the orphan portfolio_reference_curves doc block | exporter.hpp, portfolio_instrument_projection.hpp | Open | |
 | L12 | The acceptance still promises reading an ORE name back | task_resolve_an_oresmd_reference.org | Open | The Result explains the amendment; the bullet must say the same. The design page still names reference_resolver and ore_naming. |
 | L13 | A component link has no class in the check tree | build/scripts/local_checks.py | Open | Both links land in the unknown class, so the gate runs all 81 checks. |
-| L14 | No test reaches the Ibor and overnight conflict | conventions/convention_lookup.cpp | Open | The six cases cover a two-swap conflict only. |
+| L14 | No test reaches the Ibor and overnight conflict | conventions/convention_lookup.cpp | Fixed | The case exists, and it found a fault: ambiguity in one convention type was hidden when the other type answered. Ambiguity is now reported first. 28d7bc3382. |
+| L15 | Generated build files carried links their models never stated | ores.marketdata/api, ores.ore/core | Fixed | The marketdata API's refdata API and Boost::url links, and the ore core's marketdata API link, were hand-edited into generated files and would have been lost on regeneration. Declared in the models and regenerated. b5974f0fd3. |
 
 * Result
 
@@ -128,3 +130,14 @@ convention and the equity and commodity underlyings move to
 [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Generate every trade type through its builder]],
 where their families' builders need them, since no seeded CDS convention
 states an address yet.
+
+* Follow-up: the review round
+
+The two faults the review found were fixed in three commits. The projection
+answers each refusal apart. The lookup matches references instead of text,
+which does not widen what it accepts, because oresmd gives one datum one
+spelling and the codec refuses the rest; what it widens is the diagnosis, so
+a convention whose address the codec refuses is named instead of being read
+as absent. Regenerating the two components also put the generated build files
+back in step with their models: both carried links the models never stated,
+and a regeneration would have dropped them.

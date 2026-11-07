@@ -38,7 +38,7 @@ Every check the local gate runs passes on main: drift, collisions, the ER diagra
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8D5EEB80-0182-4F0D-83BE-A80A8008B318][Scaffold story: Hotfix: clear the six failing checks on main]] | STARTED | 2026-11-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8D5EEB80-0182-4F0D-83BE-A80A8008B318][Scaffold story: Hotfix: clear the six failing checks on main]] | DONE | 2026-11-07 | 2026-11-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:F7140B69-81C7-49D2-8254-88A803262DF6][Clear the six failing checks on main]] | BACKLOG | | | Initial task for: Hotfix: clear the six failing checks on main |
 
 * Decisions

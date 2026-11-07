@@ -65,7 +65,7 @@ for kind, nodes in [('book', books), ('portfolio', portfolios)]:
             context.prec = 1000
             total = sum(values.values(), Decimal(0))
         output.append({'scopeType': kind, 'scope': selected['name'], 'scopeId': identity,
-                       'runId': run['id'], 'currency': currency, 'total': decimal_text(total),
+                       'runId': run['id'], 'membershipAt': run['started_at'], 'currency': currency, 'total': decimal_text(total),
                        'expectedTradeCount': len(ids),
                        'contributors': {i: decimal_text(value) for i, value in values.items()}})
 Path(sys.argv[2]).write_text(json.dumps(output, indent=2) + '\n', encoding='utf-8', newline='\n')

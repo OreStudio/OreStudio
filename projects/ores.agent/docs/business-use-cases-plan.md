@@ -248,7 +248,8 @@ backend evidence. Add only necessary subjects to the adapter allowlist. Keep
 the growing model-visible catalogue relevant to the request to reduce irrelevant
 tool choices; do not silently truncate tool contracts. The initial 4096-token
 test context was expanded to the model's full 262144 tokens on 2026-11-07;
-the agent's separate 512-token generated-output limit remains in place.
+the agent's separate generated-output allowance defaults to 2048 tokens and
+is configurable; truncated calls remain errors.
 
 Before enabling business commands or remote hosting, finish the applicable
 security gate: real low-privilege/cross-party tests, restricted broker subject

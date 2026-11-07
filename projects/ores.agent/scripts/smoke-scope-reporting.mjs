@@ -22,6 +22,7 @@ try {
         do {
             const result = await call({ ...args, offset });
             assert.equal(result.status, 'ok'); assert.equal(result.scope.id, ref.scopeId);
+            assert.equal(result.membershipAt, ref.membershipAt);
             assert.equal(result.total.figure, ref.total); assert.equal(result.total.currency, ref.currency); assert.equal(result.total.currencyBasis, 'typed_metric.BaseCurrency');
             assert.equal(result.coverage.expectedTradeCount, ref.expectedTradeCount); assert.equal(result.coverage.valuedTradeCount, ref.expectedTradeCount);
             assert.equal(result.coverage.missingTradeCount, 0); assert.equal(result.coverage.duplicateTradeCount, 0);

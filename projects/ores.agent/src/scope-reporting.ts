@@ -41,6 +41,13 @@ const metricSchema = z.object({ ...scoped, report_instance_id: uuid, report_defi
 const nil = '00000000-0000-0000-0000-000000000000';
 function accepted(raw: unknown) { if (z.object({ result: z.object({ outcome: z.string() }) }).parse(raw).result.outcome !== 'ok') throw new AppError('scope_read_refused', 'Backend refused the scoped reporting read.', 403); }
 function dateOf(value: string) { if (value.length > 10) observationTime(value); return z.iso.date().parse(value.slice(0, 10)); }
+// Validate calendar/UTC syntax with the shared parser, retaining the backend's
+// microseconds for chronology checks instead of rounding to JS milliseconds.
+function timestampMicros(value: string): bigint {
+    const milliseconds = observationTime(value);
+    const fraction = /\.(\d{1,6})Z$/.exec(value)?.[1] ?? '';
+    return BigInt(milliseconds) * 1000n + BigInt(fraction.padEnd(6, '0').slice(3));
+}
 
 export class ScopeReporting {
     constructor(private backend: Backend, private now: () => number = Date.now) {}
@@ -78,11 +85,11 @@ export class ScopeReporting {
         const health = async () => z.object({ health: z.string(), state_name: z.string() }).parse(await request('runHealth', { report_instance_id: run.id }));
         const state = await health();
         if (state.health !== 'completed clean' || !run.started_at || !run.completed_at || !run.priced_at) return { ...base, status: 'unavailable', health: state.health, reason: 'A clean completed run with start, completion and actual pricing dates is required. No partial total is calculated.' };
-        const membershipTime = observationTime(run.started_at), completedTime = observationTime(run.completed_at), pricedAt = dateOf(run.priced_at);
-        if (membershipTime > completedTime || completedTime > now || pricedAt > retrievedAt.slice(0, 10)) throw new AppError('invalid_run_dates', 'Run dates are inconsistent or in the future.', 422);
+        const membershipTime = timestampMicros(run.started_at), completedTime = timestampMicros(run.completed_at), pricedAt = dateOf(run.priced_at);
+        if (membershipTime > completedTime || completedTime > BigInt(now) * 1000n || pricedAt > retrievedAt.slice(0, 10)) throw new AppError('invalid_run_dates', 'Run dates are inconsistent or in the future.', 422);
         if (args.valuationDate && args.valuationDate !== pricedAt) return { ...base, status: 'unavailable', reason: 'The run did not price at the requested valuation date.' };
-        const membershipAt = new Date(membershipTime).toISOString();
-        const historical = <T extends { recorded_at: string }>(rows: T[]) => { if (rows.some(r => observationTime(r.recorded_at) > membershipTime)) throw new AppError('incomplete_scope', 'Backend returned records newer than the historical membership timestamp.', 422); return rows; };
+        const membershipAt = run.started_at;
+        const historical = <T extends { recorded_at: string }>(rows: T[]) => { if (rows.some(r => timestampMicros(r.recorded_at) > membershipTime)) throw new AppError('incomplete_scope', 'Backend returned records newer than the historical membership timestamp.', 422); return rows; };
         const books = historical((await scan('books', 'books', book, null, membershipAt)).filter(own));
         const portfolios = args.scopeType === 'portfolio' ? historical((await scan('portfolios', 'portfolios', portfolio, null, membershipAt)).filter(own)) : [];
         const catalogue = args.scopeType === 'book' ? books : portfolios, query = args.scope.toLowerCase();

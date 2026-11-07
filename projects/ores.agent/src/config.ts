@@ -5,7 +5,7 @@ export interface Config {
     port: number;
     allowedOrigins: string[];
     nats: null | { server: string; prefix: string; ca: string; cert: string; key: string };
-    inference: { baseUrl: string; model: string; timeoutMs: number; apiKeyFile?: string };
+    inference: { baseUrl: string; model: string; timeoutMs: number; apiKeyFile?: string; maxOutputTokens?: number };
 }
 
 export function validateConfig(raw: unknown): Config {
@@ -20,6 +20,7 @@ export function validateConfig(raw: unknown): Config {
     if (inferenceUrl.username || inferenceUrl.password || inferenceUrl.search || inferenceUrl.hash || c.inference.timeoutMs > 120000) throw new Error('Invalid inference endpoint or deadline.');
     if (inferenceUrl.protocol !== 'https:' && !['127.0.0.1', 'localhost', '[::1]'].includes(inferenceUrl.hostname)) throw new Error('Remote inference requires HTTPS.');
     if (c.inference.apiKeyFile !== undefined && typeof c.inference.apiKeyFile !== 'string') throw new Error('Invalid inference key path.');
+    if (c.inference.maxOutputTokens !== undefined && (!Number.isInteger(c.inference.maxOutputTokens) || c.inference.maxOutputTokens < 128 || c.inference.maxOutputTokens > 8192)) throw new Error('Inference maxOutputTokens must be an integer from 128 to 8192.');
     return c;
 }
 

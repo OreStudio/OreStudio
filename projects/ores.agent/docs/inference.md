@@ -40,7 +40,11 @@ verbose runtime logs may include prompt content. Use verbosity 3 after diagnosis
 The initial smoke deployment used an explicit 4096-token context, which limited
 the model despite its advertised and GGUF-declared 262144-token capacity. The
 launcher now requests its full context. Context includes input and output;
-the agent separately sends `max_tokens: 512` to limit generated output per call.
+the agent separately sends `max_tokens: 2048` by default to limit generated
+output per call. Set `inference.maxOutputTokens` in the private agent config
+to an integer from 128 to 8192 to override it. The previous 512-token allowance
+intermittently exhausted generation before a complete tool call was returned.
+Replies with `finish_reason: length` remain errors, never accepted partial calls.
 Increasing context does not remove that output budget or the agent's bounded
 tool-result and HTTP payload sizes. The configured context is capacity, not a
 requirement to fill each request; GPU memory and long-prompt latency must still

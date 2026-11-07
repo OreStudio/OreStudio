@@ -36,11 +36,23 @@ test('scope totals use historical bookings, exact decimal arithmetic and bounded
     const f = fixture(), r = await f.report.execute({ ...args, limit: 1 }, f.session);
     assert.equal(r.status, 'ok'); assert.equal(r.total.figure, '0.3'); assert.equal(r.total.currency, 'GBP');
     assert.deepEqual(r.coverage, { expectedTradeCount: 2, valuedTradeCount: 2, missingTradeCount: 0, duplicateTradeCount: 0, failedTradeCount: null });
-    assert.equal(r.contributors[0].tradeId, id(11)); assert.equal(r.nextOffset, 1); assert.equal(r.membershipAt, f.run.started_at.replace('Z', '.000Z'));
+    assert.equal(r.contributors[0].tradeId, id(11)); assert.equal(r.nextOffset, 1); assert.equal(r.membershipAt, f.run.started_at);
     for (const c of f.calls.filter(c => ['books', 'trades', 'tradeBookings'].includes(c.op))) assert.equal(c.args.as_of, r.membershipAt);
     const next = await f.report.execute({ ...args, offset: 1, limit: 1 }, f.session);
     assert.equal(next.total.figure, '0.3'); assert.equal(next.contributors[0].tradeId, id(10)); assert.equal(next.nextOffset, null);
     assert.match(formatScopeReporting(r), /Coverage: 2\/2/); assert.match(formatScopeReporting(r), /Stored results only/); assert.doesNotThrow(() => JSON.stringify(r));
+});
+
+test('historical membership preserves microseconds and rejects newer submillisecond rows', async () => {
+    const f = fixture(); f.run.started_at = '2026-11-06 10:00:00.000100Z';
+    f.books[0].recorded_at = f.run.started_at;
+    const r = await f.report.execute(args, f.session);
+    assert.equal(r.membershipAt, f.run.started_at);
+    for (const c of f.calls.filter(c => ['books', 'trades', 'tradeBookings'].includes(c.op))) assert.equal(c.args.as_of, f.run.started_at);
+    f.books[0].recorded_at = '2026-11-06 10:00:00.000101Z';
+    await assert.rejects(() => f.report.execute(args, f.session), /newer than/);
+    f.run.completed_at = '2026-11-06 10:00:00.000099Z';
+    await assert.rejects(() => f.report.execute(args, f.session), /dates are inconsistent/);
 });
 test('portfolio booking subtrees reconcile with books and do not use direct assignments or current export', async () => {
     const f = fixture();

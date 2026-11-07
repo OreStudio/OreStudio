@@ -18,7 +18,7 @@ export class HttpInference implements Inference {
                 method: 'POST', headers: { 'content-type': 'application/json', ...(key ? { Authorization: 'Bearer ' + key } : {}) },
                 signal: AbortSignal.any([signal, timeout]),
                 body: JSON.stringify({ model: this.config.model, messages, tools, tool_choice: 'auto', parallel_tool_calls: false,
-                    temperature: 0.1, top_k: 50, repeat_penalty: 1.1, max_tokens: 512, stream: false }),
+                    temperature: 0.1, top_k: 50, repeat_penalty: 1.1, max_tokens: this.config.maxOutputTokens ?? 2048, stream: false }),
             });
             if (!response.ok || !response.body) { await response.body?.cancel(); throw new AppError('inference_unavailable', 'Inference request failed.', 503); }
             const chunks: Uint8Array[] = []; let size = 0;

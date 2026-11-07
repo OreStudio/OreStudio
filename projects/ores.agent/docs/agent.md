@@ -32,7 +32,8 @@ from validated results. Greek requests cannot be silently changed to NPV.
 Limits: 2,000-character input, four model rounds, six tool calls, at most four
 proposed calls per response, one active inference request globally, two active
 tools per session, 60 tool calls per minute per session, 32 KiB tool output,
-64 KiB inference reply, 512 generated tokens and a two-minute overall deadline.
+64 KiB inference reply, 2048 generated tokens by default (configurable through
+`inference.maxOutputTokens`, 128–8192) and a two-minute overall deadline.
 Repeated identical calls do not execute again. Errors are returned to the model
 without credentials/internal exception details. Expiry and logout are checked
 before accepting results. A prompt is guidance, not an authorization boundary.

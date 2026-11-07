@@ -89,6 +89,14 @@ struct product_type final {
     std::string source_ref;
 
     /**
+     * @brief Whether a deal of this type is flow or non-flow work: flow for the plain trades
+     * Operations signs off a few rows at a time, non_flow for the structured ones that get the
+     * closer look. Null means nobody has classified the type, which the queue reads as non_flow: a
+     * deal nobody has called routine draws the closer look.
+     */
+    std::string deal_class;
+
+    /**
      * @brief The contract shape the product type takes. Null where the shape is not stated.
      */
     std::string product_family_code;

@@ -253,6 +253,10 @@ BEGIN
 
     -- Party identifier scheme permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_id_schemes:read',   'View party identifier schemes');
+    -- Party product type deal classes: where a party draws the flow line
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_type_deal_classes:read',   'View the class a party works a product type as');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_type_deal_classes:write',  'State the class a party works a product type as');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_type_deal_classes:delete', 'Drop a party''s class and take the catalogue''s');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_id_schemes:write',  'Create and modify party identifier schemes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_id_schemes:delete', 'Delete party identifier schemes');
 

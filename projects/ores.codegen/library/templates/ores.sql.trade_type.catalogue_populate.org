@@ -44,7 +44,7 @@ type a reader cannot be told about is not worth seeding.
 
 insert into ores_trading_product_types_tbl (
     code, tenant_id, version, name, description, source, source_ref,
-    product_family_code, construction,
+    product_family_code, construction, deal_class,
     has_options, has_extension, instrument_table, display_order,
     modified_by, change_reason_code, change_commentary
 ) values
@@ -52,7 +52,7 @@ insert into ores_trading_product_types_tbl (
 {{#rows}}
     ('{{code}}', ores_utility_system_tenant_id_fn(), 0, '{{name_sql}}', '{{description_sql}}',
      '{{source_sql}}', '{{source_ref_sql}}',
-     {{family_literal}}, '{{construction}}',
+     {{family_literal}}, '{{construction}}', {{deal_class_literal}},
      {{has_options}}, {{has_extension}}, {{instrument_literal}}, {{display_order}},
      'ores_trading_service', 'system.initial_load', 'Seed product types'){{comma}}
 {{/rows}}

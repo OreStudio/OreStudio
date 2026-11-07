@@ -45,6 +45,7 @@ import { subjects as publishedCurveSubjects } from '@ores/wire-protocol/generate
 import { subjects as tradeSummarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
 import { subjects as productTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_protocol';
+import { subjects as dealClassSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_product_type_deal_class_protocol';
 import { subjects as bookSubjects } from '@ores/wire-protocol/generated/refdata/protocol/book_protocol';
 import { subjects as counterpartySubjects } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
 import { invalidRequest, notFound } from './errors.js';
@@ -324,30 +325,27 @@ async function withSubjects<Request extends { readonly id: string; readonly kind
 /** The kind of request the Operations queue works. */
 const AUTHORISATION_KIND = 'trading.operational_authorisation';
 
-/**
- * The instruments Operations authorises without a second look.
- *
- * The knowledge page divides the queue by complexity, not by asset class: spot,
- * forward, cash and vanilla trades and a plain interest rate swap are flow, and
- * everything else is not. The division is stated here rather than read from a
- * catalogue because it is a judgement about how much work a deal is, and no
- * catalogue holds that. Every code here is one the trade type catalogue states;
- * a code the catalogue does not hold is non-flow, which is the safe direction: a
- * deal is drawn where it gets the closer look.
- */
-const FLOW_TRADE_TYPES: ReadonlySet<string> = new Set([
-    'CashPosition',
-    'CapFloor',
-    'FxAverageForward',
-    'FxDigitalOption',
-    'FxForward',
-    'FxOption',
-    'FxSwap',
-    'Swap',
-]);
+/** The class a deal nobody has classified reads as: the closer look. */
+const DEFAULT_CLASS = 'non_flow';
 
-const classOf = (tradeType: string): 'flow' | 'non-flow' =>
-    FLOW_TRADE_TYPES.has(tradeType) ? 'flow' : 'non-flow';
+/**
+ * The class a deal is worked as, in the order the store states it.
+ *
+ * A party that draws the line elsewhere states its own class for the type, the
+ * catalogue states one for every type, and a type nobody has classified reads as
+ * the default. The queue states no trade type code of its own: the division is
+ * configuration, and moving a code between classes is a row edit.
+ */
+const classOf = (
+    tradeType: string,
+    partyId: string,
+    typeClasses: ReadonlyMap<string, string>,
+    partyClasses: ReadonlyMap<string, string>,
+): 'flow' | 'non-flow' => {
+    const stated =
+        partyClasses.get(`${partyId}/${tradeType}`) ?? typeClasses.get(tradeType) ?? DEFAULT_CLASS;
+    return stated === 'flow' ? 'flow' : 'non-flow';
+};
 
 /**
  * What the queue states about the deals a page of authorisation requests names.
@@ -395,6 +393,17 @@ async function dealtWithByRequests(
         }),
     ]);
 
+    // The parties the page's trades belong to, so the overrides are one read.
+    const partyIds = [...new Set(trades.map((row) => text(row['party_id'])))].filter(
+        (id) => id !== '',
+    );
+    const partyClasses = await readAll(
+        session,
+        dealClassSubjects.list_party_product_type_deal_classes_request,
+        'party_product_type_deal_classes',
+        { filter: { party_id_one_of: partyIds } },
+    );
+
     const bookNameOf = new Map(books.map((row) => [text(row['id']), text(row['name'])]));
     const counterpartyNameOf = new Map(
         counterparties.map((row) => [text(row['id']), text(row['full_name'])]),
@@ -403,6 +412,18 @@ async function dealtWithByRequests(
     const typeNameOf = new Map(
         types.map(
             (row) => [text(row['code']), text(row['name']) || text(row['description'])] as const,
+        ),
+    );
+    const typeClassOf = new Map(
+        types.map((row) => [text(row['code']), text(row['deal_class'])] as const),
+    );
+    const partyClassOf = new Map(
+        partyClasses.map(
+            (row) =>
+                [
+                    `${text(row['party_id'])}/${text(row['product_type_code'])}`,
+                    text(row['deal_class']),
+                ] as const,
         ),
     );
 
@@ -416,7 +437,7 @@ async function dealtWithByRequests(
         facts.set(id, {
             tradeType,
             tradeTypeName: typeNameOf.get(tradeType) ?? '',
-            classCode: classOf(tradeType),
+            classCode: classOf(tradeType, text(trade['party_id']), typeClassOf, partyClassOf),
             tradeVersion: Number(trade['version'] ?? 0),
             bookId,
             counterpartyId,

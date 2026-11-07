@@ -29,6 +29,11 @@ worked differently.
 | *Flow* | Spot, forward, cash, vanillas, interest rate swaps |
 | *Non-flow* | Everything more complex |
 
+The division is configuration and not a constant: every product type states the
+class a desk works it as, a party may state its own where it draws the line
+elsewhere, and a type nobody has classified reads as non-flow so a new deal gets
+the closer look. Moving a code between classes is a row edit, not a release.
+
 Within each, deals are grouped by their state: awaiting authorisation,
 held over, amendments, new, authorised and denied, with an all-trades
 view alongside.

@@ -10,6 +10,7 @@ import { subjects as identifierSubjects } from '@ores/wire-protocol/generated/tr
 import { subjects as summarySubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_summary_protocol';
 import { subjects as tradeSubjects } from '@ores/wire-protocol/generated/trading/protocol/trade_protocol';
 import { subjects as productTypeSubjects } from '@ores/wire-protocol/generated/trading/protocol/product_type_protocol';
+import { subjects as dealClassSubjects } from '@ores/wire-protocol/generated/refdata/protocol/party_product_type_deal_class_protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
@@ -43,6 +44,7 @@ const BANK = '33333333-3333-4333-8333-333333333333';
 const FUND = '44444444-4444-4444-8444-444444444444';
 const SWAP = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const PACKAGE = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+const PARTY = '55555555-5555-4555-8555-555555555555';
 const REQUEST_ONE = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 const REQUEST_TWO = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
 const REQUEST_ROLES = 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee';
@@ -97,7 +99,9 @@ function requests(): readonly Record<string, unknown>[] {
     ];
 }
 
-function replies(): Readonly<Record<string, unknown>> {
+function replies(
+    partyClasses: readonly Record<string, unknown>[] = [],
+): Readonly<Record<string, unknown>> {
     return {
         [INBOX_SUBJECTS.queue]: {
             result: ok,
@@ -125,8 +129,8 @@ function replies(): Readonly<Record<string, unknown>> {
             result: ok,
             trades: [
                 // The swap has moved on since its request: version 3 against 2.
-                { id: SWAP, trade_type: 'Swap', version: 3 },
-                { id: PACKAGE, trade_type: 'VanillaSwap', version: 1 },
+                { id: SWAP, trade_type: 'Swap', version: 3, party_id: PARTY },
+                { id: PACKAGE, trade_type: 'VanillaSwap', version: 1, party_id: PARTY },
             ],
             total: 2,
         },
@@ -161,11 +165,20 @@ function replies(): Readonly<Record<string, unknown>> {
         [productTypeSubjects.list_product_types_request]: {
             result: ok,
             types: [
-                { code: 'Swap', description: 'Interest rate swap' },
-                { code: 'VanillaSwap', description: 'A code the catalogue does not hold' },
-                { code: 'Package', description: 'Package of deals' },
+                { code: 'Swap', description: 'Interest rate swap', deal_class: 'flow' },
+                {
+                    code: 'VanillaSwap',
+                    description: 'A code the catalogue does not hold',
+                    deal_class: 'non_flow',
+                },
+                { code: 'Package', description: 'Package of deals', deal_class: 'non_flow' },
             ],
             total: 2,
+        },
+        [dealClassSubjects.list_party_product_type_deal_classes_request]: {
+            result: ok,
+            party_product_type_deal_classes: partyClasses,
+            total: partyClasses.length,
         },
         [counterpartySubjects.list_counterparties_request]: {
             result: ok,
@@ -178,11 +191,11 @@ function replies(): Readonly<Record<string, unknown>> {
     };
 }
 
-function buildTestServer(): {
+function buildTestServer(partyClasses: readonly Record<string, unknown>[] = []): {
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
 } {
-    const canned = replies();
+    const canned = replies(partyClasses);
     const sessions = createSessionStore({ ttlSeconds: 60 });
     /*
      * A subject the case does not state answers with the envelope alone: the
@@ -310,6 +323,21 @@ describe('the Operations queue', () => {
         // which is the safe direction: it is drawn where it gets the closer look.
         expect(rows.map((row) => [row.tradeType, row.classCode])).toEqual([
             ['Swap', 'flow'],
+            ['VanillaSwap', 'non-flow'],
+        ]);
+    });
+
+    it('takes the class from the party that draws the line elsewhere', async () => {
+        const { server, sessionId } = buildTestServer([
+            { party_id: PARTY, product_type_code: 'Swap', deal_class: 'non_flow' },
+        ]);
+        const rows = (
+            (await get(server, sessionId, '/api/queue/authorisations')).json() as { items: Row[] }
+        ).items;
+        // The catalogue calls a plain swap flow; this party does not, and its row
+        // wins without a release.
+        expect(rows.map((row) => [row.tradeType, row.classCode])).toEqual([
+            ['Swap', 'non-flow'],
             ['VanillaSwap', 'non-flow'],
         ]);
     });

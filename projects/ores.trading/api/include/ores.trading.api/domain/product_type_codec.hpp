@@ -54,6 +54,7 @@ namespace ores::trading::domain {
         utility::codec::field{"description", &product_type::description},
         utility::codec::field{"source", &product_type::source},
         utility::codec::field{"source_ref", &product_type::source_ref},
+        utility::codec::field{"deal_class", &product_type::deal_class},
         utility::codec::field{"product_family_code", &product_type::product_family_code},
         utility::codec::field{"construction", &product_type::construction},
         utility::codec::field{"has_options", &product_type::has_options},

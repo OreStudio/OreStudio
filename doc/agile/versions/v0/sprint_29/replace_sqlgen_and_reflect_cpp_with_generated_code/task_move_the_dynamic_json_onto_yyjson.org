@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/move-the-dynamic-json-onto-yyjson
-#+pr:
+#+pr: 4490
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4490][#4490]] | [utility,http,ore] Move the dynamic JSON onto a document |
 
 * Review
 

@@ -37,6 +37,7 @@ import type { BondRepo } from './bond_repo.js';
 import type { BondScheduleData } from './bond_schedule_data.js';
 import type { BondStrikeData } from './bond_strike_data.js';
 import type { BondTrs } from './bond_trs.js';
+import type { InstrumentUnderlying } from './instrument_underlying.js';
 
 /**
  * The BondInstrumentData wire shape.
@@ -49,6 +50,7 @@ export interface BondInstrumentData {
     issue: BondIssue;
     call_dates: BondIssueCallDate[];
     conversion_targets: BondIssueConversionTarget[];
+    instrument_underlyings: InstrumentUnderlying[];
     option: BondOption | null;
     trs: BondTrs | null;
     repo: BondRepo | null;

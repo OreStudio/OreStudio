@@ -21,12 +21,63 @@
 
 #include "ores.marketdata.api/datum/market_reference.hpp"
 #include "ores.marketdata.api/export.hpp"
+#include <cstdint>
 #include <expected>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 
 namespace ores::marketdata::projection {
+
+/**
+ * @brief Why an oresmd reference has no ORE name in this projection.
+ *
+ * The reasons stay apart rather than folded into one, because they call for
+ * different answers: one is a gap in the run's market configuration, the other
+ * two are references ORE cannot read at all.
+ */
+enum class projection_refusal_kind : std::uint8_t {
+    /// The stored text looks like an oresmd address and the grammar refuses it,
+    /// so nothing can say what datum, series or index it names.
+    address_the_grammar_refuses,
+    /// A curve series the run's market configuration gives no name.
+    configuration_names_no_curve,
+    /// A datum ORE has no market datum of its type for, so the key codec cannot
+    /// spell it.
+    ore_has_no_name
+};
+
+/// The reference the projection could not name, and why, in the codec's words.
+struct projection_refusal final {
+    projection_refusal_kind kind;
+    std::string reference;
+    std::string reason;
+};
+
+/**
+ * @brief A stored reference the export can neither write as an ORE name nor
+ * leave as stored.
+ *
+ * Thrown where the alternative is an ORE document carrying a value the engine
+ * cannot read, so the export names the value and the reason, rather than a
+ * valuation failing later with a message about a curve.
+ */
+class ORES_MARKETDATA_API_EXPORT ore_projection_error final : public std::runtime_error {
+public:
+    explicit ore_projection_error(projection_refusal refusal);
+
+    [[nodiscard]] projection_refusal_kind kind() const noexcept {
+        return kind_;
+    }
+    [[nodiscard]] const std::string& reference() const noexcept {
+        return reference_;
+    }
+
+private:
+    projection_refusal_kind kind_;
+    std::string reference_;
+};
 
 /**
  * @brief The vendor projection to ORE: an oresmd identifier written as ORE
@@ -48,18 +99,28 @@ public:
     explicit ore_projection(std::unordered_map<std::string, std::string> curve_names);
 
     /// The ORE name of @p reference, or why it has none here.
-    [[nodiscard]] std::expected<std::string, std::string>
+    [[nodiscard]] std::expected<std::string, projection_refusal>
     ore_name_of(const datum::market_reference& reference) const;
 
     /**
      * @brief The ORE name of what a stored column holds, or the text as stored.
      *
-     * Until every stored reference is an identifier, a column may hold an ORE
-     * name already, and a curve the run names no ORE name for is written as
-     * the trade states it, so an export with no names writes what its trades
-     * hold.
+     * A stored column is in one of four states, and each is answered apart:
+     *
+     * - It holds no address, but an ORE name or another vendor's name, as every
+     *   reference column does until stored references are identifiers. It is
+     *   written as it stands, and nothing is wrong.
+     * - It holds a curve series the run's market configuration gives no name.
+     *   It is written as it stands and the projection warns, because a run that
+     *   forwards no market writes what its trades hold: an export with no
+     *   configuration leaves every curve alone.
+     * - It looks like an oresmd address and the grammar refuses it. No ORE
+     *   document can read it, so the projection logs the reason and throws.
+     * - It holds a datum ORE has no key for. Same answer: logged and thrown.
+     *
+     * @throws ore_projection_error on the last two, naming the value and why.
      */
-    [[nodiscard]] std::string ore_name_or_stored(std::string_view stored) const;
+    std::string ore_name_or_stored(std::string_view stored) const;
 
 private:
     std::unordered_map<std::string, std::string> curve_names_;

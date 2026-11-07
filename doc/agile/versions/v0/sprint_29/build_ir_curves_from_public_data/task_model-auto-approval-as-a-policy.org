@@ -116,6 +116,11 @@ task and name that file in the Command column.
   route, which today answers without a session.
 - =system_setting= carries no system-tenant overlay, so every tenant reads the
   installation's row only when it has none of its own.
+- The development database was altered by hand: the column on each of the two
+  tables, the policy on the curve publish kind, and the =inbox.approvals.mode=
+  row. The create and populate scripts carry all four, and a recreated database
+  builds them from those files alone; a =compass db recreate= is still worth
+  running before this is relied on.
 
 * Test Scenarios
 

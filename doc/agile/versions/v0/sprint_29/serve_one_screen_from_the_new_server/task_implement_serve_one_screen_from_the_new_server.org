@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 506FB5FA-42AD-4F95-BFC2-CB2E52079DD7
 :END:
-#+title: Task: Point one screen at the new server
+#+title: Task: Port the HTTP layer to parity
 #+description: Initial task for: Serve one screen from the new server
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server:sprint_29:v0:
 #+owner: marco
-#+branch: feature/implement-serve-one-screen-from-the-new-server
+#+branch: feature/port-the-http-layer-to-parity
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,7 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A signed-in person uses one screen served end to end by the C++ server, and the rest of the application is unchanged.
+Every route the BFF answers has an equivalent on the C++ server, and the browser is
+served by the BFF until the last one does.
 
 * Status
 
@@ -28,7 +29,7 @@ A signed-in person uses one screen served end to end by the C++ server, and the 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve one screen from the new server]] |
-| Now          | Not yet started.                       |
+| Now          | Search on a generated list, and the whole reference data catalogue. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-06                               |

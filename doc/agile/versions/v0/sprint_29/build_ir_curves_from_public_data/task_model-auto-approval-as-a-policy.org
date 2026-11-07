@@ -29,11 +29,11 @@ run its tests unattended, and a desk's own act still waits for its decider.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
-| Now          | The policy, its two knobs and the decision wording are in place. |
-| Waiting on   | Nothing.                               |
-| Next         | Review the change with the curve step it serves. |
+| Now          | Done. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -99,10 +99,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Approval suites | 80 cases, 0 failed, of which 6 are the new policy cases | =./publish/bin/ores.inbox.core.tests= | =HEAD= |
-| Market data service curve publish suite | 25 cases, 0 failed | =./publish/bin/ores.marketdata.service.tests "[curve_publish]"= | =HEAD= |
-| Web suites | 4049 cases, 0 failed | =npm run test= in =projects/ores.web= | =HEAD= |
-| Auto-approved requests a provisioned run raised | 20, each carrying system_tenant | =evidence/publish_system_curves_run.txt= | =HEAD= |
+| Approval suites | 80 cases, 0 failed, of which 6 are the new policy cases | =./publish/bin/ores.inbox.core.tests= | =cf05462115= |
+| Market data service curve publish suite | 25 cases, 0 failed | =./publish/bin/ores.marketdata.service.tests "[curve_publish]"= | =cf05462115= |
+| Web suites | 4049 cases, 0 failed | =npm run test= in =projects/ores.web= | =cf05462115= |
+| Auto-approved requests a provisioned run raised | 20, each carrying system_tenant | =evidence/publish_system_curves_run.txt= | =cf05462115= |
+| Local check gate | 86 of 88 checks pass; the 2 failures are pre-existing on main and in paths this branch does not touch | =./compass.sh check= | =cf05462115= |
 |      |       |         |        |
 
 * Notes

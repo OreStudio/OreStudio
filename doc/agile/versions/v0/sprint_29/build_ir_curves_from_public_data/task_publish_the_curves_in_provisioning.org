@@ -26,11 +26,11 @@ After provisioning, each currency with a bootstrap config has a published curve 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
-| Now          | The step publishes all 20 system curves in the run. Awaiting review. |
-| Waiting on   | Nothing.                               |
-| Next         | Review the change, then close the task. |
+| Now          | Done. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -94,13 +94,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Curves a step run published | 20 of 20, none refused | =evidence/publish_system_curves_run.txt= | =e80234c376= |
-| Time a step run took | 4.87 s for 20 curves, no retry | =evidence/publish_system_curves_run.txt= | =HEAD= |
-| System curve configs with a live published set | 20 of 20 | =evidence/publish_system_curves_run.txt= | =HEAD= |
-| Market data service suite | 207 cases, 2 failed, both in the feed ingest loop and both failing at the branch point too | =./publish/bin/ores.marketdata.service.tests= | =HEAD= |
-| Market data curve publish suite | 26 cases, 0 failed | =./publish/bin/ores.marketdata.service.tests "[curve_publish]"= | =HEAD= |
-| IAM API suite | 911 cases, 0 failed | =./publish/bin/ores.iam.api.tests= | =HEAD= |
-| IAM core suite | 324 cases, 0 failed | =./publish/bin/ores.iam.core.tests= | =HEAD= |
+| Curves a step run published | 20 of 20, none refused | =evidence/publish_system_curves_run.txt= | =cf05462115= |
+| Time a step run took | 4.87 s for 20 curves, no retry | =evidence/publish_system_curves_run.txt= | =5711e85c34= |
+| System curve configs with a live published set | 20 of 20 | =evidence/publish_system_curves_run.txt= | =5711e85c34= |
+| Market data service suite | 206 cases, 2 failed, both in the feed ingest loop and both failing at the branch point too | =./publish/bin/ores.marketdata.service.tests= | =cf05462115= |
+| Market data curve publish suite | 25 cases, 0 failed | =./publish/bin/ores.marketdata.service.tests "[curve_publish]"= | =cf05462115= |
+| IAM API suite | 911 cases, 0 failed | =./publish/bin/ores.iam.api.tests= | =cf05462115= |
+| IAM core suite | 324 cases, 0 failed | =./publish/bin/ores.iam.core.tests= | =cf05462115= |
 
 * Notes
 

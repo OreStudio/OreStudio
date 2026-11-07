@@ -91,6 +91,11 @@ task and name that file in the Command column.
 | The prefix a screen asks through | 3 cases, all passing | =npx vitest run src/api/servers.test.ts= | 0fe2666b3d |
 | The server's new option | =--web-session-path arg (=/)= on the built binary | =./ores.http.server --help= | 0fe2666b3d |
 | The web package's typecheck | clean for =src/api/servers.ts=; one error elsewhere, pre-existing from =ede5b9cc50= on main | =npx tsc --noEmit -p tsconfig.json= | 0fe2666b3d |
+| =ores.http.refdata= suite, after the entity routes | 38 cases, 807 assertions, all passing | =./ores.http.refdata.tests= | 27d732b82c |
+| =ores.http.refdata= suite, after the junction routes | 52 cases, 1070 assertions, all passing | =./ores.http.refdata.tests= | ad81629621 |
+| The route inventory | 674 routes, current, and the reference data family classified by one rule | =python3 build/scripts/route_inventory.py --check= | ad81629621 |
+| The route checks | 7 of 7: inventory, route auth, handler permissions, open reads, published areas, CMake lists, lint | =./compass.sh check --only ...= | ad81629621 |
+| Codegen route cases | 25 cases in the route projection's own file | =python -m pytest projects/ores.codegen/tests/test_http_routes.py= | d0ba12b92b |
 
 * Notes
 
@@ -120,6 +125,34 @@ task and name that file in the Command column.
   needs either an adapter in the screen or the screen rewritten against the
   generated collection. This task takes the second, because an adapter would be the
   BFF's route kept alive under a new name.
+
+* Notes: the parity work this task turned into
+
+The owner's direction changed the shape of this task: no screen moves until the C++
+server answers what the BFF answers, so the work is the layer's features and its
+collections, not the flag.
+
+*Done.*
+
+- A generated list a caller may search reads =?search= and hands it to the filter the
+  request carries, for the three collections whose models mark a column searchable.
+  Every other list renders as it did.
+- The whole reference data catalogue the BFF serves, twenty-six resources, is served
+  under =/api/v1/reference-data/=: the eighteen entities and, once the junction loader
+  read the model's published area, the seven junctions. A junction used to answer
+  under =/api/v1/refdata/=, the component name the area exists to hide.
+
+*What the sweep found.* A resource is ported in five mechanical steps: enable
+=:ores.cpp.http-route.enabled:= on the model, declare =#+http_area:=, regenerate the
+facet, add the unit to the component's hand-written route aggregate, and regenerate
+=component_files.cmake= and the inventory. The aggregate is the one step no generator
+covers, and a unit that is missing from it compiles and is never reachable.
+
+*What remains, by the BFF's own resource count.* Reporting 32, access 30 (the IAM
+collections answer already; the rest are the access area's remaining families),
+simulation 25, market data 24, trading 22, tenancy 19, auth 13, workflow 11, grid 11,
+analytics 6, QA 6, agile 4, assets 4, operations 2. The composed views are separate:
+they are V's increments, not this sweep.
 
 * Test Scenarios
 

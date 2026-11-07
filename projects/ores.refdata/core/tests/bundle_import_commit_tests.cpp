@@ -17,8 +17,8 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.refdata.api/domain/convention.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
+#include "ores.refdata.api/domain/convention_codec.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_codec.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
 #include "ores.refdata.core/repository/bundle_import_repository.hpp"

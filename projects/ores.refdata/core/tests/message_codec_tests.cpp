@@ -22,7 +22,6 @@
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/domain/convention_identity.hpp"
-#include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/domain/currency_codec.hpp"
 #include "ores.refdata.api/domain/currency_json_io.hpp"
 #include "ores.refdata.api/eventing/currency_event.hpp"

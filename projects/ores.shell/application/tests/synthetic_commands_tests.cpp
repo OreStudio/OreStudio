@@ -19,7 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
-#include "ores.synthetic.api/domain/gmm_component.hpp"
+#include "ores.synthetic.api/domain/gmm_component_codec.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"

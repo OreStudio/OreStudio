@@ -18,8 +18,8 @@
  *
  */
 #include "ores.compute.core/messaging/report_submit_handler.hpp"
-#include "ores.compute.api/domain/batch.hpp"
-#include "ores.compute.api/domain/workunit.hpp"
+#include "ores.compute.api/domain/batch_codec.hpp"
+#include "ores.compute.api/domain/workunit_codec.hpp"
 #include "ores.compute.core/repository/app_version_repository.hpp"
 #include "ores.compute.core/repository/workflow_batch_link_repository.hpp"
 #include "ores.compute.core/service/batch_service.hpp"

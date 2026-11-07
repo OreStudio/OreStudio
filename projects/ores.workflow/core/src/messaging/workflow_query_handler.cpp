@@ -24,7 +24,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.workflow.api/domain/workflow_instance.hpp"
+#include "ores.workflow.api/domain/workflow_instance_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include <boost/lexical_cast.hpp>

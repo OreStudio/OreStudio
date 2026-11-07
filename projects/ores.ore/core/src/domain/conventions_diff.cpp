@@ -19,6 +19,9 @@
 #include "conventions_family_units.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
+#include "ores.refdata.api/domain/convention_codec.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short_codec.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_codec.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>

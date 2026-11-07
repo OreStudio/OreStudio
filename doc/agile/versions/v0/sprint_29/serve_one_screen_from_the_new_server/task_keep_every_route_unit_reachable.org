@@ -8,7 +8,7 @@
 #+filetags: :sprint_29:v0:serve_one_screen_from_the_new_server:
 #+owner: marco
 #+branch: feature/generate-the-route-aggregate
-#+pr:
+#+pr: 4483
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -102,7 +102,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4483][#4483]] | [codegen] Read filter members, and gate the route aggregate |
 
 * Review
 

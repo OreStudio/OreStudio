@@ -44,7 +44,6 @@ boost::urls::encoding_opts query_encoding() {
 }
 
 
-
 std::unexpected<std::string> oresmd_uri_codec_refuse(std::string_view uri, std::string_view why) {
     return std::unexpected(std::format("'{}': {}", uri, why));
 }

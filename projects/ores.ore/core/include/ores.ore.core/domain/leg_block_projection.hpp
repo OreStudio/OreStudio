@@ -32,8 +32,8 @@
 #include "ores.trading.api/domain/swap_leg_indexing.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include <algorithm>
-#include <cstddef>
 #include <chrono>
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -279,7 +279,8 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
     row.currency = scalar_of(leg, "Currency");
     row.day_count_fraction_code = spelling_of(leg, "DayCounter");
     row.business_day_convention_code = spelling_of(leg, "PaymentConvention");
-    row.payment_frequency_code = tenor_to_payment_frequency(first_tenor(child_if(leg, "ScheduleData")));
+    row.payment_frequency_code =
+        tenor_to_payment_frequency(first_tenor(child_if(leg, "ScheduleData")));
     if (has_if(leg, "PaymentLag"))
         row.payment_lag = text_of(leg, "PaymentLag");
     if (has_if(leg, "PaymentCalendar"))
@@ -441,11 +442,8 @@ void read_leg_indexings(Data& result, const record_reader& leg, int leg_number) 
         stamp_row(row);
         result.leg_indexings.push_back(std::move(row));
         if (const auto schedule = indexing.child("ValuationSchedule"))
-            option_block::read_schedule(result,
-                                        *schedule,
-                                        "swap",
-                                        leg_number,
-                                        indexing_valuation_role(sequence_number));
+            option_block::read_schedule(
+                result, *schedule, "swap", leg_number, indexing_valuation_role(sequence_number));
     }
 }
 
@@ -773,7 +771,8 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
 template <typename Data>
 void read_payment_dates(Data& result, const record_reader& leg, int leg_number) {
     if (const auto group = child_if(leg, "PaymentDates"))
-        option_block::read_date_list(result, *group, "PaymentDate", "swap", leg_number, "payment_dates");
+        option_block::read_date_list(
+            result, *group, "PaymentDate", "swap", leg_number, "payment_dates");
 }
 
 template <typename Data>
@@ -811,8 +810,9 @@ inline void write_schedule_rules(record_writer& schedule,
 }
 
 inline bool has_role_in(const std::vector<swap_leg_rate>& rates, std::string_view role) {
-    return std::any_of(
-        rates.begin(), rates.end(), [&](const swap_leg_rate& rate) { return rate.rate_role == role; });
+    return std::any_of(rates.begin(), rates.end(), [&](const swap_leg_rate& rate) {
+        return rate.rate_role == role;
+    });
 }
 
 template <typename Data>
@@ -877,8 +877,8 @@ void write_leg(record_writer& leg,
         return;
     }
 
-    const bool commodity = row.leg_type_code == "CommodityFixed" ||
-                           row.leg_type_code == "CommodityFloating";
+    const bool commodity =
+        row.leg_type_code == "CommodityFixed" || row.leg_type_code == "CommodityFloating";
     if (!amounts.empty() && !commodity) {
         auto notionals = leg.child("Notionals");
         for (const auto& amount : amounts) {

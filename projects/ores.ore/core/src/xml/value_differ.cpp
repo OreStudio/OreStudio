@@ -33,8 +33,9 @@ auto path_run(const std::vector<value_entry>& values, std::size_t from) -> std::
     return to;
 }
 
-auto values_of(const std::vector<value_entry>& entries, std::size_t from, std::size_t to)
-    -> std::vector<std::string> {
+auto values_of(const std::vector<value_entry>& entries,
+               std::size_t from,
+               std::size_t to) -> std::vector<std::string> {
     std::vector<std::string> out;
     out.reserve(to - from);
     for (auto at = from; at < to; ++at)
@@ -69,8 +70,8 @@ auto diff_path(const std::string& path,
 
 }
 
-auto diff_values(const std::vector<value_entry>& expected, const std::vector<value_entry>& actual)
-    -> std::vector<value_difference> {
+auto diff_values(const std::vector<value_entry>& expected,
+                 const std::vector<value_entry>& actual) -> std::vector<value_difference> {
     // Both fingerprints are sorted by path and then value, so the two are
     // merged a path at a time.
     std::vector<value_difference> out;

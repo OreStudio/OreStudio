@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/instrument_underlying_repository.hpp"
 #include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/bond_issue_leg.hpp"
@@ -26,6 +25,7 @@
 #include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
+#include "ores.trading.core/repository/instrument_underlying_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/service/ascot_service.hpp"
 #include "ores.trading.core/service/bond_future_service.hpp"
@@ -768,8 +768,8 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_i
     static const issue_leg_rows no_issue_rows;
 
     std::unordered_map<std::string, std::vector<domain::instrument_underlying>> underlyings;
-    for (auto& row : repository::instrument_underlying_repository().read_by_instruments_batch(
-             ctx_, trade_ids))
+    for (auto& row :
+         repository::instrument_underlying_repository().read_by_instruments_batch(ctx_, trade_ids))
         underlyings[boost::uuids::to_string(row.trade_id)].push_back(std::move(row));
 
     for (auto& row : rows) {

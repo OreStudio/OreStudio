@@ -18,10 +18,10 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
-#include "ores.ore.core/domain/scalar_terms_projection.hpp"
-#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
@@ -116,15 +116,15 @@ auto fx_instrument_projection_to_ore_date(const std::optional<std::chrono::year_
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto fx_instrument_projection_text_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto fx_instrument_projection_text_of(const record_reader& r,
+                                      std::string_view name) -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto fx_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto fx_instrument_projection_spelling_of(const record_reader& r,
+                                          std::string_view name) -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -137,8 +137,8 @@ auto fx_instrument_projection_decimal_of(const record_reader& r, std::string_vie
     return decimal{};
 }
 
-auto fx_instrument_projection_optional_decimal_of(const record_reader& r, std::string_view name)
-    -> std::optional<decimal> {
+auto fx_instrument_projection_optional_decimal_of(const record_reader& r,
+                                                  std::string_view name) -> std::optional<decimal> {
     return r.decimal(name);
 }
 
@@ -237,8 +237,8 @@ auto underlying_code_of(const record_reader& data) -> std::string {
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_fx_forward(const record_reader& trade, std::string_view trade_type)
-    -> fx_forward_instrument {
+auto read_fx_forward(const record_reader& trade,
+                     std::string_view trade_type) -> fx_forward_instrument {
     auto r = fx_instrument_projection_make_row<fx_forward_instrument>(trade_type);
     const auto data = trade.child("FxForwardData");
     if (!data)
@@ -374,8 +374,8 @@ auto read_fx_digital_fields(const record_reader& data, fx_digital_option_instrum
     r.expiry_date = fx_instrument_projection_expiry_date_of(option);
 }
 
-auto read_fx_digital_option(const record_reader& trade, std::string_view trade_type)
-    -> fx_digital_option_instrument {
+auto read_fx_digital_option(const record_reader& trade,
+                            std::string_view trade_type) -> fx_digital_option_instrument {
     auto r = fx_instrument_projection_make_row<fx_digital_option_instrument>(trade_type);
     r.long_short = "Long";
     if (const auto data = trade.child("FxDigitalOptionData"))
@@ -408,8 +408,8 @@ auto read_fx_digital_barrier_option(const record_reader& trade) -> fx_digital_op
     return r;
 }
 
-auto read_fx_touch_option(const record_reader& trade, std::string_view trade_type)
-    -> fx_digital_option_instrument {
+auto read_fx_touch_option(const record_reader& trade,
+                          std::string_view trade_type) -> fx_digital_option_instrument {
     auto r = fx_instrument_projection_make_row<fx_digital_option_instrument>(trade_type);
     r.long_short = "Long";
 
@@ -471,8 +471,8 @@ auto read_fx_average_forward(const record_reader& trade) -> fx_asian_forward_ins
     return r;
 }
 
-auto read_fx_accumulator(fx_instrument_data& result, const record_reader& trade)
-    -> fx_accumulator_instrument {
+auto read_fx_accumulator(fx_instrument_data& result,
+                         const record_reader& trade) -> fx_accumulator_instrument {
     auto r = fx_instrument_projection_make_row<fx_accumulator_instrument>("FxAccumulator");
     r.long_short = "Long";
     const auto data = trade.child("FxAccumulatorData");
@@ -686,8 +686,7 @@ void write_fx_generic_barrier_option(record_writer& trade,
         auto barriers = data.child("Barriers");
         if (v.kiko_type)
             scalar_terms::write_text(barriers, "KikoType", *v.kiko_type);
-        option_block::write_product_schedule(
-            barriers, carrier, "ScheduleData", "barrier_schedule");
+        option_block::write_product_schedule(barriers, carrier, "ScheduleData", "barrier_schedule");
     }
     barrier_block::write_kept_barriers(data, "TransatlanticBarrier", carrier, "transatlantic");
 }
@@ -1108,8 +1107,9 @@ auto write_fx_instrument(xml::record_writer& trade,
                     using Row = std::decay_t<decltype(row)>;
                     if constexpr (barrier_block::monitored<Row>)
                         barrier_block::write_monitoring(*product, row, "FXIndex");
-                    with_fx_terms<Row>(
-                        [&](const auto& terms) { scalar_terms::write_terms(*product, row, terms); });
+                    with_fx_terms<Row>([&](const auto& terms) {
+                        scalar_terms::write_terms(*product, row, terms);
+                    });
                     if constexpr (std::is_same_v<Row, fx_variance_swap_instrument>)
                         if (!row.moment_type.empty())
                             scalar_terms::write_text(*product, "MomentType", row.moment_type);

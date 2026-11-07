@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -87,8 +87,7 @@ constexpr std::string_view change_commentary = "Imported from ORE XML";
 constexpr bool is_bond_trade_type(std::string_view type) {
     return type == "Bond" || type == "ForwardBond" || type == "CallableBond" ||
            type == "ConvertibleBond" || type == "BondOption" || type == "BondTRS" ||
-           type == "BondRepo" || type == "BondFuture" || type == "BondPosition" ||
-           type == "Ascot";
+           type == "BondRepo" || type == "BondFuture" || type == "BondPosition" || type == "Ascot";
 }
 
 template <typename Row>

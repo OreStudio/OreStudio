@@ -533,10 +533,8 @@ void write_commodity_swaption(record_writer& trade, const commodity_instrument_d
 void write_commodity_swap(record_writer& trade, const commodity_instrument_data& carrier) {
     auto data = trade.child("SwapData");
     if (!carrier.legs.empty()) {
-        leg_block::write_legs(data,
-                              carrier.instrument.start_date,
-                              carrier.instrument.maturity_date,
-                              carrier);
+        leg_block::write_legs(
+            data, carrier.instrument.start_date, carrier.instrument.maturity_date, carrier);
         return;
     }
 
@@ -686,8 +684,8 @@ std::optional<std::string> commodity_option_data_element(std::string_view trade_
     return std::nullopt;
 }
 
-auto read_commodity_product(const xml::record_reader& trade, std::string_view trade_type)
-    -> trading::domain::trade_instrument {
+auto read_commodity_product(const xml::record_reader& trade,
+                            std::string_view trade_type) -> trading::domain::trade_instrument {
     if (trade_type == "CommodityBasketOption")
         return trading::domain::trade_instrument{read_commodity_basket_option(trade)};
 

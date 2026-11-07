@@ -19,8 +19,8 @@
  */
 #include "ores.marketdata.core/service/series_identity_lister.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/series_axis_repository.hpp"

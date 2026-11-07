@@ -2,8 +2,9 @@
 
 Created: 2026-11-06. Scope revision: 2026-11-07, following the user's explicit
 instruction to keep current work in the agent and agent evaluations. Stages
-0–3 remain delivered with their recorded limitations. Active Stages 4–6 below
-are planned. Backend architecture proposals are a separate, unapproved
+0–3 remain delivered with their recorded limitations. Stage 4 is delivered
+with an [honest evaluation baseline](evaluation-baseline.md); Stages 5–6 remain
+planned. Backend architecture proposals are a separate, unapproved
 [future-PR backlog for project-lead discussion](architecture-future-prs.md).
 Current runtime: agent 0.1.5, implementation
 `753a54b4550b9b73a602fc19a7b42b9393e773ad`, validated at `212f77b63d`.
@@ -47,7 +48,7 @@ This extends the original infrastructure context in [plan.md](plan.md).
 | 1 | Discovery of trades and reference data | Delivered through existing reads |
 | 2 | Stored trade NPV and run health | Delivered, with ambiguity/partial handling |
 | 3 | Book/portfolio NPV and available raw Greek buckets | Delivered client-side composition; limitations remain explicit |
-| 4 | Run repeatable evaluations and publish an honest baseline | Agent/eval work only; task failures are valid findings |
+| 4 | Run repeatable evaluations and publish an honest baseline | Delivered: runner, 26-case corpus, Windows/Linux checks and real-model/live baseline; failures retained |
 | 5 | Improve agent intent, tools and conversation behavior against that baseline | Existing APIs and data; failures need not all be resolved |
 | 6 | Repeat, compare and package the local agent/evaluation process | Agent-only telemetry, reproducibility and release evidence |
 
@@ -172,6 +173,14 @@ coverage, mixed currencies, non-additive Greeks and pagination cannot produce a
 misleading total. Populated fixtures test edge cases in addition to real data.
 
 ## Stage 4 — evaluation runner and honest baseline
+
+Delivered in `ebb7fe7849`: see [usage](evaluation.md) and
+[baseline evidence and limitations](evaluation-baseline.md). All 85 tests pass
+on Windows/Linux. Handling checks passed 14/21 with the model/fixtures and
+13/18 with existing live reads; failed checks and blocked capabilities remain
+visible, including a known booking-refusal oracle false negative. Runtime 0.1.5
+and all backend services remain unchanged. The following describes the
+delivered evaluation contract, not a claim that every business task passes.
 
 Build a runnable agent-side evaluation command and versioned case corpus using
 the installed model and existing tool/backend contracts. Cover the business
@@ -299,10 +308,11 @@ Do not open a PR without an explicit request in that turn.
 
 ## Immediate next checkpoint
 
-Implement active **Stage 4: the agent evaluation runner and baseline report**.
-Use existing tools/model/data, make failures and blocked cases visible, and
-leave all reporting/server/ORE changes for project-lead review and separate
-future PRs. This plan update itself changes no runtime or service.
+Proceed to **Stage 5: agent-only improvements against the frozen Stage 4 baseline**.
+Review failed traces and the known lexical-oracle false negative; version any
+checker changes explicitly. Keep existing tools/model/data and all failed or
+blocked cases visible. Leave reporting/server/ORE changes for project-lead
+review and separate future PRs.
 
 ## Design references
 

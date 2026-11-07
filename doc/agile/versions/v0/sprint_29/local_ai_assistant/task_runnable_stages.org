@@ -28,9 +28,9 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] |
-| Now          | Version 0.1.5 raw Greek buckets deployed; CSV/MCP/GPU evidence reconciled.                       |
+| Now          | Stage 4 evaluation runner/baseline delivered; installed agent 0.1.5 unchanged.                       |
 | Waiting on   | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
-| Next         | Agent-only Stage 4: evaluation runner and honest baseline, including failing/blocked cases.                  |
+| Next         | Stage 5: agent/evaluation improvements against frozen Stage 4 evidence.                  |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -165,3 +165,12 @@ via its "Verifies task" field.
 - Main fleet not restarted/replaced; no broker ACL/configuration changes or queue purge. Original fleet does not permanently serve the new subject; native Linux validation of this backend addition remains open. Agent remains read-only.
 - The existing 48 Windows agent tests passed; the unchanged artifact had already passed 48 tests/packaging on Linux. No native Linux backend or least-privilege/cross-tenant proof is claimed.
 - Evidence, reproduction, warnings and backend API observations: =projects/ores.agent/docs/valuation-validation.md=. Next: Stage 3 scoped summaries and available Greeks, with explicit completeness and units.
+
+* Business Stage 4 evaluation checkpoint
+
+- Implementation =ebb7fe7849d2089da0444f250bbe32edddfbf405=; corpus 1.0.0 contains 26 cases. All 85 component/harness tests pass on Windows and pinned Linux. Linux replay reproduces Windows outcomes with matching source fingerprints; its archive report records unknown Git revision.
+- Replay handling passes 26/26, model/fixture handling 14/21 and live-read handling 13/18. Overall passes are 22/26, 12/21 and 11/18. Blocked cases stay in denominators and business fulfillment is separate. One repetition is baseline evidence, not a broad accuracy benchmark.
+- Failed automated checks remain recorded. Booking refusal has a known lexical-oracle false negative; preserve the frozen result and review/version any correction during Stage 5. Missing IR/vega and report/booking capabilities remain explicit.
+- Usage, safe aggregate and private evidence paths: =projects/ores.agent/docs/evaluation.md= and =evaluation-baseline.md=. Normal completed reports return 0 despite quality failures; strict replay returns the expected 2.
+- No production agent/backend source or business records changed. Existing read-only NATS plus normal session lifecycle only; installed 0.1.5, 19 native/broker/inference PIDs, agent PID and private config remain unchanged. Main app and agent health/readiness return HTTP 200.
+- Next: agent/eval-only Stage 5; backend proposals remain separate future PRs. Task/story remain STARTED for later stages.

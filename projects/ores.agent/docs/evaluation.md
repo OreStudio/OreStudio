@@ -1,5 +1,7 @@
 # Stage 4: agent evaluation runner
 
+Delivered baseline: [results, failed checks and known oracle limitation](evaluation-baseline.md).
+
 The evaluator runs the actual `Agent` and shared `ToolExecutor` from this
 checkout. It is checkout tooling, not a new server or a change to the installed
 agent bundle. The current runtime remains separately deployed. No reporting,

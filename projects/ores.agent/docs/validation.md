@@ -1,5 +1,16 @@
 # Implementation validation
 
+## Stage 4: evaluation tooling and initial baseline
+
+Implementation `ebb7fe7849d2089da0444f250bbe32edddfbf405` passes all 85 tests
+on Windows and Linux. The 26-case corpus runs as replay, local-model/fixtures
+and opt-in existing live reads. Handling checks passed 26/26, 14/21 and 13/18
+respectively. Failed checks, missing-data/capability outcomes and a known
+booking-refusal oracle false negative remain visible. See the
+[complete baseline evidence](evaluation-baseline.md) and [runner usage](evaluation.md).
+This tooling changes no installed application or backend deployment; the
+0.1.5 release and its historical validation below remain unchanged.
+
 ## Current release: 0.1.5 stored raw Greek buckets
 
 Validated code: `753a54b4550b9b73a602fc19a7b42b9393e773ad`. Installed artifact:

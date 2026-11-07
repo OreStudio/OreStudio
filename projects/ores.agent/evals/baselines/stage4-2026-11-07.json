@@ -1,0 +1,611 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-07",
+  "implementationRevision": "ebb7fe7849d2089da0444f250bbe32edddfbf405",
+  "corpusVersion": "1.0.0",
+  "corpusSha256": "9873408a6cdfa138348703468267ec02fbaef9562682b1b03538f3061de7b286",
+  "scope": "Agent/evaluation tooling only; existing installed agent and business services unchanged.",
+  "profiles": {
+    "replay": {
+      "summary": {
+        "total": 26,
+        "outcomes": {
+          "pass": 22,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 26,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 16,
+          "unfulfilled": 0,
+          "not_applicable": 6,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.8461538461538461,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "node": "v24.16.0",
+      "platform": "win32",
+      "dataMode": "LABELLED FIXTURE DATA; not live OreStudio.",
+      "inferenceMode": "SCRIPTED REPLAY; not a model-quality score.",
+      "failedCaseIds": [],
+      "caseResults": [
+        {
+          "id": "books",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "portfolio",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "book-clarification",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "historical-fx",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "provider-clarification",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "missing-ir",
+          "overall": "blocked_data",
+          "handling": "pass",
+          "capability": "blocked_data"
+        },
+        {
+          "id": "trade-npv",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-npv",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-run-clarification",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-delta",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-gamma",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-dv01",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "missing-vega",
+          "overall": "blocked_data",
+          "handling": "pass",
+          "capability": "blocked_data"
+        },
+        {
+          "id": "partial-withheld",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "foreign-party",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "not_applicable"
+        },
+        {
+          "id": "report-command",
+          "overall": "blocked_backend",
+          "handling": "pass",
+          "capability": "blocked_backend"
+        },
+        {
+          "id": "booking-command",
+          "overall": "blocked_backend",
+          "handling": "pass",
+          "capability": "blocked_backend"
+        },
+        {
+          "id": "malformed-model-call",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "not_applicable"
+        },
+        {
+          "id": "inference-failure",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "not_applicable"
+        },
+        {
+          "id": "cancelled",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "not_applicable"
+        },
+        {
+          "id": "tool-text-injection",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "books-paraphrase",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "fx-natural-date",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-value-paraphrase",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "inference-timeout",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "not_applicable"
+        },
+        {
+          "id": "backend-denied",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "not_applicable"
+        }
+      ]
+    },
+    "model": {
+      "summary": {
+        "total": 21,
+        "outcomes": {
+          "pass": 12,
+          "fail": 7,
+          "blocked_backend": 0,
+          "blocked_data": 2,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 14,
+          "fail": 7,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 11,
+          "unfulfilled": 5,
+          "not_applicable": 1,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.5714285714285714,
+        "handlingPassRate": 0.6666666666666666,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "node": "v24.16.0",
+      "platform": "win32",
+      "dataMode": "LABELLED FIXTURE DATA; not live OreStudio.",
+      "inferenceMode": "Actual configured local model.",
+      "failedCaseIds": [
+        "scope-npv",
+        "scope-delta",
+        "scope-gamma",
+        "report-command",
+        "booking-command",
+        "fx-natural-date",
+        "scope-value-paraphrase"
+      ],
+      "caseResults": [
+        {
+          "id": "books",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "portfolio",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "book-clarification",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "historical-fx",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "provider-clarification",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "missing-ir",
+          "overall": "blocked_data",
+          "handling": "pass",
+          "capability": "blocked_data"
+        },
+        {
+          "id": "trade-npv",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-npv",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "unfulfilled"
+        },
+        {
+          "id": "scope-run-clarification",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-delta",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "unfulfilled"
+        },
+        {
+          "id": "scope-gamma",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "unfulfilled"
+        },
+        {
+          "id": "scope-dv01",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "missing-vega",
+          "overall": "blocked_data",
+          "handling": "pass",
+          "capability": "blocked_data"
+        },
+        {
+          "id": "partial-withheld",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "foreign-party",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "not_applicable"
+        },
+        {
+          "id": "report-command",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "blocked_backend"
+        },
+        {
+          "id": "booking-command",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "blocked_backend"
+        },
+        {
+          "id": "tool-text-injection",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "books-paraphrase",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "fx-natural-date",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "unfulfilled"
+        },
+        {
+          "id": "scope-value-paraphrase",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "unfulfilled"
+        }
+      ]
+    },
+    "live": {
+      "summary": {
+        "total": 18,
+        "outcomes": {
+          "pass": 11,
+          "fail": 5,
+          "blocked_backend": 0,
+          "blocked_data": 2,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 13,
+          "fail": 5,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 10,
+          "unfulfilled": 3,
+          "not_applicable": 1,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.6111111111111112,
+        "handlingPassRate": 0.7222222222222222,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "node": "v24.16.0",
+      "platform": "win32",
+      "dataMode": "Existing backend records; no business mutations.",
+      "inferenceMode": "Actual configured local model.",
+      "failedCaseIds": [
+        "trade-npv",
+        "report-command",
+        "booking-command",
+        "fx-natural-date",
+        "scope-value-paraphrase"
+      ],
+      "caseResults": [
+        {
+          "id": "books",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "portfolio",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "historical-fx",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "provider-clarification",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "missing-ir",
+          "overall": "blocked_data",
+          "handling": "pass",
+          "capability": "blocked_data"
+        },
+        {
+          "id": "trade-npv",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "unfulfilled"
+        },
+        {
+          "id": "scope-npv",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-run-clarification",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-delta",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-gamma",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "scope-dv01",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "missing-vega",
+          "overall": "blocked_data",
+          "handling": "pass",
+          "capability": "blocked_data"
+        },
+        {
+          "id": "foreign-party",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "not_applicable"
+        },
+        {
+          "id": "report-command",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "blocked_backend"
+        },
+        {
+          "id": "booking-command",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "blocked_backend"
+        },
+        {
+          "id": "books-paraphrase",
+          "overall": "pass",
+          "handling": "pass",
+          "capability": "fulfilled"
+        },
+        {
+          "id": "fx-natural-date",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "unfulfilled"
+        },
+        {
+          "id": "scope-value-paraphrase",
+          "overall": "fail",
+          "handling": "fail",
+          "capability": "unfulfilled"
+        }
+      ]
+    }
+  },
+  "linuxReplay": {
+    "summary": {
+      "total": 26,
+      "outcomes": {
+        "pass": 22,
+        "fail": 0,
+        "blocked_backend": 2,
+        "blocked_data": 2,
+        "blocked_identity": 0,
+        "error": 0
+      },
+      "handling": {
+        "pass": 26,
+        "fail": 0,
+        "error": 0,
+        "not_run": 0
+      },
+      "capability": {
+        "fulfilled": 16,
+        "unfulfilled": 0,
+        "not_applicable": 6,
+        "blocked_backend": 2,
+        "blocked_data": 2,
+        "blocked_identity": 0
+      },
+      "overallPassRate": 0.8461538461538461,
+      "handlingPassRate": 1,
+      "denominator": "All selected case repetitions, including blocked and errored cases."
+    },
+    "sourceFingerprintsMatchWindows": true,
+    "archiveRevision": "ebb7fe7849d2089da0444f250bbe32edddfbf405",
+    "reportGitRevision": "unknown",
+    "node": "v24.22.2"
+  },
+  "componentTests": {
+    "windows": 85,
+    "linux": 85
+  },
+  "manualReview": [
+    {
+      "caseId": "booking-command",
+      "profiles": [
+        "model",
+        "live"
+      ],
+      "finding": "Known lexical-oracle false negative: the response refuses booking using wording absent from the expected phrase list. Automatic baseline is retained unchanged; review/refine the oracle as a versioned follow-up."
+    }
+  ],
+  "limitations": [
+    "One repetition per real-model profile; task/case scores are not broad accuracy or latency benchmarks.",
+    "Replay uses scripted inference and labelled fixture data, not model-quality evaluation.",
+    "Blocked/data/identity cases stay in all-case denominators; handling and business fulfillment are separate.",
+    "Model artifact/configuration hashes do not attest the bytes loaded by an already-running process.",
+    "Failed automated checks require trace review; do not automatically attribute them to the agent or backend."
+  ],
+  "modelConfiguration": {
+    "model": "lfm3-1.7b",
+    "timeoutMs": 60000,
+    "maxOutputTokens": 2048,
+    "temperature": 0.1,
+    "topK": 50,
+    "repeatPenalty": 1.1
+  },
+  "modelArtifacts": {
+    "provenance": "Configured files/artifact hashes; actual served process not attested by this evaluator.",
+    "release": "b12172",
+    "modelRepository": "LiquidAI/LFM3-1.7B-GGUF",
+    "modelRevision": "cd0c74c575b5c416f3011b5b4c298077f26ca8c2",
+    "modelFile": "LFM3-1.7B-QAD-Q4_0.gguf",
+    "quantization": "QAD-Q4_0",
+    "expectedModelSha256": "43a7d09a0e9cba91b63eb7052488b9564569bddfd65754d2e426465e572a7452",
+    "observedModelSha256": "43a7d09a0e9cba91b63eb7052488b9564569bddfd65754d2e426465e572a7452",
+    "modelHashMatches": true,
+    "runtimeBinarySha256": "2149d33c00cbdb2c4ff5e43e737a4fdf145f871e3cb62c068551d7d09745e2d6",
+    "flags": {
+      "--ctx-size": "262144",
+      "--parallel": "1",
+      "--n-gpu-layers": "99",
+      "--device": "CUDA0",
+      "--threads": "4",
+      "--threads-batch": "4",
+      "--temp": "0.1",
+      "--top-k": "50",
+      "--repeat-penalty": "1.1"
+    }
+  }
+}

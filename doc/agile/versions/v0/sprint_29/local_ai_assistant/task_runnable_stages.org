@@ -29,8 +29,8 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 | State        | STARTED                              |
 | Parent story | [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] |
 | Now          | Version 0.1.5 raw Greek buckets deployed; CSV/MCP/GPU evidence reconciled.                       |
-| Waiting on   | Native Linux backend/GPU checks; hosted auth and broker ACL hardening.                               |
-| Next         | Revised Stage 4: rule ownership, evaluation baseline and first versioned authoritative valuation query.                  |
+| Waiting on   | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
+| Next         | Agent-only Stage 4: evaluation runner and honest baseline, including failing/blocked cases.                  |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -45,9 +45,9 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 
 * Plan
 
-- Architecture revision, 2026-11-07: follow =projects/ores.agent/docs/business-use-cases-plan.md=. Preserve delivered Stages 0–3; add 4 stable business contracts/first valuation query, 5 authoritative scope/NPV reads, 6 authoritative Greek cutover/thin agent tools, 7 explicit conversational workflows/AI evaluations and 8 deployment/command readiness. Evaluation baseline work starts in 4, not after migration.
-- Next runnable checkpoint is one versioned reporting query consumed by the current agent/MCP tool and an independent client, with ownership/capability/permission tests. Declare exact backend/NATS changes before implementation. Move financial rules incrementally; preserve independent deployment, old/new parity, rollback and explicit missing-data behavior. No automatic legacy or HTTP/SQL fallback.
-- Report execution becomes 9, booking drafts 10, confirmed booking 11, expansion 12, quotations 13 and business workflows 14. Historical validation labels remain unchanged. This plan update changes no application or service; task stays STARTED and future gates are not marked complete.
+- Scope correction, 2026-11-07: follow =projects/ores.agent/docs/business-use-cases-plan.md= for agent/eval-only work. Active 4 builds the evaluation runner and baseline, 5 improves agent behavior and 6 makes local evaluation/release repeatable. Existing client-side financial composition stays in place. Do not implement or deploy reporting/server/ORE, schema/business-data or broker changes to close an evaluation gap.
+- Stage 4 acceptance is a runnable harness and complete honest report, even if most model/business cases fail. Distinguish handling correctness from business fulfillment, retain all denominators, classify blocked data/backend/identity cases and errors, and keep deterministic safeguards/harness tests passing. Use existing APIs/data and labelled fixtures; do not provision data or execute reports/booking from evaluations.
+- =projects/ores.agent/docs/architecture-future-prs.md= retains proposals F1–F10 for project-lead review and separate future PRs, including the historical cc917e0d36 backend-delta scope audit. These proposals are not authorised implementations or blockers for active evaluation. No branch rewrite, PR or runtime change is part of this planning update; task stays STARTED.
 
 - Business Stage 3 raw Greek checkpoint: =753a54b4550b9b73a602fc19a7b42b9393e773ad=, separate release =0.1.5-cf24e13db443=. Windows and pinned Linux =npm test= pass 77 tests; manifests match. =scripts/smoke-greeks.mjs= passes full external MCP/CSV reference reconciliation, GPU Delta/Gamma/DV01, run clarification and isolation checks.
 - The independent =scripts/reconcile-greek-reference.py= validates all 510 stored Delta/Gamma figures against actual CSV lines, using Decimal and no agent arithmetic. Complete FX-book GBP 1Y/0.0001 buckets give Delta GBP -6502.44 and Gamma GBP 0.14; sparse parent buckets withhold totals rather than inventing zero contributions. Positive live vega remains unavailable in this dataset.

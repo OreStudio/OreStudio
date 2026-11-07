@@ -9,8 +9,11 @@ See [deployment](docs/deployment.md), [CUDA inference](docs/inference.md),
 [backend contract](docs/backend-contract.md) for current runnable instructions.
 Version 0.1.1 adds [FX spot and basic IR lookups](docs/market-lookups.md), with
 exact point matching, provider clarification and dated freshness information.
-The [staged business-use-case plan](docs/business-use-cases-plan.md) covers the
-next reporting, booking, quotation and workflow deliveries and their gates.
+The [active implementation plan](docs/business-use-cases-plan.md) now focuses
+on agent evaluations, an honest failing/blocked baseline and agent-only
+improvements using existing APIs. Reporting/server architecture and command
+capabilities are [separate future PR proposals](docs/architecture-future-prs.md)
+for project-lead discussion; they do not block the evaluation work.
 The [Stage 0 baseline](docs/business-baseline.md) records live data readiness
 and how to rerun the read-only operator inspection.
 Version 0.1.2 adds [Stage 1 discovery](docs/discovery.md): trades, books,

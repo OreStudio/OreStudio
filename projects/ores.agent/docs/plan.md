@@ -7,20 +7,22 @@ Source: https://github.com/OreStudio/OreStudio/issues/4295 and its three comment
 
 Agent 0.1.5 has delivered the read-only discovery, market lookup, stored NPV and
 raw Greek checkpoints, with the limits in [validation](validation.md).
-The authoritative next-stage sequence is the revised
-[business-use-case plan](business-use-cases-plan.md). Keep the combined agent/MCP
-app and inference independently deployed, but migrate authoritative financial
-membership, eligibility, units and aggregation into domain-owned queries.
-Business ownership does not require putting MCP or prompts in the main server.
+The current sequence is the [agent-only implementation plan](business-use-cases-plan.md):
+Stage 4 builds the evaluation runner and honest baseline, Stage 5 improves
+agent behavior against it, and Stage 6 makes local evaluation/release repeatable.
+Most quality evaluations may fail initially; reporting those failures and data/
+capability gaps is a successful baseline, not a reason to change the server.
+Keep existing deterministic agent composition, standalone agent/MCP and LLM.
 
-New Stages 4–8 cover the versioned business contract/first query, authoritative
-scope/NPV reads, Greek-query cutover with thin tools, explicit conversational
-workflows/AI evaluations, and deployment/command-readiness gates. Report
-execution is now Stage 9; drafts/confirmed booking are 10/11, and expansion,
-quotations and business workflows are 12/13/14. Earlier stage numbers in
-historical evidence retain their original meaning. NATS remains the sole
-business transport; no HTTP migration or runtime change is part of this plan
-revision. The infrastructure checkpoints below remain historical context.
+Reporting/main-server/ORE code, schemas, broker configuration and deployments
+are outside current work. Authoritative query/aggregation migration, packaging/
+lifecycle repairs, hosted security and future commands are documented separately
+as [future PR proposals for project-lead discussion](architecture-future-prs.md).
+They do not block agent/evaluation work and are not approved for implementation
+here. Review historical backend commit cc917e0d36 separately when preparing
+agent-only PRs. NATS remains the sole business transport. Older stage numbers
+and the infrastructure checkpoints below are historical context, superseded
+where they conflict with the current scope boundary.
 
 ## Initial delivery status (2026-11-06)
 

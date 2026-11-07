@@ -24,8 +24,8 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Version 0.1.5 raw Greek buckets deployed; CSV/MCP/GPU evidence reconciled.                       |
-| Waiting on    | Native Linux backend/GPU checks; hosted auth and broker ACL hardening.                               |
-| Next          | Revised Stage 4: rule ownership, evaluation baseline and first versioned authoritative valuation query.            |
+| Waiting on    | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
+| Next          | Agent-only Stage 4: evaluation runner and honest baseline, including failing/blocked cases.            |
 | Last touched  | 2026-11-07                               |
 
 * Acceptance
@@ -46,9 +46,9 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 
 * Decisions
 
-- Architecture revision, 2026-11-07: authoritative financial membership, eligibility, completeness, units and aggregation belong to domain-owned business queries; current agent reporting composition is transitional. The separate combined agent/MCP app retains intent, clarification, bounded orchestration and presentation. Logical ownership does not require a new process or moving MCP into the main server.
-- Keep NATS as the sole business transport behind a transport-neutral versioned contract. Revised business Stages 4–8 precede commands: first stable query, authoritative scope/NPV, authoritative Greek cutover/thin tools, explicit conversation workflows/evaluations and deployment readiness. Evaluation starts with the Stage 4 baseline. Former report execution/booking stages are now 9/10/11; expansion/quotes/workflows are 12/13/14. Historical checkpoints retain their numbering.
-- The revision is planned work, not a claim of server-side aggregation, complete AI evaluations or production readiness in 0.1.5. See =projects/ores.agent/docs/business-use-cases-plan.md=. No runtime/server/broker change is part of the plan update.
+- Scope correction, 2026-11-07: current work is agent and agent evaluation only. Do not change reporting/main-server/ORE source, schemas, business data, broker configuration or deployments. Retain existing deterministic client composition and read-only NATS access; normal login/logout is permitted. Proposed financial-rule migration is deferred for project-lead discussion and separate future PRs.
+- Active Stage 4 is the evaluation runner/baseline, 5 agent-only behavioral improvements and 6 repeatable local evaluation/release. Most quality cases may fail; publish failures, blocked backend/data/identity cases and harness errors honestly. Deterministic safeguards and harness-integrity checks remain required; a complete report is not a claim of business fulfillment or production readiness.
+- Future proposals F1–F10 are in =projects/ores.agent/docs/architecture-future-prs.md=, including query ownership, packaging/lifecycle, hosted security and commands. They do not block active agent/eval work and are not authorised here. That handoff also records historical backend commit cc917e0d36 for separate agent-PR scope review; no history rewrite or new PR is requested. See the active =business-use-cases-plan.md= for the current sequence; earlier numbers remain historical.
 
 - Business Stage 3 raw Greeks preserve cash finite-difference units at exact target shifts, factor/tenor/scenario/currency separation and per-bucket coverage. Missing/suppressed rows do not prove zero; only complete buckets receive a total. Signed ORE rate Delta at a 1bp target bump and cash volatility Delta are labelled explicitly, with no derivative normalization or sign reversal.
 - Business Stage 3 NPV uses historical booking membership at the exact run-start timestamp, preserving microseconds. Portfolio totals follow the booking hierarchy, with complete population/coverage and explicit same-row base currency metadata; direct trade assignments are not mixed in.

@@ -19,9 +19,8 @@
  */
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <map>
-#include <rfl/json.hpp>
 
 namespace ores::eventing::service {
 
@@ -35,7 +34,9 @@ postgres_event_source::postgres_event_source(database::context ctx, event_bus& b
         // its traits name, and the notification is also published as an
         // entity_change_event for a subscriber that needs the tenant.
         try {
-            const auto notification = rfl::json::read<domain::entity_event_notification>(payload);
+            const auto notification =
+                ores::utility::codec::json::read_expected<domain::entity_event_notification>(
+                    payload);
             if (!notification) {
                 const auto n = ++parse_failure_count_;
                 BOOST_LOG_SEV(lg(), error) << "Failed to deserialize notification payload"
@@ -55,7 +56,8 @@ postgres_event_source::postgres_event_source(database::context ctx, event_bus& b
             change.timestamp = notification->occurred_at;
             change.tenant_id = notification->tenant_id;
             if (const auto keys =
-                    rfl::json::read<std::map<std::string, std::string>>(notification->key))
+                    ores::utility::codec::json::read_expected<std::map<std::string, std::string>>(
+                        notification->key))
                 for (const auto& entry : *keys)
                     change.entity_ids.push_back(entry.second);
             bus_.publish(change);

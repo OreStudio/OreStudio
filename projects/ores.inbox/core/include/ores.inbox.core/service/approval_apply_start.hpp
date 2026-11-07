@@ -20,8 +20,8 @@
 #ifndef ORES_INBOX_CORE_SERVICE_APPROVAL_APPLY_START_HPP
 #define ORES_INBOX_CORE_SERVICE_APPROVAL_APPLY_START_HPP
 
-#include "ores.inbox.api/domain/approval_kind.hpp"
-#include "ores.inbox.api/domain/approval_request.hpp"
+#include "ores.inbox.api/domain/approval_kind_codec.hpp"
+#include "ores.inbox.api/domain/approval_request_codec.hpp"
 #include "ores.inbox.api/workflow/apply_step_command.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"

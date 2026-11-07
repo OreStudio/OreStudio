@@ -18,7 +18,7 @@
  *
  */
 #include "ores.reporting.core/service/report_error_recorder.hpp"
-#include "ores.reporting.api/domain/report_error_event.hpp"
+#include "ores.reporting.api/domain/report_error_event_codec.hpp"
 #include "ores.reporting.core/repository/report_error_event_repository.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"

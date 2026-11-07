@@ -20,8 +20,12 @@
 #ifndef ORES_EVENTING_API_DOMAIN_ENTITY_CHANGE_EVENT_HPP
 #define ORES_EVENTING_API_DOMAIN_ENTITY_CHANGE_EVENT_HPP
 
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 namespace ores::eventing::domain {
@@ -58,6 +62,20 @@ struct entity_change_event final {
      */
     std::string tenant_id;
 };
+
+/**
+ * @brief The members of entity_change_event, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_change_event>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"entity", &entity_change_event::entity},
+                      field{"timestamp", &entity_change_event::timestamp},
+                      field{"entity_ids", &entity_change_event::entity_ids},
+                      field{"tenant_id", &entity_change_event::tenant_id}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<entity_change_event>(),
+              "entity_change_event gained a member its wire_fields does not name.");
 
 }
 

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 67A70592-0AD7-4E33-A348-1B945D2F7FAC
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.tenor_basis_swap_convention
 #+description: Codegen family model for the tenor basis swap convention: the central convention row plus its two parts, and the family get and put derived from them.

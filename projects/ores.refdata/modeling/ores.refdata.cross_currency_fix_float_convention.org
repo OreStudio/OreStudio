@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 42B27F4A-F09C-4DBC-9B9B-F9EFE601E2EA
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.cross_currency_fix_float_convention
 #+description: Codegen family model for the cross-currency fix-float convention: the central convention row plus its two legs, and the family get and put derived from them.

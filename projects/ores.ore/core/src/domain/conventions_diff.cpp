@@ -19,11 +19,13 @@
 #include "conventions_family_units.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/convention_codec.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short_codec.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_codec.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <map>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -71,12 +73,12 @@ std::string without_joined_kinds(const conventions_package& p) {
             continue;
         out += row.family + "\x1f" + std::to_string(row.sequence) + "\x1f" + row.payload + "\n";
     }
-    return out + rfl::json::write(p.fx);
+    return out + ores::utility::codec::json::write(p.fx);
 }
 
 template <typename Row>
 Row decode(const refdata::messaging::conventions_bundle_row& row) {
-    auto decoded = rfl::json::read<Row>(row.payload);
+    auto decoded = ores::utility::codec::json::read_expected<Row>(row.payload);
     if (!decoded)
         throw std::runtime_error("A conventions payload does not decode: " + row.family);
     return std::move(*decoded);
@@ -126,7 +128,8 @@ std::map<std::string, std::string> tenor_basis_swap_facts(const conventions_pack
             copy.identity.convention_id = boost::uuids::uuid{};
             item.long_short.push_back(copy);
         }
-        out[c.identity.kind_code + "\x1f" + c.payload.name] = rfl::json::write(item);
+        out[c.identity.kind_code + "\x1f" + c.payload.name] =
+            ores::utility::codec::json::write(item);
     }
     return out;
 }

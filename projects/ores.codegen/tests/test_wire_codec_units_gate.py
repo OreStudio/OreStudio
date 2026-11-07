@@ -55,11 +55,11 @@ def render_changed_event(opted_in):
     )
 
 
-def test_a_model_that_did_not_opt_in_prints_its_row_with_the_reflector():
+def test_a_model_without_the_flag_prints_its_row_with_the_codec_too():
+    """Every model has a generated codec, so no branch keeps reflect-cpp."""
     plain = render_json_io(False)
-    assert "<rfl/json.hpp>" in plain
-    assert "rfl::json::write(v, s);" in plain
-    assert "codec/" not in plain
+    assert "rfl" not in plain
+    assert "ores::utility::codec::json::write(v)" in plain
 
 
 def test_a_model_that_opted_in_prints_its_row_with_the_generated_codec():

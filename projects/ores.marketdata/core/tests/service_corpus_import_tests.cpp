@@ -32,6 +32,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/running_under_valgrind.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -41,7 +42,6 @@
 #include <format>
 #include <functional>
 #include <map>
-#include <rfl/json.hpp>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -158,7 +158,7 @@ std::vector<dated_value> triples_of(ores::database::context ctx,
     std::vector<dated_value> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
-        const auto t = rfl::json::read<std::vector<std::string>>(row);
+        const auto t = ores::utility::codec::json::read_expected<std::vector<std::string>>(row);
         if (!t || t->size() != 3)
             FAIL("unreadable row: " << row);
         result.emplace_back((*t)[0], (*t)[1], (*t)[2]);

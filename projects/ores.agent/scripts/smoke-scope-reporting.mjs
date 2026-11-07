@@ -47,7 +47,7 @@ try {
         console.log(JSON.stringify({ gpuChat: true, scope: ref.scope, total: ref.total, durationMs: result.durationMs }));
     }
     const clarification = await post('/chat', { message: `What is the base-currency NPV for ${first.scopeType} "${first.scope}"?` }, token);
-    assert.ok(clarification.evidence.some(e => e.status === 'selection_required'), JSON.stringify(clarification));
+    assert.ok(clarification.selectionRequired === 'runId' || clarification.evidence.some(e => e.status === 'selection_required'), JSON.stringify(clarification));
     const selectedReply = await post('/chat', { message: first.runId }, token);
     assert.ok(selectedReply.evidence.some(e => e.total?.figure === first.total));
     const unsupported = await post('/chat', { message: `Show delta for ${first.scopeType} "${first.scope}" from run ${first.runId}` }, token);

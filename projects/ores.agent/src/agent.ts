@@ -4,7 +4,7 @@ import { AppError } from './backend.js';
 import type { Session } from './auth.js';
 import { tools, type ToolExecutor } from './tools.js';
 import type { Inference, Message } from './inference.js';
-import { formatMarketResult } from './market.js';
+import { formatMarketResult, marketId } from './market.js';
 import { discoveryTools, formatDiscovery } from './discovery.js';
 import { reportingTools, formatReporting } from './reporting.js';
 import { scopeTools, formatScopeReporting } from './scope-reporting.js';
@@ -35,6 +35,7 @@ export class Agent {
     private pending = new WeakMap<Session, PendingMarket>();
     private pendingDiscovery = new WeakMap<Session, { name: string; args: Record<string, unknown>; field: string; candidates: { id: string; name: string }[]; expires: number }>();
     private pendingScope = new WeakMap<Session, { args: Record<string, unknown>; field: string; candidates: { id: string; name: string }[]; expires: number }>();
+    private pendingScopeIntent = new WeakMap<Session, { message: string; expires: number }>();
     constructor(private inference: Inference, private executor: ToolExecutor) {}
     private scopeAnswer(result: unknown, session: Session) {
         const answer = formatScopeReporting(result); if (!answer) return;
@@ -59,10 +60,12 @@ export class Agent {
         return answer;
     }
     async chat(raw: unknown, session: Session, signal: AbortSignal) {
-        const { message } = input.parse(raw);
+        let { message } = input.parse(raw);
         if (session.chatBusy || this.active >= 1) throw new AppError('agent_busy', 'Inference is busy; try again shortly.', 429);
         session.chatBusy = true; this.active++;
         const started = Date.now();
+        const previousIntent = this.pendingScopeIntent.get(session); this.pendingScopeIntent.delete(session);
+        if (previousIntent && previousIntent.expires > Date.now() && marketId.safeParse(message).success) message = previousIntent.message.replace(/[.?!]+$/, '') + ' from run ' + message;
         const deadline = AbortSignal.any([signal, AbortSignal.timeout(120000)]);
         const messages: Message[] = [{ role: 'system', content: system }, { role: 'user', content: message }];
         const business = /\b(trade|trades|book|books|portfolio|portfolios|counterparty|counterparties)\b/i.test(message);
@@ -82,6 +85,11 @@ export class Agent {
                     const result = await this.executor.execute('summarize_scope_results', { ...previousScope.args, [previousScope.field]: runChoice ? message : choice[0]!.id }, session, deadline);
                     return { answer: this.scopeAnswer(result, session)!, evidence: [result], dataRetrieved: true, durationMs: Date.now() - started };
                 }
+            }
+            if (scopedReporting && !/\b(greeks?|delta|gamma|vega|dv01)\b/i.test(message) && !/\b(?:run|report)\s+(?:UUID\s+)?[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b/i.test(message)) {
+                this.pending.delete(session); this.pendingDiscovery.delete(session);
+                this.pendingScopeIntent.set(session, { message, expires: Date.now() + 300000 });
+                return { answer: 'Which stored report run should I use? Reply with its exact run UUID from the report list or UI. I will use the book/portfolio membership at that run’s start time.', evidence: [], dataRetrieved: false, selectionRequired: 'runId', durationMs: Date.now() - started };
             }
             // An exact explicit partial-inspection command needs no probabilistic UUID/opt-in transcription.
             const partial = /^(?:show|read|inspect)\s+(?:the\s+)?partial\s+(npv|npv_base)\s+(?:of|for)\s+trade\s+([0-9a-f-]{36})\s+(?:from|in)\s+run\s+([0-9a-f-]{36})[.?!]?$/i.exec(message);

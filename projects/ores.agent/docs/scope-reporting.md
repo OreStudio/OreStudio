@@ -12,6 +12,8 @@ explicit `runId`. Omitting the run asks for a selection instead of guessing one.
 In chat, a pending run or ambiguous-scope choice lasts five minutes in that
 authenticated session only. A model cannot select an unrequested run or replace
 a requested Greek with an NPV figure.
+The missing-run prompt is deterministic and makes no inference request. On a
+UUID reply, only that session's bounded original scope intent is resumed.
 
 The tool reconstructs **booking membership at the selected run's `started_at`**
 through existing bitemporal NATS reads for books, portfolios, trades and trade

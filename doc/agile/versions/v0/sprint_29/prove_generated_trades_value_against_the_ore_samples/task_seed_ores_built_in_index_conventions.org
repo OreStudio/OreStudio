@@ -83,6 +83,21 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
   checkout), so the mined table is committed and the script re-derives it on
   demand. That answers the acceptance's "mined from indexparser.cpp" without
   vendoring the engine.
+- The fields come from ORE itself, not from a text pass over its source.
+  =index_catalogue= in =external/ore/tools/datum_catalogue= already asks ORE
+  what it made of each index name; it now reports the physical fields too
+  (settlement days, fixing calendar, day counter, business day convention,
+  end of month). Built against the ORE engine checkout on this machine and
+  run over a sample, it answers
+  =EUR-EURIBOR-6M -> 2, TARGET, Actual/360, ModifiedFollowing, end of month=,
+  which is exactly what the hand-written =refdata_ibor_index_conventions_populate.sql=
+  row states from the same class. So the 32 hand-written rows are the
+  validation set for the miner.
+- Two mappings remain to curate, and they are the only judgement in the
+  miner: ORE's calendar name to refdata's calendar code (=TARGET= stays,
+  =SOFR fixing calendar= is =UnitedStates.SOFR=), and ORE's day counter name
+  to FpML's code (=Actual/360= is =ACT/360=). Both are checked against the 32
+  rows before they are trusted.
 
 * Test Scenarios
 

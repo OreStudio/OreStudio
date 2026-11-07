@@ -100,14 +100,15 @@ by its type" on 2026-11-04:
 - =ores.refdata.calendar_materialisation_messages=
 - =ores.refdata.book_proposal_operations=
 
-**The conventions path waits on its own story.** =run_configuration_operations.cpp=
-uses =rfl::Generic= for the conventions export, and ores.ore core encodes
-convention rows with reflect-cpp in =conventions_family_pack.hpp=,
-=conventions_diff.cpp= and =conventions_family_cross_currency_fix_float.cpp=.
-The ores.ore codec task leaves them, because
+**The conventions path moved in step 2.** =conventions_family_pack.hpp=,
+=conventions_diff.cpp= and =conventions_family_cross_currency_fix_float.cpp=
+encoded convention rows with reflect-cpp after the ores.ore codec task, and step
+2 moved all three onto the codec: the packer writes and reads each row through
+=ores::utility::codec::json=. What stays is
+=run_configuration_operations.cpp='s =rfl::Generic= row, which step 3 moves to
+yyjson. The document aggregate that
 [[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Import and export conventions without a document aggregate]]
-replaces that code with typed family messages and a typed package. This task
-cannot close before that story does.
+replaces is a design change of its own now, and it no longer blocks this task.
 
 
 **The byte tests lose their reference.** =message_codec_tests.cpp= and the

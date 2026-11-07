@@ -108,3 +108,12 @@ test('Greek questions ask for a run before inference and cannot invent factor se
     assert.equal(missing.selectionRequired,'runId');assert.equal(modelCalls,0);
     await assert.rejects(()=>agent.chat({message:'Show delta for book FX Book from run 11111111-1111-4111-8111-111111111111'},makeSession(),new AbortController().signal));
 });
+
+test('model-supplied empty Greek selectors cannot silently narrow stress or cross buckets', async () => {
+    const agent=new Agent({complete:async()=>toolCall('{"scopeType":"book","scope":"FX Book","measure":"greeks","scenario":"","factor2":""}','summarize_scope_results')},{execute:async(name,args)=>{
+        assert.equal(Object.hasOwn(args,'scenario'),false);assert.equal(Object.hasOwn(args,'factor2'),false);
+        return {tool:name,status:'unavailable',reason:'No stored figures in this fixture.'};
+    }});
+    const result=await agent.chat({message:'Show Greeks for book FX Book from run 11111111-1111-4111-8111-111111111111'},makeSession(),new AbortController().signal);
+    assert.equal(result.evidence[0].status,'unavailable');
+});

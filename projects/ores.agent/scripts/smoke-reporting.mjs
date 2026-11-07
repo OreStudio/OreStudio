@@ -17,15 +17,22 @@ try {
     assert.equal((await call('read_run_status', { runId })).health, 'completed with errors');
     const withheld = await call('read_trade_results', { tradeId, runId }); assert.equal(withheld.status, 'unavailable'); assert.equal(withheld.result, undefined);
     const defaultResult = await call('read_trade_results', { tradeId });
-    assert.equal(defaultResult.status, cleanRunId ? 'ok' : 'unavailable');
-    if (cleanRunId) assert.equal(defaultResult.run.id, cleanRunId);
-    else assert.equal(defaultResult.result, undefined);
+    if (cleanRunId) {
+        if (defaultResult.status === 'ambiguous') {
+            assert.equal(defaultResult.result, undefined);
+            assert.ok(defaultResult.candidates.length >= 2);
+            assert.ok(defaultResult.candidates.some(r => r.id === cleanRunId));
+        } else { assert.equal(defaultResult.status, 'ok'); assert.equal(defaultResult.run.id, cleanRunId); }
+        const selected = await call('read_trade_results', { tradeId, runId: cleanRunId });
+        assert.equal(selected.status, 'ok'); assert.equal(selected.run.id, cleanRunId); assert.equal(selected.result.source, 'npv.csv');
+    } else { assert.equal(defaultResult.status, 'unavailable'); assert.equal(defaultResult.result, undefined); }
     const partial = await call('read_trade_results', { tradeId, runId, allowPartial: true }); assert.equal(partial.status, 'partial'); assert.equal(partial.result.source, 'npv.csv'); assert.match(partial.run.priced_at, /^2026-11-06/);
     if (otherPartyId) { const other = await login(otherPartyId); try { assert.equal((await post('/tools/read_trade_results', { tradeId, runId, allowPartial: true }, other.accessToken)).status, 'not_found'); } finally { await post('/auth/logout', {}, other.accessToken); } }
     for (const [message, tool, status] of [
-        [`What is the NPV of trade ${tradeId}?`, 'read_trade_results', cleanRunId ? 'ok' : 'unavailable'],
+        [`What is the NPV of trade ${tradeId}?`, 'read_trade_results', defaultResult.status],
         [`Show the status of report run ${runId}`, 'read_run_status', 'ok'],
         [`Show the partial NPV of trade ${tradeId} from run ${runId}`, 'read_trade_results', 'partial'],
+        ...(cleanRunId ? [[`What is the NPV of trade ${tradeId} from run ${cleanRunId}?`, 'read_trade_results', 'ok']] : []),
     ]) { const r = await post('/chat', { message }, token); assert.ok(r.evidence.some(e => e.tool === tool && e.status === status), JSON.stringify(r)); console.log(JSON.stringify({ message, tool, status, durationMs: r.durationMs })); }
     console.log(JSON.stringify({ externalMcp: true, erroredRunWithheld: true, explicitPartial: true, source: partial.result.source, pricingDate: partial.run.priced_at, secondPartyIsolation: Boolean(otherPartyId), cleanLiveExample: Boolean(cleanRunId) }));
 } finally { await client.close(); await post('/auth/logout', {}, token); }

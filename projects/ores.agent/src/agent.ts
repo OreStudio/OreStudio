@@ -136,6 +136,9 @@ export class Agent {
                         if (scopedReporting && !catalog.some(t => t.function.name === call.function.name)) throw new AppError('tool_not_in_catalogue', 'Tool is not available for this scoped request.', 400);
                         const args = JSON.parse(call.function.arguments);
                         if (call.function.name === 'summarize_scope_results' && args && typeof args === 'object') {
+                            // An empty string matches every prompt. Do not let model-
+                            // supplied empty selectors silently discard stress/cross buckets.
+                            for (const key of ['factor','factor2','scenario']) if (args[key] === '') delete args[key];
                             for (const key of ['scope', 'runId', 'factor', 'factor2', 'scenario']) if (typeof args[key] === 'string' && !message.toLowerCase().includes(args[key].toLowerCase())) throw new AppError('selection_not_requested', 'Use literal scope/factor/scenario and a run explicitly selected by the user.', 422);
                             const greek = /\b(greeks?|delta|gamma|vega|dv01)\b/i.exec(message)?.[1];
                             if (greek) args.measure = /^greeks?$/i.test(greek) ? 'greeks' : greek.toLowerCase();

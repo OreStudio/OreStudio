@@ -70,7 +70,7 @@
  * With no --write the statements go to stdout. With no input file the quotes are read from stdin.
  */
 #include "ores.marketdata.api/datum/market_datum.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include "ores.marketdata.core/vendor/provider_notation.hpp"
 #include "ores.marketdata.core/vendor/quote_description.hpp"

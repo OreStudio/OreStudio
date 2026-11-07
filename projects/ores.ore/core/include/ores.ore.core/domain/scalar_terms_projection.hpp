@@ -25,6 +25,7 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <cstddef>
+#include <format>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -57,6 +58,7 @@ struct term {
     std::variant<std::optional<std::string> Row::*,
                  std::optional<int> Row::*,
                  std::optional<decimal> Row::*,
+                 std::optional<double> Row::*,
                  std::optional<bool> Row::*,
                  std::optional<std::chrono::year_month_day> Row::*>
         member;
@@ -69,28 +71,28 @@ inline auto read_text(const record_reader& product, std::string_view element)
     if (f == nullptr)
         return std::nullopt;
     switch (f->kind) {
-    case xml::field_kind::repeated_leaf: {
-        const auto values = f->scalar == xml::scalar_kind::enumeration ?
-                                product.spellings(element) :
-                                product.values(element);
-        if (values.empty())
+        case xml::field_kind::repeated_leaf: {
+            const auto values = f->scalar == xml::scalar_kind::enumeration ?
+                                    product.spellings(element) :
+                                    product.values(element);
+            if (values.empty())
+                return std::nullopt;
+            return values.front();
+        }
+        case xml::field_kind::enumeration:
+            return product.spelling(element);
+        case xml::field_kind::text:
+            return product.text(element);
+        case xml::field_kind::integer:
+            if (const auto value = product.integer(element))
+                return std::to_string(*value);
             return std::nullopt;
-        return values.front();
-    }
-    case xml::field_kind::enumeration:
-        return product.spelling(element);
-    case xml::field_kind::text:
-        return product.text(element);
-    case xml::field_kind::integer:
-        if (const auto value = product.integer(element))
-            return std::to_string(*value);
-        return std::nullopt;
-    case xml::field_kind::decimal:
-        if (const auto value = product.decimal(element))
-            return value->to_string();
-        return std::nullopt;
-    default:
-        return std::nullopt;
+        case xml::field_kind::decimal:
+            if (const auto value = product.decimal(element))
+                return value->to_string();
+            return std::nullopt;
+        default:
+            return std::nullopt;
     }
 }
 
@@ -100,27 +102,27 @@ inline void write_text(record_writer& product, std::string_view element, const s
     if (f == nullptr)
         return;
     switch (f->kind) {
-    case xml::field_kind::repeated_leaf:
-        if (f->scalar == xml::scalar_kind::enumeration)
-            product.append_spelling(element, value, element);
-        else
-            product.append_value(element, value);
-        return;
-    case xml::field_kind::enumeration:
-        product.set_spelling(element, value, element);
-        return;
-    case xml::field_kind::text:
-        product.set_text(element, value);
-        return;
-    case xml::field_kind::integer:
-        product.set_integer(element, std::stoll(value));
-        return;
-    case xml::field_kind::decimal:
-        if (const auto parsed = decimal::from_string(value))
-            product.set_decimal(element, *parsed);
-        return;
-    default:
-        return;
+        case xml::field_kind::repeated_leaf:
+            if (f->scalar == xml::scalar_kind::enumeration)
+                product.append_spelling(element, value, element);
+            else
+                product.append_value(element, value);
+            return;
+        case xml::field_kind::enumeration:
+            product.set_spelling(element, value, element);
+            return;
+        case xml::field_kind::text:
+            product.set_text(element, value);
+            return;
+        case xml::field_kind::integer:
+            product.set_integer(element, std::stoll(value));
+            return;
+        case xml::field_kind::decimal:
+            if (const auto parsed = decimal::from_string(value))
+                product.set_decimal(element, *parsed);
+            return;
+        default:
+            return;
     }
 }
 
@@ -142,6 +144,8 @@ void read_terms(Row& row, const record_reader& product, const term<Row> (&terms)
                 } else if constexpr (std::is_same_v<Value, decimal>) {
                     if (const auto parsed = decimal::from_string(*text))
                         row.*member = *parsed;
+                } else if constexpr (std::is_same_v<Value, double>) {
+                    row.*member = std::stod(*text);
                 } else if constexpr (std::is_same_v<Value, bool>) {
                     row.*member = option_block::is_flag_on(*text);
                 } else {
@@ -169,6 +173,8 @@ void write_terms(record_writer& product, const Row& row, const term<Row> (&terms
                     write_text(product, t.element, std::to_string(*value));
                 } else if constexpr (std::is_same_v<Value, decimal>) {
                     write_text(product, t.element, value->to_string());
+                } else if constexpr (std::is_same_v<Value, double>) {
+                    write_text(product, t.element, std::format("{}", *value));
                 } else if constexpr (std::is_same_v<Value, bool>) {
                     write_text(product, t.element, std::string(option_block::flag_text(*value)));
                 } else {

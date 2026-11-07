@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_CORE_DOMAIN_LEG_BLOCK_PROJECTION_HPP
 #define ORES_ORE_CORE_DOMAIN_LEG_BLOCK_PROJECTION_HPP
 
+#include "ores.ore.core/domain/decimal_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/scalar_terms_projection.hpp"
@@ -32,8 +33,8 @@
 #include "ores.trading.api/domain/swap_leg_indexing.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include <algorithm>
-#include <cstddef>
 #include <chrono>
+#include <cstddef>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -244,7 +245,7 @@ inline void read_equity_terms(swap_leg& row, const record_reader& equity) {
         if (underlying->has("IdentifierType"))
             row.equity_underlying_identifier_type = text_of(*underlying, "IdentifierType");
     }
-    row.equity_quantity = equity.decimal("Quantity");
+    row.equity_quantity = decimal_as_double(equity, "Quantity");
     row.equity_initial_price = equity.decimal("InitialPrice");
     if (equity.has("InitialPriceCurrency"))
         row.equity_initial_price_currency = text_of(equity, "InitialPriceCurrency");
@@ -279,7 +280,8 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
     row.currency = scalar_of(leg, "Currency");
     row.day_count_fraction_code = spelling_of(leg, "DayCounter");
     row.business_day_convention_code = spelling_of(leg, "PaymentConvention");
-    row.payment_frequency_code = tenor_to_payment_frequency(first_tenor(child_if(leg, "ScheduleData")));
+    row.payment_frequency_code =
+        tenor_to_payment_frequency(first_tenor(child_if(leg, "ScheduleData")));
     if (has_if(leg, "PaymentLag"))
         row.payment_lag = text_of(leg, "PaymentLag");
     if (has_if(leg, "PaymentCalendar"))
@@ -383,7 +385,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         };
         row.floating_index_code = first("Index").value_or("");
         if (const auto base = cpi->decimals("BaseCPI"); !base.empty())
-            row.cpi_base = base.front();
+            row.cpi_base = base.front().to_double();
         if (const auto start = first("StartDate"))
             row.cpi_start_date = to_domain_date(*start);
         row.observation_lag = first("ObservationLag");
@@ -429,7 +431,7 @@ void read_leg_indexings(Data& result, const record_reader& leg, int leg_number) 
         row.leg_number = leg_number;
         row.sequence_number = ++sequence_number;
         row.index_name = text_of(indexing, "Index");
-        row.quantity = indexing.decimal("Quantity");
+        row.quantity = decimal_as_double(indexing, "Quantity");
         row.initial_fixing = indexing.decimal("InitialFixing");
         if (const auto days = indexing.integer("FixingDays"))
             row.fixing_days = static_cast<int>(*days);
@@ -441,11 +443,8 @@ void read_leg_indexings(Data& result, const record_reader& leg, int leg_number) 
         stamp_row(row);
         result.leg_indexings.push_back(std::move(row));
         if (const auto schedule = indexing.child("ValuationSchedule"))
-            option_block::read_schedule(result,
-                                        *schedule,
-                                        "swap",
-                                        leg_number,
-                                        indexing_valuation_role(sequence_number));
+            option_block::read_schedule(
+                result, *schedule, "swap", leg_number, indexing_valuation_role(sequence_number));
     }
 }
 
@@ -465,7 +464,7 @@ void write_leg_indexings(record_writer& leg, const swap_leg& row, const Data& v)
             continue;
         auto writer = group.append("Indexing");
         if (indexing.quantity)
-            writer.set_decimal("Quantity", *indexing.quantity);
+            set_decimal_from_double(writer, "Quantity", *indexing.quantity);
         writer.set_text("Index", indexing.index_name);
         if (indexing.initial_fixing)
             writer.set_decimal("InitialFixing", *indexing.initial_fixing);
@@ -633,7 +632,7 @@ inline void write_historical_fixings(record_writer& floating,
 
 inline void write_equity_terms(record_writer payload, const swap_leg& row) {
     if (row.equity_quantity)
-        payload.set_decimal("Quantity", *row.equity_quantity);
+        set_decimal_from_double(payload, "Quantity", *row.equity_quantity);
     if (row.equity_return_type)
         payload.set_text("ReturnType", *row.equity_return_type);
     if (row.equity_underlying_type) {
@@ -773,7 +772,8 @@ inline std::vector<swap_leg_rate> read_leg_rates(const record_reader& leg, int l
 template <typename Data>
 void read_payment_dates(Data& result, const record_reader& leg, int leg_number) {
     if (const auto group = child_if(leg, "PaymentDates"))
-        option_block::read_date_list(result, *group, "PaymentDate", "swap", leg_number, "payment_dates");
+        option_block::read_date_list(
+            result, *group, "PaymentDate", "swap", leg_number, "payment_dates");
 }
 
 template <typename Data>
@@ -811,8 +811,9 @@ inline void write_schedule_rules(record_writer& schedule,
 }
 
 inline bool has_role_in(const std::vector<swap_leg_rate>& rates, std::string_view role) {
-    return std::any_of(
-        rates.begin(), rates.end(), [&](const swap_leg_rate& rate) { return rate.rate_role == role; });
+    return std::any_of(rates.begin(), rates.end(), [&](const swap_leg_rate& rate) {
+        return rate.rate_role == role;
+    });
 }
 
 template <typename Data>
@@ -877,8 +878,8 @@ void write_leg(record_writer& leg,
         return;
     }
 
-    const bool commodity = row.leg_type_code == "CommodityFixed" ||
-                           row.leg_type_code == "CommodityFloating";
+    const bool commodity =
+        row.leg_type_code == "CommodityFixed" || row.leg_type_code == "CommodityFloating";
     if (!amounts.empty() && !commodity) {
         auto notionals = leg.child("Notionals");
         for (const auto& amount : amounts) {
@@ -1034,7 +1035,7 @@ void write_leg(record_writer& leg,
         cpi.append_value("Index", row.floating_index_code);
         write_fixed_rates(cpi);
         if (row.cpi_base)
-            cpi.append_decimal("BaseCPI", *row.cpi_base);
+            cpi.append_decimal("BaseCPI", decimal_from_double(*row.cpi_base));
         if (row.cpi_start_date)
             cpi.append_value("StartDate", to_ore_date(*row.cpi_start_date));
         if (row.observation_lag)

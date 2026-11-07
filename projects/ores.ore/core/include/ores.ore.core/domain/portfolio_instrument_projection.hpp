@@ -21,6 +21,7 @@
 #define ORES_ORE_CORE_DOMAIN_PORTFOLIO_INSTRUMENT_PROJECTION_HPP
 
 #include "ores.marketdata.api/projection/ore_projection.hpp"
+#include "ores.ore.core/domain/decimal_projection.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
@@ -32,19 +33,6 @@
 #include <vector>
 
 namespace ores::ore::domain {
-
-/**
- * @brief An exact decimal member as the double the trading domain stores.
- *
- * The table keeps the digits the document wrote, and the domain column is a
- * double. The conversion happens here, once, at the boundary.
- */
-inline auto decimal_as_double(const xml::record_reader& r, std::string_view name)
-    -> std::optional<double> {
-    if (const auto value = r.decimal(name))
-        return value->to_double();
-    return std::nullopt;
-}
 
 /// A double as the exact decimal the table writes.
 inline auto decimal_from_double(double value) -> ores::utility::decimal::decimal {

@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_CORE_DOMAIN_UNDERLYING_BLOCK_PROJECTION_HPP
 #define ORES_ORE_CORE_DOMAIN_UNDERLYING_BLOCK_PROJECTION_HPP
 
+#include "ores.ore.core/domain/decimal_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.trading.api/domain/instrument_underlying.hpp"
@@ -91,7 +92,7 @@ void read_underlying(Data& result,
     row.identifier_type = optional_text(block, "IdentifierType");
     row.currency = optional_text(block, "Currency");
     row.exchange = optional_text(block, "Exchange");
-    row.weight = optional_decimal(block, "Weight");
+    row.weight = decimal_as_double(block, "Weight");
     row.price_type = optional_text(block, "PriceType");
     row.future_month_offset = optional_integer(block, "FutureMonthOffset");
     row.delivery_roll_days = optional_integer(block, "DeliveryRollDays");
@@ -149,10 +150,14 @@ inline void write_underlying(record_writer block, const instrument_underlying& r
         if (value && block.declares(name))
             block.set_decimal(name, *value);
     };
+    const auto real = [&](std::string_view name, const std::optional<double>& value) {
+        if (value && block.declares(name))
+            set_decimal_from_double(block, name, *value);
+    };
     text("IdentifierType", row.identifier_type);
     text("Currency", row.currency);
     text("Exchange", row.exchange);
-    decimal("Weight", row.weight);
+    real("Weight", row.weight);
     text("PriceType", row.price_type);
     integer("FutureMonthOffset", row.future_month_offset);
     integer("DeliveryRollDays", row.delivery_roll_days);

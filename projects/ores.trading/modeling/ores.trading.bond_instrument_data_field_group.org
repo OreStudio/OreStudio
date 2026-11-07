@@ -247,6 +247,16 @@ The repo leg's payer flag and schedule, re-emitted whole.
 
 The ascot reference swap's payer flag and schedule, re-emitted whole.
 
+** instrument_underlyings
+:PROPERTIES:
+:cpp_type: std::vector<instrument_underlying>
+:END:
+
+A bond position's basket, one row per Underlying bond.
+
+A basket position names no single issue, so its bonds are the shared underlying
+rows, as an equity position's are.
+
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -176,6 +176,25 @@ absent: it is a placeholder, not a product.
 | EuropeanOptionBarrier | European Option with Barrier | option | scripted |  | false | false |  |
 | PerformanceOption_01 | Performance Option (variant 01) |   | scripted |  | false | false | scripted_instrument |
 
+* Classes
+
+The division Operations works by: the plain trades a desk signs off a few rows
+at a time are =flow=, and every other code this catalogue states is =non_flow=.
+Naming only the flow codes states the division once, and a code added to the
+catalogue is =non_flow= until somebody classifies it, which is the direction that
+gives a new type the closer look.
+
+| code              | deal_class |
+|-------------------+------------|
+| CashPosition      | flow       |
+| CapFloor          | flow       |
+| FxAverageForward  | flow       |
+| FxDigitalOption   | flow       |
+| FxForward         | flow       |
+| FxOption          | flow       |
+| FxSwap            | flow       |
+| Swap              | flow       |
+
 * Descriptions
 
 The description a person reads before booking a type, and the source it comes

@@ -1,0 +1,170 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 028e8ae7-ca0a-431a-bfea-978751b6700a
+:END:
+#+title: ores.refdata.party_product_type_deal_class
+#+description: Codegen entity model for the refdata table that states where one party draws the flow line for one product type.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: The class one party works a product type as, where it differs from the catalogue.
+#+entity_singular: party_product_type_deal_class
+#+entity_plural: party_product_type_deal_classes
+#+entity_title: Party Product Type Deal Class
+#+created: 2026-11-04
+#+updated: 2026-11-04
+
+A party that draws the flow line elsewhere than the tenant states it here: one
+row per (party, product type) whose class differs from the catalogue's. A party
+with no row takes the product type's own class, and a type nobody has classified
+reads as =non_flow=.
+
+The product type is named by the code the catalogue states, a soft reference:
+the catalogue belongs to the trading component and this row to the party that
+classifies it.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+The row's identifier.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The party whose line this row states.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** product_type_code
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:natural_key:         true
+:no_generator_suffix: true
+:END:
+
+The code of the product type the party classifies.
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+** deal_class
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the party works the type: =flow= for the plain trades signed off a few rows
+at a time, =non_flow= for the structured ones that get the closer look.
+
+#+begin_src cpp :name generator
+std::string("flow")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_party_product_type_deal_classes_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "deal_class" in ('flow', 'non_flow') |
+
+** Indexes
+
+| name                          | columns                          | unique | current_only | where_extra |
+|-------------------------------+----------------------------------+--------+--------------+-------------|
+| party_product_type_deal_class | party_id, product_type_code      | true   | true         |             |
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:parent_entity: party
+:reuse_existing: true
+:nullable:      false
+:error_message: Invalid party_id: %. No active party found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:bump_parent_version: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: party_product_type_deal_class
+:entity_plural_short:   party_product_type_deal_classes
+:entity_singular_words: party product type deal class
+:entity_plural_words:   party product type deal classes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Table display
+
+| column            | header       |
+|-------------------+--------------|
+| product_type_code | Product Type |
+| deal_class        | Class        |
+
+** Presentation
+
+#+begin_src cpp :name generator
+{
+    .entity_plural_words = "party product type deal classes",
+}
+#+end_src
+
+* See also
+
+- [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product type]] states what a product type is, and the class the catalogue
+  gives it.

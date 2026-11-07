@@ -28,9 +28,9 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] |
-| Now          | Version 0.1.3 reporting deployed; clean live trade NPV reconciled.                       |
+| Now          | Version 0.1.4 scoped NPV deployed; complete books/portfolio reconciled.                       |
 | Waiting on   | Native Linux backend/GPU checks; hosted auth and broker ACL hardening.                               |
-| Next         | Stage 3: complete scoped book/portfolio summaries; verify available Greek units.                  |
+| Next         | Finish Stage 3 Greek units/bump/dimension verification; keep unsupported until proven.                  |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -44,6 +44,10 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 - [ ] Validate restricted broker subject ACLs and a hosted client-enrollment profile before claiming production isolation.
 
 * Plan
+
+- Business Stage 3 NPV checkpoint: =558452611601852436ccb3820efc1b10e6b8d7a0=, independent release =0.1.4-754c262be033=. Windows and pinned Linux =npm test= pass 68 tests; manifests match.
+- Independent =scripts/smoke-scope-reporting.mjs= checks every contributor against Python Decimal for two books and their parent (63, 10 and 73 trades). GPU tool selection, run clarification, party isolation and partial-run withholding pass; Greeks remain unsupported.
+- Evidence: =build/output/agent-scope-windows-check.log=, =agent-scope-linux-check.log=, =agent-scope-smoke.log= and =projects/ores.agent/docs/validation.md=. No raw data or credentials are committed. Task remains STARTED because Greek/hosted-security/Linux NVIDIA gates remain open.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the

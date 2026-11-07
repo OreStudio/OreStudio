@@ -1,9 +1,10 @@
 # Stage 3: historical book and portfolio NPV summaries
 
 Version 0.1.4 adds `summarize_scope_results` to the shared agent/MCP executor.
-Implementation validation passes 66 Windows tests and direct live NATS reads.
-Deployment, Linux artifact parity and deployed MCP/GPU checks are pending at
-this implementation checkpoint; the validation record will state their outcome.
+The NPV slice is deployed locally and validated with 68 tests on Windows and
+Linux, identical release artifacts and independent live MCP/GPU checks. Greek
+aggregation remains an open part of Stage 3; this is not full Greek delivery.
+See the [release evidence](validation.md) for the exact source and artifact.
 
 ## Scope and selection
 
@@ -18,6 +19,8 @@ UUID reply, only that session's bounded original scope intent is resumed.
 The tool reconstructs **booking membership at the selected run's `started_at`**
 through existing bitemporal NATS reads for books, portfolios, trades and trade
 bookings. This timestamp is distinct from the run's actual pricing date.
+The original UTC timestamp, including microseconds, is preserved in the NATS
+request and the response. Chronology checks retain submillisecond precision.
 Portfolio membership is the booking portfolio's subtree; direct trade-to-
 portfolio assignments are a separate relationship and are not mixed in.
 Names resolve against that historical catalogue. Missing/cyclic parents,

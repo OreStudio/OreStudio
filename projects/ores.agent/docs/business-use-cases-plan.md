@@ -115,6 +115,16 @@ completed successfully. Unsupported Greeks are explicitly unavailable.
 
 ## Stage 3 — book/portfolio summaries and Greeks
 
+**NPV slice delivered in 0.1.4; Greek aggregation remains open.** Historical
+booking populations, consistently denominated totals and every contributor
+reconcile for two real books and their parent portfolio. Independent MCP,
+GPU-backed chat, run selection, party isolation and partial-run withholding
+pass. See [scope behavior and limitations](scope-reporting.md) and
+[validation evidence](validation.md). Only existing NATS read subjects were
+added to the agent allowlist; no server handler or broker change was needed.
+Greek requests explicitly return unsupported until units, bump conventions
+and risk-factor dimensions have a verified additive contract.
+
 Questions: “What is this book's NPV?”; “Show available Greeks for portfolio X”;
 “Which trades contribute most to this result?”
 
@@ -272,9 +282,11 @@ pass; an unverified or backend-blocked stage is not complete.
 
 ## Immediate next checkpoint
 
-Stages 0/1 inspection and discovery, and Stage 2's clean single-trade NPV
-demonstration, are delivered with the limitations above. Next is Stage 3:
-reconcile one book/portfolio's complete population and additive, consistently
-denominated results within one run. Verify available Greek dimensions/units
-before exposing them; do not infer them from measure names. Report editing,
-execution and trading writes remain separate approval/security stages.
+Stages 0/1 inspection and discovery, Stage 2's clean single-trade NPV
+demonstration, and Stage 3's book/portfolio NPV slice are delivered with the
+limitations above. Finish Stage 3 by verifying available Greek dimensions,
+units and bump conventions against stored report evidence and the NATS
+contract. If those dimensions cannot be established, declare the precise
+backend extension before implementing it; never infer them from measure names.
+Report editing, execution and trading writes remain separate approval/security
+stages. No command is enabled by the read-only NPV release.

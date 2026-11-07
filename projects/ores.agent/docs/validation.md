@@ -1,6 +1,71 @@
 # Implementation validation
 
-## Current release: 0.1.3 stored reporting
+## Current release: 0.1.4 book/portfolio NPV
+
+Validated code: `558452611601852436ccb3820efc1b10e6b8d7a0` (NPV implementation
+begins at `fbded53408`). Installed artifact: `0.1.4-754c262be033`, identical on
+Windows and Linux. All **68 tests pass** on both platforms. Local evidence is
+in `build/output/agent-scope-windows-check.log` and
+`build/output/agent-scope-linux-check.log`; Linux used the pinned Node image
+`node@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9`.
+No Linux GPU execution or remote CI is claimed.
+
+The read-only `scripts/smoke-scope-reporting.mjs` passed with the official
+independent MCP client. Every contributor across all pages and each full-scope
+total matched a separate Python `Decimal` reference from historical NATS rows
+and typed CSV metrics. The agent's arithmetic is not imported by that reference:
+
+| Scope | Expected/valued trades | Base NPV, GBP | MCP reconciliation sample |
+| --- | ---: | ---: | ---: |
+| Group FX Hedges | 63/63 | 206318954.123122 | 6097 ms |
+| Group Intercompany Loans | 10/10 | 50969977.080832 | 2017 ms |
+| Group Treasury Portfolio | 73/73 | 257288931.203954 | 6062 ms |
+
+Run `884d0bc9-932d-4c4c-9b66-ee97d2b810bb` priced at 2026-11-06. Booking
+membership uses its exact start `2026-11-06 21:42:03.608662Z`, preserving all
+microseconds. The canonical source is `npv.csv`; explicit GBP base units were
+joined from each matching typed metric's `BaseCurrency`, not inferred from
+current book configuration. Both books reconcile to their parent portfolio.
+
+Actual LFM3 GPU book and portfolio questions passed (4924 ms and 5030 ms
+samples). Run clarification and same-session UUID continuation passed. A
+second party could not access this run; a partial run supplied no aggregate;
+a requested different currency supplied no filtered partial total. Both MCP
+and GPU chat returned unsupported for Greek requests without substituting NPV.
+Samples are smoke timings, not benchmarks. See [scope semantics](scope-reporting.md).
+The previously intermittent book and portfolio requests then passed three
+additional repetitions each without a generation-budget failure (4870–5903 ms
+samples), recorded in `build/output/agent-scope-chat-repeat.log`. This is a
+bounded regression check, not a guarantee that arbitrary requests cannot reach
+the configured output limit.
+
+The existing market, discovery and stored trade-reporting smoke suites also
+passed on the installed release. They cover provider and book clarification,
+historical FX/no-observation behavior, trade economics, clean default NPV,
+explicit partial inspection, run status and second-party isolation. Logs are
+`build/output/agent-scope-{market,discovery,reporting}-regression.log`.
+
+The original 512-token generated-output allowance intermittently exhausted
+before a complete call. It now defaults to 2048, optionally configured by
+`inference.maxOutputTokens`; truncated replies still fail closed. The launcher
+was also corrected from 4096 to 262144 context tokens. Only llama.cpp was
+restarted for that separate correction: 25/25 layers remain on CUDA, total
+GPU usage was 4548 MiB, and a 7225-token prompt completed successfully.
+This does not prove quality/latency at a fully occupied 256K context.
+
+Only the standalone agent was switched during the application rollout. The
+19 inspected native service/broker/inference PIDs and private agent config hash
+were unchanged across that switch; the main app, agent health and readiness
+returned HTTP 200. This release adds two existing read subjects to the agent
+allowlist; no new C++ handler, native build, broker ACL/configuration, database
+reset, queue purge or report execution was required.
+
+Stage 3's NPV slice is delivered. **Greek aggregation remains open** pending
+verified units, bump conventions and factor/scenario dimensions. Hosted auth,
+restricted broker ACLs, role/cross-tenant proof and native Linux NVIDIA checks
+remain separate open gates. No command/write business use case is enabled.
+
+## Previous release: 0.1.3 stored reporting
 
 Validated code: `bf08fba92c6cfe2da67ec172f6c207272501b4ff` (implementation begins
 at `5ff7160a7b`). Installed artifact: `0.1.3-5b23d543cb79`, identical on Windows

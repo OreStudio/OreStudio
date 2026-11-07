@@ -23,9 +23,9 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Version 0.1.3 reporting deployed; clean live trade NPV reconciled.                       |
+| Now           | Version 0.1.4 scoped NPV deployed; complete books/portfolio reconciled.                       |
 | Waiting on    | Native Linux backend/GPU checks; hosted auth and broker ACL hardening.                               |
-| Next          | Stage 3: complete scoped book/portfolio summaries; verify available Greek units.            |
+| Next          | Finish Stage 3 Greek units/bump/dimension verification; keep unsupported until proven.            |
 | Last touched  | 2026-11-07                               |
 
 * Acceptance
@@ -45,6 +45,18 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 | [[id:9BACE972-57A4-430F-A9C1-C0F48CB0E78A][Build and verify the independent agent stages]] | STARTED | | | Implement and push runnable checkpoints for foundation, NATS tools, MCP, CUDA inference, the agent loop and independent deployment. |
 
 * Decisions
+
+- Business Stage 3 NPV uses historical booking membership at the exact run-start timestamp, preserving microseconds. Portfolio totals follow the booking hierarchy, with complete population/coverage and explicit same-row base currency metadata; direct trade assignments are not mixed in.
+- Greek aggregation remains unavailable until units, bump conventions and factor/scenario contracts are verified. The NPV release does not complete that part of Stage 3 or enable writes.
+
+* Business Stage 3 NPV checkpoint
+
+- Code =558452611601852436ccb3820efc1b10e6b8d7a0=; installed independent release =0.1.4-754c262be033=, identical Windows/Linux artifact. =npm test= passes 68 tests on each platform.
+- =scripts/smoke-scope-reporting.mjs= reconciles every paged contributor against a separate Python Decimal reference: FX book 63 trades/GBP 206318954.123122; loans book 10/GBP 50969977.080832; parent 73/GBP 257288931.203954.
+- Real GPU book/portfolio questions, run clarification, cross-party denial, partial-run withholding and unsupported Greek handling pass. No Greek total is claimed.
+- Context corrected from 4096 to 262144 with an inference-only restart, full 25/25 CUDA offload and a successful 7225-token prompt. Agent output allowance defaults to 2048, configurable; truncated responses remain errors.
+- During the subsequent agent release switch, 19 inspected native/broker/inference PIDs and the private agent config hash stayed unchanged. Main app and agent health/readiness returned HTTP 200. Only existing read subjects were added to the agent allowlist; no C++/broker changes or main build were required.
+- Evidence and remaining gates: =projects/ores.agent/docs/validation.md= and =scope-reporting.md=. Story remains STARTED.
 
 * Out of scope
 

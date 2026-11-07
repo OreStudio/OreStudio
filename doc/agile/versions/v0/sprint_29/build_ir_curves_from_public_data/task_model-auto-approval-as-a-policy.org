@@ -8,7 +8,7 @@
 #+filetags: :approvals:inbox:build_ir_curves_from_public_data:sprint_29:v0:
 #+owner: marco
 #+branch: feature/publish-the-curves-in-provisioning
-#+pr:
+#+pr: 4488
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -138,7 +138,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4488][#4488]] | [iam,marketdata,inbox] Publish the system's curves, and make auto-approval a policy |
 
 * Review
 

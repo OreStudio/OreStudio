@@ -54,6 +54,7 @@ column beyond the type and the strike, so the option block is held whole.
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_strike_data.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #+end_src
 
 * Fields

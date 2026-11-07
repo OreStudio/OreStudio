@@ -1492,7 +1492,7 @@ package "trading" #E8F5E9 {
           notional_calculation : text
           notional_override : numeric(38, 12)
           portfolio_basket : text
-          index_quantity : numeric(38, 12)
+          index_quantity : double
           return_payer : text
           return_currency : text
           return_observation_lag : text
@@ -1986,7 +1986,7 @@ package "trading" #E8F5E9 {
           barrier_start_date : date
           barrier_calendar : text
           barrier_fixing_index : text
-          quantity : numeric(38, 12)
+          quantity : double
           description : text
         * modified_by : text
         * performed_by : text
@@ -2683,7 +2683,7 @@ package "trading" #E8F5E9 {
           barrier_start_date : date
           barrier_calendar : text
           barrier_fixing_index : text
-          quantity : numeric(38, 12)
+          quantity : double
           strike : numeric(38, 12)
           amount : numeric(38, 12)
           settlement_date : date
@@ -3402,7 +3402,7 @@ package "trading" #E8F5E9 {
           identifier_type : text
           currency : text
           exchange : text
-          weight : numeric(38, 12)
+          weight : double
           price_type : text
           future_month_offset : integer
           delivery_roll_days : integer
@@ -4386,7 +4386,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * index_name : text
-          quantity : numeric(38, 12)
+          quantity : double
           initial_fixing : numeric(38, 12)
           fixing_days : integer
           fixing_calendar : text
@@ -4495,7 +4495,7 @@ package "trading" #E8F5E9 {
           equity_name : text
           equity_underlying_type : text
           equity_underlying_identifier_type : text
-          equity_quantity : numeric(38, 12)
+          equity_quantity : double
           equity_initial_price : numeric(38, 12)
           equity_initial_price_currency : text
           equity_dividend_factor : numeric(38, 12)
@@ -4526,7 +4526,7 @@ package "trading" #E8F5E9 {
           rate_cutoff : integer
           local_cap_floor : boolean
           observation_lag : text
-          cpi_base : numeric(38, 12)
+          cpi_base : double
           cpi_start_date : date
           cpi_interpolation : text
           cpi_interpolated : boolean

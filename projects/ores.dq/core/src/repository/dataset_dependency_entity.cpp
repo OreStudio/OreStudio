@@ -18,12 +18,13 @@
  *
  */
 #include "ores.dq.core/repository/dataset_dependency_entity.hpp"
-#include "ores.utility/codec/json_codec.hpp"
+#include "ores.database/query_builder/json.hpp"
+#include <ostream>
 
 namespace ores::dq::repository {
 
 std::ostream& operator<<(std::ostream& s, const dataset_dependency_entity& v) {
-    s << ores::utility::codec::json::write(v);
+    s << ores::database::query_builder::write_json(v);
     return s;
 }
 

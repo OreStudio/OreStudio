@@ -105,6 +105,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:B95A38D7-5ADA-46A2-934A-176B6D84CB7F][Give every encoded type a stated shape]] | DONE | | 2026-11-06 | Step 1 of Remove reflect-cpp: the seven operation models and the four diff types that still fell back to reflect-cpp get generated wire codecs. |
 | [[id:0DB04FD3-D026-4729-8BD0-78301E573087][Move the reflect-cpp calls onto the codec]] | DONE | 2026-11-06 | 2026-11-07 | Step 2 of Remove reflect-cpp: the direct rfl::json and rfl::msgpack calls in hand-written code use the generated codec carriers. |
 | [[id:EE45CC22-58A9-4E84-97CB-14A68F6147B2][Move the dynamic JSON onto yyjson]] | DONE | 2026-11-07 | 2026-11-07 | 2026-11-07 | | Step 3 of Remove reflect-cpp: the 79 uses of rfl::Generic and rfl::Object in seven files read and write their dynamic JSON through yyjson. |
+| [[id:D07297DF-94DD-46E5-BC73-E5B4CB6D6EC2][Generate the JSON schemas from the wire shapes]] | STARTED | 2026-11-07 | | Step 4 of Remove reflect-cpp: the OpenAPI request and response schemas come from the shapes the codec already states, so no file calls rfl::json::to_schema. |
 
 * Decisions
 

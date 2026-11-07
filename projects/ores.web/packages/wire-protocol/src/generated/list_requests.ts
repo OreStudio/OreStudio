@@ -6237,6 +6237,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.instrument_underlyings.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_underlyings'],
+    },
+    'trading.v1.instrument_underlyings.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_underlyings'],
+    },
+    'trading.v1.instrument_underlyings_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.knock_out_swap_instruments.list': {
         asOf: true,
         filter: ['trade_id_one_of'],

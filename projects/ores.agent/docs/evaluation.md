@@ -1,6 +1,9 @@
 # Stage 4: agent evaluation runner
 
-Delivered baseline: [results, failed checks and known oracle limitation](evaluation-baseline.md).
+Delivered baseline: [Stage 4 results and oracle limitation](evaluation-baseline.md).
+Follow-up: [Stage 5 comparisons and remaining failures](stage5-validation.md).
+Use `--corpus evals/holdout-stage5.json` for the separate paraphrase/clarification
+corpus; the default Stage 4 corpus and grader remain unchanged.
 
 The evaluator runs the actual `Agent` and shared `ToolExecutor` from this
 checkout. It is checkout tooling, not a new server or a change to the installed

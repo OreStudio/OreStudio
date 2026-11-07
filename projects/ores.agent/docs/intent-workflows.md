@@ -62,4 +62,4 @@ read-only wrapper, provenance, privacy and non-overwrite rules as the default.
 For local-model/live profiles use the existing private options documented in
 [evaluation usage](evaluation.md). Native Linux GPU execution and hosted/broker
 security remain separate gates. Measured results and remaining failures are
-recorded in [implementation validation](validation.md).
+recorded in [Stage 5 validation](stage5-validation.md).

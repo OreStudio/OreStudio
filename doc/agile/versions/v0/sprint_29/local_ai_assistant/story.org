@@ -23,9 +23,9 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Stage 4 evaluation runner/baseline delivered; installed agent 0.1.5 unchanged.                       |
+| Now           | Stage 5 agent/eval improvements validated; independent agent 0.1.6 deployed.                       |
 | Waiting on    | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
-| Next          | Stage 5: agent/evaluation improvements against frozen Stage 4 evidence.            |
+| Next          | Stage 6: reproducible local evaluation, comparison and agent release.            |
 | Last touched  | 2026-11-07                               |
 
 * Acceptance
@@ -145,3 +145,12 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 - Usage, safe aggregate and private evidence paths: =projects/ores.agent/docs/evaluation.md= and =evaluation-baseline.md=. Normal completed reports return 0 despite quality failures; strict replay returns the expected 2.
 - No production agent/backend source or business records changed. Existing read-only NATS plus normal session lifecycle only; installed 0.1.5, 19 native/broker/inference PIDs, agent PID and private config remain unchanged. Main app and agent health/readiness return HTTP 200.
 - Next: agent/eval-only Stage 5; backend proposals remain separate future PRs. Task/story remain STARTED for later stages.
+
+* Business Stage 5 agent/evaluation checkpoint
+
+- Final implementation =17cb7bc4a07cb9108ab81fe7abf69d8afb7303be=; separate release =0.1.6-4317a6cd1870=. All 94 tests pass on Windows/Linux with identical manifests and replay source fingerprints. Native Linux NVIDIA validation remains open.
+- Added typed bounded intent/catalogue selection, preservation of literal dates/factors/scenarios, deterministic command refusal, identity-bound expiring clarification and explicit withholding on unit/provenance validation failures. No financial semantics or backend migration was introduced.
+- Original Stage 4 corpus/grader/model settings are unchanged. Two-repetition handling scores: 42/42 model/fixture, 33/36 live, versus Stage 4 14/21 and 13/18 with one repetition. Eight separate paraphrase/clarification cases retain their own denominator; small samples are not broad benchmarks. Full failures and blocked data/backend capabilities remain recorded.
+- Earlier live findings at 0ca93f8aa3 remain preserved, including run-status substitution and a generation-limit response. The former prompted the final scope catalogue correction; generation allowance and unit checks were not relaxed. Existing trade base-NPV currency-unit validation still withholds the positive result.
+- Installed authenticated chat smoke checks pass; 19 native/broker/inference PIDs and private config hash remain unchanged. Main app and agent health/readiness return HTTP 200. Only the standalone agent lifecycle changed; no new reporting/server/ORE, schema/business-record or broker changes.
+- Evidence: =projects/ores.agent/docs/stage5-validation.md= and reviewed =evals/baselines/stage5-2026-11-07.json=. Next: agent/eval-only Stage 6; backend architecture stays separate future PRs. Task/story remain STARTED.

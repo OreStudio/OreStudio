@@ -2,12 +2,12 @@
 
 Created: 2026-11-06. Scope revision: 2026-11-07, following the user's explicit
 instruction to keep current work in the agent and agent evaluations. Stages
-0–3 remain delivered with their recorded limitations. Stage 4 is delivered
-with an [honest evaluation baseline](evaluation-baseline.md); Stages 5–6 remain
-planned. Backend architecture proposals are a separate, unapproved
+0–5 are delivered with their recorded limitations. Stage 4 established the
+[honest evaluation baseline](evaluation-baseline.md); Stage 5 adds
+[measured agent-only improvements](stage5-validation.md). Stage 6 remains planned. Backend architecture proposals are a separate, unapproved
 [future-PR backlog for project-lead discussion](architecture-future-prs.md).
-Current runtime: agent 0.1.5, implementation
-`753a54b4550b9b73a602fc19a7b42b9393e773ad`, validated at `212f77b63d`.
+Current runtime: agent 0.1.6, implementation
+`17cb7bc4a07cb9108ab81fe7abf69d8afb7303be`; see the Stage 5 validation above.
 This extends the original infrastructure context in [plan.md](plan.md).
 
 ## Current scope boundary
@@ -49,7 +49,7 @@ This extends the original infrastructure context in [plan.md](plan.md).
 | 2 | Stored trade NPV and run health | Delivered, with ambiguity/partial handling |
 | 3 | Book/portfolio NPV and available raw Greek buckets | Delivered client-side composition; limitations remain explicit |
 | 4 | Run repeatable evaluations and publish an honest baseline | Delivered: runner, 26-case corpus, Windows/Linux checks and real-model/live baseline; failures retained |
-| 5 | Improve agent intent, tools and conversation behavior against that baseline | Existing APIs and data; failures need not all be resolved |
+| 5 | Improve agent intent, tools and conversation behavior against that baseline | Delivered: bounded intent/catalogues, selectors, refusal and identity-bound clarification; failed/blocked cases retained |
 | 6 | Repeat, compare and package the local agent/evaluation process | Agent-only telemetry, reproducibility and release evidence |
 
 The previous architecture-first sequence in `e2b59a301e` is superseded for
@@ -224,6 +224,13 @@ the remaining cases continue. Baseline collection never depends on backend chang
 
 ## Stage 5 — agent-only improvements and conversational workflows
 
+Delivered in 0.1.6; see [workflow boundaries](intent-workflows.md) and
+[comparison/rollout evidence](stage5-validation.md). All 94 tests pass on
+Windows/Linux with identical artifacts. Final original-corpus handling was
+42/42 model/fixtures and 33/36 live, with two repetitions.
+Original graders/cases and model settings are unchanged; failures and capability
+gaps remain visible. The following records the delivered stage contract.
+
 Use Stage 4 evidence to prioritise improvements within the agent: tool
 descriptions/catalogue selection, typed intent extraction, clarification states,
 literal argument validation, deterministic rendering, bounded context/results,
@@ -308,11 +315,10 @@ Do not open a PR without an explicit request in that turn.
 
 ## Immediate next checkpoint
 
-Proceed to **Stage 5: agent-only improvements against the frozen Stage 4 baseline**.
-Review failed traces and the known lexical-oracle false negative; version any
-checker changes explicitly. Keep existing tools/model/data and all failed or
-blocked cases visible. Leave reporting/server/ORE changes for project-lead
-review and separate future PRs.
+Proceed to **Stage 6: reproducible local evaluation, comparison and agent release**.
+Use the frozen Stage 4 baseline and Stage 5 evidence, retain failed/blocked cases
+and record any future oracle revisions explicitly. Keep existing model/data and
+leave reporting/server/ORE changes for project-lead review and separate PRs.
 
 ## Design references
 

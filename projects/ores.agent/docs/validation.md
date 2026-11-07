@@ -1,5 +1,16 @@
 # Implementation validation
 
+## Current release: 0.1.6 bounded agent workflows
+
+Code `17cb7bc4a07cb9108ab81fe7abf69d8afb7303be`; installed independent release
+`0.1.6-4317a6cd1870`, identical Windows/Linux manifests. All **94 tests pass**
+on both platforms. Final handling checks: 42/42 model/fixture and
+33/36 existing live reads, with two repetitions and unchanged original
+corpus/grader/model settings. Failed/blocked cases remain visible. Installed
+smoke checks and service isolation pass; no new backend/broker changes.
+See [complete Stage 5 evidence](stage5-validation.md) and
+[behavior/limitations](intent-workflows.md).
+
 ## Stage 4: evaluation tooling and initial baseline
 
 Implementation `ebb7fe7849d2089da0444f250bbe32edddfbf405` passes all 85 tests
@@ -11,7 +22,7 @@ booking-refusal oracle false negative remain visible. See the
 This tooling changes no installed application or backend deployment; the
 0.1.5 release and its historical validation below remain unchanged.
 
-## Current release: 0.1.5 stored raw Greek buckets
+## Historical release: 0.1.5 stored raw Greek buckets
 
 Validated code: `753a54b4550b9b73a602fc19a7b42b9393e773ad`. Installed artifact:
 `0.1.5-cf24e13db443`, identical Windows/Linux manifests. All **77 tests pass**

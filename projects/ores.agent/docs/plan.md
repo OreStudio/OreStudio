@@ -9,8 +9,9 @@ Agent 0.1.5 has delivered the read-only discovery, market lookup, stored NPV and
 raw Greek checkpoints, with the limits in [validation](validation.md).
 The current sequence is the [agent-only implementation plan](business-use-cases-plan.md):
 Stage 4 delivered the evaluation runner and [honest baseline](evaluation-baseline.md).
-Next, Stage 5 improves agent/evaluation behavior against it; Stage 6 makes local
-evaluation/release repeatable. Runtime 0.1.5 remains unchanged.
+Stage 5 delivered [bounded workflows and measured comparisons](stage5-validation.md)
+in independent agent release 0.1.6. Next, Stage 6 makes local evaluation/release
+repeatable. Backend and model deployments remain unchanged.
 Most quality evaluations may fail initially; reporting those failures and data/
 capability gaps is a successful baseline, not a reason to change the server.
 Keep existing deterministic agent composition, standalone agent/MCP and LLM.

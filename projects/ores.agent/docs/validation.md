@@ -1,6 +1,18 @@
 # Implementation validation
 
-## Current release: 0.1.6 bounded agent workflows
+## Current release: 0.1.7 reproducible evaluation and private timing
+
+Code `5004b5e7c8e36f7c26e70788227ca92fdfa1675f`; installed separate release
+`0.1.7-0a1d2f580ce4`, identical Windows/Linux manifests. All **101 tests pass**
+on both OSes, plus complete offline replay handling gates. Real-model handling
+is 42/42, live 32/36 over two repetitions; both real-model paraphrase profiles
+pass 8/8. Strict comparison correctly flags the retained continuation regression
+from Stage 5. Model/corpus/grader settings and all native/broker/inference PIDs
+remain unchanged. Installed request-ID/timing/privacy and health checks pass.
+See [Stage 6 evidence](stage6-validation.md) and
+[reproduction/comparison/release commands](reproducible-evaluation.md).
+
+## Historical release: 0.1.6 bounded agent workflows
 
 Code `17cb7bc4a07cb9108ab81fe7abf69d8afb7303be`; installed independent release
 `0.1.6-4317a6cd1870`, identical Windows/Linux manifests. All **94 tests pass**

@@ -2,12 +2,13 @@
 
 Created: 2026-11-06. Scope revision: 2026-11-07, following the user's explicit
 instruction to keep current work in the agent and agent evaluations. Stages
-0–5 are delivered with their recorded limitations. Stage 4 established the
-[honest evaluation baseline](evaluation-baseline.md); Stage 5 adds
-[measured agent-only improvements](stage5-validation.md). Stage 6 remains planned. Backend architecture proposals are a separate, unapproved
+0–6 are delivered with their recorded limitations. Stage 4 established the
+[honest baseline](evaluation-baseline.md), Stage 5 added
+[measured improvements](stage5-validation.md), and Stage 6 delivered
+[reproducible evaluation/release evidence](stage6-validation.md). Backend architecture proposals are a separate, unapproved
 [future-PR backlog for project-lead discussion](architecture-future-prs.md).
-Current runtime: agent 0.1.6, implementation
-`17cb7bc4a07cb9108ab81fe7abf69d8afb7303be`; see the Stage 5 validation above.
+Current runtime: agent 0.1.7, implementation
+`5004b5e7c8e36f7c26e70788227ca92fdfa1675f`; see the Stage 6 validation above.
 This extends the original infrastructure context in [plan.md](plan.md).
 
 ## Current scope boundary
@@ -50,7 +51,7 @@ This extends the original infrastructure context in [plan.md](plan.md).
 | 3 | Book/portfolio NPV and available raw Greek buckets | Delivered client-side composition; limitations remain explicit |
 | 4 | Run repeatable evaluations and publish an honest baseline | Delivered: runner, 26-case corpus, Windows/Linux checks and real-model/live baseline; failures retained |
 | 5 | Improve agent intent, tools and conversation behavior against that baseline | Delivered: bounded intent/catalogues, selectors, refusal and identity-bound clarification; failed/blocked cases retained |
-| 6 | Repeat, compare and package the local agent/evaluation process | Agent-only telemetry, reproducibility and release evidence |
+| 6 | Repeat, compare and package the local agent/evaluation process | Delivered: offline verifier/CI, preflight, provenance-aware comparison, private timing, metrics and independent 0.1.7 release |
 
 The previous architecture-first sequence in `e2b59a301e` is superseded for
 current work. Its reporting/query migrations and command stages are retained
@@ -260,6 +261,14 @@ project lead rather than silently expanding this work into server changes.
 
 ## Stage 6 — repeatable local evaluation and agent release
 
+Delivered in 0.1.7; see [reproduction commands](reproducible-evaluation.md) and
+[full validation/remaining failures](stage6-validation.md). All 101 tests pass on
+Windows/Linux with identical artifacts. Model handling is 42/42 and live handling
+32/36 over two repetitions; strict comparison retains the continuation regression
+against Stage 5. Separate real-model paraphrase profiles pass 8/8 each. No
+backend/broker changes or relaxed quality checks were used. The following
+records the delivered stage contract.
+
 Provide documented fixture/replay, local-model and opt-in live-read commands;
 run selection, repeat counts, report locations and comparison behavior must be
 clear. Keep private data, credentials and raw traces outside source control;
@@ -315,10 +324,12 @@ Do not open a PR without an explicit request in that turn.
 
 ## Immediate next checkpoint
 
-Proceed to **Stage 6: reproducible local evaluation, comparison and agent release**.
-Use the frozen Stage 4 baseline and Stage 5 evidence, retain failed/blocked cases
-and record any future oracle revisions explicitly. Keep existing model/data and
-leave reporting/server/ORE changes for project-lead review and separate PRs.
+The active **local agent/evaluation Stages 0–6 are delivered** with recorded
+failures and data/capability limits. Review the continuation measure-selection
+finding for a further agent-only iteration and take the architecture/data/unit
+gaps to the project lead. Backend work remains a separate future PR decision;
+no reporting/server/ORE changes, data provisioning or hosted rollout is approved
+by completion of this local process.
 
 ## Design references
 

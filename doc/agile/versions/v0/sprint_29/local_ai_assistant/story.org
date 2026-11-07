@@ -23,9 +23,9 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Stage 5 agent/eval improvements validated; independent agent 0.1.6 deployed.                       |
+| Now           | Stage 6 local evaluation/release process delivered; independent agent 0.1.7 running.                       |
 | Waiting on    | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
-| Next          | Stage 6: reproducible local evaluation, comparison and agent release.            |
+| Next          | Review retained agent/data/architecture findings; future backend PRs remain separate.            |
 | Last touched  | 2026-11-07                               |
 
 * Acceptance
@@ -154,3 +154,11 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 - Earlier live findings at 0ca93f8aa3 remain preserved, including run-status substitution and a generation-limit response. The former prompted the final scope catalogue correction; generation allowance and unit checks were not relaxed. Existing trade base-NPV currency-unit validation still withholds the positive result.
 - Installed authenticated chat smoke checks pass; 19 native/broker/inference PIDs and private config hash remain unchanged. Main app and agent health/readiness return HTTP 200. Only the standalone agent lifecycle changed; no new reporting/server/ORE, schema/business-record or broker changes.
 - Evidence: =projects/ores.agent/docs/stage5-validation.md= and reviewed =evals/baselines/stage5-2026-11-07.json=. Next: agent/eval-only Stage 6; backend architecture stays separate future PRs. Task/story remain STARTED.
+
+* Business Stage 6 reproducible evaluation/release checkpoint
+
+- Implementation =5004b5e7c8e36f7c26e70788227ca92fdfa1675f=; installed independent release =0.1.7-0a1d2f580ce4=. All 101 tests and both replay handling gates pass on Windows/Linux with identical fingerprints/manifests. Remote CI is configured, not dispatched; native Linux NVIDIA and local Node 22 validation are not claimed.
+- Added =npm run verify=, =eval:doctor= and =eval:compare= commands, strict/non-overwriting comparisons, explicit provenance checks and argument/tool/clarification/refusal/numeric-attribution/latency sample metrics. Private chat spans correlate HTTP request IDs across inference, intent/catalogue selection, tools, adapter reads and formatter attempts without payloads/identities/error text. No financial semantics changed.
+- Frozen cases/grader/model settings are unchanged. Two-repetition handling is 42/42 model/fixtures and 32/36 live; separate paraphrase profiles pass 8/8 each. Strict live comparison returns 2 for scope-run-clarification (prior 1/2, now 0/2); native-NPV mixed units and existing base-NPV unit errors remain withheld. No oracle weakening or best-of reruns hide the finding.
+- Standalone agent rollout and five installed checks pass, including 62 request-correlated timing events across all six phases. Main app and agent health/readiness return HTTP 200. All 19 native/broker/inference PIDs and private config hash remain unchanged; previous 0.1.6 remains for rollback. No new reporting/main-server/ORE, schema/business-record or broker changes.
+- Evidence: =projects/ores.agent/docs/stage6-validation.md=, =reproducible-evaluation.md= and reviewed =evals/baselines/stage6-2026-11-07.json=. Active local Stages 0-6 are delivered with explicit gaps; broader feature/story remain STARTED for unimplemented business/hosted/Linux-GPU gates. Review future scope with the project lead; this does not authorise backend PRs or claim production readiness.

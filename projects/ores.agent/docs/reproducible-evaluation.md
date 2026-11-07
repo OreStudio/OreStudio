@@ -1,5 +1,7 @@
 # Stage 6: reproduce evaluations, compare and release the agent
 
+Delivered evidence and retained failures: [Stage 6 validation](stage6-validation.md).
+
 Use Node 22.11+ and the locked component dependencies. From `projects/ores.agent`:
 
 ```text

@@ -1,0 +1,1525 @@
+{
+  "schemaVersion": 1,
+  "implementationRevision": "5004b5e7c8e36f7c26e70788227ca92fdfa1675f",
+  "release": "0.1.7-0a1d2f580ce4",
+  "componentTests": {
+    "windows": 101,
+    "linux": 101
+  },
+  "artifactManifest": {
+    "component": "ores.agent",
+    "version": "0.1.7",
+    "node": ">=22.11.0",
+    "sourceRevision": "5004b5e7c8e36f7c26e70788227ca92fdfa1675f",
+    "files": {
+      "agent.mjs": "2c86c3f16aa17615829aadb725c4c1567091f5bb4fb9828f284865401cb922cb",
+      "service.mjs": "5e7ba2386ccb7985028307a3a33264d1b392cb96cced9722a547d676e9b40120"
+    },
+    "id": "0a1d2f580ce4bbbc466fed76aa9bf33cac8fb98ce6157f1d0eebb7009de71255"
+  },
+  "profiles": {
+    "replay": {
+      "corpusVersion": "1.0.0",
+      "corpusSha256": "9873408a6cdfa138348703468267ec02fbaef9562682b1b03538f3061de7b286",
+      "summary": {
+        "total": 26,
+        "outcomes": {
+          "pass": 22,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 26,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 16,
+          "unfulfilled": 0,
+          "not_applicable": 6,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.8461538461538461,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "metrics": {
+        "version": 1,
+        "tasks": {
+          "total": 26,
+          "outcomes": {
+            "pass": 22,
+            "fail": 0,
+            "blocked_backend": 2,
+            "blocked_data": 2,
+            "blocked_identity": 0,
+            "error": 0
+          },
+          "handling": {
+            "pass": 26,
+            "fail": 0,
+            "error": 0,
+            "not_run": 0
+          },
+          "capability": {
+            "fulfilled": 16,
+            "unfulfilled": 0,
+            "not_applicable": 6,
+            "blocked_backend": 2,
+            "blocked_data": 2,
+            "blocked_identity": 0
+          },
+          "overallPassRate": 0.8461538461538461,
+          "handlingPassRate": 1,
+          "denominator": "All selected case repetitions, including blocked and errored cases."
+        },
+        "turns": 29,
+        "unmeasuredCases": 0,
+        "scores": {
+          "executedToolSelection": {
+            "passed": 28,
+            "total": 28,
+            "rate": 1
+          },
+          "proposedToolSelection": {
+            "passed": 19,
+            "total": 20,
+            "rate": 0.95
+          },
+          "executedArguments": {
+            "passed": 32,
+            "total": 32,
+            "rate": 1
+          },
+          "proposedArguments": {
+            "passed": 30,
+            "total": 30,
+            "rate": 1
+          },
+          "clarification": {
+            "passed": 3,
+            "total": 3,
+            "rate": 1
+          },
+          "refusal": {
+            "passed": 2,
+            "total": 2,
+            "rate": 1
+          },
+          "evidenceAttribution": {
+            "passed": 31,
+            "total": 31,
+            "rate": 1
+          },
+          "numericAttribution": {
+            "passed": 9,
+            "total": 9,
+            "rate": 1
+          },
+          "answerFacts": {
+            "passed": 12,
+            "total": 12,
+            "rate": 1
+          }
+        },
+        "truncationTurns": 0,
+        "turnErrors": {
+          "turn_budget": 2,
+          "inference_unavailable": 1,
+          "cancelled": 1,
+          "inference_failed": 1
+        },
+        "latency": {
+          "case": {
+            "samples": 26,
+            "minimumMs": 0.8496999999999844,
+            "maximumMs": 13.907600000000002,
+            "p50Ms": 3.7380000000000564,
+            "p95Ms": 12.085399999999936,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "selection": {
+            "samples": 58,
+            "minimumMs": 0.025100000000065847,
+            "maximumMs": 1.6320000000000618,
+            "p50Ms": 0.5217000000000098,
+            "p95Ms": 1.342200000000048,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "inference": {
+            "samples": 30,
+            "minimumMs": 0.02689999999995507,
+            "maximumMs": 0.290300000000002,
+            "p50Ms": 0.09000000000003183,
+            "p95Ms": 0.22460000000000946,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "adapter": {
+            "samples": 86,
+            "minimumMs": 0.00580000000002201,
+            "maximumMs": 0.27289999999993597,
+            "p50Ms": 0.018700000000080763,
+            "p95Ms": 0.09749999999996817,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "tool": {
+            "samples": 22,
+            "minimumMs": 0.35779999999999745,
+            "maximumMs": 12.34979999999996,
+            "p50Ms": 2.526299999999992,
+            "p95Ms": 7.362700000000018,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "render": {
+            "samples": 46,
+            "minimumMs": 0.002100000000041291,
+            "maximumMs": 1.6444000000000187,
+            "p50Ms": 0.008900000000039654,
+            "p95Ms": 1.2350000000000136,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "agent": {
+            "samples": 29,
+            "minimumMs": 0.6277000000000044,
+            "maximumMs": 13.704900000000066,
+            "p50Ms": 3.606700000000046,
+            "p95Ms": 10.690600000000018,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          }
+        },
+        "definitions": "Task denominators include blocked/error cases. Submetrics count applicable recorded turn expectations; cases without turn records are explicitly unmeasured, never passed. Tool selection counts validated execution attempts; proposal scores use model proposals only, excluding paths with no proposal. Arguments count expected selectors, attribution counts evidence checks, numeric attribution is the figure/value subset. Scores reflect bounded corpus oracles, not general semantic accuracy. Phase spans are nested and must not be summed."
+      },
+      "failedCases": []
+    },
+    "model": {
+      "corpusVersion": "1.0.0",
+      "corpusSha256": "9873408a6cdfa138348703468267ec02fbaef9562682b1b03538f3061de7b286",
+      "summary": {
+        "total": 42,
+        "outcomes": {
+          "pass": 34,
+          "fail": 0,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 42,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 32,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.8095238095238095,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "metrics": {
+        "version": 1,
+        "tasks": {
+          "total": 42,
+          "outcomes": {
+            "pass": 34,
+            "fail": 0,
+            "blocked_backend": 4,
+            "blocked_data": 4,
+            "blocked_identity": 0,
+            "error": 0
+          },
+          "handling": {
+            "pass": 42,
+            "fail": 0,
+            "error": 0,
+            "not_run": 0
+          },
+          "capability": {
+            "fulfilled": 32,
+            "unfulfilled": 0,
+            "not_applicable": 2,
+            "blocked_backend": 4,
+            "blocked_data": 4,
+            "blocked_identity": 0
+          },
+          "overallPassRate": 0.8095238095238095,
+          "handlingPassRate": 1,
+          "denominator": "All selected case repetitions, including blocked and errored cases."
+        },
+        "turns": 48,
+        "unmeasuredCases": 0,
+        "scores": {
+          "executedToolSelection": {
+            "passed": 48,
+            "total": 48,
+            "rate": 1
+          },
+          "proposedToolSelection": {
+            "passed": 38,
+            "total": 38,
+            "rate": 1
+          },
+          "executedArguments": {
+            "passed": 64,
+            "total": 64,
+            "rate": 1
+          },
+          "proposedArguments": {
+            "passed": 56,
+            "total": 60,
+            "rate": 0.9333333333333333
+          },
+          "clarification": {
+            "passed": 6,
+            "total": 6,
+            "rate": 1
+          },
+          "refusal": {
+            "passed": 4,
+            "total": 4,
+            "rate": 1
+          },
+          "evidenceAttribution": {
+            "passed": 62,
+            "total": 62,
+            "rate": 1
+          },
+          "numericAttribution": {
+            "passed": 18,
+            "total": 18,
+            "rate": 1
+          },
+          "answerFacts": {
+            "passed": 24,
+            "total": 24,
+            "rate": 1
+          }
+        },
+        "truncationTurns": 0,
+        "turnErrors": {},
+        "latency": {
+          "case": {
+            "samples": 42,
+            "minimumMs": 0.6661000000021886,
+            "maximumMs": 9629.974800000004,
+            "p50Ms": 1608.2014,
+            "p95Ms": 8705.155999999999,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "selection": {
+            "samples": 96,
+            "minimumMs": 0.011799999992945231,
+            "maximumMs": 4.7554999999993015,
+            "p50Ms": 0.4948000000003958,
+            "p95Ms": 1.7737999999999374,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "inference": {
+            "samples": 40,
+            "minimumMs": 322.56729999999516,
+            "maximumMs": 9622.1345,
+            "p50Ms": 1632.4781999999977,
+            "p95Ms": 8693.791699999998,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "adapter": {
+            "samples": 170,
+            "minimumMs": 0.004700000004959293,
+            "maximumMs": 1.143899999995483,
+            "p50Ms": 0.020000000004074536,
+            "p95Ms": 0.07760000000007494,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "tool": {
+            "samples": 42,
+            "minimumMs": 0.7023000000044703,
+            "maximumMs": 18.777000000000044,
+            "p50Ms": 2.7791999999972177,
+            "p95Ms": 9.419499999999971,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "render": {
+            "samples": 92,
+            "minimumMs": 0.002199999999902502,
+            "maximumMs": 3.5542999999997846,
+            "p50Ms": 0.008900000000721775,
+            "p95Ms": 1.3103000000000975,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "agent": {
+            "samples": 48,
+            "minimumMs": 0.5622000000003027,
+            "maximumMs": 9629.824900000007,
+            "p50Ms": 1417.248799999994,
+            "p95Ms": 8704.971300000001,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          }
+        },
+        "definitions": "Task denominators include blocked/error cases. Submetrics count applicable recorded turn expectations; cases without turn records are explicitly unmeasured, never passed. Tool selection counts validated execution attempts; proposal scores use model proposals only, excluding paths with no proposal. Arguments count expected selectors, attribution counts evidence checks, numeric attribution is the figure/value subset. Scores reflect bounded corpus oracles, not general semantic accuracy. Phase spans are nested and must not be summed."
+      },
+      "failedCases": []
+    },
+    "live": {
+      "corpusVersion": "1.0.0",
+      "corpusSha256": "9873408a6cdfa138348703468267ec02fbaef9562682b1b03538f3061de7b286",
+      "summary": {
+        "total": 36,
+        "outcomes": {
+          "pass": 24,
+          "fail": 4,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 32,
+          "fail": 4,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 22,
+          "unfulfilled": 4,
+          "not_applicable": 2,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.6666666666666666,
+        "handlingPassRate": 0.8888888888888888,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "metrics": {
+        "version": 1,
+        "tasks": {
+          "total": 36,
+          "outcomes": {
+            "pass": 24,
+            "fail": 4,
+            "blocked_backend": 4,
+            "blocked_data": 4,
+            "blocked_identity": 0,
+            "error": 0
+          },
+          "handling": {
+            "pass": 32,
+            "fail": 4,
+            "error": 0,
+            "not_run": 0
+          },
+          "capability": {
+            "fulfilled": 22,
+            "unfulfilled": 4,
+            "not_applicable": 2,
+            "blocked_backend": 4,
+            "blocked_data": 4,
+            "blocked_identity": 0
+          },
+          "overallPassRate": 0.6666666666666666,
+          "handlingPassRate": 0.8888888888888888,
+          "denominator": "All selected case repetitions, including blocked and errored cases."
+        },
+        "turns": 40,
+        "unmeasuredCases": 0,
+        "scores": {
+          "executedToolSelection": {
+            "passed": 40,
+            "total": 40,
+            "rate": 1
+          },
+          "proposedToolSelection": {
+            "passed": 32,
+            "total": 32,
+            "rate": 1
+          },
+          "executedArguments": {
+            "passed": 60,
+            "total": 60,
+            "rate": 1
+          },
+          "proposedArguments": {
+            "passed": 53,
+            "total": 58,
+            "rate": 0.9137931034482759
+          },
+          "clarification": {
+            "passed": 4,
+            "total": 4,
+            "rate": 1
+          },
+          "refusal": {
+            "passed": 4,
+            "total": 4,
+            "rate": 1
+          },
+          "evidenceAttribution": {
+            "passed": 56,
+            "total": 62,
+            "rate": 0.9032258064516129
+          },
+          "numericAttribution": {
+            "passed": 14,
+            "total": 18,
+            "rate": 0.7777777777777778
+          },
+          "answerFacts": {
+            "passed": 20,
+            "total": 22,
+            "rate": 0.9090909090909091
+          }
+        },
+        "truncationTurns": 0,
+        "turnErrors": {},
+        "latency": {
+          "case": {
+            "samples": 36,
+            "minimumMs": 1.1575000000011642,
+            "maximumMs": 12252.619399999996,
+            "p50Ms": 2356.120200000005,
+            "p95Ms": 10821.672600000005,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "selection": {
+            "samples": 80,
+            "minimumMs": 0.012699999992037192,
+            "maximumMs": 2.9930999999924097,
+            "p50Ms": 0.7239000000008673,
+            "p95Ms": 1.7242999999998574,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "inference": {
+            "samples": 32,
+            "minimumMs": 551.4107000000004,
+            "maximumMs": 9554.7863,
+            "p50Ms": 2225.912500000006,
+            "p95Ms": 8303.532599999991,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "adapter": {
+            "samples": 552,
+            "minimumMs": 4.783699999999953,
+            "maximumMs": 1116.2281999999996,
+            "p50Ms": 15.257400000002235,
+            "p95Ms": 849.144500000024,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "tool": {
+            "samples": 34,
+            "minimumMs": 8.045899999997346,
+            "maximumMs": 2710.227800000008,
+            "p50Ms": 92.54640000000654,
+            "p95Ms": 2695.426099999997,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "render": {
+            "samples": 68,
+            "minimumMs": 0.0036000000000058208,
+            "maximumMs": 3.5877999999993335,
+            "p50Ms": 0.014000000010128133,
+            "p95Ms": 1.3205999999991036,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "agent": {
+            "samples": 40,
+            "minimumMs": 0.9634000000078231,
+            "maximumMs": 12252.296199999997,
+            "p50Ms": 1937.5935,
+            "p95Ms": 10200.387400000007,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          }
+        },
+        "definitions": "Task denominators include blocked/error cases. Submetrics count applicable recorded turn expectations; cases without turn records are explicitly unmeasured, never passed. Tool selection counts validated execution attempts; proposal scores use model proposals only, excluding paths with no proposal. Arguments count expected selectors, attribution counts evidence checks, numeric attribution is the figure/value subset. Scores reflect bounded corpus oracles, not general semantic accuracy. Phase spans are nested and must not be summed."
+      },
+      "failedCases": [
+        {
+          "id": "trade-npv",
+          "repetition": 1,
+          "outcome": "fail",
+          "handling": "fail",
+          "failedCheckCount": 6
+        },
+        {
+          "id": "scope-run-clarification",
+          "repetition": 1,
+          "outcome": "fail",
+          "handling": "fail",
+          "failedCheckCount": 2
+        },
+        {
+          "id": "trade-npv",
+          "repetition": 2,
+          "outcome": "fail",
+          "handling": "fail",
+          "failedCheckCount": 6
+        },
+        {
+          "id": "scope-run-clarification",
+          "repetition": 2,
+          "outcome": "fail",
+          "handling": "fail",
+          "failedCheckCount": 2
+        }
+      ]
+    },
+    "holdout-replay": {
+      "corpusVersion": "stage5-holdout-1.0.0",
+      "corpusSha256": "faa0442444e653984ce6a8e2e8e03d0877ee80bb7da602f6530abcb094aedb8e",
+      "summary": {
+        "total": 8,
+        "outcomes": {
+          "pass": 6,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 8,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 4,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.75,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "metrics": {
+        "version": 1,
+        "tasks": {
+          "total": 8,
+          "outcomes": {
+            "pass": 6,
+            "fail": 0,
+            "blocked_backend": 2,
+            "blocked_data": 0,
+            "blocked_identity": 0,
+            "error": 0
+          },
+          "handling": {
+            "pass": 8,
+            "fail": 0,
+            "error": 0,
+            "not_run": 0
+          },
+          "capability": {
+            "fulfilled": 4,
+            "unfulfilled": 0,
+            "not_applicable": 2,
+            "blocked_backend": 2,
+            "blocked_data": 0,
+            "blocked_identity": 0
+          },
+          "overallPassRate": 0.75,
+          "handlingPassRate": 1,
+          "denominator": "All selected case repetitions, including blocked and errored cases."
+        },
+        "turns": 8,
+        "unmeasuredCases": 0,
+        "scores": {
+          "executedToolSelection": {
+            "passed": 8,
+            "total": 8,
+            "rate": 1
+          },
+          "proposedToolSelection": {
+            "passed": 4,
+            "total": 4,
+            "rate": 1
+          },
+          "executedArguments": {
+            "passed": 10,
+            "total": 10,
+            "rate": 1
+          },
+          "proposedArguments": {
+            "passed": 10,
+            "total": 10,
+            "rate": 1
+          },
+          "clarification": {
+            "passed": 0,
+            "total": 0,
+            "rate": null
+          },
+          "refusal": {
+            "passed": 2,
+            "total": 2,
+            "rate": 1
+          },
+          "evidenceAttribution": {
+            "passed": 11,
+            "total": 11,
+            "rate": 1
+          },
+          "numericAttribution": {
+            "passed": 3,
+            "total": 3,
+            "rate": 1
+          },
+          "answerFacts": {
+            "passed": 7,
+            "total": 7,
+            "rate": 1
+          }
+        },
+        "truncationTurns": 0,
+        "turnErrors": {},
+        "latency": {
+          "case": {
+            "samples": 8,
+            "minimumMs": 1.0853000000000748,
+            "maximumMs": 17.430799999999977,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "selection": {
+            "samples": 16,
+            "minimumMs": 0.15630000000010114,
+            "maximumMs": 2.0675999999999704,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "inference": {
+            "samples": 4,
+            "minimumMs": 0.07629999999994652,
+            "maximumMs": 0.38980000000003656,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "adapter": {
+            "samples": 20,
+            "minimumMs": 0.010400000000004184,
+            "maximumMs": 0.4067000000000007,
+            "p50Ms": 0.02729999999996835,
+            "p95Ms": 0.20210000000008677,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "tool": {
+            "samples": 4,
+            "minimumMs": 4.874299999999948,
+            "maximumMs": 14.828100000000063,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "render": {
+            "samples": 9,
+            "minimumMs": 0.0030000000000427463,
+            "maximumMs": 1.602800000000002,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "agent": {
+            "samples": 8,
+            "minimumMs": 0.8498999999999342,
+            "maximumMs": 17.04720000000009,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          }
+        },
+        "definitions": "Task denominators include blocked/error cases. Submetrics count applicable recorded turn expectations; cases without turn records are explicitly unmeasured, never passed. Tool selection counts validated execution attempts; proposal scores use model proposals only, excluding paths with no proposal. Arguments count expected selectors, attribution counts evidence checks, numeric attribution is the figure/value subset. Scores reflect bounded corpus oracles, not general semantic accuracy. Phase spans are nested and must not be summed."
+      },
+      "failedCases": []
+    },
+    "holdout-model": {
+      "corpusVersion": "stage5-holdout-1.0.0",
+      "corpusSha256": "faa0442444e653984ce6a8e2e8e03d0877ee80bb7da602f6530abcb094aedb8e",
+      "summary": {
+        "total": 8,
+        "outcomes": {
+          "pass": 6,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 8,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 4,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.75,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "metrics": {
+        "version": 1,
+        "tasks": {
+          "total": 8,
+          "outcomes": {
+            "pass": 6,
+            "fail": 0,
+            "blocked_backend": 2,
+            "blocked_data": 0,
+            "blocked_identity": 0,
+            "error": 0
+          },
+          "handling": {
+            "pass": 8,
+            "fail": 0,
+            "error": 0,
+            "not_run": 0
+          },
+          "capability": {
+            "fulfilled": 4,
+            "unfulfilled": 0,
+            "not_applicable": 2,
+            "blocked_backend": 2,
+            "blocked_data": 0,
+            "blocked_identity": 0
+          },
+          "overallPassRate": 0.75,
+          "handlingPassRate": 1,
+          "denominator": "All selected case repetitions, including blocked and errored cases."
+        },
+        "turns": 8,
+        "unmeasuredCases": 0,
+        "scores": {
+          "executedToolSelection": {
+            "passed": 8,
+            "total": 8,
+            "rate": 1
+          },
+          "proposedToolSelection": {
+            "passed": 4,
+            "total": 4,
+            "rate": 1
+          },
+          "executedArguments": {
+            "passed": 10,
+            "total": 10,
+            "rate": 1
+          },
+          "proposedArguments": {
+            "passed": 9,
+            "total": 10,
+            "rate": 0.9
+          },
+          "clarification": {
+            "passed": 0,
+            "total": 0,
+            "rate": null
+          },
+          "refusal": {
+            "passed": 2,
+            "total": 2,
+            "rate": 1
+          },
+          "evidenceAttribution": {
+            "passed": 11,
+            "total": 11,
+            "rate": 1
+          },
+          "numericAttribution": {
+            "passed": 3,
+            "total": 3,
+            "rate": 1
+          },
+          "answerFacts": {
+            "passed": 7,
+            "total": 7,
+            "rate": 1
+          }
+        },
+        "truncationTurns": 0,
+        "turnErrors": {},
+        "latency": {
+          "case": {
+            "samples": 8,
+            "minimumMs": 1.918100000002596,
+            "maximumMs": 9904.0465,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "selection": {
+            "samples": 16,
+            "minimumMs": 0.17100000000209548,
+            "maximumMs": 7.345800000000054,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "inference": {
+            "samples": 4,
+            "minimumMs": 1034.3496999999988,
+            "maximumMs": 9882.249399999999,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "adapter": {
+            "samples": 20,
+            "minimumMs": 0.01300000000082946,
+            "maximumMs": 0.23409999999967113,
+            "p50Ms": 0.028800000000046566,
+            "p95Ms": 0.18809999999939464,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "tool": {
+            "samples": 4,
+            "minimumMs": 5.8783000000003085,
+            "maximumMs": 17.562200000000303,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "render": {
+            "samples": 9,
+            "minimumMs": 0.00480000000243308,
+            "maximumMs": 2.430099999997765,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "agent": {
+            "samples": 8,
+            "minimumMs": 1.710799999997107,
+            "maximumMs": 9903.652399999999,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          }
+        },
+        "definitions": "Task denominators include blocked/error cases. Submetrics count applicable recorded turn expectations; cases without turn records are explicitly unmeasured, never passed. Tool selection counts validated execution attempts; proposal scores use model proposals only, excluding paths with no proposal. Arguments count expected selectors, attribution counts evidence checks, numeric attribution is the figure/value subset. Scores reflect bounded corpus oracles, not general semantic accuracy. Phase spans are nested and must not be summed."
+      },
+      "failedCases": []
+    },
+    "holdout-live": {
+      "corpusVersion": "stage5-holdout-1.0.0",
+      "corpusSha256": "faa0442444e653984ce6a8e2e8e03d0877ee80bb7da602f6530abcb094aedb8e",
+      "summary": {
+        "total": 8,
+        "outcomes": {
+          "pass": 6,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 8,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 4,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.75,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "metrics": {
+        "version": 1,
+        "tasks": {
+          "total": 8,
+          "outcomes": {
+            "pass": 6,
+            "fail": 0,
+            "blocked_backend": 2,
+            "blocked_data": 0,
+            "blocked_identity": 0,
+            "error": 0
+          },
+          "handling": {
+            "pass": 8,
+            "fail": 0,
+            "error": 0,
+            "not_run": 0
+          },
+          "capability": {
+            "fulfilled": 4,
+            "unfulfilled": 0,
+            "not_applicable": 2,
+            "blocked_backend": 2,
+            "blocked_data": 0,
+            "blocked_identity": 0
+          },
+          "overallPassRate": 0.75,
+          "handlingPassRate": 1,
+          "denominator": "All selected case repetitions, including blocked and errored cases."
+        },
+        "turns": 8,
+        "unmeasuredCases": 0,
+        "scores": {
+          "executedToolSelection": {
+            "passed": 8,
+            "total": 8,
+            "rate": 1
+          },
+          "proposedToolSelection": {
+            "passed": 4,
+            "total": 4,
+            "rate": 1
+          },
+          "executedArguments": {
+            "passed": 10,
+            "total": 10,
+            "rate": 1
+          },
+          "proposedArguments": {
+            "passed": 9,
+            "total": 10,
+            "rate": 0.9
+          },
+          "clarification": {
+            "passed": 0,
+            "total": 0,
+            "rate": null
+          },
+          "refusal": {
+            "passed": 2,
+            "total": 2,
+            "rate": 1
+          },
+          "evidenceAttribution": {
+            "passed": 11,
+            "total": 11,
+            "rate": 1
+          },
+          "numericAttribution": {
+            "passed": 3,
+            "total": 3,
+            "rate": 1
+          },
+          "answerFacts": {
+            "passed": 7,
+            "total": 7,
+            "rate": 1
+          }
+        },
+        "truncationTurns": 0,
+        "turnErrors": {},
+        "latency": {
+          "case": {
+            "samples": 8,
+            "minimumMs": 1.271600000000035,
+            "maximumMs": 11091.023299999999,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "selection": {
+            "samples": 16,
+            "minimumMs": 0.125,
+            "maximumMs": 1.870600000000195,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "inference": {
+            "samples": 4,
+            "minimumMs": 1206.9256999999998,
+            "maximumMs": 8710.9218,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "adapter": {
+            "samples": 74,
+            "minimumMs": 6.481999999999971,
+            "maximumMs": 959.2802000000011,
+            "p50Ms": 18.24880000000121,
+            "p95Ms": 885.9884999999995,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "tool": {
+            "samples": 4,
+            "minimumMs": 19.526200000000244,
+            "maximumMs": 2588.7898000000023,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "render": {
+            "samples": 9,
+            "minimumMs": 0.00480000000243308,
+            "maximumMs": 2.056300000000192,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          },
+          "agent": {
+            "samples": 8,
+            "minimumMs": 1.064300000001822,
+            "maximumMs": 11090.2372,
+            "p50Ms": null,
+            "p95Ms": null,
+            "percentilePolicy": "Descriptive nearest-rank percentiles only with at least 20 samples; not a latency benchmark."
+          }
+        },
+        "definitions": "Task denominators include blocked/error cases. Submetrics count applicable recorded turn expectations; cases without turn records are explicitly unmeasured, never passed. Tool selection counts validated execution attempts; proposal scores use model proposals only, excluding paths with no proposal. Arguments count expected selectors, attribution counts evidence checks, numeric attribution is the figure/value subset. Scores reflect bounded corpus oracles, not general semantic accuracy. Phase spans are nested and must not be summed."
+      },
+      "failedCases": []
+    }
+  },
+  "comparisons": {
+    "replay": {
+      "controlled": true,
+      "mismatches": [],
+      "beforeRevision": "17cb7bc4a07cb9108ab81fe7abf69d8afb7303be",
+      "afterRevision": "5004b5e7c8e36f7c26e70788227ca92fdfa1675f",
+      "unequalRepetitionCounts": false,
+      "regressions": [],
+      "before": {
+        "total": 26,
+        "outcomes": {
+          "pass": 22,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 26,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 16,
+          "unfulfilled": 0,
+          "not_applicable": 6,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.8461538461538461,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "after": {
+        "total": 26,
+        "outcomes": {
+          "pass": 22,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 26,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 16,
+          "unfulfilled": 0,
+          "not_applicable": 6,
+          "blocked_backend": 2,
+          "blocked_data": 2,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.8461538461538461,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      }
+    },
+    "model": {
+      "controlled": true,
+      "mismatches": [],
+      "beforeRevision": "17cb7bc4a07cb9108ab81fe7abf69d8afb7303be",
+      "afterRevision": "5004b5e7c8e36f7c26e70788227ca92fdfa1675f",
+      "unequalRepetitionCounts": false,
+      "regressions": [],
+      "before": {
+        "total": 42,
+        "outcomes": {
+          "pass": 34,
+          "fail": 0,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 42,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 32,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.8095238095238095,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "after": {
+        "total": 42,
+        "outcomes": {
+          "pass": 34,
+          "fail": 0,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 42,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 32,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.8095238095238095,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      }
+    },
+    "live": {
+      "controlled": true,
+      "mismatches": [],
+      "beforeRevision": "17cb7bc4a07cb9108ab81fe7abf69d8afb7303be",
+      "afterRevision": "5004b5e7c8e36f7c26e70788227ca92fdfa1675f",
+      "unequalRepetitionCounts": false,
+      "regressions": [
+        "scope-run-clarification"
+      ],
+      "before": {
+        "total": 36,
+        "outcomes": {
+          "pass": 25,
+          "fail": 3,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 33,
+          "fail": 3,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 23,
+          "unfulfilled": 3,
+          "not_applicable": 2,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.6944444444444444,
+        "handlingPassRate": 0.9166666666666666,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "after": {
+        "total": 36,
+        "outcomes": {
+          "pass": 24,
+          "fail": 4,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 32,
+          "fail": 4,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 22,
+          "unfulfilled": 4,
+          "not_applicable": 2,
+          "blocked_backend": 4,
+          "blocked_data": 4,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.6666666666666666,
+        "handlingPassRate": 0.8888888888888888,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      }
+    },
+    "holdout-model": {
+      "controlled": true,
+      "mismatches": [],
+      "beforeRevision": "17cb7bc4a07cb9108ab81fe7abf69d8afb7303be",
+      "afterRevision": "5004b5e7c8e36f7c26e70788227ca92fdfa1675f",
+      "unequalRepetitionCounts": false,
+      "regressions": [],
+      "before": {
+        "total": 8,
+        "outcomes": {
+          "pass": 6,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 8,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 4,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.75,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "after": {
+        "total": 8,
+        "outcomes": {
+          "pass": 6,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 8,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 4,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.75,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      }
+    },
+    "holdout-live": {
+      "controlled": true,
+      "mismatches": [],
+      "beforeRevision": "17cb7bc4a07cb9108ab81fe7abf69d8afb7303be",
+      "afterRevision": "5004b5e7c8e36f7c26e70788227ca92fdfa1675f",
+      "unequalRepetitionCounts": false,
+      "regressions": [],
+      "before": {
+        "total": 8,
+        "outcomes": {
+          "pass": 6,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 8,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 4,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.75,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      },
+      "after": {
+        "total": 8,
+        "outcomes": {
+          "pass": 6,
+          "fail": 0,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0,
+          "error": 0
+        },
+        "handling": {
+          "pass": 8,
+          "fail": 0,
+          "error": 0,
+          "not_run": 0
+        },
+        "capability": {
+          "fulfilled": 4,
+          "unfulfilled": 0,
+          "not_applicable": 2,
+          "blocked_backend": 2,
+          "blocked_data": 0,
+          "blocked_identity": 0
+        },
+        "overallPassRate": 0.75,
+        "handlingPassRate": 1,
+        "denominator": "All selected case repetitions, including blocked and errored cases."
+      }
+    }
+  },
+  "sourceFingerprints": {
+    "evals/cases.json": "9873408a6cdfa138348703468267ec02fbaef9562682b1b03538f3061de7b286",
+    "evals/check.mjs": "9db65db1d8610f32389a202b26d959366b0bbb22452f415597d2cd2e74afdae7",
+    "evals/compare.mjs": "80629c74058a24cbc02b4004f0b5ec2fb3a334066cb8036f25571507af06d5dd",
+    "evals/engine.mjs": "5a8e27c773b330d151dbebfa2c9c0ec1b662b744302bc6604d92635711969294",
+    "evals/fixtures.mjs": "87aec134bfff154f3222241efa631363a7a151dc3e81cc8c3d9c079dfb544352",
+    "evals/grade.mjs": "a0e7f3aed7e5583e790067151a249f7586be4d593ecb58d16e99b339a62cdbd0",
+    "evals/holdout-stage5.json": "faa0442444e653984ce6a8e2e8e03d0877ee80bb7da602f6530abcb094aedb8e",
+    "evals/metrics.mjs": "feec668c41d2198acfb725f0980711ab7c877b93a2bbd126c6670a3f6557f9a5",
+    "evals/preflight.mjs": "7be1dd23a27d18210746a92b8d3040b4dd750602bfca02d8efbe5e1e2395dc9e",
+    "evals/run.mjs": "25c44f174d93e0fe4164b2262c772c17d6be2bfab25b89de03b63312adc09c86",
+    "package-lock.json": "19f10c5adeca13b632283168d452bc817f0fcceeafe54cb5ef33b70de5611293",
+    "package.json": "15c16fb8697c4fdde33632293d75750fd38ebd7d3d010824a35812a05935d9f9",
+    "src/agent.ts": "f907fa670df03fcd7ba305cd49d8f28e627859ae51508cea0f081ce5118141e9",
+    "src/auth.ts": "654cffd0ea504d39bc1525f4956eccbdb7bcadf8cd176f2894ed71318bf0343f",
+    "src/backend.ts": "e69b70fc5db532f6ae6d56229cef8170b5995c7fe89e1026f966379e2dae0bf2",
+    "src/business-baseline.ts": "82eb375c76ff14b52f164248bfe8a7595faf280786d1bfe66adcc23e8f402830",
+    "src/config.ts": "73e255405c1f0ee5775d6874f2b9a9a6fce7b7de053394742c14bccd9799f17a",
+    "src/decimal.ts": "21981c1d004790b27128248541668539905fb5db2ade1483d018555a0179ef71",
+    "src/discovery.ts": "337dd90037ad7534132e738b0b09dc8d171dcf35c51e73fe32ee9629d3183db4",
+    "src/inference.ts": "4b3f25c91fb0d297250b2a8ad3c5e9180227f075cb87b55df4932407c11ac2df",
+    "src/intent.ts": "c98931e6abb1d21a5efb1afd457bf7573b8a7ee2b7971fae207280b7a976d184",
+    "src/main.ts": "feb8a751adced7d1791521cebbb72ff8f0aad3c0e550013d58bf1b1326b6586a",
+    "src/market.ts": "7992bf268794330689420e628a16086bd3cc1daaefdb8f60c13b089fec6aab90",
+    "src/mcp.ts": "ef28e8fba1d0a65b077f8bf1ab09a366414f15d414ff91b055c397cea7bfdf56",
+    "src/reporting.ts": "e75d4174f35377bc255f9bef9cacef3c2264d122a62cb9197e5f518296b0e14f",
+    "src/scope-reporting.ts": "86e85c0e76f8eabe4fb097e380444c0e39563651c7f510068d93c019c611e932",
+    "src/sensitivity.ts": "61fa5c6dd8c383dacb26beb16f6f66f911d3206ab597d9606f1ade5f671b8bc0",
+    "src/server.ts": "94295f7a33dee36e28da690513c667752c96cfb1220a6b3d3fd8d9c382a31a2c",
+    "src/telemetry.ts": "6422d142899667f50ebccbd5e509d8af0e3be9686925d0f755fc29c1a5f6feb9",
+    "src/tools.ts": "70f18c631d65d7cd97a05835c7d53d19c6e7600d750d1c23ff5cd531d6074f8d",
+    "src/ui.ts": "5179b7408f6c847d0f517480b203ec979eebd338b2ef7c4473bbab533356c077",
+    "src/version.ts": "1da3db8d4cb0425933f8ee867b49aee0b10e554337d145de3533aafcc2a2dbb7"
+  },
+  "linuxReplay": {
+    "sourceFingerprintsMatchWindows": true,
+    "reportGitRevision": "unknown",
+    "archiveRevision": "5004b5e7c8e36f7c26e70788227ca92fdfa1675f",
+    "node": "v24.22.2"
+  },
+  "inferenceConfiguration": {
+    "model": "lfm3-1.7b",
+    "timeoutMs": 60000,
+    "maxOutputTokens": 2048,
+    "temperature": 0.1,
+    "topK": 50,
+    "repeatPenalty": 1.1
+  },
+  "modelArtifacts": {
+    "provenance": "Configured files/artifact hashes; actual served process not attested by this evaluator.",
+    "release": "b12172",
+    "modelRepository": "LiquidAI/LFM3-1.7B-GGUF",
+    "modelRevision": "cd0c74c575b5c416f3011b5b4c298077f26ca8c2",
+    "modelFile": "LFM3-1.7B-QAD-Q4_0.gguf",
+    "quantization": "QAD-Q4_0",
+    "expectedModelSha256": "43a7d09a0e9cba91b63eb7052488b9564569bddfd65754d2e426465e572a7452",
+    "observedModelSha256": "43a7d09a0e9cba91b63eb7052488b9564569bddfd65754d2e426465e572a7452",
+    "modelHashMatches": true,
+    "runtimeBinarySha256": "2149d33c00cbdb2c4ff5e43e737a4fdf145f871e3cb62c068551d7d09745e2d6",
+    "flags": {
+      "--ctx-size": "262144",
+      "--parallel": "1",
+      "--n-gpu-layers": "99",
+      "--device": "CUDA0",
+      "--threads": "4",
+      "--threads-batch": "4",
+      "--temp": "0.1",
+      "--top-k": "50",
+      "--repeat-penalty": "1.1"
+    }
+  },
+  "installedSmoke": {
+    "timingEvents": 62,
+    "timingPhases": [
+      "adapter",
+      "agent",
+      "inference",
+      "render",
+      "selection",
+      "tool"
+    ],
+    "at": "2026-11-07T18:45:44.983Z",
+    "version": "0.1.7",
+    "checks": [
+      "installed_scope_value_paraphrase",
+      "installed_natural_date_fx",
+      "installed_command_refusal_without_reads",
+      "installed_unit_failure_explicitly_withheld",
+      "installed_correlated_safe_timing"
+    ],
+    "mainWebStatus": 200,
+    "agentReadyStatus": 200
+  },
+  "limitations": [
+    "Corpus and grading unchanged; small repeated samples are descriptive, not isolated model accuracy or statistically significant performance evidence.",
+    "Runtime spans overlap; formatter-attempt latency and mixed case latency must not be summed or called a benchmark. Percentiles require at least 20 samples.",
+    "Blocked/error cases retain task denominators; applicable submetrics retain explicit sample counts and unmeasured cases.",
+    "Configured model artifacts do not attest running-process bytes; equal configuration does not freeze live data.",
+    "Native Linux NVIDIA, least-privilege/hosted broker security, positive live IR/vega and command fulfillment remain open.",
+    "Remote CI workflow is configured but was not dispatched; local Windows/Linux verifier ran."
+  ]
+}

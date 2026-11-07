@@ -54,6 +54,7 @@ column beyond the type and the strike, so the option block is held whole.
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_strike_data.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #+end_src
 
 * Fields
@@ -85,6 +86,14 @@ The issue's call dates, one row per date the call schedule names.
 :END:
 
 The issue's conversion targets, one row per conversion ratio.
+
+** instrument_underlyings
+:PROPERTIES:
+:cpp_type: std::vector<instrument_underlying>
+:END:
+
+The instrument_underlying rows the trade states, as a basket position does for each
+bond of the basket.
 
 ** option
 :PROPERTIES:

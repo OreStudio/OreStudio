@@ -40,6 +40,7 @@
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_strike_data.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <optional>
@@ -89,6 +90,12 @@ struct bond_instrument_data {
      * @brief The issue's conversion targets, one row per conversion ratio.
      */
     std::vector<bond_issue_conversion_target> conversion_targets;
+
+    /**
+     * @brief The instrument_underlying rows the trade states, as a basket position does for each
+bond of the basket.
+     */
+    std::vector<instrument_underlying> instrument_underlyings;
 
     /**
      * @brief The bond_option fact row, engaged for BondOption products.
@@ -230,6 +237,8 @@ struct bond_instrument_data {
         utility::codec::field{"issue", &bond_instrument_data::issue},
         utility::codec::field{"call_dates", &bond_instrument_data::call_dates},
         utility::codec::field{"conversion_targets", &bond_instrument_data::conversion_targets},
+        utility::codec::field{"instrument_underlyings",
+                              &bond_instrument_data::instrument_underlyings},
         utility::codec::field{"option", &bond_instrument_data::option},
         utility::codec::field{"trs", &bond_instrument_data::trs},
         utility::codec::field{"repo", &bond_instrument_data::repo},

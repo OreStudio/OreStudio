@@ -8,7 +8,7 @@
 #+filetags: :build:marketdata:sprint_29:v0:versions:
 #+owner: marco
 #+branch: hotfix/vendor-catalogue-oresmd-uri-codec
-#+pr:
+#+pr: 4479
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4479][#4479]] | [marketdata] Include the URI codec from the header that declares it |
 
 * Review
 

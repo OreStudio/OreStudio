@@ -50,7 +50,6 @@ public:
     void bind_configuration(ores::nats::message msg);
     void get_run_document(ores::nats::message msg);
     void delete_run_document(ores::nats::message msg);
-    void copy_run_scope(ores::nats::message msg);
 
 private:
     inline static std::string_view logger_name = "ores.reporting.messaging.run_document_handler";

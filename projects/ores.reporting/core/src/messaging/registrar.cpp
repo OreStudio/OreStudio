@@ -29,7 +29,6 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
-#include "ores.reporting.api/messaging/run_scope_protocol.hpp"
 #include "ores.reporting.core/messaging/analytic_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/analytic_type_registrar.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
@@ -499,10 +498,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // Report instances (generated CRUD handler)
     // ----------------------------------------------------------------
     auto rdoc = std::make_shared<run_document_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        copy_run_scope_request::nats_subject, group, [rdoc](ores::nats::message msg) {
-            rdoc->copy_run_scope(std::move(msg));
-        }));
     subs.push_back(nats.queue_subscribe(
         save_run_document_request::nats_subject, group, [rdoc](ores::nats::message msg) {
             rdoc->save_run_document(std::move(msg));

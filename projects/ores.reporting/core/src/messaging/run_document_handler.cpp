@@ -19,9 +19,7 @@
  */
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
-#include "ores.reporting.api/messaging/run_scope_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
-#include "ores.reporting.core/repository/risk_report_config_repository.hpp"
 #include "ores.reporting.core/service/run_document_service.hpp"
 #include "ores.service/messaging/authorise.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -154,39 +152,6 @@ void run_document_handler::get_run_document(ores::nats::message msg) {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, get_run_document_response{.message = e.what()});
-    }
-}
-
-void run_document_handler::copy_run_scope(ores::nats::message msg) {
-    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "reporting::run_documents:write");
-    if (!ctx)
-        return;
-    const auto req = decode<copy_run_scope_request>(msg);
-    if (!req) {
-        error_reply(nats_, msg, ores::service::error_code::bad_request);
-        return;
-    }
-    try {
-        require_party(*ctx);
-        const auto [source_scope, source] = owner_scope(*ctx, req->source_definition_id);
-        const auto [target_scope, target] = owner_scope(*ctx, req->target_definition_id);
-        repository::risk_report_config_repository repo;
-        const auto from = repo.find_by_definition_id(source_scope, boost::uuids::to_string(source));
-        const auto to = repo.find_by_definition_id(target_scope, boost::uuids::to_string(target));
-        if (!from || !to)
-            throw std::invalid_argument("Both definitions must bind a risk report configuration.");
-        repo.copy_scope(
-            target_scope, boost::uuids::to_string(from->id), boost::uuids::to_string(to->id));
-        reply(nats_,
-              msg,
-              copy_run_scope_response{
-                  .success = true,
-                  .book_ids = repo.get_book_scope(target_scope, boost::uuids::to_string(to->id)),
-                  .portfolio_ids =
-                      repo.get_portfolio_scope(target_scope, boost::uuids::to_string(to->id))});
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
-        reply(nats_, msg, copy_run_scope_response{.message = e.what()});
     }
 }
 

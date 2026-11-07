@@ -318,8 +318,10 @@ fixtures where real prerequisites are absent.
 Commit/push reviewable agent/eval checkpoints on the existing fork branch when
 validated. Keep backend proposals in documentation until separately agreed;
 neither a failing eval nor this plan authorises modifying reporting/main-server/
-ORE code, schemas, broker configuration or deployments. Before a future PR,
-review the historical backend delta separately as recorded in the handoff.
+ORE code, schemas, broker configuration or deployments. The historical backend
+addition and its operator helper have been reverted at the user's request;
+reporting source matches the branch base. Preserve that agent-only net scope
+when preparing any future PR; historical validation data remains in place.
 Do not open a PR without an explicit request in that turn.
 
 ## Immediate next checkpoint

@@ -231,9 +231,6 @@ public:
 
     std::vector<std::string> get_portfolio_scope(context ctx, const std::string& config_id);
 
-    /** Atomically copies scope, refusing an empty source or nonempty/shared target. */
-    void copy_scope(context ctx, const std::string& source_id, const std::string& target_id);
-
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

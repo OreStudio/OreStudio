@@ -22,8 +22,9 @@ are outside current work. Authoritative query/aggregation migration, packaging/
 lifecycle repairs, hosted security and future commands are documented separately
 as [future PR proposals for project-lead discussion](architecture-future-prs.md).
 They do not block agent/evaluation work and are not approved for implementation
-here. Review historical backend commit cc917e0d36 separately when preparing
-agent-only PRs. NATS remains the sole business transport. Older stage numbers
+here. The historical backend addition `cc917e0d36` and its operator helper
+have been reverted at the user's request; the branch's net changes exclude them.
+See the future-PR handoff for historical data-preparation context. NATS remains the sole business transport. Older stage numbers
 and the infrastructure checkpoints below are historical context, superseded
 where they conflict with the current scope boundary.
 

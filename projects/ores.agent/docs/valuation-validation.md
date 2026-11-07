@@ -1,5 +1,14 @@
 # Isolated live NPV validation
 
+**Historical setup record:** the backend addition from `cc917e0d36` and its
+operator-only `copy-validation-scope.mjs` helper have since been reverted at the
+user's request. They are absent from the current tree/net PR changes. The notes
+below describe the earlier preparation, not instructions to deploy or run that
+removed operation. Existing stored results remain usable through unchanged
+read APIs. No current agent/evaluation case requires the addition at runtime;
+fresh test-data preparation requires separate agreement. See the
+[scope-removal record](architecture-future-prs.md#historical-backend-addition-excluded-from-this-branchs-changes).
+
 Setup/run: 2026-11-06; reconciliation: 2026-11-07. Uses the installed
 `0.1.3-5b23d543cb79` agent and its existing read contract
 `fc4f559dfb187a368bf2a8cd4053d8e833348835`. A separately validated backend
@@ -64,7 +73,7 @@ using two compiler jobs. A private Ninja build variant retained existing version
 metadata and shared dependencies, writing the DLL to `validation-bin` rather
 than replacing a loaded DLL. This is a local validation build, not a new full
 backend release. A temporary reporting instance loaded that DLL alongside the
-original fleet. The live `copy-validation-scope.mjs` integration check verified
+original fleet. The historical `copy-validation-scope.mjs` integration check (since removed) verified
 authentication, party ownership and refusal of same/populated/shared/replayed
 copies, then copied portfolio `e781f889-96ed-4553-96be-e12b00356075`.
 

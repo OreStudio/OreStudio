@@ -29,16 +29,29 @@ acceptance evidence. Take those briefs to the project lead before selecting
 or implementing backend work. Proposals may be split or combined after review.
 An evaluation failure is evidence for discussion, not automatic approval of a PR.
 
-## Existing backend work to separate when preparing PRs
+## Historical backend addition excluded from this branch's changes
 
-The branch already contains historical commit `cc917e0d36` adding
-`reporting.v1.ops.copy_run_scope` for earlier isolated validation. It was tested
-in a temporary instance and is not permanently deployed in the original fleet.
-This plan does not undo, extend or redeploy it. Audit that existing delta with
-the project lead and select/split commits so a future **agent-only PR does not
-silently include backend source changes**. Do not rewrite branch history or
-claim the whole historical branch is agent-only merely because new work is.
-No PR is opened by this plan update.
+At the user's request, the change introduced by `cc917e0d36` has been reverted,
+including the reporting C++/generated/modeling changes and the operator-only
+`scripts/copy-validation-scope.mjs` helper. The reporting source now matches
+the branch base. The original commit and its reversal remain in history;
+there is no force-push or history rewrite. An eventual PR's net diff excludes
+that backend addition. No PR is opened by this cleanup.
+
+The operation was used once during earlier local data preparation in a temporary
+reporting instance; it was never permanently deployed in the original fleet.
+Existing report results and running services are untouched. No current agent,
+MCP tool or evaluation case calls `reporting.v1.ops.copy_run_scope`; live cases
+read previously prepared records through existing APIs, while fixture profiles
+need no live data. The negative mutation-blocking test remains intentionally.
+
+Fresh-environment reproduction of those exact live records requires separately
+agreed data preparation or equivalent existing results and an explicitly
+versioned corpus update. This branch does not supply the removed operator API
+or authorise recreating the database, copying scope or executing reports.
+Historical [validation notes](valuation-validation.md) preserve what was done;
+they are not current deployment/setup instructions. Future backend proposals
+below remain subject to project-lead discussion and separate PRs.
 
 ## Proposed PR sequence
 

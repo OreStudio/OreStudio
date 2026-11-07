@@ -14,6 +14,9 @@ on agent evaluations, an honest failing/blocked baseline and agent-only
 improvements using existing APIs. Reporting/server architecture and command
 capabilities are [separate future PR proposals](docs/architecture-future-prs.md)
 for project-lead discussion; they do not block the evaluation work.
+The [Stage 4 evaluation runner](docs/evaluation.md) provides offline replay,
+real-model/fixture and opt-in live-read profiles via `npm run eval`. Reports
+retain failures and blocked capabilities; normal mode does not require high scores.
 The [Stage 0 baseline](docs/business-baseline.md) records live data readiness
 and how to rerun the read-only operator inspection.
 Version 0.1.2 adds [Stage 1 discovery](docs/discovery.md): trades, books,

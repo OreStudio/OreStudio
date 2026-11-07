@@ -19,7 +19,7 @@
  */
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/curve_snapshot_staleness.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"

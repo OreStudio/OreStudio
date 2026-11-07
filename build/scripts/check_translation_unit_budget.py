@@ -71,9 +71,6 @@ KNOWN: dict[str, tuple[int, str]] = {
         4,
         "the central row and three part families of the cross-currency fix-float swap are "
         "one document element, mapped and compared together"),
-    "projects/ores.ore/core/src/domain/conventions_diff.cpp": (
-        3,
-        "the three tenor basis swap families are one document element, compared together"),
 }
 
 _DOMAIN_TYPE = re.compile(r'"ores::refdata::domain::([a-z_0-9]+)"')

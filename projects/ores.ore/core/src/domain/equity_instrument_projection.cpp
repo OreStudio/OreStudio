@@ -18,12 +18,12 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
-#include "ores.ore.core/domain/scalar_terms_projection.hpp"
-#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
@@ -633,7 +633,8 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
                 if (const auto dates = option->child("ExerciseDates")) {
                     const auto values = dates->values("ExerciseDate");
                     if (!values.empty())
-                        row.exercise_date = equity_instrument_projection_to_domain_date(values.front());
+                        row.exercise_date =
+                            equity_instrument_projection_to_domain_date(values.front());
                 }
             }
             equity_instrument_projection_stamp_columns(row);
@@ -1342,7 +1343,7 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
 auto write_equity_instrument(xml::record_writer& trade,
                              std::string_view trade_type,
                              const trading::domain::trade_instrument& instrument,
-                             const portfolio_reference_curves&) -> bool {
+                             const ores::marketdata::projection::ore_projection&) -> bool {
     const auto* v = std::get_if<equity_instrument_data>(&instrument);
     if (v == nullptr || !is_equity_trade_type(trade_type))
         return false;
@@ -1393,7 +1394,8 @@ auto write_equity_instrument(xml::record_writer& trade,
                     write_equity_barrier_option(trade, "EquityBarrierOptionData", row, false, *v);
                     matched = true;
                 } else if (trade_type == "EquityDoubleBarrierOption") {
-                    write_equity_barrier_option(trade, "EquityDoubleBarrierOptionData", row, true, *v);
+                    write_equity_barrier_option(
+                        trade, "EquityDoubleBarrierOptionData", row, true, *v);
                     matched = true;
                 } else if (trade_type == "EquityEuropeanBarrierOption") {
                     write_equity_barrier_option(
@@ -1438,8 +1440,9 @@ auto write_equity_instrument(xml::record_writer& trade,
                     using Row = std::decay_t<decltype(row)>;
                     if constexpr (barrier_block::monitored<Row>)
                         barrier_block::write_monitoring(*product, row, "EQIndex");
-                    with_equity_terms<Row>(
-                        [&](const auto& terms) { scalar_terms::write_terms(*product, row, terms); });
+                    with_equity_terms<Row>([&](const auto& terms) {
+                        scalar_terms::write_terms(*product, row, terms);
+                    });
                     if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
                         if (row.strike_currency) {
                             auto strike = product->child("StrikeData");

@@ -87,6 +87,9 @@
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
@@ -101,7 +104,6 @@
 #include <memory>
 #include <optional>
 #include <ranges>
-#include <rfl/json.hpp>
 #include <set>
 #include <stdexcept>
 #include <thread>
@@ -308,7 +310,7 @@ public:
             // screen the run was started from.
             start.target_kind = std::string(ores::iam::workflow::provision_tenant_target_kind);
             start.target_id = created.tenant_id;
-            start.request_json = rfl::json::write(run);
+            start.request_json = ores::utility::codec::json::write(run);
             start.correlation_id = correlation_id;
             start.instance_id = instance_id;
 
@@ -575,7 +577,7 @@ public:
             // resolved, so the run can be found from the party it works on.
             start.target_kind = std::string(ores::iam::workflow::provision_party_target_kind);
             start.target_id = found.front();
-            start.request_json = rfl::json::write(run);
+            start.request_json = ores::utility::codec::json::write(run);
             start.correlation_id = correlation_id;
             start.instance_id = instance_id;
 
@@ -659,13 +661,13 @@ public:
 
             const std::string_view payload(reinterpret_cast<const char*>(msg.data.data()),
                                            msg.data.size());
-            auto parsed =
-                rfl::json::read<ores::iam::workflow::provision_tenant_step_command>(payload);
+            auto parsed = ores::utility::codec::json::read_expected<
+                ores::iam::workflow::provision_tenant_step_command>(payload);
             if (!parsed) {
                 // The step is failed, so the delivery is done with: re-running
                 // it would only report the same failure again.
                 wf->fail("The provisioning step command could not be read: " +
-                         std::string(parsed.error().what()));
+                         std::string(parsed.error()));
                 ack.accept();
                 return;
             }
@@ -761,6 +763,7 @@ private:
     };
 
     /// The result a step reports, so the run's record says what it acted on.
+public:
     struct provision_step_result {
         /// What one party's report definitions came to when the step scheduled
         /// them. Read together, the entries say how much of the catalogue a
@@ -800,6 +803,7 @@ private:
         std::vector<std::string> curves_not_published;
     };
 
+private:
     /**
      * @brief How long a step waits on the publication it started.
      *
@@ -993,7 +997,7 @@ private:
         publish_bundle_or_throw(
             admin_client, bundle_code, super_actor->username, params_json, command.kind);
         complete_system_onboarding(admin_client);
-        wf.complete(rfl::json::write(
+        wf.complete(ores::utility::codec::json::write(
             provision_step_result{.kind = command.kind, .bundles = {bundle_code}}));
     }
 
@@ -1164,9 +1168,9 @@ private:
         // forwards a surface reads, so the step says so in its own status rather
         // than passing as a clean run. The run still advances.
         if (result.curves_not_published.empty())
-            wf.complete(rfl::json::write(result), step_log);
+            wf.complete(ores::utility::codec::json::write(result), step_log);
         else
-            wf.warn(rfl::json::write(result), step_log);
+            wf.warn(ores::utility::codec::json::write(result), step_log);
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports
@@ -1193,7 +1197,7 @@ private:
         for (const auto& bundle_code : arguments.bundles)
             publish_bundle_or_throw(client, bundle_code, actor.username, params_json, command.kind);
 
-        wf.complete(rfl::json::write(
+        wf.complete(ores::utility::codec::json::write(
             provision_step_result{.kind = command.kind, .bundles = arguments.bundles}));
     }
 
@@ -1212,7 +1216,7 @@ private:
             parse_lei_hierarchy_arguments(command.arguments_json, command.parameters);
         if (arguments.root_lei.empty()) {
             wf.warn(
-                rfl::json::write(provision_step_result{
+                ores::utility::codec::json::write(provision_step_result{
                     .kind = command.kind, .bundles = arguments.bundles, .root_lei = ""}),
                 {ores::workflow::messaging::step_log_entry{
                     .level = ores::workflow::messaging::step_log_level::warn,
@@ -1231,7 +1235,7 @@ private:
         for (const auto& bundle_code : arguments.bundles)
             publish_bundle_or_throw(client, bundle_code, actor.username, params_json, command.kind);
 
-        wf.complete(rfl::json::write(provision_step_result{
+        wf.complete(ores::utility::codec::json::write(provision_step_result{
             .kind = command.kind, .bundles = arguments.bundles, .root_lei = arguments.root_lei}));
     }
 
@@ -1291,7 +1295,7 @@ private:
             provisioned.push_back(party_id);
         }
 
-        wf.complete(rfl::json::write(provision_step_result{
+        wf.complete(ores::utility::codec::json::write(provision_step_result{
             .kind = command.kind, .bundles = arguments.bundles, .parties = provisioned}));
     }
 
@@ -1329,8 +1333,8 @@ private:
             parties.push_back(boost::uuids::to_string(party->id));
         }
 
-        wf.complete(
-            rfl::json::write(provision_step_result{.kind = command.kind, .parties = parties}));
+        wf.complete(ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .parties = parties}));
     }
 
     /**
@@ -1374,7 +1378,8 @@ private:
         }
 
         if (account_ids.empty()) {
-            wf.complete(rfl::json::write(provision_step_result{.kind = command.kind}));
+            wf.complete(
+                ores::utility::codec::json::write(provision_step_result{.kind = command.kind}));
             return;
         }
 
@@ -1400,7 +1405,8 @@ private:
                                      "' was not set: " + resp.results[i].message);
         }
 
-        wf.complete(rfl::json::write(provision_step_result{.kind = command.kind, .accounts = set}));
+        wf.complete(ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .accounts = set}));
     }
 
     /// Attaches each named party's staff photos, read from the dataset that
@@ -1442,7 +1448,7 @@ private:
             parties.push_back(boost::uuids::to_string(party->id));
         }
 
-        wf.complete(rfl::json::write(
+        wf.complete(ores::utility::codec::json::write(
             provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
     }
 
@@ -1524,8 +1530,8 @@ private:
                 throw std::runtime_error("The tenant holds no party the market data step names: '" +
                                          assignment.party + "'.");
 
-        wf.complete(
-            rfl::json::write(provision_step_result{.kind = command.kind, .parties = subscribed}));
+        wf.complete(ores::utility::codec::json::write(
+            provision_step_result{.kind = command.kind, .parties = subscribed}));
     }
 
     /// A client that speaks as one party over the connection this handler
@@ -1996,7 +2002,7 @@ private:
         BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
             << "generate_trades: every entry is written (" << result.trades_written << " written, "
             << result.trades_already_present << " already present); completing the step";
-        wf.complete(rfl::json::write(result));
+        wf.complete(ores::utility::codec::json::write(result));
     }
 
     /// Every definition a party owns, one page at a time, as the party reads
@@ -2102,7 +2108,7 @@ private:
             result.report_schedules.push_back(std::move(schedule));
         }
 
-        wf.complete(rfl::json::write(result));
+        wf.complete(ores::utility::codec::json::write(result));
     }
 
     /**
@@ -2156,7 +2162,7 @@ private:
             << "Started " << start.type << " for tenant " << run.tenant_code
             << " (instance: " << instance_id << ")";
 
-        wf.complete(rfl::json::write(provision_step_result{
+        wf.complete(ores::utility::codec::json::write(provision_step_result{
             .kind = command.kind, .tenant_id = run.tenant_id, .child_instance_id = instance_id}));
     }
 
@@ -2195,7 +2201,7 @@ private:
         auto client = make_step_client(
             command.tenant_id, actor.account_id, settings_party->id, actor.username);
 
-        const auto result = rfl::json::write(
+        const auto result = ores::utility::codec::json::write(
             provision_step_result{.kind = command.kind, .tenant_id = command.tenant_id});
         const auto warn = [&](const std::string& message) {
             wf.warn(result,
@@ -2926,6 +2932,51 @@ private:
     ores::security::jwt::jwt_authenticator signer_;
     ores::iam::service::internal_impersonation_service impersonation_;
 };
+
+/**
+ * @brief The members of the step result and of its report schedule, in the
+ * order they declare them.
+ */
+[[nodiscard]] constexpr auto wire_fields(
+    std::type_identity<tenant_provisioning_handler::provision_step_result::party_report_schedule>) {
+    using ::ores::utility::codec::field;
+    using schedule = tenant_provisioning_handler::provision_step_result::party_report_schedule;
+    return std::tuple{field{"party", &schedule::party},
+                      field{"scheduled", &schedule::scheduled},
+                      field{"already_scheduled", &schedule::already_scheduled},
+                      field{"on_demand", &schedule::on_demand},
+                      field{"not_a_cron", &schedule::not_a_cron}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<
+                  tenant_provisioning_handler::provision_step_result::party_report_schedule>(),
+              "tenant_provisioning_handler::provision_step_result::party_report_schedule gained a "
+              "member its wire_fields does not name.");
+
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<tenant_provisioning_handler::provision_step_result>) {
+    using ::ores::utility::codec::field;
+    using result = tenant_provisioning_handler::provision_step_result;
+    return std::tuple{field{"kind", &result::kind},
+                      field{"bundles", &result::bundles},
+                      field{"root_lei", &result::root_lei},
+                      field{"parties", &result::parties},
+                      field{"accounts", &result::accounts},
+                      field{"images", &result::images},
+                      field{"datasets", &result::datasets},
+                      field{"tenant_id", &result::tenant_id},
+                      field{"child_instance_id", &result::child_instance_id},
+                      field{"configs", &result::configs},
+                      field{"trades_planned", &result::trades_planned},
+                      field{"trades_written", &result::trades_written},
+                      field{"trades_already_present", &result::trades_already_present},
+                      field{"report_schedules", &result::report_schedules}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<
+                  tenant_provisioning_handler::provision_step_result>(),
+              "tenant_provisioning_handler::provision_step_result gained a member its wire_fields "
+              "does not name.");
 
 } // namespace ores::iam::messaging
 #endif

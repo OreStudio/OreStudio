@@ -23,13 +23,12 @@
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.testing/project_root.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "test_helpers.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
-#include <rfl/json.hpp>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -190,7 +189,7 @@ TEST_CASE("a_central_row_of_another_kind_is_not_written_as_a_tenor_basis_swap",
     c.payload.name = "not a tenor basis swap";
 
     conventions_package package;
-    package.bundle.rows.push_back({"convention", 0, rfl::json::write(c)});
+    package.bundle.rows.push_back({"convention", 0, ores::utility::codec::json::write(c)});
 
     CHECK(count(join_conventions(package), "TenorBasisSwap") == 0);
 }

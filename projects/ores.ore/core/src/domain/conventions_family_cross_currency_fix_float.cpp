@@ -21,10 +21,10 @@
 #include "conventions_family_units.hpp"
 #include "conventions_fields.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <format>
 #include <map>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -232,7 +232,8 @@ cross_currency_fix_float_facts(const refdata::messaging::conventions_bundle& bun
         for (const auto& part : floating)
             if (part.convention_id == c.identity.id)
                 item.float_leg.push_back(without_keys(part));
-        out[c.identity.kind_code + "\x1f" + c.payload.name] = rfl::json::write(item);
+        out[c.identity.kind_code + "\x1f" + c.payload.name] =
+            ores::utility::codec::json::write(item);
     }
     return out;
 }

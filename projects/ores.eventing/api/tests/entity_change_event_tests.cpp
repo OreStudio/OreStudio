@@ -21,9 +21,8 @@
 #include "ores.eventing.api/domain/entity_change_event_json_io.hpp"
 #include "ores.eventing.api/domain/entity_change_event_table_io.hpp"
 #include "ores.eventing.api/generators/entity_change_event_generator.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
 #include <sstream>
 
 using namespace ores::eventing::domain;
@@ -68,7 +67,7 @@ TEST_CASE("entity_change_event_db_payload_roundtrip", "[domain]") {
         R"({"entity":"ores.refdata.currency","timestamp":"2026-05-27T12:34:56Z",)"
         R"("entity_ids":["USD"],"tenant_id":"ffffffff-ffff-ffff-ffff-ffffffffffff"})";
 
-    auto result = rfl::json::read<entity_change_event>(payload);
+    auto result = ores::utility::codec::json::read_expected<entity_change_event>(payload);
     REQUIRE(result.has_value());
     CHECK(result->entity == "ores.refdata.currency");
     CHECK(result->timestamp.time_since_epoch().count() != 0);
@@ -84,6 +83,6 @@ TEST_CASE("entity_change_event_broken_timestamp_rejected", "[domain]") {
         R"({"entity":"ores.refdata.currency","timestamp":"2026-05-27 12:34:56",)"
         R"("entity_ids":["USD"],"tenant_id":"ffffffff-ffff-ffff-ffff-ffffffffffff"})";
 
-    auto result = rfl::json::read<entity_change_event>(payload);
+    auto result = ores::utility::codec::json::read_expected<entity_change_event>(payload);
     CHECK_FALSE(result.has_value());
 }

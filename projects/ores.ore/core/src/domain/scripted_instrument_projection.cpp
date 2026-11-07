@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include <algorithm>
 #include <cctype>
@@ -187,8 +187,8 @@ auto own_text(const xml::record_reader& record, std::string_view name) -> std::s
     return child->own_text().value_or("");
 }
 
-auto vector_values(const xml::record_reader& record,
-                   std::string_view name) -> std::vector<std::string> {
+auto vector_values(const xml::record_reader& record, std::string_view name)
+    -> std::vector<std::string> {
     const auto child = record.child(name);
     if (!child)
         return {};
@@ -332,7 +332,7 @@ void append_leaf(xml::record_writer& w, std::string_view name, const std::string
 /// The terms of a derived schedule, each kept on its own column.
 struct derived_term {
     std::string_view element;
-    std::optional<std::string> scripted_parameter::*column;
+    std::optional<std::string> scripted_parameter::* column;
 };
 
 constexpr derived_term derived_terms[] = {
@@ -392,7 +392,8 @@ void read_event(scripted_instrument_data& data,
 void read_generic_parameters(scripted_instrument_data& data, const xml::record_reader& values) {
     for (const auto kind : generic_kinds) {
         for (const auto& entry : values.children(kind)) {
-            auto& parameter = make_parameter(data, entry.text("Name").value_or(""), std::string(kind));
+            auto& parameter =
+                make_parameter(data, entry.text("Name").value_or(""), std::string(kind));
             if (const auto value = scalar_text(entry, "Value"))
                 parameter.value = *value;
             if (kind == "Event") {
@@ -428,7 +429,8 @@ auto named_product_of(const xml::record_reader& trade) -> std::optional<std::str
         const auto& f = type.fields[i];
         // A trade states its product as one of many alternatives, so the
         // product's member is a column alternative rather than a plain child.
-        const bool child = f.kind == xml::field_kind::nested || f.kind == xml::field_kind::column_nested;
+        const bool child =
+            f.kind == xml::field_kind::nested || f.kind == xml::field_kind::column_nested;
         if (!child || f.type == nullptr || !is_named_product(*f.type))
             continue;
         if (trade.child(f.name))
@@ -675,7 +677,8 @@ auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
                 }
             }
             params += ",\"StrikePrices\":\"" + joined + "\"";
-            if (const auto included = scalar_terms::read_text(*d, "StrikeIncluded"); included && d->has("StrikeIncluded"))
+            if (const auto included = scalar_terms::read_text(*d, "StrikeIncluded");
+                included && d->has("StrikeIncluded"))
                 params += ",\"StrikeIncluded\":\"" + *included + "\"";
             for (std::size_t i = 0; i < types.size(); ++i)
                 if (!types[i].empty())
@@ -715,7 +718,7 @@ auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_t
 auto write_scripted_instrument(xml::record_writer& trade,
                                std::string_view trade_type,
                                const trading::domain::trade_instrument& instrument,
-                               const portfolio_reference_curves&) -> bool {
+                               const ores::marketdata::projection::ore_projection&) -> bool {
     const auto* carrier = std::get_if<scripted_instrument_data>(&instrument);
     if (carrier == nullptr)
         return false;

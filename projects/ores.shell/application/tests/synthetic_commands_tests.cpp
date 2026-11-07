@@ -19,7 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
-#include "ores.synthetic.api/domain/gmm_component.hpp"
+#include "ores.synthetic.api/domain/gmm_component_codec.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
@@ -27,14 +27,14 @@
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
 #include <ostream>
-#include <rfl/json.hpp>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -301,7 +301,8 @@ TEST_CASE("setup_plans_one_container_one_folder_chain_and_the_fx_rows", "[comman
     REQUIRE(rows.size() == 3);
     CHECK(rows[0].subject == "synthetic.v1.fx_spot_generation_configs.put");
     const auto config =
-        rfl::json::read<messaging::put_fx_spot_generation_config_request>(rows[0].body);
+        ores::utility::codec::json::read_expected<messaging::put_fx_spot_generation_config_request>(
+            rows[0].body);
     REQUIRE(config);
     CHECK(config->change.write.source_name == "synthetic.eurusd");
     CHECK(config->change.write.oresmd_uri ==
@@ -318,13 +319,17 @@ TEST_CASE("setup_plans_one_container_one_folder_chain_and_the_fx_rows", "[comman
           "11111111-0000-4000-8000-000000000004");
 
     CHECK(rows[1].subject == "synthetic.v1.gmm_components.put");
-    const auto first = rfl::json::read<messaging::put_gmm_component_request>(rows[1].body);
+    const auto first =
+        ores::utility::codec::json::read_expected<messaging::put_gmm_component_request>(
+            rows[1].body);
     REQUIRE(first);
     CHECK(first->change.write.component_index == 0);
     CHECK(first->change.write.weight == 0.7);
     CHECK(first->change.write.stdev == 0.01);
 
-    const auto second = rfl::json::read<messaging::put_gmm_component_request>(rows[2].body);
+    const auto second =
+        ores::utility::codec::json::read_expected<messaging::put_gmm_component_request>(
+            rows[2].body);
     REQUIRE(second);
     CHECK(second->change.write.component_index == 1);
     CHECK(second->change.write.weight == 0.3);
@@ -356,8 +361,8 @@ TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", "[commands][synthetic]") {
 
     REQUIRE(rows.size() == 4);
     CHECK(rows[0].subject == "synthetic.v1.ir_curve_generation_configs.put");
-    const auto config =
-        rfl::json::read<messaging::put_ir_curve_generation_config_request>(rows[0].body);
+    const auto config = ores::utility::codec::json::read_expected<
+        messaging::put_ir_curve_generation_config_request>(rows[0].body);
     REQUIRE(config);
     CHECK(config->change.write.process_type == "VASICEK");
     CHECK(config->change.write.currency_code == "USD");
@@ -374,7 +379,8 @@ TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", "[commands][synthetic]") {
 
     CHECK(rows[1].subject == "synthetic.v1.ir_curve_template_entries.put");
     const auto entry =
-        rfl::json::read<messaging::put_ir_curve_template_entry_request>(rows[1].body);
+        ores::utility::codec::json::read_expected<messaging::put_ir_curve_template_entry_request>(
+            rows[1].body);
     REQUIRE(entry);
     CHECK(entry->change.write.sequence_index == 0);
     CHECK(entry->change.write.start_tenor_code == "1Y");
@@ -382,16 +388,16 @@ TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", "[commands][synthetic]") {
 
     CHECK(rows[2].subject == "synthetic.v1.ir_curve_template_entries.put");
     const auto second =
-        rfl::json::read<messaging::put_ir_curve_template_entry_request>(rows[2].body);
+        ores::utility::codec::json::read_expected<messaging::put_ir_curve_template_entry_request>(
+            rows[2].body);
     REQUIRE(second);
     CHECK(second->change.write.sequence_index == 1);
     CHECK(second->change.write.start_tenor_code == "2Y");
 
     CHECK(rows[3].subject ==
           "synthetic.v1.ir_curve_generation_config_process_parameter_values.put");
-    const auto value =
-        rfl::json::read<messaging::put_ir_curve_generation_config_process_parameter_value_request>(
-            rows[3].body);
+    const auto value = ores::utility::codec::json::read_expected<
+        messaging::put_ir_curve_generation_config_process_parameter_value_request>(rows[3].body);
     REQUIRE(value);
     CHECK(value->change.write.parameter_value == 0.5);
     CHECK(boost::uuids::to_string(value->change.write.parameter_definition_id) ==
@@ -434,13 +440,14 @@ TEST_CASE("process_setup_writes_the_container_id_as_the_fx_configs_parent",
 
     // Container, three folders, the FX config and its one GMM component.
     REQUIRE(session.rows.size() == 6);
-    const auto container =
-        rfl::json::read<messaging::put_market_data_generation_config_request>(session.rows[0].body);
+    const auto container = ores::utility::codec::json::read_expected<
+        messaging::put_market_data_generation_config_request>(session.rows[0].body);
     REQUIRE(container);
     const auto container_id = container->change.write.id;
 
     const auto config =
-        rfl::json::read<messaging::put_fx_spot_generation_config_request>(session.rows[4].body);
+        ores::utility::codec::json::read_expected<messaging::put_fx_spot_generation_config_request>(
+            session.rows[4].body);
     REQUIRE(config);
     CHECK(config->change.write.config_id == container_id);
     CHECK(config->change.write.id != container_id);
@@ -456,12 +463,15 @@ TEST_CASE("process_setup_kinds_the_asset_and_instrument_folders", "[commands][sy
     synthetic_commands::process_setup(out, session, fx_setup_args());
 
     REQUIRE(session.rows.size() == 6);
-    const auto asset = rfl::json::read<messaging::put_folder_request>(session.rows[2].body);
+    const auto asset = ores::utility::codec::json::read_expected<messaging::put_folder_request>(
+        session.rows[2].body);
     REQUIRE(asset);
     CHECK(asset->change.write.kind == "asset_class");
     CHECK(asset->change.write.name == "FX");
 
-    const auto instrument = rfl::json::read<messaging::put_folder_request>(session.rows[3].body);
+    const auto instrument =
+        ores::utility::codec::json::read_expected<messaging::put_folder_request>(
+            session.rows[3].body);
     REQUIRE(instrument);
     CHECK(instrument->change.write.kind == "instrument_type");
     CHECK(instrument->change.write.name == "FX Rates");
@@ -488,13 +498,13 @@ TEST_CASE("process_setup_writes_the_container_id_and_required_ir_fields", "[comm
     // Container, three folders, the IR config, one template entry and four
     // process parameter values.
     REQUIRE(session.rows.size() == 10);
-    const auto container =
-        rfl::json::read<messaging::put_market_data_generation_config_request>(session.rows[0].body);
+    const auto container = ores::utility::codec::json::read_expected<
+        messaging::put_market_data_generation_config_request>(session.rows[0].body);
     REQUIRE(container);
     const auto container_id = container->change.write.id;
 
-    const auto config =
-        rfl::json::read<messaging::put_ir_curve_generation_config_request>(session.rows[4].body);
+    const auto config = ores::utility::codec::json::read_expected<
+        messaging::put_ir_curve_generation_config_request>(session.rows[4].body);
     REQUIRE(config);
     CHECK(config->change.write.config_id == container_id);
     CHECK(config->change.write.id != container_id);
@@ -502,11 +512,14 @@ TEST_CASE("process_setup_writes_the_container_id_and_required_ir_fields", "[comm
     CHECK(config->change.write.price_source == "fixed");
     CHECK(config->change.write.fixed_leg_payment_frequency_code == "Annual");
 
-    const auto ir_asset = rfl::json::read<messaging::put_folder_request>(session.rows[2].body);
+    const auto ir_asset = ores::utility::codec::json::read_expected<messaging::put_folder_request>(
+        session.rows[2].body);
     REQUIRE(ir_asset);
     CHECK(ir_asset->change.write.kind == "asset_class");
     CHECK(ir_asset->change.write.name == "IR");
-    const auto ir_instrument = rfl::json::read<messaging::put_folder_request>(session.rows[3].body);
+    const auto ir_instrument =
+        ores::utility::codec::json::read_expected<messaging::put_folder_request>(
+            session.rows[3].body);
     REQUIRE(ir_instrument);
     CHECK(ir_instrument->change.write.kind == "instrument_type");
     CHECK(ir_instrument->change.write.name == "IR Curves");

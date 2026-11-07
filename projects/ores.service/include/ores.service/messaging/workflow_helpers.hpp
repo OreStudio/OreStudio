@@ -26,6 +26,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>
@@ -75,7 +76,7 @@ inline std::string extract_workflow_header(const ores::nats::message& msg,
  *   if (!wf) return;           // not a workflow command
  *   try {
  *       auto result = do_work(wf->tenant_id, ...);
- *       wf->complete(rfl::json::write(result));
+ *       wf->complete(ores::utility::codec::json::write(result));
  *   } catch (const std::exception& e) {
  *       wf->fail(e.what());
  *   }

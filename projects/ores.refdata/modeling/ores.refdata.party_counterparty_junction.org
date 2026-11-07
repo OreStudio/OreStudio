@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.http-route.enabled: true
 :ores.cpp.wire-codec.enabled: true
 :ID: 77870EE2-3123-4881-AF13-F35D432FC237
 :ores.sql.schema.junction_artefact_create.enabled: true
@@ -6,6 +7,7 @@
 #+title: ores.refdata.party_counterparty
 #+description: Codegen junction model for party_counterparties.
 #+type: ores.codegen.junction
+#+http_area: reference-data
 #+component: refdata
 #+filetags: :model:junction:refdata:
 #+name: party_counterparties

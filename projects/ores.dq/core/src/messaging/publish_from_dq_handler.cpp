@@ -23,10 +23,10 @@
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
 #include <array>
 #include <format>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace ores::dq::messaging {
@@ -112,9 +112,10 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<ores::dq::messaging::publish_from_dq_command>(sv);
+    auto parsed =
+        ores::utility::codec::json::read_expected<ores::dq::messaging::publish_from_dq_command>(sv);
     if (!parsed) {
-        wf->fail("Failed to decode publish_from_dq_command: " + std::string(parsed.error().what()));
+        wf->fail("Failed to decode publish_from_dq_command: " + std::string(parsed.error()));
         ack.accept();
         return;
     }
@@ -161,7 +162,7 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
                                   << " inserted=" << result.records_inserted
                                   << " updated=" << result.records_updated;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
 
     } catch (const std::exception& e) {

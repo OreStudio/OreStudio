@@ -18,13 +18,13 @@
  *
  */
 #include "ores.dq.core/repository/dataset_dependency_entity.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.database/query_builder/json.hpp"
+#include <ostream>
 
 namespace ores::dq::repository {
 
 std::ostream& operator<<(std::ostream& s, const dataset_dependency_entity& v) {
-    rfl::json::write(v, s);
+    s << ores::database::query_builder::write_json(v);
     return s;
 }
 

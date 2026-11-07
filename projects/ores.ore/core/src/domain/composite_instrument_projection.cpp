@@ -100,7 +100,8 @@ auto spelling_if(const xml::record_reader& r, std::string_view name) -> std::opt
 void read_total_return(composite_instrument_data& r, const xml::record_reader& data) {
     auto& row = r.instrument;
     if (const auto underlying = data.child("UnderlyingData")) {
-        if (const auto indices = underlying->children("PortfolioIndexTradeData"); !indices.empty()) {
+        if (const auto indices = underlying->children("PortfolioIndexTradeData");
+            !indices.empty()) {
             const auto& index = indices.front();
             row.underlying_basket_name = text_if(index, "BasketName");
             row.underlying_index_quantity = text_if(index, "IndexQuantity");
@@ -130,7 +131,8 @@ void read_total_return(composite_instrument_data& r, const xml::record_reader& d
         if (const auto schedule = ret->child("ScheduleData"))
             option_block::read_schedule(r, *schedule, "trs", 1, "return_schedule");
         if (const auto dates = ret->child("PaymentDates"))
-            option_block::read_date_list(r, *dates, "PaymentDate", "trs", 1, "return_payment_dates");
+            option_block::read_date_list(
+                r, *dates, "PaymentDate", "trs", 1, "return_payment_dates");
     }
     if (const auto funding = data.child("FundingData")) {
         std::string types;
@@ -195,7 +197,8 @@ void write_total_return(xml::record_writer& trade,
             indices.remove_prefix(space + 1);
         }
     }
-    text(ret, "PayUnderlyingCashFlowsImmediately", row.return_pay_underlying_cash_flows_immediately);
+    text(
+        ret, "PayUnderlyingCashFlowsImmediately", row.return_pay_underlying_cash_flows_immediately);
 
     if (!v.legs.empty() || row.funding_notional_types) {
         auto funding = data.child("FundingData");
@@ -268,7 +271,7 @@ auto read_composite_instrument(xml::record_reader trade, std::string_view trade_
 auto write_composite_instrument(xml::record_writer& trade,
                                 std::string_view trade_type,
                                 const trading::domain::trade_instrument& instrument,
-                                const portfolio_reference_curves&) -> bool {
+                                const ores::marketdata::projection::ore_projection&) -> bool {
     const auto* r = std::get_if<composite_instrument_data>(&instrument);
     if (r == nullptr || !is_composite_trade_type(trade_type))
         return false;
@@ -277,8 +280,8 @@ auto write_composite_instrument(xml::record_writer& trade,
         write_composite_trade(trade, r->instrument);
     else
         write_total_return(trade,
-                           trade_type == "TotalReturnSwap" ? "TotalReturnSwapData"
-                                                           : "ContractForDifferenceData",
+                           trade_type == "TotalReturnSwap" ? "TotalReturnSwapData" :
+                                                             "ContractForDifferenceData",
                            *r);
     return true;
 }

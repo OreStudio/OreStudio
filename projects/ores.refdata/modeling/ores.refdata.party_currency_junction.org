@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.http-route.enabled: true
 :ores.cpp.wire-codec.enabled: true
 :ID: 0BB9EF29-22CD-4088-9D9B-40AE4E7FF099
 :ores.sql.schema.junction_artefact_create.enabled: true
@@ -6,6 +7,7 @@
 #+title: ores.refdata.party_currency
 #+description: Codegen junction model for party_currencies.
 #+type: ores.codegen.junction
+#+http_area: reference-data
 #+component: refdata
 #+filetags: :model:junction:refdata:
 #+name: party_currencies

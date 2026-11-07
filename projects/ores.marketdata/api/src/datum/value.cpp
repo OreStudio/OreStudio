@@ -34,9 +34,6 @@ bool is_digit(char c) {
     return c >= '0' && c <= '9';
 }
 
-bool all_digits(std::string_view s) {
-    return !s.empty() && std::ranges::all_of(s, is_digit);
-}
 
 int to_int(std::string_view s) {
     int result = 0;

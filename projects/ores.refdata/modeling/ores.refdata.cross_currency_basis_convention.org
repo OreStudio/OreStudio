@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 88382103-22A1-4B77-A76E-AF20076F6E1C
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.cross_currency_basis_convention
 #+description: Codegen family model for the cross-currency basis convention: the central convention row plus its swap terms and its two legs, and the family get and put derived from them.

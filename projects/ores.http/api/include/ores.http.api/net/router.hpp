@@ -23,6 +23,7 @@
 #include "ores.http.api/domain/route.hpp"
 #include "ores.http.api/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cstdint>
 #include <functional>
@@ -129,7 +130,8 @@ public:
         schema.json_schema = rfl::json::to_schema<T>();
 
         if (example_generator) {
-            schema.example_json = rfl::json::write(example_generator());
+            schema.example_json =
+                ores::utility::codec::wire_traits<T>::write_json(example_generator());
         }
 
         body_schema_ = schema;
@@ -159,7 +161,8 @@ public:
         schema.json_schema = rfl::json::to_schema<T>();
 
         if (example_generator) {
-            schema.example_json = rfl::json::write(example_generator());
+            schema.example_json =
+                ores::utility::codec::wire_traits<T>::write_json(example_generator());
         }
 
         success_response_schema_ = schema;

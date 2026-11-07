@@ -359,3 +359,32 @@ class TestTheFacetResolves:
         units, _, _ = resolve_targets(model, CODEGEN_BASE,
                                       address="ores.cpp.http-route")
         assert units == []
+
+
+class TestTheSearchParameter:
+    """A list a caller may search reads the parameter, and no other list does."""
+
+    @staticmethod
+    def _searchable():
+        entity = _entity()
+        entity["has_search"] = True
+        entity["filter_type"] = "messaging::widgets_filter"
+        return entity
+
+    def test_a_searchable_list_reads_the_parameter_and_carries_it(self):
+        # The model says a column is searchable, so the route states the
+        # parameter and hands the text to the filter the request carries.
+        text = _rendered_impl(self._searchable())
+        assert 'req.get_query_param("search")' in text, text[:400]
+        assert "msg.filter = messaging::widgets_filter{};" in text
+        assert "msg.filter->search = raw;" in text
+
+    def test_a_searchable_list_documents_the_parameter(self):
+        text = _rendered_impl(self._searchable())
+        assert '.query_param("search", "string"' in text, text[:400]
+
+    def test_a_list_with_nothing_to_search_reads_no_parameter(self):
+        # Every entity without a searchable column keeps the route it had.
+        text = _rendered_impl(_entity())
+        assert 'get_query_param("search")' not in text
+        assert '.query_param("search"' not in text

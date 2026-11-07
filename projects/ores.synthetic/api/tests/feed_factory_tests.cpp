@@ -21,7 +21,7 @@
 #include "ores.analytics.quant/service/run_clock.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"

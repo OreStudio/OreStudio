@@ -20,7 +20,11 @@
 #ifndef ORES_EVENTING_API_DOMAIN_EVENT_CHANNEL_INFO_HPP
 #define ORES_EVENTING_API_DOMAIN_EVENT_CHANNEL_INFO_HPP
 
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include <string>
+#include <tuple>
+#include <type_traits>
 
 namespace ores::eventing::domain {
 
@@ -45,6 +49,18 @@ struct event_channel_info final {
      */
     std::string description;
 };
+
+/**
+ * @brief The members of event_channel_info, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<event_channel_info>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"name", &event_channel_info::name},
+                      field{"description", &event_channel_info::description}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<event_channel_info>(),
+              "event_channel_info gained a member its wire_fields does not name.");
 
 }
 

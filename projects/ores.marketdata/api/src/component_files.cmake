@@ -20,9 +20,22 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "conventions/convention_lookup.cpp"
     "datum/market_datum.cpp"
     "datum/market_index.cpp"
+    "datum/market_reference.cpp"
+    "datum/ore_index_codec.cpp"
+    "datum/ore_key_codec.cpp"
+    "datum/ore_key_commodity.cpp"
+    "datum/ore_key_credit.cpp"
+    "datum/ore_key_equity.cpp"
+    "datum/ore_key_fx.cpp"
+    "datum/ore_key_inflation.cpp"
+    "datum/ore_key_rates.cpp"
+    "datum/ore_key_securities.cpp"
+    "datum/ore_key_volatility.cpp"
     "datum/ore_types.cpp"
+    "datum/oresmd_uri_codec.cpp"
     "datum/schema.cpp"
     "datum/value.cpp"
     "domain/adapter_codec.cpp"
@@ -207,13 +220,19 @@ set(files
     "messaging/subscription_interval_protocol_codec.cpp"
     "messaging/subscription_protocol_codec.cpp"
     "messaging/supplier_protocol_codec.cpp"
+    "projection/ore_projection.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/conventions/convention_lookup.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/market_datum.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/market_index.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/market_reference.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/ore_index_codec.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/ore_key_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/ore_types.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/oresmd_uri_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/schema.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/datum/value.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/domain/adapter.hpp"
@@ -460,4 +479,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/subscription_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/messaging/supplier_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/ores.marketdata.api.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.api/projection/ore_projection.hpp"
 )

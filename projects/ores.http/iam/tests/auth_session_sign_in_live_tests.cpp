@@ -24,7 +24,7 @@
 #include "ores.nats/service/jwks.hpp"
 #include "ores.nats/service/timeouts.hpp"
 #include "ores.platform/environment/environment.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -32,7 +32,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstdlib>
 #include <optional>
-#include <rfl/json.hpp>
 #include <string>
 
 using namespace ores::http::domain;
@@ -138,7 +137,7 @@ TEST_CASE("a_person_signs_in_and_the_token_stays_with_the_server", "[auth_sessio
 
     http_request req;
     req.method = http_method::post;
-    req.body = rfl::json::write(credentials);
+    req.body = ores::utility::codec::json::write(credentials);
 
     std::optional<http_response> answer;
     asio::io_context io;

@@ -20,7 +20,7 @@
 #ifndef ORES_IAM_SERVICE_SEED_PROFILE_PARAMETER_CHECK_HPP
 #define ORES_IAM_SERVICE_SEED_PROFILE_PARAMETER_CHECK_HPP
 
-#include "ores.iam.api/domain/seed_profile_parameter.hpp"
+#include "ores.iam.api/domain/seed_profile_parameter_codec.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
 #include <cctype>

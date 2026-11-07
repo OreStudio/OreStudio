@@ -48,6 +48,7 @@ const std::string server_identifier_arg("identifier");
 const std::string storage_dir_arg("storage-dir");
 const std::string web_dir_arg("web-dir");
 const std::string web_session_name_arg("web-session-name");
+const std::string web_session_path_arg("web-session-path");
 const std::string http_base_url_arg("http-base-url");
 
 using boost::program_options::value;
@@ -109,7 +110,11 @@ options_description make_options_description() {
         "Root directory of the built browser bundle. Empty serves no bundle.")(
         web_session_name_arg.c_str(),
         value<std::string>()->default_value("ores_web_session"),
-        "Name of the session cookie, which carries the deployment's environment.");
+        "Name of the session cookie, which carries the deployment's environment.")(
+        web_session_path_arg.c_str(),
+        value<std::string>()->default_value("/"),
+        "Path the session cookie is scoped to, which is the prefix this server is "
+        "served under when a screen of the port runs beside the BFF.");
 
     options_description nod("HTTP service discovery");
     nod.add_options()(http_base_url_arg.c_str(),

@@ -40,6 +40,7 @@ A person lists bindings, says what each source writes and when it last ticked, b
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
+| [[id:C3EF7247-25EB-4AAA-9759-466D86E11A3A][Hotfix the vendor catalogue's URI codec include]] | DONE | 2026-11-01 | 2026-11-07 | Main does not compile the vendor catalogue: the URI codec it includes moved to the marketdata api component. |
 
 * Decisions
 

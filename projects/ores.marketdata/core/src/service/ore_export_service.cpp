@@ -18,9 +18,9 @@
  *
  */
 #include "ores.marketdata.core/service/ore_export_service.hpp"
-#include "ores.marketdata.core/datum/ore_index_codec.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/ore_index_codec.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/market_fixing_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"

@@ -27,6 +27,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
 #include <cstdint>
@@ -93,9 +94,10 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
     }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto parsed = rfl::json::read<ores::dq::messaging::publish_from_dq_command>(sv);
+    auto parsed =
+        ores::utility::codec::json::read_expected<ores::dq::messaging::publish_from_dq_command>(sv);
     if (!parsed) {
-        wf->fail("Failed to decode publish_from_dq_command: " + std::string(parsed.error().what()));
+        wf->fail("Failed to decode publish_from_dq_command: " + std::string(parsed.error()));
         ack.accept();
         return;
     }
@@ -148,7 +150,7 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
             << "publish_from_dq complete: fn=" << fn_name << " inserted=" << result.records_inserted
             << " updated=" << result.records_updated;
 
-        wf->complete(rfl::json::write(result));
+        wf->complete(ores::utility::codec::json::write(result));
         ack.accept();
 
     } catch (const std::exception& e) {

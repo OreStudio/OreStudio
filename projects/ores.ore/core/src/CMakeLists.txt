@@ -60,6 +60,7 @@ target_link_libraries(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.analytics.api.lib
+        ores.marketdata.api.lib
         ores.ore.api.lib
         ores.refdata.api.lib
         ores.reporting.api.lib

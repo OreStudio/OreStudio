@@ -127,7 +127,7 @@ struct equity_digital_option_instrument final {
     /**
      * @brief The number of units the option pays on, as Quantity states it.
      */
-    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<double> quantity;
 
     /**
      * @brief Optional free-text description.

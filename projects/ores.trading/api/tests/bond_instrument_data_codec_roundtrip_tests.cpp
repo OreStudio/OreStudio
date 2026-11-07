@@ -38,7 +38,6 @@
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_strike_data.hpp"
 #include "ores.trading.api/domain/bond_trs_codec.hpp"
-#include "ores.trading.api/domain/instrument_underlying_codec.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/sample.hpp"
 #include "ores.utility/codec/struct_codec.hpp"

@@ -38,7 +38,7 @@ export interface SwapLegIndexing {
     sequence_number: number;
     trade_activity_id: string;
     index_name: string;
-    quantity: string | null;
+    quantity: number | null;
     initial_fixing: string | null;
     fixing_days: number | null;
     fixing_calendar: string | null;

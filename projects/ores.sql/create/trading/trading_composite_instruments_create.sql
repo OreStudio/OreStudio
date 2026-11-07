@@ -48,7 +48,7 @@ create table if not exists "ores_trading_composite_instruments_tbl" (
     "notional_calculation" text null,
     "notional_override" numeric(38, 12) null,
     "portfolio_basket" text null,
-    "index_quantity" numeric(38, 12) null,
+    "index_quantity" double precision null,
     "return_payer" text null,
     "return_currency" text null,
     "return_observation_lag" text null,

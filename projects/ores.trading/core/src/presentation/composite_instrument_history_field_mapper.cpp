@@ -52,8 +52,9 @@ render_composite_instrument_fields(const domain::composite_instrument& v) {
          .value = v.notional_override ? v.notional_override->to_string() : std::string{}});
     fields.push_back(
         {.name = "Portfolio Basket", .value = v.portfolio_basket.value_or(std::string{})});
-    fields.push_back({.name = "Index Quantity",
-                      .value = v.index_quantity ? v.index_quantity->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Index Quantity",
+         .value = v.index_quantity ? std::to_string(*v.index_quantity) : std::string{}});
     fields.push_back({.name = "Return Payer", .value = v.return_payer.value_or(std::string{})});
     fields.push_back(
         {.name = "Return Currency", .value = v.return_currency.value_or(std::string{})});

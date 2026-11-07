@@ -93,7 +93,7 @@ struct swap_leg_indexing final {
     /**
      * @brief The quantity the index scales, as Quantity states it.
      */
-    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<double> quantity;
 
     /**
      * @brief The fixing the first period uses, as InitialFixing states it.

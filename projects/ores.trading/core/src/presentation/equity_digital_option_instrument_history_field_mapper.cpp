@@ -66,7 +66,7 @@ render_equity_digital_option_instrument_fields(const domain::equity_digital_opti
     fields.push_back(
         {.name = "Barrier Fixing Index", .value = v.barrier_fixing_index.value_or(std::string{})});
     fields.push_back(
-        {.name = "Quantity", .value = v.quantity ? v.quantity->to_string() : std::string{}});
+        {.name = "Quantity", .value = v.quantity ? std::to_string(*v.quantity) : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

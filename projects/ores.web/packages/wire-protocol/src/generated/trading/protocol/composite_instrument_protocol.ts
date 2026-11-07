@@ -41,7 +41,7 @@ export interface CompositeInstrumentWrite {
     notional_calculation: string | null;
     notional_override: string | null;
     portfolio_basket: string | null;
-    index_quantity: string | null;
+    index_quantity: number | null;
     return_payer: string | null;
     return_currency: string | null;
     return_observation_lag: string | null;

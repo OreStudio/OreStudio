@@ -63,7 +63,7 @@ export interface SwapLegWrite {
     equity_name: string | null;
     equity_underlying_type: string | null;
     equity_underlying_identifier_type: string | null;
-    equity_quantity: string | null;
+    equity_quantity: number | null;
     equity_initial_price: string | null;
     equity_initial_price_currency: string | null;
     equity_dividend_factor: string | null;
@@ -94,7 +94,7 @@ export interface SwapLegWrite {
     rate_cutoff: number | null;
     local_cap_floor: boolean | null;
     observation_lag: string | null;
-    cpi_base: string | null;
+    cpi_base: number | null;
     cpi_start_date: string | null;
     cpi_interpolation: string | null;
     cpi_interpolated: boolean | null;

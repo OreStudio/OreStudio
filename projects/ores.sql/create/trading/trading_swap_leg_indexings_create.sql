@@ -49,7 +49,7 @@ create table if not exists "ores_trading_swap_leg_indexings_tbl" (
     "version" integer not null,
     "trade_activity_id" uuid not null,
     "index_name" text not null,
-    "quantity" numeric(38, 12) null,
+    "quantity" double precision null,
     "initial_fixing" numeric(38, 12) null,
     "fixing_days" integer null,
     "fixing_calendar" text null,

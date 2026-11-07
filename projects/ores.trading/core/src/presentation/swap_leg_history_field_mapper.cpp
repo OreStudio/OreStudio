@@ -93,8 +93,9 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
                       .value = v.equity_underlying_type.value_or(std::string{})});
     fields.push_back({.name = "Equity Underlying Identifier Type",
                       .value = v.equity_underlying_identifier_type.value_or(std::string{})});
-    fields.push_back({.name = "Equity Quantity",
-                      .value = v.equity_quantity ? v.equity_quantity->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Equity Quantity",
+         .value = v.equity_quantity ? std::to_string(*v.equity_quantity) : std::string{}});
     fields.push_back(
         {.name = "Equity Initial Price",
          .value = v.equity_initial_price ? v.equity_initial_price->to_string() : std::string{}});
@@ -172,7 +173,7 @@ std::vector<ores::diff::domain::field_value> render_swap_leg_fields(const domain
     fields.push_back(
         {.name = "Observation Lag", .value = v.observation_lag.value_or(std::string{})});
     fields.push_back(
-        {.name = "Cpi Base", .value = v.cpi_base ? v.cpi_base->to_string() : std::string{}});
+        {.name = "Cpi Base", .value = v.cpi_base ? std::to_string(*v.cpi_base) : std::string{}});
     fields.push_back({.name = "Cpi Start Date",
                       .value = v.cpi_start_date ? ores::platform::time::datetime::to_iso8601_date(
                                                       *v.cpi_start_date) :

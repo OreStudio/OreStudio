@@ -136,7 +136,7 @@ struct fx_barrier_option_instrument final {
     /**
      * @brief A generic barrier option's quantity, as Quantity states it.
      */
-    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<double> quantity;
 
     /**
      * @brief A generic barrier option's strike, as Strike states it.

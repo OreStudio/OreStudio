@@ -47,7 +47,8 @@ render_instrument_underlying_fields(const domain::instrument_underlying& v) {
         {.name = "Identifier Type", .value = v.identifier_type.value_or(std::string{})});
     fields.push_back({.name = "Currency", .value = v.currency.value_or(std::string{})});
     fields.push_back({.name = "Exchange", .value = v.exchange.value_or(std::string{})});
-    fields.push_back({.name = "Weight", .value = v.weight ? v.weight->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Weight", .value = v.weight ? std::to_string(*v.weight) : std::string{}});
     fields.push_back({.name = "Price Type", .value = v.price_type.value_or(std::string{})});
     fields.push_back(
         {.name = "Future Month Offset",

@@ -50,9 +50,6 @@ generate_synthetic_swap_leg_indexing(utility::generation::generation_context& ct
     r.sequence_number = faker::number::integer(1, 3);
     r.trade_activity_id = ctx.generate_uuid();
     r.index_name = std::string("FX-ECB-EUR-USD");
-    r.quantity = ores::utility::decimal::decimal::from_string(
-                     std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
-                     .value();
     r.initial_fixing = ores::utility::decimal::decimal::from_string(
                            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                            .value();

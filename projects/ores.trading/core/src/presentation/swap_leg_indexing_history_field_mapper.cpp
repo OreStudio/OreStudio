@@ -43,7 +43,7 @@ render_swap_leg_indexing_fields(const domain::swap_leg_indexing& v) {
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
     fields.push_back({.name = "Index Name", .value = v.index_name});
     fields.push_back(
-        {.name = "Quantity", .value = v.quantity ? v.quantity->to_string() : std::string{}});
+        {.name = "Quantity", .value = v.quantity ? std::to_string(*v.quantity) : std::string{}});
     fields.push_back({.name = "Initial Fixing",
                       .value = v.initial_fixing ? v.initial_fixing->to_string() : std::string{}});
     fields.push_back({.name = "Fixing Days",

@@ -52,7 +52,7 @@ create table if not exists "ores_trading_equity_digital_option_instruments_tbl" 
     "barrier_start_date" date null,
     "barrier_calendar" text null,
     "barrier_fixing_index" text null,
-    "quantity" numeric(38, 12) null,
+    "quantity" double precision null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,

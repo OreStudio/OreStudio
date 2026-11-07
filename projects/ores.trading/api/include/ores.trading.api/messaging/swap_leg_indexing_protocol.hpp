@@ -55,7 +55,7 @@ struct swap_leg_indexing_write {
     int sequence_number;
     boost::uuids::uuid trade_activity_id;
     std::string index_name;
-    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<double> quantity;
     std::optional<ores::utility::decimal::decimal> initial_fixing;
     std::optional<int> fixing_days;
     std::optional<std::string> fixing_calendar;

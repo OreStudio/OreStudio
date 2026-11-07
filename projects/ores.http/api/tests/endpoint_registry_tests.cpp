@@ -22,7 +22,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <fstream>
 
 namespace {
 
@@ -363,74 +362,4 @@ TEST_CASE("endpoint_registry_generates_swagger_ui_html_default_spec_url", "[endp
     auto html = registry.generate_swagger_ui_html();
 
     REQUIRE(html.find("/openapi.json") != std::string::npos);
-}
-
-TEST_CASE("endpoint_registry_temporary_capture", "[endpoint_registry][temporary_capture]") {
-    endpoint_registry registry;
-
-    api_info info;
-    info.title = "Captured API";
-    info.description = "Capture description";
-    info.version = "9.9.9";
-    info.contact_name = "Only Name";
-    info.license_name = "Apache-2.0";
-    registry.set_info(info);
-
-    registry.add_server({"https://one.example.com", "One"});
-    registry.add_server({"https://two.example.com", "Two"});
-
-    route plain;
-    plain.method = http_method::get;
-    plain.pattern = "/plain/{id}/child/{child}";
-    plain.param_names = {"id", "child"};
-    plain.summary = "Plain route";
-    plain.description = "Plain description";
-    plain.tags = {"Alpha", "Beta"};
-    plain.requires_auth = true;
-    plain.query_params.push_back({"limit", "integer", "int32", true, "How many", std::nullopt});
-    plain.query_params.push_back({"name", "string", "", false, "", std::nullopt});
-    registry.register_route(plain);
-
-    route with_body;
-    with_body.method = http_method::post;
-    with_body.pattern = "/things";
-    with_body.summary = "Create thing";
-    with_body.body_schema = request_body_schema{
-        "application/json",
-        true,
-        R"({"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","title":"Thing","properties":{"name":{"type":"string"},"count":{"type":"integer","minimum":0},"ratio":{"type":"number","example":1.5},"tags":{"type":"array","items":{"$ref":"#/$defs/Tag"}},"child":{"$ref":"#/$defs/Child"},"missing":{"$ref":"#/$defs/Nope"},"odd":{"$ref":42}},"required":["name"],"$defs":{"Tag":{"type":"object","properties":{"value":{"type":"string"}}},"Child":{"type":"object","properties":{"again":{"$ref":"#/$defs/Child"},"tag":{"$ref":"#/$defs/Tag"}}},"Unused":{"type":"string"}}})",
-        R"({"name":"thing","count":3,"ratio":0.25,"tags":[{"value":"a"}],"nested":{"a":[1,2,{"b":true}],"c":null}})"};
-    with_body.success_response_schema = response_schema{
-        "200",
-        "Created thing",
-        "application/json",
-        R"({"type":"object","properties":{"id":{"type":"string"}}})",
-        R"({"id":"abc"})"};
-    registry.register_route(with_body);
-
-    route bad_schema;
-    bad_schema.method = http_method::put;
-    bad_schema.pattern = "/bad";
-    bad_schema.body_schema =
-        request_body_schema{"application/json", false, "this is not json", "neither is this"};
-    bad_schema.success_response_schema =
-        response_schema{"200", "Bad response", "application/json", "", ""};
-    registry.register_route(bad_schema);
-
-    route scalar_schema;
-    scalar_schema.method = http_method::patch;
-    scalar_schema.pattern = "/scalar";
-    scalar_schema.body_schema = request_body_schema{"application/json", true, "true", ""};
-    registry.register_route(scalar_schema);
-
-    route unauth_response;
-    unauth_response.method = http_method::delete_;
-    unauth_response.pattern = "/unauth";
-    unauth_response.success_response_schema =
-        response_schema{"200", "No example", "text/plain", "{}", ""};
-    registry.register_route(unauth_response);
-
-    const auto json = registry.generate_openapi_json();
-    std::ofstream out("/home/marco/Development/OreStudio/ores_dev_brave_hopper/tmp/openapi_capture_before.json");
-    out << json;
 }

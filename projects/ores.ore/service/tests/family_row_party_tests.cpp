@@ -44,9 +44,11 @@ TEST_CASE("a flat family row states its own party", tags) {
 TEST_CASE("a grouped family row states its party in its identity", tags) {
     // The central convention and the parts keyed to it group their identity,
     // so their party is stated inside it.
-    CHECK(party_of_family_row(row_of(
-              R"({"identity":{"id":"c1","party_id":"party-a","kind_code":"COMMODITY_FUTURE"},)"
-              R"("payload":{"name":"XLME:OP"}})").root()) == "party-a");
+    CHECK(
+        party_of_family_row(
+            row_of(R"({"identity":{"id":"c1","party_id":"party-a","kind_code":"COMMODITY_FUTURE"},)"
+                   R"("payload":{"name":"XLME:OP"}})")
+                .root()) == "party-a");
 }
 
 TEST_CASE("a null party at the top of a row defers to its identity", tags) {

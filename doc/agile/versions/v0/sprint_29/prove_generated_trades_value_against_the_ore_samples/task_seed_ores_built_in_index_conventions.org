@@ -108,6 +108,13 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
   =ACT/ACT.ISDA -> Actual/Actual (ISDA)=, =ACT/ACT.ISMA -> Actual/Actual
   (ISMA)=, =BUS/252 -> Business/252(Brazil)=. These are the only five the
   81 built-ins need.
+- The address half is done: =oresmd_index_map.tsv= now covers every one of the
+  81 built-in families, 652 names in all. It was regenerated the way its
+  =generate_oresmd_index_map.ores= script says, with the input taken as the
+  union of the names the map already held and the built-in names and probes,
+  because the verb replaces the file rather than adding to it. The 30 new
+  lines are the families that had none, AUD-LIBOR, USD-AMBOR, DKK-CITA,
+  SEK-STINA and GBP-BoEBase among them.
 - The calendar field is the one open question. refdata's calendar codes are
   not ORE's calendar names: refdata holds =UnitedStates.SOFR=, and ORE's
   parser refuses that string, building =US-SOFR= or =US= instead. So a row's

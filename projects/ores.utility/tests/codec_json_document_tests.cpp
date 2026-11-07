@@ -18,9 +18,11 @@
  *
  */
 #include "ores.utility/codec/json_document.hpp"
+#include "ores.utility/codec/json_document_wire.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
+#include <span>
 #include <string>
 
 namespace doc = ores::utility::codec;
@@ -84,4 +86,24 @@ TEST_CASE("text that is not JSON states why it reads as nothing", "[codec][json]
 
     REQUIRE_FALSE(failed.has_value());
     CHECK(failed.error().starts_with("Not JSON"));
+}
+
+TEST_CASE("a document survives a MessagePack round trip", "[codec][json][document]") {
+    const auto parsed =
+        doc::json_document::parse(R"({"subject":"currency","offset":10,"ratio":0.25,"live":true,)"
+                                  R"("rows":["USD",7,null,{"k":"v"}]})");
+    REQUIRE(parsed.has_value());
+
+    const auto packed = doc::write_document_msgpack(*parsed);
+    const auto read = doc::read_document_msgpack(std::as_bytes(std::span(packed)));
+
+    REQUIRE(read.has_value());
+    CHECK(read->write() == parsed->write());
+}
+
+TEST_CASE("MessagePack that states no document is refused", "[codec][json][document]") {
+    const auto text = std::string("not msgpack at all");
+    const auto read = doc::read_document_msgpack(std::as_bytes(std::span(text)));
+
+    CHECK_FALSE(read.has_value());
 }

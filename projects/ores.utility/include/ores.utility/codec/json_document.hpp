@@ -159,6 +159,11 @@ public:
         return yyjson_mut_get_sint(val_);
     }
 
+    /// Whether a number is stated as a whole number rather than a float.
+    [[nodiscard]] bool is_integer() const {
+        return val_ != nullptr && yyjson_mut_is_int(val_);
+    }
+
     /// The number a number states as a binary float, or nothing.
     [[nodiscard]] std::optional<double> real() const {
         if (!is_number())
@@ -171,6 +176,19 @@ public:
         if (!is_bool())
             return std::nullopt;
         return yyjson_mut_get_bool(val_);
+    }
+
+    /// The value as text, which is a document of its own.
+    [[nodiscard]] std::string write() const {
+        if (val_ == nullptr)
+            return {};
+        std::size_t length = 0;
+        char* text = yyjson_mut_val_write(val_, 0, &length);
+        if (text == nullptr)
+            return {};
+        std::string out(text, length);
+        free(text);
+        return out;
     }
 
     /// States a string member on an object, replacing one of the same name.
@@ -186,6 +204,16 @@ public:
     /// States a whole number member on an object.
     void set(std::string_view name, std::int64_t value) {
         set_value(name, yyjson_mut_int(doc_, value));
+    }
+
+    /// States a binary float member on an object.
+    void set(std::string_view name, double value) {
+        set_value(name, yyjson_mut_real(doc_, value));
+    }
+
+    /// States a member that holds no value, which a strict reader requires.
+    void set_null(std::string_view name) {
+        set_value(name, yyjson_mut_null(doc_));
     }
 
     /// States a truth member on an object.
@@ -236,6 +264,21 @@ public:
     /// Appends a literal, which the bool overload would otherwise take.
     void push(const char* value) {
         push(std::string_view(value));
+    }
+
+    /// Appends a value that holds nothing.
+    void push_null() {
+        yyjson_mut_arr_append(val_, yyjson_mut_null(doc_));
+    }
+
+    /// Appends a truth to an array.
+    void push(bool value) {
+        yyjson_mut_arr_append(val_, yyjson_mut_bool(doc_, value));
+    }
+
+    /// Appends a binary float to an array.
+    void push(double value) {
+        yyjson_mut_arr_append(val_, yyjson_mut_real(doc_, value));
     }
 
     /// Appends a whole number to an array.

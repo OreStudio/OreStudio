@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 5B1B2D2B-6B2A-4C6B-9C25-9E1D1F4A7C31
+:ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.refdata.commodity_future_convention
 #+description: Codegen family model for the commodity future convention: the central convention row plus its contract terms and its four optional blocks, and the family get and put derived from them.

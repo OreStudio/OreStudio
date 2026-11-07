@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :sprint_29:v0:serve_one_screen_from_the_new_server:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-the-route-aggregate
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -27,11 +27,11 @@ unnoticed, because the gate names it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] |
-| Now          | The check is written and the tree passes it. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-07                               |
 
 * Acceptance

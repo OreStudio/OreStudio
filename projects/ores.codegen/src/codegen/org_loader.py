@@ -3576,6 +3576,9 @@ def filter_members(entity: dict[str, Any]) -> dict[str, Any]:
         members.append({
             "member": name, "column": name, "is_equals": True,
             "cpp_type": cpp_type,
+            # The record wraps a nullable member once more than a plain one, so a
+            # reader that parses text states the type inside both wrappers.
+            "read_type": _strip_optional(cpp_type),
             "is_nullable": cpp_type != _strip_optional(cpp_type)})
     for name in one_of:
         members.append({

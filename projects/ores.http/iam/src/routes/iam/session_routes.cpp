@@ -173,6 +173,11 @@ boost::asio::awaitable<http_response> session_routes::handle_list(const http_req
     try {
         request_type msg;
         session_apply_page(msg, req);
+        if (const auto raw = req.get_query_param("f.account_id"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::sessions_filter{};
+            msg.filter->account_id = session_read_param<boost::uuids::uuid>(raw, "f.account_id");
+        }
         co_return co_await session_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -312,6 +317,7 @@ void session_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("f.account_id", "string", "", false, "Rows whose account_id is this value")
             .response<messaging::list_sessions_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();

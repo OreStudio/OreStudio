@@ -506,6 +506,17 @@ CATALOGUE: tuple[Check, ...] = (
     # route nobody answers, or when a row disagrees with the decisions in
     # route_classification.
     Check(
+        id="route-units",
+        title="Every route unit a component opts into is registered by its aggregate",
+        argv=("python3", "build/scripts/check_route_units.py"),
+        classes=("cpp", "codegen", "tooling"),
+        paths=("projects/ores.http/*",
+               "projects/ores.*/modeling/*",
+               "build/scripts/check_route_units.py"),
+        fix="Add the unit's register_routes call to the component's aggregate, or "
+            "remove the model's :ores.cpp.http-route.enabled: opt-in.",
+    ),
+    Check(
         id="route-inventory",
         title="Every HTTP route is in the inventory",
         argv=("python3", "build/scripts/route_inventory.py", "--check"),

@@ -54,6 +54,7 @@ column beyond the type and the strike, so the option block is held whole.
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_strike_data.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #+end_src
 
 * Fields
@@ -246,6 +247,16 @@ The repo leg's payer flag and schedule, re-emitted whole.
 :END:
 
 The ascot reference swap's payer flag and schedule, re-emitted whole.
+
+** instrument_underlyings
+:PROPERTIES:
+:cpp_type: std::vector<instrument_underlying>
+:END:
+
+A bond position's basket, one row per Underlying bond.
+
+A basket position names no single issue, so its bonds are the shared underlying
+rows, as an equity position's are.
 
 * See also
 

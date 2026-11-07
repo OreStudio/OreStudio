@@ -21,11 +21,11 @@ Every check the local gate runs passes on main: drift, collisions, the ER diagra
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-11-07                               |
 
 * Acceptance
@@ -46,3 +46,9 @@ Every check the local gate runs passes on main: drift, collisions, the ER diagra
 * Out of scope
 
 -
+
+The six checks main failed now pass, the tree builds, the ticks smoke provisions
+a tenant and ticks, and every suite the change touches passes. One suite failure
+remains and predates this work: the marketdata service's two ingest-loop cases
+miss a wall-clock deadline only under parallel load, and their fix is captured.
+

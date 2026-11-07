@@ -62,7 +62,7 @@ struct instrument_underlying_entity {
     std::optional<std::string> identifier_type;
     std::optional<std::string> currency;
     std::optional<std::string> exchange;
-    std::optional<ores::utility::decimal::decimal> weight;
+    std::optional<double> weight;
     std::optional<std::string> price_type;
     std::optional<int> future_month_offset;
     std::optional<int> delivery_roll_days;

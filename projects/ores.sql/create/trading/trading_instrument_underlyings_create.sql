@@ -50,7 +50,7 @@ create table if not exists "ores_trading_instrument_underlyings_tbl" (
     "identifier_type" text null,
     "currency" text null,
     "exchange" text null,
-    "weight" numeric(38, 12) null,
+    "weight" double precision null,
     "price_type" text null,
     "future_month_offset" integer null,
     "delivery_roll_days" integer null,

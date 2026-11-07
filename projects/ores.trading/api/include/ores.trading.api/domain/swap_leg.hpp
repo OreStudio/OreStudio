@@ -242,7 +242,7 @@ struct swap_leg final {
     /**
      * @brief The number of shares an equity leg pays on, as Quantity states it.
      */
-    std::optional<ores::utility::decimal::decimal> equity_quantity;
+    std::optional<double> equity_quantity;
 
     /**
      * @brief The equity's price at the start of the first period, as InitialPrice states it.
@@ -413,7 +413,7 @@ struct swap_leg final {
     /**
      * @brief The base CPI a CPI leg indexes from, as BaseCPI states it.
      */
-    std::optional<ores::utility::decimal::decimal> cpi_base;
+    std::optional<double> cpi_base;
 
     /**
      * @brief The date a CPI leg's base CPI applies from, as StartDate states it.

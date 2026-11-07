@@ -589,8 +589,15 @@ trading_trade_population_writer::book_request_for(const domain::trade_population
      * them: a row the writer left behind would be a term the trade never
      * holds. Each row states why it was written, as its table states its
      * audit columns.
+     *
+     * The issue's own rows do not travel with the trade. They belong to the
+     * security, and =ensure_issue= has already written them, so a booking that
+     * carried them would ask the store to create them a second time and be
+     * refused.
      */
     book_req.instruments = slot.instruments;
+    book_req.instruments.bond_issue_call_dates.clear();
+    book_req.instruments.bond_issue_conversion_targets.clear();
     std::size_t rows = 0;
     std::apply(
         [&](const auto&... fields) {

@@ -67,7 +67,7 @@ render_fx_barrier_option_instrument_fields(const domain::fx_barrier_option_instr
     fields.push_back(
         {.name = "Barrier Fixing Index", .value = v.barrier_fixing_index.value_or(std::string{})});
     fields.push_back(
-        {.name = "Quantity", .value = v.quantity ? v.quantity->to_string() : std::string{}});
+        {.name = "Quantity", .value = v.quantity ? std::to_string(*v.quantity) : std::string{}});
     fields.push_back({.name = "Strike", .value = v.strike ? v.strike->to_string() : std::string{}});
     fields.push_back({.name = "Amount", .value = v.amount ? v.amount->to_string() : std::string{}});
     fields.push_back({.name = "Settlement Date",

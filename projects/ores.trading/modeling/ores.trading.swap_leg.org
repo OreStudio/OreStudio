@@ -404,8 +404,8 @@ The identifier type of the equity leg's =Underlying= block, such as =RIC=.
 
 ** equity_quantity
 :PROPERTIES:
-:type:     numeric(38, 12)
-:cpp_type: std::optional<ores::utility::decimal::decimal>
+:type:     double precision
+:cpp_type: std::optional<double>
 :nullable: true
 :END:
 
@@ -685,8 +685,8 @@ The observation lag of an inflation leg's index, as =ObservationLag= states it, 
 
 ** cpi_base
 :PROPERTIES:
-:type:     numeric(38, 12)
-:cpp_type: std::optional<ores::utility::decimal::decimal>
+:type:     double precision
+:cpp_type: std::optional<double>
 :nullable: true
 :END:
 

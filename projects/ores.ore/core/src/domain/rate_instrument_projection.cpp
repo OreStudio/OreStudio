@@ -648,7 +648,7 @@ void write_inflation_swap(record_writer& trade, const swap_instrument_data& v) {
             if (leg.floating_index_code.empty())
                 leg.floating_index_code = fact.inflation_index_code;
             if (!leg.cpi_base && fact.base_cpi)
-                leg.cpi_base = decimal_from_double(*fact.base_cpi);
+                leg.cpi_base = *fact.base_cpi;
             if (!leg.observation_lag && !fact.lag_convention.empty())
                 leg.observation_lag = fact.lag_convention;
         }

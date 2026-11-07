@@ -65,7 +65,7 @@ struct equity_digital_option_instrument_write {
     std::optional<std::chrono::year_month_day> barrier_start_date;
     std::optional<std::string> barrier_calendar;
     std::optional<std::string> barrier_fixing_index;
-    std::optional<ores::utility::decimal::decimal> quantity;
+    std::optional<double> quantity;
     std::string description;
 
     friend bool operator==(const equity_digital_option_instrument_write&,

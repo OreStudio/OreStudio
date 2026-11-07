@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :clear_the_failing_checks_on_main:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-clear-the-failing-checks-on-main
+#+pr: 4485
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
 #+updated: 2026-11-07
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:694694B1-82AE-464F-ABB0-B0786BFEAE0A][Hotfix: clear the six failing checks on main]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every check the local gate runs passes on main: drift, collisions, the ER diagra
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:694694B1-82AE-464F-ABB0-B0786BFEAE0A][Hotfix: clear the six failing checks on main]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -41,25 +41,65 @@ Every check the local gate runs passes on main: drift, collisions, the ER diagra
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Each check is one defect with its own cause, so the work is six small fixes
+rather than one change:
+
+- =component-drift= names eight generated files. Six are hand edits that the
+  model never learned, and two are stale models; each is fixed in the model and
+  the component is regenerated, never in the generated file.
+- =unity-collisions= finds six file-local names that one unity target holds
+  twice. The colliding names are renamed for what they do.
+- =er-diagram= and =bff-list-requests= are regenerated from the tools that own
+  them.
+- =money-decimal-columns= reports seven columns that hold a continuous
+  quantity -- a quantity, a weight, a CPI level -- typed as an exact decimal.
+  ORE's schema reads those leaves as =xs:float=, so the columns become binary
+  floats and the ORE projections convert at the boundary.
+- =ticks-smoke= fails booking a bond whose call date the run already stored.
+  The population writer books the trade with the issue's own rows after the
+  composite write stored them, and the store refuses the second create.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Checks the gate fails on main | 6 | =./compass.sh check= | =e7fdf31bcd= |
+| Generated files that drift | 8 | =check_component_drift.py --changed --base e7fdf31bcd= | =e7fdf31bcd= |
+| Continuous columns typed exact | 7 | =python3 build/scripts/check_money_decimal_columns.py= | =e7fdf31bcd= |
+| File-local names one unity target holds twice | 6 | =python3 build/scripts/check_unity_collisions.py= | =e7fdf31bcd= |
 
 * Notes
+
+**The eight drifted files, and which side was wrong.** Six were hand edits to
+generated files, so the model learned what the tree already did:
+=ores.http.server= options gained =web_session_path=, whose parser and
+application already read it; =marketdata.api= states =Boost::url=, because its
+datum codecs include =boost/url.hpp=; =synthetic.core= tests state
+=ores.ore.core.lib=, because the export tests use =ores::ore::xml=; and the bond
+instrument field group states the =instrument_underlyings= basket member the
+projection reads. Two models were stale instead: =marketdata.core= had carried
+=Boost::url= since the codecs moved out of it, and the trading CMakeLists read
+a column the generator renders differently. The http client test main's timeout
+listener was the seventh hand edit, and it is dropped: a listener is a
+whole-suite policy, and a capture records putting it in the template with a
+per-component opt-in.
+
+**Two columns in the same table stayed decimal.** =equity_initial_price= and
+=initial_fixing= sit beside the retyped =equity_quantity= and =quantity=, and
+they are money, so they stay exact. Only the leaves ORE reads as =xs:float=
+became floats.
+
+**The projections convert once.** The ORE layer keeps the XML tables as exact
+decimals, so the boundary helpers =decimal_as_double=, =decimal_from_double= and
+=set_decimal_from_double= moved into one header that the four projections
+include. The commodity quantities already used the same conversion.
+
+**Why the booking carried the issue's rows.** The writer copies the slot's
+instrument batch whole, and the batch's append moves a product's call dates and
+conversion targets into it. The composite write stores those rows with the
+issue, so the booking asked the store to create them a second time at version
+zero, and the store refused. The booking now states none of the issue's own
+rows.
 
 * Test Scenarios
 
@@ -76,7 +116,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4485][#4485]] | [agile] Close the hotfix story |
+| [[https://github.com/OreStudio/OreStudio/pull/4484][#4484]] | [trading,ore,synthetic] Clear the six failing checks on main |
 
 * Review
 
@@ -85,3 +126,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Six checks the gate failed on main pass on this branch: =component-drift= with
+no file left to render, =unity-collisions= with no name held twice, =er-diagram=,
+=money-decimal-columns= with no continuous column typed exact, =bff-list-requests=
+and =ticks-smoke=. The build succeeds and every suite passes except one, and that
+one is not this work's: =ores.marketdata.service.tests= fails two of its
+ingest-loop cases only when three other heavy suites run beside it under =-j 4=.
+It passes when the suite is run alone, it failed the same way on main before
+this branch started, and it still fails that way after the rebase onto
+=4323f8e73e=. Its two cases wait on a wall-clock deadline for a
+loop that is competing for the machine, so the fix is in that suite's timing
+design and has its own capture.
+
+The capture the http work needed is filed: the test timeout listener belongs in
+the test-main template behind a per-component opt-in, not in one generated file.
+
+The rebase onto =4323f8e73e= moved the ORE projections into the marketdata api
+and touched the projection header the boundary conversions left, which resolved
+by keeping main's file and deleting the duplicate definitions. On that base the
+whole tree builds, =ticks-smoke= passes, the nine suites the change touches pass
+and the nine checks the fix turns on pass.
+

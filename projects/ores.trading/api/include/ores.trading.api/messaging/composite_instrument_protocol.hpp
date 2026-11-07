@@ -57,7 +57,7 @@ struct composite_instrument_write {
     std::optional<std::string> notional_calculation;
     std::optional<ores::utility::decimal::decimal> notional_override;
     std::optional<std::string> portfolio_basket;
-    std::optional<ores::utility::decimal::decimal> index_quantity;
+    std::optional<double> index_quantity;
     std::optional<std::string> return_payer;
     std::optional<std::string> return_currency;
     std::optional<std::string> return_observation_lag;

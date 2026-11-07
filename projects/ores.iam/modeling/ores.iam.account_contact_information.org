@@ -2,10 +2,12 @@
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ID: 892C7799-23B7-4D3D-900D-8A2D08D62A6C
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
 :END:
 #+title: ores.iam.account_contact_information
 #+description: Contact details for an account (address/phone/email/web page) -- the person's name lives on the account itself, not here.
 #+type: ores.codegen.entity
+#+http_area: access
 #+component: iam
 #+filetags: :model:entity:iam:
 #+entity_singular: account_contact_information

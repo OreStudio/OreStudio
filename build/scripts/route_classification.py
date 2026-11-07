@@ -742,6 +742,16 @@ RULES = (
          ("exact", "POST /api/v1/iam/roles_permissions/put"),
          CPP, RESOURCE, "access",
          "Replaces the permissions one role grants with exactly the set sent."),
+    Rule("an access collection",
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/access/(?!accounts|permissions|roles|sessions)\w"),
+         CPP, RESOURCE, "access",
+         "A generated collection of the access area that is not one of the four the"
+         " gateway served first: its rows, a row by key or by a lookup, and its writes."),
+    Rule("an auth collection",
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/auth/(?!sessions|login_info|account_credentials)\w"),
+         CPP, RESOURCE, "auth",
+         "A generated collection of the auth area beyond the door's own: its rows and its"
+         " writes, published under the area rather than under the component's name."),
     Rule("the account operations",
          ("regex", r"^POST /api/v1/iam/ops/(update_account|lock_account|unlock_account)$"),
          CPP, RESOURCE, "access",

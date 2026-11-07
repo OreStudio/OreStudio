@@ -79,6 +79,7 @@ views, which the V increments own.
 | [[id:B914EAE1-E73B-424C-8196-F9C68EEFDB54][Keep every route unit reachable]] | DONE | 2026-11-07 | 2026-11-07 | A route unit the component aggregate never registers compiles, links, passes its cases and answers nothing, and nothing reports it. Gate the link: every model that opts into the route facet has its unit called by its component's aggregate, once. |
 | [[id:A441EC2F-9B64-445B-97A9-50A73A44ACDD][Read a list's filter members]] | DONE | 2026-11-07 | 2026-11-07 | The BFF's lists filter on the members a resource names, under an f.<member> parameter, and the generated C++ list route reads none of them. Read the single-valued filter members into the filter the request carries, and document each one where it is read. |
 | [[id:114A065F-7B4B-4DF1-B339-84FC6FEF466F][Serve the tenancy collections]] | DONE | 2026-11-07 | 2026-11-07 | The tenants, their statuses and types, and the seed profiles the browser reads are answered by the BFF only. Serve them from the new server under the tenancy area, and classify the family in the inventory as one rule rather than a row at a time. |
+| [[id:24983ABA-4F85-4776-A6D3-F02FBA336ED5][Serve the contact collection, and guard an entity whose protocol another model owns]] | DONE | | 2026-11-07 | The contact information the browser reads for a person is answered by the BFF alone. Serve it, and refuse the route facet for an entity whose protocol an operation model owns, which is how auth_event was caught: its generated unit included a header that does not exist. |
 
 * Decisions
 

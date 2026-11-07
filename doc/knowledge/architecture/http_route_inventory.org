@@ -63,7 +63,7 @@ an API publishes no area, so it is counted under =(none)=.
 
 | Area | Owner components | Routes | Kinds |
 |------+------------------+--------+-------|
-| access | iam, server | 64 | composed view 1, resource 63 |
+| access | iam, server | 75 | composed view 1, resource 74 |
 | agile | agile-routes | 6 | composed view 2, resource 4 |
 | analytics | sensitivity-templates | 6 | resource 6 |
 | assets | assets, server | 34 | composed view 1, resource 33 |
@@ -135,7 +135,7 @@ change of its own, not part of the port.
 
 * The inventory
 
-714 routes: 322 answered by the BFF and 392 by ores.http.
+725 routes: 322 answered by the BFF and 403 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -460,6 +460,17 @@ change of its own, not part of the port.
 | resource | trading | get | =/api/trades/:id/versions/:version= | bff | projects/ores.web/packages/bff/src/trades.ts:174 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | get | =/api/trades/new= | bff | projects/ores.web/packages/bff/src/booking.ts:198 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | resource | trading | get | =/api/ungrouped-trades= | bff | projects/ores.web/packages/bff/src/structures.ts:566 | The trades no structure holds, a filtered read of the trade collection. |
+| resource | access | get | =/api/v1/access/account_contact_informations= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:367 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | post | =/api/v1/access/account_contact_informations= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:409 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | put | =/api/v1/access/account_contact_informations= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:422 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | get | =/api/v1/access/account_contact_informations/by-account-id/{account_id}= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:479 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | post | =/api/v1/access/account_contact_informations/delete-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:464 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | post | =/api/v1/access/account_contact_informations/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:396 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | post | =/api/v1/access/account_contact_informations/put-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:436 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | delete | =/api/v1/access/account_contact_informations/{email}= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:449 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | get | =/api/v1/access/account_contact_informations/{email}= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:384 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | get | =/api/v1/access/account_contact_informations/{email}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:498 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
+| resource | access | get | =/api/v1/access/account_contact_informations/{email}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/account_contact_information_routes.cpp:515 | A generated collection of the access area that is not one of the four the gateway served first: its rows, a row by key or by a lookup, and its writes. |
 | resource | access | get | =/api/v1/access/accounts= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:249 | The IAM account collection, generated with list, read by username, a version read and a bulk get. |
 | resource | access | post | =/api/v1/access/accounts/get-many= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:278 | A generated write of the IAM account collection: the delete, the bulk get, or a whole-record put. |
 | resource | access | get | =/api/v1/access/accounts/{username}= | ores.http | projects/ores.http/iam/src/routes/iam/account_routes.cpp:266 | The IAM account collection, generated with list, read by username, a version read and a bulk get. |

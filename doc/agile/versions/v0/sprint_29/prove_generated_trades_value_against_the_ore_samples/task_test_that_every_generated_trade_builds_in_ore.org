@@ -239,7 +239,7 @@ own. Grounding found:
 - Some address-to-ORE-name conversions are fixed (an index and its ORE
   name); others depend on the market configuration a run reads (a curve URI
   and the ORE curve name its today's market forwards to; see
-  =reference_curve_names_of= in =run_configuration_operations.cpp=).
+  =ore_projection_of= in =run_configuration_operations.cpp=).
 
 *** Amended on 2026-11-06: the names the docs give
 
@@ -274,22 +274,26 @@ Checked against the market data requirements pages
 - A trade stores the address's canonical text; the codec's writer is the
   one spelling.
 
-*** Layer 2: the resolvers
+*** Layer 2: the convention lookup and the projection
 
 Two questions, two contexts, two interfaces; one type would mix a tenant's
-reference data with a run's market configuration.
+reference data with a run's market configuration. Neither is resolution:
+the pages of the market data requirements reserve that name for mapping a
+requirement to an identifier, and both of these are asked about an
+identifier that is already known.
 
-- =reference_resolver=: what an address means in reference data. By
-  address: the index's convention, the swap convention that uses it, the
-  CDS convention, the equity underlying, the commodity, the currency pair.
-  Answers =std::expected<refdata type, resolve_error>=. Context: a tenant's
+- =convention_lookup=: what an identifier's index means in reference data.
+  By identifier: the Ibor or overnight index convention that defines the
+  index, the swap convention whose floating leg uses it, the OIS convention.
+  Answers =std::expected<refdata type, lookup_error>=. Context: a tenant's
   refdata. Implementations: in memory (tests, generator, shell) and one over
   the refdata service.
-- =ore_naming=: an address and its ORE name, both ways, under one market
+- =ore_projection=: an identifier as its ORE name, one way, under one market
   configuration. Fixed for indices (=ore_index_codec=), configuration-bound
-  for curves (today's =reference_curve_names_of=, generalised). Context: a
-  run's or an import's market configuration. The exporter writes through it,
-  the importer reads through it.
+  for curves (the run's curve configuration and today's market, which
+  =ore_projection_of= reads). Context: a run's market configuration. The
+  exporter writes through it; reading an ORE name back is ingestion, which
+  the importer owns.
 
 Both interfaces sit beside the address types, so trading, ORE and the
 services see them without seeing each other.
@@ -302,7 +306,7 @@ services see them without seeing each other.
   optional terms and overrides are setters; =build() const= returns
   =std::expected<T, build_error>= with =build_error{term, message}=.
 - Market references are =market_reference= values, never strings. =build=
-  resolves them through a =reference_resolver= given at construction and
+  resolves them through a =convention_lookup= given at construction and
   derives what conventions fix (a fixed leg's frequency, day count, calendar
   and adjustment from the swap convention; the floating leg's from the index
   convention), as ORE's =TradeGenerator= does. An unresolved reference fails
@@ -323,7 +327,7 @@ services see them without seeing each other.
 const auto euribor_6m = market_reference::parse(
     "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M");
 
-auto swap = vanilla_swap_builder{refdata,          // a reference_resolver
+auto swap = vanilla_swap_builder{refdata,          // a convention_lookup
         {.notional = 10'000'000, .currency = "EUR",
          .start = 2026y/1/5, .maturity = 2036y/1/5,
          .fixed_rate = 0.0215, .index = *euribor_6m,
@@ -332,14 +336,14 @@ auto swap = vanilla_swap_builder{refdata,          // a reference_resolver
     .build();       // std::expected<swap_instrument_data, build_error>
 
 // Export: the run's market configuration names each address for ORE.
-exporter::export_portfolio(items, batch, ore_naming_for(run));
+exporter::export_portfolio(items, batch, projection);
 #+end_src
 
 *** How the parts hang together
 
 - One language for references (layer 1); every component speaks it.
-- Meaning comes from refdata (=reference_resolver=); ORE spelling comes from
-  the market configuration (=ore_naming=). Neither is in a trade.
+- Meaning comes from refdata (=convention_lookup=); ORE spelling comes from
+  the market configuration (=ore_projection=). Neither is in a trade.
 - Builders produce complete trades in that language; the exporter is the
   only place a trade becomes ORE names, the importer the only place ORE names
   become a trade.
@@ -390,8 +394,9 @@ Agreed with the product owner on 2026-11-06.
 *** Tasks
 
 1. Move the oresmd codecs into the marketdata API and add =market_reference=.
-2. Resolve an oresmd reference: =reference_resolver= and =ore_naming=, the
-   second replacing =reference_curve_names=.
+2. Look up an identifier's conventions and project it for ORE:
+   =convention_lookup= and =ore_projection=, the second replacing
+   =reference_curve_names=.
 3. Seed ORE's built-in index conventions in population.
 4. Store every market reference a trade holds as an oresmd address, checked
    against the series catalogue; the importer and exporter convert.

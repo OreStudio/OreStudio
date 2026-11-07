@@ -31,7 +31,6 @@
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include <functional>
 #include <string>
 #include <vector>
 

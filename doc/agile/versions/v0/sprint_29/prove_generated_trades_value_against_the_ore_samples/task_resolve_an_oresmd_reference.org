@@ -36,7 +36,7 @@ A builder can look up the conventions an oresmd identifier needs, and the export
 * Acceptance
 
 - =convention_lookup= answers by identifier: an index's convention, the swap convention that uses it, a CDS convention, an equity or commodity underlying; an unknown address is a stated error. An in-memory implementation serves tests, the generator and the shell.
-- =ore_projection= writes an identifier as its ORE name, and reads an ORE name back where the codecs can, under one market configuration: fixed for indices through =ore_index_codec=, configuration-bound for curves.
+- =ore_projection= writes an identifier as its ORE name under one market configuration: fixed for indices through =ore_index_codec=, configuration-bound for curves. Reading an ORE name back is the importer's, on [[id:639CEE8C-0586-4EEF-8F12-C450F956B00F][Store trade market references as oresmd addresses]]; the projection is one way.
 - =reference_curve_names= and =reference_curve_names_of= are replaced by =ore_projection= and deleted, with the bond export unchanged in the recorded trades.
 
 * Plan

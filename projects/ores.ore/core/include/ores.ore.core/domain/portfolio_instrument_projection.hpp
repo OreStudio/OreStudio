@@ -26,22 +26,12 @@
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.utility/decimal/decimal.hpp"
-#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace ores::ore::domain {
-
-/**
- * @brief The ORE name a trade's reference curve is written under.
- *
- * A bond names the curve it is discounted on by the market series' own URI, and
- * ORE resolves that name through the market configuration the run prices under.
- * The mapping belongs to the run, not to the trade.
- */
-
 
 /**
  * @brief An exact decimal member as the double the trading domain stores.

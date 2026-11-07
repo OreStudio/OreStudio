@@ -56,6 +56,23 @@
 
 namespace {
 
+/// @p text as the emitter writes it in an element: the markup characters escaped.
+std::string escaped_text(const std::string& text) {
+    std::string escaped;
+    for (const char c : text) {
+        if (c == '&')
+            escaped += "&amp;";
+        else if (c == '<')
+            escaped += "&lt;";
+        else if (c == '>')
+            escaped += "&gt;";
+        else
+            escaped += c;
+    }
+    return escaped;
+}
+
+
 /**
  * @brief Turns imported trades into the payload the exporter consumes.
  *
@@ -928,8 +945,14 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
         if (bond.issue.reference_curve_id == std::optional<std::string>("EUR-EURIBOR-6M"))
             bond.issue.reference_curve_id = curve->uri();
 
+    /*
+     * The emitter escapes text, and an oresmd address carries an ampersand for
+     * every query key, so the element is asserted in its escaped spelling.
+     */
+    const auto curve_id = "<ReferenceCurveId>" + escaped_text(curve->uri()) + "</ReferenceCurveId>";
+
     const auto xml = exporter::export_portfolio(items, instruments);
-    REQUIRE(xml.contains(curve->uri().substr(0, 10)));
+    REQUIRE(xml.contains(curve_id));
 
     const auto translated = exporter::export_portfolio(
         items,
@@ -941,7 +964,7 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
      * Only the reference curve is translated: the documents' index and income
      * curve keep their names, which are not the run's to rename.
      */
-    CHECK(!translated.contains(curve->uri().substr(0, 10)));
+    CHECK(!translated.contains(curve_id));
     CHECK(translated.contains("<ReferenceCurveId>EUR-ESTER</ReferenceCurveId>"));
     CHECK(translated.contains("<IncomeCurveId>EUR-EURIBOR-6M</IncomeCurveId>"));
 }

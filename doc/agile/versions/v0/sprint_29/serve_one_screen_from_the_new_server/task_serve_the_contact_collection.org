@@ -8,7 +8,7 @@
 #+filetags: :sprint_29:v0:serve_one_screen_from_the_new_server:
 #+owner: marco
 #+branch: feature/serve-the-contact-collection
-#+pr:
+#+pr: 4489
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4489][#4489]] | [http] Serve the contact collection, and guard the route facet |
 
 * Review
 

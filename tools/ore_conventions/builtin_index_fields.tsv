@@ -1,0 +1,84 @@
+# The index conventions ORE defines in code, mined from the engine.
+# Regenerate with mine_builtin_conventions.py; see the task.
+name	kind	settlement_days	fixing_calendar	day_counter	convention	end_of_month	ore_name	oresmd_uri
+AUD-AONIA	overnight	0	Australia settlement	ACT/365.FIXED	Following	false	AUD-AONIA	oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA
+AUD-BBSW	ibor	0	Australia settlement	ACT/365.FIXED	HalfMonthModifiedFollowing	true	AUD-BBSW	oresmd://ir/AUD?type=fixing&index=ibor&name=BBSW
+AUD-LIBOR	ibor	2	London stock exchange	ACT/360	ModifiedFollowing	true	AUD-LIBOR	oresmd://ir/AUD?type=fixing&index=ibor&name=LIBOR
+BRL-CDI	overnight	0	Brazil	BUS/252	Following	false	BRL-CDI	oresmd://ir/BRL?type=fixing&index=ibor&name=CDI
+CAD-CDOR	ibor	0	Canada	ACT/365.FIXED	ModifiedFollowing	false	CAD-CDOR	oresmd://ir/CAD?type=fixing&index=ibor&name=CDOR
+CAD-CORRA	ibor	2	Canada	ACT/365.FIXED	ModifiedFollowing	false	CAD-CORRA	oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA
+CAD-CORRA	overnight	0	Canada	ACT/365.FIXED	Following	false	CAD-CORRA	oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA
+CAD-LIBOR	ibor	0	London stock exchange	ACT/365.FIXED	ModifiedFollowing	true	CAD-LIBOR	oresmd://ir/CAD?type=fixing&index=ibor&name=LIBOR
+CHF-LIBOR	ibor	2	London stock exchange	ACT/360	ModifiedFollowing	true	CHF-LIBOR	oresmd://ir/CHF?type=fixing&index=ibor&name=LIBOR
+CHF-SARON	overnight	0	Switzerland	ACT/360	Following	false	CHF-SARON	oresmd://ir/CHF?type=fixing&index=ibor&name=SARON
+CHF-TOIS	overnight	1	Switzerland	ACT/360	Following	false	CHF-TOIS	oresmd://ir/CHF?type=fixing&index=ibor&name=TOIS
+CLP-CAMARA	overnight	2	Santiago Stock Exchange	ACT/360	Following	false	CLP-CAMARA	oresmd://ir/CLP?type=fixing&index=ibor&name=CAMARA
+CNH-HIBOR	ibor	0	Hong Kong stock exchange	ACT/360	ModifiedFollowing	false	CNH-HIBOR	oresmd://ir/CNH?type=fixing&index=ibor&name=HIBOR
+CNH-SHIBOR	ibor	0	Hong Kong stock exchange	ACT/360	ModifiedFollowing	false	CNH-SHIBOR	oresmd://ir/CNH?type=fixing&index=ibor&name=SHIBOR
+CNY-REPOFIX	ibor	1	China inter bank market	ACT/365.FIXED	Following	false	CNY-REPOFIX	oresmd://ir/CNY?type=fixing&index=ibor&name=REPOFIX
+CNY-SHIBOR	ibor	1	China inter bank market	ACT/360	ModifiedFollowing	false	CNY-SHIBOR	oresmd://ir/CNY?type=fixing&index=ibor&name=SHIBOR
+COP-IBR	overnight	0	Colombia Stock Exchange	ACT/360	Following	false	COP-IBR	oresmd://ir/COP?type=fixing&index=ibor&name=IBR
+CZK-PRIBOR	ibor	2	Prague stock exchange	ACT/360	ModifiedFollowing	false	CZK-PRIBOR	oresmd://ir/CZK?type=fixing&index=ibor&name=PRIBOR
+DEM-LIBOR	ibor	2	London stock exchange	ACT/360	ModifiedFollowing	true	DEM-LIBOR	oresmd://ir/DEM?type=fixing&index=ibor&name=LIBOR
+DKK-CIBOR	ibor	2	Denmark	ACT/360	ModifiedFollowing	false	DKK-CIBOR	oresmd://ir/DKK?type=fixing&index=ibor&name=CIBOR
+DKK-CITA	overnight	1	Denmark	ACT/360	Following	false	DKK-CITA	oresmd://ir/DKK?type=fixing&index=ibor&name=CITA
+DKK-DKKOIS	overnight	1	Denmark	ACT/360	Following	false	DKK-DKKOIS	oresmd://ir/DKK?type=fixing&index=ibor&name=DKKOIS
+DKK-LIBOR	ibor	2	London stock exchange	ACT/360	ModifiedFollowing	true	DKK-LIBOR	oresmd://ir/DKK?type=fixing&index=ibor&name=LIBOR
+EUR-EONIA	overnight	0	TARGET	ACT/360	Following	false	EUR-EONIA	oresmd://ir/EUR?type=fixing&index=ibor&name=EONIA
+EUR-ESTER	overnight	0	TARGET	ACT/360	Following	false	EUR-ESTER	oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER
+EUR-EURIBOR	ibor	2	TARGET	ACT/360	ModifiedFollowing	true	EUR-EURIBOR	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR
+EUR-EURIBOR365	ibor	2	TARGET	ACT/365.FIXED	ModifiedFollowing	true	EUR-EURIBOR365	oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR365
+EUR-LIBOR	ibor	2	JoinHolidays(London stock exchange, TARGET)	ACT/360	ModifiedFollowing	true	EUR-LIBOR	oresmd://ir/EUR?type=fixing&index=ibor&name=LIBOR
+GBP-BoEBase	overnight	0	UK settlement	ACT/365.FIXED	Following	false	GBP-BoEBase	oresmd://ir/GBP?type=fixing&index=ibor&name=BoEBase
+GBP-LIBOR	ibor	0	London stock exchange	ACT/365.FIXED	ModifiedFollowing	true	GBP-LIBOR	oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR
+GBP-SONIA	ibor	2	London stock exchange	ACT/360	ModifiedFollowing	false	GBP-SONIA	oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA
+GBP-SONIA	overnight	0	London stock exchange	ACT/365.FIXED	Following	false	GBP-SONIA	oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA
+HKD-HIBOR	ibor	0	Hong Kong stock exchange	ACT/365.FIXED	ModifiedFollowing	false	HKD-HIBOR	oresmd://ir/HKD?type=fixing&index=ibor&name=HIBOR
+HKD-HONIA	overnight	0	Hong Kong stock exchange	ACT/365.FIXED	Following	false	HKD-HONIA	oresmd://ir/HKD?type=fixing&index=ibor&name=HONIA
+HUF-BUBOR	ibor	2	Hungary	ACT/360	ModifiedFollowing	false	HUF-BUBOR	oresmd://ir/HUF?type=fixing&index=ibor&name=BUBOR
+IDR-IDRFIX	ibor	2	Jakarta stock exchange	ACT/360	ModifiedFollowing	false	IDR-IDRFIX	oresmd://ir/IDR?type=fixing&index=ibor&name=IDRFIX
+IDR-JIBOR	ibor	2	Jakarta stock exchange	ACT/360	ModifiedFollowing	false	IDR-JIBOR	oresmd://ir/IDR?type=fixing&index=ibor&name=JIBOR
+ILS-TELBOR	ibor	2	Telbor	ACT/360	ModifiedFollowing	false	ILS-TELBOR	oresmd://ir/ILS?type=fixing&index=ibor&name=TELBOR
+INR-MIBOROIS	overnight	0	National Stock Exchange of India	ACT/365.FIXED	Following	false	INR-MIBOROIS	oresmd://ir/INR?type=fixing&index=ibor&name=MIBOROIS
+INR-MIFOR	ibor	2	National Stock Exchange of India	ACT/365.FIXED	ModifiedFollowing	false	INR-MIFOR	oresmd://ir/INR?type=fixing&index=ibor&name=MIFOR
+JPY-EYTIBOR	ibor	2	Japan	ACT/360	ModifiedFollowing	false	JPY-EYTIBOR	oresmd://ir/JPY?type=fixing&index=ibor&name=EYTIBOR
+JPY-LIBOR	ibor	2	London stock exchange	ACT/360	ModifiedFollowing	true	JPY-LIBOR	oresmd://ir/JPY?type=fixing&index=ibor&name=LIBOR
+JPY-TIBOR	ibor	2	Japan	ACT/365.FIXED	ModifiedFollowing	false	JPY-TIBOR	oresmd://ir/JPY?type=fixing&index=ibor&name=TIBOR
+JPY-TONAR	ibor	2	Japan	ACT/365.FIXED	ModifiedFollowing	false	JPY-TONAR	oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR
+JPY-TONAR	overnight	0	Japan	ACT/365.FIXED	Following	false	JPY-TONAR	oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR
+KRW-CD	ibor	1	South-Korean settlement	ACT/365.FIXED	ModifiedFollowing	false	KRW-CD	oresmd://ir/KRW?type=fixing&index=ibor&name=CD
+KRW-KORIBOR	ibor	1	South-Korean settlement	ACT/365.FIXED	ModifiedFollowing	false	KRW-KORIBOR	oresmd://ir/KRW?type=fixing&index=ibor&name=KORIBOR
+MXN-TIIE	ibor	1	Mexican stock exchange	ACT/360	Following	false	MXN-TIIE	oresmd://ir/MXN?type=fixing&index=ibor&name=TIIE
+MYR-KLIBOR	ibor	0	Malaysia Stock Exchange	ACT/365.FIXED	ModifiedFollowing	false	MYR-KLIBOR	oresmd://ir/MYR?type=fixing&index=ibor&name=KLIBOR
+NOK-NIBOR	ibor	2	Norway	ACT/360	ModifiedFollowing	false	NOK-NIBOR	oresmd://ir/NOK?type=fixing&index=ibor&name=NIBOR
+NOK-NOWA	overnight	0	Norway	ACT/ACT.ISMA	Following	false	NOK-NOWA	oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA
+NZD-BKBM	ibor	2	New Zealand	ACT/ACT.ISDA	ModifiedFollowing	false	NZD-BKBM	oresmd://ir/NZD?type=fixing&index=ibor&name=BKBM
+NZD-OCR	overnight	0	New Zealand	ACT/365.FIXED	Following	false	NZD-OCR	oresmd://ir/NZD?type=fixing&index=ibor&name=OCR
+PHP-PHIREF	ibor	1	Philippine stock exchange	ACT/360	ModifiedFollowing	false	PHP-PHIREF	oresmd://ir/PHP?type=fixing&index=ibor&name=PHIREF
+PLN-POLONIA	overnight	1	PL	ACT/365.FIXED	Following	false	PLN-POLONIA	oresmd://ir/PLN?type=fixing&index=ibor&name=POLONIA
+PLN-WIBOR	ibor	2	PL	ACT/365.FIXED	ModifiedFollowing	false	PLN-WIBOR	oresmd://ir/PLN?type=fixing&index=ibor&name=WIBOR
+RON-ROBOR	ibor	2	Bucharest stock exchange	ACT/360	ModifiedFollowing	false	RON-ROBOR	oresmd://ir/RON?type=fixing&index=ibor&name=ROBOR
+RUB-KEYRATE	ibor	1	Russian settlement	ACT/ACT.ISDA	ModifiedFollowing	false	RUB-KEYRATE	oresmd://ir/RUB?type=fixing&index=ibor&name=KEYRATE
+RUB-MOSPRIME	ibor	1	Russian settlement	ACT/ACT.ISDA	ModifiedFollowing	false	RUB-MOSPRIME	oresmd://ir/RUB?type=fixing&index=ibor&name=MOSPRIME
+SAR-SAIBOR	ibor	2	Tadawul	ACT/360	ModifiedFollowing	false	SAR-SAIBOR	oresmd://ir/SAR?type=fixing&index=ibor&name=SAIBOR
+SEK-LIBOR	ibor	2	London stock exchange	ACT/360	ModifiedFollowing	true	SEK-LIBOR	oresmd://ir/SEK?type=fixing&index=ibor&name=LIBOR
+SEK-SIOR	overnight	1	Sweden	ACT/360	Following	false	SEK-SIOR	oresmd://ir/SEK?type=fixing&index=ibor&name=SIOR
+SEK-STIBOR	ibor	2	Sweden	ACT/360	ModifiedFollowing	false	SEK-STIBOR	oresmd://ir/SEK?type=fixing&index=ibor&name=STIBOR
+SEK-STINA	overnight	1	Sweden	ACT/360	Following	false	SEK-STINA	oresmd://ir/SEK?type=fixing&index=ibor&name=STINA
+SGD-SIBOR	ibor	2	Singapore exchange	ACT/365.FIXED	ModifiedFollowing	false	SGD-SIBOR	oresmd://ir/SGD?type=fixing&index=ibor&name=SIBOR
+SGD-SOR	ibor	2	Singapore exchange	ACT/365.FIXED	ModifiedFollowing	false	SGD-SOR	oresmd://ir/SGD?type=fixing&index=ibor&name=SOR
+SGD-SORA	overnight	0	Singapore exchange	ACT/365.FIXED	Following	false	SGD-SORA	oresmd://ir/SGD?type=fixing&index=ibor&name=SORA
+SKK-BRIBOR	ibor	2	Bratislava stock exchange	ACT/360	ModifiedFollowing	false	SKK-BRIBOR	oresmd://ir/SKK?type=fixing&index=ibor&name=BRIBOR
+THB-BIBOR	ibor	2	Thailand stock exchange	ACT/365.FIXED	ModifiedFollowing	false	THB-BIBOR	oresmd://ir/THB?type=fixing&index=ibor&name=BIBOR
+THB-THBFIX	ibor	2	Thailand stock exchange	ACT/365.FIXED	ModifiedFollowing	true	THB-THBFIX	oresmd://ir/THB?type=fixing&index=ibor&name=THBFIX
+THB-THOR	overnight	0	Thailand stock exchange	ACT/365.FIXED	Following	false	THB-THOR	oresmd://ir/THB?type=fixing&index=ibor&name=THOR
+TRY-TRLIBOR	ibor	0	Turkey	ACT/360	ModifiedFollowing	false	TRY-TRLIBOR	oresmd://ir/TRY?type=fixing&index=ibor&name=TRLIBOR
+TWD-TAIBOR	ibor	2	Taiwan stock exchange	ACT/365.FIXED	ModifiedFollowing	false	TWD-TAIBOR	oresmd://ir/TWD?type=fixing&index=ibor&name=TAIBOR
+USD-AMBOR	ibor	2	US settlement	ACT/360	ModifiedFollowing	false	USD-AMBOR	oresmd://ir/USD?type=fixing&index=ibor&name=AMBOR
+USD-AMERIBOR	overnight	0	US settlement	ACT/360	Following	false	USD-AMERIBOR	oresmd://ir/USD?type=fixing&index=ibor&name=AMERIBOR
+USD-FedFunds	overnight	0	Federal Reserve Bankwire System	ACT/360	Following	false	USD-FedFunds	oresmd://ir/USD?type=fixing&index=ibor&name=FedFunds
+USD-LIBOR	ibor	2	London stock exchange	ACT/360	ModifiedFollowing	true	USD-LIBOR	oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR
+USD-Prime	overnight	0	Federal Reserve Bankwire System	ACT/360	Following	false	USD-Prime	oresmd://ir/USD?type=fixing&index=ibor&name=Prime
+USD-SOFR	ibor	2	SOFR fixing calendar	ACT/360	ModifiedFollowing	false	USD-SOFR	oresmd://ir/USD?type=fixing&index=ibor&name=SOFR
+USD-SOFR	overnight	0	SOFR fixing calendar	ACT/360	Following	false	USD-SOFR	oresmd://ir/USD?type=fixing&index=ibor&name=SOFR
+ZAR-JIBAR	ibor	0	South Africa	ACT/365.FIXED	ModifiedFollowing	false	ZAR-JIBAR	oresmd://ir/ZAR?type=fixing&index=ibor&name=JIBAR

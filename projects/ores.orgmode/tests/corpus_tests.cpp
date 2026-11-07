@@ -18,11 +18,11 @@
  *
  */
 #include "ores.orgmode/parser/parser.hpp"
-#include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
+#include <rfl/json.hpp>
 #include <vector>
 
 namespace {
@@ -77,7 +77,7 @@ TEST_CASE("every .org doc in the repo parses without crashing, and dumps to JSON
     for (const auto& file : files) {
         try {
             const auto doc = ores::orgmode::parser::parse_file(file);
-            const auto json = ores::utility::codec::json::write(doc);
+            const auto json = rfl::json::write(doc);
 
             auto rel = fs::relative(file, repo_root).string();
             std::replace(rel.begin(), rel.end(), '/', '_');

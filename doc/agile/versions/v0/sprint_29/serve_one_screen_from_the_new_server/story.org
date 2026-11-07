@@ -45,7 +45,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:18835766-D75B-4438-BF90-4B6A148631E4][Scaffold story: Serve one screen from the new server]] | DONE | 2026-11-06 | 2026-11-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:506FB5FA-42AD-4F95-BFC2-CB2E52079DD7][Port the HTTP layer to parity]] | STARTED | 2026-11-06 | | Close the C++ layer's gap to the BFF one functionality at a time, merging each as it lands. |
+| [[id:506FB5FA-42AD-4F95-BFC2-CB2E52079DD7][Serve the reference data catalogue, and let a list be searched]] | DONE | 2026-11-06 | 2026-11-07 | Port the BFF's generic reference data router to generated routes, and let a searchable list be searched. |
 
 * Decisions
 

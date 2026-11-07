@@ -556,7 +556,7 @@ public:
             // party this answer names rather than resolving the reference a
             // second time and possibly reaching another row.
             auto arguments = detail::read_step_arguments(party_step->arguments_json);
-            arguments["party"] = found.front();
+            arguments.root().set("party", found.front());
             /*
              * The entity the person chose travels with the step, and the step
              * records it against the party: a party identifier carries the
@@ -564,8 +564,8 @@ public:
              * another one, so the run is the only client that can write it.
              */
             if (!req->lei.empty())
-                arguments["lei"] = req->lei;
-            run.steps.push_back({party_step->step_kind, rfl::json::write(arguments)});
+                arguments.root().set("lei", req->lei);
+            run.steps.push_back({party_step->step_kind, arguments.write()});
 
             boost::uuids::random_generator generate;
             const auto instance_id = boost::uuids::to_string(generate());

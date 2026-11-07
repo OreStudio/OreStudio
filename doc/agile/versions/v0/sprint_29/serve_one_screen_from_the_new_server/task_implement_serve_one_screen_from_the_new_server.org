@@ -86,7 +86,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The =ores.http.api= suite | 128 cases, 443 assertions, all passing | =./ores.http.api.tests= with the environment from =.env= | 0fe2666b3d |
+| The door's cookie cases | 8 cases, 44 assertions, all passing | =./ores.http.api.tests "[session_cookie]"= | 0fe2666b3d |
+| The prefix a screen asks through | 3 cases, all passing | =npx vitest run src/api/servers.test.ts= | 0fe2666b3d |
+| The server's new option | =--web-session-path arg (=/)= on the built binary | =./ores.http.server --help= | 0fe2666b3d |
+| The web package's typecheck | clean for =src/api/servers.ts=; one error elsewhere, pre-existing from =ede5b9cc50= on main | =npx tsc --noEmit -p tsconfig.json= | 0fe2666b3d |
 
 * Notes
 

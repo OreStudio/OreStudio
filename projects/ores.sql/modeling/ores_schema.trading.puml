@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 123
+Tables: 129
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -429,7 +429,8 @@ package "trading" #E8F5E9 {
         * trade_type_code : text
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
-        * issue_id : uuid <<FK>>
+          issue_id : uuid <<FK>>
+          position_identifier : text
           notional : numeric(38, 12)
         * modified_by : text
         * performed_by : text
@@ -1313,6 +1314,7 @@ package "trading" #E8F5E9 {
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
+          long_short : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1419,7 +1421,7 @@ package "trading" #E8F5E9 {
         * commodity_code : text
         * currency : text
         * quantity : double
-        * unit : text
+          unit : text
           start_date : date
           maturity_date : date
           fixed_price : numeric(38, 12)
@@ -1441,6 +1443,15 @@ package "trading" #E8F5E9 {
           day_count_fraction_code : text
           payment_frequency_code : text
           swaption_expiry_date : date
+          calendar : text
+          moment_type : text
+          add_past_dividends : boolean
+          pay_relative_to : text
+          quantity_frequency : text
+          delivery_roll_days : integer
+          future_month_offset : integer
+          include_period_end : boolean
+          position : text
           description : text
         * modified_by : text
         * performed_by : text
@@ -1477,6 +1488,27 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
           description : text
+          currency : text
+          notional_calculation : text
+          notional_override : numeric(38, 12)
+          portfolio_basket : text
+          index_quantity : numeric(38, 12)
+          return_payer : text
+          return_currency : text
+          return_observation_lag : text
+          return_observation_convention : text
+          return_observation_calendar : text
+          return_payment_lag : text
+          return_payment_convention : text
+          return_payment_calendar : text
+          return_initial_price : numeric(38, 12)
+          return_initial_price_currency : text
+          return_fx_index : text
+          return_pay_underlying_cash_flows_immediately : text
+          funding_notional_types : text
+          underlying_basket_name : text
+          underlying_index_quantity : text
+          underlying_price_is_per_unit : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -1491,49 +1523,14 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Composite Instrument Table
     Represents the composite product types ORE states. trade_type_code
-    discriminates the exact product, and the constituent trades live in the
-    composite_legs child table keyed by this instrument's trade_id.
-    The parent row carries only the basket identity and its optional free-text
-    description: the basket's constituents are child rows, so there is no
-    per-leg block to hold here. The table is bi-temporal and audited, so the
-    model takes the ordinary audited shape and needs no shape flag.
-    end note
-
-    entity ores_trading_composite_legs_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * party_id : uuid <<FK>>
-        * trade_id : uuid <<FK>>
-        * trade_activity_id : uuid <<FK>>
-        * leg_sequence : integer
-        * constituent_trade_id : text <<FK>>
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_trading_composite_legs_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Composite Leg Table
-    Child table of composite_instruments. Each row is one constituent trade
-    of a composite basket and names the parent through trade_id, with
-    leg_sequence giving the leg's 1-based ordinal inside the basket.
-    The leg carries no economics of its own: the ORE schema states a basket as
-    a list of whole trades, so the constituent is a child row that points at
-    the parent and records which constituent it is. The table is bi-temporal
-    and audited, so the model takes the ordinary audited shape and needs no
-    shape flag.
-    The row keeps its own id surrogate: composite_legs is one of the five
-    id-keyed tables the component's investigation names, and its
-    trade_id is a foreign key to the instrument rather than the row's
-    own key.
+    discriminates the exact product.
+    A composite trade's components are trades of their own, joined to the
+    composite by a structure of the CompositeTrade template: the composite
+    holds the composite role and each component the trade or sub_trade
+    role it held in the document. This row keeps the composite's own terms:
+    its currency, how its notional is formed, the basket's name and index
+    quantity. The table is bi-temporal and audited, so the model takes the
+    ordinary audited shape and needs no shape flag.
     end note
 
     entity ores_trading_counterparty_scope_types_tbl <<temporal>> #C6F0D8 {
@@ -1765,6 +1762,9 @@ package "trading" #E8F5E9 {
           target_amount : numeric(38, 12)
           target_type : text
         * payoff_type : text
+          settlement_lag : text
+          settlement_calendar : text
+          settlement_convention : text
           description : text
         * modified_by : text
         * performed_by : text
@@ -1802,11 +1802,13 @@ package "trading" #E8F5E9 {
         * option_type : text
         * strike : numeric(38, 12)
         * expiry_date : date
-        * exercise_type : text
+          exercise_type : text
         * long_short : text
         * average_type : text
         * averaging_start_date : date
         * averaging_end_date : date
+          settlement : text
+          strike_currency : text
           description : text
         * modified_by : text
         * performed_by : text
@@ -1850,6 +1852,9 @@ package "trading" #E8F5E9 {
           upper_barrier : numeric(38, 12)
           upper_barrier_type : text
           rebate : numeric(38, 12)
+          barrier_start_date : date
+          barrier_calendar : text
+          barrier_fixing_index : text
           description : text
         * modified_by : text
         * performed_by : text
@@ -1882,6 +1887,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
+          identifier_type : text
         * underlying_kind : text
           weight : double
           initial_price : numeric(38, 12)
@@ -1977,6 +1983,10 @@ package "trading" #E8F5E9 {
         * expiry_date : date
         * long_short : text
           payout_amount : numeric(38, 12)
+          barrier_start_date : date
+          barrier_calendar : text
+          barrier_fixing_index : text
+          quantity : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -2086,10 +2096,22 @@ package "trading" #E8F5E9 {
         * option_type : text
         * strike : numeric(38, 12)
         * expiry_date : date
-        * exercise_type : text
+          exercise_type : text
         * long_short : text
           settlement_type : text
           cliquet_frequency : text
+          strike_currency : text
+          local_cap : numeric(38, 12)
+          local_floor : numeric(38, 12)
+          global_cap : numeric(38, 12)
+          global_floor : numeric(38, 12)
+          settlement_days : integer
+          premium : numeric(38, 12)
+          premium_payment_date : date
+          initial_price_1 : numeric(38, 12)
+          initial_price_2 : numeric(38, 12)
+          knock_in_price : numeric(38, 12)
+          knock_out_price : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -2168,7 +2190,7 @@ package "trading" #E8F5E9 {
         * party_id : uuid <<FK>>
         * trade_activity_id : uuid <<FK>>
         * underlying_name : text
-        * currency : text
+          currency : text
         * quantity : double
           price : numeric(38, 12)
           description : text
@@ -2210,6 +2232,8 @@ package "trading" #E8F5E9 {
           option_type : text
           exercise_type : text
           settlement_type : text
+          identifier_type : text
+          exercise_date : date
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2261,7 +2285,16 @@ package "trading" #E8F5E9 {
         * start_date : date
         * maturity_date : date
         * long_short : text
-        * payment_frequency_code : text
+          payment_frequency_code : text
+          fixed_rate : numeric(38, 12)
+          floating_index : text
+          floating_spread : numeric(38, 12)
+          floating_day_count_fraction : text
+          initial_fixed_rate : numeric(38, 12)
+          knock_in_level : numeric(38, 12)
+          bermudan_knock_in : boolean
+          accruing_fixed_coupons : boolean
+          accumulating_fixed_coupons : boolean
           description : text
         * modified_by : text
         * performed_by : text
@@ -2374,6 +2407,9 @@ package "trading" #E8F5E9 {
         * start_date : date
         * maturity_date : date
         * long_short : text
+          calendar : text
+          moment_type : text
+          add_past_dividends : boolean
           description : text
         * modified_by : text
         * performed_by : text
@@ -2600,6 +2636,7 @@ package "trading" #E8F5E9 {
           fixing_amount : numeric(38, 12)
           target_amount : numeric(38, 12)
           strike : numeric(38, 12)
+          fixed_payer : boolean
           description : text
         * modified_by : text
         * performed_by : text
@@ -2643,6 +2680,14 @@ package "trading" #E8F5E9 {
           lower_barrier : numeric(38, 12)
           upper_barrier : numeric(38, 12)
           underlying_code : text
+          barrier_start_date : date
+          barrier_calendar : text
+          barrier_fixing_index : text
+          quantity : numeric(38, 12)
+          strike : numeric(38, 12)
+          amount : numeric(38, 12)
+          settlement_date : date
+          kiko_type : text
           description : text
         * modified_by : text
         * performed_by : text
@@ -2682,6 +2727,9 @@ package "trading" #E8F5E9 {
           barrier_type : text <<FK>>
           lower_barrier : numeric(38, 12)
           upper_barrier : numeric(38, 12)
+          barrier_start_date : date
+          barrier_calendar : text
+          barrier_fixing_index : text
           description : text
         * modified_by : text
         * performed_by : text
@@ -2718,6 +2766,15 @@ package "trading" #E8F5E9 {
         * sold_amount : numeric(38, 12)
         * value_date : date
           settlement : text <<FK>>
+          settlement_currency : text
+          settlement_fx_index : text
+          settlement_date : date
+          settlement_payment_lag : text
+          settlement_payment_calendar : text
+          settlement_payment_convention : text
+          far_date : date
+          far_bought_amount : numeric(38, 12)
+          far_sold_amount : numeric(38, 12)
           description : text
         * modified_by : text
         * performed_by : text
@@ -2787,6 +2844,8 @@ package "trading" #E8F5E9 {
         * strike : double
         * notional : numeric(38, 12)
         * moment_type : text <<FK>>
+          calendar : text
+          add_past_dividends : boolean
           description : text
         * modified_by : text
         * performed_by : text
@@ -2904,6 +2963,75 @@ package "trading" #E8F5E9 {
     ores.trading.rate_instruments, holds the trade type code, the party, the
     instrument's start and maturity dates and its description; this table holds
     only the product's own fields, and joins the header by trade_id.
+    end note
+
+    entity ores_trading_instrument_barrier_levels_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * barrier_role : text <<PK>>
+        * barrier_sequence_number : integer <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * level : numeric(38, 12)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_instrument_barrier_levels_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Instrument Barrier Level Table
+    One level of a barrier, keyed to the barrier and the level's ordinal.
+    A single barrier states one level and a double barrier states two; the
+    levels are a list in the document, so each is a row of its own rather
+    than a column of the barrier.
+    end note
+
+    entity ores_trading_instrument_barriers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * barrier_role : text <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * barrier_type : text
+          style : text
+          strict_comparison : text
+          rebate : numeric(38, 12)
+          rebate_currency : text
+          rebate_pay_time : text
+          override_triggered : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_instrument_barriers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Instrument Barrier Table
+    One barrier of a product, keyed to the trade, the list that states it and
+    the barrier's ordinal in that list.
+    ORE states a barrier as a BarrierData block: a type, a style, a list of
+    levels and an optional rebate. Fifteen products state one, some state a
+    list of them, and a generic barrier option also states a transatlantic
+    barrier. Every one of them is a row here, so a product with one barrier
+    holds one row, a product with several holds several, and the type, style
+    and rebate belong to each barrier rather than to the product.
+    The levels are instrument_barrier_level rows: a single barrier states
+    one level and a double barrier states two.
     end note
 
     entity ores_trading_instrument_option_exercise_fees_tbl <<temporal>> #C6F0D8 {
@@ -3175,6 +3303,8 @@ package "trading" #E8F5E9 {
           remove_first_date : boolean
           remove_last_date : boolean
           include_duplicate_dates : text
+          base_schedule : text
+          shift : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3235,6 +3365,7 @@ package "trading" #E8F5E9 {
           yield_compounding : text
           bare_value : numeric(38, 12)
           bare_currency : text
+          long_short : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3256,6 +3387,53 @@ package "trading" #E8F5E9 {
     this table holds the two richer spellings. The three pairs are mutually
     exclusive in a document, so at most one pair of columns is filled on a
     row and the other four are null.
+    end note
+
+    entity ores_trading_instrument_underlyings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * underlying_role : text <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * underlying_type : text
+        * name : text
+          identifier_type : text
+          currency : text
+          exchange : text
+          weight : numeric(38, 12)
+          price_type : text
+          future_month_offset : integer
+          delivery_roll_days : integer
+          delivery_roll_calendar : text
+          future_expiry_date : text
+          future_contract_month : text
+          interpolation : text
+          bid_ask_adjustment : numeric(38, 12)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_instrument_underlyings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Instrument Underlying Table
+    One underlying of a product, keyed to the trade, the list that states it and
+    the underlying's ordinal in that list.
+    ORE states an underlying as an Underlying block of its underlying type:
+    a type and a name, and optionally an identifier type, a currency, an
+    exchange, a weight, a price type and the commodity future terms. Twenty-four
+    places in ORE's schema state one, some once and some as a list. Every block
+    is a row here, so a product with one underlying holds one row and a basket
+    or a position holds one per member.
+    A product's fact row keeps the first underlying's name as its summary; the
+    rows keep everything the document states.
     end note
 
     entity ores_trading_knock_out_swap_instruments_tbl <<temporal>> #C6F0D8 {
@@ -3796,6 +3974,7 @@ package "trading" #E8F5E9 {
           underlyings_json : text
           parameters_json : text
           description : text
+          data_element : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -3827,6 +4006,83 @@ package "trading" #E8F5E9 {
     the table with no UI surface -- the per-instrument forms were hand-crafted
     in the removed desktop client and consumed the generated messaging
     protocol.
+    end note
+
+    entity ores_trading_scripted_parameter_values_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * parameter_sequence_number : integer <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * value : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_scripted_parameter_values_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Scripted Parameter Value Table
+    One value of a scripted trade's list parameter, keyed to the parameter and
+    the value's ordinal.
+    A parameter whose value is a list, such as a basket's underlyings or a
+    vector of weights, states each value in turn, so each is a row.
+    end note
+
+    entity ores_trading_scripted_parameters_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * name : text
+        * declared_type : text
+        * shape : text
+          value : text
+          apply_coarsening : text
+          base_schedule : text
+          shift : text
+          calendar : text
+          convention : text
+          remove_first_date : text
+          remove_last_date : text
+          shift_unit : text
+          shift_anchor : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_scripted_parameters_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Scripted Parameter Table
+    One named parameter of a scripted trade, keyed to the trade and the
+    parameter's ordinal.
+    ORE reads every scripted trade as a script and a set of named parameters of
+    five kinds: event, number, index, currency and day counter
+    (scriptedtrade.cpp). A generic trade states them under
+    ScriptedTradeData/Data as <Number><Name/><Value/></Number>; a named
+    product such as MovingMaxYYIISData states each as an element named after
+    the variable, typed by its type attribute. Either way a parameter is a
+    name, a type and a value, and the value is a scalar, a list, or for an
+    event a schedule or a schedule derived from another event. The list is
+    finite, so every scripted product is these rows.
+    A list value is scripted_parameter_value rows, and an event's schedule is
+    rows of the shared schedule tables under the owner scripted and the
+    parameter's ordinal.
     end note
 
     entity ores_trading_settlement_types_tbl <<temporal>> #C6F0D8 {
@@ -3921,6 +4177,7 @@ package "trading" #E8F5E9 {
         * structure_id : uuid <<FK>>
         * role : text
         * sequence_number : integer
+          member_label : text
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4042,6 +4299,48 @@ package "trading" #E8F5E9 {
     deal has no confirmation to hang on. The insert trigger enforces it.
     end note
 
+    entity ores_trading_swap_leg_amortizations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * amortization_type : text
+          value : numeric(38, 12)
+          start_date : date
+          end_date : date
+          frequency : text
+          underflow : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_swap_leg_amortizations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swap Leg Amortization Table
+    One step of a swap leg's amortization schedule, keyed to the leg and the
+    step's ordinal.
+    ORE states a leg's amortization on LegData/Amortizations as a list of
+    AmortizationData blocks. A block is a rule, not an amount: it states how
+    the notional amortizes (Type), by how much (Value), over which window
+    (StartDate and EndDate), how often (Frequency) and whether the notional
+    may fall below zero (Underflow). ORE derives the notional schedule from the
+    rules, so the rules are what the document states and what this row keeps.
+    The type is required and the other five members are optional, so the type
+    is not null here and the rest are nullable.
+    The row is a child of the leg rather than an entity with a life of its own:
+    swap_leg names the trade and the ordinal, and this row adds its own ordinal
+    within that leg. The bond legs keep the same block in bond_leg_amortization.
+    end note
+
     entity ores_trading_swap_leg_amounts_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -4073,6 +4372,48 @@ package "trading" #E8F5E9 {
     land here: the import reads whichever the document states, and the export
     writes the list back. The leg itself carries no notional, because a single
     column cannot hold a schedule.
+    The row is a child of the leg rather than an entity with a life of its own:
+    swap_leg names the trade and the ordinal, and this row adds its own ordinal
+    within that leg.
+    end note
+
+    entity ores_trading_swap_leg_indexings_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * leg_number : integer <<PK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * index_name : text
+          quantity : numeric(38, 12)
+          initial_fixing : numeric(38, 12)
+          fixing_days : integer
+          fixing_calendar : text
+          fixing_convention : text
+          is_in_arrears : boolean
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_swap_leg_indexings_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Swap Leg Indexing Table
+    One indexing of a swap leg, keyed to the leg and the indexing's ordinal.
+    ORE states a leg's indexings on LegData/Indexings as a list of Indexing
+    blocks. An indexing scales the leg's notional by an index: an FX index turns
+    a notional in one currency into another, and an equity index turns a share
+    count into a notional. Each block names the index, the quantity, the initial
+    fixing, the fixing terms and, optionally, a valuation schedule.
+    The valuation schedule is a schedule like any other, so it lands in the
+    shared schedule rows under the leg, with the schedule role
+    indexing_<n>_valuation, where n is this row's ordinal.
     The row is a child of the leg rather than an entity with a life of its own:
     swap_leg names the trade and the ordinal, and this row adds its own ordinal
     within that leg.
@@ -4110,8 +4451,12 @@ package "trading" #E8F5E9 {
     a list of values that vary over the leg's life, so both land here and
     rate_role says which arm stated the row. The leg itself carries no rate and
     no spread, because a single column cannot hold a schedule.
-    rate_role is data, not a table: the closed set is fixed and spread, and
-    the schema states it.
+    rate_role is data, not a table: the closed set is fixed, spread,
+    gearing, cap, floor and price, and the schema states it. A commodity
+    fixed leg states its prices on CommodityFixedLegData/Prices, which land here
+    as price. A floating leg states
+    its spreads, gearings, caps and floors each as a schedule of its own, and a
+    value applies from its start date.
     The row is a child of the leg rather than an entity with a life of its own:
     swap_leg names the trade and the ordinal, and this row adds its role and its
     own ordinal within that leg.
@@ -4127,12 +4472,67 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
           payer : boolean
         * leg_type_code : text
-        * day_count_fraction_code : text
-        * business_day_convention_code : text
-        * payment_frequency_code : text
+          day_count_fraction_code : text
+          business_day_convention_code : text
+          payment_frequency_code : text
           floating_index_code : text
         * currency : text
           leg_group : text
+          fixing_days : integer
+          is_in_arrears : boolean
+          include_spread : boolean
+          is_averaged : boolean
+          has_sub_periods : boolean
+          notional_initial_exchange : boolean
+          notional_final_exchange : boolean
+          payment_lag : text
+          payment_calendar : text
+          commodity_price_type : text
+          future_month_offset : integer
+          daily_expiry_offset : integer
+          pricing_calendar : text
+          equity_return_type : text
+          equity_name : text
+          equity_underlying_type : text
+          equity_underlying_identifier_type : text
+          equity_quantity : numeric(38, 12)
+          equity_initial_price : numeric(38, 12)
+          equity_initial_price_currency : text
+          equity_dividend_factor : numeric(38, 12)
+          equity_notional_reset : boolean
+          equity_currency : text
+          fx_index : text
+          fx_reset_foreign_currency : text
+          fx_reset_start_date : text
+          fx_reset_foreign_amount : numeric(38, 12)
+          fx_reset_fx_index : text
+          fx_reset_fixing_days : integer
+          fx_reset_fixing_calendar : text
+          fixing_calendar : text
+          digital_call_position : text
+          digital_is_call_atm_included : boolean
+          digital_put_position : text
+          digital_is_put_atm_included : boolean
+          equity_margin_initial_margin_factor : numeric(38, 12)
+          equity_margin_multiplier : numeric(38, 12)
+          commodity_pay_relative_to : text
+          commodity_quantity_frequency : text
+          pricing_date_rule : text
+          indexings_from_asset_leg : boolean
+          floating_index_code_2 : text
+          cms_duration : integer
+          naked_option : boolean
+          lookback : text
+          rate_cutoff : integer
+          local_cap_floor : boolean
+          observation_lag : text
+          cpi_base : numeric(38, 12)
+          cpi_start_date : date
+          cpi_interpolation : text
+          cpi_interpolated : boolean
+          subtract_inflation_notional : boolean
+          zero_coupon_compounding : text
+          zero_coupon_subtract_notional : boolean
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -4620,18 +5020,21 @@ package "trading" #E8F5E9 {
     no audit tail: the audit record of the act that booked it carries that.
     end note
 
-    entity ores_trading_vanilla_swap_instruments_tbl <<junction>> #ECECEC {
+    entity ores_trading_vanilla_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
           settlement_lag : integer
+          settlement : text
+          round_netted_floating_legs : boolean
+          netting_precision : integer
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -4701,8 +5104,6 @@ ores_trading_trades_tbl ||--o{ ores_trading_commodity_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_commodity_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_composite_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_composite_instruments_tbl : "has"
-ores_trading_trades_tbl ||--o{ ores_trading_composite_legs_tbl : "has"
-ores_trading_trade_activities_tbl ||--o{ ores_trading_composite_legs_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_credit_basket_constituents_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_credit_basket_constituents_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_cds_instruments_tbl : "has"
@@ -4773,6 +5174,10 @@ ores_trading_trades_tbl ||--o{ ores_trading_index_cds_option_instruments_tbl : "
 ores_trading_trade_activities_tbl ||--o{ ores_trading_index_cds_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_inflation_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_inflation_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_instrument_barrier_levels_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_barrier_levels_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_instrument_barriers_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_barriers_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_instrument_option_exercise_fees_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_option_exercise_fees_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_instrument_option_exercise_prices_tbl : "has"
@@ -4789,6 +5194,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_instrument_schedules_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_schedules_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_instrument_strikes_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_strikes_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_instrument_underlyings_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_underlyings_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_range_bounds_tbl : "has"
@@ -4799,6 +5206,10 @@ ores_trading_trades_tbl ||--o{ ores_trading_risk_participation_instruments_tbl :
 ores_trading_trade_activities_tbl ||--o{ ores_trading_risk_participation_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_scripted_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_scripted_parameter_values_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_scripted_parameter_values_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_scripted_parameters_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_scripted_parameters_tbl : "has"
 ores_trading_structures_tbl ||--o{ ores_trading_structure_identifiers_tbl : "has"
 ores_trading_trade_id_types_tbl ||--o{ ores_trading_structure_identifiers_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_structure_members_tbl : "has"
@@ -4807,8 +5218,12 @@ ores_trading_structure_templates_tbl ||--o{ ores_trading_structure_template_role
 ores_trading_structure_kinds_tbl ||--o{ ores_trading_structure_templates_tbl : "has"
 ores_trading_structure_kinds_tbl ||--o{ ores_trading_structures_tbl : "has"
 ores_trading_structure_templates_tbl ||--o{ ores_trading_structures_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_swap_leg_amortizations_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_swap_leg_amortizations_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_swap_leg_amounts_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_swap_leg_amounts_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_swap_leg_indexings_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_swap_leg_indexings_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_swap_leg_rates_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_swap_leg_rates_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_swap_legs_tbl : "has"

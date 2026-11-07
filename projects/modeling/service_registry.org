@@ -472,9 +472,13 @@
 
 # The publish is a request, so the service raises one and reads the decision.
 # It writes the request and its parts, and reads the kinds that say who
-# decides, the states a request moves through, and the parts it names.
+# decides, the states a request moves through, and the parts it names. A curve
+# of the tenant's own party needs nobody, so the service closes that request in
+# the same act and writes the decision that closed it, which is why it writes
+# the decisions too.
 - ores_inbox_approval_requests_
 - ores_inbox_approval_request_parts_
+- ores_inbox_approval_decisions_
 
 ** Select prefixes
 

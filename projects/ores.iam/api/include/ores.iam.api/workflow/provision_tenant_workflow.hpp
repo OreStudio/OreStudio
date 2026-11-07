@@ -93,6 +93,7 @@ inline constexpr std::string_view start_tenant_setup_step_kind = "start_tenant_s
 /// The step kinds the notation knows, each named once so a handler that reads
 /// the catalogue by kind names the same string the catalogue declares.
 inline constexpr std::string_view system_provision_step_kind = "system_provision";
+inline constexpr std::string_view publish_system_curves_step_kind = "publish_system_curves";
 inline constexpr std::string_view publish_bundle_step_kind = "publish_bundle";
 inline constexpr std::string_view import_lei_hierarchy_step_kind = "import_lei_hierarchy";
 inline constexpr std::string_view provision_party_step_kind = "provision_party";
@@ -110,6 +111,7 @@ inline constexpr std::string_view schedule_reports_step_kind = "schedule_reports
 /// a second one. Not every kind here is one this build executes; see
 /// @ref provision_executed_step_kinds for the subset a profile may order today.
 inline constexpr std::string_view provision_step_kinds[] = {system_provision_step_kind,
+                                                            publish_system_curves_step_kind,
                                                             publish_bundle_step_kind,
                                                             import_lei_hierarchy_step_kind,
                                                             provision_party_step_kind,
@@ -160,6 +162,12 @@ struct step_kind_words {
         return {"Publish the system's own data",
                 "Publishes the datasets the installation itself is read from into the system "
                 "tenant, before the tenant has any of its own.",
+                orchestrating_step_timeout};
+    if (kind == publish_system_curves_step_kind)
+        return {"Publish the system's curves",
+                "Bootstraps each IR curve the system tenant holds a config for from its quotes "
+                "and publishes it, so forwards can be read at once. A curve whose quotes have not "
+                "arrived in time is named with its reason, and the run goes on.",
                 orchestrating_step_timeout};
     if (kind == publish_bundle_step_kind)
         return {"Publish the reference data",
@@ -233,6 +241,7 @@ struct step_kind_words {
 /// half-provisioned. Growing it is a code change beside the executor.
 inline constexpr std::string_view provision_executed_step_kinds[] = {
     system_provision_step_kind,
+    publish_system_curves_step_kind,
     publish_bundle_step_kind,
     import_lei_hierarchy_step_kind,
     provision_party_step_kind,
@@ -258,14 +267,15 @@ inline constexpr std::string_view provision_executed_step_kinds[] = {
  * The split between the two runs is this predicate. The provisioning of one
  * tenant is two runs joined at the authentication boundary: the caller owns
  * the run whose kinds act in the system tenant, and the new tenant owns the
- * run whose kinds act inside it. @c system_provision is the only system-scoped
- * kind today -- it publishes the installation's own data, which belongs to the
- * system tenant and exists before the new tenant holds anything. A kind added
+ * run whose kinds act inside it. @c system_provision publishes the
+ * installation's own data, which belongs to the system tenant and exists before
+ * the new tenant holds anything, and @c publish_system_curves publishes the
+ * system tenant's curves from the quotes that data's feeds start. A kind added
  * to the catalogue has to be classified here, so that a future kind cannot
  * land in a run by accident.
  */
 [[nodiscard]] inline bool is_system_scoped_step_kind(std::string_view kind) {
-    return kind == system_provision_step_kind;
+    return kind == system_provision_step_kind || kind == publish_system_curves_step_kind;
 }
 
 /**
@@ -412,6 +422,10 @@ make_step(const provision_tenant_workflow_request& run,
  */
 [[nodiscard]] inline std::vector<std::string_view> needs_of_step_kind(std::string_view kind) {
     if (kind == publish_bundle_step_kind)
+        return {system_provision_step_kind};
+    // The curves read the quotes of the feeds the system data starts, and the
+    // configs that data's bootstrap seed holds.
+    if (kind == publish_system_curves_step_kind)
         return {system_provision_step_kind};
     if (kind == import_lei_hierarchy_step_kind)
         return {publish_bundle_step_kind};

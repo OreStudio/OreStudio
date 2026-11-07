@@ -109,6 +109,12 @@ resolve_publish_subject(const ores::database::context& ctx,
  * exist, and the request identifier is that row's natural key, so a request
  * authorises one publish and no second row can name it.
  *
+ * A curve the tenant's own party owns is the tenant's baseline, bootstrapped
+ * from the quotes its own feeds publish, so no person's judgement is in the act:
+ * its request closes approved in the same act, with the system as its decider,
+ * and the caller applies it at once. A curve any other party owns waits for the
+ * decider the kind names.
+ *
  * @throws std::invalid_argument when the kind, the account or the subject is
  * missing.
  * @throws std::runtime_error when the store refuses the detail row.

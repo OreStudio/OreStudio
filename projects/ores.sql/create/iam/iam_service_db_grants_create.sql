@@ -307,6 +307,11 @@ select _ores_grant_select_fn('ores_dq_fsm_', :'workflow_service_user');
 select _ores_grant_dml_fn('ores_marketdata_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_inbox_approval_requests_', :'marketdata_service_user');
 select _ores_grant_dml_fn('ores_inbox_approval_request_parts_', :'marketdata_service_user');
+-- A curve of the tenant's own party needs no approval, so the service closes
+-- that request in the same act and writes the decision that closed it. A
+-- decision is the inbox's row and the inbox's function, which runs as its
+-- caller, so the service that closes a request writes the decision.
+select _ores_grant_dml_fn('ores_inbox_approval_decisions_', :'marketdata_service_user');
 -- The notices a published curve raises. A component that tells the readers of
 -- its own record writes the notice itself, as the reference data and reporting
 -- services already do for the kinds they raise; the inbox owns the rows and the

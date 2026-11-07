@@ -13,8 +13,8 @@
 * Summary
 
 A tenant is built from a starting point, and a starting point is an ordered list
-of steps held as rows. The one the demonstration uses is =acme_demo=: ten steps
-that install the system data, publish the tenant's own datasets, import the LEI
+of steps held as rows. The one the demonstration uses is =acme_demo=: eleven steps
+that install the system data, publish the system's curves, publish the tenant's own datasets, import the LEI
 hierarchy, provision the parties, load the staff, set their passwords, attach
 their pictures, subscribe every party to its market data provider, schedule the
 reports each party publishes and generate a trade population. Nothing in that
@@ -23,12 +23,13 @@ thinner book or a different feed changes a value rather than a build.
 
 * Detail
 
-** The ten steps
+** The eleven steps
 
 #+ATTR_HTML: :class hug-leading
 | Order | Step | What it creates |
 |-------+------+-----------------|
 | 5 | =system_provision= | publishes the system's own datasets into the system tenant, which every tenant reads as an overlay |
+| 6 | =publish_system_curves= | bootstraps and publishes each IR curve the system tenant holds a config for, from its synthetic quotes, so forwards can be read at once |
 | 10 | =publish_bundle= | the =base= bundle, the =marketdata.reference_vintage_2026_05_05= bundle, the GLEIF counterparty set at the profile's chosen size, and the ORE counterparty aliases |
 | 20 | =import_lei_hierarchy= | the Acme LEI hierarchy, whose root is =9695ACMEGROUP0000030=, as the tenant's four parties |
 | 30 | =provision_party= | each party's own reference data, from the =party_essentials= bundle |
@@ -45,11 +46,15 @@ bootstrap flag, and declares the run done.
 
 ** Why the order is what it is
 
-Four dependencies decide it, and each one has a failure behind it.
+Five dependencies decide it, and all but the curves have a failure behind them.
 
 - The system data comes first, because a tenant is built on a system that already
   makes sense: a coding scheme validator resolves its scheme in the system
   tenant, and a template image is read from there.
+- The system's curves come straight after the system data, because their quotes
+  come from the feeds that data starts. The step runs beside the tenant's own
+  setup rather than before it, and it asks again for a curve whose quotes have
+  not arrived yet, for up to five minutes.
 - The staff come after the parties, and the passwords and pictures after the
   staff, because a password or a picture names an account that must already
   exist. Attaching a picture to an account that is not there is the step failure

@@ -481,6 +481,47 @@ TEST_CASE("a_kind_that_needs_one_approval_publishes_nothing_until_a_person_answe
     CHECK_FALSE(f.published().has_value());
 }
 
+TEST_CASE("a_curve_the_tenants_own_party_owns_publishes_on_the_raise_itself", tags) {
+    // The tenant's own party carries the curves a fresh environment is built
+    // with: the system bootstraps them from the quotes its own feeds publish, so
+    // no person's judgement is in the act and no person has to answer.
+    curve_fixture f(curve_fixture::owner::the_tenants_own_party);
+    const auto maker = seed_person(f.h);
+    const auto subject = f.subject();
+
+    const auto raised = raise_publish_request(
+        maker.ctx, subject, "The system's own curve, bootstrapped from its own feeds");
+    const auto id = boost::uuids::to_string(raised.id);
+    CHECK(raised.state_code == "approved");
+
+    // The system is the decider and the asker is somebody else, so the record
+    // states a decision and not the asker signing for themselves.
+    approval_lifecycle lifecycle(maker.ctx);
+    ores::inbox::repository::approval_decision_repository decisions;
+    const auto written = decisions.read_latest_by_request_id(maker.ctx, id, 0, 10);
+    REQUIRE(written.size() == 1);
+    CHECK(written.front().decision_code == "approve");
+    const auto system = lifecycle.system_actor_account_id();
+    REQUIRE(system.has_value());
+    CHECK(written.front().decided_by == *system);
+    CHECK(written.front().decided_by != maker.account.id);
+
+    // The publish goes ahead without a second call by anybody, and it is the
+    // published set the reads see, not a candidate the publisher wrote.
+    const auto verdict = verdict_on_publish(maker.ctx, id, subject);
+    REQUIRE(verdict.approved);
+    ores::marketdata::service::app::curve_republish_service::republish(
+        *f.party, subject.bootstrap_config_id, subject.as_of);
+    const auto published = record_publication(*f.party, *verdict.record, maker.account.username);
+    CHECK(published.published_by == maker.account.username);
+    REQUIRE(published.published_at.has_value());
+
+    const auto read = f.published();
+    REQUIRE(read.has_value());
+    CHECK(read->request_id == raised.id);
+    CHECK(f.output_point_count() == 2);
+}
+
 TEST_CASE("the_maker_permission_a_publish_asks_for_is_the_kinds_own", tags) {
     curve_fixture f;
     const auto maker = seed_person(f.h);

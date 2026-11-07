@@ -97,6 +97,9 @@ export default defineConfig(({ mode }) => {
     const checkout = resolve(import.meta.dirname, '../../../..');
     const env = loadEnv(mode, checkout, '');
     const BFF_PORT = env['ORES_WEB_PORT'] ?? '8080';
+    // The C++ server of the port. A screen moved to it asks under /cpp, and the
+    // proxy is what makes the browser see one origin either way.
+    const CPP_PORT = env['ORES_HTTP_SERVER_PORT'] ?? '21601';
     const WEB_PORT = Number(env['ORES_WEB_DEV_PORT'] ?? '5173');
     const stamp = buildStamp(checkout);
 
@@ -117,6 +120,15 @@ export default defineConfig(({ mode }) => {
                 '/api': {
                     target: `http://127.0.0.1:${BFF_PORT}`,
                     changeOrigin: false,
+                },
+                // One screen of the port runs on the C++ server, under its own
+                // prefix, so the same bundle can be compared against either server.
+                // The prefix is stripped: the C++ server names its routes as the
+                // published contract does, without a deployment's prefix.
+                '/cpp': {
+                    target: `http://127.0.0.1:${CPP_PORT}`,
+                    changeOrigin: false,
+                    rewrite: (path: string) => path.replace(/^\/cpp/, ''),
                 },
             },
         },

@@ -173,6 +173,10 @@ boost::asio::awaitable<http_response> image_routes::handle_list(const http_reque
     try {
         request_type msg;
         image_apply_page(msg, req);
+        if (const auto raw = req.get_query_param("search"); !raw.empty()) {
+            msg.filter = messaging::images_filter{};
+            msg.filter->search = raw;
+        }
         co_return co_await image_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -337,6 +341,7 @@ void image_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("search", "string", "", false, "Free text the rows must match")
             .response<messaging::list_images_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();

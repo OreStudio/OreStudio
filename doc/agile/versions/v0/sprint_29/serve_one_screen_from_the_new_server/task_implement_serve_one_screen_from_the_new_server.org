@@ -1,36 +1,37 @@
 :PROPERTIES:
 :ID: 506FB5FA-42AD-4F95-BFC2-CB2E52079DD7
 :END:
-#+title: Task: Point one screen at the new server
+#+title: Task: Serve the reference data catalogue, and let a list be searched
 #+description: Initial task for: Serve one screen from the new server
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server:sprint_29:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/port-the-http-layer-to-parity
+#+pr: 4480
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
 #+updated: 2026-11-06
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve one screen from the new server]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A signed-in person uses one screen served end to end by the C++ server, and the rest of the application is unchanged.
+The reference data resources the browser reads are answered by the new server under
+their published area, and a list a caller may search reads the search it is given.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve one screen from the new server]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-06                               |
 
 * Acceptance
@@ -42,9 +43,37 @@ A signed-in person uses one screen served end to end by the C++ server, and the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*The browser talks to one origin, and a prefix decides which server answers.* The
+transport issues same-origin requests to relative paths, and the dev server already
+proxies =/api= to the BFF. So a screen on the new server is a prefix, not an origin:
+the proxy routes =/cpp= to the C++ server and strips the prefix, and the one screen's
+module asks for =/cpp/api/v1/...= while every other module asks for =/api/v1/...=.
+That is the design's own wording, "behind a flag or a prefix", and it needs no change
+to the C++ server's routes.
+
+*The flag picks the prefix, and it is read once.* One module resolves the base for
+the screen from a build-time or start-up value, so the same bundle serves both
+arrangements and turning the flag off returns the screen to the BFF with no rebuild
+of the C++ side.
+
+*The cookie's path is the prefix.* The door sets a session cookie, and the BFF sets
+one with the same deployment name, so a cookie at =Path=/= from the C++ server and one
+from the BFF would overwrite each other. The C++ server must set the cookie's path to
+its prefix, which makes the two sessions independent: the screen's calls carry the
+C++ cookie and everything else carries the BFF's.
+
+*Slices, each one verifiable.* First the prefix and the proxy, proved with =curl= on
+the C++ server's own list route. Then the screen's list on the prefix with the flag
+on, proved in a browser. Then sign in on the prefix, so the screen's session is the
+C++ one. Then the change stream on the prefix, so the list follows its rows. Sign in
+first would make every later slice need a working browser session, and a failure
+would have three possible causes instead of one.
+
+*What this needs running.* The prefix slices need only the C++ server and the dev
+server. The sign-in slice needs the fleet, because the door asks IAM, and the change
+stream slice needs NATS. This checkout's database was reported out of sync with the
+tree, so the first browser proof will need =compass services start= and a database
+that matches.
 
 * Measurements
 
@@ -58,9 +87,73 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The =ores.http.api= suite | 128 cases, 443 assertions, all passing | =./ores.http.api.tests= with the environment from =.env= | 0fe2666b3d |
+| The door's cookie cases | 8 cases, 44 assertions, all passing | =./ores.http.api.tests "[session_cookie]"= | 0fe2666b3d |
+| The prefix a screen asks through | 3 cases, all passing | =npx vitest run src/api/servers.test.ts= | 0fe2666b3d |
+| The server's new option | =--web-session-path arg (=/)= on the built binary | =./ores.http.server --help= | 0fe2666b3d |
+| The web package's typecheck | clean for =src/api/servers.ts=; one error elsewhere, pre-existing from =ede5b9cc50= on main | =npx tsc --noEmit -p tsconfig.json= | 0fe2666b3d |
+| =ores.http.refdata= suite, after the entity routes | 38 cases, 807 assertions, all passing | =./ores.http.refdata.tests= | 27d732b82c |
+| =ores.http.refdata= suite, after the junction routes | 52 cases, 1070 assertions, all passing | =./ores.http.refdata.tests= | ad81629621 |
+| The route inventory | 674 routes, current, and the reference data family classified by one rule | =python3 build/scripts/route_inventory.py --check= | ad81629621 |
+| The route checks | 7 of 7: inventory, route auth, handler permissions, open reads, published areas, CMake lists, lint | =./compass.sh check --only ...= | ad81629621 |
+| Codegen route cases | 25 cases in the route projection's own file | =python -m pytest projects/ores.codegen/tests/test_http_routes.py= | d0ba12b92b |
 
 * Notes
+
+- The dev server proxies =/api= to =ORES_WEB_PORT= (8080 by default) and the C++
+  server listens on =ORES_HTTP_PORT= (21601), so the two are separate origins today
+  and the prefix is what puts one screen on the second.
+- A cookie at =Path=/= and a second cookie with the same name overwrite each other,
+  which is why the prefix is also the cookie's path rather than a cosmetic detail.
+  The path is now a server setting, =--web-session-path=, read into the door's
+  =cookie_settings=.
+- The two sessions cannot yet be one. The BFF keeps the token and hands the browser
+  its own cookie; the C++ door keeps its own store. Neither accepts the other's
+  credential, so a screen on the prefix carries the C++ session and the rest of the
+  application carries the BFF's, and both exist at once because their paths differ.
+  Making them one is a decision for the cutover, not for this task.
+- The obvious screen is the people list, and it does not fit yet. =PeoplePage= reads
+  =/api/accounts= through a =ListSource= that searches, sorts and pages on the server;
+  the C++ route =/api/v1/access/accounts= takes =offset=, =limit=, =order= and =desc=
+  and no search, although the wire request it forwards to carries an
+  =accounts_filter=. So moving that screen would either drop the search box or need
+  the generated route to expose one. Neither belongs in a skeleton whose point is the
+  flag.
+- Which list is not yet settled. The C++ server answers the generated collections,
+  such as =/api/v1/reference-data/currencies=, and the screen that shows currencies
+  asks the BFF for =/api/refdata/currencies=, which is the generic router the
+  classification retires. The two shapes are not the same, so the first moved list
+  needs either an adapter in the screen or the screen rewritten against the
+  generated collection. This task takes the second, because an adapter would be the
+  BFF's route kept alive under a new name.
+
+* Notes: the sweep, and what it found
+
+The owner's direction changed the shape of this task: no screen moves until the C++
+server answers what the BFF answers, so the work is the layer's features and its
+collections, not the flag.
+
+*Done.*
+
+- A generated list a caller may search reads =?search= and hands it to the filter the
+  request carries, for the three collections whose models mark a column searchable.
+  Every other list renders as it did.
+- The whole reference data catalogue the BFF serves, twenty-six resources, is served
+  under =/api/v1/reference-data/=: the eighteen entities and, once the junction loader
+  read the model's published area, the seven junctions. A junction used to answer
+  under =/api/v1/refdata/=, the component name the area exists to hide.
+
+*What the sweep found.* A resource is ported in five mechanical steps: enable
+=:ores.cpp.http-route.enabled:= on the model, declare =#+http_area:=, regenerate the
+facet, add the unit to the component's hand-written route aggregate, and regenerate
+=component_files.cmake= and the inventory. The aggregate is the one step no generator
+covers, and a unit that is missing from it compiles and is never reachable.
+
+*What remains, by the BFF's own resource count.* Reporting 32, access 30 (the IAM
+collections answer already; the rest are the access area's remaining families),
+simulation 25, market data 24, trading 22, tenancy 19, auth 13, workflow 11, grid 11,
+analytics 6, QA 6, agile 4, assets 4, operations 2. The composed views are separate:
+they are V's increments, not this sweep.
 
 * Test Scenarios
 
@@ -77,7 +170,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4480][#4480]] | [http] Start the port: search, the reference data catalogue, and the plan |
 
 * Review
 
@@ -86,3 +179,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The reference data catalogue the browser reads is served by the new server, all
+twenty-six resources of it, and a list a caller may search reads its search. Two gaps
+were closed in the codegen for every collection rather than for one: a searchable
+model states the parameter and hands the text to the filter, and a junction route
+answers under the area its model declares.
+
+The port continues one functionality per pull request under the story, with the BFF
+left serving the browser until the last route has an equivalent.

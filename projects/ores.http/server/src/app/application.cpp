@@ -178,6 +178,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     http::domain::cookie_settings session_cookie;
     session_cookie.name = cfg.web_session_name;
     session_cookie.secure = cfg.server.enable_ssl;
+    session_cookie.path = cfg.web_session_path;
     server.set_cookie_settings(session_cookie);
 
     /*

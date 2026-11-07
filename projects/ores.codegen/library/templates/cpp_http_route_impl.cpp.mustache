@@ -167,6 +167,12 @@ boost::asio::awaitable<http_response>
     try {
         request_type msg;
         {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_apply_page(msg, req);
+{{#has_search}}
+        if (const auto raw = req.get_query_param("search"); !raw.empty()) {
+            msg.filter = {{{filter_type}}}{};
+            msg.filter->search = raw;
+        }
+{{/has_search}}
         co_return co_await {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_forward(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
@@ -338,6 +344,10 @@ void {{entity_singular}}_routes::register_routes(
                                     .query_param("order", "string", "", false, "Column to order")
                                     .query_param("desc", "boolean", "", false, "Descending")
 {{/has_order}}
+{{#has_search}}
+                                    .query_param("search", "string", "", false,
+                                                 "Free text the rows must match")
+{{/has_search}}
 {{#has_scope}}
                                     .query_param("scope", "string", "", false, "direct or subtree")
 {{/has_scope}}

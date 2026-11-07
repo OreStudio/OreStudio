@@ -1,4 +1,5 @@
 :PROPERTIES:
+:ores.cpp.http-route.enabled: true
 :ores.cpp.wire-codec.enabled: true
 :ID: EC7B18A7-3865-424A-AD78-F6BE522F3B0B
 :ores.sql.schema.junction_artefact_create.enabled: true
@@ -6,6 +7,7 @@
 #+title: ores.refdata.currency_calendar
 #+description: Codegen junction model for currency_calendars.
 #+type: ores.codegen.junction
+#+http_area: reference-data
 #+component: refdata
 #+filetags: :model:junction:refdata:
 #+name: currency_calendars

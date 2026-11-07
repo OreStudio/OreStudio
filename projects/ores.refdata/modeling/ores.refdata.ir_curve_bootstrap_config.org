@@ -1,10 +1,12 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 73A5FAA1-377C-45A6-999E-4AD4DE406F78
 :END:
 #+title: ores.refdata.ir_curve_bootstrap_config
 #+description: Codegen entity model for the refdata ir_curve_bootstrap_config table; the recipe (source series, family role, build-order dependency, interpolation, day-count, split tenor) that bootstraps a raw instrument grid into a discount curve.
 #+type: ores.codegen.entity
+#+http_area: reference-data
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: ir_curve_bootstrap_config

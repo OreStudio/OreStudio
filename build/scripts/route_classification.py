@@ -339,17 +339,17 @@ RULES = (
          "The folders and the feeds under each at any depth, two collections woven, with the"
          " count of each kind so no screen reads the feeds."),
 
-    Rule("the currency collection",
-         ("prefix", "GET /api/v1/reference-data/currencies"),
+    Rule("a reference data collection",
+         ("regex", r"^GET /api/v1/reference-data/\w"),
          CPP, RESOURCE, "reference-data",
-         "The currency collection, generated with list, create, replace, remove, bulk get and"
-         " put, and a version read; the first collection to answer under its published area"
-         " rather than under the component's name."),
-    Rule("the currency collection writes",
-         ("regex", r"^(POST|PUT|DELETE) /api/v1/reference-data/currencies"),
+         "A generated reference data collection, answering under its published area rather"
+         " than under the component's name: the list, one row by key or by one of its"
+         " lookups, its versions, and the bulk get."),
+    Rule("a reference data collection writes",
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/reference-data/\w"),
          CPP, RESOURCE, "reference-data",
-         "A generated write of the currency collection: create, replace, remove, or one of"
-         " the bulk get, put and delete calls."),
+         "A generated write of a reference data collection: create, replace, remove, or one"
+         " of the bulk put and delete calls."),
     Rule("the ORE currency document",
          ("regex", r"^(GET|POST) /api/refdata/currencies/ore-"),
          BFF, RESOURCE, "reference-data",

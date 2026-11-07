@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 35649881-C6FE-4FC6-97D7-DA18A05A0355
 :END:
-#+title: Story: Serve one screen from the new server
-#+description: Sign in, one list and the change stream all work on the C++ server, and no screen calls them: the browser still reaches the BFF for everything. Put one screen on the C++ server behind a flag, with the BFF serving every other screen, so the shape is proven against a real person before the rest is ported.
+#+title: Story: Serve what the BFF serves, then retire it
+#+description: The C++ server answers a fraction of what the BFF answers, and the browser calls none of it. Port the layer to parity one functionality at a time, merge each as it lands, and leave the BFF serving the browser until every route it answers has an equivalent. Retiring the BFF is a later set of pull requests, once the coverage is complete.
 #+type: story
 #+level: s2
 #+filetags: :sprint_29:v0:
@@ -15,7 +15,8 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A signed-in person uses one screen served end to end by the C++ server, and the rest of the application is unchanged.
+Every route the BFF answers has an equivalent on the C++ server, merged and proved as
+it lands, and the browser keeps calling the BFF until the last one does.
 
 * Status
 
@@ -23,36 +24,56 @@ A signed-in person uses one screen served end to end by the C++ server, and the 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Scaffolded. No screen calls the new server yet. |
+| Now           | The layer's first two gaps are closed: search on a generated list, and the reference data catalogue. |
 | Waiting on    | Nothing.                               |
-| Next          | Point one list at the new server behind a flag. |
+| Next          | The next functionality, one pull request at a time, measured against the route inventory. |
 | Last touched  | 2026-11-06                               |
 
 * Acceptance
 
-- A signed-in person loads one list from the C++ server while the BFF serves every other screen.
-- The list follows its rows: a change in the data reaches the open screen over the change stream.
-- Turning the flag off serves the same screen from the BFF.
-- The smoke run proves both paths, and the gate stays green.
+- [ ] Every resource route the BFF answers has a C++ equivalent, area by area, merged as
+      it lands.
+- [ ] Every composed view is answered by the server that owns it, with its name, its
+      schema, its owner, its computation and its cache policy.
+- [ ] A generated list route carries what the BFF's lists carry: the page, the order,
+      the search and the filter's own members.
+- [ ] The coverage is counted from the route inventory, not claimed.
+- [ ] The local gate is green on every pull request.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:18835766-D75B-4438-BF90-4B6A148631E4][Scaffold story: Serve one screen from the new server]] | DONE | 2026-11-06 | 2026-11-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:506FB5FA-42AD-4F95-BFC2-CB2E52079DD7][Point one screen at the new server]] | BACKLOG | | | Initial task for: Serve one screen from the new server |
+| [[id:506FB5FA-42AD-4F95-BFC2-CB2E52079DD7][Serve the reference data catalogue, and let a list be searched]] | DONE | 2026-11-06 | 2026-11-07 | Port the BFF's generic reference data router to generated routes, and let a searchable list be searched. |
 
 * Decisions
 
-*The first screen is the one with the fewest reasons to be in the BFF.* Sign in, one
-list and the change stream are the three pieces the C++ server already answers, and
-they are the whole of a screen's life: it opens, it reads, it follows. A screen that
-needs no composed view proves the path without porting a view.
+*Parity first, screens after, and the BFF stays where it is.* Moving a screen first
+would make the port a rewrite of the client and the server at once, and a failure
+would have two possible causes. The browser keeps calling the BFF until every route it
+needs has an equivalent, so each step is judged against a layer that already works.
+The other reason is the sharper one: a request must never depend on both servers at
+once. A screen split across them would carry two sessions, two cookie stores and two
+answers to the same question, and a fault would be a fault in the seam rather than in
+either side. Building the layer behind the BFF means no request ever crosses that seam
+during the migration, and the cutover is one switch thrown once rather than a hundred
+screens half moved.
 
-*The switch is a flag, not a rewrite.* Both servers answer the same request while the
-flag is on, so the same screen can be compared against either, and a failure is one
-flag away from being undone. The flag is the shape of the whole port: every later
-increment moves one more screen across and leaves the switch behind.
+*A cutover at parity is the shortest one there is.* If every route the browser uses is
+already answered and proved by the new server, the removal is an act of configuration
+and deletion rather than a second migration: the work left is the switch, the fleet
+entry and the old unit, not a list of screens still to fix.
+
+*One functionality per pull request, merged as it lands.* A pull request that closes a
+feature and a pull request that removes the BFF are different kinds of change, so they
+do not share one. The BFF's removal is a set of pull requests written after the
+coverage is complete, against a layer that has nothing left to prove.
+
+*Coverage is the route inventory, not a claim.* =doc/knowledge/architecture/http_route_inventory.org=
+already lists every route both servers answer and the kind each one is. A resource the
+C++ server does not answer is a row the table shows as the BFF's, so progress is read
+from the table rather than from a story saying it is done.
 
 * Out of scope
 

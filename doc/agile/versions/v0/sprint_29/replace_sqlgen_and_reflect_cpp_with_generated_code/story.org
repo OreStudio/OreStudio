@@ -104,7 +104,7 @@ Every component reads and writes the database through generated statements on a 
 | [[id:6F2E7BDC-CE4B-4C4F-B2CB-B2F0737054D9][State the shared options shapes through codegen]] | DONE | 2026-11-05 | 2026-11-05 | The logging, nats, database, telemetry and http_server options types state their wire shapes through codegen, so no hand-written wire_fields remains for an options type. |
 | [[id:B95A38D7-5ADA-46A2-934A-176B6D84CB7F][Give every encoded type a stated shape]] | DONE | | 2026-11-06 | Step 1 of Remove reflect-cpp: the seven operation models and the four diff types that still fell back to reflect-cpp get generated wire codecs. |
 | [[id:0DB04FD3-D026-4729-8BD0-78301E573087][Move the reflect-cpp calls onto the codec]] | DONE | 2026-11-06 | 2026-11-07 | Step 2 of Remove reflect-cpp: the direct rfl::json and rfl::msgpack calls in hand-written code use the generated codec carriers. |
-| [[id:EE45CC22-58A9-4E84-97CB-14A68F6147B2][Move the dynamic JSON onto yyjson]] | STARTED | 2026-11-07 | | Step 3 of Remove reflect-cpp: the 79 uses of rfl::Generic and rfl::Object in seven files read and write their dynamic JSON through yyjson. |
+| [[id:EE45CC22-58A9-4E84-97CB-14A68F6147B2][Move the dynamic JSON onto yyjson]] | DONE | 2026-11-07 | 2026-11-07 | 2026-11-07 | | Step 3 of Remove reflect-cpp: the 79 uses of rfl::Generic and rfl::Object in seven files read and write their dynamic JSON through yyjson. |
 
 * Decisions
 

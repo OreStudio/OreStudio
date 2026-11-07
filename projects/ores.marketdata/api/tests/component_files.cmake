@@ -29,6 +29,7 @@ set(files
     "composite_input_codec_roundtrip_tests.cpp"
     "composite_input_protocol_codec_roundtrip_tests.cpp"
     "composite_protocol_codec_roundtrip_tests.cpp"
+    "conventions_convention_lookup_tests.cpp"
     "curve_publish_codec_roundtrip_tests.cpp"
     "curve_publish_operations_protocol_codec_roundtrip_tests.cpp"
     "curve_publish_protocol_codec_roundtrip_tests.cpp"

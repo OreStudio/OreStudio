@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: 4435202D-6074-47F6-8BEB-85E25CF70BEF
 :END:
-#+title: Task: Resolve an oresmd reference
-#+description: Two resolvers in the marketdata API: one says what an oresmd address means in reference data (its index, swap or CDS convention, its underlying), the other names it for ORE under a market configuration and replaces reference_curve_names.
+#+title: Task: Look up an oresmd identifier's conventions and project it for ORE
+#+description: Two pieces in the marketdata API, named as the market data requirements pages name them: a convention lookup that finds the conventions defining and using an oresmd identifier's index (its physical fields), and the ORE projection that writes an identifier as an ORE name under a market configuration, replacing reference_curve_names.
 #+type: task
 #+level: s1
 #+filetags: :marketdata:oresmd:refdata:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/resolve-an-oresmd-reference
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,13 +20,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A builder can ask what an oresmd address means in reference data, and the exporter and importer can name an address for ORE under a market configuration, both through interfaces in the marketdata API.
+A builder can look up the conventions an oresmd identifier needs, and the exporter and importer can project an identifier to ORE and back under a market configuration, both in the marketdata API. The names follow the market data requirements pages: resolution is a requirement mapped to an identifier, which this task does not do.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -35,9 +35,9 @@ A builder can ask what an oresmd address means in reference data, and the export
 
 * Acceptance
 
-- =reference_resolver= answers by address: an index's convention, the swap convention that uses it, a CDS convention, an equity or commodity underlying; an unknown address is a stated error. An in-memory implementation serves tests, the generator and the shell.
-- =ore_naming= converts an address and its ORE name both ways under one market configuration: fixed for indices through =ore_index_codec=, configuration-bound for curves.
-- =reference_curve_names= and =reference_curve_names_of= are replaced by =ore_naming= and deleted, with the bond export unchanged in the recorded trades.
+- =convention_lookup= answers by identifier: an index's convention, the swap convention that uses it, a CDS convention, an equity or commodity underlying; an unknown address is a stated error. An in-memory implementation serves tests, the generator and the shell.
+- =ore_projection= writes an identifier as its ORE name, and reads an ORE name back where the codecs can, under one market configuration: fixed for indices through =ore_index_codec=, configuration-bound for curves.
+- =reference_curve_names= and =reference_curve_names_of= are replaced by =ore_projection= and deleted, with the bond export unchanged in the recorded trades.
 
 * Plan
 

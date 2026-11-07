@@ -57,6 +57,7 @@ find_package(Boost REQUIRED COMPONENTS url)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.platform.lib
+        ores.refdata.api.lib
     PRIVATE
         ores.utility.lib
         faker-cxx::faker-cxx

@@ -241,6 +241,28 @@ own. Grounding found:
   and the ORE curve name its today's market forwards to; see
   =reference_curve_names_of= in =run_configuration_operations.cpp=).
 
+*** Amended on 2026-11-06: the names the docs give
+
+Checked against the market data requirements pages
+([[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]],
+[[id:3D56DB59-8075-42BB-8139-A7440C9786B2][Market Data Identifier]],
+[[id:3F7F814B-E96F-4A62-99E2-76A3074AC832][Market Data Configuration]] and
+[[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]]):
+
+- An oresmd URI is an *identifier*: strict, it names one datum, series or
+  index, and the grammar has no requirement form. A trade's stored reference
+  is an identifier.
+- *Resolution* (\rho) is reserved for mapping a requirement to an identifier
+  under a configuration. Neither piece of layer 2 does that, so neither is
+  called a resolver: =reference_resolver= is =convention_lookup=, which finds
+  the conventions an identifier's index is defined and used by (the
+  identifier's physical fields: calendar, day count), and =ore_naming= is
+  =ore_projection=, the vendor projection T_ORE.
+- Open: some conventions describe their address as a "requirement" that
+  leaves fields open (the CDS convention among them), which the grammar does
+  not admit; the seeded CDS conventions state no address, so nothing reads
+  one yet.
+
 *** Layer 1: the address
 
 - The codecs move from =ores.marketdata.core= to =ores.marketdata.api=, so

@@ -2970,7 +2970,9 @@ wire_fields(std::type_identity<tenant_provisioning_handler::provision_step_resul
                       field{"trades_planned", &result::trades_planned},
                       field{"trades_written", &result::trades_written},
                       field{"trades_already_present", &result::trades_already_present},
-                      field{"report_schedules", &result::report_schedules}};
+                      field{"report_schedules", &result::report_schedules},
+                      field{"curves", &result::curves},
+                      field{"curves_not_published", &result::curves_not_published}};
 }
 
 static_assert(::ores::utility::codec::names_every_member<

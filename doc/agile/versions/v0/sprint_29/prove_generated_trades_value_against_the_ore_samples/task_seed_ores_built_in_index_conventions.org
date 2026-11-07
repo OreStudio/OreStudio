@@ -28,9 +28,9 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
-| Now          | Checking the conventions seed against ORE's indexparser.cpp. |
+| Now          | Giving the seeded index conventions their addresses. |
 | Waiting on   | Nothing.                               |
-| Next         | Fill the gaps the check finds.          |
+| Next         | A test of the lookup over what population writes. |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -55,16 +55,44 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Ibor rows that state an address | 0 of 7, all 7 have an ORE name in the map | =evidence/index_convention_addresses.txt= | 344555802d |
+| Overnight rows that state an address | 0 of 25; 19 match an ORE name exactly, 2 more have one under another spelling, 4 have none | same | 344555802d |
+| Seeded Ibor addresses the defining role can match | 0 of 10, each carries a tenor | same | 344555802d |
+
+* Plan
+
+1. Give the Ibor and overnight rows of the population scripts their address,
+   from =tools/ore_conventions/oresmd_index_map.tsv=, which already carries
+   the ORE name of every family the codecs admit. The row's id stays the
+   synthetic feeds' =(currency, family)= name: the address is the market
+   identity, the id is a local catalogue name, and the lookup answers by the
+   address.
+2. Make the corpus-derived seed's =IborIndex= rows state the family address.
+   A convention defines the family, not one tenor, and the lookup drops the
+   tenor before it matches, so an address that carries one can never be found.
+3. State, per row, why a family ORE has no index for carries no address
+   (SEK-SWESTR, KRW-KOFR, NZD-NZONIA, INR-MIBOR: ORE has MIBOROIS, a different
+   index, and no index for the other three).
+4. A test of =convention_lookup= over exactly the rows population writes: it
+   answers for =EUR-EURIBOR-6M= and =USD-SOFR=, and a tenant row that states
+   the same address wins over the seeded one.
 
 * Notes
 
-- Found while starting the convention lookup (2026-11-06): the conventions
-  seed (=refdata_conventions_seed_populate.sql=) already holds Ibor and
-  overnight index conventions with their family addresses (EURIBOR, ESTER,
-  EONIA, SOFR, HONIA, FedFunds, BoEBASE, ...) and swap conventions addressed
-  per tenor. This task may reduce to checking that seed against ORE's
-  =indexparser.cpp= and filling the gaps.
+- Measured while starting this task (2026-11-07), evidence in
+  =evidence/index_convention_addresses.txt=. The corpus-derived seed carries
+  addresses, but only for ten tenor-keyed Ibor rows, and each states the
+  tenor, which the defining role cannot match. The rows for the families ORE
+  defines in code (EUR-EURIBOR, USD-LIBOR, GBP-LIBOR, JPY-LIBOR, CNY-SHIBOR,
+  MXN-TIIE, TWD-TAIBOR, and the overnight RFRs) carry no address at all.
+- The earlier note, that the seed already held the family addresses, was
+  wrong for the Ibor rows.
+- ORE's index parser is not vendored: =external/ore/packages= holds binaries
+  only, and =external/ore/tools/datum_catalogue= builds against a local ORE
+  engine checkout we do not have. The census of ORE's names therefore comes
+  from =external/ore/catalogue/index_corpus.jsonl= and from the map the
+  codecs generate, not from reading =indexparser.cpp=, which the acceptance
+  asks for. Say which of the two the task should require.
 
 * Test Scenarios
 

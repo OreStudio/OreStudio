@@ -34,18 +34,6 @@
 
 namespace ores::ore::domain {
 
-/// A double as the exact decimal the table writes.
-inline auto decimal_from_double(double value) -> ores::utility::decimal::decimal {
-    if (auto parsed = ores::utility::decimal::decimal::from_double(value))
-        return *parsed;
-    return ores::utility::decimal::decimal{};
-}
-
-/// States a decimal member from a double the domain holds.
-inline void set_decimal_from_double(xml::record_writer& w, std::string_view name, double value) {
-    w.set_decimal(name, decimal_from_double(value));
-}
-
 /**
  * @brief States one rule of a schedule, and hands the rule back.
  *

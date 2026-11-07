@@ -25,7 +25,7 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Version 0.1.5 raw Greek buckets deployed; CSV/MCP/GPU evidence reconciled.                       |
 | Waiting on    | Native Linux backend/GPU checks; hosted auth and broker ACL hardening.                               |
-| Next          | Stage 4 execution/security contract inspection; fix packaging/lifecycle prerequisites before enabling commands.            |
+| Next          | Revised Stage 4: rule ownership, evaluation baseline and first versioned authoritative valuation query.            |
 | Last touched  | 2026-11-07                               |
 
 * Acceptance
@@ -45,6 +45,10 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 | [[id:9BACE972-57A4-430F-A9C1-C0F48CB0E78A][Build and verify the independent agent stages]] | STARTED | | | Implement and push runnable checkpoints for foundation, NATS tools, MCP, CUDA inference, the agent loop and independent deployment. |
 
 * Decisions
+
+- Architecture revision, 2026-11-07: authoritative financial membership, eligibility, completeness, units and aggregation belong to domain-owned business queries; current agent reporting composition is transitional. The separate combined agent/MCP app retains intent, clarification, bounded orchestration and presentation. Logical ownership does not require a new process or moving MCP into the main server.
+- Keep NATS as the sole business transport behind a transport-neutral versioned contract. Revised business Stages 4–8 precede commands: first stable query, authoritative scope/NPV, authoritative Greek cutover/thin tools, explicit conversation workflows/evaluations and deployment readiness. Evaluation starts with the Stage 4 baseline. Former report execution/booking stages are now 9/10/11; expansion/quotes/workflows are 12/13/14. Historical checkpoints retain their numbering.
+- The revision is planned work, not a claim of server-side aggregation, complete AI evaluations or production readiness in 0.1.5. See =projects/ores.agent/docs/business-use-cases-plan.md=. No runtime/server/broker change is part of the plan update.
 
 - Business Stage 3 raw Greeks preserve cash finite-difference units at exact target shifts, factor/tenor/scenario/currency separation and per-bucket coverage. Missing/suppressed rows do not prove zero; only complete buckets receive a total. Signed ORE rate Delta at a 1bp target bump and cash volatility Delta are labelled explicitly, with no derivative normalization or sign reversal.
 - Business Stage 3 NPV uses historical booking membership at the exact run-start timestamp, preserving microseconds. Portfolio totals follow the booking hierarchy, with complete population/coverage and explicit same-row base currency metadata; direct trade assignments are not mixed in.

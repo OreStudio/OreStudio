@@ -1,9 +1,28 @@
 # Feature #4295: local AI assistant
 
-Planning date: 2026-11-04. Updated: 2026-11-06. This is the versioned implementation plan; a convenience copy is kept beside the checkout.
+Planning date: 2026-11-04. Updated: 2026-11-07. This records the original infrastructure plan; a convenience copy is kept beside the checkout.
 Source: https://github.com/OreStudio/OreStudio/issues/4295 and its three comments.
 
-## Current implementation status (2026-11-06)
+## Current direction (2026-11-07)
+
+Agent 0.1.5 has delivered the read-only discovery, market lookup, stored NPV and
+raw Greek checkpoints, with the limits in [validation](validation.md).
+The authoritative next-stage sequence is the revised
+[business-use-case plan](business-use-cases-plan.md). Keep the combined agent/MCP
+app and inference independently deployed, but migrate authoritative financial
+membership, eligibility, units and aggregation into domain-owned queries.
+Business ownership does not require putting MCP or prompts in the main server.
+
+New Stages 4–8 cover the versioned business contract/first query, authoritative
+scope/NPV reads, Greek-query cutover with thin tools, explicit conversational
+workflows/AI evaluations, and deployment/command-readiness gates. Report
+execution is now Stage 9; drafts/confirmed booking are 10/11, and expansion,
+quotations and business workflows are 12/13/14. Earlier stage numbers in
+historical evidence retain their original meaning. NATS remains the sole
+business transport; no HTTP migration or runtime change is part of this plan
+revision. The infrastructure checkpoints below remain historical context.
+
+## Initial delivery status (2026-11-06)
 
 The initial six checkpoints are followed by the 0.1.1 FX/IR enhancement,
 committed as `7cc8511292a2416da54c25fe8bd54530326b37c7` and deployed as

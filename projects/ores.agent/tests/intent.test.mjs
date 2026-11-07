@@ -60,6 +60,16 @@ test('validation failures produce an explicit withheld answer without a replacem
     assert.equal(count,1);assert.equal(result.dataRetrieved,false);assert.match(result.answer,/invalid_result_units/);assert.ok(!result.answer.includes('private result details'));
 });
 
+test('an explicit scope valuation exposes no run-status substitution and rejects one proposed anyway',async()=>{
+    let turn=0;
+    const agent=new Agent({complete:async(messages,catalogue)=>{
+        assert.deepEqual(catalogue.map(t=>t.function.name),['summarize_scope_results']);
+        return ++turn===1?call('read_run_status',{runId:run}):call('summarize_scope_results',{scopeType:'book',scope:'Treasury',runId:run,measure:'delta'});
+    }},{execute:async(name)=>{assert.equal(name,'summarize_scope_results');return {tool:name,status:'unavailable',reason:'fixture unavailable'};}});
+    const result=await agent.chat({message:`Delta for book "Treasury" from run ${run}`},session(),signal());
+    assert.equal(result.evidence[0].tool,'summarize_scope_results');assert.equal(turn,2);
+});
+
 test('pending scope intent cannot cross party/session identity changes or expiry',async()=>{
     const reads=[];
     const agent=new Agent({complete:async()=>({role:'assistant',content:'No pending request.'})},{execute:async(name,args)=>{reads.push(args);return {tool:name,status:'unavailable',reason:'fixture'};}});

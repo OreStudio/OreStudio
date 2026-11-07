@@ -72,7 +72,7 @@ export class Agent {
         const messages: Message[] = [{ role: 'system', content: system }, { role: 'user', content: message }];
         const intent = readIntent(message);
         const scopedReporting = intent.route === 'scope', reporting = intent.route === 'reporting', market = intent.route === 'market';
-        const catalog = Object.entries(tools).filter(([name]) => scopedReporting ? Object.hasOwn(scopeTools, name) || ['find_report_runs', 'read_run_status'].includes(name) : reporting ? Object.hasOwn(reportingTools, name) || name === 'find_trades' : market ? !Object.hasOwn(discoveryTools, name) && !Object.hasOwn(reportingTools, name) && !Object.hasOwn(scopeTools, name) : Object.hasOwn(discoveryTools, name) || name === 'list_currencies').map(([name, t]) => ({ type: 'function', function: { name, description: t.description, parameters: z.toJSONSchema(t.schema, { io: 'input' }) } }));
+        const catalog = Object.entries(tools).filter(([name]) => scopedReporting ? Object.hasOwn(scopeTools, name) : reporting ? Object.hasOwn(reportingTools, name) || name === 'find_trades' : market ? !Object.hasOwn(discoveryTools, name) && !Object.hasOwn(reportingTools, name) && !Object.hasOwn(scopeTools, name) : Object.hasOwn(discoveryTools, name) || name === 'list_currencies').map(([name, t]) => ({ type: 'function', function: { name, description: t.description, parameters: z.toJSONSchema(t.schema, { io: 'input' }) } }));
         const evidence: unknown[] = []; const seen = new Set<string>(); let calls = 0;
         try {
             if (!session.active || session.expires <= Date.now()) throw new AppError('session_expired', 'Sign in again.', 401);

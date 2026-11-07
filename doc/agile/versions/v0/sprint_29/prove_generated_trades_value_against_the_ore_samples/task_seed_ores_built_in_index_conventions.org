@@ -28,9 +28,9 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
-| Now          | The seed is mined from the engine and covers every built-in family. |
+| Now          | The seed is mined from the engine, covers every built-in family, and the lookup reads both kinds. |
 | Waiting on   | Nothing.                               |
-| Next         | The lookup picks by kind, and a test over what population writes. |
+| Next         | A test over what population writes. |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -140,11 +140,14 @@ calendar; and the fixing calendar is spelled as an ORE calendar name, the
 vocabulary the calendar validator reads and ORE's parser accepts, not as a
 refdata.calendars code.
 
-Still open on this task: the lookup answers by family address, so a family
-that is both kinds reports a conflict; the kind should decide, no tenor
-asking the overnight convention and a tenor the Ibor one. And the acceptance
-asks for a test over what population writes, which needs a database-backed
-suite rather than the marketdata API's.
+The lookup answers both kinds now: a family ORE builds as an overnight index
+and as a term rate is no longer a conflict, because the index says which one
+it is by whether it carries a tenor. That is what ORE's own parser does, and
+it is the difference between a conflict and a question the index has already
+answered.
+
+Still open: the acceptance asks for a test over what population writes, which
+needs a database-backed suite rather than the marketdata API's.
 
 * Test Scenarios
 

@@ -2287,7 +2287,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
 
     j: dict[str, Any] = {}
     for key in ("product", "schema", "component", "name", "name_singular",
-                "name_title", "name_singular_words", "brief"):
+                "name_title", "name_singular_words", "brief", "http_area"):
         if key in fm:
             j[key] = fm[key]
     if "has_tenant_id" in fm:
@@ -3977,6 +3977,9 @@ def junction_entity_shape(junction: dict[str, Any]) -> dict[str, Any]:
     sides = (junction.get("left") or {}, junction.get("right") or {})
     return {
         "component": junction.get("component", ""),
+        # The published area is the model's declaration, as it is for an entity:
+        # a junction answers under the same contract as the rows it links.
+        **({"http_area": junction["http_area"]} if junction.get("http_area") else {}),
         "entity_singular": junction.get("name_singular", ""),
         "entity_plural": name,
         "entity_plural_short": name,

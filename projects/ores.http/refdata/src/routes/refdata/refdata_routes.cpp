@@ -28,13 +28,20 @@
 #include "ores.http/routes/refdata/counterparty_routes.hpp"
 #include "ores.http/routes/refdata/country_routes.hpp"
 #include "ores.http/routes/refdata/currency_routes.hpp"
+#include "ores.http/routes/refdata/currency_calendar_routes.hpp"
+#include "ores.http/routes/refdata/currency_country_routes.hpp"
+#include "ores.http/routes/refdata/currency_currency_group_routes.hpp"
 #include "ores.http/routes/refdata/currency_group_routes.hpp"
 #include "ores.http/routes/refdata/currency_pair_routes.hpp"
 #include "ores.http/routes/refdata/currency_pair_convention_routes.hpp"
+#include "ores.http/routes/refdata/currency_pair_convention_calendar_routes.hpp"
 #include "ores.http/routes/refdata/ir_curve_bootstrap_config_routes.hpp"
 #include "ores.http/routes/refdata/ir_curve_bootstrap_pillar_routes.hpp"
 #include "ores.http/routes/refdata/party_routes.hpp"
 #include "ores.http/routes/refdata/party_contact_information_routes.hpp"
+#include "ores.http/routes/refdata/party_counterparty_routes.hpp"
+#include "ores.http/routes/refdata/party_country_routes.hpp"
+#include "ores.http/routes/refdata/party_currency_routes.hpp"
 #include "ores.http/routes/refdata/party_id_scheme_routes.hpp"
 #include "ores.http/routes/refdata/party_identifier_routes.hpp"
 
@@ -55,13 +62,20 @@ void refdata_routes::register_routes(
     counterparty_routes::register_routes(router, registry, session);
     country_routes::register_routes(router, registry, session);
     currency_routes::register_routes(router, registry, session);
+    currency_calendar_routes::register_routes(router, registry, session);
+    currency_country_routes::register_routes(router, registry, session);
+    currency_currency_group_routes::register_routes(router, registry, session);
     currency_group_routes::register_routes(router, registry, session);
     currency_pair_routes::register_routes(router, registry, session);
     currency_pair_convention_routes::register_routes(router, registry, session);
+    currency_pair_convention_calendar_routes::register_routes(router, registry, session);
     ir_curve_bootstrap_config_routes::register_routes(router, registry, session);
     ir_curve_bootstrap_pillar_routes::register_routes(router, registry, session);
     party_routes::register_routes(router, registry, session);
     party_contact_information_routes::register_routes(router, registry, session);
+    party_counterparty_routes::register_routes(router, registry, session);
+    party_country_routes::register_routes(router, registry, session);
+    party_currency_routes::register_routes(router, registry, session);
     party_id_scheme_routes::register_routes(router, registry, session);
     party_identifier_routes::register_routes(router, registry, session);
 }

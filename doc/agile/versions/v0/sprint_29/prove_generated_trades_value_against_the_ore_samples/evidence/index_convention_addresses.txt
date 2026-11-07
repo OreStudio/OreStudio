@@ -1,45 +1,44 @@
-Index convention address coverage, measured 2026-11-07 on feature/seed-ores-built-in-index-conventions
-fresh from origin/main (5432dea83b parent, f9efe3b6e2).
+ORE's built-in index families against what ORE Studio seeds.
+Measured 2026-11-07 on feature/seed-ores-built-in-index-conventions, from
+  /home/marco/Vault/Development/ORE/Engine/OREData/ored/utilities/indexparser.cpp
+  tools/ore_conventions/oresmd_index_map.tsv
+  projects/ores.sql/populate/refdata/refdata_{ibor,overnight}_index_conventions_populate.sql
 
-Source of the addresses: tools/ore_conventions/oresmd_index_map.tsv (622 names).
+indexparser.cpp holds two hardcoded maps, the families ORE defines in code:
+  onIndices    27 overnight families
+  iborIndices  54 Ibor families
 
-Ibor index conventions population script: 7 rows, 7 have an ORE index name in the map, 0 state an address today.
-  USD-LIBOR        oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR
-  GBP-LIBOR        oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR
-  JPY-LIBOR        oresmd://ir/JPY?type=fixing&index=ibor&name=LIBOR
-  EUR-EURIBOR      oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR
-  CNY-SHIBOR       oresmd://ir/CNY?type=fixing&index=ibor&name=SHIBOR
-  MXN-TIIE         oresmd://ir/MXN?type=fixing&index=ibor&name=TIIE
-  TWD-TAIBOR       oresmd://ir/TWD?type=fixing&index=ibor&name=TAIBOR
+overnight:
+  families with an address in the map: 24 of 27
+  families with a seeded convention row: 12 of 27
+  no address in the map: DKK-CITA, GBP-BoEBase, SEK-STINA
+  no seeded row: CHF-TOIS, DKK-CITA, DKK-DKKOIS, EUR-EONIA, EUR-ESTER, GBP-BoEBase, INR-MIBOROIS, JPY-TONAR, NZD-OCR, SEK-SIOR, SEK-STINA, THB-THOR, USD-AMERIBOR, USD-FedFunds, USD-Prime
 
-Overnight index conventions population script: 25 rows, 19 in the map, 0 state an address today.
-  USD-SOFR             oresmd://ir/USD?type=fixing&index=ibor&name=SOFR
-  EUR-ESTR             (no ORE index of that name)
-  JPY-TONA             (no ORE index of that name)
-  GBP-SONIA            oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA
-  CHF-SARON            oresmd://ir/CHF?type=fixing&index=ibor&name=SARON
-  AUD-AONIA            oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA
-  CAD-CORRA            oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA
-  HKD-HONIA            oresmd://ir/HKD?type=fixing&index=ibor&name=HONIA
-  SGD-SORA             oresmd://ir/SGD?type=fixing&index=ibor&name=SORA
-  SEK-SWESTR           (no ORE index of that name)
-  NOK-NOWA             oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA
-  KRW-KOFR             (no ORE index of that name)
-  INR-MIBOR            (no ORE index of that name)
-  DKK-DESTR            oresmd://ir/DKK?type=fixing&index=ibor&name=DESTR
-  PLN-POLONIA          oresmd://ir/PLN?type=fixing&index=ibor&name=POLONIA
-  ZAR-ZARONIA          oresmd://ir/ZAR?type=fixing&index=ibor&name=ZARONIA
-  NZD-NZONIA           (no ORE index of that name)
-  BRL-CDI              oresmd://ir/BRL?type=fixing&index=ibor&name=CDI
-  CZK-CZEONIA          oresmd://ir/CZK?type=fixing&index=ibor&name=CZEONIA
-  HUF-BUBORON          oresmd://ir/HUF?type=fixing&index=ibor&name=BUBORON
-  ILS-TELBORON         oresmd://ir/ILS?type=fixing&index=ibor&name=TELBORON
-  TRY-TLREF            oresmd://ir/TRY?type=fixing&index=ibor&name=TLREF
-  CLP-CAMARA           oresmd://ir/CLP?type=fixing&index=ibor&name=CAMARA
-  COP-IBR              oresmd://ir/COP?type=fixing&index=ibor&name=IBR
-  CNH-HIBOR            oresmd://ir/CNH?type=fixing&index=ibor&name=HIBOR
+Ibor:
+  families with an address in the map: 40 of 54
+  families with a seeded convention row: 7 of 54
+  no address in the map: AUD-LIBOR, CAD-LIBOR, CNH-SHIBOR, DEM-LIBOR, DKK-LIBOR, EUR-EURIBOR365, IDR-IDRFIX, KRW-KORIBOR, RON-ROBOR, SAR-SAIBOR, SEK-LIBOR, SGD-SOR, SKK-BRIBOR, USD-AMBOR
+  no seeded row: AUD-BBSW, AUD-LIBOR, CAD-CDOR, CAD-CORRA, CAD-LIBOR, CHF-LIBOR, CNH-HIBOR, CNH-SHIBOR, CNY-REPOFIX, CZK-PRIBOR, DEM-LIBOR, DKK-CIBOR, DKK-LIBOR, EUR-EURIBOR365, EUR-LIBOR, GBP-SONIA, HKD-HIBOR, HUF-BUBOR, IDR-IDRFIX, IDR-JIBOR, ILS-TELBOR, INR-MIFOR, JPY-EYTIBOR, JPY-TIBOR, JPY-TONAR, KRW-CD, KRW-KORIBOR, MYR-KLIBOR, NOK-NIBOR, NZD-BKBM, PHP-PHIREF, PLN-WIBOR, RON-ROBOR, RUB-KEYRATE, RUB-MOSPRIME, SAR-SAIBOR, SEK-LIBOR, SEK-STIBOR, SGD-SIBOR, SGD-SOR, SKK-BRIBOR, THB-BIBOR, THB-THBFIX, TRY-TRLIBOR, USD-AMBOR, USD-SOFR, ZAR-JIBAR
 
-Corpus-derived seed (refdata_conventions_seed_populate.sql), IborIndex block: 10 rows, each states an
-address that carries a tenor, e.g. AED-EIBOR-3M -> oresmd://ir/AED?type=fixing&index=ibor&name=EIBOR&tenor=3M
-A defining convention states the family address, so a lookup asked for EUR-EURIBOR-6M drops the tenor
-and looks for oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR; no seeded row states that address.
+None of the seeded rows states an address:
+  oresmd_uri on refdata_ibor_index_conventions_populate rows: 0 of 7
+  oresmd_uri on refdata_overnight_index_conventions_populate rows: 0 of 25
+
+The corpus-derived seed states an address on its ten IborIndex rows, and every
+one carries a tenor (e.g. AED-EIBOR-3M -> ...&name=EIBOR&tenor=3M). A defining
+convention states the family address, so the lookup drops the tenor and matches
+nothing: 0 of 10 are reachable by index_definition_of.
+
+Seeded ids that differ from ORE's own spelling for the same index:
+  EUR-ESTR     vs ORE EUR-ESTER
+  JPY-TONA     vs ORE JPY-TONAR
+
+Seeded rows with no counterpart in ORE's built-in table (the synthetic feeds name
+families ORE has no index for): SEK-SWESTR, KRW-KOFR, NZD-NZONIA, INR-MIBOR
+(ORE has INR-MIBOROIS, a different index).
+
+where the physical fields live: each built-in maps to a QuantLib or QuantExt class
+whose constructor states them, e.g. QuantLib/ql/indexes/ibor/sofr.cpp:
+  OvernightIndex("SOFR", 0, USDCurrency(), UnitedStates(UnitedStates::SOFR), Actual360(), h)
+so settlement days, currency, fixing calendar and day counter are minable from the
+same checkout, and the calendar and day counter need a mapping to refdata's codes.

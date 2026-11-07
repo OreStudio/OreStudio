@@ -8,7 +8,7 @@
 #+filetags: :clear_the_failing_checks_on_main:sprint_29:v0:
 #+owner: marco
 #+branch: feature/implement-clear-the-failing-checks-on-main
-#+pr:
+#+pr: 4484
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -116,7 +116,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4484][#4484]] | [trading,ore,synthetic] Clear the six failing checks on main |
 
 * Review
 

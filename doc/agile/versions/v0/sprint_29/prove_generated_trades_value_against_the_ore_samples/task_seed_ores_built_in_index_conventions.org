@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :refdata:oresmd:seed:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/seed-ores-built-in-index-conventions
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
-#+updated: 2026-11-06
+#+updated: 2026-11-07
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
-| Now          | Not yet started.                       |
+| Now          | Checking the conventions seed against ORE's indexparser.cpp. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-06                               |
+| Next         | Fill the gaps the check finds.          |
+| Last touched | 2026-11-07                               |
 
 * Acceptance
 

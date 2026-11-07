@@ -919,8 +919,7 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
 
     auto [items, instruments] = make_export_payload(imported);
 
-    const auto quote =
-        ores::marketdata::datum::ore_key_codec::read("ZERO/RATE/EUR/EUR6M/A365/5Y");
+    const auto quote = ores::marketdata::datum::ore_key_codec::read("ZERO/RATE/EUR/EUR6M/A365/5Y");
     REQUIRE(quote);
     const auto curve =
         ores::marketdata::datum::market_reference::of(ores::marketdata::datum::series_of(*quote));
@@ -933,7 +932,9 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
     REQUIRE(xml.contains(curve->uri().substr(0, 10)));
 
     const auto translated = exporter::export_portfolio(
-        items, instruments, ores::marketdata::projection::ore_projection({{curve->uri(), "EUR-ESTER"}}));
+        items,
+        instruments,
+        ores::marketdata::projection::ore_projection({{curve->uri(), "EUR-ESTER"}}));
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << translated;
 
     /*

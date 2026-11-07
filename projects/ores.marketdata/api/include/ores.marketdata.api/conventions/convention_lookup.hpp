@@ -53,8 +53,8 @@ struct lookup_error final {
 };
 
 /// The convention that defines an index: an Ibor index or an overnight one.
-using index_definition =
-    std::variant<refdata::domain::ibor_index_convention, refdata::domain::overnight_index_convention>;
+using index_definition = std::variant<refdata::domain::ibor_index_convention,
+                                      refdata::domain::overnight_index_convention>;
 
 /**
  * @brief The conventions an oresmd identifier's index is defined and used by.

@@ -59,9 +59,9 @@ std::optional<std::string> family_address_of(const market_reference& reference) 
  */
 template <typename Convention>
 std::expected<Convention, lookup_error> the_one_at(const std::vector<Convention>& conventions,
-                                                    const std::string& address,
-                                                    const market_reference& reference,
-                                                    std::string_view what) {
+                                                   const std::string& address,
+                                                   const market_reference& reference,
+                                                   std::string_view what) {
     const Convention* found = nullptr;
     for (const auto& convention : conventions) {
         if (!convention.oresmd_uri || *convention.oresmd_uri != address)

@@ -49,8 +49,8 @@ namespace ores::ore::domain {
  * The table keeps the digits the document wrote, and the domain column is a
  * double. The conversion happens here, once, at the boundary.
  */
-inline auto decimal_as_double(const xml::record_reader& r,
-                              std::string_view name) -> std::optional<double> {
+inline auto decimal_as_double(const xml::record_reader& r, std::string_view name)
+    -> std::optional<double> {
     if (const auto value = r.decimal(name))
         return value->to_double();
     return std::nullopt;

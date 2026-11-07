@@ -535,8 +535,8 @@ ore_projection_of(nats_client& owners, const std::string& report_definition_id) 
     }
 
     BOOST_LOG_SEV(run_configuration_operations_lg(), ores::logging::debug)
-        << "ore_projection_of: " << index_of_curve_uri.size()
-        << " curve name(s) for definition " << report_definition_id;
+        << "ore_projection_of: " << index_of_curve_uri.size() << " curve name(s) for definition "
+        << report_definition_id;
 
     return ores::marketdata::projection::ore_projection(std::move(index_of_curve_uri));
 }

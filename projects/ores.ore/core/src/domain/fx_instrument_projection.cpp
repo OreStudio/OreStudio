@@ -18,10 +18,10 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
-#include "ores.ore.core/domain/scalar_terms_projection.hpp"
-#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
@@ -686,8 +686,7 @@ void write_fx_generic_barrier_option(record_writer& trade,
         auto barriers = data.child("Barriers");
         if (v.kiko_type)
             scalar_terms::write_text(barriers, "KikoType", *v.kiko_type);
-        option_block::write_product_schedule(
-            barriers, carrier, "ScheduleData", "barrier_schedule");
+        option_block::write_product_schedule(barriers, carrier, "ScheduleData", "barrier_schedule");
     }
     barrier_block::write_kept_barriers(data, "TransatlanticBarrier", carrier, "transatlantic");
 }
@@ -1108,8 +1107,9 @@ auto write_fx_instrument(xml::record_writer& trade,
                     using Row = std::decay_t<decltype(row)>;
                     if constexpr (barrier_block::monitored<Row>)
                         barrier_block::write_monitoring(*product, row, "FXIndex");
-                    with_fx_terms<Row>(
-                        [&](const auto& terms) { scalar_terms::write_terms(*product, row, terms); });
+                    with_fx_terms<Row>([&](const auto& terms) {
+                        scalar_terms::write_terms(*product, row, terms);
+                    });
                     if constexpr (std::is_same_v<Row, fx_variance_swap_instrument>)
                         if (!row.moment_type.empty())
                             scalar_terms::write_text(*product, "MomentType", row.moment_type);

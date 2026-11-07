@@ -32,7 +32,8 @@ namespace rd = ores::refdata::domain;
 
 constexpr auto euribor_family = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR";
 constexpr auto euribor_six_months = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M";
-constexpr auto euribor_three_months = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M";
+constexpr auto euribor_three_months =
+    "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M";
 constexpr auto sofr_index = "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR";
 
 market_reference identifier(const char* uri) {
@@ -51,9 +52,12 @@ Convention convention_at(std::string id, std::string uri) {
 
 convention_set conventions() {
     convention_set set;
-    set.ibor_indices.push_back(convention_at<rd::ibor_index_convention>("EUR-EURIBOR", euribor_family));
-    set.overnight_indices.push_back(convention_at<rd::overnight_index_convention>("USD-SOFR", sofr_index));
-    set.swaps.push_back(convention_at<rd::swap_convention>("EUR-EURIBOR-6M-SWAP", euribor_six_months));
+    set.ibor_indices.push_back(
+        convention_at<rd::ibor_index_convention>("EUR-EURIBOR", euribor_family));
+    set.overnight_indices.push_back(
+        convention_at<rd::overnight_index_convention>("USD-SOFR", sofr_index));
+    set.swaps.push_back(
+        convention_at<rd::swap_convention>("EUR-EURIBOR-6M-SWAP", euribor_six_months));
     set.ois_swaps.push_back(convention_at<rd::ois_convention>("USD-SOFR-OIS", sofr_index));
     return set;
 }
@@ -74,7 +78,8 @@ TEST_CASE("an index tenor is defined by its family's convention", "[marketdata][
     }
 }
 
-TEST_CASE("an overnight index is defined by its overnight convention", "[marketdata][conventions]") {
+TEST_CASE("an overnight index is defined by its overnight convention",
+          "[marketdata][conventions]") {
     auto lg(make_logger(test_suite));
     const convention_lookup lookup(conventions());
 
@@ -98,7 +103,8 @@ TEST_CASE("a swap convention matches the index tenor it uses, not another",
     const auto three_months = lookup.swap_convention_of(identifier(euribor_three_months));
     REQUIRE(!three_months);
     CHECK(three_months.error().reference == euribor_three_months);
-    CHECK(three_months.error().reason == std::string("no swap convention states ") + euribor_three_months);
+    CHECK(three_months.error().reason ==
+          std::string("no swap convention states ") + euribor_three_months);
 
     const auto ois = lookup.ois_convention_of(identifier(sofr_index));
     REQUIRE(ois);
@@ -109,7 +115,8 @@ TEST_CASE("two conventions stating one address are refused, naming both",
           "[marketdata][conventions]") {
     auto lg(make_logger(test_suite));
     auto set = conventions();
-    set.swaps.push_back(convention_at<rd::swap_convention>("EUR-EURIBOR-6M-SWAP-OLD", euribor_six_months));
+    set.swaps.push_back(
+        convention_at<rd::swap_convention>("EUR-EURIBOR-6M-SWAP-OLD", euribor_six_months));
     const convention_lookup lookup(std::move(set));
 
     const auto found = lookup.swap_convention_of(identifier(euribor_six_months));

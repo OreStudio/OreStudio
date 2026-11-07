@@ -26,8 +26,8 @@
 #include "ores.ore.core/xml/trade_import_item.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include <string>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <vector>
 

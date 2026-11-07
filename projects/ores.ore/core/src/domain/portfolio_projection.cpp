@@ -22,12 +22,12 @@
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include <boost/container_hash/hash.hpp>
 #include <algorithm>
-#include <span>
 #include <format>
+#include <span>
 #include <stdexcept>
 #include <unordered_map>
-#include <boost/container_hash/hash.hpp>
 
 namespace ores::ore::domain {
 
@@ -263,12 +263,24 @@ struct embedding {
 };
 
 constexpr embedding embeddings[] = {
-    {"CompositeTrade", "CompositeTradeData", "Components", "CompositeTrade", "composite",
+    {"CompositeTrade",
+     "CompositeTradeData",
+     "Components",
+     "CompositeTrade",
+     "composite",
      component_lists},
-    {"TotalReturnSwap", "TotalReturnSwapData", "UnderlyingData", "TotalReturnSwap",
-     "total_return_swap", underlying_lists},
-    {"ContractForDifference", "ContractForDifferenceData", "UnderlyingData", "TotalReturnSwap",
-     "total_return_swap", underlying_lists},
+    {"TotalReturnSwap",
+     "TotalReturnSwapData",
+     "UnderlyingData",
+     "TotalReturnSwap",
+     "total_return_swap",
+     underlying_lists},
+    {"ContractForDifference",
+     "ContractForDifferenceData",
+     "UnderlyingData",
+     "TotalReturnSwap",
+     "total_return_swap",
+     underlying_lists},
 };
 
 auto embedding_of(std::string_view trade_type) -> const embedding* {
@@ -398,7 +410,9 @@ portfolio_projection::reverse(const std::vector<trading::messaging::trade_export
         member_of;
     for (const auto& member : instruments.structure_members)
         member_of[member.trade_id] = &member;
-    std::unordered_map<trade_key, const trading::messaging::trade_export_item*, boost::hash<trade_key>>
+    std::unordered_map<trade_key,
+                       const trading::messaging::trade_export_item*,
+                       boost::hash<trade_key>>
         item_of;
     for (const auto& item : items)
         item_of[item.anchor.id] = &item;
@@ -491,9 +505,8 @@ portfolio_projection::reverse(const std::vector<trading::messaging::trade_export
             if (list.wrapped)
                 for (const auto* member : members_in_role(structure_id, list.role))
                     wrapped.emplace_back(member, &list);
-        std::ranges::sort(wrapped, {}, [](const auto& entry) {
-            return entry.first->sequence_number;
-        });
+        std::ranges::sort(
+            wrapped, {}, [](const auto& entry) { return entry.first->sequence_number; });
         for (const auto& [member, list] : wrapped) {
             const auto* child = child_of(member);
             if (child == nullptr)

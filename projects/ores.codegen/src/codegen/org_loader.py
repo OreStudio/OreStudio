@@ -5729,6 +5729,10 @@ def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
             "relation": relation,
             "precondition": command["precondition"],
             "has_order": command["has_order"],
+            # A list a caller may search, when the model says a column is
+            # searchable and the route is the plain paged one. A versions read
+            # lists a record's history and is not searched.
+            "has_search": bool(entity.get("has_search")) and kind == "paged",
             "has_scope": kind == "list_by",
             "allows_version": command["allows_version"],
             # The shapes the template selects a handler body by. Mustache

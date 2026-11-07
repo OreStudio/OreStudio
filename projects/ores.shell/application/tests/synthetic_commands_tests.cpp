@@ -28,6 +28,7 @@
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>

@@ -23,6 +23,7 @@
 #include "ores.ore.api/messaging/pricing_engines_protocol.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
+#include "ores.refdata.api/domain/convention_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 #include "ores.utility/codec/wire_traits.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.

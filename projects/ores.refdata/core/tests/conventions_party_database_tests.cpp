@@ -22,6 +22,7 @@
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.refdata.api/domain/deposit_convention_codec.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 #include "ores.testing/conventions_rows.hpp"
 #include "ores.testing/project_root.hpp"

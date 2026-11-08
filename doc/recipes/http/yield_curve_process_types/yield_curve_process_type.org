@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 6E3169FA-98CD-5ACC-B24A-F2403BFEB51A
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the yield_curve_process_types endpoints over HTTP?
+#+description: Every endpoint the yield_curve_process_types resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:yield_curve_process_types:
+
+This file documents the yield_curve_process_types resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/simulation/yield_curve_process_types=
+:PROPERTIES:
+:ID: B2591FCE-9B04-5752-B93D-827F11D4BAA0
+:END:
+
+List yield curve process types. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/simulation/yield_curve_process_types
+#+end_example
+
+#+name: yield_curve_process_types-list
+#+begin_src hurl :tangle yield_curve_process_types-list.hurl :exports none
+GET {{base_url}}/api/v1/simulation/yield_curve_process_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/simulation/yield_curve_process_types/__none__=
+:PROPERTIES:
+:ID: 96379FE0-AC60-53AA-BA58-5EE71E7F0596
+:END:
+
+Get one yield curve process type. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/simulation/yield_curve_process_types/__none__
+#+end_example
+
+#+name: yield_curve_process_types-get
+#+begin_src hurl :tangle yield_curve_process_types-get.hurl :exports none
+GET {{base_url}}/api/v1/simulation/yield_curve_process_types/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/simulation/yield_curve_process_types/get-many=
+:PROPERTIES:
+:ID: C44D52E4-C4FC-51FE-BC02-581633525FB0
+:END:
+
+Get many yield curve process types. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/simulation/yield_curve_process_types/get-many
+#+end_example
+
+#+name: yield_curve_process_types-get-many
+#+begin_src hurl :tangle yield_curve_process_types-get-many.hurl :exports none
+POST {{base_url}}/api/v1/simulation/yield_curve_process_types/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/simulation/yield_curve_process_types=
+:PROPERTIES:
+:ID: 6F643C13-8E4C-5D89-ACD2-E7257B026F35
+:END:
+
+Create one yield curve process type. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/simulation/yield_curve_process_types
+#+end_example
+
+#+name: yield_curve_process_types-add
+#+begin_src hurl :tangle yield_curve_process_types-add.hurl :exports none
+POST {{base_url}}/api/v1/simulation/yield_curve_process_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/simulation/yield_curve_process_types=
+:PROPERTIES:
+:ID: EF19E8EE-5CAA-54A3-BD24-0F9B48AE0CD0
+:END:
+
+Replace one yield curve process type. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/simulation/yield_curve_process_types
+#+end_example
+
+#+name: yield_curve_process_types-set
+#+begin_src hurl :tangle yield_curve_process_types-set.hurl :exports none
+PUT {{base_url}}/api/v1/simulation/yield_curve_process_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/simulation/yield_curve_process_types/put-many=
+:PROPERTIES:
+:ID: 010AD8C6-5629-59F0-A6B4-49414BB018D9
+:END:
+
+Write many yield curve process types. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/simulation/yield_curve_process_types/put-many
+#+end_example
+
+#+name: yield_curve_process_types-put-many
+#+begin_src hurl :tangle yield_curve_process_types-put-many.hurl :exports none
+POST {{base_url}}/api/v1/simulation/yield_curve_process_types/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/simulation/yield_curve_process_types/__none__=
+:PROPERTIES:
+:ID: A7EA194C-C11B-5E28-8297-F433400A891B
+:END:
+
+Delete one yield curve process type. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/simulation/yield_curve_process_types/__none__
+#+end_example
+
+#+name: yield_curve_process_types-delete
+#+begin_src hurl :tangle yield_curve_process_types-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/simulation/yield_curve_process_types/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/simulation/yield_curve_process_types/delete-many=
+:PROPERTIES:
+:ID: A46EE53E-7123-5C12-B151-DB13EF054BDA
+:END:
+
+Delete many yield curve process types. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/simulation/yield_curve_process_types/delete-many
+#+end_example
+
+#+name: yield_curve_process_types-delete-many
+#+begin_src hurl :tangle yield_curve_process_types-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/simulation/yield_curve_process_types/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/simulation/yield_curve_process_types/__none__/versions=
+:PROPERTIES:
+:ID: 5BF5F10E-4F68-5F3F-A8E8-3411B5E0E461
+:END:
+
+List the recorded versions of one yield curve process type. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/simulation/yield_curve_process_types/__none__/versions
+#+end_example
+
+#+name: yield_curve_process_types-versions
+#+begin_src hurl :tangle yield_curve_process_types-versions.hurl :exports none
+GET {{base_url}}/api/v1/simulation/yield_curve_process_types/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/simulation/yield_curve_process_types/__none__/versions/0=
+:PROPERTIES:
+:ID: 0AE8CFDE-EF07-58C9-8A4F-D897CC277DD9
+:END:
+
+Get one recorded version of one yield curve process type. It needs a session.
+
+It forwards to =synthetic.v1.yield_curve_process_types_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/simulation/yield_curve_process_types/__none__/versions/0
+#+end_example
+
+#+name: yield_curve_process_types-version
+#+begin_src hurl :tangle yield_curve_process_types-version.hurl :exports none
+GET {{base_url}}/api/v1/simulation/yield_curve_process_types/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

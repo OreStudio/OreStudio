@@ -146,4 +146,4 @@ def test_non_nullable_double_is_left_alone(tmp_path):
         target_output="nullable_bare_entity.hpp",
     )
     domain = (output_dir / "nullable_bare_entity.hpp").read_text(encoding="utf-8")
-    assert "double coupon_rate;" in domain
+    assert "double coupon_rate{};" in domain

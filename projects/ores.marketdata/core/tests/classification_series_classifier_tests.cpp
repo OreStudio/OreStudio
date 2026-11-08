@@ -332,7 +332,7 @@ TEST_CASE("every_distinct_series_identity_in_the_ore_corpus_classifies",
 }
 
 TEST_CASE("every_instrument_the_ore_corpus_carries_is_known_to_the_classifier",
-          "[marketdata][classification][corpus]") {
+          "[long_running][marketdata][classification][corpus]") {
     const auto instruments = distinct_instruments();
     REQUIRE(instruments.size() >= min_distinct_instruments);
 

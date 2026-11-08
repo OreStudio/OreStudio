@@ -84,7 +84,7 @@ TEST_CASE("roundtrip_harness_names_the_difference_when_one_document_is_a_prefix"
     CHECK(difference.find("(end of document)") != std::string::npos);
 }
 
-TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", "[ore][xml][roundtrip][harness]") {
+TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", "[long_running][ore][xml][roundtrip][harness]") {
     const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_package>(
         "conventions",
         "conventions",

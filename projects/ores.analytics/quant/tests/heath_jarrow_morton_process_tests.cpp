@@ -161,7 +161,7 @@ TEST_CASE("hjm no-arbitrage drift formula", "[heath_jarrow_morton_process]") {
     REQUIRE(drift_big[3] == Catch::Approx(0.5 * 0.85).epsilon(1e-15));
 }
 
-TEST_CASE("hjm drift matches the grid integral statistically", "[heath_jarrow_morton_process]") {
+TEST_CASE("hjm drift matches the grid integral statistically", "[long_running][heath_jarrow_morton_process]") {
     // One tick of the linear transition: E[f(t+dt) - f(t)] = mu * dt
     // exactly, so the sample mean of the increment per unit time must
     // reproduce the hand-computed drift vector, and the front rate's
@@ -220,7 +220,7 @@ TEST_CASE("hjm one-tick discounted bond ratio", "[heath_jarrow_morton_process]")
     REQUIRE(ratio.mean == Catch::Approx(1.0).margin(3e-3));
 }
 
-TEST_CASE("hjm discounted bond prices are martingales", "[heath_jarrow_morton_process]") {
+TEST_CASE("hjm discounted bond prices are martingales", "[long_running][heath_jarrow_morton_process]") {
     // The defining HJM property: with the no-arbitrage drift, the
     // money-market-rebased price of a fixed-maturity bond is a
     // martingale. The discretised model satisfies this only up to an

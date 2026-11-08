@@ -250,7 +250,7 @@ TEST_CASE("the_walk_names_the_value_that_changed", "[ore][xml][roundtrip-values]
 }
 
 TEST_CASE("every_generated_family_keeps_its_values_across_the_writing",
-          "[ore][xml][roundtrip-values]") {
+          "[long_running][ore][xml][roundtrip-values]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";

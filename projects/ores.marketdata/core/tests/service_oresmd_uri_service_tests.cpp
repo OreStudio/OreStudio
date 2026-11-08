@@ -117,7 +117,7 @@ std::set<std::string> index_uris() {
 }
 
 TEST_CASE("every URI the codec writes for the catalogue parses and composes back to itself",
-          "[marketdata][service][oresmd_uri_service]") {
+          "[long_running][marketdata][service][oresmd_uri_service]") {
     const auto uris = catalogue_uris();
     REQUIRE(uris.size() > 100);
     std::vector<std::string> failures;

@@ -295,6 +295,10 @@ set(cmake_args ${cmake_args} "--preset ${preset}")
 # Use dynamic libraries.
 set(cmake_args ${cmake_args} "-DBUILD_SHARED_LIBS=ON")
 
+if(USE_MEMCHECK)
+    set(cmake_args ${cmake_args} "-DWITH_MEMCHECK=ON")
+endif()
+
 # Hosted Linux Debug builds can exhaust disk while linking full DWARF into
 # every executable and shared library. Opt in to lossless compression at link
 # time, preserving compile/cache inputs, debug symbols and coverage data.

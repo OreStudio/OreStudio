@@ -207,7 +207,7 @@ void observe_many(observation_fixture& f,
 }
 
 TEST_CASE("a_window_holding_exactly_the_ceiling_is_read_whole",
-          "[observation_reader][integration]") {
+          "[long_running][observation_reader][integration]") {
     observation_fixture f;
     const auto uri = observation_fixture::series_uri();
     const auto s = f.series(uri, "composite");
@@ -219,7 +219,7 @@ TEST_CASE("a_window_holding_exactly_the_ceiling_is_read_whole",
 }
 
 TEST_CASE("a_window_holding_more_than_the_ceiling_is_refused_rather_than_cut",
-          "[observation_reader][integration]") {
+          "[long_running][observation_reader][integration]") {
     observation_fixture f;
     const auto uri = observation_fixture::series_uri();
     const auto s = f.series(uri, "composite");

@@ -25,11 +25,12 @@
 #ifndef ORES_COMPUTE_API_MESSAGING_WORKUNIT_PROTOCOL_HPP
 #define ORES_COMPUTE_API_MESSAGING_WORKUNIT_PROTOCOL_HPP
 
-#include "ores.compute.api/domain/workunit.hpp"
+#include "ores.compute.api/domain/workunit_codec.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

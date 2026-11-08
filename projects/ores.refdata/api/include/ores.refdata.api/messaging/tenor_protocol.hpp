@@ -25,13 +25,14 @@
 #ifndef ORES_REFDATA_API_MESSAGING_TENOR_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_TENOR_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/tenor.hpp"
+#include "ores.refdata.api/domain/tenor_codec.hpp"
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstddef>

@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "codec_json_document_tests.cpp"
+    "codec_json_schema_tests.cpp"
     "codec_json_tests.cpp"
     "codec_msgpack_tests.cpp"
     "codec_object_tests.cpp"

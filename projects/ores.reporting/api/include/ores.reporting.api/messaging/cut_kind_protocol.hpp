@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_CUT_KIND_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_CUT_KIND_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/cut_kind.hpp"
+#include "ores.reporting.api/domain/cut_kind_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

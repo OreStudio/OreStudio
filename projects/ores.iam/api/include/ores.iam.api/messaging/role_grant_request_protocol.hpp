@@ -25,11 +25,12 @@
 #ifndef ORES_IAM_API_MESSAGING_ROLE_GRANT_REQUEST_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_ROLE_GRANT_REQUEST_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/role_grant_request.hpp"
+#include "ores.iam.api/domain/role_grant_request_codec.hpp"
 #include "ores.iam.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

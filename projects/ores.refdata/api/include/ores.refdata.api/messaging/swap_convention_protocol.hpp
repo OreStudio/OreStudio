@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_SWAP_CONVENTION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_SWAP_CONVENTION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/swap_convention.hpp"
+#include "ores.refdata.api/domain/swap_convention_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

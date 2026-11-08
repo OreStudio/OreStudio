@@ -25,11 +25,12 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_TRADE_GENERATION_BOOK_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_TRADE_GENERATION_BOOK_PROTOCOL_HPP
 
-#include "ores.synthetic.api/domain/trade_generation_book.hpp"
+#include "ores.synthetic.api/domain/trade_generation_book_codec.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

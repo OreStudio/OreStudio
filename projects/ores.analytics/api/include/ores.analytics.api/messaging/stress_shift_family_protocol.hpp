@@ -25,11 +25,12 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_STRESS_SHIFT_FAMILY_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_STRESS_SHIFT_FAMILY_PROTOCOL_HPP
 
-#include "ores.analytics.api/domain/stress_shift_family.hpp"
+#include "ores.analytics.api/domain/stress_shift_family_codec.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

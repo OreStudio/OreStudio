@@ -25,11 +25,12 @@
 #ifndef ORES_DQ_API_MESSAGING_TREATMENT_DIMENSION_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_TREATMENT_DIMENSION_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/treatment_dimension.hpp"
+#include "ores.dq.api/domain/treatment_dimension_codec.hpp"
 #include "ores.dq.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_ORE_PARAMETER_VALUE_DOMAIN_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_ORE_PARAMETER_VALUE_DOMAIN_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/ore_parameter_value_domain.hpp"
+#include "ores.reporting.api/domain/ore_parameter_value_domain_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

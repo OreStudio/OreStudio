@@ -25,11 +25,12 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_GENERATION_CONFIG_PROCESS_PARAMETER_VALUE_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_GENERATION_CONFIG_PROCESS_PARAMETER_VALUE_PROTOCOL_HPP
 
-#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value_codec.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

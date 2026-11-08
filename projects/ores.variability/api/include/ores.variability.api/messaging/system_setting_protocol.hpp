@@ -28,7 +28,8 @@
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
+#include "ores.variability.api/domain/system_setting_codec.hpp"
 #include "ores.variability.api/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>

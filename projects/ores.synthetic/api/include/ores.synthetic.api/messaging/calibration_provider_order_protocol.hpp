@@ -25,11 +25,12 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_CALIBRATION_PROVIDER_ORDER_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_CALIBRATION_PROVIDER_ORDER_PROTOCOL_HPP
 
-#include "ores.synthetic.api/domain/calibration_provider_order.hpp"
+#include "ores.synthetic.api/domain/calibration_provider_order_codec.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>

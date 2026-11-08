@@ -52,11 +52,15 @@ The full template source. Edit here and re-tangle with
 #include <span>
 #include <tuple>
 {{/has_generated_wire_codec}}
-#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 {{#has_generated_wire_codec}}
+#include "ores.{{component_include}}/domain/{{entity_singular}}_codec.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include "ores.{{component_include}}/export.hpp"
+{{/has_generated_wire_codec}}
+{{^has_generated_wire_codec}}
+#include "ores.{{component_include}}/domain/{{entity_singular}}.hpp"
 {{/has_generated_wire_codec}}
 <<paste:8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F>>
 

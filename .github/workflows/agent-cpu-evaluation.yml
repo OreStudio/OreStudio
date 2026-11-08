@@ -51,9 +51,9 @@ jobs:
       CPU_EVAL_CORPUS: ${{ inputs.corpus || 'all' }}
       CPU_EVAL_REQUIRE_HANDLING: ${{ inputs.require_handling && 'true' || 'false' }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set isolated CPU root
         run: echo "CPU_ROOT=$RUNNER_TEMP/ores-agent-cpu" >> "$GITHUB_ENV"
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
@@ -74,6 +74,7 @@ jobs:
           npm run verify
           python -m unittest discover -s tests -p "*_test.py"
       - name: Install and configure CPU inference
+        id: configure
         run: |
           python scripts/install-inference.py "$CPU_ROOT" --cpu
           node scripts/configure-inference.mjs "$CPU_ROOT"
@@ -82,13 +83,13 @@ jobs:
       - name: Evaluate real model with fixture data
         run: node evals/cpu-ci.mjs run "$CPU_ROOT" "$CPU_REPORTS"
       - name: Stop CPU inference
-        if: always()
+        if: always() && steps.configure.outcome == 'success'
         run: |
           if [ -f "$CPU_ROOT/service.json" ]; then
             node "$CPU_ROOT/service.mjs" stop "$CPU_ROOT/service.json"
           fi
       - name: Collect redacted inference logs
-        if: always()
+        if: always() && steps.configure.outcome == 'success'
         run: node evals/cpu-ci.mjs collect "$CPU_ROOT" "$CPU_REPORTS"
       - name: Upload fixture reports and diagnostics
         if: always()

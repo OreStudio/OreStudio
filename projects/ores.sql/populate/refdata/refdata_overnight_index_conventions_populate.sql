@@ -27,10 +27,14 @@
  * "<currency_code>-<upper(index_family)>", the shape a curve's
  * (currency_code, index_family) pair names. The families ORE builds in code
  * are seeded by refdata_builtin_index_conventions_populate.sql instead, from
- * the engine, so this script holds only what the engine has no index for and
- * nothing validates a curve against these rows. fixing_calendar values are refdata.calendars codes (see
- * refdata_calendars_populate.sql); day_count_fraction values are FpML
- * canonical day-count-fraction codes (see
+ * the engine, so this script holds only what the engine has no index for, and
+ * nothing validates a curve against these rows.
+ *
+ * fixing_calendar values are still refdata.calendars codes (see
+ * refdata_calendars_populate.sql), which is a different vocabulary from the
+ * ORE calendar names the built-in script states and ORE's parser accepts; see
+ * the capture on the two calendar vocabularies. day_count_fraction values are
+ * FpML canonical day-count-fraction codes (see
  * external/fpml/codelist/day-count-fraction-2-3.xml).
  *
  * Sourced from ORE's own vendored QuantExt/QuantLib index class

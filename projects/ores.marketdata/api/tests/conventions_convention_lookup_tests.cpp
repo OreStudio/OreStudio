@@ -158,6 +158,37 @@ TEST_CASE("a family both kinds state is answered by the tenor the index states",
     CHECK(ibor_convention->id == "USD-SOFR-TERM");
 }
 
+TEST_CASE("a family stated by one kind only answers either way", "[marketdata][conventions]") {
+    auto lg(make_logger(test_suite));
+    /*
+     * The family address a defining convention states carries no tenor, so a
+     * question about the family must find the Ibor convention even though the
+     * question states no tenor. The opposite holds when only the overnight
+     * convention is loaded: a question that states a tenor finds it rather than
+     * nothing, because the tenant's convention set is what it is.
+     */
+    convention_set ibor_only;
+    ibor_only.ibor_indices.push_back(
+        convention_at<rd::ibor_index_convention>("EUR-EURIBOR", euribor_family));
+    const convention_lookup ibor_lookup(std::move(ibor_only));
+
+    const auto family = ibor_lookup.index_definition_of(identifier(euribor_family));
+    REQUIRE(family);
+    CHECK(std::get_if<rd::ibor_index_convention>(&*family) != nullptr);
+
+    convention_set overnight_only;
+    overnight_only.overnight_indices.push_back(
+        convention_at<rd::overnight_index_convention>("USD-SOFR", sofr_index));
+    const convention_lookup overnight_lookup(std::move(overnight_only));
+
+    const auto term = overnight_lookup.index_definition_of(
+        identifier("oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=3M"));
+    REQUIRE(term);
+    const auto* overnight = std::get_if<rd::overnight_index_convention>(&*term);
+    REQUIRE(overnight != nullptr);
+    CHECK(overnight->id == "USD-SOFR");
+}
+
 TEST_CASE("an index family with no defining convention is not this lookup's question",
           "[marketdata][conventions]") {
     auto lg(make_logger(test_suite));

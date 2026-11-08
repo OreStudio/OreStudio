@@ -52,7 +52,7 @@ export function readIntent(message: string): RequestPlan {
     // or currency inside a factor as an independent filter.
     for (const key of ['factor2', 'factor', 'scenario'] as const) {
         const pattern = new RegExp(`\\b${key}\\s*(?:[:=]\\s*|\\s+)(?:"([^"]+)"|'([^']+)'|([^\\s,;?!]+))`, 'gi');
-        const values = [...message.matchAll(pattern)].map(m => m[1] ?? m[2] ?? m[3]!);
+        const values = [...message.matchAll(pattern)].map(m => m[1] ?? m[2] ?? m[3]!.replace(/\.+$/, ''));
         if (new Set(values.map(v => v.toLowerCase())).size > 1) intent.clarification = `Please specify one ${key} selector for this request.`;
         else if (values[0]) intent[key] = values[0];
     }

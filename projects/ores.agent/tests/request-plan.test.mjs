@@ -45,6 +45,8 @@ test('provider phrases are parsed once and cannot overwrite ore with the word pr
 });
 
 test('run continuation preserves the typed measure, date, factor and currency without model calls',async()=>{
+    assert.equal(readIntent('Delta for factor DiscountCurve/GBP/0/1Y.').factor,'DiscountCurve/GBP/0/1Y');
+    assert.equal(readIntent('Delta for factor "Literal."').factor,'Literal.');
     const args=[];
     const agent=new Agent({complete:async()=>assert.fail('Complete continuation needs no model')},{execute:async(name,input)=>{
         args.push(input);return {tool:name,status:'unavailable',reason:'fixture'};

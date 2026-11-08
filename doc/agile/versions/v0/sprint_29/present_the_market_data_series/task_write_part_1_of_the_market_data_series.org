@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: E749631F-6910-4FE6-A8A2-17A1BAF21FD1
+:END:
+#+title: Task: Write part 1 of the market data series
+#+description: A Beamer deck on synthetic market data generators, with a companion spreadsheet over real GBP/USD rates.
+#+type: task
+#+level: s1
+#+filetags: :presentation:market_data:present_the_market_data_series:sprint_29:v0:
+#+owner: marco
+#+branch: doc/market-data-series-part-1-presentation
+#+pr: 4501
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:30CD1858-317A-416F-9953-1FCB39D1C1EA][Present the market data series]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Turn the part 1 notes into a Beamer deck that an engineer can present, and back it with a spreadsheet over real data.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:30CD1858-317A-416F-9953-1FCB39D1C1EA][Present the market data series]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-08                               |
+
+* Acceptance
+
+- The deck builds to a PDF with latexmk.
+- The chart, the raw data table and the spreadsheet use the same GBP/USD series.
+- The simulation parameters in the code slides match the measured volatility of that series.
+
+* Plan
+
+Turn each section of the notes into slides, then style the deck with the
+ORE Studio colours and logo. Chart real GBP/USD rates, and use the same
+series in the raw data table, the spreadsheet and the code parameters.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Daily log return volatility | 0.003714 | =STDEV(F3:F127)= in =gbp_usd_6m_timeseries.ods= cell N4 | 78a99e441c |
+| Annualised volatility | 5.90% | =N4*SQRT(252)= in cell N5 | 78a99e441c |
+| Daily rates in the series | 126 | =wc -l gbp_usd_2024h1_ecb.csv=, less the header | 78a99e441c |
+| Deck length | 30 pages | =pdfinfo market_data_series_part_1.pdf= | 78a99e441c |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4501][#4501]] | [doc] Add part 1 of the market data series presentation |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Mixed spelling: "discretize" beside "centre" and "optimisation" | market_data_series_part_1.tex | Decline | "Discretize" comes from the source notes. It has no effect on meaning. |
+| 2 | The Euler-Maruyama listing calls =N= steps, but the array holds =N= points and =N-1= steps | market_data_series_part_1.tex | Decline | Listing kept as in the source notes. Revisit in part 2 with the SDE work. |
+| 3 | PR 4501 review 1: the chart path is not NumPy's seed 42 path | market_data_series_part_1.tex | Accept | The caption now says so. |
+| 4 | PR 4501 review 2: the log returns listing does not run on its own | market_data_series_part_1.tex | Accept | The listing now has a comment. |
+| 5 | PR 4501 review 3: note that the vectorised version is faster | market_data_series_part_1.tex | Decline | It adds nothing to the point of the slide. |
+| 6 | PR 4501 review 4: Euler-Maruyama can go negative | market_data_series_part_1.tex | Accept | The non-negativity point now says so. |
+| 7 | PR 4501 review 5: memory describes the price level | market_data_series_part_1.tex | Accept | The bullet now says price level. |
+| 8 | PR 4501 review 6: reconsider tracking the PDF | market_data_series_part_1.pdf | Decline | The user manual PDF is tracked too. |
+| 9 | PR 4501 review 7: fix the title page overfull box | market_data_series_part_1.tex | Decline | It comes from the theme layout and the page renders correctly. |
+| 10 | PR 4501 review note: state the ECB fixing time | market_data_series_part_1.tex | Decline | The caption already says these are reference rates. |
+
+* Result
+
+Part 1 ships as a 30-page Beamer deck under
+=doc/presentations/market_data_series/part_1=, in the ORE Studio colours and
+logo. All three acceptance criteria hold: the deck builds with latexmk; the
+chart, the table and the spreadsheet use the same 126 ECB reference rates; and
+the code slides use the measured volatility.
+
+The rates are ECB fixings retrieved through the Frankfurter API, not market
+closes. FRED did not answer during the work. The Python listings were not run,
+because NumPy was not installed.

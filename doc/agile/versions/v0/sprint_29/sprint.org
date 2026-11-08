@@ -149,6 +149,7 @@ of the application join as their own stories under this heading.
 | [[id:A6E6653D-40FD-464B-A7F7-DC3D05FBFAEF][Switch the interface between light and dark, and choose the language from the header]] | DONE | 2026-10-31 | 2026-10-31 | The interface has one palette, a dark one. A person who needs a light screen has no way to ask for one. The language sits in a select inside the account menu, where a person looks for their own pages. Give the header two controls with the icons the set already uses for them. |
 | [[id:4E2AD35F-121F-452F-8D01-8B27723022B8][Read a batch of rows in one query in the generated services]] | ABANDONED |  | 2026-11-08 | The generated get-many, put-many and delete-many paths read each row by key, one query per row, so a 1,000-row put makes about 2,000 reads and stores about 104 rows a second; each batch path reads its rows in one query instead. |
 | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] | DONE | 2026-11-06 | 2026-11-08 | Each supported currency has an overnight-index curve bootstrapped from its synthetic quotes and published in the system tenant, and the synthetic IR feeds start from public rates; today only USD has a bootstrap config, it was never published, and no currency's synthetic feed is calibrated. |
+| [[id:30CD1858-317A-416F-9953-1FCB39D1C1EA][Present the market data series]] | DONE | 2026-11-08 | 2026-11-08 | A slide series that explains how ORE Studio builds synthetic market data generators. |
 
 ** Hotfixes
 

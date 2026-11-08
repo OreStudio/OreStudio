@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
 #+owner: marco
 #+branch: feature/generate-the-json-schemas-from-the-wire-shapes
-#+pr:
+#+pr: 4492
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4492][#4492]] | [utility,http] Generate the JSON schemas from the wire shapes |
 
 * Review
 

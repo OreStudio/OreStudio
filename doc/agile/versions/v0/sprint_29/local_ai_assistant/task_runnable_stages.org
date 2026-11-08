@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
-#+updated: 2026-11-07
-#+environment: OreStudio
+#+updated: 2026-11-08
+#+environment: orestudio
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] |
-| Now          | Review-driven cleanup validated; standalone agent 0.1.8 running; frozen baseline retained.                       |
+| Now          | Nothing. |
 | Waiting on   | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
-| Next         | Review retained agent/data/architecture findings; future backend PRs remain separate.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -40,8 +40,15 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 - [X] Official LFM3 QAD model with full CUDA offload on native Windows.
 - [X] Independent checksummed packages, installation and lifecycle, tested on Windows/Linux.
 - [X] Real currency/missing-observation answers; main backend remains running.
-- [ ] Validate the native inference deployment on a Linux NVIDIA host.
-- [ ] Validate restricted broker subject ACLs and a hosted client-enrollment profile before claiming production isolation.
+- [X] CPU model CI on Windows/Linux, with fixture evaluations and explicit blocked cases.
+
+* Deferred validation
+
+- Native Linux NVIDIA execution.
+- Restricted broker subjects, low-permission/cross-tenant proof and hosted authentication.
+- Report execution, booking and executable quote capabilities.
+
+These are outside this completed local read-only delivery. The parent story remains open.
 
 * Plan
 
@@ -104,6 +111,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered the standalone read-only agent/MCP application, separate CUDA/CPU inference,
+Markdown chat, and repeatable evaluations. CPU CI passes on Windows/Linux: 114 agent
+tests, five installer tests and 40/40 handling checks per platform. Six business
+cases remain blocked. No net main/reporting-server, schema or NATS configuration
+change is included. Six guides describe use, deployment, evaluation, validation
+and future architecture. Broader business and hosted/GPU gates remain separate.
 
 * Implementation checkpoints
 

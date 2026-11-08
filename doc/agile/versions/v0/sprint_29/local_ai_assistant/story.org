@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :agent:mcp:local-ai:sprint_29:v0:
 #+created: 2026-11-06
-#+updated: 2026-11-07
+#+updated: 2026-11-08
 #+environment: OreStudio
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,10 +23,10 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Review-driven cleanup validated; standalone agent 0.1.8 running; frozen baseline retained.                       |
+| Now           | Local agent 0.1.9 delivered; CPU CI validated on Windows/Linux; upstream review next.                       |
 | Waiting on    | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
-| Next          | Review retained agent/data/architecture findings; future backend PRs remain separate.            |
-| Last touched  | 2026-11-07                               |
+| Next          | Review the read-only delivery PR; agree separate business/security/GPU follow-ups.            |
+| Last touched  | 2026-11-08                               |
 
 * Acceptance
 
@@ -42,7 +42,7 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9BACE972-57A4-430F-A9C1-C0F48CB0E78A][Build and verify the independent agent stages]] | STARTED | | | Implement and push runnable checkpoints for foundation, NATS tools, MCP, CUDA inference, the agent loop and independent deployment. |
+| [[id:9BACE972-57A4-430F-A9C1-C0F48CB0E78A][Build and verify the independent agent stages]] | DONE | | 2026-11-08 | Implement and push runnable checkpoints for foundation, NATS tools, MCP, CUDA inference, the agent loop and independent deployment. |
 
 * Decisions
 

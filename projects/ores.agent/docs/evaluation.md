@@ -150,7 +150,7 @@ Runtime changes need a new [deployment](deployment.md); evaluation-only runs do 
 ## GitHub CPU CI
 
 `Agent CPU evaluation` runs on agent code changes in pushes to `main` or
-`feature/local-ai-assistant`, and on pull requests. Document-only changes do
+`feature/local-ai-assistant`. Repository policy disables PR triggers. Document-only changes do
 not trigger it. Manual runs select `all`, `original`, `holdout` or `review`.
 GitHub requires the workflow on the default branch to enable manual dispatch.
 

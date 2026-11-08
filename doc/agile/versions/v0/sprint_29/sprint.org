@@ -288,3 +288,5 @@ Health review 1 graded the sprint RED on day 16 of a planned 7.
 * Release Notes
 
 See [[file:release_notes.org][release_notes.org]] for the full narrative.
+
+[[id:3D4ED943-DF9F-4C34-97CA-0421227B7B2B][Capture the sprint 29 release screenshots]] lists the images the notes need.

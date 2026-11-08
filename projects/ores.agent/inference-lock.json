@@ -33,5 +33,19 @@
       "name": "llama-b12172-bin-win-cuda-12.4-x64.zip"
     }
   ],
-  "release": "b12172"
+  "release": "b12172",
+  "cpuAssets": [
+    {
+      "sha256": "4496c40c11710b520a745bd9845a47fc91c8d42077c4069130a075d08d4718f1",
+      "bytes": 23046879,
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b12172/llama-b12172-bin-ubuntu-x64.tar.gz",
+      "name": "llama-b12172-bin-ubuntu-x64.tar.gz"
+    },
+    {
+      "sha256": "86626118e9bea1abf965e8d1425cbdbed0a68dbbccfb348d176b0379904b1378",
+      "bytes": 24745816,
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b12172/llama-b12172-bin-win-cpu-x64.zip",
+      "name": "llama-b12172-bin-win-cpu-x64.zip"
+    }
+  ]
 }

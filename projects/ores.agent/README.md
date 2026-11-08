@@ -8,7 +8,7 @@ Business calls use NATS. A separate llama.cpp process runs the model.
 | Need | Document |
 | --- | --- |
 | Chat, MCP, business tools and limits | [Usage](docs/agent.md) |
-| Build, install, CUDA, access and rollback | [Deployment](docs/deployment.md) |
+| Build, install, CPU/CUDA, access and rollback | [Deployment](docs/deployment.md) |
 | Datasets, evaluation, comparison and timing | [Evaluation](docs/evaluation.md) |
 | Discuss component ownership and future changes | [Architecture proposals](docs/architecture-future-prs.md) |
 | Check tested releases, known gaps and historical evidence | [Validation](docs/validation.md) |
@@ -42,3 +42,6 @@ schemas, business records or the main UI to improve a score.
 Next: use evaluation traces to select one agent improvement and compare it with
 a fixed baseline. Preserve failures and checks. Server aggregation is optional;
 future business actions need separate agreement. Open a PR only when requested.
+
+`Agent CPU evaluation` is separate CI for real-model fixture tests on Windows/Linux.
+See [CPU CI](docs/evaluation.md#github-cpu-ci) for triggers, results and failure rules.

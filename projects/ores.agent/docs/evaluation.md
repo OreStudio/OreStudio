@@ -146,3 +146,25 @@ Nearest-rank p50/p95 require 20+ samples. Mixed questions are not latency benchm
 Timing events exclude prompts, identities, arguments, data and exception text.
 General tool audits can identify tenant/party. Protect logs and private reports.
 Runtime changes need a new [deployment](deployment.md); evaluation-only runs do not.
+
+## GitHub CPU CI
+
+`Agent CPU evaluation` runs on agent code changes in pushes to `main` or
+`feature/local-ai-assistant`, and on pull requests. Document-only changes do
+not trigger it. Manual runs select `all`, `original`, `holdout` or `review`.
+
+Each Windows/Linux job installs the pinned CPU llama.cpp runtime and LFM3 model
+in a temporary root. It forces zero GPU layers, keeps context 262144 and uses
+one slot. It verifies the agent, checks real generation, then runs the `model`
+profile against labelled fixtures. No NATS, production secrets or live server
+is needed. CPU and CUDA results are separate experiments.
+
+The default runs all three corpora once, with a 120-second turn deadline.
+Setup/test/report failures fail CI. Quality failures remain visible findings.
+Manual `require_handling` also fails CI on handling failures; blocked business
+capabilities stay blocked. A green default job is not a claim that all cases pass.
+
+Results appear in the job summary and `agent-cpu-<OS>` artifacts for 14 days.
+Artifacts contain fixture reports, CPU settings and redacted inference logs.
+They exclude keys, private config and control records. Cleanup stops inference
+even after failure. Jobs have a 90-minute limit and cancel older runs on the same ref.

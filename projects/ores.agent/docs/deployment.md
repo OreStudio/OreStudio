@@ -47,13 +47,13 @@ its installed controller, configure the selected release, then start. Keep the
 old release. Private config survives; sessions do not. This does not control
 main services, NATS or inference. Document/evaluation-only work needs no deployment.
 
-## CUDA inference
+## Inference
 
 Selected model: official LiquidAI/LFM3-1.7B QAD Q4_0 GGUF, 1,049,615,680 bytes.
 `inference-lock.json` pins model/license/runtime references and SHA-256 values.
 Runtime: llama.cpp b12172. Keep binaries and weights outside Git.
 
-Installation needs Python 3.12+, Node and an enabled NVIDIA GPU. Windows x64
+CUDA installation needs Python 3.12+, Node and an enabled NVIDIA GPU. Windows x64
 uses native CUDA 12.4 binaries. Linux x64 uses Ubuntu CUDA 12.8 binaries with
 compatible glibc/drivers. CPU fallback is not a GPU test pass.
 
@@ -118,3 +118,22 @@ node scripts/smoke-backend.mjs <PRIVATE_CONFIG> <PRIVATE_CREDENTIALS_JSON> <PART
 The party is optional if the account has a valid default. Output contains scoped
 business data. Keep it private. The manual CI workflow covers Windows/Linux
 Node 22/24; [validation](validation.md) states which checks actually ran.
+
+## Separate CPU deployment
+
+The [CPU CI workflow](evaluation.md#github-cpu-ci) uses this optional profile:
+
+```text
+python scripts/install-inference.py <CPU_ROOT> --cpu
+node scripts/configure-inference.mjs <CPU_ROOT>
+node <CPU_ROOT>/service.mjs start <CPU_ROOT>/service.json
+node <CPU_ROOT>/service.mjs stop <CPU_ROOT>/service.json
+```
+
+Use a different root from CUDA. The installer refuses mixed profiles. CPU uses
+pinned Windows/Linux archives, port 20110, `--device none` and zero GPU layers.
+Context, model and sampling stay the same. It needs no NVIDIA driver or CUDA DLLs.
+Downloads, including restored caches, must pass SHA-256 checks.
+
+CI starts this profile only on its temporary runner. It does not install anything
+on the local laptop or change the existing CUDA deployment.

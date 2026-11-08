@@ -8,7 +8,7 @@
 #+filetags: :presentation:market_data:present_the_market_data_series:sprint_29:v0:
 #+owner: marco
 #+branch: doc/market-data-series-part-1-presentation
-#+pr:
+#+pr: 4501
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-08
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4501][#4501]] | [doc] Add part 1 of the market data series presentation |
 
 * Review
 

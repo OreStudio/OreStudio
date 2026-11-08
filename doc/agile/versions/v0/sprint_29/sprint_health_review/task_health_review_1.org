@@ -391,9 +391,11 @@ The owner then asked for five of the six live stories to close this sprint on
 their merged work, with the rest in a follow-up story for the next sprint. The
 sqlgen story stays STARTED, because PR #4492 is still in progress.
 
+Two PRs merged on main after the split, and the rebases record them. PR #4471 finished "Classify each product type as flow or non-flow", so that task returned to its closed story, and the table above counts it there. PR #4494 shipped part of "Seed ORE's built-in index conventions". That task stays in the follow-up story, because the database-backed test and the tenant override remain.
+
 | Story | DONE tasks kept | Tasks moved | Follow-up holds |
 |-------+-----------------+-------------+-----------------|
-| Describe every product type on one page | 6 | 8 | The page, the serve, the joins and the retirement of the duplicates. |
+| Describe every product type on one page | 7 | 7 | The page, the serve, the joins and the retirement of the duplicates. |
 | Split the types that carry too many columns | 9 | 2 | The market series identity and the instrument parts. |
 | Serve what the BFF serves, then retire it | 7 | 0 | The original Acceptance only. It needs tasks. |
 | Prove generated trades value against the ORE samples | 3 | 4 | The trade builders, the seed and the references. |

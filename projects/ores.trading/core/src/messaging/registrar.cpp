@@ -91,6 +91,7 @@
 #include "ores.trading.core/messaging/payoff_type_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_registrar.hpp"
+#include "ores.trading.core/messaging/product_type_asset_class_registrar.hpp"
 #include "ores.trading.core/messaging/product_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/range_bound_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
@@ -253,6 +254,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_authorisation_request_handlers(nats, ctx, verifier));
     append(register_trade_booking_handlers(nats, ctx, verifier));
     append(register_trade_id_type_handlers(nats, ctx, verifier));
+    append(register_product_type_asset_class_handlers(nats, ctx, verifier));
     append(register_structure_handlers(nats, ctx, verifier));
     append(register_structure_kind_handlers(nats, ctx, verifier));
     append(register_structure_member_handlers(nats, ctx, verifier));

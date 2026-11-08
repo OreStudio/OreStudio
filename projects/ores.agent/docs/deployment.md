@@ -1,6 +1,6 @@
-# Separate application deployment
+# Deploy the agent separately
 
-Build and package in the component checkout, using Node 22.11+:
+Use Node 22.11 or later. Run these commands from `projects/ores.agent`:
 
 ```text
 npm ci --ignore-scripts
@@ -8,59 +8,61 @@ npm run verify
 npm run package
 ```
 
-These commands never invoke CMake, install models or start services. Verification
-includes complete offline replay handling gates; blocked business
-capabilities remain explicitly blocked. See [reproducible evaluation](reproducible-evaluation.md).
-The package
-contains a bundled `agent.mjs`, dependency-free `service.mjs` and a manifest
-with source revision and file checksums. Transfer that artifact to the target
-Windows or Linux host. No npm installation is required there; Node is required.
-The source-free build option `ORES_AGENT_SOURCE_REVISION` must be a full Git SHA
-supplied by the build pipeline; otherwise packaging reads the checkout's HEAD.
+The commands do not run CMake, download models or start services. The package
+contains `agent.mjs`, `service.mjs` and a manifest with source revision and hashes.
+A target host needs Node but does not need npm dependencies or the checkout.
+For a source archive, set `ORES_AGENT_SOURCE_REVISION` to the full Git SHA before
+packaging. Otherwise, packaging reads HEAD.
 
-Installation and configuration are separate operations:
+## Install and configure
 
 ```text
-node scripts/deploy.mjs install <artifact-directory> <app-root-outside-checkout>
-node scripts/deploy.mjs configure <app-root> <installed-release-directory>
+node scripts/deploy.mjs install <ARTIFACT_DIRECTORY> <APP_ROOT>
+node scripts/deploy.mjs configure <APP_ROOT> <INSTALLED_RELEASE>
 ```
 
-Install verifies hashes and refuses to overwrite a damaged existing release.
-Releases include manifest identity in their directory names. Configure preserves
-an existing private `config/agent.json` and writes an explicit `service.json`.
-Set NATS URL/prefix, a dedicated client certificate/CA/key and the separate
-inference key-file path in agent.json. No main-server `.env` is loaded or edited.
-Protect configuration/key directories with the operating system's user ACLs;
-POSIX-created private files use mode 0600. See backend-contract.md for broker
-ACL limits and mcp.md for the local bearer authentication profile.
+Put `<APP_ROOT>` outside the checkout and main server installation. Install
+checks file hashes and refuses to overwrite a damaged release. Configure selects
+a release in `service.json`. It preserves existing `config/agent.json`.
 
-Use the **installed** lifecycle script; the checkout is not needed to operate:
+Set the NATS URL, prefix, CA, client certificate and key in that private config.
+Set the inference URL and `apiKeyFile`. The agent does not load the main `.env`.
+Protect configuration, keys and logs with file permissions. See the
+[backend contract](backend-contract.md) for access limits.
+
+## Operate the installed release
 
 ```text
-node <release>/service.mjs start <app-root>/service.json
-node <release>/service.mjs status <app-root>/service.json
-node <release>/service.mjs stop <app-root>/service.json
+node <INSTALLED_RELEASE>/service.mjs start <APP_ROOT>/service.json
+node <INSTALLED_RELEASE>/service.mjs status <APP_ROOT>/service.json
+node <INSTALLED_RELEASE>/service.mjs stop <APP_ROOT>/service.json
 ```
 
-The detached supervisor owns exactly one child and authenticates control
-requests over a random loopback port with a private per-run secret. It does not
-signal processes based on a saved PID. Invalid or stale control records fail
-closed; inspect `run/stdout.log`, `run/stderr.log` and the recorded supervisor
-before removing a stale record manually. There is no automatic restart policy
-or OS boot registration in this local version. Startup has a 30-second health
-deadline; a failed health check leaves diagnostic state for status/stop.
-`/readyz` checks NATS readiness; MCP tools can remain available while inference
-is stopped. Chat failures identify inference unavailability separately.
+The supervisor controls only its own child. It authenticates control requests;
+it does not stop a process using a saved PID alone. Startup allows 30 seconds
+for health. Inspect `run/stdout.log` and `run/stderr.log` after failure.
+There is no automatic restart policy or OS boot registration.
 
-Upgrade: install a new artifact, stop the current app, configure the new release
-and start it. Rollback: stop, configure an existing older release, start. This
-never rebuilds or touches OreStudio or inference. Operator configuration and
-keys survive release changes; sessions do not survive process restarts.
-Inference uses its own root, spec and lifecycle. After configuring inference,
-its lifecycle is also copied to `<inference-root>/service.mjs` so it can be
-operated without the checkout. Neither lifecycle controls the other component.
+| Endpoint | Purpose |
+| --- | --- |
+| `/` | Chat UI |
+| `/mcp` | Authenticated MCP |
+| `/healthz` | Agent process health |
+| `/readyz` | NATS connection readiness |
 
-The manual GitHub workflow verifies Windows/Linux on Node 22/24; it has no PR
-trigger. Local Linux validation also runs in a disposable Node container with
-only component source mounted, without backend credentials. A Linux NVIDIA
-host is still required to validate the native CUDA runtime on that OS.
+Readiness does not prove model readiness or business-data availability.
+MCP read tools can work while inference is stopped.
+
+## Upgrade or roll back
+
+Install the selected artifact. Stop the current agent with its installed
+controller. Configure the selected release, then start it. Keep the previous
+release for rollback. Private config survives; login sessions do not.
+
+This procedure does not control OreStudio, NATS or inference. Inference has its
+own root and [lifecycle](inference.md). Agent code changes need a new package;
+evaluation-only runs and document edits need no deployment.
+
+The manual CI workflow covers Windows/Linux with Node 22/24. It has no PR trigger.
+See [validation](validation.md) for actual runs; configured CI is not evidence
+that CI or native Linux CUDA has run.

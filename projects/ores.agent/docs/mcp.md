@@ -1,40 +1,37 @@
 # External MCP clients
 
-The combined application serves `/mcp` using the official TypeScript SDK's
-production HTTP handler and Node adapter. It supports revisions 2026-07-28
-and 2025-11-25 (stateless Streamable HTTP compatibility). There is no separate
-gateway process and no MCP loopback in the built-in agent. SDK request
-cancellation reaches the same shared executor as local tool requests.
-Version 0.1.4 exposes 14 tools, including `summarize_scope_results` for historical
-book/portfolio NPV and bounded contributor drill-down. Version 0.1.5 extends
-that tool with [raw Greek buckets](greeks.md) using existing metric reads.
+The agent process serves `/mcp` through the official TypeScript SDK.
+It supports protocol revisions 2026-07-28 and 2025-11-25 using Streamable HTTP.
+There is no separate gateway. Chat and MCP share one tool executor.
+MCP calls do not require the language model.
 
-This first deployment uses an explicit **local bearer authentication profile**,
-not OAuth discovery. Sign in to `POST /auth/login` with `principal`, `password`
-and, where needed, `partyId`. Supply the returned short-lived `accessToken` as
-`Authorization: Bearer ...` on every MCP exchange. Configure it privately in
-clients that support custom headers. Never copy the backend session token or
-NATS keys to an MCP client. `POST /auth/logout` revokes the agent token.
-An MCP session identifier is not an authentication credential. No OAuth
-authorization-server metadata is advertised; clients requiring automatic
-OAuth enrollment are not supported in this local version.
+## Sign in
 
-Only loopback binding is accepted. For remote hosting use a TLS reverse proxy,
-preserve Authorization and the expected loopback Host header, and configure
-the exact browser Origin if browser access is required. Do not expose the
-loopback login/MCP listener directly to a network. A future hosted auth profile
-should use the deployment's authorization server rather than inventing OAuth
-inside OreStudio.
+1. Send `POST /auth/login` with `principal`, `password` and optional `partyId`.
+2. Read the returned `accessToken`.
+3. Send `Authorization: Bearer <TOKEN>` on every MCP request.
+4. Send `POST /auth/logout` with that header to revoke the token.
 
-Run `node scripts/smoke-mcp.mjs <agent-url> <private-credentials-json> <party-uuid>`
-to verify discovery and live currency reads without running a model. It uses
-the official independent client SDK, signs out, and never prints credentials.
-The initial Windows smoke on 2026-11-06 discovered three read tools and read the
-first three of 170 real currencies under Acme's selected party. Automated
-tests additionally reject missing/revoked bearer credentials and injected
-tenant arguments.
+Use a client that supports private custom headers. An MCP session ID is not a
+credential. Do not give clients the backend token or NATS keys.
 
-Version 0.1.1 adds `read_fx_spot` and `read_ir_rate` to the same catalogue.
-Both use the shared selected-party lookup and return structured ambiguity,
-freshness and missing-data statuses; see market-lookups.md. Automated MCP client
-tests execute a dated FX lookup, not just catalogue discovery.
+This is a local bearer profile. It does not provide OAuth discovery or automatic
+client enrollment. The listener accepts loopback binding only. Remote hosting
+needs a separately reviewed authentication profile, TLS proxy and Origin rules;
+a proxy alone does not complete that work.
+
+## Tools and checks
+
+The catalogue has 14 read-only tools. It covers currencies, market data,
+discovery, stored values, run status and scope NPV/Greeks. See the business
+guides in the [README](../README.md). SDK cancellation reaches the shared executor.
+An in-flight NATS read can still finish at its deadline.
+
+```text
+node scripts/smoke-mcp.mjs <AGENT_URL> <PRIVATE_CREDENTIALS_JSON> <PARTY_UUID>
+```
+
+The smoke uses an independent SDK client, reads currencies and signs out.
+It does not print credentials. Tool tests also cover revoked tokens, invalid
+arguments and selected-party checks. See [validation](validation.md) for dated
+live results and remaining security checks.

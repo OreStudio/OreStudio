@@ -1,98 +1,51 @@
-# Stage 1: trade and reference-data discovery
+# Find trades and reference data
 
-Agent version 0.1.2 adds `find_trades`, `read_trade`, `find_books`,
-`find_portfolios` and `find_counterparties`. Internal chat and external MCP use
-the same typed execution, per-user NATS session, limits and validation. No
-mutation tools are added. No OreStudio server source/build or broker
-configuration changes are required; only existing read subjects are added to
-the adapter allowlist. The standalone agent is released independently.
+Tools: `find_trades`, `read_trade`, `find_books`, `find_portfolios` and
+`find_counterparties`. All are read-only and use the shared chat/MCP executor.
 
-Try:
+Examples:
 
 - “Show my books.”
-- “Show trades in book Group.” Then reply “Group FX Hedges”.
+- “Show trades in book Group FX Hedges.”
 - “Show trades in portfolio Group Treasury Portfolio.”
-- “Read trade 049da6ed-e746-5cf4-af7a-399e045e9849.”
 - “Find counterparty CARECR9.”
+- “Read trade <TRADE_UUID>.”
 
 ## Search and scope
 
-Trade queries match UUID, origin reference or trade type, case-insensitively.
-They do not search currency-pair economics. Optional book/portfolio names or IDs
-are resolved against the selected party. Exact names/IDs take precedence over
-substring matches. Multiple matches require a choice; no arbitrary entity is
-selected. A pending scoped membership choice lasts five minutes in that session
-only. A different question, logout or restart discards it.
+Trade search matches UUID, origin reference or trade type. It does not search
+currency-pair terms. Exact names/IDs take priority over substring matches.
+Multiple matches require a choice. A pending choice lasts five minutes.
 
-Book/portfolio membership queries use `trading.v1.ops.export_portfolio`, the
-existing read-authorized inline export. The server resolves taxonomy membership;
-the agent never derives membership from similar names. The storage-export and
-booking commands are not allowlisted. Returned trade identities must match the
-selected tenant/party. Book and portfolio catalogues also restrict that party.
-Counterparties are an entitled **tenant** catalogue without a party ownership
-field; the UI/evidence labels that distinction rather than inventing one.
+Book/portfolio membership comes from the existing inline `export_portfolio`
+operation. Similar names do not establish membership. Trades, books and
+portfolios must match the selected tenant/party. Counterparties form an entitled
+tenant catalogue; they do not have an invented party owner.
 
-Reference/trade catalogue scans are complete within a 2,000-row ceiling. They
-use a shared as-of snapshot per request and validate page counts and duplicates.
-Inline membership export is limited to 1,000 trades and must reach a short final
-page. A ceiling or inconsistent read produces an error, not a false global
-absence or complete total. Output pages contain at most 25 records and expose
-offset/total matches. Business results are rendered from validated evidence.
-
-The real counterparty catalogue contains 2,454 records. Exact short-code reads
-and UUID-filtered reads avoid scanning it. Name/substring searches operate on
-one explicitly labelled catalogue page; `nextOffset` allows continuation. A
-partial page never proves global absence or uniqueness, including the last
-page when earlier pages were not included. An efficient global name-search
-filter would be a future backend enhancement; it is not implemented here.
+Most catalogue scans have a 2,000-row ceiling. Membership export allows 1,000
+trades. Output pages allow 25 rows. Duplicate or inconsistent pages produce an
+error. Counterparty name searches cover one labelled catalogue page; use
+`nextOffset` to continue. A page cannot prove global absence or uniqueness.
+Exact short-code and UUID reads avoid a full counterparty scan.
 
 ## Trade details
 
-`read_trade` first validates the trade header's tenant and selected party before
-requesting related data. It reads booking, direct portfolio links and typed
-instrument data. The booked book must be in the selected party's catalogue.
-Direct portfolio assignments are separate from the book's parent hierarchy;
-all linked portfolios must be in scope and the hierarchy must be acyclic.
-Counterparty details use an exact ID lookup. The trade header is read again to
-detect changes while assembling the view; this is not a server-wide atomic
-snapshot across every related table.
+The tool checks ownership before related reads. It returns booking, counterparty,
+book hierarchy and direct portfolio assignments. Those assignments are separate
+from the booking hierarchy. Cycles and foreign links are rejected.
+The header is read again to detect changes; this is not an atomic snapshot of
+all related tables.
 
-FX-forward economics include bought/sold currency and precise decimal amounts,
-value date and settlement. Amounts are not converted through floating-point
-display arithmetic. Bond instruments expose issue UUID and notional only,
-labelled `issue_reference_only`; coupon, schedules and full issue economics are
-not inferred. Missing instruments and unsupported products have explicit status.
-No NPV, valuation, draft creation or booking is performed by these tools.
+FX forwards include bought/sold amounts and currencies, value date and settlement.
+Decimal amounts are preserved. Bonds expose issue ID and notional only, labelled
+`issue_reference_only`. Missing or unsupported terms are not inferred.
+These tools do not value or book a trade.
 
-Only tools relevant to the question domain are sent to the small local model:
-business discovery or market-data tools, reducing irrelevant tool choices.
-External MCP still advertises the full catalogue. This selection is a context
-budget mechanism; authorization remains in the shared executor/backend. The
-initial 4096-token inference window was expanded to 262144 on 2026-11-07;
-see [inference deployment](inference.md). Domain selection remains useful.
-
-## Validation
-
-Fixtures cover scoped searches, denied/malformed pages, duplicate-name
-resolution, exact membership requests, precise FX economics, hierarchy versus
-direct assignments, cross-party identity rejection and changed versions.
-The independent MCP client executes discovery reads. Actual CUDA LFM3 questions
-exercise book listing, ambiguous-book clarification, trade details and exact
-counterparty lookup. Existing FX/IR/currency regression checks remain required.
-
-Run the read-only Acme integration check:
+## Check existing data
 
 ```text
-node scripts/smoke-discovery.mjs <agent-url> <private-credentials.json> <Acme-Plc-party-id> <optional-other-party-id>
+node scripts/smoke-discovery.mjs <AGENT_URL> <PRIVATE_CREDENTIALS_JSON> <PARTY_UUID> <OPTIONAL_OTHER_PARTY_UUID>
 ```
 
-The optional second-party check logs in separately and confirms the first
-party's known trade cannot be read through that second agent context. It does
-not establish low-privilege-role coverage or cross-tenant broker isolation.
-Keep the previously documented hosted-auth/broker and Linux GPU gates open.
-
-Live data verified during implementation: two books, three portfolios, 73
-selected-party trades (63 FX forwards and 10 bonds). “Group FX Hedges” contains
-63 trades. The sampled FX-forward read includes booking, counterparty and
-economics; its direct portfolio-link list is empty while its booking hierarchy
-contains Group Treasury Portfolio. These distinct facts must not be conflated.
+The second-party check uses a separate login. It does not prove low-permission
+or cross-tenant security. Historical results are in [validation](validation.md).

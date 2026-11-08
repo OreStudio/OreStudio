@@ -1,10 +1,11 @@
-# Stage 4 evaluation baseline — 2026-11-07
+# Historical Stage 4 evaluation baseline
 
-Stage 4 is delivered: a runnable evaluator, versioned corpus and complete
-reports, including failures. This is an initial measurement, not completion of
-every business use case. Implementation: `ebb7fe7849d2089da0444f250bbe32edddfbf405`;
-corpus 1.0.0. See [commands and scoring](evaluation.md) and the reviewed
-[machine-readable aggregate](../evals/baselines/stage4-2026-11-07.json).
+Recorded 2026-11-07. Code: `ebb7fe7849d2089da0444f250bbe32edddfbf405`.
+Corpus: 1.0.0. This is the frozen initial measurement, not the current score.
+See [current validation](validation.md), [run commands](evaluation.md) and the
+[reviewed aggregate](../evals/baselines/stage4-2026-11-07.json).
+
+## Results
 
 | Profile | Cases | Handling passed | Overall passed | Failed checks | Overall blocked data | Errors |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -12,69 +13,38 @@ corpus 1.0.0. See [commands and scoring](evaluation.md) and the reviewed
 | Local GPU model / fixtures | 21 | 14 | 12 | 7 | 2 | 0 |
 | Local GPU model / existing live reads | 18 | 13 | 11 | 5 | 2 | 0 |
 
-Replay also has two overall `blocked_backend` outcomes. In both real-model
-profiles, the report/booking capability gaps are still recorded separately;
-their failed handling checks take precedence in the overall outcome. Missing
-IR observations and vega remain blocked data. All selected cases stay in the
-denominator. Replay is scripted inference, not model-quality evidence.
-One repetition per real-model profile does not establish general accuracy or
-latency. Handling correctness and business fulfillment remain separate scores.
+Replay also had two `blocked_backend` outcomes. In real-model profiles, failed
+handling took priority over report/booking capability gaps. Missing IR and vega
+remained blocked data. All selected cases stayed in the denominator.
+Each real-model profile ran once. Replay was not model-quality evidence.
 
-## Findings for Stage 5
+## Retained failures
 
-The fixture-model profile failed automated checks for scope NPV/Delta date
-arguments, the Gamma factor argument, report and booking refusal, a natural-date
-FX paraphrase and a scope-value paraphrase. The live profile failed checks for
-trade NPV selection, report and booking refusal, natural-date FX (turn budget)
-and the scope-value paraphrase. These traces identify work to inspect; they do
-not automatically identify the agent or backend as the cause.
+Model/fixture failures covered scope dates, Gamma factor, refusals and natural
+phrasing. Live failures covered trade selection, refusals, natural-date FX and
+scope phrasing. A trace needs review before assigning the cause.
 
-**Known oracle false negative:** the booking answer correctly refuses creation
-using wording such as “unable to place” and “cannot create”, which the bounded
-keyword matcher does not recognise. The frozen baseline retains that failed
-check. Review and version any oracle correction explicitly in Stage 5, then
-compare results without hiding this original result. Other failures include
-strict request-argument checks even where returned figures can be correct.
+The booking-refusal oracle had a known false negative: correct “unable to place”
+or “cannot create” wording did not match its keywords. The original failed
+check remains recorded. Later results must not overwrite this baseline.
 
-No unavailable positive IR/vega or command capability is claimed. Future server
-contracts remain [separate proposals](architecture-future-prs.md).
+## Validation and source records
 
-## Validation and provenance
+85 tests passed on Windows and Linux. All 26 Linux replay outcomes and source
+fingerprints matched. Windows used Node v24.16.0; Linux used v24.22.2 in the
+pinned image recorded in [validation](validation.md). The extracted archive's
+Git revision was `unknown`; the archive revision/fingerprints identify its source.
 
-All **85 component/harness tests pass on Windows and Linux**. Linux additionally
-reproduced all 26 replay outcomes, with matching source fingerprints. Its source
-archive was created from the implementation revision above; the extracted
-archive report itself records Git revision `unknown`. Linux Node was v24.22.2;
-Windows Node v24.16.0. Pinned Linux image:
-`node@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9`.
-This is Linux test/replay evidence, not native Linux NVIDIA validation.
+The model/live runs used LFM3 QAD Q4_0, llama.cpp b12172, configured context
+262144, output allowance 2048 and temperature 0.1. These identify configured
+files, not the running process's loaded bytes.
 
-The Windows baseline reports record a clean component at that revision. Local
-model/live runs used existing llama.cpp b12172 and official LFM3-1.7B QAD Q4_0,
-with matching GGUF hash, configured context 262144 and CUDA offload. Model
-requests allowed 2048 output tokens with temperature 0.1. Full hashes/settings
-are in the reviewed aggregate. These identify configured artifacts and do not
-attest which bytes an already-running process loaded.
+Normal runs returned 0 despite failures. Strict replay returned 2 because blocked
+capabilities reduced the overall rate. The installed agent stayed at 0.1.5.
+No production/backend code, business records or broker configuration changed.
+The 19 inspected native/broker/inference PIDs, agent PID and private config stayed
+unchanged. Health/readiness checks returned 200.
 
-Normal completed evaluations returned 0 despite failures. Strict replay returned
-the expected 2 because blocked capabilities lower the all-case pass rate;
-deterministic CLI tests also cover setup errors and refusal to overwrite reports.
-
-Private evidence is retained under ignored `build/output/`:
-
-- `agent-evals-stage4-{replay,model,live}/`: `results.json`, `summary.md`, progress
-  and reservation metadata; raw traces may contain business data.
-- `agent-evals-stage4-strict/`: strict-mode report.
-- `agent-evals-stage4-linux/replay/`: Linux replay report.
-- `agent-evals-stage4-windows-test.log` and
-  `agent-evals-stage4-linux-check.log`: test evidence.
-
-Only reviewed aggregates are committed. No production agent source, reporting/
-main-server/ORE source, broker configuration or business records changed in
-this stage. Live checks used existing reads and normal login/logout only.
-The installed agent remains `0.1.5-cf24e13db443`; no deployment was needed.
-All 19 inspected native/broker/inference PIDs, the agent PID and private config
-hash stayed unchanged. Main app, agent health and readiness returned HTTP 200.
-
-Next: Stage 5 agent/evaluation improvements against this frozen evidence,
-retaining failures, blocked capabilities and explicit oracle revisions.
+Private evidence: `build/output/agent-evals-stage4-{replay,model,live}/`,
+`agent-evals-stage4-strict/`, `agent-evals-stage4-linux/replay/` and
+`agent-evals-stage4-{windows-test,linux-check}.log`.

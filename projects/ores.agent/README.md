@@ -1,55 +1,41 @@
 # OreStudio Agent
 
-This component now has a read-only agent UI and a standard MCP endpoint in one
-process. OreStudio access uses NATS only; llama.cpp is a separate inference
-process. Neither is part of the main CMake build or existing deployment fleet.
+Current code: **0.1.9**. This is a local, read-only assistant. Chat and MCP share
+one process. Business calls use NATS. A separate llama.cpp process runs the model.
+The agent has its own build and deployment. It does not use the main CMake build.
 
-See [deployment](docs/deployment.md), [CUDA inference](docs/inference.md),
-[agent usage](docs/agent.md), [external MCP](docs/mcp.md) and
-[backend contract](docs/backend-contract.md) for current runnable instructions.
-Version 0.1.1 adds [FX spot and basic IR lookups](docs/market-lookups.md), with
-exact point matching, provider clarification and dated freshness information.
-The [active implementation plan](docs/business-use-cases-plan.md) now focuses
-on agent evaluations, an honest failing/blocked baseline and agent-only
-improvements using existing APIs. Reporting/server architecture and command
-capabilities are [separate future PR proposals](docs/architecture-future-prs.md)
-for project-lead discussion; they do not block the evaluation work.
-The [Stage 4 evaluation runner](docs/evaluation.md) provides offline replay,
-real-model/fixture and opt-in live-read profiles via `npm run eval`. Reports
-retain failures and blocked capabilities; normal mode does not require high scores.
-The [Stage 0 baseline](docs/business-baseline.md) records live data readiness
-and how to rerun the read-only operator inspection.
-Version 0.1.2 adds [Stage 1 discovery](docs/discovery.md): trades, books,
-portfolios, counterparties and scoped trade economics.
-Version 0.1.3 adds [stored trade results and run health](docs/reporting.md),
-with explicit handling of partial output. Its [clean live NPV gate](docs/valuation-validation.md) passed separately.
-Version 0.1.4 adds [historical book/portfolio NPV summaries](docs/scope-reporting.md)
-with complete coverage checks, explicit currency metadata and paginated contributors.
-Version 0.1.5 adds [stored raw Greek buckets](docs/greeks.md): Delta, Gamma,
-cash vega at its stated volatility bump, and signed ORE rate Delta at a 1bp
-target bump. Exact factor/bump/scenario/currency buckets remain separate;
-missing members withhold that bucket's total.
-Version 0.1.6 adds [bounded intent and conversation improvements](docs/intent-workflows.md)
-measured against the frozen Stage 4 evaluations and separate paraphrases.
-Version 0.1.7 adds [reproducible verification/comparison and private timing](docs/reproducible-evaluation.md).
-Version 0.1.8 adds [typed request/clarification handling and review regressions](docs/request-plan.md).
+## Start here
 
-Requires Node 22.11+. From this component directory:
+| Need | Guide |
+| --- | --- |
+| Use chat and see examples | [Agent](docs/agent.md) |
+| Install, start, stop or roll back | [Deployment](docs/deployment.md) |
+| Configure CUDA and the model | [Inference](docs/inference.md) |
+| Connect an external MCP client | [MCP](docs/mcp.md) |
+| Understand identity and NATS access | [Backend contract](docs/backend-contract.md) |
+| Run evaluations | [Evaluation](docs/evaluation.md) |
+| Compare results and inspect timing | [Repeatable evaluation](docs/reproducible-evaluation.md) |
+| Review current scope and remaining work | [Business plan](docs/business-use-cases-plan.md) |
+| Discuss future server changes | [Architecture proposals](docs/architecture-future-prs.md) |
+| Check release evidence and known gaps | [Validation](docs/validation.md) |
 
-```sh
+Use Node 22.11 or later. From this directory:
+
+```text
 npm ci --ignore-scripts
 npm run verify
 npm run package
 ```
 
-Build/package creates an artifact without starting services. Install and
-configure that artifact outside the checkout as described in the deployment
-guide; no production npm install is needed. Use the dedicated inference
-installer for LiquidAI/LFM3-1.7B QAD Q4_0 and CUDA llama.cpp. Models, private
-configuration, keys, logs and process state remain outside Git.
+These commands test and package the agent. They do not deploy it, start services
+or download a model. Keep private configuration, keys, reports and model files
+outside Git.
 
-`/` serves the agent UI, `/mcp` serves authenticated external clients,
-`/healthz` checks process liveness and `/readyz` checks NATS readiness.
-The process binds loopback; remote hosting requires a TLS proxy and explicit
-Origin configuration. See [plan](docs/plan.md) for the agreed scope and
-[validation](docs/validation.md) for tested deployments and remaining limits.
+Business guides: [market data](docs/market-lookups.md),
+[discovery](docs/discovery.md), [trade values](docs/reporting.md),
+[scope totals](docs/scope-reporting.md) and [Greeks](docs/greeks.md).
+Design: [runtime layout](docs/plan.md), [intent](docs/intent-workflows.md) and
+[typed requests](docs/request-plan.md).
+
+Dated baseline and validation pages are historical evidence. They are not current
+setup instructions. Their links are in [validation](docs/validation.md).

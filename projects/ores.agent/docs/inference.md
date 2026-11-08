@@ -1,76 +1,70 @@
-# Independent native CUDA inference
+# Separate CUDA inference
 
-The user selected **LiquidAI/LFM3-1.7B**, official QAD Q4_0, and approved its
-1,049,615,680-byte download. `inference-lock.json` pins the Hugging Face revision,
-LFS SHA-256, model license reference, llama.cpp b12172 and official CUDA archive
-SHA-256 hashes. No model or runtime binary belongs in Git. The model uses the
-LFM Open License; review the upstream license for your intended deployment.
+The selected model is **LiquidAI/LFM3-1.7B**, official QAD Q4_0 GGUF.
+Its approved size is 1,049,615,680 bytes. `inference-lock.json` pins its revision,
+SHA-256, license reference, llama.cpp b12172 and CUDA archive hashes.
+Do not commit model or runtime binaries.
 
-Prerequisites: Node 22.11+ and Python 3.12+ for installation. Windows x64 uses
-native CUDA 12.4 binaries and bundled runtime DLLs. Linux x64 uses the official
-Ubuntu CUDA 12.8 binaries and runtime libraries; use a compatible Ubuntu/glibc
-host and NVIDIA driver. Both require an enabled CUDA-capable NVIDIA GPU. This
-deployment explicitly selects CUDA0 and does not count CPU fallback as success.
+## Install and start
 
-From this component directory, independently of any application build:
+Installation needs Node 22.11+, Python 3.12+ and a CUDA-capable NVIDIA GPU.
+Windows x64 uses native CUDA 12.4 binaries. Linux x64 uses Ubuntu CUDA 12.8
+binaries; it needs compatible glibc and NVIDIA drivers.
+
+From `projects/ores.agent`:
 
 ```text
-python scripts/install-inference.py <inference-root-outside-checkout>
-node scripts/configure-inference.mjs <inference-root>
-node scripts/service.mjs start <inference-root>/service.json
-node scripts/service.mjs status <inference-root>/service.json
-node scripts/service.mjs stop <inference-root>/service.json
+python scripts/install-inference.py <INFERENCE_ROOT>
+node scripts/configure-inference.mjs <INFERENCE_ROOT>
+node <INFERENCE_ROOT>/service.mjs start <INFERENCE_ROOT>/service.json
+node <INFERENCE_ROOT>/service.mjs status <INFERENCE_ROOT>/service.json
+node <INFERENCE_ROOT>/service.mjs stop <INFERENCE_ROOT>/service.json
 ```
 
-Install downloads and verifies artifacts; configure writes a service spec and
-creates a private API-key file once. Neither starts processes. Start consumes
-that spec without compiling or downloading anything. The operator owns the
-spec, key, logs, models and release directories. Retain the key and models
-across runtime upgrades; stop, install/configure the desired pinned release,
-then start. Existing releases remain available for rollback. No backend process,
-database, broker configuration or main application deployment is touched.
+Keep the root outside the checkout. Install downloads and checks files.
+Configure writes a service spec and creates the private key once. Neither starts
+a process. Configure also copies the lifecycle script into the root.
 
-Set the agent's inference `apiKeyFile` to `<inference-root>/config/api-key.txt`.
-It reads the key server-side; never put it in browser configuration. Inference
-binds to 127.0.0.1:20010 with one slot, 262144 context tokens, four CPU threads,
-all model layers requested on CUDA, the GGUF's Jinja chat template, temperature
-0.1, top_k 50 and repeat penalty 1.1. Logs are private operational artifacts;
-verbose runtime logs may include prompt content. Use verbosity 3 after diagnosis.
+Set the agent's `inference.apiKeyFile` to
+`<INFERENCE_ROOT>/config/api-key.txt`. Keep the key server-side.
 
-The initial smoke deployment used an explicit 4096-token context, which limited
-the model despite its advertised and GGUF-declared 262144-token capacity. The
-launcher now requests its full context. Context includes input and output;
-the agent separately sends `max_tokens: 2048` by default to limit generated
-output per call. Set `inference.maxOutputTokens` in the private agent config
-to an integer from 128 to 8192 to override it. The previous 512-token allowance
-intermittently exhausted generation before a complete tool call was returned.
-Replies with `finish_reason: length` remain errors, never accepted partial calls.
-Increasing context does not remove that output budget or the agent's bounded
-tool-result and HTTP payload sizes. The configured context is capacity, not a
-requirement to fill each request; GPU memory and long-prompt latency must still
-be checked on each deployment host.
+## Configured limits
 
-Windows revalidation, 2026-11-07: the running b12172 server reports
-`n_ctx = 262144`, `n_ctx_seq = 262144` and all 25/25 layers offloaded.
-CUDA KV buffers are 3072.00 + 7.50 MiB; `nvidia-smi` reported 4548 MiB
-total device usage with 3401 MiB free. Plain generation, a structured tool
-call and fixture replay passed in 3.9 seconds combined. A separate request
-with 7225 prompt tokens completed normally in 2.9 seconds (365 output tokens),
-proving acceptance beyond the old limit. This verifies configuration and a
-longer request, not retrieval quality or latency at a fully occupied 256K window.
+| Setting | Value |
+| --- | --- |
+| Address / model alias | `127.0.0.1:20010` / `lfm3-1.7b` |
+| Context / parallel slots | 262144 tokens / 1 |
+| GPU | CUDA0; all layers requested |
+| CPU threads / batch threads | 4 / 4 |
+| Template | GGUF Jinja template |
+| Temperature / top_k / repeat penalty | 0.1 / 50 / 1.1 |
+| Agent output allowance | 2048 tokens |
 
-Run `node scripts/smoke-inference.mjs <agent-config.json>` to check plain
-generation, a structured tool call and replay. Its replay data is explicitly
-a fixture. The end-to-end agent check separately retrieves real backend data.
-Confirm `offloaded 25/25 layers to GPU` in `run/stderr.log` and inspect GPU
-memory; a healthy HTTP response alone is insufficient.
+Context includes input and output. Set `inference.maxOutputTokens` in the private
+agent config to 128–8192 to change the output allowance. A response stopped by
+`finish_reason: length` is rejected. Agent payload and tool limits still apply.
 
-Windows evidence, 2026-11-06: llama.cpp 0.9.0-dev build 12172, commit
-5d3ed2ae7; RTX 4070 Laptop GPU 8188 MiB, driver 577.02. All 25/25 layers
-offloaded; CUDA model buffer 993.13 MiB, KV buffers 55.50 MiB, compute buffer
-65.82 MiB. Health and three generation checks passed (3.4–3.9 seconds combined
-in two smoke runs; not a throughput benchmark). Linux GPU execution still
-requires validation on a Linux NVIDIA host; Windows validation does not prove it.
+The earlier 4096-token context and 512-token output allowance are obsolete.
+Full context is capacity, not proof of quality or speed with a 256K-token prompt.
+Check GPU memory on each host. CPU fallback is not a CUDA test pass.
 
-Sources: [official model card](https://huggingface.co/LiquidAI/LFM3-1.7B-GGUF),
-[pinned runtime release](https://github.com/ggml-org/llama.cpp/releases/tag/b12172).
+## Check the deployment
+
+```text
+node scripts/smoke-inference.mjs <PRIVATE_AGENT_CONFIG>
+```
+
+This checks text generation, a structured tool call and fixture replay. It does
+not prove live business-data access. Inspect runtime logs for GPU offload.
+Logs can contain prompt text; protect them.
+
+Windows check, 2026-11-07: RTX 4070 Laptop GPU, 25/25 layers on CUDA,
+`n_ctx=n_ctx_seq=262144`. Device usage was 4548 MiB, with 3401 MiB free.
+A 7225-token prompt completed. This did not test a full 256K prompt.
+Native Linux NVIDIA execution remains unverified.
+
+To upgrade, stop inference, install/configure the pinned release, then start.
+Keep the key and model store. This does not redeploy the agent or main server.
+
+References: [official model and license](https://huggingface.co/LiquidAI/LFM3-1.7B-GGUF),
+[pinned runtime](https://github.com/ggml-org/llama.cpp/releases/tag/b12172).

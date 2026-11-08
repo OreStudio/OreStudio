@@ -1,60 +1,56 @@
-# Built-in agent
+# Use the agent
 
-Open the combined application's `/` page, sign in using your OreStudio account,
-and select a party when required. The browser holds only an ephemeral agent
-access token in memory. Refreshing the page requires signing in again. It does
-not receive the backend token, NATS certificate or inference API key. Sign out
-revokes the session; Cancel aborts the request and inference fetch. Replies use Markdown for headings, tables, lists and code blocks. Raw HTML
-and images are disabled. Tool evidence stays in a separate plain-text panel.
-The chat API returns the source in `answer` and safe HTML in `answerHtml`.
+Open the agent URL. The local installation uses
+[http://127.0.0.1:20100/](http://127.0.0.1:20100/).
+Sign in with an existing OreStudio account. If sign-in lists parties, enter one
+of their IDs and sign in again.
 
-Try: “List the first three configured currencies. Use limit 3 and offset 0.”
-Discover a series with `list_market_series`, then ask for observations using
-its exact ID. Search applies only to a requested page; it is not a global
-instrument resolver. No booking, quote calculation or database access is
-exposed. This is the plan's first read-only deliverable, not the future trading
-workflow described in the issue comments.
+The browser keeps a short-lived agent token in memory. Refresh requires sign-in.
+Sign out revokes the token. Cancel stops the chat request and inference fetch;
+an in-flight NATS read can continue until its deadline.
 
-`POST /chat` accepts `{ "message": "..." }` and the same Bearer authentication
-as MCP. General conversation history is not persisted. Version 0.1.1 retains
-only a pending market provider/series clarification for five minutes within
-the same authenticated session; see [market lookups](market-lookups.md).
-The model receives the shared tool catalogue, proposes typed tool calls, and
-the agent invokes `ToolExecutor.execute` directly in this process. It never
-creates an MCP client or calls its own HTTP listener. Both entry paths use
-the same validation, user/party identity, budgets and NATS adapter.
+## Example questions
 
-Version 0.1.4 adds [scope summaries](scope-reporting.md). Book/portfolio NPV
-questions receive a narrow catalogue, use a literal historical scope and
-require an explicitly selected run. Pending run/scope choices are private to
-the session for five minutes. Totals and contributor figures render directly
-from validated results. Greek requests cannot be silently changed to NPV.
-Version 0.1.5 adds [raw sensitivity buckets](greeks.md) for Delta/Gamma, vega
-at its stated volatility bump and signed ORE rate Delta at a 1bp target bump.
-Only complete buckets have full-scope totals; sparse results stay explicit.
+- “List the first three configured currencies.”
+- “Show my books.”
+- “What was EUR/USD spot from ore on 2016-12-30?”
+- “What is the base NPV of book Group FX Hedges from run <RUN_UUID>?”
+- “Show Delta for book Group FX Hedges from run <RUN_UUID> for factor DiscountCurve/GBP/0/1Y.”
 
-Version 0.1.6 adds [bounded read-intent workflows](intent-workflows.md): broader
-catalogue routing, preservation of explicit dates/bucket selectors, deterministic
-command refusal and identity-bound clarification state. Invalid units/provenance
-withhold the requested result explicitly instead of substituting another lookup.
+Replace `<RUN_UUID>` with a stored run ID. Missing data, ambiguous choices and
+invalid units can prevent an answer. The agent does not book trades, run reports
+or provide executable quotes.
 
-Version 0.1.7 adds private correlated timing for chat selection, inference,
-tool/adapter reads and formatting. The response `x-request-id` links its timing
-spans without including request text, arguments, identities, data or exception
-messages. See [reproduction and measurement definitions](reproducible-evaluation.md).
+Replies support Markdown headings, tables, lists and code blocks. Raw HTML and
+images are disabled. Open **OreStudio tool evidence** to inspect source data.
+Model text can be wrong. Scope totals are calculated by the agent from checked
+reads; they are not a server summary API.
 
-Limits: 2,000-character input, four model rounds, six tool calls, at most four
-proposed calls per response, one active inference request globally, two active
-tools per session, 60 tool calls per minute per session, 32 KiB tool output,
-64 KiB inference reply, 2048 generated tokens by default (configurable through
-`inference.maxOutputTokens`, 128–8192) and a two-minute overall deadline.
-Repeated identical calls do not execute again. Recoverable errors are returned to the model
-without credentials/internal exception details. Expiry and logout are checked
-before accepting results. A prompt is guidance, not an authorization boundary.
-The evidence contains authoritative tool results; model prose can still be wrong.
+## API and conversation
 
-Deterministic tests use labelled fixtures. Live Windows evaluation on 2026-11-06
-used CUDA LFM3 QAD Q4_0 and Acme's real NATS data: the three-currency request
-returned AED, AFN, ALL in 2,237 ms; a sampled empty series returned a clear
-no-observations answer in 1,546 ms. These are individual smoke timings, not
-performance guarantees or a financial-data accuracy benchmark.
+`POST /chat` accepts `{ "message": "..." }` with an agent Bearer token.
+It returns `answer`, rendered `answerHtml`, tool `evidence` and timing fields.
+Use `x-request-id` to find related timing events.
+
+Chat and MCP call the same tool executor directly. The model proposes calls;
+code validates arguments and session identity. Explicit IDs, dates, measures
+and providers cannot be replaced by model guesses.
+
+Pending provider, scope or run choices expire after five minutes. They belong
+to one session. Unrelated messages, logout or restart clear them. There is no
+saved general conversation history.
+
+## Limits
+
+| Limit | Value |
+| --- | ---: |
+| Message | 2,000 characters |
+| Model rounds / tool calls per chat | 4 / 6 |
+| Proposed calls per model response | 4 |
+| Active inference requests | 1 |
+| Concurrent tools / tools per minute per session | 2 / 60 |
+| Tool output / inference reply | 32 KiB / 64 KiB |
+| Overall chat deadline | 2 minutes |
+
+Generated output defaults to 2048 tokens. See [inference](inference.md) for
+configuration and [validation](validation.md) for tested behavior and open gaps.

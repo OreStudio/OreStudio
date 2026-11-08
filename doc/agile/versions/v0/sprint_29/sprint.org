@@ -285,3 +285,6 @@ Health review 1 graded the sprint RED on day 16 of a planned 7.
 - Make =compass sprint status= read the same state as the sprint table.
 - Shorten the local gate so that it is run to the end.
 
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

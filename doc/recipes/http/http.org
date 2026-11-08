@@ -11,6 +11,10 @@
 
 Recipes related to *HTTP recipes*. Each entry below is a single how-do-I question with executable steps. New recipes go in this folder; re-run no script — just edit this inventory to add a link.
 
+* Building the gateway
+
+- [[id:3A61E5E2-CBD2-47D5-B70C-F656C214937C][How do I add an adapter part to ores.http?]]
+
 * Authentication                                                      :verb:
 
 - [[id:AD6A0BA3-3857-40C9-9A23-57BD240C115E][Check Bootstrap Status]]

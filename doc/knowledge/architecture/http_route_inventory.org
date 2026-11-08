@@ -75,7 +75,7 @@ an API publishes no area, so it is counted under =(none)=.
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, counterparties, curve-configuration, records, refdata, server, tenors | 277 | composed view 1, resource 276 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 44 | composed view 12, resource 32 |
-| simulation | calibration, market-regime, synthetic | 28 | composed view 3, resource 25 |
+| simulation | calibration, market-regime, synthetic | 38 | composed view 3, resource 35 |
 | tenancy | iam, server | 63 | composed view 2, resource 61 |
 | trading | blotter, book-changes, booking, books, structures, trades | 24 | composed view 2, resource 22 |
 | workflow | inbox, server, timeline | 17 | composed view 6, resource 11 |
@@ -135,7 +135,7 @@ change of its own, not part of the port.
 
 * The inventory
 
-725 routes: 322 answered by the BFF and 403 by ores.http.
+735 routes: 322 answered by the BFF and 413 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -567,7 +567,7 @@ change of its own, not part of the port.
 | resource | access | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:254 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
 | resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:328 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
 | resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:256 | Replaces the permissions one role grants with exactly the set sent. |
-| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:152 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:153 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
 | resource | reference-data | get | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:337 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:378 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:391 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
@@ -815,6 +815,16 @@ change of its own, not part of the port.
 | resource | reference-data | get | =/api/v1/reference-data/party_identifiers/{id_value}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:380 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/party_identifiers/{id_value}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:500 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/party_identifiers/{id_value}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:517 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | simulation | get | =/api/v1/simulation/yield_curve_process_types= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:340 | A generated synthetic collection, answering under the published simulation area: the list, one row by key, its versions, and the bulk get. |
+| resource | simulation | post | =/api/v1/simulation/yield_curve_process_types= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:382 | A generated write of a synthetic collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | simulation | put | =/api/v1/simulation/yield_curve_process_types= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:395 | A generated write of a synthetic collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | simulation | post | =/api/v1/simulation/yield_curve_process_types/delete-many= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:438 | A generated write of a synthetic collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | simulation | post | =/api/v1/simulation/yield_curve_process_types/get-many= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:368 | A generated write of a synthetic collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | simulation | post | =/api/v1/simulation/yield_curve_process_types/put-many= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:409 | A generated write of a synthetic collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | simulation | delete | =/api/v1/simulation/yield_curve_process_types/{code}= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:423 | A generated write of a synthetic collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | simulation | get | =/api/v1/simulation/yield_curve_process_types/{code}= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:356 | A generated synthetic collection, answering under the published simulation area: the list, one row by key, its versions, and the bulk get. |
+| resource | simulation | get | =/api/v1/simulation/yield_curve_process_types/{code}/versions= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:453 | A generated synthetic collection, answering under the published simulation area: the list, one row by key, its versions, and the bulk get. |
+| resource | simulation | get | =/api/v1/simulation/yield_curve_process_types/{code}/versions/{version}= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:470 | A generated synthetic collection, answering under the published simulation area: the list, one row by key, its versions, and the bulk get. |
 | resource | operations | get | =/api/v1/system-settings= | ores.http | projects/ores.http/core/src/routes/variability_routes.cpp:47 | The deployment's system settings, the variability component's own collection. |
 | resource | tenancy | get | =/api/v1/tenancy/seed_profiles= | ores.http | projects/ores.http/iam/src/routes/iam/seed_profile_routes.cpp:337 | A generated tenancy collection: the list, one row by key, its versions and the bulk get, published under the area a tenant's own rows answer on. |
 | resource | tenancy | post | =/api/v1/tenancy/seed_profiles= | ores.http | projects/ores.http/iam/src/routes/iam/seed_profile_routes.cpp:378 | A generated write of a tenancy collection: create, replace, remove, or one of the bulk put and delete calls. |

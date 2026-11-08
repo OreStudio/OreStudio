@@ -94,3 +94,7 @@ The hand-written recipes that predate the facet are catalogued separately in
 * Tags
 
 - [[id:B08A234B-9FEF-5B71-B0FC-DC4A43CAA19A][How do I call the tags endpoints over HTTP?]]
+
+* Yield Curve Process Types
+
+- [[id:6E3169FA-98CD-5ACC-B24A-F2403BFEB51A][How do I call the yield_curve_process_types endpoints over HTTP?]]

@@ -26,7 +26,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Six areas answer on the new server: access, auth, assets, changes, reference data and tenancy. |
 | Waiting on    | Nothing.                               |
-| Next          | The next area by resource count: reporting, market data, simulation or trading. |
+| Next          | The next area by resource count: reporting, market data or trading, and the rest of simulation once its adapter is proven. |
 | Last touched  | 2026-11-06                               |
 
 * Coverage, counted from the inventory
@@ -38,26 +38,30 @@ what parity looks like from this angle, not a surplus.
 
 | Area | BFF routes | New server's routes |
 |------+------------+---------------------|
-| access | 31 | 33 |
+| access | 31 | 44 |
 | auth | 18 | 31 |
 | assets | 5 | 29 |
 | changes | 2 | 1 |
 | reference-data | 30 | 247 |
+| simulation | 28 | 10 |
 | tenancy | 21 | 42 |
-| analytics | 6 | 0 |
 | agile | 6 | 0 |
+| analytics | 6 | 0 |
 | grid | 14 | 0 |
 | market-data | 30 | 0 |
 | operations | 5 | 1 |
 | qa | 6 | 0 |
 | reporting | 44 | 0 |
-| simulation | 28 | 0 |
 | trading | 24 | 0 |
 | workflow | 17 | 0 |
 
-The five areas at the top are served; the rest are untouched. Two of the served areas
+The six areas at the top are served; the rest are untouched. Three of the served areas
 are only partly so: the access area's views and the tenancy area's views are composed
-views, which the V increments own.
+views, which the V increments own, and simulation has one collection of its twenty
+models, which is the adapter's first step.
+
+The column favours the new server because a generated collection answers seven verbs
+where the BFF's hand-written route answers one or two. A large number is not a surplus.
 
 * Acceptance
 
@@ -80,6 +84,7 @@ views, which the V increments own.
 | [[id:A441EC2F-9B64-445B-97A9-50A73A44ACDD][Read a list's filter members]] | DONE | 2026-11-07 | 2026-11-07 | The BFF's lists filter on the members a resource names, under an f.<member> parameter, and the generated C++ list route reads none of them. Read the single-valued filter members into the filter the request carries, and document each one where it is read. |
 | [[id:114A065F-7B4B-4DF1-B339-84FC6FEF466F][Serve the tenancy collections]] | DONE | 2026-11-07 | 2026-11-07 | The tenants, their statuses and types, and the seed profiles the browser reads are answered by the BFF only. Serve them from the new server under the tenancy area, and classify the family in the inventory as one rule rather than a row at a time. |
 | [[id:24983ABA-4F85-4776-A6D3-F02FBA336ED5][Serve the contact collection, and guard an entity whose protocol another model owns]] | DONE | | 2026-11-07 | The contact information the browser reads for a person is answered by the BFF alone. Serve it, and refuse the route facet for an entity whose protocol an operation model owns, which is how auth_event was caught: its generated unit included a header that does not exist. |
+| [[id:8F10C573-02A6-40AC-9145-B6377BE58E39][Stand up the synthetic adapter and serve its first collection]] | STARTED | 2026-11-07 | | The synthetic domain has no adapter part in the gateway, so none of its twenty entities can be served. Stand the part up, prove it on one lookup collection, and write down what a new part costs so the next one is a checklist. |
 
 * Decisions
 

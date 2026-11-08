@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 3A61E5E2-CBD2-47D5-B70C-F656C214937C
+:END:
+#+title: How do I add an adapter part to ores.http?
+#+description: Stand up a new per-domain adapter part in the gateway: the component model, the composite wiring, the four CMake files, the aggregate, and the server registration.
+#+type: recipe
+#+level: cross
+#+filetags: :http:codegen:component:recipe:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+
+The gateway serves each domain through one adapter part named after the
+domain. The parts are described in
+[[id:09BD5681-9C12-469A-80DA-27D1DF9D0808][ores.http]], and
+[[id:B8376009-B47E-4B2F-ADD8-AD6B79D1A7AC][ores.http.synthetic]] is the part to copy: it is the
+smallest one and it was written from this list.
+
+* Question
+
+How do I stand up a new per-domain adapter part in =ores.http=, so its
+models can be served by the new server?
+
+* Answer
+
+Work in this order. The composite root must not name the part before the
+part's own =CMakeLists.txt= files exist, or configure stops with "does not
+contain a CMakeLists.txt file".
+
+1. Add the part's model, =projects/ores.http/<comp>/modeling/component_overview.org=,
+   copied from an existing adapter part with =#+component_kind: adapter=,
+   =#+name:=, =#+full_name:=, =#+brief:=, and the two =#+begin_src cmake= blocks
+   (=extra_dependencies=, =extra_test_dependencies=) naming
+   =ores.<comp>.api.lib=.
+
+2. Copy the four CMake files from the same part — root, =src=, =tests=,
+   =modeling= — and swap the name throughout. Codegen writes only the two
+   =component_files.cmake= lists for an adapter, so these four are
+   hand-authored and a regeneration never writes over them.
+
+3. Add the part to =#+parts:= and to the Sub-components table of
+   =projects/ores.http/modeling/component_overview.org=, then regenerate the
+   composite root:
+   =compass codegen generate --model projects/ores.http/modeling/component_overview.org --address ores.cmake.component=
+
+4. Generate the umbrella header:
+   =compass codegen generate --model projects/ores.http/<comp>/modeling/component_overview.org --address ores.cpp=
+   Then copy =tests/main.cpp= and =tests/test_suite.hpp= from the same part and
+   swap the name.
+
+5. Write the aggregate by hand — =src/routes/<comp>/<comp>_routes.cpp= and its
+   header. It is the one file in the part that lists the units, and
+   =check_route_units= fails when an opted-in model's unit is missing from it.
+
+6. Generate the file lists:
+   =projects/ores.codegen/scripts/regenerate_cmake_component_files.py --component ores.http.<comp>=
+
+7. Draw the diagram:
+   =build/scripts/generate_component_puml.py --project ores.http.<comp>=
+   then add the three relations after the manual sentinel and render with
+   =plantuml -tpng= in the =modeling= directory. =component-docs= fails
+   without the PNG.
+
+8. Register the part in the server: add =ores.http.<comp>.lib= to the
+   =extra_dependencies= block of
+   =projects/ores.http/server/modeling/component_overview.org=, regenerate
+   with =--address ores.cmake.service=, then include the aggregate's header and
+   call =register_routes= in =projects/ores.http/server/src/app/application.cpp=.
+
+9. Serve the first collection: add =:ores.cpp.http-route.enabled: true= and
+   =#+http_area:= to the model's drawer, then
+   =compass codegen generate --model <model> --address ores.cpp.http-route= and
+   =--address ores.doc.http-recipe=. Add the unit to the aggregate, regenerate
+   the file lists, then
+   =python3 build/scripts/route_inventory.py --write= and
+   =projects/ores.codegen/scripts/regenerate_http_recipe_inventory.py=.
+
+The area in =#+http_area:= must be one =build/scripts/route_classification.py=
+publishes, and the classification needs a rule for the =/api/v1/<area>/=
+family or the inventory check reports every generated route as unclassified.
+
+* Tested by
+
+Written while standing up =ores.http.synthetic=, and followed in that order.
+The part and its first collection are in that task's PR; the build, the
+component tests and the local gate are the proof.
+
+* See also
+
+- [[id:B8376009-B47E-4B2F-ADD8-AD6B79D1A7AC][ores.http.synthetic]] -- the part this recipe was written from.
+- [[id:09BD5681-9C12-469A-80DA-27D1DF9D0808][ores.http]] -- the composite that holds the parts.

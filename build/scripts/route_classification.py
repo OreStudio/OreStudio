@@ -350,6 +350,16 @@ RULES = (
          CPP, RESOURCE, "reference-data",
          "A generated write of a reference data collection: create, replace, remove, or one"
          " of the bulk put and delete calls."),
+    Rule("a synthetic collection",
+         ("regex", r"^GET /api/v1/simulation/\w"),
+         CPP, RESOURCE, "simulation",
+         "A generated synthetic collection, answering under the published simulation area:"
+         " the list, one row by key, its versions, and the bulk get."),
+    Rule("a synthetic collection writes",
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/simulation/\w"),
+         CPP, RESOURCE, "simulation",
+         "A generated write of a synthetic collection: create, replace, remove, or one of"
+         " the bulk put and delete calls."),
     Rule("the ORE currency document",
          ("regex", r"^(GET|POST) /api/refdata/currencies/ore-"),
          BFF, RESOURCE, "reference-data",

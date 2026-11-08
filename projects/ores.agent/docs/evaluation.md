@@ -152,6 +152,7 @@ Runtime changes need a new [deployment](deployment.md); evaluation-only runs do 
 `Agent CPU evaluation` runs on agent code changes in pushes to `main` or
 `feature/local-ai-assistant`, and on pull requests. Document-only changes do
 not trigger it. Manual runs select `all`, `original`, `holdout` or `review`.
+GitHub requires the workflow on the default branch to enable manual dispatch.
 
 Each Windows/Linux job installs the pinned CPU llama.cpp runtime and LFM3 model
 in a temporary root. It forces zero GPU layers, keeps context 262144 and uses

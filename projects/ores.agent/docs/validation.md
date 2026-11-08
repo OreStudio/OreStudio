@@ -24,7 +24,7 @@ PIDs stayed unchanged. Main/agent health returned 200. Evidence is in ignored
 - Original fixtures can conceal native/base errors; review fixtures are separate.
 - Hosted authentication, restricted broker subjects, low-permission and cross-tenant
   proof remain open. There is no OS boot or automatic restart policy.
-- Native Linux NVIDIA, local Node 22 and remote CI execution remain unverified.
+- Native Linux NVIDIA and local Node 22 execution remain unverified.
 
 Latest broad handling scores: original model 42/42, live 34/36, review/model 22/22.
 These use different selections and include deterministic agent paths. They are
@@ -62,3 +62,21 @@ Windows CUDA verified all 25 layers and context 262144 on the RTX 4070 Laptop GP
 A 7225-token prompt passed; a full 256K prompt was not tested. Linux Node tests
 used `node@sha256:01d566e8d94d8c619591d78652babfccd3c6992a3dffa9ed5ab39e11cf6c70e9`.
 They did not test native Linux CUDA. Smoke timings are not benchmarks.
+
+## CPU evaluation CI
+
+The separate [CPU workflow run](https://github.com/alexhock/OreStudio/actions/runs/42495394844)
+uses Node 24, llama.cpp b12172 and the pinned LFM3 QAD Q4_0 model. Context is
+262144 with four CPU threads and no GPU offload. It uses fixture data, not NATS.
+
+114 agent tests, five installer tests and replay checks pass locally.
+The laptop model run passed 40/40 handling checks; six business cases remained
+blocked. It generated 4,256 tokens at 26.7 tokens/second. Linux CI also passed
+40/40 handling checks, generating 4,053 tokens at 33.5 tokens/second.
+Windows CI passed 40/40 handling checks, generating 4,270 tokens at 22.2
+tokens/second. Each platform retained six expected blocked business cases in total.
+Both jobs stopped inference and uploaded reports. Rates exclude prompt processing;
+these are samples, not a controlled hardware benchmark.
+
+The temporary laptop CPU deployment was stopped and removed. Existing app,
+agent and GPU inference health checks passed. No runtime application was upgraded.

@@ -98,7 +98,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The split left four evidence files behind their moved tasks | =evidence/= under the normalise and rework stories | Accept | Moved with their tasks. |
+| 2 | Thirteen evidence references were already broken on main | Sprint 29 task files | Decline | This PR did not cause them. |
+| 3 | Ten spelling hits in existing task text | Four sprint 29 task files | Decline | This PR did not write that text. |
+| 4 | Three closed stories have a task row count that differs from their task files | let-the-plan, trade-blotter-remaining, rework | Decline | The mismatch exists on main. |
 
 * Result
 

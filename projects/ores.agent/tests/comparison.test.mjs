@@ -8,7 +8,7 @@ import { compare } from '../evals/compare.mjs';
 import { metrics,latency } from '../evals/metrics.mjs';
 import { summarize } from '../evals/grade.mjs';
 const result=(id='a',handling='pass',outcome='pass',capability='fulfilled')=>({id,repetition:1,handling,outcome,capability,turns:[],trace:[],durationMs:5});
-const report=results=>({schemaVersion:1,profile:'replay',corpusSha256:'same',metadata:{agentRevision:'fixture',fingerprints:{'evals/grade.mjs':'same'},backendContract:'same',toolSchemaHash:'same',perTurnDeadlineMs:60000},results,summary:summarize(results)});
+const report=results=>({schemaVersion:1,profile:'replay',corpusSha256:'same',metadata:{agentRevision:'fixture',fingerprints:{'evals/grade.mjs':'same','evals/fixtures.mjs':'same'},backendContract:'same',toolSchemaHash:'same',perTurnDeadlineMs:60000},results,summary:summarize(results)});
 
 test('comparison retains blocked denominators, detects regressions and rejects incompatible/missing/duplicate cases',()=>{
  const before=report([result(),result('b','pass','blocked_data','blocked_data')]);
@@ -35,7 +35,7 @@ test('offline verification and comparison CLI write non-overwriting reports with
  const run=(script,args)=>spawnSync(process.execPath,[script,...args],{encoding:'utf8',timeout:30000});
  try{
   const out=join(root,'verify'),check=run('evals/check.mjs',['--out',out]);assert.equal(check.status,0,check.stderr);
-  const checks=JSON.parse(await readFile(join(out,'checks.json'),'utf8'));assert.equal(checks.reports.length,2);assert.ok(checks.reports.every(r=>r.summary.handling.fail===0));
+  const checks=JSON.parse(await readFile(join(out,'checks.json'),'utf8'));assert.equal(checks.reports.length,3);assert.ok(checks.reports.every(r=>r.summary.handling.fail===0));
   const file=join(out,'replay/results.json'),dest=join(root,'comparison');const same=run('evals/compare.mjs',[file,file,'--out',dest,'--strict']);assert.equal(same.status,0,same.stderr);
   const comparison=JSON.parse(await readFile(join(dest,'comparison.json'),'utf8'));assert.equal(comparison.controlled,true);assert.deepEqual(comparison.regressions,[]);
   const changed=JSON.parse(await readFile(file,'utf8'));changed.results[0].handling='fail';changed.results[0].outcome='fail';changed.results[0].capability='unfulfilled';changed.summary=summarize(changed.results);const changedFile=join(root,'changed.json');await writeFile(changedFile,JSON.stringify(changed));

@@ -50,7 +50,7 @@ test('unexpected per-case inference errors are recorded without exposing message
 });
 test('runner writes complete non-overwriting reports; normal mode accepts quality gaps, strict mode exposes them',async()=>{
  const root=await mkdtemp(join(tmpdir(),'ores-eval-'));
- const run=(out,...extra)=>spawnSync(process.execPath,['evals/run.mjs','--profile','replay','--cases','missing-vega,books','--out',out,...extra],{cwd:resolve('.'),encoding:'utf8',timeout:20000});
+ const run=(out,...extra)=>spawnSync(process.execPath,['evals/run.mjs','--profile','replay',...(extra.includes('--cases')?[]:['--cases','missing-vega,books']),'--out',out,...extra],{cwd:resolve('.'),encoding:'utf8',timeout:20000});
  try{
   const normal=run(join(root,'normal'));assert.equal(normal.status,0,normal.stderr);
   const report=JSON.parse(await readFile(join(root,'normal/results.json'),'utf8'));assert.equal(report.results.length,2);assert.equal(report.summary.outcomes.blocked_data,1);assert.equal(report.summary.handling.pass,2);assert.match(report.metadata.inferenceMode,/SCRIPTED/);
@@ -58,6 +58,7 @@ test('runner writes complete non-overwriting reports; normal mode accepts qualit
   const strict=run(join(root,'strict'),'--strict');assert.equal(strict.status,2,strict.stderr);
   const previous=await readFile(join(root,'normal/results.json'),'utf8');assert.equal(run(join(root,'normal')).status,1);assert.equal(await readFile(join(root,'normal/results.json'),'utf8'),previous);
   assert.equal(run(join(root,'bad'),'--cases','not-a-case').status,1);
+  assert.equal(run(join(root,'duplicate'),'--repeat','1','--repeat','2').status,1);
   const heldout=run(join(root,'heldout'),'--corpus','evals/holdout-stage5.json','--cases','holdout-invalid-date,holdout-date-range');assert.equal(heldout.status,0,heldout.stderr);
   const heldoutReport=JSON.parse(await readFile(join(root,'heldout/results.json'),'utf8'));assert.equal(heldoutReport.corpusVersion,'stage5-holdout-1.0.0');assert.equal(heldoutReport.summary.handling.pass,2);
  }finally{assert.equal(dirname(resolve(root)),resolve(tmpdir()));await rm(root,{recursive:true,force:true});}

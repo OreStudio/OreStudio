@@ -11,7 +11,8 @@ export function fixtureBackend(scenario='default'){
  const books=[{...own(3),name:'Fixture FX Book',parent_portfolio_id:id(4),functional_currency:'GBP'}, {...own(13),name:'Fixture Loans Book',parent_portfolio_id:id(4),functional_currency:'GBP'}];
  const results=trades.map((t,i)=>({...own(20+i),report_instance_id:id(7),report_definition_id:id(8),as_of:run.priced_at,subject_type:'trade',subject_id:t.id,measure:'npv_base',currency:'GBP',figure:[0.1,0.2][i],source:'npv.csv'}));
  const uri=(provider,ir=false)=>({ ...own(provider==='ore'?30:31),provider_code:provider,oresmd_uri:ir?'oresmd://ir/USD?type=series&instrument=ir_swap&quote=rate&term=5Y&fwd_start=0D':'oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=USD',series_subclass:'LABELLED FIXTURE' });
- const dataset={books,portfolios:[{...own(4),name:'Fixture Treasury',parent_portfolio_id:null,aggregation_ccy:'GBP'}],trades,tradeBookings:trades.map(t=>({tenant_id:id(1),trade_id:t.id,book_id:id(3),recorded_at:t.recorded_at})),reportInstances:[run],runResults:results,counterparties:[]};
+ const native=results.map((r,i)=>({...r,id:id(120+i),measure:'npv',currency:i?'USD':'EUR',figure:i?20:10}));
+ const dataset={books,portfolios:[{...own(4),name:'Fixture Treasury',parent_portfolio_id:null,aggregation_ccy:'GBP'}],trades,tradeBookings:trades.map(t=>({tenant_id:id(1),trade_id:t.id,book_id:id(3),recorded_at:t.recorded_at})),reportInstances:[run],runResults:[...results,...native],counterparties:[]};
  const keys={books:'books',portfolios:'portfolios',trades:'trades',tradeBookings:'trade_bookings',reportInstances:'instances',runResults:'results',counterparties:'counterparties'};
  const page=(rows,key,args)=>({result:{outcome:'ok'},total:rows.length,[key]:rows.slice(args.offset??0,(args.offset??0)+(args.limit??50))});
  return {ready:()=>true,close:async()=>{},request:async(op,args,session,signal)=>{
@@ -33,7 +34,6 @@ export function fixtureBackend(scenario='default'){
   }
   if(Object.hasOwn(dataset,op)){
    let rows=dataset[op];const filter=args.filter;
-   if(op==='runResults')rows=rows.map(r=>({...r,measure:filter?.measure??'npv_base'}));
    if(filter)rows=rows.filter(r=>Object.entries(filter).every(([k,v])=>v===null||v===undefined||(k.endsWith('_one_of')?v.includes(r[k.slice(0,-7)]):r[k]===v)));
    return page(rows,keys[op],args);
   }

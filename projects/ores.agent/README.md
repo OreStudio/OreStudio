@@ -32,6 +32,7 @@ missing members withhold that bucket's total.
 Version 0.1.6 adds [bounded intent and conversation improvements](docs/intent-workflows.md)
 measured against the frozen Stage 4 evaluations and separate paraphrases.
 Version 0.1.7 adds [reproducible verification/comparison and private timing](docs/reproducible-evaluation.md).
+Version 0.1.8 adds [typed request/clarification handling and review regressions](docs/request-plan.md).
 
 Requires Node 22.11+. From this component directory:
 

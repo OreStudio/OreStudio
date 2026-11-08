@@ -10,7 +10,8 @@ npm run verify
 npm run package
 ```
 
-`verify` runs all component tests and both complete offline replay corpora.
+`verify` runs all component tests and three complete offline replay corpora:
+the original, Stage 5 paraphrases and [versioned review regressions](request-plan.md).
 Every handling check must pass, with no execution errors. Correct refusals and
 missing-data answers still retain their blocked business outcomes; the gate
 does not relabel them as fulfilled. Reports go into new ignored directories
@@ -58,7 +59,7 @@ npm run eval:compare -- <BEFORE/results.json> <AFTER/results.json> --out <NEW_CO
 
 The comparator validates unique case/repetition IDs and summary totals, and
 requires the same profile and case-ID selection. By default it also requires
-matching corpus, grader, tool schemas, backend contract, deadline and (for real
+matching corpus, grader, selected fixture hash, tool schemas, backend contract, deadline and (for real
 models) model artifacts/settings; live party selection must match. Agent source,
 prompt/catalogue changes are the experiment, not a reason to discard the
 comparison. Unequal repeat counts are labelled and rates use each full

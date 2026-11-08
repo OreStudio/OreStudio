@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readIntent, preserveReadSelectors } from '../dist/intent.js';
 import { Agent } from '../dist/agent.js';
 import { AppError } from '../dist/backend.js';
+import { catalogue } from '../dist/catalogue.js';
 const session = () => ({active:true,expires:Date.now()+120000,tenantId:'tenant',partyId:'party',sessionId:'session'});
 const signal = () => new AbortController().signal;
 const run = '11111111-1111-4111-8111-111111111111';
@@ -24,7 +25,7 @@ test('literal date extraction validates calendars and refuses ranges instead of 
 test('literal dates and bucket selectors survive omissions; contradictory proposals cannot execute',()=>{
     const intent=readIntent('Show Gamma on 2026-11-06 for factor DiscountCurve/GBP/0/1Y factor2 "FXSpot/EUR/USD" scenario "Stress One"');
     const args=preserveReadSelectors('summarize_scope_results',{},intent);
-    assert.deepEqual(args,{valuationDate:'2026-11-06',factor:'DiscountCurve/GBP/0/1Y',factor2:'FXSpot/EUR/USD',scenario:'Stress One'});
+    assert.deepEqual(args,{valuationDate:'2026-11-06',factor:'DiscountCurve/GBP/0/1Y',factor2:'FXSpot/EUR/USD',scenario:'Stress One',measure:'gamma'});
     assert.throws(()=>preserveReadSelectors('summarize_scope_results',{valuationDate:'2026-11-05'},intent),e=>e.code==='selection_not_requested');
     assert.throws(()=>preserveReadSelectors('summarize_scope_results',{factor:'different'},intent));
     assert.throws(()=>preserveReadSelectors('read_fx_spot',[],intent));
@@ -60,14 +61,15 @@ test('validation failures produce an explicit withheld answer without a replacem
     assert.equal(count,1);assert.equal(result.dataRetrieved,false);assert.match(result.answer,/invalid_result_units/);assert.ok(!result.answer.includes('private result details'));
 });
 
-test('an explicit scope valuation exposes no run-status substitution and rejects one proposed anyway',async()=>{
+test('an explicit scope valuation uses its plan without inference or run-status substitution',async()=>{
     let turn=0;
     const agent=new Agent({complete:async(messages,catalogue)=>{
         assert.deepEqual(catalogue.map(t=>t.function.name),['summarize_scope_results']);
         return ++turn===1?call('read_run_status',{runId:run}):call('summarize_scope_results',{scopeType:'book',scope:'Treasury',runId:run,measure:'delta'});
     }},{execute:async(name)=>{assert.equal(name,'summarize_scope_results');return {tool:name,status:'unavailable',reason:'fixture unavailable'};}});
     const result=await agent.chat({message:`Delta for book "Treasury" from run ${run}`},session(),signal());
-    assert.equal(result.evidence[0].tool,'summarize_scope_results');assert.equal(turn,2);
+    assert.equal(result.evidence[0].tool,'summarize_scope_results');assert.equal(turn,0);
+    assert.deepEqual(catalogue('scope').map(t=>t.function.name),['summarize_scope_results']);
 });
 
 test('pending scope intent cannot cross party/session identity changes or expiry',async()=>{

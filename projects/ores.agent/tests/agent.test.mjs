@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Agent } from '../dist/agent.js';
+import { readIntent, preserveReadSelectors } from '../dist/intent.js';
 const makeSession = () => ({ active: true, expires: Date.now() + 100000, chatBusy: false });
 const toolCall = (args = '{}', name = 'list_currencies') => ({ role: 'assistant', content: null, tool_calls: [{ id: 'call1', type: 'function', function: { name, arguments: args } }] });
 test('agent directly executes tools and returns attributable evidence; no MCP loopback', async () => {
@@ -84,7 +85,7 @@ test('scope run selection is private to its session and resumes the literal hist
     assert.equal(prompt.selectionRequired, 'runId'); assert.equal(modelCalls, 0);
     await agent.chat({ message: runId }, makeSession(), new AbortController().signal); assert.equal(calls.length, 0);
     assert.match((await agent.chat({ message: runId }, session, new AbortController().signal)).answer, /fixture unavailable/);
-    assert.equal(modelCalls, 2); assert.equal(calls.at(-1).scope, 'FX Book'); assert.equal(calls.at(-1).runId, runId);
+    assert.equal(modelCalls, 1); assert.equal(calls.at(-1).scope, 'FX Book'); assert.equal(calls.at(-1).runId, runId); assert.equal(calls.at(-1).measure, 'npv_base');
 });
 
 test('scope Greeks cannot be replaced by an NPV measure proposed by the model', async () => {
@@ -96,9 +97,13 @@ test('scope Greeks cannot be replaced by an NPV measure proposed by the model', 
 });
 
 test('a model-invented scope run cannot execute without a user selection', async () => {
-    let round = 0;
-    const agent = new Agent({ complete: async () => ++round === 1 ? toolCall('{"scopeType":"book","scope":"FX Book","runId":"22222222-2222-4222-8222-222222222222"}', 'summarize_scope_results') : { role: 'assistant', content: 'Select a report run.' } }, { execute: async () => assert.fail('Invented run selection must not execute') });
-    assert.equal((await agent.chat({ message: 'Show NPV for book FX Book from run 44444444-4444-4444-8444-444444444444' }, makeSession(), new AbortController().signal)).evidence.length, 0);
+    const message = 'Show NPV for book FX Book from run 44444444-4444-4444-8444-444444444444';
+    assert.throws(() => preserveReadSelectors('summarize_scope_results', { runId: '22222222-2222-4222-8222-222222222222' }, readIntent(message)), e => e.code === 'selection_not_requested');
+    const agent = new Agent({ complete: async () => assert.fail('Complete plan needs no model transcription') }, { execute: async (name,args) => {
+        assert.equal(args.runId,'44444444-4444-4444-8444-444444444444');
+        return { tool:name,status:'unavailable',reason:'fixture unavailable' };
+    }});
+    assert.equal((await agent.chat({ message }, makeSession(), new AbortController().signal)).evidence.length, 1);
 });
 
 test('Greek questions ask for a run before inference and cannot invent factor selection', async () => {
@@ -106,7 +111,8 @@ test('Greek questions ask for a run before inference and cannot invent factor se
     const agent = new Agent({ complete: async () => { modelCalls++; return toolCall('{"scopeType":"book","scope":"FX Book","measure":"delta","factor":"DiscountCurve/GBP/0/1Y"}', 'summarize_scope_results'); } }, { execute: async () => assert.fail('Unrequested factor must not execute') });
     const missing=await agent.chat({message:'Show Greeks for book FX Book'},makeSession(),new AbortController().signal);
     assert.equal(missing.selectionRequired,'runId');assert.equal(modelCalls,0);
-    await assert.rejects(()=>agent.chat({message:'Show delta for book FX Book from run 11111111-1111-4111-8111-111111111111'},makeSession(),new AbortController().signal));
+    const message='Show delta for book FX Book from run 11111111-1111-4111-8111-111111111111';
+    assert.throws(()=>preserveReadSelectors('summarize_scope_results',{factor:'DiscountCurve/GBP/0/1Y'},readIntent(message)),e=>e.code==='selection_not_requested');
 });
 
 test('model-supplied empty Greek selectors cannot silently narrow stress or cross buckets', async () => {

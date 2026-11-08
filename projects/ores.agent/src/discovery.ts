@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from 'zod';
+import { readPages } from './read-pages.js';
 import { AppError, type Backend, type Operation } from './backend.js';
 import type { Session } from './auth.js';
 import { marketId } from './market.js';
@@ -35,17 +36,17 @@ export class Discovery {
         const request = async (op: Operation, payload: unknown) => { check(); const r = await this.backend.request(op, payload, session, deadline); check(); return r; };
         const own = (r: Row) => r.tenant_id === session.tenantId && (!('party_id' in r) || r.party_id === session.partyId);
         const scan = async (resource: Resource): Promise<Row[]> => {
-            const spec = specs[resource], rows: Row[] = [], seen = new Set<string>(); let total: number | undefined;
-            for (let offset = 0; offset < 2000; offset += 50) {
-                const r = await request(resource, { offset, limit: 50, order: { field: '', descending: false }, filter: null, as_of: snapshot }); accepted(r);
-                const result = z.object({ total: z.number().int().nonnegative() }).parse(r);
-                const batch = z.object({ [spec.key]: z.array(spec.schema).max(50) }).parse(r)[spec.key] as Row[];
-                if (total !== undefined && total !== result.total || batch.length !== Math.min(50, Math.max(0, result.total - offset))) throw new AppError('incomplete_discovery', 'Catalogue changed or returned an incomplete page; retry or narrow the lookup.', 422);
-                total = result.total;
-                for (const row of batch) { if (seen.has(String(row.id))) throw new AppError('incomplete_discovery', 'Repeated catalogue page.', 422); seen.add(String(row.id)); if (own(row)) rows.push(row); }
-                if (offset + batch.length >= total) return rows;
-            }
-            throw new AppError('incomplete_discovery', 'Catalogue exceeds the 2,000-row inspection limit. No complete search result is claimed.', 422);
+            const spec = specs[resource];
+            const rows = await readPages(async (offset, limit) => {
+                const raw = await request(resource, { offset, limit, order: { field: '', descending: false }, filter: null, as_of: snapshot });
+                accepted(raw);
+                const total = z.object({ total: z.number().int().nonnegative() }).parse(raw).total;
+                const batch = z.object({ [spec.key]: z.array(spec.schema).max(limit) }).parse(raw)[spec.key] as Row[];
+                return { total, rows: batch };
+            }, row => String(row.id), {
+                code: 'incomplete_discovery', message: 'Catalogue pages changed, were duplicated/incomplete or exceeded the 2,000-row bound. No complete search is claimed.',
+            });
+            return rows.filter(own);
         };
         const base = { tool: name, request: args, tenantId: session.tenantId, partyId: session.partyId, source: 'OreStudio', retrievedAt: snapshot };
         const readCounterpartyId = async (id: string) => {

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { z } from 'zod';
+import { readPages } from './read-pages.js';
 import { AppError, type Backend, type Operation } from './backend.js';
 import type { Session } from './auth.js';
 import { marketId, observationTime } from './market.js';
@@ -22,19 +23,16 @@ export class Reporting {
         const check = () => { deadline.throwIfAborted(); if (!session.active || session.expires <= Date.now()) throw new AppError('session_expired', 'Sign in again.', 401); };
         const request = async (op: Operation, data: unknown) => { check(); const r = await this.backend.request(op, data, session, deadline); check(); return r; };
         const own = (r: { tenant_id: string; party_id: string }) => r.tenant_id === session.tenantId && r.party_id === session.partyId;
-        const scan = async <T extends z.ZodType>(op: 'reportInstances' | 'runResults', key: string, schema: T, filter: unknown): Promise<z.infer<T>[]> => {
-            const rows: z.infer<T>[] = [], seen = new Set<string>(); let total: number | undefined;
-            for (let offset = 0; offset < 2000; offset += 50) {
-                const r = await request(op, { offset, limit: 50, order: { field: '', descending: false }, filter, ...(op === 'reportInstances' ? { as_of: snapshot } : {}) }); accepted(r);
-                const n = z.object({ total: z.number().int().nonnegative() }).parse(r).total;
-                const batch = z.object({ [key]: z.array(schema).max(50) }).parse(r)[key]!;
-                if (total !== undefined && total !== n || batch.length !== Math.min(50, Math.max(0, n - offset))) throw new AppError('incomplete_reporting', 'Reporting page changed or was incomplete.', 422);
-                total = n;
-                for (const row of batch) { const id = String((row as any).id); if (seen.has(id)) throw new AppError('incomplete_reporting', 'Duplicate reporting page.', 422); seen.add(id); rows.push(row); }
-                if (offset + batch.length >= n) return rows;
-            }
-            throw new AppError('incomplete_reporting', 'Reporting scan exceeds its 2,000-row limit; narrow the query.', 422);
-        };
+        const scan = async <T extends z.ZodType>(op: 'reportInstances' | 'runResults', key: string, schema: T, filter: unknown): Promise<z.infer<T>[]> =>
+            readPages(async (offset, limit) => {
+                const raw = await request(op, { offset, limit, order: { field: '', descending: false }, filter, ...(op === 'reportInstances' ? { as_of: snapshot } : {}) });
+                accepted(raw);
+                const total = z.object({ total: z.number().int().nonnegative() }).parse(raw).total;
+                const rows = z.object({ [key]: z.array(schema).max(limit) }).parse(raw)[key]!;
+                return { total, rows };
+            }, row => String((row as Record<string, unknown>).id), {
+                code: 'incomplete_reporting', message: 'Reporting pages changed, were duplicated/incomplete or exceeded the 2,000-row bound; narrow the query.',
+            });
         const runs = async (ids?: string[]) => (await scan('reportInstances', 'instances', runSchema, ids ? { definition_id: null, kind: null, cut_id: null, id_one_of: ids, definition_id_one_of: null, kind_one_of: null, cut_id_one_of: null } : null)).filter(own);
         const health = async (run: z.infer<typeof runSchema>) => {
             const r = await request('runHealth', { report_instance_id: run.id }); accepted(r);

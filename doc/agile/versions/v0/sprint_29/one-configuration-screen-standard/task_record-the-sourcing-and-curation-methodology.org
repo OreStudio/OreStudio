@@ -29,7 +29,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
 | Now          | Nothing. |
-| Waiting on   | Review.                                |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 

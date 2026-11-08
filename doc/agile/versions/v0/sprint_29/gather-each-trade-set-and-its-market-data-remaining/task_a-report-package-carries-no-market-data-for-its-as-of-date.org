@@ -31,7 +31,7 @@ report fails for a reason that has nothing to do with the report.
 | State        | DONE                              |
 | Parent story | [[id:ACFE9144-48DF-4FE5-902D-18C757DC91F4][Gather each trade set and its market data — the remaining work]] |
 | Now          | Nothing. |
-| Waiting on   | A decision between pricing at the data's date and failing early, or both.                               |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
-#+updated: 2026-11-07
+#+updated: 2026-11-08
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -34,13 +34,12 @@ a new part costs, so the next one is a checklist and not an investigation.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-07                               |
-
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-08 |
 * Acceptance
 
 - =projects/ores.http/synthetic= exists as =#+component_kind: adapter=, is a

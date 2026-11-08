@@ -28,9 +28,9 @@ The intraday reports run by default at the agreed cadences; only the investigati
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Closed. The seeds, the pages and the live scheduler state the agreed cadences, and the scheduler fires them. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing: the remaining work is the report inputs, which another task owns. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-04                               |
 
 * Acceptance

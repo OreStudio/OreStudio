@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 639CEE8C-0586-4EEF-8F12-C450F956B00F
+:END:
+#+title: Task: Store trade market references as oresmd addresses
+#+description: Every trade column that names market data (indices, curves, underlyings, credit names) holds an oresmd address, checked against the party's series catalogue as a curve already is; the importer and exporter convert to and from ORE names.
+#+type: task
+#+level: s1
+#+filetags: :trading:oresmd:sql:prove_generated_trades_value_against_the_ore_samples-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-06
+#+updated: 2026-11-08
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Prove generated trades value against the ORE samples — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No trade holds an ORE name: every column that names market data holds an oresmd address, and ORE names exist only in the ORE documents we read and write.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Prove generated trades value against the ORE samples — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-06                               |
+
+* Acceptance
+
+- Every trade column that names market data (indices, curves, underlyings, credit names) holds an oresmd address; the inventory of about 60 columns is in the design.
+- Each column is checked by a soft foreign key against the party's series catalogue, as =ores_marketdata_validate_curve_series_fn= checks a curve today.
+- The importer converts ORE names to addresses and the exporter converts back, both through =ore_projection=; the corpus roundtrip still loses nothing.
+- Stored trades are migrated, family by family.
+
+* Plan
+
+The design is in [[id:63FF92C8-3E18-49BB-93FA-B0862B5FD4B2][Test that every generated trade builds in ORE]], section Design: oresmd references, resolvers and trade builders.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

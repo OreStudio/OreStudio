@@ -28,9 +28,9 @@ tell a healthy server from one that is refusing every request.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | Nothing; #4178 is merged. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

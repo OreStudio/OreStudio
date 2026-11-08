@@ -38,9 +38,9 @@ This is increment A1 of
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Both tasks are done and the worker pool and counters are in place. |
-| Waiting on    | Nothing.                               |
-| Next          | Merged. The next increment takes over. |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-29                               |
 
 * Acceptance

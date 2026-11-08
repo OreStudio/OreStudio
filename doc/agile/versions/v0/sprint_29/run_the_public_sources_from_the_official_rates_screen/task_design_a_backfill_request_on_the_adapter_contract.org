@@ -28,9 +28,9 @@ The backfill window lives in the service's command line today: the adapter fetch
 |--------------+----------------------------------------|
 | State         | ABANDONED                              |
 | Parent story | [[id:3D0DECE4-B91C-4855-96E9-A302A6B99E19][Run the public sources from the Official rates screen]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-28                               |
 
 * Notes

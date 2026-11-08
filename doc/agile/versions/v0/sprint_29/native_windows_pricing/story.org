@@ -23,9 +23,9 @@ Run pricing on native x64 Windows workers using the same Engine revision and pac
 |---------------+----------------------------------------|
 | State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Implementation and scoped validation complete.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Review the upstream PR and track the remaining platform validation separately.            |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-11-04                               |
 
 * Acceptance

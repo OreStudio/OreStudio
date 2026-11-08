@@ -28,9 +28,9 @@ Every supported currency's synthetic IR curve starts from public data, or the ga
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
-| Now          | Split into three tasks of this story.  |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance

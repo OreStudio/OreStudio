@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: FEDD0DC4-BC71-4348-9032-6A61088B220D
+:END:
+#+title: Task: Hold a composite's legs as trades
+#+description: A composite leg names its constituent in free text, so the row points at a word and not at a trade. Give the leg a uuid reference to the trade and a role, and give the composite the kind and template the deal states.
+#+type: task
+#+level: s1
+#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D9BE397A-86AF-4A17-9D15-135CD9815C9D][Let the blotter read a page, not the book — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A package states which trades it groups. Today a composite leg states that in free text: =constituent_trade_id= is a =text= column whose generator writes a noun, so every leg the demonstration holds names =CD= and no leg names a trade. The package also cannot say what shape it is: =kind= and =template_code= live on =structures= and have no home on the composite.
+
+This task gives the composite the columns a package needs: each leg is a uuid reference to a constituent trade, with the role it plays; the composite states the deal kind and template; and a trade sits in at most one composite at a time, which is the rule =structure_member= already states. No service writes these columns yet. The completion does, in the next task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D9BE397A-86AF-4A17-9D15-135CD9815C9D][Let the blotter read a page, not the book — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing. This task goes first: every later task reads the columns it adds. |
+| Next         | Begin with the two models, then regenerate the component file lists. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- A composite leg names a constituent trade by uuid, with a foreign key to =ores_trading_trades_tbl= and a current-only index.
+- A trade is a constituent of at most one composite at a time, and the store refuses a second.
+- A composite states the deal kind and template, and a leg states its role.
+- The generator and the repository tests write and read a leg that names a real trade.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Composite leg rows, and current ones | 10, 0 | =select count(*), count(*) filter (where valid_to = ores_utility_infinity_timestamp_fn()) from ores_trading_composite_legs_tbl= | 23f46a8a0a |
+| Distinct constituent values | 1, and it is =CD= | =select constituent_trade_id, count(*) from ores_trading_composite_legs_tbl group by 1= | 23f46a8a0a |
+| Composite instrument rows, current ones, distinct trades | 10, 0, 5 | =select count(*), count(*) filter (where valid_to = ores_utility_infinity_timestamp_fn()), count(distinct trade_id) from ores_trading_composite_instruments_tbl= | 23f46a8a0a |
+| Structures and structure members | 60, 115 | =select (select count(*) from ores_trading_structures_tbl), (select count(*) from ores_trading_structure_members_tbl)= | 23f46a8a0a |
+
+* Notes
+
+- The row today points at a word. =ores.trading.composite_leg.org= declares
+  =constituent_trade_id= as =text= and generates it with
+  =faker::word::noun()=, which is where =CD= comes from. The demonstration holds
+  ten leg rows and not one of them names a trade.
+- The export already reads composite legs: =trade_export_service.cpp= collects
+  them for every composite instrument id it exports. A uuid reference is what
+  lets that read resolve a constituent to the trade it names.
+- The rule this task copies is written on
+  =ores.trading.structure_member.org=: the row is keyed by the trade, so a trade
+  sits in at most one structure at a time. The composite leg takes the same
+  rule, with a current-only unique index on =(tenant_id, constituent_trade_id)=.
+- =kind= and =template_code= are the structure's words for the deal shape and
+  have no home on the composite. They move to =composite_instruments=, and the
+  leg's =role= moves to the leg row, so a package states the shape it was given
+  without reading its legs.
+- Regenerate the component file lists after the models change:
+  =projects/ores.compass/venv/bin/python projects/ores.codegen/scripts/regenerate_cmake_component_files.py=.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

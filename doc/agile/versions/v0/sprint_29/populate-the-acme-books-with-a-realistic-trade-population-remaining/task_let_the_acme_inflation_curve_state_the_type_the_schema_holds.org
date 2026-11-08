@@ -28,9 +28,9 @@ A provisioned tenant holds an inflation curve whose Type is one the ORE curvecon
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] |
-| Now          | Superseded before any commit.           |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

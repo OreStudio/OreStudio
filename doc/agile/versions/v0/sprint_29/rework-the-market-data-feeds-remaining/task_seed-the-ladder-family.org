@@ -28,9 +28,9 @@ The ladder family is seeded for ACME and Northwind with its configs and cut, fai
 |--------------+----------------------------------------|
 | State        | DONE                                   |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | The ten rows of the design's list are seeded for the four Acme parties and Northwind, at the cycles the design states, and applied to this environment. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing: the ladders wait on the same three gaps the rest of the sensitivity reports do. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-04                             |
 
 * Acceptance

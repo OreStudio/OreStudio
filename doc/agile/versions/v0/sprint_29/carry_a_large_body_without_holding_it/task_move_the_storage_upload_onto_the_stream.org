@@ -28,9 +28,9 @@ size in memory. Move them onto the chunk channel and the file on disk.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | Nothing; #4157 is merged. |
-| Waiting on   | Nothing.                               |
-| Next         | The wrapper run proves it against a real transfer. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

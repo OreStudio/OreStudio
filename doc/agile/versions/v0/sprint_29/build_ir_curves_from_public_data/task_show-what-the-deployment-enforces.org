@@ -28,7 +28,7 @@ A person reading the application, or the shell, can tell whether this deployment
 |--------------+----------------------------------------|
 | State        | ABANDONED |
 | Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
-| Now          | Superseded by the capture named in the Result; no change was shipped. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-07                               |

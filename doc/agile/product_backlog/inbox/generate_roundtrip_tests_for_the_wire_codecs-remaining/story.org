@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: DB50FEE1-98D8-4D49-AA24-BBBDE54B464C
+:END:
+#+title: Story: Generate roundtrip tests for the wire codecs — the remaining work
+#+description: Codegen emits a JSON and MessagePack roundtrip test for every model that opts in to the wire codec, so no codec depends on a hand-written test.
+#+type: story
+#+level: s2
+#+filetags: :codegen:codec:tests:json:msgpack:product_backlog:inbox:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every type the wire codec writes, from 621 opted-in models, has a generated test that fills it with non-default values, writes it in JSON and MessagePack, reads it back and requires the same value. A codec that drops, renames or mistypes a member fails its test. New opt-ins get the test without anyone writing it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started. Split from [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- Codegen emits one roundtrip test per opted-in model, for domain entities, junctions, field groups, operations and families.
+- Each test fills every member with a non-default value and requires read(write(v)) == v in JSON and in MessagePack.
+- A member type with no sample value fails to compile, and the error names the type.
+- A deliberately broken codec (a dropped member, a wrong MessagePack type) fails its generated test or its build, with evidence in the story.
+- Every opted-in component regenerates, builds and passes, and the drift check covers the tests.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C796BACD-607A-4A84-B5BE-6F6D2F16B3CB][Fold the hand-written roundtrip checks into the generated tests]] | BACKLOG | | | Delete the roundtrip parts of the hand-written codec tests that the generated tests now cover, and keep only the reflect-cpp byte comparisons. |
+
+* Decisions
+
+- Split from [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+- A renamed member. The codec writes and reads under the same name, so a
+  roundtrip cannot see a rename. The hand-written byte comparisons catch it
+  while they last.
+
+- Malformed input per model. The struct codec's refusal of a missing member or a
+  wrong type is tested once in =ores.utility= and in scheduler (#4357).
+- The TypeScript protocol codecs.
+- Comparing bytes with reflect-cpp. See the Decisions.
+

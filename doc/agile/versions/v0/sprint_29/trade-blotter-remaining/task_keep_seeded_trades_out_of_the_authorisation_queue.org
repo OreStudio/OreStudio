@@ -28,9 +28,9 @@ A seeded or synthetic book of trades raises no authorisation request, so the Ope
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:67C1C30A-5CF6-408A-B73C-99A79A01B19F][Trade Blotter — the remaining work]] |
-| Now          | Superseded before any code was written. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance

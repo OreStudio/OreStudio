@@ -25,9 +25,9 @@ This story takes up the capture [[id:9605A39E-CAE9-4232-90DF-C42EBE94CB41][Scope
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Done: the repository scopes the key read and removal.|
-| Waiting on    | Nothing.                               |
-| Next          | Nothing.                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-27                               |
 
 * Acceptance

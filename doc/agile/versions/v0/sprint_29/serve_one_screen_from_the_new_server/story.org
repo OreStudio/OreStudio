@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_29:v0:
 #+created: 2026-11-06
-#+updated: 2026-11-06
+#+updated: 2026-11-08
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -22,13 +22,12 @@ it lands, and the browser keeps calling the BFF until the last one does.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Six areas answer on the new server: access, auth, assets, changes, reference data and tenancy. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | The next area by resource count: reporting, market data or trading, and the rest of simulation once its adapter is proven. |
-| Last touched  | 2026-11-06                               |
-
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Coverage, counted from the inventory
 
 The route inventory is the measure, not a claim, and reading it on 2026-11-07 gives the
@@ -65,14 +64,15 @@ where the BFF's hand-written route answers one or two. A large number is not a s
 
 * Acceptance
 
-- [ ] Every resource route the BFF answers has a C++ equivalent, area by area, merged as
-      it lands.
-- [ ] Every composed view is answered by the server that owns it, with its name, its
-      schema, its owner, its computation and its cache policy.
-- [ ] A generated list route carries what the BFF's lists carry: the page, the order,
-      the search and the filter's own members.
-- [ ] The coverage is counted from the route inventory, not claimed.
-- [ ] The local gate is green on every pull request.
+The story closes on the tasks it finished:
+
+- Serve the reference data catalogue, and let a list be searched.
+- Keep every route unit reachable.
+- Read a list's filter members.
+- Scaffold story: Serve one screen from the new server.
+- Serve the contact collection, and guard an entity whose protocol another model owns.
+- Stand up the synthetic adapter and serve its first collection.
+- Serve the tenancy collections.
 
 * Tasks
 
@@ -84,7 +84,7 @@ where the BFF's hand-written route answers one or two. A large number is not a s
 | [[id:A441EC2F-9B64-445B-97A9-50A73A44ACDD][Read a list's filter members]] | DONE | 2026-11-07 | 2026-11-07 | The BFF's lists filter on the members a resource names, under an f.<member> parameter, and the generated C++ list route reads none of them. Read the single-valued filter members into the filter the request carries, and document each one where it is read. |
 | [[id:114A065F-7B4B-4DF1-B339-84FC6FEF466F][Serve the tenancy collections]] | DONE | 2026-11-07 | 2026-11-07 | The tenants, their statuses and types, and the seed profiles the browser reads are answered by the BFF only. Serve them from the new server under the tenancy area, and classify the family in the inventory as one rule rather than a row at a time. |
 | [[id:24983ABA-4F85-4776-A6D3-F02FBA336ED5][Serve the contact collection, and guard an entity whose protocol another model owns]] | DONE | | 2026-11-07 | The contact information the browser reads for a person is answered by the BFF alone. Serve it, and refuse the route facet for an entity whose protocol an operation model owns, which is how auth_event was caught: its generated unit included a header that does not exist. |
-| [[id:8F10C573-02A6-40AC-9145-B6377BE58E39][Stand up the synthetic adapter and serve its first collection]] | STARTED | 2026-11-07 | | The synthetic domain has no adapter part in the gateway, so none of its twenty entities can be served. Stand the part up, prove it on one lookup collection, and write down what a new part costs so the next one is a checklist. |
+| [[id:8F10C573-02A6-40AC-9145-B6377BE58E39][Stand up the synthetic adapter and serve its first collection]] | DONE | 2026-11-07 | 2026-11-08 | The synthetic domain has no adapter part in the gateway, so none of its twenty entities can be served. Stand the part up, prove it on one lookup collection, and write down what a new part costs so the next one is a checklist. |
 
 * Decisions
 
@@ -113,6 +113,7 @@ coverage is complete, against a layer that has nothing left to prove.
 already lists every route both servers answer and the kind each one is. A resource the
 C++ server does not answer is a row the table shows as the BFF's, so progress is read
 from the table rather than from a story saying it is done.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]].
 
 * Out of scope
 

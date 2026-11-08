@@ -23,9 +23,9 @@ A person lists bindings, says what each source writes and when it last ticked, b
 |---------------+----------------------------------------|
 | State         | ABANDONED                            |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Retired. The feed binding is gone, so the subscriptions screen replaces this one. |
-| Waiting on    | Nothing.                               |
-| Next          | Nothing.                               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-24                               |
 
 * Acceptance

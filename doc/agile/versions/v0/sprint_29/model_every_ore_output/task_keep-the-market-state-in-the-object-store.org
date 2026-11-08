@@ -35,9 +35,9 @@ and be fetched only by a reader that needs the values.
 |--------------+----------------------------------------|
 | State        | ABANDONED                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
-| Now          | Abandoned: the market state is parsed into rows, not kept as a blob. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 
 * Acceptance

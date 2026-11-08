@@ -28,9 +28,9 @@ Every documented leaf of curveconfig.xsd is linked to the value set its values b
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:18A29061-FBAD-4C5A-90A1-F02039F791BF][Standardise the curve configuration's parameters on the one contract]] |
-| Now          | DONE. 213 documented leaves are linked to a set: 60 to a catalogue, a curated parser's list or their type, and 153 to text. The generator reports the text ones. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing: the review of PR #3915 is answered. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance

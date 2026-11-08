@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :marketdata:publishers:suppliers:sessions:feeds:configuration:sprint_29:v0:
 #+created: 2026-10-29
-#+updated: 2026-10-29
+#+updated: 2026-11-08
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -24,13 +24,12 @@ session and a production session of one supplier differ without a redeploy.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-29                               |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
 - A supplier has sessions; a session names one adapter, one environment, one

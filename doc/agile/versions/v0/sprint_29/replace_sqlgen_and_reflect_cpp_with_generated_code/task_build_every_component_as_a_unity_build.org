@@ -29,7 +29,7 @@ Step 1 of 7. Every component builds as a unity build of 16, and the full build t
 | State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
 | Now          | Nothing. |
-| Waiting on   | A quiet machine for the measurement.   |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 

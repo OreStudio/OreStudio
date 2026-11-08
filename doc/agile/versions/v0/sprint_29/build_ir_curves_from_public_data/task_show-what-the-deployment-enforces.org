@@ -8,7 +8,7 @@
 #+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
 #+owner: marco
 #+branch: feature/show-what-the-deployment-enforces
-#+pr:
+#+pr: 4496
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4496][#4496]] | [inbox,docs] Name the approvals mode as an installation setting, and record why the screen waits |
 
 * Review
 

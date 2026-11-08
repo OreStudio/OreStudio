@@ -175,6 +175,16 @@ public:
 
 private:
     void write(std::string value) {
+        // A tenant provisioned by the harness already holds the installation's
+        // copy of the setting, so the test states its own over it rather than
+        // writing a second row.
+        ores::database::repository::execute_parameterized_command(
+            ctx_,
+            "delete from ores_variability_system_settings_tbl"
+            " where name = 'system.approvals.mode' and tenant_id = $1::uuid",
+            {ctx_.tenant_id().to_string()},
+            test_lg(),
+            "Clearing the approvals mode for a test");
         ores::database::repository::execute_parameterized_command(
             ctx_,
             "insert into ores_variability_system_settings_tbl ("

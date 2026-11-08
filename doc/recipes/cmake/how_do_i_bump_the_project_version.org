@@ -46,9 +46,9 @@ Edit them as a single commit.
    +  "version": "0.0.<NEW>",
    #+end_src
 
-   The GitHub workflows need no edit. The macOS and Windows nightlies
-   upload =OreStudio-*= by pattern, and the continuous Linux run builds
-   no package.
+   The GitHub workflows need no edit. They upload packages by pattern:
+   the macOS and Windows nightlies on every run, and the continuous Linux
+   run on a tag.
 
 5. /=readme.org=/ — four things:
 
@@ -122,9 +122,8 @@ release confirms the diffs by eye.
 
 * Tested by
 
-The macOS and Windows nightlies set =if-no-files-found: error= on their
-package upload, so a build that passes and produces no package fails the
-run.
+The package uploads set =if-no-files-found: error=, so a release build
+that passes and produces no package fails the run.
 
 * See also
 

@@ -136,7 +136,7 @@
       \textbf{What we notice:}
       \begin{itemize}
         \item \textbf{Continuous and bounded:} prices move in smooth, connected trajectories
-        \item \textbf{Memory:} today's price is heavily constrained by yesterday's
+        \item \textbf{Memory:} today's price level is heavily constrained by yesterday's
         \item \textbf{Regimes:} low volatility alternates with high volatility
       \end{itemize}
     \end{column}
@@ -268,7 +268,7 @@ prices[1:] = S0 + np.cumsum(delta_S)
         \end{axis}
       \end{tikzpicture}
 
-      {\scriptsize One uniform walk: $N=126$, $S_0=1.2645$, drawn at build time}
+      {\scriptsize One uniform walk: $N=126$, $S_0=1.2645$, drawn by LaTeX at build time, not NumPy's seed 42}
     \end{column}
     \begin{column}{0.40\textwidth}
       \textbf{Visual observation}
@@ -381,14 +381,14 @@ prices[1:] = S0 + np.cumsum(delta_S)
   \begin{enumerate}
     \item \textbf{Time additivity:} the total return over $N$ steps is a vector sum, $r_{\text{total}} = \sum_{i=1}^{N} r_i$ (\code{np.sum()})
     \item \textbf{Symmetry around zero:} drops and gains are symmetric in log space, a clean fit for Gaussian distributions
-    \item \textbf{Non-negativity guarantee:} reconstruction uses exponentiation, $S_t = S_0 e^{\sum r_i}$, so prices never fall below zero
+    \item \textbf{Non-negativity guarantee:} reconstruction uses exponentiation, $S_t = S_0 e^{\sum r_i}$, so prices never fall below zero. The Euler--Maruyama scheme later in this deck has no such guarantee.
   \end{enumerate}
 \end{frame}
 
 \begin{frame}[fragile]{Code: Measuring and Reconstructing Prices}
 \begin{lstlisting}
 import numpy as np
-
+# Continues the walk code: uses its prices array
 # 1. Compute log returns array from price array: ln(S_t / S_{t-1})
 log_returns = np.log(prices[1:] / prices[:-1])
 

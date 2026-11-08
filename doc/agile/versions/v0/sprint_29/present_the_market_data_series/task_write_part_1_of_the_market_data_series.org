@@ -87,6 +87,14 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Mixed spelling: "discretize" beside "centre" and "optimisation" | market_data_series_part_1.tex | Decline | "Discretize" comes from the source notes. It has no effect on meaning. |
 | 2 | The Euler-Maruyama listing calls =N= steps, but the array holds =N= points and =N-1= steps | market_data_series_part_1.tex | Decline | Listing kept as in the source notes. Revisit in part 2 with the SDE work. |
+| 3 | PR 4501 review 1: the chart path is not NumPy's seed 42 path | market_data_series_part_1.tex | Accept | The caption now says so. |
+| 4 | PR 4501 review 2: the log returns listing does not run on its own | market_data_series_part_1.tex | Accept | The listing now has a comment. |
+| 5 | PR 4501 review 3: note that the vectorised version is faster | market_data_series_part_1.tex | Decline | It adds nothing to the point of the slide. |
+| 6 | PR 4501 review 4: Euler-Maruyama can go negative | market_data_series_part_1.tex | Accept | The non-negativity point now says so. |
+| 7 | PR 4501 review 5: memory describes the price level | market_data_series_part_1.tex | Accept | The bullet now says price level. |
+| 8 | PR 4501 review 6: reconsider tracking the PDF | market_data_series_part_1.pdf | Decline | The user manual PDF is tracked too. |
+| 9 | PR 4501 review 7: fix the title page overfull box | market_data_series_part_1.tex | Decline | It comes from the theme layout and the page renders correctly. |
+| 10 | PR 4501 review note: state the ECB fixing time | market_data_series_part_1.tex | Decline | The caption already says these are reference rates. |
 
 * Result
 

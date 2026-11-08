@@ -130,9 +130,12 @@ void write_schema(json_value out) {
     } else if constexpr (states_wire_form<value_type>) {
         write_object<value_type>(out);
     } else {
-        static_assert(states_wire_form<value_type>,
-                      "A schema needs a shape: the type states wire_fields, or it is written as "
-                      "text, a number, a truth value or a list of one of those.");
+        // A message whose shape lives in a codec header that is not in view
+        // here still gets a schema: an object with no members stated, which is
+        // valid and says less. The protocol headers that name such a message
+        // include the codec headers of the types it holds, so this is the case
+        // for a component whose regeneration lags its template.
+        out.set("type", "object");
     }
 }
 

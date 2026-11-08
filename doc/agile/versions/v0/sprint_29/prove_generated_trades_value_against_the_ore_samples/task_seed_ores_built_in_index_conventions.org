@@ -28,9 +28,9 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
-| Now          | The seed is mined from the engine, covers every built-in family, and the lookup reads both kinds. |
+| Now          | Shipped in #4494; the database-backed test and the tenant override remain. |
 | Waiting on   | Nothing.                               |
-| Next         | A test over what population writes. |
+| Next         | A test over what population writes, and one over a tenant's override. |
 | Last touched | 2026-11-07                               |
 
 * Acceptance
@@ -124,7 +124,7 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
   and =Bratislava stock exchange=). Until that is settled the generated seed
   cannot state a fixing calendar that both refdata and ORE accept.
 
-* Result, in part
+* Result
 
 The seed is mined from ORE rather than transcribed from it, and it covers
 every family the engine defines: 54 Ibor and 27 overnight, four families
@@ -146,8 +146,16 @@ it is by whether it carries a tenor. That is what ORE's own parser does, and
 it is the difference between a conflict and a question the index has already
 answered.
 
-Still open: the acceptance asks for a test over what population writes, which
-needs a database-backed suite rather than the marketdata API's.
+The seed also cannot drift silently: a check re-runs the generator over the
+committed table and diffs the SQL, and the tooling that produces the table
+from an ORE checkout is committed beside it.
+
+Acceptance. The mined seed, its coverage of every built-in family and the
+one-directional reading of the projection are met, and #4494 carries them. Two
+clauses are not: a tenant overriding a seeded convention is untested, and the
+test over what population writes needs a database-backed suite rather than the
+marketdata API's. The task stays STARTED for those two, and they are the only
+work left in it.
 
 * Test Scenarios
 

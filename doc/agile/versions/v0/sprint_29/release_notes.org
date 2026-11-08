@@ -12,7 +12,7 @@
 
 /November 2026/
 
-Sprint 29 set out to finish the work carried from sprint 28. It delivered streaming, session handling and sole ownership of ORE formats, and it moved most of the database layer to generated code. It closed only a small part of the carried work and ran eight days past its plan, so 61 stories go back to the product backlog.
+Sprint 29 merged 781 pull requests across the whole product. The C++ server took on more of the web tier: it streams changes and responses, holds the session at the door, and bounds and streams request bodies. =ores.ore= became the only owner of ORE formats, every output ORE writes is modelled, and generated trades are proved against the ORE samples. Market data gained suppliers, sessions and feeds, public fixings through an adapter, volatility surfaces, the Connectivity and Public rates screens, and new tick arrival models. The trade blotter, draft booking, the product type page and the ACME trade population all moved forward. Record and configuration screens now follow one standard, driven through a repeatable screen pipeline. Generated code replaced most of sqlgen and reflect-cpp, every wire type gained a generated roundtrip test, pricing runs on native Windows workers, and the local gate runs only the checks a change needs. The mission was to finish the work carried from sprint 28, and that did not happen: the sprint ran eight days past its plan and 61 stories return to the product backlog.
 
 -----
 

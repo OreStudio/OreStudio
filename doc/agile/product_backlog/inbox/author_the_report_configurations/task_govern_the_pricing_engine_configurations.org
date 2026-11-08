@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ Show that a party holds few official pricing engine configurations, one per cycl
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] |
 | Now          | Journeys, wireframes and prototypes are reworked. Waiting for review of the PR. |
 | Waiting on   | Model risk, to confirm the approval parts and their order. |

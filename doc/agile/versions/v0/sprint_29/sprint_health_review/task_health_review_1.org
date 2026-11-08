@@ -102,6 +102,8 @@ via its "Verifies task" field.
 | 2 | Thirteen evidence references were already broken on main | Sprint 29 task files | Decline | This PR did not cause them. |
 | 3 | Ten spelling hits in existing task text | Four sprint 29 task files | Decline | This PR did not write that text. |
 | 4 | Three closed stories have a task row count that differs from their task files | let-the-plan, trade-blotter-remaining, rework | Decline | The mismatch exists on main. |
+| 5 | PR #4499 review: follow-up stories and their tasks disagree on state | Inbox stories this PR carried | Accept | Every carried STARTED or BLOCKED story and task is now BACKLOG. Each keeps its =Now= text, branch and PR. A stale row and a DONE row with no Result are corrected from the task files. |
+| 6 | PR #4499 review: empty =Out of scope= and uneven table padding | Follow-up stories | Decline | Cosmetic. The owner asked for the state fix only. |
 
 * Result
 

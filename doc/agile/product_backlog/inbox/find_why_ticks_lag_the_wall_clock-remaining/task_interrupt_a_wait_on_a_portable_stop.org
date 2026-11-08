@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-22
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ Give ores.platform a stop state with an interruptible wait, so that the retry of
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:42252DB8-F87A-4DAD-925D-655AA43FDD60][Find why market data ticks lag the wall clock — the remaining work]] |
 | Now          | Review of the pull request.            |
 | Waiting on   | Nothing.                               |

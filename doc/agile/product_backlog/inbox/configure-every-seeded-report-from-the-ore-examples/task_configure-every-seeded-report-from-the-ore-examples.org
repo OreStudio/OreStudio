@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-08
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -40,7 +40,7 @@ carry none.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:0A76FA11-7E9D-4D1A-B94C-7D3C03113914][Configure every seeded report from the ORE examples]] |
 | Now          | The scope half is settled, and a pricing run showed that ORE recognises the analytic codes. That run stopped because the package carries no quotes for the run's as-of date.                       |
 | Waiting on   | Market data at the run's as-of date, then a run per analytic family.                               |

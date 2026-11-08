@@ -40,7 +40,7 @@ A change event names the record that changed, on every entity in the system. The
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:34293B98-59B2-4A67-AB11-290CBAE2BBD1][Prove the record key is on every entity event]] | STARTED | 2026-10-11 | | Task for: Name the record in a change event |
+| [[id:34293B98-59B2-4A67-AB11-290CBAE2BBD1][Prove the record key is on every entity event]] | BACKLOG | 2026-10-11 | | Task for: Name the record in a change event |
 | [[id:2A5A2501-B264-4D8C-9626-F5E74ABC1CD4][Tell the browser which records changed]] | BACKLOG | | | Task for: Name the record in a change event |
 | [[id:740F4FB7-8AE4-4DA0-BB26-81DB35972AF1][Stale a record page only for its own record]] | BACKLOG | | | Task for: Name the record in a change event |
 | [[id:07940056-8D24-4538-AB24-624BE68B82D8][Name the record in ores.qt]] | BACKLOG | | | Task for: Name the record in a change event |

@@ -38,7 +38,7 @@ A person who looks for what changed lately orders any list by update time. Today
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B9CDFAD7-DCB6-4941-BE6E-55E6CDE9A29A][Scaffold story: Sort every list by when it was updated]] | STARTED | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B9CDFAD7-DCB6-4941-BE6E-55E6CDE9A29A][Scaffold story: Sort every list by when it was updated]] | BACKLOG | 2026-10-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:30829A51-CE1B-4CF1-AF62-5D6A440D881A][Make the update time sortable in the shared audit field group]] | BACKLOG | | | Initial task for: Sort every list by when it was updated |
 
 * Decisions

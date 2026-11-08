@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-10
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ The BFF passes an event to a session only when =X-Tenant-Id= is the session's te
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:AAAB325D-DF76-41D9-AEE4-70F54060760A][Keep the record screens up to date — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

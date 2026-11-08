@@ -26,7 +26,7 @@ The curve blueprint list and record work against the service, using the history 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:36D992FD-0E21-4C21-915E-17D8717A0E23][Rework the market data feeds into a market data service with adapters — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

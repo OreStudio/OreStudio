@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-11
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ Today every ACME party holds the same 31 report definitions. No party has a risk
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:8789FF50-9E1B-46A4-8DC0-9277C1B2825B][Design and seed the reports, configurations and portfolio trees each ACME party runs]] |
 | Now          | Design agreed in [[id:6A1EE441-E132-4230-BCD9-E8BB786D721F][Which reports each ACME party runs]]. Each party now gets its own report definitions. |
 | Waiting on   | The attach-photos fix, to prove a complete provision. |

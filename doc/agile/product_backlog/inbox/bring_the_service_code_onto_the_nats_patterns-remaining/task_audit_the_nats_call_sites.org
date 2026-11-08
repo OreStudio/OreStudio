@@ -51,7 +51,7 @@ A pattern the code proves wrong is amended rather than the code bent to fit it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:38DDDD12-6C66-422E-AE49-0C408AEE3F42][Bring the service code onto the NATS patterns — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -38,8 +38,8 @@ The tenor basis swap convention carries its identity, legs, coupon treatment, ma
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:6F8D224E-C71E-4902-AE18-A43850F6245B][Get clang-cl past rfl's macros]] | STARTED | 2026-10-28 | | The windows-clang job fails inside rfl's own headers, before this project's code matters: 'too few arguments provided for function-like macro invocation' in rfl/Literal.hpp:413, rfl/Variant.hpp:31 and rfl/Generic.hpp:211. It is a clang-cl/preprocessor interaction with a third-party library, and it blocks the same nightly the configuration document split needs to prove itself. |
-| [[id:2750EACD-6C84-485D-B32A-E41D2785F0DF][Split the configuration document protocol by document family]] | STARTED | 2026-10-28 | | Split configuration_document_protocol.hpp and its handler so each translation unit reaches one document family, and restore the Windows MSVC build without a compiler-flag workaround. |
+| [[id:6F8D224E-C71E-4902-AE18-A43850F6245B][Get clang-cl past rfl's macros]] | BACKLOG | 2026-10-28 | | The windows-clang job fails inside rfl's own headers, before this project's code matters: 'too few arguments provided for function-like macro invocation' in rfl/Literal.hpp:413, rfl/Variant.hpp:31 and rfl/Generic.hpp:211. It is a clang-cl/preprocessor interaction with a third-party library, and it blocks the same nightly the configuration document split needs to prove itself. |
+| [[id:2750EACD-6C84-485D-B32A-E41D2785F0DF][Split the configuration document protocol by document family]] | BACKLOG | 2026-10-28 | | Split configuration_document_protocol.hpp and its handler so each translation unit reaches one document family, and restore the Windows MSVC build without a compiler-flag workaround. |
 
 * Decisions
 

@@ -29,7 +29,7 @@ wrote.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:27D295F5-862E-4DF4-898D-9747F768E342][Fix the tenor basis swap convention model and the document TU — the remaining work]] |
 | Now          | Fixed in the root =CMakeLists.txt=; no Windows job has run it yet. |
 | Waiting on   | The next nightly-windows run.          |

@@ -61,7 +61,7 @@ The investigation this story commissioned is
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:20CC752D-14DC-4D4B-B6A1-8BDD67F7B6A2][Let the wizard state the population as shares]] | STARTED | | | Task for: Populate the ACME books with a realistic trade population — the remaining work |
+| [[id:20CC752D-14DC-4D4B-B6A1-8BDD67F7B6A2][Let the wizard state the population as shares]] | BACKLOG | | | Task for: Populate the ACME books with a realistic trade population — the remaining work |
 
 * Decisions
 

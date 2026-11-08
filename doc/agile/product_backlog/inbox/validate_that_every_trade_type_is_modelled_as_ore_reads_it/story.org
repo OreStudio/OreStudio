@@ -21,7 +21,7 @@ Every trade type states how well it is modelled as a level we measure, from a co
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | BACKLOG                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | The audit task is done: the corpus roundtrip compares content and loses nothing. |
 | Waiting on    | Nothing.                               |

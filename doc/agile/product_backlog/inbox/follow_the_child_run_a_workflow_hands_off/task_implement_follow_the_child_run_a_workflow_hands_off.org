@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ A person who provisions a tenant should not be told it is ready while its setup 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:F601BA2C-C879-4880-95C2-02110E5D168E][Follow the child run a workflow hands off]] |
 | Now          | Implementation done on the branch; the PR #3442 review blockers are cleared in local commits. |
 | Waiting on   | Nothing.                               |

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-12
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ Show what the work costs for every role, and let a tenant administrator see the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:92AE6188-834F-4DD9-B63D-C3A8CB1282F6][Draw the node heatmap and carry the engine run statistics]] |
 | Now          | Half built. A tenant and a party see the grid views (0d64a9e959, 7caa4701e3). No cost rate exists on a host or a result.                       |
 | Waiting on   | Nothing.                               |

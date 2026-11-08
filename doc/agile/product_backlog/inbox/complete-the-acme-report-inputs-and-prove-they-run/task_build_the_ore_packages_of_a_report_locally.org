@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ A developer can take a report and get, on disk, every package the compute grid w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:441E3343-F754-49B1-9763-960BBC2D4532][Complete the ACME report inputs and prove they run]] |
 | Now          | The kind lookup, the package chain and the build-packages and fetch-packages commands are written. The branch is rebased onto sprint 28 main and awaits a build. |
 | Waiting on   | Nothing.                               |

@@ -48,4 +48,4 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |---|---|---|---|---|
-| [[id:CAE6E2DF-02A0-4977-8F66-4DC246EAE5E9][Configure every seeded report from the ORE examples]] | STARTED | | | Every report ACME is seeded with needs a risk report configuration ORE can run, built from the ORE examples. |
+| [[id:CAE6E2DF-02A0-4977-8F66-4DC246EAE5E9][Configure every seeded report from the ORE examples]] | BACKLOG | | | Every report ACME is seeded with needs a risk report configuration ORE can run, built from the ORE examples. |

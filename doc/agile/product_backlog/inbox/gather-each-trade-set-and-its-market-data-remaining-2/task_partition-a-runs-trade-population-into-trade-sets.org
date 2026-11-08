@@ -34,7 +34,7 @@ rest of the run reads.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:E4801A4B-938E-48FD-A7F2-E57E91587FEF][Gather each trade set and its market data — the remaining work]] |
 | Now          | The partitioning landed: the strategy interface, batch by book, the bounded-set strategy, composition, the batch key and the partition invariants. The recording half is not built. |
 | Waiting on   | The trade group and its membership, [[id:BB871463-761B-496E-9ABD-EB2000AB8A28][Add the trade group and its membership]], for the acceptance bullet that records the sets against the run. |

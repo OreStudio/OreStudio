@@ -39,7 +39,7 @@ The signed-off Connectivity prototype becomes the screen: the delivery tree, the
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A2A85020-A346-4DA4-971A-2B69F4E8799B][Draw the adapter catalogue and publisher]] | DONE | 2026-10-30 | 2026-10-31 | The read-only adapter catalogue and the publisher record with its feeds. |
+| [[id:A2A85020-A346-4DA4-971A-2B69F4E8799B][Draw the adapter catalogue and publisher]] | BACKLOG | 2026-10-30 | 2026-10-31 | The read-only adapter catalogue and the publisher record with its feeds. |
 | [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the Connectivity screens]] | BACKLOG | | | The new session and new feed flows create rows the adapter reads. |
 | [[id:04C544E6-DFAA-4612-B521-EF1D412EC1B5][Serve the Connectivity writes]] | BACKLOG | | | Write endpoints and permissions for sessions, feeds, scopes, schedules and routes. |
 

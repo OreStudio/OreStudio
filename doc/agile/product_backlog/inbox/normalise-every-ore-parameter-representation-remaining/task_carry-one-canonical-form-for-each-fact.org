@@ -31,7 +31,7 @@ that knowledge lives.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:111B04F6-7E3C-400F-B957-A1E221DEB016][Normalise every ORE parameter representation — the remaining work]] |
 | Now          | Slice 2 is done: the four guards refuse a value outside the set and store the form the set names, so a rendering does not reach a row by any of the four write paths. The mappers still convert first, which slice 3 removes. |
 | Waiting on   | Nothing.                               |

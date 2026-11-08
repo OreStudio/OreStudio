@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ Journey 6 shows when and by whom a membership was closed, and reads a membership
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:2BCBF0AB-EF49-4F28-9725-06F3D03E4BDF][Close the tenor journey and the remaining refdata gaps — the remaining work]] |
 | Now          | The design question is settled. The codegen change is next. |
 | Waiting on   | Nothing.                               |

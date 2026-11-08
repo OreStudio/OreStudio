@@ -39,7 +39,7 @@ Each ACME party gets the reports it would really run, with the configuration tho
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:11AE607C-9F2B-479E-BAA7-36C743AC308F][Design the reports, configs and portfolio trees each ACME party runs]] | STARTED | 2026-10-11 | | Give each ACME party the reports it would really run, with the configuration those reports need and a realistic portfolio tree, root portfolio and currencies. Record and justify every decision for later review. |
+| [[id:11AE607C-9F2B-479E-BAA7-36C743AC308F][Design the reports, configs and portfolio trees each ACME party runs]] | BACKLOG | 2026-10-11 | | Give each ACME party the reports it would really run, with the configuration those reports need and a realistic portfolio tree, root portfolio and currencies. Record and justify every decision for later review. |
 
 * Decisions
 

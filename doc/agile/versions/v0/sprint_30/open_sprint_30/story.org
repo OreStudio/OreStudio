@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: D6E357B9-AEF7-45D4-B756-209D6BDC3538
+:END:
+#+title: Story: Open sprint 30
+#+description: Scaffold sprint 30, wire the version manifest and the agile index, bump the version and update vcpkg.
+#+type: story
+#+level: s2
+#+filetags: :open_sprint_30:sprint_30:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Sprint 30 is open: it is the current sprint in the version manifest and the agile index, and the project is on version 0.0.30 with the latest vcpkg.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- Sprint 30 is the current sprint in the version manifest and the agile index.
+- The project version is 0.0.30.
+- The vcpkg submodule is at the latest commit of its tracked branch.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:50FCF664-4555-4052-AEBC-36839CE5966D][Task: Open sprint 30]] | DONE | 2026-11-08 | 2026-11-08 | Scaffold and wire sprint 30, bump the version and update vcpkg. |
+
+* Decisions
+
+* Out of scope
+
+- Promoting captures into stories. Sprint planning does that.

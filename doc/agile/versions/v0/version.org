@@ -7,7 +7,7 @@
 #+level: s4
 #+filetags: :v0:
 #+created: 2024-06-15
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+todo: STARTED | RELEASED
 
 This page documents *v0* — the 0.x.x [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]] series of ORE Studio. It
@@ -22,10 +22,10 @@ statement of what ORE Studio is, see the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597
 |------------------+-------------------------------------------------------------------|
 | State            | STARTED                                                           |
 | Target milestone | [[id:DDA02748-7054-463B-9238-CC196601403D][Milestone v1.0 — Static World]]                                     |
-| Now              | Sprint 29 in flight: finishing the work carried from sprint 28. |
+| Now              | Sprint 30 in flight. |
 | Waiting on       | Nothing.                                                          |
 | Next             | Pick the first story.                                             |
-| Last touched     | 2026-10-13                                                        |
+| Last touched     | 2026-11-08 |
 
 * Sprints
 
@@ -64,3 +64,4 @@ the current sprint; the rest are closed.
 | [[id:AC79A686-FBE5-49DE-AA4C-2C59250C3A93][Sprint 27]] | 2026-10-05 | 2026-10-13 | Finish the UX pass: the remaining journey groups and the record screens.       |
 | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] | 2026-10-13 | 2026-10-24 | Finish the work carried out of sprint 27: the record screens, the journeys and the rest of its remainders. |
 | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] | 2026-10-24 | 2026-11-08 | Finish the work carried out of sprint 28.   |
+| [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] | 2026-11-08 |            | Finish moving off sqlgen and reflect-cpp, with a limit on the stories in flight. |

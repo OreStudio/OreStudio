@@ -528,3 +528,25 @@ jobs:
               [ -n "$id" ] && gh api --method DELETE \
                 "/repos/${GITHUB_REPOSITORY}/actions/caches/${id}" >/dev/null || true
             done
+
+  attach_package:
+    name: Attach packages to the release
+    needs: build
+    # Attach what passed, so one failed build does not cost the others.
+    if: ${{ !cancelled() && github.ref_type == 'tag' && needs.build.result != 'skipped' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Download the packages of this run
+        uses: actions/download-artifact@v8
+        with:
+          pattern: linux-*-release-ninja
+          path: packages
+          merge-multiple: true
+
+      - name: Attach the packages to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" packages/* --clobber --repo "$GITHUB_REPOSITORY"

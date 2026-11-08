@@ -29,9 +29,9 @@ routes that should not survive are named.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:7470D277-F9BB-4DB1-95CD-20F3D4138395][Classify every HTTP route against the resource rule]] |
-| Now          | All 408 rows are decided, and the area map and the composed views' obligations are emitted beside them. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Nothing: the port works from this table. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

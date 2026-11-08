@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-24
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -34,28 +34,40 @@ The investigation this story commissioned is
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing. |
 | Next          | Nothing. |
-| Last touched  | 2026-10-30                             |
-
+| Last touched  | 2026-11-08 |
 * Acceptance
 
-- One asset class at a time. A planner exists for every asset class in
-  the refdata catalogue, and the planner for a class books the trade
-  types the catalogue routes to that class.
-- The population is a function of (seed, as-of). A review is a rebuild
-  and a diff, and a second run books nothing.
-- The product mix matches Trade Population Weights within a stated
-  tolerance, and every routed product appears at least once.
-- Every trade names a party, a book, a netting set and a counterparty
-  the tenant holds.
-- The population exports as the ORE portfolio the engine reads, and
-  reverse-maps without loss.
-- A second tenant runs the same machinery from its own config rows with
-  no code change.
+The story closes on the tasks it finished:
+
+- A generated date is a real date.
+- A security is named by its product.
+- Charter a book and a config for the commodity population.
+- Construct every bond product by name.
+- Draw every bond code and state its facts.
+- Expose the population's size and mix in the provisioning UI.
+- Factor out the shared planner loop.
+- Give the system a legal entity.
+- Make the trade population plan family-neutral.
+- Name a bond security by its issuer.
+- Populate the commodity family.
+- Populate the credit family.
+- Populate the equity family.
+- Populate the FX family.
+- Populate the inflation family.
+- Populate the interest rates family.
+- Populate the scripted family.
+- Publish the commodity catalogue.
+- Record where a trade came from.
+- Trade Population Weights states a trade-count mix: interest ….
+- Seed a commodity catalogue.
+- Seed an inflation curve the tenant holds.
+- The bond population books one product of ten.
+- The population never draws the products past its slot count.
 
 * Tasks
 
@@ -191,6 +203,7 @@ The investigation this story commissioned is
   knob the profile declares costs no screen code and the arithmetic has one home
   on the server. A run that states no size keeps the seeded counts; one that
   states a size and no mix keeps the seeded mix.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:991A62E6-A8D5-4E2E-9B42-AF0519AEE961][Populate the ACME books with a realistic trade population — the remaining work]].
 
 * Result
 

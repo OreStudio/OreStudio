@@ -28,9 +28,9 @@ Make the native Windows implementation and its limitations reviewable in one ups
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:A5920AD8-3AF8-4D7D-B98E-976D3F3EF4DE][Support native Windows pricing and local services]] |
-| Now          | Implementation and scoped validation complete.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Review the upstream PR; retain the documented validation limitations.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-04                               |
 
 * Acceptance

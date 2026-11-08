@@ -28,7 +28,7 @@ After provisioning, each currency with a bootstrap config has a published curve 
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
-| Now          | Done. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-11-07                               |

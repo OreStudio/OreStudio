@@ -35,8 +35,8 @@ format, and why the shapes are what they are.
 | State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
 | Now          | Nothing. |
-| Waiting on   | Nothing.                               |
-| Next         | Review and merge.                      |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

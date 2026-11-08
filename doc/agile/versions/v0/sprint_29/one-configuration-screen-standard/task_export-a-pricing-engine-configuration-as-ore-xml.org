@@ -28,9 +28,9 @@ One pricing engine configuration leaves the system as the ORE XML ORE itself rea
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | Built to the specification: protocol, exporter, handler, route, screen button and shell command. |
-| Waiting on   | Nothing.                              |
-| Next         | The import of the same document, which is the other half of the pair. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-26                               |
 
 * Acceptance

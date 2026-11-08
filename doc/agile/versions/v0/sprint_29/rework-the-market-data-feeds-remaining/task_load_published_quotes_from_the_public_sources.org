@@ -28,9 +28,9 @@ The system holds what the ECB, the Federal Reserve, the Treasury and other publi
 |--------------+----------------------------------------|
 | State        | ABANDONED                            |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Superseded before any code: see Result. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-23                               |
 
 * Acceptance

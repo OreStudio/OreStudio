@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :build:ci:testing:sprint_29:v0:
 #+created: 2026-10-28
-#+updated: 2026-10-28
+#+updated: 2026-11-08
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,16 +23,19 @@ the reflect-cpp removal retires.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                 |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Done; every local check passes.        |
-| Waiting on    | Nothing.                               |
-| Next          | Merge the PR.                          |
-| Last touched  | 2026-10-28                               |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
--
+The story closes on the tasks it finished:
+
+- Hold the basket's initial price as the decimal the domain now states.
+- Fix what the checks and CI find on main.
+- Scaffold story: Make main green after the sqlgen removal.
 
 * Tasks
 

@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: C9FC5224-69D3-444A-8D9E-4669ACC88F36
+:END:
+#+title: Story: Prove the report grid run end to end — the remaining work
+#+description: The ACME report definition runs to completion against the compute grid from an input bundle that already exists, the compute results are retrieved, and the run is reproducible from a freshly recreated database.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The ACME report definition runs to completion against the compute grid from an input bundle that already exists, the compute results are retrieved, and the run is reproducible from a freshly recreated database.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started. Split from [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- The ACME definition triggers from the shell, the instance travels pending, running and completed through the FSM guard, and the compute results are retrieved.
+- The run is reproducible from a freshly recreated database, and every report ACME is seeded with has the risk report configuration its run needs.
+- The run's portfolio input is ORE-readable at the path the run document names, and the engine proceeds past Build Portfolio.
+- A job whose engine reports an error and writes no analytics is recorded as a failed result, and a stored assignment whose result is gone is not replayed.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D42DC42B-1729-4B1C-9EE8-658208319355][Prove a run on generated trades and market data]] | BACKLOG | | | Every end-to-end run so far has depended on hand-seeded ACME data, which is why a run fails for a data reason rather than a chain reason. The synthetic component already generates the trade population (bond books, counterparties, trade generation configs) and publishes market data (IR curve and FX spot generation configs, feeds into ores.marketdata). Prove a report runs to completion on data the system generates: generate the trades, generate the market data they need, point a report definition at those books, and run it. Record what the generated data cannot yet express, which is the gap a gather has to respect. |
+
+* Decisions
+
+- Split from [[id:90A8E8FB-F103-42D1-9C57-517D7F0694B3][Prove the report grid run end to end — the remaining work]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+-
+

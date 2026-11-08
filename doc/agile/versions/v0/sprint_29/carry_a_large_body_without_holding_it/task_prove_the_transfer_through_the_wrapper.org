@@ -30,9 +30,9 @@ prove the file protocol, but the path a real transfer takes is unproven.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | The transfer path the wrapper uses is proven through the real gateway. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing; the grid wrapper process itself was not run. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

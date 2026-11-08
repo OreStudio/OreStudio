@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-24
-#+updated: 2026-11-04
+#+updated: 2026-11-08
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,45 +21,72 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The route is the one consumer record; the feed binding is gone and the record agrees. Split from [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]], which closed in sprint 28 with its done tasks. |
-| Waiting on    | Nothing.                               |
-| Next          | Start [[id:60254044-78AD-4422-B1FF-3D78FA40F598][Test the market data service in a non-system tenant]]. |
-| Last touched  | 2026-10-24                               |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
-- The catalogue holds providers, sources with a kind, vendor instruments and mappings, installed by a system bundle.
-- An adapter announces itself, answers a demand set, publishes vendor-id ticks and sends a heartbeat, and the service maps, checks, stores and delivers them.
-- A party holds a subscription with rights and one route per provider, and a source switch is audited and effective-dated.
-- The simulator is an adapter under ores.marketdata.synthetic, its generators belong to the system tenant and system party, and no subject, table or constraint carries a mark of the simulator.
-- Usage events, rate cards, rating and allocation give each party a bill, and a simulated source gives a shadow bill.
-- The screens and the shell follow the architecture pages, and a scenario shows a development party on a simulated source and a prelive party on a live source side by side.
+The story closes on the tasks it finished:
+
+- Add the demo approvers and document the market data setup.
+- Add a provisioning to ticks smoke check.
+- Address the blueprint review.
+- Audit the market data documents for the service.
+- Bind a report to the published curve.
+- Build the cut screens.
+- Build the cut take and its authorisation.
+- Build the cut data model.
+- Build the published curve screens.
+- Build the market data sources board and the subscriptions screen.
+- Close the approval model gaps.
+- Complete the publish policies.
+- Give the cut families and values system labels, and fix the history.
+- Decide a cut's authorisation and apply it.
+- Decide the binding's place in the route architecture.
+- Decide whether ticks are stored once for each source.
+- Design the published curve screens and decide the publish model gaps.
+- Design the bootstrapping screens.
+- Design the cut's journeys and screens.
+- Document the market data path.
+- Fix the post-merge checks.
+- Fix the system lookups and the approval read.
+- Light the intraday reports on the LIVE cut.
+- Make the demo tenant exercise the system.
+- Make the existing market data screens correct.
+- Make the demand self-correcting and visible.
+- Name a curve pillar's market series.
+- Name the publish subject and record who published it.
+- Notify a person that a scenario is ready.
+- Parse the engine log when a run fails.
+- Port the market data cuts reference.
+- Reconcile the binding stories and the market data docs.
+- Record the trades per book on the provisoned config.
+- Remove the committed session cookie.
+- Repair the web after the feed rename.
+- Retire the feed binding.
+- Route the synthetic feeds into the ingest.
+- Schedule a report from its own page.
+- Schedule the catalogue when Acme is provisioned.
+- Seed the ladder family and let it fail like the rest.
+- Set the intraday frequencies a desk expects.
+- Test the market data service in a non-system tenant.
+- Use oresmd on the market data generation path.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8D5C8A02-A6E3-4195-9FD1-140A0293C78B][Remove the marks of the simulator from names, subjects and constraints]] | BACKLOG | | | Remove the synthetic prefix, subjects, constraints and screen marks so that nothing in the system depends on the simulator. |
-| [[id:AF826E35-6ED4-411D-B1E3-79D3B2103778][Split trade generation into ores.trading.synthetic]] | BACKLOG | | | Move the trade generators out of ores.synthetic into ores.trading.synthetic. |
-| [[id:3614B1D7-0D9C-4004-B190-2D8968C6A721][Build the market data service screens]] | BACKLOG | | | Build the catalogue, subscriptions and routes, usage and cost, and source status screens, and retire the bindings screen. |
-| [[id:9814C1C5-E599-4405-B79F-3525C0314A7C][Rework the shell commands for the market data service]] | BACKLOG | | | Add shell commands for the catalogue, subscriptions, routes, sources and usage, and move the simulator commands. |
-| [[id:56D38654-9CC3-45A9-B23A-78EAEE1A402C][Draw the prototypes and wireframes for the new journeys]] | BACKLOG | | | Draw the wireframes and prototypes for the subscriptions, sources and offer-a-collection journeys. |
-| [[id:A712C3E7-ED5C-4E71-B6FB-5D1932354F6D][Add a replay adapter]] | BACKLOG | | | Add an adapter that replays recorded vendor ticks as a source of kind replay. |
-| [[id:816F6540-89B4-4847-A289-88A1948DC682][Check a development party and a prelive party side by side]] | BACKLOG | | | Write and run a scenario with one party routed to the simulated source and one to the live-kind source, both running. |
-| [[id:FD3DF4E8-DD1D-4CC2-96A0-D3DF3624B5A2][Rename the simulator component to ores.marketdata.synthetic]] | BACKLOG | | | Rename the synthetic component to ores.marketdata.synthetic, with the codegen identity, the paths and the namespaces. |
-| [[id:5CCD3099-EC5D-4F43-A106-33E3F235115B][Write the vendor tickers of the curve pillars]] | BACKLOG | | | Give each rate curve pillar of Bloomberg and LSEG a vendor id, so the native simulator can serve curves. |
 | [[id:74F33C8C-AF28-4A6E-812A-A2D443A77E40][Load published quotes from the public sources]] | ABANDONED | 2026-10-28 | | Superseded by the story Publish public fixings through an adapter. |
 | [[id:51A7DF59-52C9-4F25-90FD-72D7B4755CCD][Add a provisioning to ticks smoke check]] | BACKLOG | | | One script that provisions a tenant on a fresh database and asserts that ticks arrive. |
 | [[id:0BA09EFB-9E28-457A-9471-5AD18F77F016][Make the demand self-correcting and visible]] | DONE | 2026-10-25 | 2026-10-25 | Refresh the supervisor snapshot on a timer as well as on events, and show demand and ingest health in one status. |
 | [[id:60254044-78AD-4422-B1FF-3D78FA40F598][Test the market data service in a non-system tenant]] | BACKLOG | | | Run the demand, the ingest and the vintage tests with routes and subscriptions in a tenant that is not the system tenant. |
 | [[id:AD03A408-4927-4D25-86A6-9F0D19D1570C][Decide whether ticks are stored once for each source]] | DONE | 2026-10-25 | 2026-10-25 | Today the ingest writes one copy of a tick for each party that routes to the source. Decide if one shared copy with entitlement at read time is better. |
-| [[id:1FE82E68-ECA0-4E28-98C4-655AC612B728][Refresh the simulator adapters when the catalogue changes]] | BACKLOG | | | The simulator builds its adapters once, at start. A new simulated source needs a restart. |
 | [[id:E53B0439-85D8-44FF-9D3F-6C7C644E0D62][Decide the binding's place in the route architecture]] | DONE | 2026-10-24 | 2026-10-24 | Settle whether a feed binding stays as the persisted consumer record or retires in favour of the route, before the ingest, the screen and the policy audit build on it. |
 | [[id:6DB2B277-D4CC-4FE2-830B-A83D1033B6AC][Retire the feed binding]] | BACKLOG | | | Delete the feed binding and read the consumers from the routes, so one record says which party consumes which source. |
 | [[id:C452234B-3764-45C7-A62D-9DCDDFF151BC][Reconcile the binding stories and the market data docs]] | DONE | | 2026-10-24 | Make the agile record and the market data docs say that the route is the consumer record and the binding is gone. |
-| [[id:4512DD80-5A5D-42DC-996B-9C62DC88E16B][Repair the baseline drift the gate reports]] | BACKLOG | | | Commodity, workflow and reporting merges left generated artefacts, seeded permissions and pgTAP expectations stale. |
 | [[id:2D2E09E9-42CE-4467-A9B9-B7FA73975285][Audit the market data documents for the service]] | DONE | 2026-10-25 | 2026-10-25 | The standards, journeys and prototype notes still describe the old feeds world: bindings, auto-start, feeds that should run, and real market data yet to arrive. |
 | [[id:52CA4F5E-5B0F-4C34-A946-1209AB8DDEA2][Make the existing market data screens correct]] | DONE | | 2026-10-26 | The screens still read the old run model and some names no longer match the service. Make the names and the behaviour correct before adding anything. |
 | [[id:425C5D94-F627-4994-AF59-63561FA5806E][Build the market data sources board and the subscriptions screen]] | DONE | 2026-10-26 | 2026-10-26 | The two screens are signed off as prototypes and not built. Build them in the app. |
@@ -70,7 +97,6 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:C8C5536D-1FFB-4E63-937D-88A27C05B21F][Design the published curve screens and decide the publish model gaps]] | DONE | 2026-10-27 | 2026-10-27 | The published-curves list, the delta and the queue subject need a prototype; the withdrawal, zero-approval, notification and maker-checker need decisions. |
 | [[id:3E5A507D-85B5-4CBC-AEA0-4F676026ABB8][Build the published curve screens]] | STARTED | 2026-10-27 | | Implement the signed-off prototype: the list, the record page with its four tabs, the last-N overlay, the comparison, the history and the queue subject. |
 | [[id:10F30D46-7821-4831-B756-4AE462A8BEDB][Design the bootstrapping screens]] | DONE | 2026-10-28 | 2026-10-28 | The Qt app has the IR curve bootstrapping screens; the web has none. The journeys and the prototype come before any code. |
-| [[id:5E222CAA-EC8C-4A16-A835-6C76FD660406][Build the curve blueprint screens]] | STARTED | 2026-10-28 | | Implement the signed-off prototype with the standard record infrastructure. |
 | [[id:D8092FA1-9513-4CF1-8388-B51AADC32DCD][Complete the publish policies]] | DONE | 2026-10-28 | 2026-10-28 | The zero-approval path, the maker/checker pair and the publish notice are decided and not built. |
 | [[id:72C51792-6C2B-4674-ACBB-18B5444AF347][Address the blueprint review]] | DONE | 2026-10-28 | 2026-10-28 | The blueprint needs a name in the database, a null discount curve instead of the nil sentinel, and the publisher drawn as a person. |
 | [[id:EAD9F02F-3B4B-495E-B37D-71BF766F7970][Name a curve pillar's market series]] | DONE | 2026-10-29 | 2026-10-29 | Implement the decision that a pillar names its market series: model, reader, picker, seed and tests. |
@@ -91,14 +117,6 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:45C1929E-9B92-489F-8E44-FA1819E5372D][Decide a cut's authorisation and apply it]] | DONE | 2026-11-01 | 2026-11-01 | The take raises the request; the inbox decides and the reporting side must stamp the authorisation. |
 | [[id:EA59C7E0-CFDF-4BBE-815C-8AF53BFC16E1][Light the intraday reports on the LIVE cut]] | DONE | 2026-11-03 | 2026-11-03 | The intraday reports exist unconfigured or unselected; every definition has a NULL cut and the configs say eod. |
 | [[id:9271AE36-7C6F-4193-A4B0-CCCB3A4DA76E][Schedule the catalogue when Acme is provisioned]] | DONE | 2026-11-03 | 2026-11-03 | A provisioned Acme ticks nothing: the catalogue states schedules but no one schedules the reports. The provisioner should, as the run's administrator, with its own credentials. |
-| [[id:C744E1F5-AFAA-4147-9F42-87A3909934F8][Design the .1 and greek ladder reports]] | STARTED | 2026-11-03 | | The .1 family and the wider greek ladders are prose only; research ORE and design the reports before seeding. |
-| [[id:8A951C62-4081-4CF1-9051-862533FA17B9][Bind a sensitivity configuration to a report definition]] | BACKLOG | | | A sensitivity run must name the factors it shifts: bind a SensitivityAnalysis document into the configuration slot a report definition already has for it. |
-| [[id:D168771B-BC57-46D7-93B5-F9FA10A4A4B7][Seed the sensitivity shift families]] | BACKLOG | | | One sensitivity document per risk class, with the shift sizes a desk reads as the .1 and the basis-point families selected by key. |
-| [[id:FABF9F45-2B9B-4844-9200-DEFECB81CC69][Build the rates delta and gamma ladders]] | BACKLOG | | | The bucketed delta and gamma report over the discount, index and yield curves: one figure per curve and tenor, read from the sensitivity report. |
-| [[id:AFA116AA-0FF8-4FA0-88B4-1DF2F26022F5][Build the par-rate DV01 and theta ladders]] | BACKLOG | | | The two ladders whose whole result is one figure per trade: the par-rate DV01 from the par conversion, and theta from the clock. |
-| [[id:3DD3449A-CF81-458D-BE3D-07951A1E0EC2][Build the .1 ATM and surface vol ladders]] | BACKLOG | | | The .1 ATM ladder shifts one point per expiry; the .1 surface ladder shifts every configured strike. Both are the same report over two sensitivity documents. |
-| [[id:0C0F9826-403E-4C62-B03F-050888E9F88B][Derive the risk reversal and strangle ladders]] | BACKLOG | | | The engine has no risk reversal factor, so the RR and STR ladders are a change of basis over the surface-point deltas of the surface run. |
-| [[id:CC276A2C-4676-4DE3-8114-C496CAB0C082][Build the cross-gamma ladder]] | BACKLOG | | | The cross terms are present in the sensitivity report as rows with two factors; crossgamma.csv has no writer at 1.8.17.0, so the ladder reads the rows. |
 | [[id:62655D66-B68E-4E5A-9D23-1D142B74E086][Fix the post-merge checks]] | DONE | 2026-11-03 | 2026-11-03 | The merged reports pages do not link their structure notes, and four web files are not formatted. |
 | [[id:6D6A3804-3E49-4B12-9F84-A8C5C2162949][Parse the engine log when a run fails]] | DONE | 2026-11-03 | 2026-11-04 | A failed compute records the engine's whole output as one error; the parsed trade failures exist in the log but never reach the run's errors. |
 | [[id:B124F617-0859-4F78-9F81-85DEA485D97B][Seed the ladder family and let it fail like the rest]] | STARTED | 2026-11-04 | | The thirteen ladder reports are documented but no definition states them; they can be created and fail at the engine like every other report until the inputs and the vol data arrive. |
@@ -126,6 +144,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 
 - Split from [[id:BC8B619A-D766-4208-B4D1-4785F24AC67D][Rework the market data feeds into a market data service with adapters]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
 - The route is the one consumer record (2026-10-24). The feed binding retires, with its two tables, its screen and its policies. A projection of the routes would keep two records for one fact and need a writer to hold them in step. This reverses the sprint 27 decision that consumption is a binding. Evidence and consequences are in [[id:E53B0439-85D8-44FF-9D3F-6C7C644E0D62][Decide the binding's place in the route architecture]].
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:36D992FD-0E21-4C21-915E-17D8717A0E23][Rework the market data feeds into a market data service with adapters — the remaining work]].
 
 * Out of scope
 

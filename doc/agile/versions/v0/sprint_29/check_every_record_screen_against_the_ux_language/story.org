@@ -23,9 +23,9 @@ The checks exist before the screens change, so the first screen work proves the 
 |---------------+----------------------------------------|
 | State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Done: the harness checks 32 screens, the baseline is recorded and the sign off recipe has its worked example. |
-| Waiting on    | Nothing.                               |
-| Next          | Nothing; the calendars topic story takes the pipeline from here. |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance

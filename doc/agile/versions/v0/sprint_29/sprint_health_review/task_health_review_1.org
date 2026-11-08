@@ -311,6 +311,81 @@ because its one task only describes the story. The same reason applies.
 The sprint =* Status= table is also stale. It says "Pick the first story" and
 was last touched on 2026-10-24.
 
+*** Sprint cleanup: closes, splits and carries
+
+The owner asked for a cleanup to prepare the close, after this review. The
+numbers in the sections above are the state before the cleanup. The cleanup uses
+the rules of the sprint 28 close. The audit reported 105 findings before it and
+reports 1 after it. The 1 finding is the live story "Serve what the BFF serves,
+then retire it".
+
+| Outcome | Stories | Notes |
+|---------+---------+-------|
+| DONE | 61 | 36 before the cleanup, plus 20 split and 5 closed. |
+| ABANDONED in the table | 60 | 58 carried to the inbox, plus the 2 already abandoned. |
+| STARTED, left in place | 6 | A live branch owns each one. |
+
+Tasks left in the sprint: 547, of which 503 DONE, 21 ABANDONED, 22 BACKLOG and
+1 STARTED. The open tasks all belong to the six live stories.
+
+Two tasks closed DONE, because their PRs merged and each Result records the
+work: "Put the numbers-changing engine run settings through sign-off" (#4011)
+and "Stand up the synthetic adapter and serve its first collection" (#4493).
+The other open tasks with merged PRs stayed open. Each has no Result, or its
+own text says the work is partial.
+
+Twenty stories split. Each closed story keeps its done tasks and narrows its
+Acceptance to them. A new story in the inbox takes its open tasks, 82 in total,
+and its original Acceptance. A story that was already "the remaining work" keeps
+that title, and its new folder ends in =-remaining-2=. Each closed story names
+the new story in its Decisions. A split records what shipped. It does not claim
+that the original Acceptance is met.
+
+Five stories closed DONE on their finished tasks: "Complete a structure from a
+screen", "Hotfix: Keep the build warning-free on every toolchain", "Make main
+green after the sqlgen removal", "Model suppliers, sessions and feeds" and "Fix
+the nightly platform failures".
+
+Fifty-eight stories moved to the inbox with their =:ID:= intact, because they
+have no done task other than a scaffold, or because of the four cases below.
+
+The audit named four stories ready to close, and this cleanup rejects them.
+Every task is done, but those tasks do not deliver what the story promises:
+
+| Story | Tasks DONE | Why it is not closed |
+|-------+------------+----------------------|
+| Let a busy market move prices, not only the clock | 2 | A document and the sampling change. The volatility channel, the tails and the control plane are not built. |
+| Validate that every trade type is modelled as ORE reads it | 1 | The audit of the tests only. The contract for each type and the level check are not built. |
+| Eight columns in the trading models hold JSON blobs | 2 | The basket constituents only. The Goal names eight columns. |
+| Seed a relative-time trade population with the market data it needs | 1 | The one task describes the story. Reviews of sprints 27 and 28 rejected this close too. |
+
+Six stories stay STARTED in the sprint. Each has a worktree with commits ahead
+of main or an open PR from the last few days, and a move would pull the story
+from under that branch:
+
+| Story | Worktree | PR |
+|-------+----------+----|
+| Replace sqlgen and reflect-cpp with generated code | brave_hopper | #4492 |
+| Describe every product type on one page | merry_newton | #4471 |
+| Split the types that carry too many columns | bright_faraday | none |
+| Serve what the BFF serves, then retire it | clever_dijkstra | none |
+| Prove generated trades value against the ORE samples | swift_curie | none |
+| Build the IR curves of every supported currency from public data | prime_origin | none |
+
+The sprint table now agrees with every story file. It gained the six missing
+rows. Closed documents in the sprint now state "Nothing." in their Now, Waiting
+on and Next cells. The inbox index is regenerated.
+
+The cleanup did not read the code behind any closed task. The closes rest on the
+task's state, Result and PR. Two older closed stories have fewer table rows than
+task files: "Let the plan state domain rows, not a bag" and "Trade Blotter — the
+remaining work". The closed "Rework the market data feeds" also has one row
+fewer than its files. This cleanup left these as they were.
+
+Still to do for the close: resolve the six live stories, write the Achievements
+and the Retrospective, regenerate the charts, write the release notes, and mark
+the sprint DONE.
+
 *** What this review did not check
 
 - It did not read the =* Result= of each task, so the split table is a

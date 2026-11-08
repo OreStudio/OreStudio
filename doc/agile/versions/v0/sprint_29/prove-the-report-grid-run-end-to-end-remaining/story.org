@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-24
-#+updated: 2026-10-30
+#+updated: 2026-11-08
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,19 +21,41 @@ The ACME report definition runs to completion against the compute grid from an i
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The run is witnessed on a database built from nothing, and the result rows pipeline is built: the node projects the engine's npv.csv into canonical rows, post-processing loads them into the result rows hypertable, and the screens read that table. Two tasks stay open: a run on generated trades and market data, and a run per analytic family. |
-| Waiting on    | A run per analytic family, and a projection for each analytic's output file. |
-| Next          | Run one report per analytic family and record the engine's verdict for each code. |
-| Last touched  | 2026-10-30                               |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
-- The ACME definition triggers from the shell, the instance travels pending, running and completed through the FSM guard, and the compute results are retrieved.
-- The run is reproducible from a freshly recreated database, and every report ACME is seeded with has the risk report configuration its run needs.
-- The run's portfolio input is ORE-readable at the path the run document names, and the engine proceeds past Build Portfolio.
-- A job whose engine reports an error and writes no analytics is recorded as a failed result, and a stored assignment whose result is gone is not replayed.
+The story closes on the tasks it finished:
+
+- Add the report result rows table.
+- Ask a run's health from the shell.
+- Compare a run with an earlier one.
+- Complete the result row's generation.
+- Draw the plots the run can answer.
+- Group books under their portfolios.
+- Marshal the engine's output into result rows.
+- Nest the portfolios into a tree.
+- Post-process a run's results into rows.
+- Prove the run end to end and keep it repeatable.
+- Read a report's runs and one run's results.
+- Read a run's errors and its job chain from the shell.
+- Read a run's results at trade, book or counterparty level.
+- Read a run's results in the reporting area.
+- Read the trade a run failed on, at its version.
+- Read a trade from a run's results.
+- Record the date a run priced at.
+- Record the trade version a run read.
+- Restore the engine log work.
+- Roll a run's counterparties up to their groups.
+- Run a report from its page and read its rows.
+- Say the run failed in one sentence.
+- Seed ACME with the report type, the bundle and the definition.
+- Store a run's errors once, and keep the rows the vocabulary names.
+- Work out a run's error cause on the server.
 
 * Tasks
 
@@ -43,7 +65,6 @@ The ACME report definition runs to completion against the compute grid from an i
 | [[id:F185F8C8-A36C-43BD-836B-8C3D6B78C2A9][Seed ACME with the report type, the bundle and the definition]] | DONE | | 2026-10-25 | Task for: Run an example bundle through the compute grid from a report definition |
 | [[id:2AA1EA54-FE69-44C5-81C5-D9EE18D06051][Read a run's errors and its job chain from the shell]] | DONE | | 2026-10-25 | The shell could not read a run's errors at all. The generated report_error_event and report_error_scope command units existed but nothing registered them, so every recipe for a run's reasons aborted with 'Wrong command', and the reporting service subscribed only the counts read, so even a registered command would have reached no responder. The other job and run reads were already reachable: report_instances list and get, batches, workunits by-batch-id and results by-workunit-id. |
 | [[id:0CFE80F0-8DE6-43F5-BC8D-AB324592F9A4][Work out a run's error cause on the server]] | DONE | | 2026-10-25 | The run page decided what an error was about by reading the engine's message in TypeScript: it took the curve name out of IndexCurve(...), matched trades to curves by substring, truncated sentences and chose a label per scope. The shell could not do any of it without a second copy, which is how the duplication showed. |
-| [[id:D42DC42B-1729-4B1C-9EE8-658208319355][Prove a run on generated trades and market data]] | BACKLOG | | | Every end-to-end run so far has depended on hand-seeded ACME data, which is why a run fails for a data reason rather than a chain reason. The synthetic component already generates the trade population (bond books, counterparties, trade generation configs) and publishes market data (IR curve and FX spot generation configs, feeds into ores.marketdata). Prove a report runs to completion on data the system generates: generate the trades, generate the market data they need, point a report definition at those books, and run it. Record what the generated data cannot yet express, which is the gap a gather has to respect. |
 | [[id:B649FE81-7E96-43DA-AFA1-10CB22142D72][Read the trade a run failed on, at its version]] | DONE | | 2026-10-25 | The error screen links a failed trade to /trades?trade=<id>&version=<n>, and the trades page reads neither, so the link lands on the unfiltered blotter. Make the trades list open the trade the link names, at the version the run read, and say when that version is no longer current. The page must ask the server for it rather than filter a list it already fetched. |
 | [[id:A52EA064-208B-4FCB-BBBD-91B8990EE0BA][Ask a run's health from the shell]] | DONE | | 2026-10-25 | A run's health is a server-side read that the BFF calls and the shell cannot: the operations menu has the trigger and the gather verbs but no health verb, and the run entity carries state rather than health. Serve the health read under the report operations menu, generated the same way as the other operations, so the shell and the web ask the same question. |
 | [[id:7EB16D8A-A370-444A-9498-0C6ABE8C2F2E][Store a run's errors once, and keep the rows the vocabulary names]] | DONE | | 2026-10-25 | The step that reads a run's output runs at least once, and it wrote its rows every time, so a redelivery stored the same reasons twice. One engine scope the vocabulary did not name made it return before writing anything, so a single unrecognised group cost the run every reason it did name. Writing is now guarded by the run, and an unknown scope costs only its own rows, which are said as a warning on the run. |
@@ -113,6 +134,7 @@ The ACME report definition runs to completion against the compute grid from an i
   =:hypertable_retention_interval:=, and no Timescale retention job runs on any
   table in this environment. The interval is not settled, and it is filed as a
   capture rather than claimed by a task that is closed.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:C9FC5224-69D3-444A-8D9E-4669ACC88F36][Prove the report grid run end to end — the remaining work]].
 
 * Out of scope
 

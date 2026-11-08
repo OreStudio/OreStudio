@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 111B04F6-7E3C-400F-B957-A1E221DEB016
+:END:
+#+title: Story: Normalise every ORE parameter representation — the remaining work
+#+description: ORE accepts more than one spelling for many of its values: 27 spellings for seven business day conventions, four vocabularies for a boolean, alias rows for a day counter, and any case for the enumerations its parser upper-cases. The store must hold one representation of each fact, and the knowledge of which spellings mean what must live in data, not in code that drifts from the engine.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every ORE parameter whose reader accepts more than one rendering of a value is stored in one canonical representation, and the map from a rendering to that representation is data the database holds, not a table compiled into a binary. The value set states both what is accepted and what is canonical, so the screen offers one form and the store keeps one form, and a spelling ORE adds later is a row rather than a release.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started. Split from [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- Every parameter whose ORE reader accepts more than one rendering is named, with the reader that accepts it and the canonical form chosen for it.
+- The map from an accepted rendering to the canonical form is data: the value set states it, and no compiled table holds ORE's spellings.
+- A write converts an accepted rendering to the canonical form at one boundary for every parameter, and a rendering the map does not know is refused naming the set.
+- The screens offer the canonical forms and not the accepted ones, and the guard accepts every accepted rendering.
+- A check fails when a table holds more than one rendering of one fact.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4D524D0D-BEDC-460E-8846-C9982A999577][Carry one canonical form for each fact]] | STARTED | | | ORE accepts several spellings for one value, and a compiled table in the codec converts them. This task moves the spellings into the value set, converts at the write boundary so the store holds one rendering, offers only canonical forms to a screen, and fails a check when a table holds two renderings of one fact. |
+
+* Decisions
+
+- Split from [[id:46BFBF6D-6757-45C8-B799-73AEFFFBD842][Normalise every ORE parameter representation]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+- =Model=, =Engine= and a sensitivity template code: the document defines the
+  thing they name, so their set is open and nothing about them is canonicalised.
+- Free text parameters, whose set says so.
+- Currencies, whose registry already holds the ISO code and nothing else.
+- Rewriting ORE's semantics: the canonical form is a rendering, not a new value.
+

@@ -28,9 +28,9 @@ Each type on the inventory's split list becomes the components the inventory nam
 |--------------+----------------------------------------|
 | State        | ABANDONED                            |
 | Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
-| Now          | Superseded; nothing was started.        |
-| Waiting on   | Nothing: it is replaced.                |
-| Next         | None. The grouping tasks replace it.   |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-29                               |
 
 * Acceptance

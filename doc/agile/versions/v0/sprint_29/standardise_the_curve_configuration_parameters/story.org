@@ -23,9 +23,9 @@ A curve configuration is drawn like every other configuration that comes off an 
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Done. Every curve leaf the ORE guide and source document carries a contract row, the page draws a curve's parameters, its segments and each segment's quotes from the projection's own wiring, and the walk on a freshly provisioned tenant reads *289 of 289 parameters carry documentation*. Every curve parameter path is one the schema declares, or one the ORE code reads where the schema omits it, with the source line that reads it. |
-| Waiting on    | Nothing.                              |
-| Next          | Nothing. The story is closed; the sprint row follows. |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-30                               |
 
 * Acceptance

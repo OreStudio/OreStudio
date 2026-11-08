@@ -28,9 +28,9 @@ All 621 opted-in models have generated roundtrip tests that build and pass.
 |--------------+----------------------------------------|
 | State        | ABANDONED                            |
 | Parent story | [[id:E8979EC7-EC28-483B-86B4-E5AACC6DC967][Generate roundtrip tests for the wire codecs]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-02                               |
 
 * Acceptance

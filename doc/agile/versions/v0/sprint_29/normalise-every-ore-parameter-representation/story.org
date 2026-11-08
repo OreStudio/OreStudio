@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_29:v0:
 #+created: 2026-10-30
-#+updated: 2026-10-30
+#+updated: 2026-11-08
 #+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,20 +21,19 @@ Every ORE parameter whose reader accepts more than one rendering of a value is s
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The story is written; the census is the first task. |
-| Waiting on    | The owner's sign-off on the two decisions the census confirms: the canonical form per class, and where the crosswalk data lives. |
-| Next          | Consolidate the three element maps, then confirm the canonical form per class. |
-| Last touched  | 2026-10-30                               |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
-- Every parameter whose ORE reader accepts more than one rendering is named, with the reader that accepts it and the canonical form chosen for it.
-- The map from an accepted rendering to the canonical form is data: the value set states it, and no compiled table holds ORE's spellings.
-- A write converts an accepted rendering to the canonical form at one boundary for every parameter, and a rendering the map does not know is refused naming the set.
-- The screens offer the canonical forms and not the accepted ones, and the guard accepts every accepted rendering.
-- A check fails when a table holds more than one rendering of one fact.
+The story closes on the tasks it finished:
+
+- Consolidate the ORE element maps.
+- Take the census of the representations ORE accepts.
+- Scaffold story: Normalise every ORE parameter representation.
 
 * Tasks
 
@@ -285,6 +284,7 @@ Proposed, and confirmed or corrected when the census lands.
   stays as it is.
 - *A redelivery is a row, not a release.* Adding a spelling ORE accepts is a row
   in the value set and nothing else.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:111B04F6-7E3C-400F-B957-A1E221DEB016][Normalise every ORE parameter representation — the remaining work]].
 
 * Out of scope
 

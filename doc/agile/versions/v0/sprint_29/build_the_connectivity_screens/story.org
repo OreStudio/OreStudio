@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :marketdata:implementation:sprint_29:v0:
 #+created: 2026-10-29
-#+updated: 2026-10-29
+#+updated: 2026-11-08
 #+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,35 +21,32 @@ The signed-off Connectivity prototype becomes the screen: the delivery tree, the
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-29                               |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
-- The tree shows supplier, session and feed, and the pane shows the list or the details.
-- The supplier dashboard shows counts, attention, coverage, contract and feeds.
-- New session and new feed write rows the adapter reads.
-- Permissions gate the writes.
+The story closes on the tasks it finished:
+
+- Draw the session and feed records.
+- Draw the supplier tree and dashboard.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:04C544E6-DFAA-4612-B521-EF1D412EC1B5][Serve the Connectivity writes]] | BACKLOG | | | Write endpoints and permissions for sessions, feeds, scopes, schedules and routes. |
 | [[id:6BC08965-2C4E-4B28-A819-588BBAA7DD19][Draw the supplier tree and dashboard]] | DONE | | 2026-10-31 | The delivery tree and the supplier dashboard with attention, coverage and recent feeds. |
 | [[id:90A588AE-3A7D-4980-A2DB-31E044F0EC29][Draw the session and feed records]] | DONE | | 2026-10-31 | Session transport, runtime and feeds; feed overview, scope, schedule and routes. |
-| [[id:A2A85020-A346-4DA4-971A-2B69F4E8799B][Draw the adapter catalogue and publisher]] | DONE | 2026-10-30 | 2026-10-31 | The read-only adapter catalogue and the publisher record with its feeds. |
-| [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the Connectivity screens]] | BACKLOG | | | The new session and new feed flows create rows the adapter reads. |
 
 * Decisions
 
 - The screen follows the prototype; the prototype is the specification.
 - The tree is the delivery axis; publishers are the second tree.
 - No adapter is created from the screen.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:0D476AB9-3EC2-4567-A8F6-D67629179DEE][Build the Connectivity screens — the remaining work]].
 
 * Out of scope
 

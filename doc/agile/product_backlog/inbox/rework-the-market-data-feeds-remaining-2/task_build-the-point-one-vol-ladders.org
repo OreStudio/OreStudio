@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 3DD3449A-CF81-458D-BE3D-07951A1E0EC2
+:END:
+#+title: Task: Build the .1 ATM and surface vol ladders
+#+description: The .1 ATM ladder shifts one point per expiry; the .1 surface ladder shifts every configured strike. Both are the same report over two sensitivity documents.
+#+type: task
+#+level: s1
+#+filetags: :reporting:sensitivity:volatility:fx:ladder:rework-the-market-data-feeds-remaining-2:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36D992FD-0E21-4C21-915E-17D8717A0E23][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party runs a .1 ATM vol ladder and a .1 surface vol ladder over its FX book, bucketed by currency pair and expiry.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:36D992FD-0E21-4C21-915E-17D8717A0E23][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | - [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] for the FX vol quotes. |
+| Next         | Start when the market data lands.      |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- Both ladders bind sensitivity documents that differ only in ShiftStrikes, and the difference is visible in the stored configuration.
+- The shift size of each states its type and its unit, so the .1 is not left to the reader.
+- The ATM ladder produces one row per currency pair and expiry; the surface ladder one per pair, expiry and strike.
+- The ladder runs only where the run holds the vol surface for that pair, and a pair with no surface produces no row rather than a zero.
+- A test compares the two ladders on a book with a smile and proves they differ.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* See also
+
+- [[id:D9D59BD1-CAC0-4B4A-B32D-A734A4D79AB0][Greek ladder reports]] — the design this task builds.
+- [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] — the FX vol market data this ladder waits on.

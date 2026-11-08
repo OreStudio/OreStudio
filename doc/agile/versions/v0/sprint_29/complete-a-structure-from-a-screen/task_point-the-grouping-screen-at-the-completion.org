@@ -29,7 +29,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | State        | DONE                              |
 | Parent story | [[id:0D751AB7-2621-43F4-86C5-0F0AF0ABD221][Complete a structure from a screen]] |
 | Now          | Nothing. |
-| Waiting on   | Marco's review, which this branch waits for. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-11-01                               |
 

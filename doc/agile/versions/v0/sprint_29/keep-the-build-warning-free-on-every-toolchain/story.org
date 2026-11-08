@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :hotfix:build:ci:sprint_29:v0:
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-08
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,16 +21,19 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                                 |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-31                               |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
--
+The story closes on the tasks it finished:
+
+- Point the web reads at the feed catalogue.
+- Name the two types gcc refuses in a unity build.
+- Share one run builder per test suite.
 
 * Tasks
 

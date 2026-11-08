@@ -32,9 +32,9 @@ govern the body alone.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:8945F7D2-8623-407A-998C-8245ACD1DD8B][Bound the memory a request body may cost]] |
-| Now          | Nothing; #4110 is merged. |
-| Waiting on   | Nothing.                               |
-| Next         | Increment A3 streams the accepted body and takes the 256 MiB upload under 1 MiB of RSS. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

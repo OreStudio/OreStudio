@@ -23,9 +23,9 @@ One standard says how every screen draws a leaf of an ORE document and the eleme
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Done: a convention's terms are drawn and edited with the shared leaf parts, and the database checks each value against its term's set. |
-| Waiting on    | Nothing.                               |
-| Next          | Nothing. The hotfix of the service's version check is its own story.              |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-26                               |
 
 * Acceptance

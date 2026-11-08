@@ -78,6 +78,32 @@ function rewriteLinks(tree: Root, idHref: (id: string) => string): void {
     });
 }
 
+const WEB_ADDRESS = /^https?:\/\/\S+$/i;
+
+/** Make a code span that holds only a web address a link, keeping it code. */
+function linkCodeAddresses(node: Root | Element): void {
+    if (node.type === 'element' && (node.tagName === 'a' || node.tagName === 'pre')) return;
+    node.children = node.children.map((child) => {
+        if (child.type !== 'element') return child;
+        const only = child.children[0];
+        if (
+            child.tagName === 'code' &&
+            child.children.length === 1 &&
+            only?.type === 'text' &&
+            WEB_ADDRESS.test(only.value)
+        ) {
+            return {
+                type: 'element',
+                tagName: 'a',
+                properties: { href: only.value },
+                children: [child],
+            };
+        }
+        linkCodeAddresses(child);
+        return child;
+    });
+}
+
 function linkIssues(tree: Root, repo: string): void {
     const pattern = /#(\d{3,6})\b/g;
     const convert = (children: ElementContent[]): ElementContent[] => {
@@ -211,6 +237,7 @@ export function renderOrgHtml(source: string, options: RenderOptions = {}): stri
             .use(uniorg2rehype)
             .use(() => (tree: Root) => {
                 rewriteLinks(tree, idHref);
+                linkCodeAddresses(tree);
                 if (repo !== undefined) linkIssues(tree, repo);
             })
             .use(rehypeSanitize, SAFE_SCHEMA)

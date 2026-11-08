@@ -1,0 +1,275 @@
+:PROPERTIES:
+:ID: 3D4ED943-DF9F-4C34-97CA-0421227B7B2B
+:END:
+#+title: Test Scenario: Capture the sprint 29 release screenshots
+#+description: Walk the screens sprint 29 delivered on an ACME-provisioned environment and capture one screenshot per release highlight.
+#+type: test_scenario
+#+level: s1
+#+filetags: :screenshots:release_notes:test_scenario:sprint_29:v0:
+#+target_dialog:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: jolly_knuth
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+The environment is ready before you open this scenario.
+
+- Worktree =jolly_knuth= runs a current build of =main=.
+- The database is recreated and =acme_corporation= is provisioned.
+- The services run.
+
+Rules for every capture:
+
+- Use the light theme and English unless the step says otherwise.
+- Use a browser window 1600 pixels wide, at 100% zoom.
+- Save each image in =assets/images/= with the file name the step gives.
+- Do not capture real names, passwords or tokens.
+
+* Scenario Info
+
+# A non-empty Clients cell below means "this is a multi-client
+# scenario": every step then nests one level deeper, under a
+# per-client heading. Leave the cell genuinely blank — no placeholder
+# text, not even "(single client)" — for the common single-client
+# case; a non-empty cell here with flat `**` steps (no per-client
+# `**`/`***` nesting) is a malformed scenario. Only put text in it
+# when the scenario truly needs several running client instances at
+# once (e.g. a NATS notification lands on a second instance) — list
+# the instance labels, e.g. "blue, red", and nest every step one
+# level deeper under a `**` heading per client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Parent story  | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]   |
+| Target screen | The web client screens named in each step |
+| Clients       |                                          |
+| State         | PASSED |
+
+* Steps
+
+Each step captures one image for the release notes. Record PASS, FAIL or PENDING in its =*** Result=. Record FAIL when the screen is empty, shows an error or does not match the step, and say what you saw.
+
+** Log in as tenant_admin
+
+- Open =http://localhost:20802/login=.
+- Log in as =tenant_admin@acme_corporation= with the password =Secure-Password-123=.
+- Confirm that the shell opens with no permission errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
+** Capture the trade blotter
+
+- Open =http://localhost:20802/trading/blotter=.
+- Select a book node in the rail that holds trades.
+- Confirm that rows show and that the rail states the row counts.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-blotter.png=.
+- Caption for the release notes: /The trade blotter reads a page at a time, and its rail counts the rows at each node./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step2_20261108_215555.png]]; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step2_20261108_215611.png]] |
+
+
+** Capture a trade booked as draft
+
+- Open =http://localhost:20802/trading/trades/new=.
+- Fill in enough of the form to show a draft trade.
+- Do not submit the trade unless the draft needs it to show.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-trade-draft.png=.
+- Caption for the release notes: /A trade books as a draft./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step3_20261108_215711.png]] |
+
+
+** Capture a structure
+
+- Open =http://localhost:20802/trading/structures=.
+- Open one structure if the list holds any.
+- Record FAIL if the list is empty.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-structures.png=.
+- Caption for the release notes: /A structure completes from a screen./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step4_20261108_220508.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step4_20261108_220546.png]] |
+
+
+** Capture the Connectivity screen
+
+- Open =http://localhost:20802/market-data/connectivity=.
+- Show the delivery tree with its publishers and suppliers.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-connectivity.png=.
+- Caption for the release notes: /Connectivity shows the delivery tree of suppliers, sessions and feeds./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step5_20261108_220613.png]]; ; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step5_20261108_220632.png]]; [[file:scenario_capture_the_sprint_29_release_screenshots_step5_20261108_220657.png]] |
+
+
+** Capture the Public rates screen
+
+- Open =http://localhost:20802/market-data/public-rates=.
+- Show the publishers with their freshness.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-public-rates.png=.
+- Caption for the release notes: /Public rates shows each publisher and its freshness./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step6_20261108_220722.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step6_20261108_220742.png]] |
+
+
+** Capture the fixing series
+
+- Open =http://localhost:20802/market-data/fixings?uri=oresmd%3A%2F%2Ffx%2FEUR%3Ftype%3Dfixing%26index%3Dfx%26source%3DECB%26ccy%3DCNY=.
+- Open a series with history if one exists.
+- Record FAIL if no fixings exist.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-fixings.png=.
+- Caption for the release notes: /Public fixings are published through an adapter./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step7_20261108_221042.png]] |
+
+
+** Capture the synthetic feeds
+
+- Open =http://localhost:20802/market-data/synthetic=.
+- Open a running feed if the tree holds one.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-synthetic-feeds.png=.
+- Caption for the release notes: /Synthetic feeds, with the richer tick arrival models./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step8_20261108_221102.png]]; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step8_20261108_221117.png]]; ; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step8_20261108_221148.png]] |
+
+
+** Capture a convention record
+
+- Open =http://localhost:20802/refdata/conventions=.
+- Open one family, then one convention.
+- Show the record page with its sections.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-convention.png=.
+- Caption for the release notes: /A convention is drawn to the one standard for ORE leaves./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step9_20261108_221220.png]]; ; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step9_20261108_221234.png]]; [[file:scenario_capture_the_sprint_29_release_screenshots_step9_20261108_221246.png]] |
+
+
+** Capture a curve configuration
+
+- Open =http://localhost:20802/reporting/curve-configurations=.
+- Open one configuration.
+- Show the same list and record layout as the other configurations.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-curve-configuration.png=.
+- Caption for the release notes: /Curve configurations follow the one configuration screen standard./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step10_20261108_221314.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step10_20261108_221327.png]]; [[file:scenario_capture_the_sprint_29_release_screenshots_step10_20261108_221339.png]] |
+
+
+** Capture a currency record
+
+- Open =http://localhost:20802/refdata/currencies=.
+- Open =USD=.
+- Show the record page from the screen pipeline.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-currency.png=.
+- Caption for the release notes: /Currencies went through the screen pipeline./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step11_20261108_221400.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step11_20261108_221415.png]] |
+
+
+** Capture the dark theme
+
+- Open =http://localhost:20802/refdata/currencies=.
+- Switch to the dark theme from the header.
+- Open the language menu in the header, so that it shows in the image.
+- Return to the light theme after the capture.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-dark-theme.png=.
+- Caption for the release notes: /The interface switches between light and dark and chooses its language from the header./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step12_20261108_221441.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step12_20261108_221450.png]] |
+
+
+** Capture the release hero image
+
+- Open =http://localhost:20802/operations=.
+- Show a populated overview.
+- Choose the screen you think best represents the release, if another is better.
+- Save the screenshot as =assets/images/ore_studio-v0.0.29-hero.png=.
+- Caption for the release notes: /ORE Studio at the end of sprint 29./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step13_20261108_221511.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step13_20261108_221550.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step13_20261108_221608.png]] |
+
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-11-08T22:16:16Z |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+
+- No web route exists for volatility surfaces or for the product type page, so this scenario has no step for them.
+- The streaming work has no still image. A short recording of a list that updates by itself shows it better.
+- After the captures, add each image and its caption to the release notes, then export the notes and update the draft release.

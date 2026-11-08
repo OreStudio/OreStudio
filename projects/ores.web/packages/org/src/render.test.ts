@@ -117,6 +117,21 @@ describe('links', () => {
         expect(html).not.toContain('file:');
     });
 
+    it('links a code span that holds only a web address', () => {
+        const html = renderOrgHtml('- Open =http://localhost:20802/market-data/fixings=.');
+        expect(html).toMatch(
+            /<a href="http:\/\/localhost:20802\/market-data\/fixings"><code[^>]*>http:\/\/localhost:20802\/market-data\/fixings<\/code><\/a>/,
+        );
+    });
+
+    it('leaves other code spans and source blocks as code', () => {
+        expect(renderOrgHtml('Run =ls -l= now.')).not.toContain('<a');
+        expect(renderOrgHtml('Run =javascript:alert(1)= now.')).not.toContain('<a');
+        expect(renderOrgHtml('#+begin_src sh\nhttp://localhost:20802/a\n#+end_src')).not.toContain(
+            '<a',
+        );
+    });
+
     it('links a bare issue number only when asked to', () => {
         const text = 'Fixed in #3061, see `#12` and [[https://x.org][#9999 here]].\n';
         expect(renderOrgHtml(text)).not.toContain('/issues/');

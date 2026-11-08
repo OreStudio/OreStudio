@@ -32,9 +32,9 @@ terminated tenants out of demand, routing and usage.
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The leak, the tick runaway and the usage writes are fixed and measured on the live fleet. |
-| Waiting on    | Review and merge of the PR.            |
-| Next          | Find why ores.compute.service spends CPU while idle. |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-26                               |
 
 * Acceptance

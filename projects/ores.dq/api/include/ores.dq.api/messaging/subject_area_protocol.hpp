@@ -25,11 +25,12 @@
 #ifndef ORES_DQ_API_MESSAGING_SUBJECT_AREA_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_SUBJECT_AREA_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.dq.api/domain/subject_area_codec.hpp"
 #include "ores.dq.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -81,7 +82,7 @@ struct subject_area_event {
     boost::uuids::uuid event_id;
     subject_area_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -90,7 +91,7 @@ struct subject_area_event {
 
 struct subject_area_version_key {
     subject_area_key subject_area;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const subject_area_version_key&,
                            const subject_area_version_key&) = default;
@@ -127,7 +128,7 @@ struct list_subject_areas_request {
 struct list_subject_areas_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::subject_area> areas;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_subject_areas_response&,
                            const list_subject_areas_response&) = default;
@@ -302,7 +303,7 @@ struct list_subject_area_versions_request {
 struct list_subject_area_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::subject_area> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_subject_area_versions_response&,
                            const list_subject_area_versions_response&) = default;

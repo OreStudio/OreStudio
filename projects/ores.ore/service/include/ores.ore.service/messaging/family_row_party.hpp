@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_SERVICE_MESSAGING_FAMILY_ROW_PARTY_HPP
 #define ORES_ORE_SERVICE_MESSAGING_FAMILY_ROW_PARTY_HPP
 
+#include "ores.utility/codec/json_document.hpp"
 #include <rfl/Generic.hpp>
 #include <string>
 
@@ -33,7 +34,7 @@ namespace ores::ore::service::messaging {
  * identity, such as the central convention and the parts keyed to it, states
  * it inside its identity group. Empty when the row names no party.
  */
-std::string party_of_family_row(const rfl::Generic& row);
+std::string party_of_family_row(const ores::utility::codec::json_value& row);
 
 }
 

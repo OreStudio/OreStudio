@@ -25,13 +25,16 @@
 #include "ores.trading.core/repository/swap_leg_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.core/repository/swap_leg_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
 #include <optional>
 #include <string>
 #include <vector>
@@ -53,12 +56,67 @@ domain::swap_leg swap_leg_mapper::map(const swap_leg_entity& v) {
     r.identity.trade_activity_id = v.trade_activity_id;
     r.payer = v.payer;
     r.leg_type_code = v.leg_type_code;
-    r.day_count_fraction_code = v.day_count_fraction_code;
-    r.business_day_convention_code = v.business_day_convention_code;
-    r.payment_frequency_code = v.payment_frequency_code;
+    r.day_count_fraction_code = v.day_count_fraction_code.value_or("");
+    r.business_day_convention_code = v.business_day_convention_code.value_or("");
+    r.payment_frequency_code = v.payment_frequency_code.value_or("");
     r.floating_index_code = v.floating_index_code.value_or("");
     r.currency = v.currency;
     r.leg_group = v.leg_group;
+    r.fixing_days = v.fixing_days;
+    r.is_in_arrears = v.is_in_arrears;
+    r.include_spread = v.include_spread;
+    r.is_averaged = v.is_averaged;
+    r.has_sub_periods = v.has_sub_periods;
+    r.notional_initial_exchange = v.notional_initial_exchange;
+    r.notional_final_exchange = v.notional_final_exchange;
+    r.payment_lag = v.payment_lag;
+    r.payment_calendar = v.payment_calendar;
+    r.commodity_price_type = v.commodity_price_type;
+    r.future_month_offset = v.future_month_offset;
+    r.daily_expiry_offset = v.daily_expiry_offset;
+    r.pricing_calendar = v.pricing_calendar;
+    r.equity_return_type = v.equity_return_type;
+    r.equity_name = v.equity_name;
+    r.equity_underlying_type = v.equity_underlying_type;
+    r.equity_underlying_identifier_type = v.equity_underlying_identifier_type;
+    r.equity_quantity = v.equity_quantity;
+    r.equity_initial_price = v.equity_initial_price;
+    r.equity_initial_price_currency = v.equity_initial_price_currency;
+    r.equity_dividend_factor = v.equity_dividend_factor;
+    r.equity_notional_reset = v.equity_notional_reset;
+    r.equity_currency = v.equity_currency;
+    r.fx_index = v.fx_index;
+    r.fx_reset_foreign_currency = v.fx_reset_foreign_currency;
+    r.fx_reset_start_date = v.fx_reset_start_date;
+    r.fx_reset_foreign_amount = v.fx_reset_foreign_amount;
+    r.fx_reset_fx_index = v.fx_reset_fx_index;
+    r.fx_reset_fixing_days = v.fx_reset_fixing_days;
+    r.fx_reset_fixing_calendar = v.fx_reset_fixing_calendar;
+    r.fixing_calendar = v.fixing_calendar;
+    r.digital_call_position = v.digital_call_position;
+    r.digital_is_call_atm_included = v.digital_is_call_atm_included;
+    r.digital_put_position = v.digital_put_position;
+    r.digital_is_put_atm_included = v.digital_is_put_atm_included;
+    r.equity_margin_initial_margin_factor = v.equity_margin_initial_margin_factor;
+    r.equity_margin_multiplier = v.equity_margin_multiplier;
+    r.commodity_pay_relative_to = v.commodity_pay_relative_to;
+    r.commodity_quantity_frequency = v.commodity_quantity_frequency;
+    r.pricing_date_rule = v.pricing_date_rule;
+    r.indexings_from_asset_leg = v.indexings_from_asset_leg;
+    r.floating_index_code_2 = v.floating_index_code_2;
+    r.cms_duration = v.cms_duration;
+    r.naked_option = v.naked_option;
+    r.lookback = v.lookback;
+    r.rate_cutoff = v.rate_cutoff;
+    r.local_cap_floor = v.local_cap_floor;
+    r.observation_lag = v.observation_lag;
+    r.cpi_base = v.cpi_base;
+    r.cpi_start_date = v.cpi_start_date;
+    r.cpi_interpolation = v.cpi_interpolation;
+    r.cpi_interpolated = v.cpi_interpolated;
+    r.subtract_inflation_notional = v.subtract_inflation_notional;
+    r.zero_coupon_compounding = v.zero_coupon_compounding;
+    r.zero_coupon_subtract_notional = v.zero_coupon_subtract_notional;
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
     r.audit.change_reason_code = v.change_reason_code;
@@ -81,13 +139,72 @@ swap_leg_entity swap_leg_mapper::map(const domain::swap_leg& v) {
     r.trade_activity_id = v.identity.trade_activity_id;
     r.payer = v.payer;
     r.leg_type_code = v.leg_type_code;
-    r.day_count_fraction_code = v.day_count_fraction_code;
-    r.business_day_convention_code = v.business_day_convention_code;
-    r.payment_frequency_code = v.payment_frequency_code;
+    r.day_count_fraction_code =
+        v.day_count_fraction_code.empty() ? std::nullopt : std::optional(v.day_count_fraction_code);
+    r.business_day_convention_code = v.business_day_convention_code.empty() ?
+                                         std::nullopt :
+                                         std::optional(v.business_day_convention_code);
+    r.payment_frequency_code =
+        v.payment_frequency_code.empty() ? std::nullopt : std::optional(v.payment_frequency_code);
     r.floating_index_code =
         v.floating_index_code.empty() ? std::nullopt : std::optional(v.floating_index_code);
     r.currency = v.currency;
     r.leg_group = v.leg_group;
+    r.fixing_days = v.fixing_days;
+    r.is_in_arrears = v.is_in_arrears;
+    r.include_spread = v.include_spread;
+    r.is_averaged = v.is_averaged;
+    r.has_sub_periods = v.has_sub_periods;
+    r.notional_initial_exchange = v.notional_initial_exchange;
+    r.notional_final_exchange = v.notional_final_exchange;
+    r.payment_lag = v.payment_lag;
+    r.payment_calendar = v.payment_calendar;
+    r.commodity_price_type = v.commodity_price_type;
+    r.future_month_offset = v.future_month_offset;
+    r.daily_expiry_offset = v.daily_expiry_offset;
+    r.pricing_calendar = v.pricing_calendar;
+    r.equity_return_type = v.equity_return_type;
+    r.equity_name = v.equity_name;
+    r.equity_underlying_type = v.equity_underlying_type;
+    r.equity_underlying_identifier_type = v.equity_underlying_identifier_type;
+    r.equity_quantity = v.equity_quantity;
+    r.equity_initial_price = v.equity_initial_price;
+    r.equity_initial_price_currency = v.equity_initial_price_currency;
+    r.equity_dividend_factor = v.equity_dividend_factor;
+    r.equity_notional_reset = v.equity_notional_reset;
+    r.equity_currency = v.equity_currency;
+    r.fx_index = v.fx_index;
+    r.fx_reset_foreign_currency = v.fx_reset_foreign_currency;
+    r.fx_reset_start_date = v.fx_reset_start_date;
+    r.fx_reset_foreign_amount = v.fx_reset_foreign_amount;
+    r.fx_reset_fx_index = v.fx_reset_fx_index;
+    r.fx_reset_fixing_days = v.fx_reset_fixing_days;
+    r.fx_reset_fixing_calendar = v.fx_reset_fixing_calendar;
+    r.fixing_calendar = v.fixing_calendar;
+    r.digital_call_position = v.digital_call_position;
+    r.digital_is_call_atm_included = v.digital_is_call_atm_included;
+    r.digital_put_position = v.digital_put_position;
+    r.digital_is_put_atm_included = v.digital_is_put_atm_included;
+    r.equity_margin_initial_margin_factor = v.equity_margin_initial_margin_factor;
+    r.equity_margin_multiplier = v.equity_margin_multiplier;
+    r.commodity_pay_relative_to = v.commodity_pay_relative_to;
+    r.commodity_quantity_frequency = v.commodity_quantity_frequency;
+    r.pricing_date_rule = v.pricing_date_rule;
+    r.indexings_from_asset_leg = v.indexings_from_asset_leg;
+    r.floating_index_code_2 = v.floating_index_code_2;
+    r.cms_duration = v.cms_duration;
+    r.naked_option = v.naked_option;
+    r.lookback = v.lookback;
+    r.rate_cutoff = v.rate_cutoff;
+    r.local_cap_floor = v.local_cap_floor;
+    r.observation_lag = v.observation_lag;
+    r.cpi_base = v.cpi_base;
+    r.cpi_start_date = v.cpi_start_date;
+    r.cpi_interpolation = v.cpi_interpolation;
+    r.cpi_interpolated = v.cpi_interpolated;
+    r.subtract_inflation_notional = v.subtract_inflation_notional;
+    r.zero_coupon_compounding = v.zero_coupon_compounding;
+    r.zero_coupon_subtract_notional = v.zero_coupon_subtract_notional;
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;
     r.change_reason_code = v.audit.change_reason_code;

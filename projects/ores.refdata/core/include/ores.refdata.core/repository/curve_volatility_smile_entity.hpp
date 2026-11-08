@@ -57,8 +57,8 @@ struct curve_volatility_smile_entity {
 
     boost::uuids::uuid party_id;
     int max_calibration_attempts = 0;
-    double exit_early_error_threshold;
-    double max_acceptable_error;
+    double exit_early_error_threshold{};
+    double max_acceptable_error{};
     std::optional<std::string> residual_correction_dimension;
     std::string modified_by;
     std::string performed_by;

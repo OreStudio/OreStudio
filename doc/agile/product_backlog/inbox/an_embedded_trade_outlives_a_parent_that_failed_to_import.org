@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: E4317BA1-D252-4F7B-B2EA-7D7A84B67883
+:END:
+#+title: An embedded trade outlives a parent that failed to import
+#+description: The ORE import books a total return swap's, a composite's or a contract for difference's embedded trades before the parent and skips the parent when one of them fails, but the embedded trades that did save stay in the book with no parent. The parent and its embedded trades should be written as one unit.
+#+type: capture
+#+level: cross
+#+filetags: :ore:import:trading:structure:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The ORE import books the trades a total return swap, a composite trade or a
+contract for difference embeds before it books the parent, and it does not
+book the parent when one of them fails. The embedded trades that did save
+stay in the book, joined to nothing. In the TRS roundtrip of 2026-11-04 three
+equity positions saved while the cash swap beside them failed, and the swap
+itself was refused.
+
+* Why
+
+A parent is its embedded trades as much as its own terms, so half of one in
+the book is a trade nobody booked. The parent and its embedded trades should
+be written as one unit, so a failure leaves nothing behind.
+
+* References
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] — where it was found.
+- =ore_import_execute_handler.cpp=, the booking loop and =join_composites=.
+
+* See also
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]]

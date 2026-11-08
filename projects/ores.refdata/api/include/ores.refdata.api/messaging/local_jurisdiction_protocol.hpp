@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_LOCAL_JURISDICTION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_LOCAL_JURISDICTION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/local_jurisdiction.hpp"
+#include "ores.refdata.api/domain/local_jurisdiction_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -86,7 +87,7 @@ struct local_jurisdiction_event {
     boost::uuids::uuid event_id;
     local_jurisdiction_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -96,7 +97,7 @@ struct local_jurisdiction_event {
 
 struct local_jurisdiction_version_key {
     local_jurisdiction_key local_jurisdiction;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const local_jurisdiction_version_key&,
                            const local_jurisdiction_version_key&) = default;
@@ -133,7 +134,7 @@ struct list_local_jurisdictions_request {
 struct list_local_jurisdictions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::local_jurisdiction> jurisdictions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_local_jurisdictions_response&,
                            const list_local_jurisdictions_response&) = default;
@@ -308,7 +309,7 @@ struct list_local_jurisdiction_versions_request {
 struct list_local_jurisdiction_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::local_jurisdiction> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_local_jurisdiction_versions_response&,
                            const list_local_jurisdiction_versions_response&) = default;

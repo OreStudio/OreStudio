@@ -26,7 +26,7 @@
  * change to the identity of a pillar's quote is a change to this file and not a
  * silent one. No case here reads a database, NATS or a feed.
  */
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/oresmd/pillar_quote.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>

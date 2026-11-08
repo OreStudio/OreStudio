@@ -25,11 +25,12 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_OBSERVATION_LINEAGE_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_OBSERVATION_LINEAGE_PROTOCOL_HPP
 
-#include "ores.marketdata.api/domain/observation_lineage.hpp"
+#include "ores.marketdata.api/domain/observation_lineage_codec.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -56,7 +57,7 @@ struct observation_lineage_write {
     std::string oresmd_uri;
     std::string point_source_kind;
     std::optional<boost::uuids::uuid> derivation_config_id;
-    int derivation_config_version;
+    int derivation_config_version{};
     std::optional<std::chrono::system_clock::time_point> source_as_of;
     std::string source_series_ids;
 
@@ -99,7 +100,7 @@ struct observation_lineage_event {
     boost::uuids::uuid event_id;
     observation_lineage_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +110,7 @@ struct observation_lineage_event {
 
 struct observation_lineage_version_key {
     observation_lineage_key observation_lineage;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const observation_lineage_version_key&,
                            const observation_lineage_version_key&) = default;
@@ -147,7 +148,7 @@ struct list_observation_lineages_request {
 struct list_observation_lineages_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::observation_lineage> observation_lineages;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_observation_lineages_response&,
                            const list_observation_lineages_response&) = default;
@@ -324,7 +325,7 @@ struct list_observation_lineage_versions_request {
 struct list_observation_lineage_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::observation_lineage> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_observation_lineage_versions_response&,
                            const list_observation_lineage_versions_response&) = default;

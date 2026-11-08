@@ -28,6 +28,7 @@
 #include <atomic>
 #include <cstddef>
 #include <functional>
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -74,12 +75,12 @@ public:
 
     /// Whether the pool is at its in-flight cap.
     [[nodiscard]] bool saturated() const noexcept {
-        return max_inflight_ != 0 && inflight_.load(std::memory_order_relaxed) >= max_inflight_;
+        return max_inflight_ != 0 && inflight_->load(std::memory_order_relaxed) >= max_inflight_;
     }
 
     /// The requests in flight or queued on the pool.
     [[nodiscard]] std::size_t inflight() const noexcept {
-        return inflight_.load(std::memory_order_relaxed);
+        return inflight_->load(std::memory_order_relaxed);
     }
 
     /**
@@ -103,11 +104,14 @@ private:
      * A member type and not a local of run(), because run() is a coroutine and
      * its frame holds the guard: a local type would give the frame a subobject
      * with no linkage, which gcc refuses under -Wsubobject-linkage.
+     *
+     * It shares the counter rather than referring to the pool: an io_context
+     * that outlives the pool destroys a suspended frame after the pool has gone.
      */
     struct inflight_guard final {
-        std::atomic<std::size_t>& counter;
+        std::shared_ptr<std::atomic<std::size_t>> counter;
         ~inflight_guard() {
-            counter.fetch_sub(1, std::memory_order_relaxed);
+            counter->fetch_sub(1, std::memory_order_relaxed);
         }
     };
 
@@ -119,8 +123,9 @@ private:
      * refuses under -Wsubobject-linkage.
      */
     template <typename Result>
-    boost::asio::awaitable<Result> run_erased(std::function<boost::asio::awaitable<Result>()> invoke) {
-        inflight_.fetch_add(1, std::memory_order_relaxed);
+    boost::asio::awaitable<Result>
+    run_erased(std::function<boost::asio::awaitable<Result>()> invoke) {
+        inflight_->fetch_add(1, std::memory_order_relaxed);
         inflight_guard guard{inflight_};
 
         if constexpr (std::is_void_v<Result>) {
@@ -135,7 +140,8 @@ private:
 
     boost::asio::thread_pool pool_;
     std::size_t max_inflight_;
-    std::atomic<std::size_t> inflight_{0};
+    std::shared_ptr<std::atomic<std::size_t>> inflight_ =
+        std::make_shared<std::atomic<std::size_t>>(0);
 };
 
 }

@@ -71,8 +71,42 @@ change_routes::handle_changes(const domain::http_request& req) {
     const auto tenant = req.authenticated_user ?
                             req.authenticated_user->tenant_id.value_or(std::string{}) :
                             std::string{};
-    resp.body_awaitable =
-        std::make_shared<stream::change_stream_source>(hub_->subscribe(tenant), keep_alive_);
+
+    /*
+     * A reconnecting browser states where it stopped. Inside the hub's short
+     * retention it is given what it missed; outside it, or naming an id another
+     * process issued or no frame at all, it is told to resync rather than left with
+     * a silent gap it cannot see.
+     */
+    std::optional<stream::change_hub::resume_point> resumed;
+    if (const auto seen = req.get_header("last-event-id"); !seen.empty()) {
+        resumed = stream::change_hub::read_id(seen);
+        if (!resumed) {
+            BOOST_LOG_SEV(lg(), warn) << "Last-Event-ID is not a frame id: " << seen;
+            // An id no frame of this process could have carried is answered as a gap.
+            resumed = stream::change_hub::resume_point{};
+        }
+    }
+
+    /*
+     * A member hears their own party and the tenant-wide changes; an administrator
+     * hears every party of the tenant. The party travels in the token, so the
+     * gateway filters with what the caller already proved rather than asking IAM.
+     */
+    std::string party;
+    auto sees_all_parties = false;
+    if (req.authenticated_user) {
+        party = req.authenticated_user->party_id.value_or(std::string{});
+        for (const auto& role : req.authenticated_user->roles) {
+            if (role == "TenantAdmin" || role == "SuperAdmin")
+                sees_all_parties = true;
+        }
+    }
+
+    const stream::stream_scope scope{
+        .tenant = tenant, .party = party, .sees_all_parties = sees_all_parties};
+    resp.body_awaitable = std::make_shared<stream::change_stream_source>(
+        hub_->subscribe(scope, resumed), keep_alive_);
     co_return resp;
 }
 

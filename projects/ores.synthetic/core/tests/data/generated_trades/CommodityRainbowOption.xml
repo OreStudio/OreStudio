@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+    <TradeType>CommodityRainbowOption</TradeType>
+  </Trade>
+  <Trade id="0f1cabb4-b764-579f-8437-c726066494c7">
+    <TradeType>CommodityRainbowOption</TradeType>
+  </Trade>
+</Portfolio>

@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: 694694B1-82AE-464F-ABB0-B0786BFEAE0A
+:END:
+#+title: Story: Hotfix: clear the six failing checks on main
+#+description: The local gate on main fails six checks that no branch owns: component-drift names eight generated files that no longer match their models, unity-collisions finds five file-local names shared by two ores.synthetic test units, er-diagram is stale, money-decimal-columns types seven continuous trading columns as exact decimals, bff-list-requests is missing instrument_underlyings, and ticks-smoke books a bond whose call date the run already stored.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:checks:build:agile:sprint_29:v0:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every check the local gate runs passes on main: drift, collisions, the ER diagram, the column types, the list-request table and the ticks smoke.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-07                               |
+
+* Acceptance
+
+- component-drift, unity-collisions, er-diagram, money-decimal-columns, bff-list-requests and ticks-smoke pass.
+- The build and every suite still pass.
+- No behaviour changes beyond what each check asks for.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8D5EEB80-0182-4F0D-83BE-A80A8008B318][Scaffold story: Hotfix: clear the six failing checks on main]] | DONE | 2026-11-07 | 2026-11-07 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F7140B69-81C7-49D2-8254-88A803262DF6][Clear the six failing checks on main]] | BACKLOG | | | Initial task for: Hotfix: clear the six failing checks on main |
+
+* Decisions
+
+* Out of scope
+
+-
+
+The six checks main failed now pass, the tree builds, the ticks smoke provisions
+a tenant and ticks, and every suite the change touches passes. One suite failure
+remains and predates this work: the marketdata service's two ingest-loop cases
+miss a wall-clock deadline only under parallel load, and their fix is captured.
+

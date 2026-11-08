@@ -37,6 +37,7 @@ export interface ApprovalRequestWrite {
     id: string;
     kind_code: string;
     state_code: string;
+    auto_approval_code: string;
     requested_by: string;
     requested_at: string;
     reason: string;
@@ -61,10 +62,12 @@ export interface ApprovalRequestLookup {
 export interface ApprovalRequestsFilter {
     kind_code: string | null;
     state_code: string | null;
+    auto_approval_code: string | null;
     requested_by: string | null;
     id_one_of: string[] | null;
     kind_code_one_of: string[] | null;
     state_code_one_of: string[] | null;
+    auto_approval_code_one_of: string[] | null;
     requested_by_one_of: string[] | null;
 }
 

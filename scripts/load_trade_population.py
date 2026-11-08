@@ -117,8 +117,6 @@ CHILD_TABLES = ("ores_trading_bond_issue_call_dates_tbl",
 # the referenced table already holds, so the referenced table loads first. Row
 # i of the referencing table couples to row i of the referenced one.
 REFERENCES = {
-    ("ores_trading_composite_legs_tbl", "trade_id"):
-        (TRADES, "id"),
     ("ores_trading_party_roles_tbl", "trade_id"):
         (TRADES, "id"),
     ("ores_trading_trade_identifiers_tbl", "trade_id"):

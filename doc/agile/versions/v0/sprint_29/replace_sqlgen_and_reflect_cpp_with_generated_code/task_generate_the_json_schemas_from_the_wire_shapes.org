@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: D07297DF-94DD-46E5-BC73-E5B4CB6D6EC2
+:END:
+#+title: Task: Generate the JSON schemas from the wire shapes
+#+description: Step 4 of Remove reflect-cpp: the OpenAPI request and response schemas come from the shapes the codec already states, so no file calls rfl::json::to_schema.
+#+type: task
+#+level: s1
+#+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_29:v0:
+#+owner: marco
+#+branch: feature/generate-the-json-schemas-from-the-wire-shapes
+#+pr: 4495
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The router's request and response schemas are generated from wire_fields, with no reflection library involved, and the schema a route states describes the bytes the codec writes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-07                               |
+
+* Acceptance
+
+- No file calls rfl::json::to_schema.
+- A generated schema states every member the codec writes, with the type each member has, and leaves out a member the shape leaves out.
+- The tree builds and every suite passes.
+
+* Plan
+
+The router published a schema with =rfl::json::to_schema=, so a route's schema
+and the bytes it reads were two statements of one shape. The shape the codec
+walks is =wire_fields=, so the schema is generated from it: a member's type says
+whether it is a string, a number, a truth, a list, a map or a nested object, an
+optional member is not required, and an enumeration names the text each of its
+values has.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Calls to =rfl::json::to_schema= at the merge base | 2 | =git grep -c 'to_schema' origin/main -- 'projects/*.hpp' 'projects/*.cpp'= | =4d21706740= |
+| The same at the branch's tip | 0 | the same command | =6bce6cc3ee= |
+| Protocol headers that now name their members' shapes | 518 files | =git diff --stat origin/main...HEAD -- '*_protocol.hpp' \vert{} wc -l= | the regeneration commit |
+
+* Notes
+
+**Two statements, one shape.** The schema generator walks the same
+=wire_fields= the encoder does, so a member cannot appear in the schema and be
+absent from the bytes. A member that is not optional is required, because the
+reader refuses a document that leaves it out.
+
+**Why the protocol headers moved.** A message's own shape is stated in its
+protocol header, but the shapes of the rows it holds live in their codec
+headers, and the header named only the plain domain header. The template now
+includes the codec header where the message has a generated wire codec, which is
+what lets the schema describe a list of rows rather than a list of objects.
+
+**What a schema cannot yet state.** A type whose shape header is not in view
+where the message is named renders as an object with no members: valid, and
+less than the truth. Every component's protocol headers were regenerated, and
+the one that a component's regeneration lagged behind is stated as an object
+until its own regeneration catches up. The generator's comment says so.
+
+* Result
+
+No file calls =rfl::json::to_schema=. The router's request and response schemas
+are generated from the wire shapes: each member's type, the members the reader
+requires, and the text an enumeration carries.
+
+The whole tree builds, and the seven http suites pass, which is what exercises
+the router's schemas. The utility suite carries the generator's own cases: a
+member per kind, an enumeration's text, and the required list that leaves an
+optional member out.
+
+The task page keeps one limitation: a type whose shape header is not visible
+where the message is named renders as an object with no members rather than as
+a schema that would be wrong. The template change that names the codec headers
+closes it for the components that regenerate, and the fallback keeps the rest
+valid until they do.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4495][#4495]] | [agile] Close the JSON schema task |
+| [[https://github.com/OreStudio/OreStudio/pull/4492][#4492]] | [utility,http] Generate the JSON schemas from the wire shapes |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

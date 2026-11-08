@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_FX_DIGITAL_OPTION_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_FX_DIGITAL_OPTION_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_digital_option_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -63,6 +64,9 @@ struct fx_digital_option_instrument_write {
     std::string barrier_type;
     std::optional<ores::utility::decimal::decimal> lower_barrier;
     std::optional<ores::utility::decimal::decimal> upper_barrier;
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+    std::optional<std::string> barrier_calendar;
+    std::optional<std::string> barrier_fixing_index;
     std::string description;
 
     friend bool operator==(const fx_digital_option_instrument_write&,
@@ -104,7 +108,7 @@ struct fx_digital_option_instrument_event {
     boost::uuids::uuid event_id;
     fx_digital_option_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -114,7 +118,7 @@ struct fx_digital_option_instrument_event {
 
 struct fx_digital_option_instrument_version_key {
     fx_digital_option_instrument_key fx_digital_option_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const fx_digital_option_instrument_version_key&,
                            const fx_digital_option_instrument_version_key&) = default;
@@ -153,7 +157,7 @@ struct list_fx_digital_option_instruments_request {
 struct list_fx_digital_option_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_digital_option_instrument> fx_digital_option_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_digital_option_instruments_response&,
                            const list_fx_digital_option_instruments_response&) = default;
@@ -333,7 +337,7 @@ struct list_fx_digital_option_instrument_versions_request {
 struct list_fx_digital_option_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_digital_option_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_digital_option_instrument_versions_response&,
                            const list_fx_digital_option_instrument_versions_response&) = default;
@@ -423,6 +427,12 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"barrier_type", &fx_digital_option_instrument_write::barrier_type},
         utility::codec::field{"lower_barrier", &fx_digital_option_instrument_write::lower_barrier},
         utility::codec::field{"upper_barrier", &fx_digital_option_instrument_write::upper_barrier},
+        utility::codec::field{"barrier_start_date",
+                              &fx_digital_option_instrument_write::barrier_start_date},
+        utility::codec::field{"barrier_calendar",
+                              &fx_digital_option_instrument_write::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &fx_digital_option_instrument_write::barrier_fixing_index},
         utility::codec::field{"description", &fx_digital_option_instrument_write::description},
     };
 }

@@ -25,11 +25,12 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_GMM_COMPONENT_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_GMM_COMPONENT_PROTOCOL_HPP
 
-#include "ores.synthetic.api/domain/gmm_component.hpp"
+#include "ores.synthetic.api/domain/gmm_component_codec.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -50,11 +51,11 @@ struct gmm_component_key {
 struct gmm_component_write {
     boost::uuids::uuid id;
     boost::uuids::uuid fx_spot_config_id;
-    int component_index;
+    int component_index{};
     std::string description;
-    double mean;
-    double stdev;
-    double weight;
+    double mean{};
+    double stdev{};
+    double weight{};
 
     friend bool operator==(const gmm_component_write&, const gmm_component_write&) = default;
 };
@@ -92,7 +93,7 @@ struct gmm_component_event {
     boost::uuids::uuid event_id;
     gmm_component_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +102,7 @@ struct gmm_component_event {
 
 struct gmm_component_version_key {
     gmm_component_key gmm_component;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const gmm_component_version_key&,
                            const gmm_component_version_key&) = default;
@@ -139,7 +140,7 @@ struct list_gmm_components_request {
 struct list_gmm_components_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::gmm_component> gmm_components;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_gmm_components_response&,
                            const list_gmm_components_response&) = default;
@@ -314,7 +315,7 @@ struct list_gmm_component_versions_request {
 struct list_gmm_component_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::gmm_component> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_gmm_component_versions_response&,
                            const list_gmm_component_versions_response&) = default;

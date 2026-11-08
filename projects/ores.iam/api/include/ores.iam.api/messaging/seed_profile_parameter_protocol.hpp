@@ -25,11 +25,12 @@
 #ifndef ORES_IAM_API_MESSAGING_SEED_PROFILE_PARAMETER_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_SEED_PROFILE_PARAMETER_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/seed_profile_parameter.hpp"
+#include "ores.iam.api/domain/seed_profile_parameter_codec.hpp"
 #include "ores.iam.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -56,9 +57,9 @@ struct seed_profile_parameter_write {
     std::string data_type;
     std::string choices_json;
     std::string default_value;
-    bool is_required;
+    bool is_required{};
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const seed_profile_parameter_write&,
                            const seed_profile_parameter_write&) = default;
@@ -101,7 +102,7 @@ struct seed_profile_parameter_event {
     boost::uuids::uuid event_id;
     seed_profile_parameter_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -111,7 +112,7 @@ struct seed_profile_parameter_event {
 
 struct seed_profile_parameter_version_key {
     seed_profile_parameter_key seed_profile_parameter;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const seed_profile_parameter_version_key&,
                            const seed_profile_parameter_version_key&) = default;
@@ -149,7 +150,7 @@ struct list_seed_profile_parameters_request {
 struct list_seed_profile_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_parameter> seed_profile_parameters;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_seed_profile_parameters_response&,
                            const list_seed_profile_parameters_response&) = default;
@@ -327,7 +328,7 @@ struct list_by_seed_profile_id_seed_profile_parameters_request {
 struct list_by_seed_profile_id_seed_profile_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_parameter> seed_profile_parameters;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_seed_profile_id_seed_profile_parameters_response&,
@@ -357,7 +358,7 @@ struct list_seed_profile_parameter_versions_request {
 struct list_seed_profile_parameter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_parameter> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_seed_profile_parameter_versions_response&,
                            const list_seed_profile_parameter_versions_response&) = default;

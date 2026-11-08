@@ -28,9 +28,9 @@ The published curve screens read the service and match the signed-off prototype.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Built, tested and verified live.       |
-| Waiting on   | Nothing.                               |
-| Next         | Review the four commits and raise the PR. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance

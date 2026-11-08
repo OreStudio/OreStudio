@@ -2287,7 +2287,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
 
     j: dict[str, Any] = {}
     for key in ("product", "schema", "component", "name", "name_singular",
-                "name_title", "name_singular_words", "brief"):
+                "name_title", "name_singular_words", "brief", "http_area"):
         if key in fm:
             j[key] = fm[key]
     if "has_tenant_id" in fm:
@@ -3576,6 +3576,9 @@ def filter_members(entity: dict[str, Any]) -> dict[str, Any]:
         members.append({
             "member": name, "column": name, "is_equals": True,
             "cpp_type": cpp_type,
+            # The record wraps a nullable member once more than a plain one, so a
+            # reader that parses text states the type inside both wrappers.
+            "read_type": _strip_optional(cpp_type),
             "is_nullable": cpp_type != _strip_optional(cpp_type)})
     for name in one_of:
         members.append({
@@ -3977,6 +3980,9 @@ def junction_entity_shape(junction: dict[str, Any]) -> dict[str, Any]:
     sides = (junction.get("left") or {}, junction.get("right") or {})
     return {
         "component": junction.get("component", ""),
+        # The published area is the model's declaration, as it is for an entity:
+        # a junction answers under the same contract as the rows it links.
+        **({"http_area": junction["http_area"]} if junction.get("http_area") else {}),
         "entity_singular": junction.get("name_singular", ""),
         "entity_plural": name,
         "entity_plural_short": name,
@@ -5729,6 +5735,10 @@ def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
             "relation": relation,
             "precondition": command["precondition"],
             "has_order": command["has_order"],
+            # A list a caller may search, when the model says a column is
+            # searchable and the route is the plain paged one. A versions read
+            # lists a record's history and is not searched.
+            "has_search": bool(entity.get("has_search")) and kind == "paged",
             "has_scope": kind == "list_by",
             "allows_version": command["allows_version"],
             # The shapes the template selects a handler body by. Mustache
@@ -6779,6 +6789,40 @@ def _trade_type_descriptions(path: Path, doc, codes: list[str]) -> dict[str, dic
     return found
 
 
+def _trade_type_classes(path: Path, doc, codes: list[str]) -> dict[str, str]:
+    """The class each product type is worked as: flow, or non_flow.
+
+    The ``* Classes`` table names only the codes a desk signs off a few rows at a
+    time. Every other code the catalogue states is non_flow, which is the safe
+    direction: a type nobody has classified draws the closer look. A class the
+    table does not state, or a code the catalogue does not hold, fails codegen.
+    """
+    section = _section(doc.root, "Classes")
+    if not section or not section.tables:
+        raise ValueError(f"{path.name}: no * Classes table.")
+    raw = _parse_org_table_rows(section)
+    stated: dict[str, str] = {}
+    for r in raw:
+        code = (r.get("code") or "").strip()
+        if not code:
+            continue
+        deal_class = (r.get("deal_class") or "").strip()
+        if deal_class not in ("flow", "non_flow"):
+            raise ValueError(
+                f"{path.name}: product type {code} states class "
+                f"{deal_class!r}; it must be flow or non_flow.")
+        if code in stated:
+            raise ValueError(
+                f"{path.name}: product type {code} is classified twice.")
+        stated[code] = deal_class
+    extra = sorted(set(stated) - set(codes))
+    if extra:
+        raise ValueError(
+            f"{path.name}: a class names product type(s) the * Trade types "
+            f"table does not state: {', '.join(extra)}.")
+    return {code: stated.get(code, "non_flow") for code in codes}
+
+
 def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
     """Load the trade-type catalogue into the shape its readers want.
 
@@ -6876,11 +6920,14 @@ def load_org_trade_type_catalogue_model(path: Path | str) -> dict[str, Any]:
         raise ValueError(
             f"{path.name}: duplicate trade type code(s): {', '.join(repeated)}")
     descriptions = _trade_type_descriptions(path, doc, codes)
+    classes = _trade_type_classes(path, doc, codes)
     for row in rows:
         entry = descriptions[row["code"]]
         row["description_sql"] = entry["description"]
         row["source_sql"] = entry["source"]
         row["source_ref_sql"] = entry["source_ref"]
+        row["deal_class"] = classes[row["code"]]
+        row["deal_class_literal"] = f"'{classes[row['code']]}'"
     for index, row in enumerate(rows):
         row["comma"] = "" if index == len(rows) - 1 else ","
 

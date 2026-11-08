@@ -19,10 +19,10 @@
  */
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/feed_repository.hpp"
 #include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"

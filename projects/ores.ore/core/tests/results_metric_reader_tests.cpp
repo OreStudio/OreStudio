@@ -33,6 +33,7 @@
 namespace {
 
 const std::string metric_tags("[ore][results][metric_reader]");
+const std::string long_running_metric_tags(metric_tags + "[long_running]");
 
 using ores::ore::results::family_named;
 using ores::ore::results::metric;
@@ -238,7 +239,7 @@ TEST_CASE("a file no family covers is refused", metric_tags) {
     CHECK(outcome.refusals.front().find("no family") != std::string::npos);
 }
 
-TEST_CASE("every metric family's checked-in sample reads", metric_tags) {
+TEST_CASE("every metric family's checked-in sample reads", long_running_metric_tags) {
     // The payments, the calibration, the market inputs and the text values
     // have readers of their own; every other family is read as metrics.
     std::size_t read = 0;

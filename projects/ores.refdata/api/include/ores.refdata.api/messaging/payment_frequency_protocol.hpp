@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PAYMENT_FREQUENCY_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PAYMENT_FREQUENCY_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/payment_frequency.hpp"
+#include "ores.refdata.api/domain/payment_frequency_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -53,7 +54,7 @@ struct payment_frequency_write {
     std::string description;
     std::string period_unit;
     std::optional<int> period_multiplier;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const payment_frequency_write&,
                            const payment_frequency_write&) = default;
@@ -94,7 +95,7 @@ struct payment_frequency_event {
     boost::uuids::uuid event_id;
     payment_frequency_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +105,7 @@ struct payment_frequency_event {
 
 struct payment_frequency_version_key {
     payment_frequency_key payment_frequency;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const payment_frequency_version_key&,
                            const payment_frequency_version_key&) = default;
@@ -142,7 +143,7 @@ struct list_payment_frequencies_request {
 struct list_payment_frequencies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::payment_frequency> payment_frequencies;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_payment_frequencies_response&,
                            const list_payment_frequencies_response&) = default;
@@ -317,7 +318,7 @@ struct list_payment_frequency_versions_request {
 struct list_payment_frequency_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::payment_frequency> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_payment_frequency_versions_response&,
                            const list_payment_frequency_versions_response&) = default;

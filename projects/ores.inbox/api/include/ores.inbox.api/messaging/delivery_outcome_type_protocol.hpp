@@ -25,11 +25,12 @@
 #ifndef ORES_INBOX_API_MESSAGING_DELIVERY_OUTCOME_TYPE_PROTOCOL_HPP
 #define ORES_INBOX_API_MESSAGING_DELIVERY_OUTCOME_TYPE_PROTOCOL_HPP
 
-#include "ores.inbox.api/domain/delivery_outcome_type.hpp"
+#include "ores.inbox.api/domain/delivery_outcome_type_codec.hpp"
 #include "ores.inbox.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -67,7 +68,7 @@ struct delivery_outcome_type_event {
     boost::uuids::uuid event_id;
     delivery_outcome_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +98,7 @@ struct list_delivery_outcome_types_request {
 struct list_delivery_outcome_types_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::delivery_outcome_type> delivery_outcome_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_delivery_outcome_types_response&,
                            const list_delivery_outcome_types_response&) = default;

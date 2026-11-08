@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -40,6 +41,7 @@ render_cap_floor_instrument_fields(const domain::cap_floor_instrument& v) {
     fields.push_back({.name = "Trade ID", .value = boost::uuids::to_string(v.trade_id)});
     fields.push_back(
         {.name = "Trade Activity ID", .value = boost::uuids::to_string(v.trade_activity_id)});
+    fields.push_back({.name = "Long Short", .value = v.long_short.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

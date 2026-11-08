@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CDS_CONVENTION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CDS_CONVENTION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/cds_convention.hpp"
+#include "ores.refdata.api/domain/cds_convention_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -49,14 +50,14 @@ struct cds_convention_key {
 
 struct cds_convention_write {
     std::string id;
-    int settlement_days;
+    int settlement_days{};
     std::string calendar;
     std::string frequency;
     std::string payment_convention;
     std::string rule;
     std::string day_count_fraction;
-    bool settles_accrual;
-    bool pays_at_default_time;
+    bool settles_accrual{};
+    bool pays_at_default_time{};
     std::optional<int> upfront_settlement_days;
     std::optional<std::string> last_period_day_count_fraction;
     std::optional<std::string> oresmd_uri;
@@ -95,7 +96,7 @@ struct cds_convention_event {
     boost::uuids::uuid event_id;
     cds_convention_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +105,7 @@ struct cds_convention_event {
 
 struct cds_convention_version_key {
     cds_convention_key cds_convention;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const cds_convention_version_key&,
                            const cds_convention_version_key&) = default;
@@ -142,7 +143,7 @@ struct list_cds_conventions_request {
 struct list_cds_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cds_convention> cds_conventions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cds_conventions_response&,
                            const list_cds_conventions_response&) = default;
@@ -317,7 +318,7 @@ struct list_cds_convention_versions_request {
 struct list_cds_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cds_convention> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cds_convention_versions_response&,
                            const list_cds_convention_versions_response&) = default;

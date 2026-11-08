@@ -87,24 +87,24 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <kind_code> <state_code> <requested_by> <requested_at> <reason> <expires_at>
-     * <reason> <commentary>
+     * @brief add <kind_code> <state_code> <auto_approval_code> <requested_by> <requested_at>
+     * <reason> <expires_at> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <kind_code> <state_code> <requested_by> <requested_at> <reason> <expires_at>
-     * <reason> <commentary> [--version <n>]
+     * @brief set <id> <kind_code> <state_code> <auto_approval_code> <requested_by> <requested_at>
+     * <reason> <expires_at> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <kind_code> <state_code> <requested_by> <requested_at>
-     * <reason> <expires_at> <reason> <commentary>
+     * @brief put-many --count <n> <id> <kind_code> <state_code> <auto_approval_code> <requested_by>
+     * <requested_at> <reason> <expires_at> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

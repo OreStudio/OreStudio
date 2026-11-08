@@ -29,7 +29,7 @@ Every pricing engine choice and parameter carries the same documentation fields 
 | State        | DONE                              |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
 | Now          | Nothing. |
-| Waiting on   | The owner's test of the screen.        |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 

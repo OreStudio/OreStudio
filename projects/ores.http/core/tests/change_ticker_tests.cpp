@@ -42,7 +42,7 @@ TEST_CASE("a_change_recorded_between_ticks_reaches_the_stream", "[change_ticker]
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
-    auto stream = hub.subscribe("acme");
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
@@ -66,7 +66,7 @@ TEST_CASE("a_stopped_ticker_publishes_nothing_further", "[change_ticker]") {
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
-    auto stream = hub.subscribe("acme");
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
@@ -89,7 +89,7 @@ TEST_CASE("a_tick_with_nothing_recorded_writes_nothing", "[change_ticker]") {
 
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
-    auto stream = hub.subscribe("acme");
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
     change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
 
     boost::asio::io_context io;
@@ -98,5 +98,83 @@ TEST_CASE("a_tick_with_nothing_recorded_writes_nothing", "[change_ticker]") {
     ticker.stop();
     io.run();
 
+    REQUIRE(stream->size() == 0);
+}
+
+TEST_CASE("a_change_inside_the_window_does_not_extend_it", "[change_ticker]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a window closes one interval after it opened";
+
+    change_coalescer coalescer;
+    change_hub hub(ticker_system_tenant);
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
+    change_ticker ticker(coalescer, hub, std::chrono::milliseconds(500));
+
+    boost::asio::io_context io;
+    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); }, boost::asio::detached);
+
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    io.run_for(std::chrono::milliseconds(400));
+
+    // A change that lands inside the window is gathered into it, not waited for.
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    io.run_for(std::chrono::milliseconds(300));
+    ticker.stop();
+    io.run();
+
+    // A window pushed back by the second change would still be open at 700 ms.
+    REQUIRE(stream->size() == 1);
+    REQUIRE(stream->try_pop()->find("event: iam.book") != std::string::npos);
+}
+
+TEST_CASE("a_closed_window_opens_again_on_the_next_change", "[change_ticker]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the clock returns to waiting after a window";
+
+    change_coalescer coalescer;
+    change_hub hub(ticker_system_tenant);
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
+    change_ticker ticker(coalescer, hub, std::chrono::milliseconds(10));
+
+    boost::asio::io_context io;
+    boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); }, boost::asio::detached);
+
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
+    io.run_for(std::chrono::milliseconds(40));
+
+    coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "trade"});
+    io.run_for(std::chrono::milliseconds(40));
+    ticker.stop();
+    io.run();
+
+    REQUIRE(stream->size() == 2);
+    REQUIRE(stream->try_pop()->find("event: iam.book") != std::string::npos);
+    REQUIRE(stream->try_pop()->find("event: iam.trade") != std::string::npos);
+}
+
+TEST_CASE("a_ticker_stopped_before_it_ran_returns_at_once", "[change_ticker]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a stop before the loop is not lost";
+
+    change_coalescer coalescer;
+    change_hub hub(ticker_system_tenant);
+    auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
+    change_ticker ticker(coalescer, hub, std::chrono::milliseconds(5));
+
+    auto returned = false;
+    boost::asio::io_context io;
+    boost::asio::co_spawn(
+        io,
+        [&]() -> boost::asio::awaitable<void> {
+            co_await ticker.run(io.get_executor());
+            returned = true;
+        },
+        boost::asio::detached);
+
+    // The stop lands before the loop has an executor to post to.
+    ticker.stop();
+    io.run_for(std::chrono::milliseconds(50));
+
+    REQUIRE(returned);
     REQUIRE(stream->size() == 0);
 }

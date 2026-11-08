@@ -25,11 +25,12 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_CREDIT_SIMULATION_NETTING_SET_CONFIG_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_CREDIT_SIMULATION_NETTING_SET_CONFIG_PROTOCOL_HPP
 
-#include "ores.analytics.api/domain/credit_simulation_netting_set_config.hpp"
+#include "ores.analytics.api/domain/credit_simulation_netting_set_config_codec.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -52,7 +53,7 @@ struct credit_simulation_netting_set_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid credit_simulation_config_id;
     std::string netting_set_id;
-    int position;
+    int position{};
 
     friend bool operator==(const credit_simulation_netting_set_config_write&,
                            const credit_simulation_netting_set_config_write&) = default;
@@ -96,7 +97,7 @@ struct credit_simulation_netting_set_config_event {
     boost::uuids::uuid event_id;
     credit_simulation_netting_set_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +107,7 @@ struct credit_simulation_netting_set_config_event {
 
 struct credit_simulation_netting_set_config_version_key {
     credit_simulation_netting_set_config_key credit_simulation_netting_set_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const credit_simulation_netting_set_config_version_key&,
                            const credit_simulation_netting_set_config_version_key&) = default;
@@ -145,7 +146,7 @@ struct list_credit_simulation_netting_set_configs_request {
 struct list_credit_simulation_netting_set_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_netting_set_config> netting_sets;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_credit_simulation_netting_set_configs_response&,
                            const list_credit_simulation_netting_set_configs_response&) = default;
@@ -337,7 +338,7 @@ struct list_by_credit_simulation_config_id_credit_simulation_netting_set_configs
 struct list_by_credit_simulation_config_id_credit_simulation_netting_set_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_netting_set_config> netting_sets;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(
         const list_by_credit_simulation_config_id_credit_simulation_netting_set_configs_response&,
@@ -370,7 +371,7 @@ struct list_credit_simulation_netting_set_config_versions_request {
 struct list_credit_simulation_netting_set_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_netting_set_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_credit_simulation_netting_set_config_versions_response&,

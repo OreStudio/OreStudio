@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CRM_TOPOLOGY_CONFIG_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CRM_TOPOLOGY_CONFIG_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/crm_topology_config.hpp"
+#include "ores.refdata.api/domain/crm_topology_config_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -53,7 +54,7 @@ struct crm_topology_config_write {
     boost::uuids::uuid party_id;
     std::string name;
     std::string pivot_currency_code;
-    bool enabled;
+    bool enabled{};
 
     friend bool operator==(const crm_topology_config_write&,
                            const crm_topology_config_write&) = default;
@@ -94,7 +95,7 @@ struct crm_topology_config_event {
     boost::uuids::uuid event_id;
     crm_topology_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +105,7 @@ struct crm_topology_config_event {
 
 struct crm_topology_config_version_key {
     crm_topology_config_key crm_topology_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const crm_topology_config_version_key&,
                            const crm_topology_config_version_key&) = default;
@@ -142,7 +143,7 @@ struct list_crm_topology_configs_request {
 struct list_crm_topology_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::crm_topology_config> crm_topology_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_crm_topology_configs_response&,
                            const list_crm_topology_configs_response&) = default;
@@ -318,7 +319,7 @@ struct list_crm_topology_config_versions_request {
 struct list_crm_topology_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::crm_topology_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_crm_topology_config_versions_response&,
                            const list_crm_topology_config_versions_response&) = default;

@@ -28,9 +28,9 @@ can be sent until it does. A response needs a body it can read from in pieces.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | Nothing; #4173 is merged. |
-| Waiting on   | Nothing.                               |
-| Next         | The bundle is served the same way.     |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance

@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: C744E1F5-AFAA-4147-9F42-87A3909934F8
+:END:
+#+title: Task: Design the .1 and greek ladder reports
+#+description: The .1 family and the wider greek ladders are prose only; research ORE and design the reports before seeding.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-market-data-feeds-remaining-2:sprint_29:v0:
+#+owner: marco
+#+branch: feature/design-the-point-one-reports
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-08
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36D992FD-0E21-4C21-915E-17D8717A0E23][Rework the market data feeds into a market data service with adapters — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A design for the .1 and greek ladder reports, grounded in ORE, with the tasks to build them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:36D992FD-0E21-4C21-915E-17D8717A0E23][Rework the market data feeds into a market data service with adapters — the remaining work]] |
+| Now          | Design recorded; the seven build tasks are scoped and sequenced. |
+| Waiting on   | [[id:B942657D-C257-4FB5-95FE-D966A2DE7FC5][Settle the .1 family with the product owner]] for the shift size and the greek set. |
+| Next         | Answer the five open questions, then start the first build task. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- ORE's approach to .1 and greek ladders is researched and cited.
+- The full ladder family (all greeks, not only vol) and what each needs are set out.
+- The design note, the journey if needed, the tasks and the open questions are recorded.
+
+* Plan
+
+Read the engine first and the store second, because the .1 family is a name for
+something the engine already does. Read the whole sensitivity schema rather than
+the example that looks closest, because the family is as wide as the schema and
+only the vocabulary comes from the example. Then measure what the =Delta= column
+actually holds before designing anything that divides by a shift size, since a
+Greek written as a quotient and a Greek written as a value change lead to
+different reports.
+
+The work is docs and tasks only: no code, no seeds, no definitions. The build is
+sequenced so that each unit ends in a state a reviewer can check, and so that the
+plumbing lands before the reports that depend on it:
+
+1. [[id:8A951C62-4081-4CF1-9051-862533FA17B9][Bind a sensitivity
+   configuration to a report definition]] — without this, every later run shifts
+   nothing.
+2. [[id:D168771B-BC57-46D7-93B5-F9FA10A4A4B7][Seed the sensitivity shift
+   families]] — the content the binding carries.
+3. [[id:FABF9F45-2B9B-4844-9200-DEFECB81CC69][Build the rates delta and gamma
+   ladders]] — the first ladder, over data the store already holds.
+4. [[id:AFA116AA-0FF8-4FA0-88B4-1DF2F26022F5][Build the par-rate DV01 and
+   theta ladders]] — the two one-figure ladders off that same run.
+5. [[id:3DD3449A-CF81-458D-BE3D-07951A1E0EC2][Build the .1 ATM and surface vol
+   ladders]] — the vol pair, waiting on market data.
+6. [[id:0C0F9826-403E-4C62-B03F-050888E9F88B][Derive the risk reversal and
+   strangle ladders]] — derived from unit 5, not asked of the engine.
+7. [[id:CC276A2C-4676-4DE3-8114-C496CAB0C082][Build the cross-gamma ladder]] —
+   last, because it is the widest and the least load-bearing.
+
+Units 1 to 4 need no new market data. Units 5 to 7 wait on
+[[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]]. The
+wider risk classes are captured separately in
+[[id:16E9E20E-325B-4C17-AF13-530BB5824696][Extend the greek ladders to every
+risk class]].
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Data rows in the shipped sensitivity report | 968, of which 484 carry a second factor | =python3= count of =sensitivity.csv= under =external/ore/examples/MarketRisk/ExpectedOutput/Sensi= | =deb15641d0= |
+| Data rows in the shipped scenario report | 17225 | =wc -l external/ore/examples/MarketRisk/ExpectedOutput/Sensi/scenario.csv= minus the header | =deb15641d0= |
+| Lines in the shipped sensitivity configuration | 517 | =wc -l external/ore/examples/MarketRisk/Input/sensitivity.xml= | =deb15641d0= |
+| Line count of the task page before the design | 87 | =wc -l= on this page | =deb15641d0= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The design note is [[id:D9D59BD1-CAC0-4B4A-B32D-A734A4D79AB0][Greek ladder
+reports]]. It states what a .1 report is in the engine's terms, the full ladder
+family across every risk class and order, what each ladder needs, what the store
+holds and lacks, the ordered report list, six decisions and five open questions.
+
+Six findings decide the design, and each is cited on the note:
+
+- The engine has no .1. It has a shift type, a shift size, a shift scheme and a
+  bucket list, and a .1 report is a report bound to one of those sizes.
+- The =Delta= column is the value change for the configured shift, not a
+  derivative, and it is not divided by the shift size. This was measured rather
+  than assumed.
+- The risk reversal and the strangle are not engine factors. ORE shifts an
+  ATM-only grid or a strike-by-strike surface, so the two ladders are a change
+  of basis over the surface points.
+- =crossgamma.csv= has no writer at 1.8.17.0, though the cross gammas are
+  present in =sensitivity.csv= and =scenario.csv=.
+- Theta is a risk factor key of its own, not a mode of a rates run.
+- The store names the sensitivity document and switches the analytic on in nine
+  risk report configurations, and no configuration binds a document, so a
+  sensitivity run today shifts nothing.
+
+Seven tasks are scoped and sequenced in =* Plan=. Two captures wait beside them:
+[[id:B942657D-C257-4FB5-95FE-D966A2DE7FC5][Settle the .1 family with the product
+owner]] and [[id:16E9E20E-325B-4C17-AF13-530BB5824696][Extend the greek ladders
+to every risk class]].

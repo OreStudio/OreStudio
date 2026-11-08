@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_ENTITY_CLASSIFICATION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_ENTITY_CLASSIFICATION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/entity_classification.hpp"
+#include "ores.refdata.api/domain/entity_classification_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -87,7 +88,7 @@ struct entity_classification_event {
     boost::uuids::uuid event_id;
     entity_classification_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +98,7 @@ struct entity_classification_event {
 
 struct entity_classification_version_key {
     entity_classification_key entity_classification;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const entity_classification_version_key&,
                            const entity_classification_version_key&) = default;
@@ -134,7 +135,7 @@ struct list_entity_classifications_request {
 struct list_entity_classifications_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::entity_classification> classifications;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_entity_classifications_response&,
                            const list_entity_classifications_response&) = default;
@@ -311,7 +312,7 @@ struct list_entity_classification_versions_request {
 struct list_entity_classification_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::entity_classification> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_entity_classification_versions_response&,
                            const list_entity_classification_versions_response&) = default;

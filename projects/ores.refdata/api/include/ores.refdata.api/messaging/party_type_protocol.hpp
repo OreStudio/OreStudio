@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PARTY_TYPE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PARTY_TYPE_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/party_type.hpp"
+#include "ores.refdata.api/domain/party_type_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,7 +52,7 @@ struct party_type_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const party_type_write&, const party_type_write&) = default;
 };
@@ -87,7 +88,7 @@ struct party_type_event {
     boost::uuids::uuid event_id;
     party_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -96,7 +97,7 @@ struct party_type_event {
 
 struct party_type_version_key {
     party_type_key party_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const party_type_version_key&, const party_type_version_key&) = default;
 };
@@ -133,7 +134,7 @@ struct list_party_types_request {
 struct list_party_types_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_type> types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_types_response&,
                            const list_party_types_response&) = default;
@@ -306,7 +307,7 @@ struct list_party_type_versions_request {
 struct list_party_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_type_versions_response&,
                            const list_party_type_versions_response&) = default;

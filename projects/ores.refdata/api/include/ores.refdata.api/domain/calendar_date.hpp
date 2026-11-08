@@ -75,7 +75,7 @@ struct calendar_date final {
      * holiday" differently gets that from re-deriving the weekend mask itself (see
      * ores.analytics.quant's business_day_calendar_set), not from this column.
      */
-    bool is_business_day;
+    bool is_business_day{};
 
     /**
      * @brief How this row was instantiated. Soft-enum: quantlib_computed (base-less

@@ -25,11 +25,12 @@
 #ifndef ORES_INBOX_API_MESSAGING_NOTIFICATION_CHANNEL_PROTOCOL_HPP
 #define ORES_INBOX_API_MESSAGING_NOTIFICATION_CHANNEL_PROTOCOL_HPP
 
-#include "ores.inbox.api/domain/notification_channel.hpp"
+#include "ores.inbox.api/domain/notification_channel_codec.hpp"
 #include "ores.inbox.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -52,7 +53,7 @@ struct notification_channel_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const notification_channel_write&,
                            const notification_channel_write&) = default;
@@ -93,7 +94,7 @@ struct notification_channel_event {
     boost::uuids::uuid event_id;
     notification_channel_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +104,7 @@ struct notification_channel_event {
 
 struct notification_channel_version_key {
     notification_channel_key notification_channel;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const notification_channel_version_key&,
                            const notification_channel_version_key&) = default;
@@ -141,7 +142,7 @@ struct list_notification_channels_request {
 struct list_notification_channels_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_channel> channels;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_notification_channels_response&,
                            const list_notification_channels_response&) = default;
@@ -316,7 +317,7 @@ struct list_notification_channel_versions_request {
 struct list_notification_channel_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_channel> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_notification_channel_versions_response&,
                            const list_notification_channel_versions_response&) = default;

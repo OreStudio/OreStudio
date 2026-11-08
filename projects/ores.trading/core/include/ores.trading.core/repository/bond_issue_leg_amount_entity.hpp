@@ -52,9 +52,9 @@ struct bond_issue_leg_amount_entity {
     constexpr static const char* tablename = "ores_trading_bond_issue_leg_amounts_tbl";
 
     boost::uuids::uuid issue_id;
-    int leg_number;
+    int leg_number{};
     std::string amount_role;
-    int sequence_number;
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     ores::utility::decimal::decimal value;

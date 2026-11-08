@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_EQUITY_SWAP_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_EQUITY_SWAP_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/equity_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_swap_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -60,6 +61,15 @@ struct equity_swap_instrument_write {
     std::chrono::year_month_day maturity_date;
     std::string long_short;
     std::string payment_frequency_code;
+    std::optional<ores::utility::decimal::decimal> fixed_rate;
+    std::optional<std::string> floating_index;
+    std::optional<ores::utility::decimal::decimal> floating_spread;
+    std::optional<std::string> floating_day_count_fraction;
+    std::optional<ores::utility::decimal::decimal> initial_fixed_rate;
+    std::optional<ores::utility::decimal::decimal> knock_in_level;
+    std::optional<bool> bermudan_knock_in;
+    std::optional<bool> accruing_fixed_coupons;
+    std::optional<bool> accumulating_fixed_coupons;
     std::string description;
 
     friend bool operator==(const equity_swap_instrument_write&,
@@ -101,7 +111,7 @@ struct equity_swap_instrument_event {
     boost::uuids::uuid event_id;
     equity_swap_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -111,7 +121,7 @@ struct equity_swap_instrument_event {
 
 struct equity_swap_instrument_version_key {
     equity_swap_instrument_key equity_swap_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_swap_instrument_version_key&,
                            const equity_swap_instrument_version_key&) = default;
@@ -149,7 +159,7 @@ struct list_equity_swap_instruments_request {
 struct list_equity_swap_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_swap_instrument> equity_swap_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_swap_instruments_response&,
                            const list_equity_swap_instruments_response&) = default;
@@ -326,7 +336,7 @@ struct list_equity_swap_instrument_versions_request {
 struct list_equity_swap_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_swap_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_swap_instrument_versions_response&,
                            const list_equity_swap_instrument_versions_response&) = default;
@@ -407,6 +417,20 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_swap_instr
         utility::codec::field{"long_short", &equity_swap_instrument_write::long_short},
         utility::codec::field{"payment_frequency_code",
                               &equity_swap_instrument_write::payment_frequency_code},
+        utility::codec::field{"fixed_rate", &equity_swap_instrument_write::fixed_rate},
+        utility::codec::field{"floating_index", &equity_swap_instrument_write::floating_index},
+        utility::codec::field{"floating_spread", &equity_swap_instrument_write::floating_spread},
+        utility::codec::field{"floating_day_count_fraction",
+                              &equity_swap_instrument_write::floating_day_count_fraction},
+        utility::codec::field{"initial_fixed_rate",
+                              &equity_swap_instrument_write::initial_fixed_rate},
+        utility::codec::field{"knock_in_level", &equity_swap_instrument_write::knock_in_level},
+        utility::codec::field{"bermudan_knock_in",
+                              &equity_swap_instrument_write::bermudan_knock_in},
+        utility::codec::field{"accruing_fixed_coupons",
+                              &equity_swap_instrument_write::accruing_fixed_coupons},
+        utility::codec::field{"accumulating_fixed_coupons",
+                              &equity_swap_instrument_write::accumulating_fixed_coupons},
         utility::codec::field{"description", &equity_swap_instrument_write::description},
     };
 }

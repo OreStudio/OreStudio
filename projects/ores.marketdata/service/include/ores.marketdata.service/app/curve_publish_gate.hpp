@@ -109,6 +109,11 @@ resolve_publish_subject(const ores::database::context& ctx,
  * exist, and the request identifier is that row's natural key, so a request
  * authorises one publish and no second row can name it.
  *
+ * Whether the raise closes without a person is never this gate's to say: it is
+ * the kind's policy and the deployment's, read by the inbox, so an auto-approved
+ * act is visible where the requests and the kinds are read rather than buried in
+ * the code that raises one.
+ *
  * @throws std::invalid_argument when the kind, the account or the subject is
  * missing.
  * @throws std::runtime_error when the store refuses the detail row.

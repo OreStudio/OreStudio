@@ -117,7 +117,7 @@ public:
 private:
     hosted_source source_;
     frankfurter_fetcher& fetcher_;
-    int backfill_days_;
+    int backfill_days_{};
     std::string pivot_;
     std::set<std::string> universe_;
     std::set<std::string> demanded_;

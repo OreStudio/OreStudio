@@ -25,11 +25,12 @@
 #ifndef ORES_DQ_API_MESSAGING_NATURE_DIMENSION_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_NATURE_DIMENSION_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/nature_dimension.hpp"
+#include "ores.dq.api/domain/nature_dimension_codec.hpp"
 #include "ores.dq.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -90,7 +91,7 @@ struct nature_dimension_event {
     boost::uuids::uuid event_id;
     nature_dimension_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -99,7 +100,7 @@ struct nature_dimension_event {
 
 struct nature_dimension_version_key {
     nature_dimension_key nature_dimension;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const nature_dimension_version_key&,
                            const nature_dimension_version_key&) = default;
@@ -137,7 +138,7 @@ struct list_nature_dimensions_request {
 struct list_nature_dimensions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::nature_dimension> dimensions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_nature_dimensions_response&,
                            const list_nature_dimensions_response&) = default;
@@ -312,7 +313,7 @@ struct list_nature_dimension_versions_request {
 struct list_nature_dimension_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::nature_dimension> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_nature_dimension_versions_response&,
                            const list_nature_dimension_versions_response&) = default;

@@ -25,11 +25,12 @@
 #ifndef ORES_IAM_API_MESSAGING_ROLE_GRANT_REQUEST_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_ROLE_GRANT_REQUEST_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/role_grant_request.hpp"
+#include "ores.iam.api/domain/role_grant_request_codec.hpp"
 #include "ores.iam.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -92,7 +93,7 @@ struct role_grant_request_event {
     boost::uuids::uuid event_id;
     role_grant_request_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +103,7 @@ struct role_grant_request_event {
 
 struct role_grant_request_version_key {
     role_grant_request_key role_grant_request;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const role_grant_request_version_key&,
                            const role_grant_request_version_key&) = default;
@@ -140,7 +141,7 @@ struct list_role_grant_requests_request {
 struct list_role_grant_requests_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_grant_request> role_grant_requests;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_role_grant_requests_response&,
                            const list_role_grant_requests_response&) = default;
@@ -317,7 +318,7 @@ struct list_by_account_id_role_grant_requests_request {
 struct list_by_account_id_role_grant_requests_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_grant_request> role_grant_requests;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_account_id_role_grant_requests_response&,
                            const list_by_account_id_role_grant_requests_response&) = default;
@@ -346,7 +347,7 @@ struct list_role_grant_request_versions_request {
 struct list_role_grant_request_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::role_grant_request> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_role_grant_request_versions_response&,
                            const list_role_grant_request_versions_response&) = default;

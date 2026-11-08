@@ -23,8 +23,8 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/codec/json_codec.hpp"
-#include "ores.workflow.api/domain/workflow_plan_dependency.hpp"
-#include "ores.workflow.api/domain/workflow_plan_step.hpp"
+#include "ores.workflow.api/domain/workflow_plan_dependency_codec.hpp"
+#include "ores.workflow.api/domain/workflow_plan_step_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.core/service/workflow_actor.hpp"
@@ -939,7 +939,11 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     using outcome = ores::workflow::messaging::step_outcome;
     switch (event.outcome) {
         case outcome::completed:
-            set_step_state(step, step_states_.require("completed"), event.result_json, "", "");
+            // A step that finished may still have something to say about how it
+            // got there: a wait it rode out, a retry that worked. The record
+            // keeps those entries, and the status stays the clean one.
+            set_step_state(
+                step, step_states_.require("completed"), event.result_json, "", log_json);
             break;
         case outcome::completed_with_warnings:
             set_step_state(step,

@@ -38,9 +38,9 @@ The design states the approach in its *File transfer* section.
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Nothing. Every task is merged.         |
-| Waiting on    | Nothing.                               |
-| Next          | Increment B1 takes over.               |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-31                             |
 
 * Acceptance

@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_ORE_FILE_CATEGORY_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_ORE_FILE_CATEGORY_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/ore_file_category.hpp"
+#include "ores.reporting.api/domain/ore_file_category_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -52,7 +53,7 @@ struct ore_file_category_write {
     std::string name;
     std::string origin;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const ore_file_category_write&,
                            const ore_file_category_write&) = default;
@@ -93,7 +94,7 @@ struct ore_file_category_event {
     boost::uuids::uuid event_id;
     ore_file_category_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +104,7 @@ struct ore_file_category_event {
 
 struct ore_file_category_version_key {
     ore_file_category_key ore_file_category;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const ore_file_category_version_key&,
                            const ore_file_category_version_key&) = default;
@@ -141,7 +142,7 @@ struct list_ore_file_categories_request {
 struct list_ore_file_categories_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_file_category> categories;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ore_file_categories_response&,
                            const list_ore_file_categories_response&) = default;
@@ -317,7 +318,7 @@ struct list_ore_file_category_versions_request {
 struct list_ore_file_category_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_file_category> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ore_file_category_versions_response&,
                            const list_ore_file_category_versions_response&) = default;

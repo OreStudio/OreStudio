@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_BOND_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_BOND_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.api/domain/bond_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -52,6 +53,7 @@ struct bond_instrument_write {
     std::string trade_type_code;
     boost::uuids::uuid trade_activity_id;
     boost::uuids::uuid issue_id;
+    std::optional<std::string> position_identifier;
     std::optional<ores::utility::decimal::decimal> notional;
 
     friend bool operator==(const bond_instrument_write&, const bond_instrument_write&) = default;
@@ -90,7 +92,7 @@ struct bond_instrument_event {
     boost::uuids::uuid event_id;
     bond_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -99,7 +101,7 @@ struct bond_instrument_event {
 
 struct bond_instrument_version_key {
     bond_instrument_key bond_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bond_instrument_version_key&,
                            const bond_instrument_version_key&) = default;
@@ -137,7 +139,7 @@ struct list_bond_instruments_request {
 struct list_bond_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_instrument> bond_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_instruments_response&,
                            const list_bond_instruments_response&) = default;
@@ -312,7 +314,7 @@ struct list_bond_instrument_versions_request {
 struct list_bond_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_instrument_versions_response&,
                            const list_bond_instrument_versions_response&) = default;
@@ -383,6 +385,7 @@ inline constexpr std::string_view deleted = "trading.v1.events.bond_instruments.
         utility::codec::field{"trade_type_code", &bond_instrument_write::trade_type_code},
         utility::codec::field{"trade_activity_id", &bond_instrument_write::trade_activity_id},
         utility::codec::field{"issue_id", &bond_instrument_write::issue_id},
+        utility::codec::field{"position_identifier", &bond_instrument_write::position_identifier},
         utility::codec::field{"notional", &bond_instrument_write::notional},
     };
 }

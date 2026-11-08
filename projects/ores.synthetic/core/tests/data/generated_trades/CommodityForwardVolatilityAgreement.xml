@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="0940644b-3f20-5bc6-851f-fc7dccd3579f">
+    <TradeType>CommodityForwardVolatilityAgreement</TradeType>
+  </Trade>
+  <Trade id="f1c63d3f-5920-5b31-a3f0-4676a1c9b751">
+    <TradeType>CommodityForwardVolatilityAgreement</TradeType>
+  </Trade>
+</Portfolio>

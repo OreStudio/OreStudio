@@ -44,7 +44,7 @@ struct calendar_ruleset final {
 /// A flat output list -- the shape scanned once to bulk-insert into
 /// calendar_dates, never a vector<vector<...>>.
 struct instantiated_holiday final {
-    std::size_t calendar_index;
+    std::size_t calendar_index{};
     std::chrono::year_month_day date;
 };
 

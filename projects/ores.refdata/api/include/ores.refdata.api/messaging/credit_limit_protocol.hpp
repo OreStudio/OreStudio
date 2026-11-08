@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CREDIT_LIMIT_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CREDIT_LIMIT_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/credit_limit.hpp"
+#include "ores.refdata.api/domain/credit_limit_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -91,7 +92,7 @@ struct credit_limit_event {
     boost::uuids::uuid event_id;
     credit_limit_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +101,7 @@ struct credit_limit_event {
 
 struct credit_limit_version_key {
     credit_limit_key credit_limit;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const credit_limit_version_key&,
                            const credit_limit_version_key&) = default;
@@ -138,7 +139,7 @@ struct list_credit_limits_request {
 struct list_credit_limits_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::credit_limit> credit_limits;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_credit_limits_response&,
                            const list_credit_limits_response&) = default;
@@ -315,7 +316,7 @@ struct list_by_counterparty_id_credit_limits_request {
 struct list_by_counterparty_id_credit_limits_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::credit_limit> credit_limits;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_counterparty_id_credit_limits_response&,
                            const list_by_counterparty_id_credit_limits_response&) = default;
@@ -344,7 +345,7 @@ struct list_credit_limit_versions_request {
 struct list_credit_limit_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::credit_limit> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_credit_limit_versions_response&,
                            const list_credit_limit_versions_response&) = default;

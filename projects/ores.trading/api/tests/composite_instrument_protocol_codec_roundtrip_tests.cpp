@@ -24,7 +24,6 @@
  */
 #include "ores.testing/wire_roundtrip.hpp"
 #include "ores.trading.api/domain/composite_instrument_codec.hpp"
-#include "ores.trading.api/domain/composite_leg_codec.hpp"
 #include "ores.trading.api/messaging/composite_instrument_protocol.hpp"
 #include "ores.utility/domain/protocol_codec.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -177,28 +176,4 @@ TEST_CASE("ores::trading::messaging::get_composite_instrument_version_response",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<
         ores::trading::messaging::get_composite_instrument_version_response>();
-}
-
-TEST_CASE("ores::trading::messaging::put_composite_instrument_with_legs_request",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::trading::messaging::put_composite_instrument_with_legs_request>();
-}
-
-TEST_CASE("ores::trading::messaging::put_composite_instrument_with_legs_response",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::trading::messaging::put_composite_instrument_with_legs_response>();
-}
-
-TEST_CASE("ores::trading::messaging::get_composite_instrument_legs_request",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::trading::messaging::get_composite_instrument_legs_request>();
-}
-
-TEST_CASE("ores::trading::messaging::get_composite_instrument_legs_response",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::trading::messaging::get_composite_instrument_legs_response>();
 }

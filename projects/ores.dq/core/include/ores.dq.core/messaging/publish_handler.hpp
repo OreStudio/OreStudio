@@ -36,14 +36,13 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <optional>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -182,7 +181,8 @@ public:
             // fpml.* codes, countries, calendars, ...) alongside it.
             std::vector<std::string> allowed;
             if (!req->params_json.empty()) {
-                auto parsed = rfl::json::read<publish_bundle_params>(req->params_json);
+                auto parsed = ores::utility::codec::json::read_expected<publish_bundle_params>(
+                    req->params_json);
                 if (parsed)
                     allowed = parsed->opted_in_datasets;
             }
@@ -274,7 +274,7 @@ private:
         ores::workflow::messaging::start_workflow_message start_msg;
         start_msg.type = "bundle_publish_workflow";
         start_msg.tenant_id = tenant_id;
-        start_msg.request_json = rfl::json::write(wf_req);
+        start_msg.request_json = ores::utility::codec::json::write(wf_req);
         start_msg.correlation_id = correlation_id;
         start_msg.instance_id = instance_id;
 

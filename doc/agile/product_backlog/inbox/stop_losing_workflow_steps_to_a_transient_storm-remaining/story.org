@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 334A34AD-12CC-488C-AD62-69FDF09DA1D6
+:END:
+#+title: Story: Stop the workflow from losing steps to a transient storm — the remaining work
+#+description: A provisioning run lost its first step to a transient database connection storm. The engine published the step command, the iam service never handled it, and twenty minutes later the run failed with a message that names no cause. The command was dropped rather than retried, the pool storm left no explanation, and the handler has a path that discards a command in silence.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A workflow step must survive a transient failure of the service that
+serves it. The command must reach a handler or be retried until one is
+available, an intermittent error must not fail a run on its first
+occurrence, and a run that does fail must say what went wrong.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started. Split from [[id:03F84BC2-3F45-43EA-8924-FEA9246A1A9C][Stop the workflow from losing steps to a transient storm]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- A step command is not lost when the serving service is briefly unable
+  to handle it. Either a handler takes it, or the run fails with a cause
+  that names the failing component.
+- Delivery is durable: a command published while no subscriber is
+  connected is delivered when one returns, rather than discarded.
+- An intermittent failure is retried with backoff inside a bounded
+  budget, so a storm shorter than the budget does not fail the run.
+- The engine can record a failure the handler reports, so a step that
+  throws shows the handler's message instead of a deadline expiry.
+- A handler never discards a command without both a log line and a reply.
+- A connection-pool rebuild storm is observable after the fact: how
+  often each service rebuilt its pool, and why, can be read from a record
+  rather than reconstructed by hand from the journal.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CBD63566-6739-4C2D-89DA-3003A11E705B][Acknowledge a message only once it has been handled]] | BACKLOG | | | The JetStream subscription auto-acks when the handler returns, and on_msg destroys the natsMsg before invoking the handler, so nothing can acknowledge after the work is done. A handler that throws is acked and the command is gone. Move the acknowledgement behind an RAII guard that settles when the handler finishes. |
+
+* Decisions
+
+- Split from [[id:03F84BC2-3F45-43EA-8924-FEA9246A1A9C][Stop the workflow from losing steps to a transient storm]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+- The geo permission defect is recorded above as evidence. Fixing it is
+  its own change, not part of this story.
+

@@ -43,6 +43,8 @@ export interface EquityPositionOptionUnderlying {
     option_type: string;
     exercise_type: string;
     settlement_type: string;
+    identifier_type: string | null;
+    exercise_date: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

@@ -125,6 +125,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
 # options
 #
 option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
+option(WITH_MEMCHECK "Configure the tests for a run under valgrind." OFF)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(ORES_UNITY_BUILD "Build each target as unity translation units of 16 sources." ON)
 
@@ -400,6 +401,19 @@ if(WIN32)
         # Required by large translation units (e.g. registrar.cpp with many
         # template instantiations from rfl and Boost headers).
         add_compile_options(/bigobj)
+    endif()
+endif()
+
+if(APPLE)
+    # Apple's linker warns when a static library appears twice on one link
+    # line. CMake repeats a static library on purpose, so the dependencies
+    # between static libraries resolve in any order, and the repetition is
+    # correct. The flag is passed only when the linker accepts it, because
+    # linkers before Xcode 15 do not know it.
+    include(CheckLinkerFlag)
+    check_linker_flag(CXX "LINKER:-no_warn_duplicate_libraries" ores_ld_no_warn_duplicates)
+    if(ores_ld_no_warn_duplicates)
+        add_link_options("LINKER:-no_warn_duplicate_libraries")
     endif()
 endif()
 

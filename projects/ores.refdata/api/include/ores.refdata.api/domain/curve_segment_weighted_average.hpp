@@ -85,12 +85,12 @@ struct curve_segment_weighted_average final {
     /**
      * @brief The weight of a weighted average segment's first curve.
      */
-    double weight_1;
+    double weight_1{};
 
     /**
      * @brief The weight of a weighted average segment's second curve.
      */
-    double weight_2;
+    double weight_2{};
 
     /**
      * @brief Username of the person who last modified this curve segment weighted average.

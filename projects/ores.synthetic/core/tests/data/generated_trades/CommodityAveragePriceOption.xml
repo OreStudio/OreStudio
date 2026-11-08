@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
+    <TradeType>CommodityAveragePriceOption</TradeType>
+    <CommodityAveragePriceOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2027-11-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>NYMEX:CL</Name>
+      <Currency>EUR</Currency>
+      <Quantity>19661.53</Quantity>
+      <Strike>93.62</Strike>
+      <PriceType>FutureSettlement</PriceType>
+      <StartDate>2025-11-02</StartDate>
+      <EndDate>2027-11-02</EndDate>
+      <PaymentCalendar>US-NYSE</PaymentCalendar>
+      <PaymentLag>5</PaymentLag>
+      <PaymentConvention>Following</PaymentConvention>
+      <PricingCalendar>US-NYSE</PricingCalendar>
+    </CommodityAveragePriceOptionData>
+  </Trade>
+  <Trade id="f0c045e8-52b4-5121-b6ec-056dc60a2644">
+    <TradeType>CommodityAveragePriceOption</TradeType>
+    <CommodityAveragePriceOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2031-10-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Name>NYMEX:NG</Name>
+      <Currency>EUR</Currency>
+      <Quantity>40102.33</Quantity>
+      <Strike>116.49</Strike>
+      <PriceType>FutureSettlement</PriceType>
+      <StartDate>2025-10-02</StartDate>
+      <EndDate>2031-10-02</EndDate>
+      <PaymentCalendar>US-NYSE</PaymentCalendar>
+      <PaymentLag>5</PaymentLag>
+      <PaymentConvention>Following</PaymentConvention>
+      <PricingCalendar>US-NYSE</PricingCalendar>
+    </CommodityAveragePriceOptionData>
+  </Trade>
+</Portfolio>

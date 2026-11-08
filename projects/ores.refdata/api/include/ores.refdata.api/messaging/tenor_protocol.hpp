@@ -25,13 +25,14 @@
 #ifndef ORES_REFDATA_API_MESSAGING_TENOR_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_TENOR_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/tenor.hpp"
+#include "ores.refdata.api/domain/tenor_codec.hpp"
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstddef>
@@ -54,7 +55,7 @@ struct tenor_write {
     std::string code;
     std::string display_name;
     std::string description;
-    int sort_order;
+    int sort_order{};
     std::string kind;
     std::string unit;
     std::optional<int> multiplier;
@@ -93,7 +94,7 @@ struct tenor_event {
     boost::uuids::uuid event_id;
     tenor_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +103,7 @@ struct tenor_event {
 
 struct tenor_version_key {
     tenor_key tenor;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const tenor_version_key&, const tenor_version_key&) = default;
 };
@@ -137,7 +138,7 @@ struct list_tenors_request {
 struct list_tenors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor> tenors;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenors_response&, const list_tenors_response&) = default;
 };
@@ -305,7 +306,7 @@ struct list_tenor_versions_request {
 struct list_tenor_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenor_versions_response&,
                            const list_tenor_versions_response&) = default;

@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: 619AF477-DA8F-424F-8722-E1058F60FD68
+:END:
+#+title: Task: Model auto-approval as a stated policy
+#+description: A request may close without a person when the deployment does not enforce approvals or when the kind states that a system act needs nobody, and every such decision is visible and switchable.
+#+type: task
+#+level: s1
+#+filetags: :approvals:inbox:build_ir_curves_from_public_data:sprint_29:v0:
+#+owner: marco
+#+branch: feature/publish-the-curves-in-provisioning
+#+pr: 4488
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A request closes without a person only when a stated policy says so, and the
+policy is data an administrator turns on and off, visible wherever the request
+and the kind are read. The system can therefore bootstrap an installation and
+run its tests unattended, and a desk's own act still waits for its decider.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-07                               |
+
+* Acceptance
+
+- A deployment setting states whether the installation enforces approvals, and a kind states which raises it lets through without a person.
+- A request closed by either rule records a decision that names the policy in words, with the system as its decider and never the asker.
+- The request and the kind show that the decision was taken by policy, so an auto-approved act never reads as one a person signed.
+- Turning either rule off restores the person's decision, with no code change and no restart of the reading service.
+
+* Plan
+
+The rationale first, because it decides the shape. A maker and checker pair
+exists to put a second person in front of a consequential act a person proposed.
+It is not a toll on work the system does on its own behalf. So a request needs
+nobody in exactly two situations, and each is a separate decision by a different
+person about a different thing:
+
+1. *The deployment does not enforce approvals.* A development installation, a
+   test bed, a demonstration being built: waiting on a click it will always be
+   given costs time and proves nothing. This is an operator's decision about an
+   environment, so it is one setting, =system.approvals.mode=, seeded =enforced=
+   and set to =auto_approved= where nobody's book is at stake.
+2. *The maker is the installation.* The system tenant is the installation: its
+   curves are bootstrapped from the quotes its own feeds publish, which is no
+   person's judgement. This is a risk decision about one kind, so it is a column
+   on the kind, =auto_approval_code=, whose value =system_tenant= names that and
+   whose default =none= keeps the pair.
+
+Neither is inferred from what the subject happens to be. A gate that read a
+tenant or a party and decided would put a control where nobody looking at the
+approvals could see it, could not be switched off without a build, and would not
+say in the record why nobody signed.
+
+The decision that follows:
+
+- =approval_request= gains =auto_approval_code=, empty for a person's decision,
+  so the *record* states the rule and a screen filters on it. A kind whose policy
+  changes later leaves the requests it closed stating the rule that closed them.
+- The lifecycle reads both, in that order, and closes the raise approved in the
+  same act with the system as its decider and a comment that states the rule in
+  words.
+- A raise that names parts is never closed by policy: the parts are people
+  answering, and a close that skipped them would leave them open forever.
+- =approvals_required= goes back to being a count of people, and nothing else.
+  A kind that asks for zero and names no policy now refuses the raise rather than
+  writing a request no person could ever answer: one concept, not two.
+
+Visibility: the request carries the rule and its decision says it in words; the
+request page draws an =Auto-approved= chip beside the state and the sentence under
+the asker; the queue carries the same chip; the kind's list in the shell shows
+the policy column; and an operator reads or changes the deployment mode with
+=system settings get|set system.approvals.mode=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Approval suites | 80 cases, 0 failed, of which 6 are the new policy cases | =./publish/bin/ores.inbox.core.tests= | =cf05462115= |
+| Market data service curve publish suite | 25 cases, 0 failed | =./publish/bin/ores.marketdata.service.tests "[curve_publish]"= | =cf05462115= |
+| Web suites | 4049 cases, 0 failed | =npm run test= in =projects/ores.web= | =cf05462115= |
+| Auto-approved requests a provisioned run raised | 20, each carrying system_tenant | =evidence/publish_system_curves_run.txt= | =cf05462115= |
+| Local check gate | 86 of 88 checks pass; the 2 failures are pre-existing on main and in paths this branch does not touch | =./compass.sh check= | =cf05462115= |
+|      |       |         |        |
+
+* Notes
+
+** What it does not do yet
+
+- The deployment mode is read per tenant, falling back to the installation's row,
+  but there is no screen for either: an operator states it with the shell
+  =system_settings= verbs. A ribbon on the application shell that says the
+  deployment does not enforce approvals needs a settings read on the BFF's site
+  route, which today answers without a session.
+- =system_setting= carries no system-tenant overlay, so every tenant reads the
+  installation's row only when it has none of its own.
+- The development database was altered by hand: the column on each of the two
+  tables, the policy on the curve publish kind, and the =system.approvals.mode=
+  row. The create and populate scripts carry all four, and a recreated database
+  builds them from those files alone; a =compass db recreate= is still worth
+  running before this is relied on.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4488][#4488]] | [iam,marketdata,inbox] Publish the system's curves, and make auto-approval a policy |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A request now closes without a person only where a policy says so, and both
+policies are data.
+
+- The inbox reads =system.approvals.mode= and the kind's =auto_approval_code= at
+  the raise, closes the request approved in the same act as the system, writes
+  the rule on the request, and says it in the decision in words. Six cases hold
+  it: every-raise closes, a system-tenant raise closes only in the system
+  tenant, the deployment closes a kind that names no policy of its own, a count
+  of zero with no policy refuses the raise, and a person's request still waits.
+- The curve publish kind states =system_tenant=, so the provisioning run
+  publishes all 20 currencies with no person: the live run's requests carry
+  =system_tenant= and their decisions read "Approved by policy: a
+  marketdata.curve_publish request raised in the system tenant is the
+  installation acting on its own behalf, so no person stands before it", with the
+  market data service as the decider.
+- A desk's raise in a tenant is untouched: it waits for Market Risk, and the
+  request page says which of the two it was.
+- The market data gate no longer reads a tenant or a party. It raises.

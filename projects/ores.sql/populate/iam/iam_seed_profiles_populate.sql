@@ -100,6 +100,18 @@ insert into ores_iam_seed_profiles_tbl (
     'Initial population of seed profiles'
 ), (
     gen_random_uuid(),
+    'acme_minimal',
+    'ACME minimal',
+    'Acme''s group entity and books, nothing else',
+    'For development',
+    '["The group entity, its books and the ORE sample counterparties", "No staff, market data, reports or trades", "Provisions in a fraction of the demo''s time"]'::jsonb,
+    'evaluation', 'Acme Corporation', 'acme_corporation', 'acme_corporation',
+    'tenant_admin', 'admin@acme_corporation',
+    true, false, 22,
+    0, current_user, current_user, 'system.initial_load',
+    'Initial population of seed profiles'
+), (
+    gen_random_uuid(),
     'gleif_entity',
     'GLEIF entity',
     'A tenant built around a public registry hierarchy',
@@ -161,14 +173,17 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), p.id,
 from ores_iam_seed_profiles_tbl p
 cross join (values
     ('empty_operational', 'system_provision', 5, '{}'::jsonb),
+    ('empty_operational', 'publish_system_curves', 6, '{}'::jsonb),
     ('empty_operational', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('empty_operational', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('empty_operational', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
     ('gleif_entity', 'system_provision', 5, '{}'::jsonb),
+    ('gleif_entity', 'publish_system_curves', 6, '{}'::jsonb),
     ('gleif_entity', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}"]}'::jsonb),
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
     ('acme_demo', 'system_provision', 5, '{}'::jsonb),
+    ('acme_demo', 'publish_system_curves', 6, '{}'::jsonb),
     ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
     ('acme_demo', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
@@ -342,7 +357,19 @@ cross join (values
     -- size of the population, and the mix it states is the same one ACME's does;
     -- a fictional company has no register to choose from, so the root entity is
     -- not a parameter.
+    -- ACME minimal: the demo's tenant with only what an import into one of
+    -- the group's books needs. The group party's bundle carries its books, and
+    -- the ORE samples bundle the counterparties the ORE examples name.
+    ('acme_minimal', 'system_provision', 5, '{}'::jsonb),
+    ('acme_minimal', 'publish_system_curves', 6, '{}'::jsonb),
+    ('acme_minimal', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.tiny", "ore.counterparty_aliases"]}'::jsonb),
+    ('acme_minimal', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
+    ('acme_minimal', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
+    ('acme_minimal', 'load_staff', 40, '{"parties": [
+        {"name": "Acme Corporation Plc", "bundles": ["acme_group", "ore_samples"], "default": true}
+    ]}'::jsonb),
     ('northwind', 'system_provision', 5, '{}'::jsonb),
+    ('northwind', 'publish_system_curves', 6, '{}'::jsonb),
     ('northwind', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.tiny"]}'::jsonb),
     ('northwind', 'import_lei_hierarchy', 20, '{"bundles": ["northwind_lei_import"], "root_lei": "9695NORTHWIND0000065"}'::jsonb),
     ('northwind', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),

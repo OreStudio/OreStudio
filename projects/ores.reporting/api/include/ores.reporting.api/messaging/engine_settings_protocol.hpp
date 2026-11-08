@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_ENGINE_SETTINGS_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_ENGINE_SETTINGS_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/engine_settings.hpp"
+#include "ores.reporting.api/domain/engine_settings_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -91,7 +92,7 @@ struct engine_settings_event {
     boost::uuids::uuid event_id;
     engine_settings_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +101,7 @@ struct engine_settings_event {
 
 struct engine_settings_version_key {
     engine_settings_key engine_settings;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const engine_settings_version_key&,
                            const engine_settings_version_key&) = default;
@@ -138,7 +139,7 @@ struct list_engine_settings_request {
 struct list_engine_settings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings> settings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_engine_settings_response&,
                            const list_engine_settings_response&) = default;
@@ -315,7 +316,7 @@ struct list_by_configuration_id_engine_settings_request {
 struct list_by_configuration_id_engine_settings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings> settings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_configuration_id_engine_settings_response&,
                            const list_by_configuration_id_engine_settings_response&) = default;
@@ -344,7 +345,7 @@ struct list_engine_settings_versions_request {
 struct list_engine_settings_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_engine_settings_versions_response&,
                            const list_engine_settings_versions_response&) = default;

@@ -33,6 +33,7 @@
 namespace {
 
 const std::string gate_tags("[ore][results][corpus_gate]");
+const std::string long_running_gate_tags(gate_tags + "[long_running]");
 
 using ores::ore::results::family_of_file;
 using ores::ore::results::output_families;
@@ -123,7 +124,8 @@ TEST_CASE("every family states the shape that reads it", gate_tags) {
     CHECK(text_values == 6);
 }
 
-TEST_CASE("the checked-in corpus reads whole with the reader each family states", gate_tags) {
+TEST_CASE("the checked-in corpus reads whole with the reader each family states",
+          long_running_gate_tags) {
     const auto root = ores::testing::ore_path("examples");
     REQUIRE(std::filesystem::exists(root));
 
@@ -152,7 +154,8 @@ TEST_CASE("the checked-in corpus reads whole with the reader each family states"
     CHECK(read > 400);
 }
 
-TEST_CASE("every family's own sample reads whole with the reader it states", gate_tags) {
+TEST_CASE("every family's own sample reads whole with the reader it states",
+          long_running_gate_tags) {
     for (const auto& family : output_families()) {
         INFO("the family is " << family.code << ", its sample " << family.sample_file);
         const auto path = ores::testing::project_root::resolve(family.sample_file);

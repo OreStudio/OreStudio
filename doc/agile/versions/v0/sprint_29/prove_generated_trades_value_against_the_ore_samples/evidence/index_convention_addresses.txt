@@ -1,0 +1,44 @@
+ORE's built-in index families against what ORE Studio seeds.
+Measured 2026-11-07 on feature/seed-ores-built-in-index-conventions, from
+  /home/marco/Vault/Development/ORE/Engine/OREData/ored/utilities/indexparser.cpp
+  tools/ore_conventions/oresmd_index_map.tsv
+  projects/ores.sql/populate/refdata/refdata_{ibor,overnight}_index_conventions_populate.sql
+
+indexparser.cpp holds two hardcoded maps, the families ORE defines in code:
+  onIndices    27 overnight families
+  iborIndices  54 Ibor families
+
+overnight:
+  families with an address in the map: 24 of 27
+  families with a seeded convention row: 12 of 27
+  no address in the map: DKK-CITA, GBP-BoEBase, SEK-STINA
+  no seeded row: CHF-TOIS, DKK-CITA, DKK-DKKOIS, EUR-EONIA, EUR-ESTER, GBP-BoEBase, INR-MIBOROIS, JPY-TONAR, NZD-OCR, SEK-SIOR, SEK-STINA, THB-THOR, USD-AMERIBOR, USD-FedFunds, USD-Prime
+
+Ibor:
+  families with an address in the map: 40 of 54
+  families with a seeded convention row: 7 of 54
+  no address in the map: AUD-LIBOR, CAD-LIBOR, CNH-SHIBOR, DEM-LIBOR, DKK-LIBOR, EUR-EURIBOR365, IDR-IDRFIX, KRW-KORIBOR, RON-ROBOR, SAR-SAIBOR, SEK-LIBOR, SGD-SOR, SKK-BRIBOR, USD-AMBOR
+  no seeded row: AUD-BBSW, AUD-LIBOR, CAD-CDOR, CAD-CORRA, CAD-LIBOR, CHF-LIBOR, CNH-HIBOR, CNH-SHIBOR, CNY-REPOFIX, CZK-PRIBOR, DEM-LIBOR, DKK-CIBOR, DKK-LIBOR, EUR-EURIBOR365, EUR-LIBOR, GBP-SONIA, HKD-HIBOR, HUF-BUBOR, IDR-IDRFIX, IDR-JIBOR, ILS-TELBOR, INR-MIFOR, JPY-EYTIBOR, JPY-TIBOR, JPY-TONAR, KRW-CD, KRW-KORIBOR, MYR-KLIBOR, NOK-NIBOR, NZD-BKBM, PHP-PHIREF, PLN-WIBOR, RON-ROBOR, RUB-KEYRATE, RUB-MOSPRIME, SAR-SAIBOR, SEK-LIBOR, SEK-STIBOR, SGD-SIBOR, SGD-SOR, SKK-BRIBOR, THB-BIBOR, THB-THBFIX, TRY-TRLIBOR, USD-AMBOR, USD-SOFR, ZAR-JIBAR
+
+None of the seeded rows states an address:
+  oresmd_uri on refdata_ibor_index_conventions_populate rows: 0 of 7
+  oresmd_uri on refdata_overnight_index_conventions_populate rows: 0 of 25
+
+The corpus-derived seed states an address on its ten IborIndex rows, and every
+one carries a tenor (e.g. AED-EIBOR-3M -> ...&name=EIBOR&tenor=3M). A defining
+convention states the family address, so the lookup drops the tenor and matches
+nothing: 0 of 10 are reachable by index_definition_of.
+
+Seeded ids that differ from ORE's own spelling for the same index:
+  EUR-ESTR     vs ORE EUR-ESTER
+  JPY-TONA     vs ORE JPY-TONAR
+
+Seeded rows with no counterpart in ORE's built-in table (the synthetic feeds name
+families ORE has no index for): SEK-SWESTR, KRW-KOFR, NZD-NZONIA, INR-MIBOR
+(ORE has INR-MIBOROIS, a different index).
+
+where the physical fields live: each built-in maps to a QuantLib or QuantExt class
+whose constructor states them, e.g. QuantLib/ql/indexes/ibor/sofr.cpp:
+  OvernightIndex("SOFR", 0, USDCurrency(), UnitedStates(UnitedStates::SOFR), Actual360(), h)
+so settlement days, currency, fixing calendar and day counter are minable from the
+same checkout, and the calendar and day counter need a mapping to refdata's codes.

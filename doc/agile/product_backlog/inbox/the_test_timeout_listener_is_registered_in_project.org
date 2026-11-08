@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 31E4F8DB-D989-4007-AADD-C7283A31BA8F
+:END:
+#+title: Put the test timeout listener in the test-main template
+#+description: The test timeout listener is registered in projects/ores.http/client/tests/main.cpp by hand; the test-main template states only the logging and database lifecycle listeners, so the drift check flags the file. A listener that kills a test after 60 seconds is a whole-suite policy, so it belongs in the template behind a per-component opt-in (a property such as :test_timeout_listener: true on the component model) rather than in one generated file. The hotfix that cleared main dropped the hand edit, so the http client suite has no per-test timeout today.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:tests:hotfix:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

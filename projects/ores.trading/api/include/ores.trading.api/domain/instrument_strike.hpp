@@ -67,7 +67,8 @@ struct instrument_strike final {
 
     /**
      * @brief Which arm of the document stated this strike: cap or floor for a cap/floor, single for
-     * the one strike a bond, a swaption or an index option states.
+     * the one strike a bond, a swaption or an index option states, and call or put for a commodity
+     * option strip's calls and puts.
      *
      * strike_role is data, not a table: the closed set is fixed, and a collar states both arms in
      * one document, so the arm belongs to the strike rather than to the product.
@@ -77,7 +78,7 @@ struct instrument_strike final {
     /**
      * @brief 1-based ordinal of this strike within its role, in the order the document states it.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.
@@ -113,6 +114,12 @@ struct instrument_strike final {
      * @brief Currency the bare strike is stated in.
      */
     std::optional<std::string> bare_currency;
+
+    /**
+     * @brief The position held at this strike, as a commodity option strip's LongShorts/LongShort
+     * states it beside its Strikes/Strike.
+     */
+    std::optional<std::string> long_short;
 
     /**
      * @brief Username of the person who last modified this instrument strike.
@@ -175,6 +182,7 @@ struct instrument_strike final {
     ores::utility::digest::append_member(out, "yield_compounding", v.yield_compounding);
     ores::utility::digest::append_member(out, "bare_value", v.bare_value);
     ores::utility::digest::append_member(out, "bare_currency", v.bare_currency);
+    ores::utility::digest::append_member(out, "long_short", v.long_short);
     out.push_back('}');
     return out;
 }

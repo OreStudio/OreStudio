@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PERSON_ROLE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PERSON_ROLE_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/person_role.hpp"
+#include "ores.refdata.api/domain/person_role_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -82,7 +83,7 @@ struct person_role_event {
     boost::uuids::uuid event_id;
     person_role_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -91,7 +92,7 @@ struct person_role_event {
 
 struct person_role_version_key {
     person_role_key person_role;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const person_role_version_key&,
                            const person_role_version_key&) = default;
@@ -128,7 +129,7 @@ struct list_person_roles_request {
 struct list_person_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::person_role> roles;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_person_roles_response&,
                            const list_person_roles_response&) = default;
@@ -303,7 +304,7 @@ struct list_person_role_versions_request {
 struct list_person_role_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::person_role> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_person_role_versions_response&,
                            const list_person_role_versions_response&) = default;

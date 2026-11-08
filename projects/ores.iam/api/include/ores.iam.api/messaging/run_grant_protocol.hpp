@@ -25,11 +25,12 @@
 #ifndef ORES_IAM_API_MESSAGING_RUN_GRANT_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_RUN_GRANT_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/run_grant.hpp"
+#include "ores.iam.api/domain/run_grant_codec.hpp"
 #include "ores.iam.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -66,7 +67,7 @@ struct run_grant_event {
     boost::uuids::uuid event_id;
     run_grant_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -75,7 +76,7 @@ struct run_grant_event {
 
 struct run_grant_version_key {
     run_grant_key run_grant;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const run_grant_version_key&, const run_grant_version_key&) = default;
 };
@@ -112,7 +113,7 @@ struct list_run_grants_request {
 struct list_run_grants_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::run_grant> grants;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_run_grants_response&,
                            const list_run_grants_response&) = default;
@@ -188,7 +189,7 @@ struct list_by_grantor_account_id_run_grants_request {
 struct list_by_grantor_account_id_run_grants_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::run_grant> grants;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_grantor_account_id_run_grants_response&,
                            const list_by_grantor_account_id_run_grants_response&) = default;
@@ -217,7 +218,7 @@ struct list_run_grant_versions_request {
 struct list_run_grant_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::run_grant> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_run_grant_versions_response&,
                            const list_run_grant_versions_response&) = default;

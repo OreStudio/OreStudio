@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_FX_BARRIER_OPTION_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_FX_BARRIER_OPTION_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_barrier_option_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -63,6 +64,14 @@ struct fx_barrier_option_instrument_write {
     std::optional<ores::utility::decimal::decimal> lower_barrier;
     std::optional<ores::utility::decimal::decimal> upper_barrier;
     std::string underlying_code;
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+    std::optional<std::string> barrier_calendar;
+    std::optional<std::string> barrier_fixing_index;
+    std::optional<double> quantity;
+    std::optional<ores::utility::decimal::decimal> strike;
+    std::optional<ores::utility::decimal::decimal> amount;
+    std::optional<std::chrono::year_month_day> settlement_date;
+    std::optional<std::string> kiko_type;
     std::string description;
 
     friend bool operator==(const fx_barrier_option_instrument_write&,
@@ -104,7 +113,7 @@ struct fx_barrier_option_instrument_event {
     boost::uuids::uuid event_id;
     fx_barrier_option_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -114,7 +123,7 @@ struct fx_barrier_option_instrument_event {
 
 struct fx_barrier_option_instrument_version_key {
     fx_barrier_option_instrument_key fx_barrier_option_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const fx_barrier_option_instrument_version_key&,
                            const fx_barrier_option_instrument_version_key&) = default;
@@ -153,7 +162,7 @@ struct list_fx_barrier_option_instruments_request {
 struct list_fx_barrier_option_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_barrier_option_instrument> fx_barrier_option_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_barrier_option_instruments_response&,
                            const list_fx_barrier_option_instruments_response&) = default;
@@ -333,7 +342,7 @@ struct list_fx_barrier_option_instrument_versions_request {
 struct list_fx_barrier_option_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_barrier_option_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_barrier_option_instrument_versions_response&,
                            const list_fx_barrier_option_instrument_versions_response&) = default;
@@ -422,6 +431,18 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"upper_barrier", &fx_barrier_option_instrument_write::upper_barrier},
         utility::codec::field{"underlying_code",
                               &fx_barrier_option_instrument_write::underlying_code},
+        utility::codec::field{"barrier_start_date",
+                              &fx_barrier_option_instrument_write::barrier_start_date},
+        utility::codec::field{"barrier_calendar",
+                              &fx_barrier_option_instrument_write::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &fx_barrier_option_instrument_write::barrier_fixing_index},
+        utility::codec::field{"quantity", &fx_barrier_option_instrument_write::quantity},
+        utility::codec::field{"strike", &fx_barrier_option_instrument_write::strike},
+        utility::codec::field{"amount", &fx_barrier_option_instrument_write::amount},
+        utility::codec::field{"settlement_date",
+                              &fx_barrier_option_instrument_write::settlement_date},
+        utility::codec::field{"kiko_type", &fx_barrier_option_instrument_write::kiko_type},
         utility::codec::field{"description", &fx_barrier_option_instrument_write::description},
     };
 }

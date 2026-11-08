@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
+    <TradeType>KnockOutSwap</TradeType>
+    <KnockOutSwapData>
+      <BarrierData>
+        <Type>UpAndOut</Type>
+        <Levels>
+          <Level>0</Level>
+        </Levels>
+      </BarrierData>
+      <BarrierStartDate>2025-11-02</BarrierStartDate>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-11-02">7675517.41</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.0353</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-11-02">7675517.41</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-11-02</StartDate>
+            <EndDate>2027-11-02</EndDate>
+            <Tenor>6M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-ESTR</Index>
+          <Spreads>
+            <Spread startDate="2025-11-02">0.0009</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+    </KnockOutSwapData>
+  </Trade>
+  <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
+    <TradeType>KnockOutSwap</TradeType>
+    <KnockOutSwapData>
+      <BarrierData>
+        <Type>UpAndOut</Type>
+        <Levels>
+          <Level>0</Level>
+        </Levels>
+      </BarrierData>
+      <BarrierStartDate>2025-08-02</BarrierStartDate>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-08-02">6592217.61</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2030-08-02</EndDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.0561</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional startDate="2025-08-02">6592217.61</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-08-02</StartDate>
+            <EndDate>2030-08-02</EndDate>
+            <Tenor>6M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-ESTR</Index>
+          <Spreads>
+            <Spread startDate="2025-08-02">0.0023</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+    </KnockOutSwapData>
+  </Trade>
+</Portfolio>

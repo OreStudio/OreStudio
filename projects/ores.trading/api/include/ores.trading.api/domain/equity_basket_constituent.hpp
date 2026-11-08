@@ -77,7 +77,7 @@ struct equity_basket_constituent final {
      * The schema declares the list unbounded and a document's order is the order it stated, so the
      * ordinal is what identifies a row and preserves that order.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.
@@ -90,6 +90,12 @@ struct equity_basket_constituent final {
      * The ORE document states it in the Underlying/Name element; the column refuses an empty name.
      */
     std::string underlying_name;
+
+    /**
+     * @brief The scheme the constituent's name is stated in, as Underlying/IdentifierType states
+     * it.
+     */
+    std::optional<std::string> identifier_type;
 
     /**
      * @brief The vocabulary the constituent's code belongs to.

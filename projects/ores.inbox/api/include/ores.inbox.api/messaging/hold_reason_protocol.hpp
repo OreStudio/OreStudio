@@ -25,11 +25,12 @@
 #ifndef ORES_INBOX_API_MESSAGING_HOLD_REASON_PROTOCOL_HPP
 #define ORES_INBOX_API_MESSAGING_HOLD_REASON_PROTOCOL_HPP
 
-#include "ores.inbox.api/domain/hold_reason.hpp"
+#include "ores.inbox.api/domain/hold_reason_codec.hpp"
 #include "ores.inbox.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,7 +52,7 @@ struct hold_reason_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const hold_reason_write&, const hold_reason_write&) = default;
 };
@@ -87,7 +88,7 @@ struct hold_reason_event {
     boost::uuids::uuid event_id;
     hold_reason_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -96,7 +97,7 @@ struct hold_reason_event {
 
 struct hold_reason_version_key {
     hold_reason_key hold_reason;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const hold_reason_version_key&,
                            const hold_reason_version_key&) = default;
@@ -134,7 +135,7 @@ struct list_hold_reasons_request {
 struct list_hold_reasons_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::hold_reason> reasons;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_hold_reasons_response&,
                            const list_hold_reasons_response&) = default;
@@ -309,7 +310,7 @@ struct list_hold_reason_versions_request {
 struct list_hold_reason_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::hold_reason> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_hold_reason_versions_response&,
                            const list_hold_reason_versions_response&) = default;

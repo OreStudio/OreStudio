@@ -85,14 +85,6 @@ std::vector<ores::nats::service::subscription> register_composite_instrument_han
         get_composite_instrument_version_request::nats_subject,
         composite_instrument_queue_group,
         [h](ores::nats::message msg) { h->get_composite_instrument_version(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(put_composite_instrument_with_legs_request::nats_subject,
-                             composite_instrument_queue_group,
-                             [h](ores::nats::message msg) { h->put_with_legs(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(get_composite_instrument_legs_request::nats_subject,
-                             composite_instrument_queue_group,
-                             [h](ores::nats::message msg) { h->get_legs_read(std::move(msg)); }));
     return subs;
 }
 

@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_COMMODITY_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_COMMODITY_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -76,6 +77,15 @@ namespace ores::trading::domain {
         utility::codec::field{"payment_frequency_code",
                               &commodity_instrument::payment_frequency_code},
         utility::codec::field{"swaption_expiry_date", &commodity_instrument::swaption_expiry_date},
+        utility::codec::field{"calendar", &commodity_instrument::calendar},
+        utility::codec::field{"moment_type", &commodity_instrument::moment_type},
+        utility::codec::field{"add_past_dividends", &commodity_instrument::add_past_dividends},
+        utility::codec::field{"pay_relative_to", &commodity_instrument::pay_relative_to},
+        utility::codec::field{"quantity_frequency", &commodity_instrument::quantity_frequency},
+        utility::codec::field{"delivery_roll_days", &commodity_instrument::delivery_roll_days},
+        utility::codec::field{"future_month_offset", &commodity_instrument::future_month_offset},
+        utility::codec::field{"include_period_end", &commodity_instrument::include_period_end},
+        utility::codec::field{"position", &commodity_instrument::position},
         utility::codec::field{"description", &commodity_instrument::description},
         utility::codec::field{"audit", &commodity_instrument::audit},
     };

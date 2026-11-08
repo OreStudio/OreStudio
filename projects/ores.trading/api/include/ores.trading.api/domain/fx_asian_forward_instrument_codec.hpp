@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_FX_ASIAN_FORWARD_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -63,6 +64,7 @@ namespace ores::trading::domain {
         utility::codec::field{"fixing_amount", &fx_asian_forward_instrument::fixing_amount},
         utility::codec::field{"target_amount", &fx_asian_forward_instrument::target_amount},
         utility::codec::field{"strike", &fx_asian_forward_instrument::strike},
+        utility::codec::field{"fixed_payer", &fx_asian_forward_instrument::fixed_payer},
         utility::codec::field{"description", &fx_asian_forward_instrument::description},
         utility::codec::field{"audit", &fx_asian_forward_instrument::audit},
     };

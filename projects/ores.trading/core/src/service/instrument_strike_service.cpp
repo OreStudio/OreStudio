@@ -116,6 +116,7 @@ instrument_strike_to_domain(const messaging::instrument_strike_write& write) {
     v.yield_compounding = write.yield_compounding;
     v.bare_value = write.bare_value;
     v.bare_currency = write.bare_currency;
+    v.long_short = write.long_short;
     return v;
 }
 

@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_INSTRUMENT_CODE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_INSTRUMENT_CODE_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/instrument_code.hpp"
+#include "ores.refdata.api/domain/instrument_code_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -53,7 +54,7 @@ struct instrument_code_write {
     std::string description;
     std::optional<std::string> asset_class;
     std::optional<std::string> ore_trade_type;
-    int display_order;
+    int display_order{};
     std::string curve_role;
 
     friend bool operator==(const instrument_code_write&, const instrument_code_write&) = default;
@@ -92,7 +93,7 @@ struct instrument_code_event {
     boost::uuids::uuid event_id;
     instrument_code_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +102,7 @@ struct instrument_code_event {
 
 struct instrument_code_version_key {
     instrument_code_key instrument_code;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const instrument_code_version_key&,
                            const instrument_code_version_key&) = default;
@@ -139,7 +140,7 @@ struct list_instrument_codes_request {
 struct list_instrument_codes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::instrument_code> instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_codes_response&,
                            const list_instrument_codes_response&) = default;
@@ -314,7 +315,7 @@ struct list_instrument_code_versions_request {
 struct list_instrument_code_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::instrument_code> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_code_versions_response&,
                            const list_instrument_code_versions_response&) = default;

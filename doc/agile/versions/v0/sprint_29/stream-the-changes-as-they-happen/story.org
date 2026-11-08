@@ -21,12 +21,12 @@ A client can follow the changes over one long response, and a quiet market does 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | A signed-in browser reads three components' changes on one open stream. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | The subject's own token, then resume. |
-| Last touched  | 2026-10-31                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-04                               |
 
 * Acceptance
 
@@ -47,9 +47,41 @@ A client can follow the changes over one long response, and a quiet market does 
 | [[id:9C7E162B-87CD-4B68-90E3-A7CE2461379D][Hear the events that move the rows]] | DONE | 2026-10-31 | 2026-10-31 | Every store writes an entity event on a subject that names its collection, action and tenancy, and the change stream hears none of them. Subscribe once to every entity event, turn each into a change for the coalescer, and run the feed beside the ticker so a written row reaches an open stream. |
 | [[id:DD3D0CB3-A9D6-4835-BF0A-1981404F8150][Keep each stream to its own tenant, and let a dead one go]] | DONE | 2026-11-01 | 2026-11-01 | The stream fans every frame to every open stream, so one tenant reads another's changes, and a stream whose client is gone stays in the hub for the life of the process. Filter frames by the caller's tenant, close the subscription when its source dies, and hold the waker's timer safely. |
 | [[id:1BE53CE9-1B99-4A95-83C6-9918E7631E37][Give the events a subject of their own]] | DONE | | 2026-11-03 | The feed subscribes to *.v1.> because a NATS wildcard is a whole token, so *_events cannot be matched. That delivers every versioned request in the fleet to the gateway and throws it away, and it couples the stream to the request protocol. Move the events to <component>.v1.events.<collection>.<action> so one subscription hears events and nothing else. |
-| [[id:36EFB17F-5606-449D-81FF-A6E09D58D58E][Give every frame an identity, so a client can resume]] | BACKLOG | | | A frame carries no id: a client that reconnects cannot say what it last saw, so the stream cannot replay and cannot tell a reconnecting screen to resync. Number the frames, honour Last-Event-ID, and state the gap rule. |
+| [[id:36EFB17F-5606-449D-81FF-A6E09D58D58E][Give every frame an identity, so a client can resume]] | DONE | 2026-11-04 | 2026-11-04 | A frame carries no id: a client that reconnects cannot say what it last saw, so the stream cannot replay and cannot tell a reconnecting screen to resync. Number the frames, honour Last-Event-ID, and state the gap rule. |
+| [[id:08C87AD6-D572-46FA-9784-316D99C1B31E][Keep a member to the parties it works in]] | DONE | | 2026-11-04 | A stream hears its whole tenant, so a member reads the changes of parties they never look at. Filter the frames by party: a member hears their own party and the tenant-wide changes, and an administrator hears every party of the tenant. |
+| [[id:FAA6AA8A-0545-49D6-8BEE-6733A64F6994][Conflate a burst into one window and one frame]] | DONE | 2026-11-04 | 2026-11-04 | The window is a fixed tick, so a burst that starts just after one is split in two, and a stream that is behind queues a frame per window. Arm the window with the first change, and let a newer frame replace the pending one for its collection. |
 
 * Decisions
+
+*A party is the second axis of a stream, and the tenant is still the first.* A
+change that names no party concerns the whole tenant and reaches every party; one
+that names a party reaches that party and the administrator. The hub applies the
+rule on replay as well as on delivery, so a resume cannot widen a client's view.
+
+*A window opens with its first change and the rest do not extend it.* A clock
+re-armed on a fixed interval cuts a burst that begins just after a tick in two,
+and the screen redraws twice for one import. The coalescer calls the ticker only
+when its set goes from empty to non-empty, so the burst's own first change starts
+its window and a quiet system arms nothing. The call is a post, because the change
+arrives on the publishing thread and the timer belongs to the server's.
+
+*A stream holds one frame per collection, and the tenancy is part of the key.* A
+frame says that a collection moved and the client refetches it, so the frames the
+client never read carried nothing it could use: a newer frame replaces the pending
+one rather than queueing behind it. The replaced frame moves to the back, so the
+ids a client reads keep ascending and its =Last-Event-ID= stays a statement it can
+rely on. The key carries the tenant and the party as well as the collection,
+because the collection alone would let one party's change replace another's.
+
+*A frame that carries no id cannot be resumed, and a gap it cannot see is worse
+than a resync.* The hub numbers every frame and keeps a short window of what it
+published, so a client inside the window is caught up and a client outside it is
+told to reload. Core NATS has no replay, so "tell it to resync" is the only
+honest answer for the rest.
+
+*The events namespace is a token of its own.* One subscription hears every event
+and no request: =*.v1.events.>=. The collection could not be wildcarded while it
+was a suffix of another token, and the pattern that tried heard nothing at all.
 
 *A stream is kept to its tenant, not to whatever the hub publishes.* The first
 version gave every frame to every stream, which made the tenant in the frame a
@@ -75,6 +107,10 @@ stores' notify channels itself, so a change published by another service process
 reaches a client of this one.
 
 * Result
+
+A burst costs one frame per collection however it falls across the clock, and a
+stream that was too slow to read holds one frame per collection rather than one
+per window, with the ids still ascending.
 
 One slice, and the path it proves: a publish reaches every open stream, a slow reader loses its
 oldest frames rather than the server's memory, a quiet stream is kept alive without spinning,

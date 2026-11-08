@@ -91,7 +91,7 @@ struct currency_country_event {
     boost::uuids::uuid event_id;
     currency_country_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -120,7 +120,7 @@ struct list_currency_countries_request {
 struct list_currency_countries_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_country> currency_countries;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_currency_countries_response&,
                            const list_currency_countries_response&) = default;
@@ -297,7 +297,7 @@ struct list_by_currency_iso_code_currency_countries_request {
 struct list_by_currency_iso_code_currency_countries_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_country> currency_countries;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_currency_iso_code_currency_countries_response&,
                            const list_by_currency_iso_code_currency_countries_response&) = default;

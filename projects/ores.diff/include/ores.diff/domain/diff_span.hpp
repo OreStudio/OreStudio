@@ -46,12 +46,12 @@ struct diff_span final {
     /**
      * @brief Where the changed run begins.
      */
-    std::size_t offset;
+    std::size_t offset{};
 
     /**
      * @brief How many bytes it covers.
      */
-    std::size_t length;
+    std::size_t length{};
 
     /**
      * @brief Value equality.

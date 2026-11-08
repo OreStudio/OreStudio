@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_TENOR_BASIS_SWAP_LONG_SHORT_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_TENOR_BASIS_SWAP_LONG_SHORT_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -100,7 +101,7 @@ struct tenor_basis_swap_long_short_event {
     boost::uuids::uuid event_id;
     tenor_basis_swap_long_short_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -110,7 +111,7 @@ struct tenor_basis_swap_long_short_event {
 
 struct tenor_basis_swap_long_short_version_key {
     tenor_basis_swap_long_short_key tenor_basis_swap_long_short;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const tenor_basis_swap_long_short_version_key&,
                            const tenor_basis_swap_long_short_version_key&) = default;
@@ -148,7 +149,7 @@ struct list_tenor_basis_swap_long_shorts_request {
 struct list_tenor_basis_swap_long_shorts_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_long_short> tenor_basis_swap_long_shorts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenor_basis_swap_long_shorts_response&,
                            const list_tenor_basis_swap_long_shorts_response&) = default;
@@ -330,7 +331,7 @@ struct list_by_convention_id_tenor_basis_swap_long_shorts_request {
 struct list_by_convention_id_tenor_basis_swap_long_shorts_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_long_short> tenor_basis_swap_long_shorts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_convention_id_tenor_basis_swap_long_shorts_response&,
@@ -361,7 +362,7 @@ struct list_tenor_basis_swap_long_short_versions_request {
 struct list_tenor_basis_swap_long_short_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_long_short> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenor_basis_swap_long_short_versions_response&,
                            const list_tenor_basis_swap_long_short_versions_response&) = default;

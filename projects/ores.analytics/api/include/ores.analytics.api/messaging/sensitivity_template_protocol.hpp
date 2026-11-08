@@ -25,11 +25,12 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_SENSITIVITY_TEMPLATE_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_SENSITIVITY_TEMPLATE_PROTOCOL_HPP
 
-#include "ores.analytics.api/domain/sensitivity_template.hpp"
+#include "ores.analytics.api/domain/sensitivity_template_codec.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -94,7 +95,7 @@ struct sensitivity_template_event {
     boost::uuids::uuid event_id;
     sensitivity_template_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +105,7 @@ struct sensitivity_template_event {
 
 struct sensitivity_template_version_key {
     sensitivity_template_key sensitivity_template;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const sensitivity_template_version_key&,
                            const sensitivity_template_version_key&) = default;
@@ -142,7 +143,7 @@ struct list_sensitivity_templates_request {
 struct list_sensitivity_templates_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::sensitivity_template> templates;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sensitivity_templates_response&,
                            const list_sensitivity_templates_response&) = default;
@@ -319,7 +320,7 @@ struct list_sensitivity_template_versions_request {
 struct list_sensitivity_template_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::sensitivity_template> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sensitivity_template_versions_response&,
                            const list_sensitivity_template_versions_response&) = default;

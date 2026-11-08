@@ -21,9 +21,9 @@
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/ore_types.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/datum/value.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include <algorithm>
 #include <cctype>
 #include <expected>

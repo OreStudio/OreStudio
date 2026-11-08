@@ -18,7 +18,7 @@
  *
  */
 #include "datum_catalogue.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -711,7 +711,8 @@ TEST_CASE("the_codec_reads_every_documented_ore_form_as_ore_does",
     CHECK(t.failures.empty());
 }
 
-TEST_CASE("the_codec_reads_every_corpus_key_as_ore_does", "[marketdata][datum][ore_key_codec]") {
+TEST_CASE("the_codec_reads_every_corpus_key_as_ore_does",
+          "[long_running][marketdata][datum][ore_key_codec]") {
     const auto t = datum_ore_key_codec_check(catalogue_corpus());
     CHECK(t.lines == catalogue_corpus().size());
     for (const auto& f : t.failures)

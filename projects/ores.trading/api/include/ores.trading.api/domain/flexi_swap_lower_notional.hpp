@@ -70,7 +70,7 @@ struct flexi_swap_lower_notional final {
      * The schema declares the lists unbounded and a document's order is the order it stated, so the
      * ordinal identifies a row and preserves that order.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :msvc:c1202:refdata:codegen:dod:sprint_29:v0:
 #+created: 2026-10-24
-#+updated: 2026-10-27
+#+updated: 2026-11-08
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,35 +21,37 @@ The tenor basis swap convention carries its identity, legs, coupon treatment, ma
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The field-group remodel is done; the document protocol split remains. Split from [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]], which closed in sprint 28 with its done tasks. |
-| Waiting on    | Nothing.                               |
-| Next          | Split the configuration document protocol by document family, and measure its translation unit. |
-| Last touched  | 2026-10-24                               |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
-- The configuration document protocol's translation unit is measured at a named commit and its width explained, including why the per-entity protocol split does not reach it.
-- tenor_basis_swap_convention carries its identity, its two alternative leg forms, its coupon treatment, its market-data annex and its change audit as nested field groups, and its SQL schema and database entity are unchanged.
-- The configuration document protocol and its handler are split by document family, and the Windows MSVC build passes without a compiler-flag workaround.
+The story closes on the tasks it finished:
+
+- Close the four tenor basis swap snags.
+- Give each analytic parameter one contract row per version window.
+- Lay a grouped part's terms over the convention row in the BFF.
+- Mint a credential for long automated work.
+- Remodel the tenor basis swap convention onto field groups.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1AF6032A-F53E-4E56-8AD1-4CFA20020DFB][Remodel the tenor basis swap convention onto field groups]] | DONE | 2026-10-26 | 2026-10-27 | Split the 24 flat members of tenor_basis_swap_convention into identity, two alternative leg forms, coupon treatment, market-data annex and change audit field groups, so no reflected literal is wide and no row carries the leg form it is not. |
-| [[id:2750EACD-6C84-485D-B32A-E41D2785F0DF][Split the configuration document protocol by document family]] | STARTED | 2026-10-28 | | Split configuration_document_protocol.hpp and its handler so each translation unit reaches one document family, and restore the Windows MSVC build without a compiler-flag workaround. |
 | [[id:E1CA5409-BF29-4945-B50B-279EE91E2B2A][Lay a grouped part's terms over the convention row in the BFF]] | DONE | | 2026-10-28 | The convention record page reads a family item's part payload and lays its terms over the central row. A part grouped onto field groups nests its columns one level, so the flat link fields the zip skips no longer match and the groups are laid over the row as terms. Flatten the groups and keep the term lookup by column. |
 | [[id:9A223460-CCB4-4C76-AD1C-40D4CFE3286F][Close the four tenor basis swap snags]] | DONE | 2026-10-27 | 2026-10-28 | The review of the grouped convention left four snags: no uniqueness on a part's convention_id, five long and short leaves with no contract entry or value set, the bundle redesign still owed as its own story, and no browser smoke since the nesting landed. |
 | [[id:C8ED2112-68B9-4061-88D4-8F45DD78A7AB][Give each analytic parameter one contract row per version window]] | DONE | | 2026-10-27 | The analytic parameter seed emits the same parameter twice for the same version window, and the DQ publish function assumes exactly one row per name, so ACME provisioning fails at the risk report configuration step with 'more than one row returned by a subquery'. |
 | [[id:71A6BC0C-0DCA-404A-9F86-CC0817448927][Mint a credential for long automated work]] | DONE | 2026-10-27 | 2026-10-28 | A party-selected login mints a five-minute token by overwriting the access lifetime, and provisioning outlives it: the shell is refused with token_expired and gives up watching a run that is still working. Automated work needs its own credential family. |
-| [[id:6F8D224E-C71E-4902-AE18-A43850F6245B][Get clang-cl past rfl's macros]] | STARTED | 2026-10-28 | | The windows-clang job fails inside rfl's own headers, before this project's code matters: 'too few arguments provided for function-like macro invocation' in rfl/Literal.hpp:413, rfl/Variant.hpp:31 and rfl/Generic.hpp:211. It is a clang-cl/preprocessor interaction with a third-party library, and it blocks the same nightly the configuration document split needs to prove itself. |
 
 * Decisions
 
 - Split from [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]] on 2026-10-24 at sprint 28 close. The acceptance above is copied from that story; its done tasks are recorded there.
 - *A convention family member may be grouped, decided by the owner on 2026-10-26.* The composite family service refused a grouped central row or part because it built flat domain objects from the write record. Rather than leave the family flat, the service now names every column through the member that carries it, so a member of a family can hold field groups like any other entity. The write records and the wire shape stay flat; only the domain struct nests.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:27D295F5-862E-4DF4-898D-9747F768E342][Fix the tenor basis swap convention model and the document TU — the remaining work]].
 
 * Out of scope
 

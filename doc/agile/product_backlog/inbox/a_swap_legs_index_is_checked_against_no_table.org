@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 4011E491-AC56-48C7-8B32-1DC4E7AB3C69
+:END:
+#+title: A swap leg's index is checked against no table
+#+description: The swap leg's floating_index_code holds whatever index its leg type names: a floating index, a CMS swap index, an inflation index, a commodity or a formula. The trigger checked it against the floating index table alone and refused the others, so the check was dropped. A floating leg's index is now checked by nothing; the check should come back keyed by the leg type.
+#+type: capture
+#+level: cross
+#+filetags: :trading:swap-leg:refdata:sql:
+#+created: 2026-11-06
+#+updated: 2026-11-06
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=floating_index_code= on a swap leg holds the index its leg type names: a
+floating index, a CMS swap index such as =USD-CMS-30Y=, an inflation index,
+a commodity or a formula. The trigger checked it against the floating index
+table alone and refused every CMS, inflation, commodity and formula leg, so
+the check was dropped. A floating leg's index is now checked by nothing.
+
+* Why
+
+A mistyped floating index is a defect the database caught and no longer
+does. The check should return keyed by the leg type, each kind against the
+table that holds it, or the column should split by kind.
+
+* References
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]] — where it was found.
+- =ores.trading.swap_leg.org=, the =floating_index_code= column.
+
+* See also
+
+- [[id:91242ECB-E69E-4A63-B113-7C1D9B83F867][Validate that every trade type is modelled as ORE reads it]]

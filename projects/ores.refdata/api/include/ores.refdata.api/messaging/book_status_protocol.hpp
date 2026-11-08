@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/book_status.hpp"
+#include "ores.refdata.api/domain/book_status_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,7 +52,7 @@ struct book_status_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const book_status_write&, const book_status_write&) = default;
 };
@@ -87,7 +88,7 @@ struct book_status_event {
     boost::uuids::uuid event_id;
     book_status_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -96,7 +97,7 @@ struct book_status_event {
 
 struct book_status_version_key {
     book_status_key book_status;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const book_status_version_key&,
                            const book_status_version_key&) = default;
@@ -134,7 +135,7 @@ struct list_book_statuses_request {
 struct list_book_statuses_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book_status> statuses;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_book_statuses_response&,
                            const list_book_statuses_response&) = default;
@@ -309,7 +310,7 @@ struct list_book_status_versions_request {
 struct list_book_status_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book_status> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_book_status_versions_response&,
                            const list_book_status_versions_response&) = default;

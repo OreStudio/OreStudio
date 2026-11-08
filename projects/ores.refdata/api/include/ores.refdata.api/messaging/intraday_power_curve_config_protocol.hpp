@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_INTRADAY_POWER_CURVE_CONFIG_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_INTRADAY_POWER_CURVE_CONFIG_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
+#include "ores.refdata.api/domain/intraday_power_curve_config_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -95,7 +96,7 @@ struct intraday_power_curve_config_event {
     boost::uuids::uuid event_id;
     intraday_power_curve_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +106,7 @@ struct intraday_power_curve_config_event {
 
 struct intraday_power_curve_config_version_key {
     intraday_power_curve_config_key intraday_power_curve_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const intraday_power_curve_config_version_key&,
                            const intraday_power_curve_config_version_key&) = default;
@@ -143,7 +144,7 @@ struct list_intraday_power_curve_configs_request {
 struct list_intraday_power_curve_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::intraday_power_curve_config> intraday_power_curve_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_intraday_power_curve_configs_response&,
                            const list_intraday_power_curve_configs_response&) = default;
@@ -323,7 +324,7 @@ struct list_intraday_power_curve_config_versions_request {
 struct list_intraday_power_curve_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::intraday_power_curve_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_intraday_power_curve_config_versions_response&,
                            const list_intraday_power_curve_config_versions_response&) = default;

@@ -227,6 +227,47 @@ std::string("Long")
 
 Digital payout; absent when not specified.
 
+
+** barrier_start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The date the barrier starts to be monitored, as =StartDate= states it.
+
+** barrier_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The calendar the barrier is monitored in, as =Calendar= states it.
+
+** barrier_fixing_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+The index the barrier is observed against, as =EQIndex= states it.
+
+** quantity
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:economic: true
+:END:
+
+The number of units the option pays on, as =Quantity= states it.
+
 ** description
 :PROPERTIES:
 :type:     text

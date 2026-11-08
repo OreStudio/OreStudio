@@ -226,7 +226,7 @@ def test_a_double_numeric_column_needs_no_conversion(tmp_path):
     rate, volatility and correlation column, which D11 keeps as doubles.
     """
     entity = _render_entity(tmp_path)
-    assert "double legacy_rate;" in entity
+    assert "double legacy_rate{};" in entity
 
     mapper = _render_mapper(tmp_path)
     assert "r.legacy_rate = v.legacy_rate;" in mapper

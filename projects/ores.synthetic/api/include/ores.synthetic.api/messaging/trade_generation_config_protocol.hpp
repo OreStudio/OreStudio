@@ -25,11 +25,12 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_TRADE_GENERATION_CONFIG_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_TRADE_GENERATION_CONFIG_PROTOCOL_HPP
 
-#include "ores.synthetic.api/domain/trade_generation_config.hpp"
+#include "ores.synthetic.api/domain/trade_generation_config_codec.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -58,10 +59,10 @@ struct trade_generation_config_write {
     ores::utility::decimal::decimal min_notional;
     ores::utility::decimal::decimal max_notional;
     std::chrono::year_month_day as_of_date;
-    std::uint64_t seed;
-    int trades_per_book;
-    int structures_per_book;
-    bool enabled;
+    std::uint64_t seed{};
+    int trades_per_book{};
+    int structures_per_book{};
+    bool enabled{};
     std::string reference_curve_id;
 
     friend bool operator==(const trade_generation_config_write&,
@@ -108,7 +109,7 @@ struct trade_generation_config_event {
     boost::uuids::uuid event_id;
     trade_generation_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -118,7 +119,7 @@ struct trade_generation_config_event {
 
 struct trade_generation_config_version_key {
     trade_generation_config_key trade_generation_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const trade_generation_config_version_key&,
                            const trade_generation_config_version_key&) = default;
@@ -156,7 +157,7 @@ struct list_trade_generation_configs_request {
 struct list_trade_generation_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::trade_generation_config> trade_generation_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_generation_configs_response&,
                            const list_trade_generation_configs_response&) = default;
@@ -335,7 +336,7 @@ struct list_trade_generation_config_versions_request {
 struct list_trade_generation_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::trade_generation_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_generation_config_versions_response&,
                            const list_trade_generation_config_versions_response&) = default;

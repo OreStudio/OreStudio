@@ -21,16 +21,18 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.core/datum/ore_index_codec.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/ore_index_codec.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/service/import_service.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.testing/running_under_valgrind.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -40,7 +42,6 @@
 #include <format>
 #include <functional>
 #include <map>
-#include <rfl/json.hpp>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -157,7 +158,7 @@ std::vector<dated_value> triples_of(ores::database::context ctx,
     std::vector<dated_value> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
-        const auto t = rfl::json::read<std::vector<std::string>>(row);
+        const auto t = ores::utility::codec::json::read_expected<std::vector<std::string>>(row);
         if (!t || t->size() != 3)
             FAIL("unreadable row: " << row);
         result.emplace_back((*t)[0], (*t)[1], (*t)[2]);
@@ -338,6 +339,10 @@ TEST_CASE("every_line_of_a_sampled_corpus_file_reaches_the_database", "[corpus][
 }
 
 TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[corpus-full]") {
+    // The walk takes minutes natively and more than the suite's hour under valgrind. The
+    // sampled case above takes the same import path, so memcheck still checks it.
+    if (ores::testing::running_under_valgrind())
+        SKIP("the whole corpus is too slow under valgrind; the sampled case covers the path");
     auto lg(make_logger(test_suite));
 
     corpus_tenant tenant;
@@ -358,7 +363,7 @@ TEST_CASE("every_line_of_the_whole_corpus_reaches_the_database", "[corpus-full]"
 }
 
 TEST_CASE("every_line_of_every_corpus_fixing_file_reaches_the_database",
-          "[corpus][import_service]") {
+          "[long_running][corpus][import_service]") {
     auto lg(make_logger(test_suite));
 
     corpus_tenant tenant;

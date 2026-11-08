@@ -97,6 +97,25 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
          .value = v.swaption_expiry_date ?
                       ores::platform::time::datetime::to_iso8601_date(*v.swaption_expiry_date) :
                       std::string{}});
+    fields.push_back({.name = "Calendar", .value = v.calendar.value_or(std::string{})});
+    fields.push_back({.name = "Moment Type", .value = v.moment_type.value_or(std::string{})});
+    fields.push_back({.name = "Add Past Dividends",
+                      .value = v.add_past_dividends ? (*v.add_past_dividends ? "true" : "false") :
+                                                      std::string{}});
+    fields.push_back(
+        {.name = "Pay Relative To", .value = v.pay_relative_to.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Quantity Frequency", .value = v.quantity_frequency.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Delivery Roll Days",
+         .value = v.delivery_roll_days ? std::to_string(*v.delivery_roll_days) : std::string{}});
+    fields.push_back(
+        {.name = "Future Month Offset",
+         .value = v.future_month_offset ? std::to_string(*v.future_month_offset) : std::string{}});
+    fields.push_back({.name = "Include Period End",
+                      .value = v.include_period_end ? (*v.include_period_end ? "true" : "false") :
+                                                      std::string{}});
+    fields.push_back({.name = "Position", .value = v.position.value_or(std::string{})});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

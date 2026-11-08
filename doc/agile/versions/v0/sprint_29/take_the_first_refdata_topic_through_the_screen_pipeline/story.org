@@ -23,9 +23,9 @@ One reference data topic goes end to end through the pipeline, and the pipeline 
 |---------------+----------------------------------------|
 | State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Done: the calendars screen is signed off and the runbook is written; the currencies topic is next. |
+| Now           | Nothing. |
 | Waiting on    | Nothing. |
-| Next          | Nothing; the currencies topic story takes the runbook from here. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-25                               |
 
 * Acceptance

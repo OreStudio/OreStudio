@@ -25,11 +25,12 @@
 #ifndef ORES_IAM_API_MESSAGING_SESSION_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_SESSION_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/domain/session_codec.hpp"
 #include "ores.iam.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -54,10 +55,10 @@ struct session_write {
     std::optional<std::chrono::system_clock::time_point> end_time;
     boost::asio::ip::address client_ip;
     std::string client_identifier;
-    std::uint16_t client_version_major;
-    std::uint16_t client_version_minor;
-    std::uint64_t bytes_sent;
-    std::uint64_t bytes_received;
+    std::uint16_t client_version_major{};
+    std::uint16_t client_version_minor{};
+    std::uint64_t bytes_sent{};
+    std::uint64_t bytes_received{};
     std::string country_code;
     std::string protocol;
 
@@ -96,7 +97,7 @@ struct session_event {
     boost::uuids::uuid event_id;
     session_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -124,7 +125,7 @@ struct list_sessions_request {
 struct list_sessions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::session> sessions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sessions_response&, const list_sessions_response&) = default;
 };

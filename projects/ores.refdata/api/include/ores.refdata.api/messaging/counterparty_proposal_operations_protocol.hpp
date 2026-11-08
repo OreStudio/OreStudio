@@ -28,10 +28,17 @@
 #include "ores.refdata.api/domain/counterparty_change.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier_change.hpp"
 #include "ores.refdata.api/domain/party_counterparty_change.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -243,6 +250,345 @@ struct recheck_counterparty_changes_response {
                            const recheck_counterparty_changes_response&) = default;
 };
 
+/**
+ * @brief The members of counterparty_line_outcome, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_line_outcome>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"line_no", &counterparty_line_outcome::line_no},
+        ::ores::utility::codec::field{"entity_type", &counterparty_line_outcome::entity_type},
+        ::ores::utility::codec::field{"operation", &counterparty_line_outcome::operation},
+        ::ores::utility::codec::field{"subject_id", &counterparty_line_outcome::subject_id},
+        ::ores::utility::codec::field{"columns", &counterparty_line_outcome::columns},
+        ::ores::utility::codec::field{"refusal", &counterparty_line_outcome::refusal},
+        ::ores::utility::codec::field{"part_codes", &counterparty_line_outcome::part_codes},
+    };
 }
+
+/**
+ * @brief The members of preview_counterparty_changes_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_counterparty_changes_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"counterparties",
+                                      &preview_counterparty_changes_request::counterparties},
+        ::ores::utility::codec::field{"identifiers",
+                                      &preview_counterparty_changes_request::identifiers},
+        ::ores::utility::codec::field{"links", &preview_counterparty_changes_request::links},
+    };
+}
+
+/**
+ * @brief The members of preview_counterparty_changes_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<preview_counterparty_changes_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &preview_counterparty_changes_response::result},
+        ::ores::utility::codec::field{"lines", &preview_counterparty_changes_response::lines},
+        ::ores::utility::codec::field{"part_codes",
+                                      &preview_counterparty_changes_response::part_codes},
+    };
+}
+
+/**
+ * @brief The members of raise_counterparty_changes_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_counterparty_changes_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"reason", &raise_counterparty_changes_request::reason},
+        ::ores::utility::codec::field{"counterparties",
+                                      &raise_counterparty_changes_request::counterparties},
+        ::ores::utility::codec::field{"identifiers",
+                                      &raise_counterparty_changes_request::identifiers},
+        ::ores::utility::codec::field{"links", &raise_counterparty_changes_request::links},
+    };
+}
+
+/**
+ * @brief The members of raise_counterparty_changes_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_counterparty_changes_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &raise_counterparty_changes_response::result},
+        ::ores::utility::codec::field{"request_id",
+                                      &raise_counterparty_changes_response::request_id},
+        ::ores::utility::codec::field{"lines", &raise_counterparty_changes_response::lines},
+        ::ores::utility::codec::field{"part_codes",
+                                      &raise_counterparty_changes_response::part_codes},
+    };
+}
+
+/**
+ * @brief The members of counterparty_field_delta, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_field_delta>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"name", &counterparty_field_delta::name},
+        ::ores::utility::codec::field{"before", &counterparty_field_delta::before},
+        ::ores::utility::codec::field{"after", &counterparty_field_delta::after},
+        ::ores::utility::codec::field{"changed", &counterparty_field_delta::changed},
+    };
+}
+
+/**
+ * @brief The members of counterparty_change_delta, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_change_delta>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"line_no", &counterparty_change_delta::line_no},
+        ::ores::utility::codec::field{"entity_type", &counterparty_change_delta::entity_type},
+        ::ores::utility::codec::field{"operation", &counterparty_change_delta::operation},
+        ::ores::utility::codec::field{"subject_id", &counterparty_change_delta::subject_id},
+        ::ores::utility::codec::field{"base_version", &counterparty_change_delta::base_version},
+        ::ores::utility::codec::field{"applied", &counterparty_change_delta::applied},
+        ::ores::utility::codec::field{"fields", &counterparty_change_delta::fields},
+    };
+}
+
+/**
+ * @brief The members of get_counterparty_changes_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_counterparty_changes_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &get_counterparty_changes_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of get_counterparty_changes_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_counterparty_changes_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_counterparty_changes_response::result},
+        ::ores::utility::codec::field{"changes", &get_counterparty_changes_response::changes},
+    };
+}
+
+/**
+ * @brief The members of recheck_counterparty_changes_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<recheck_counterparty_changes_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id",
+                                      &recheck_counterparty_changes_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of recheck_counterparty_changes_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<recheck_counterparty_changes_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &recheck_counterparty_changes_response::result},
+        ::ores::utility::codec::field{"lines", &recheck_counterparty_changes_response::lines},
+        ::ores::utility::codec::field{"part_codes",
+                                      &recheck_counterparty_changes_response::part_codes},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::counterparty_line_outcome> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::counterparty_line_outcome& v);
+    static ores::refdata::messaging::counterparty_line_outcome read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::counterparty_line_outcome& v);
+    static ores::refdata::messaging::counterparty_line_outcome
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::preview_counterparty_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::preview_counterparty_changes_request& v);
+    static ores::refdata::messaging::preview_counterparty_changes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::preview_counterparty_changes_request& v);
+    static ores::refdata::messaging::preview_counterparty_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::preview_counterparty_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::preview_counterparty_changes_response& v);
+    static ores::refdata::messaging::preview_counterparty_changes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::preview_counterparty_changes_response& v);
+    static ores::refdata::messaging::preview_counterparty_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::raise_counterparty_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::raise_counterparty_changes_request& v);
+    static ores::refdata::messaging::raise_counterparty_changes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::raise_counterparty_changes_request& v);
+    static ores::refdata::messaging::raise_counterparty_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::raise_counterparty_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::raise_counterparty_changes_response& v);
+    static ores::refdata::messaging::raise_counterparty_changes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::raise_counterparty_changes_response& v);
+    static ores::refdata::messaging::raise_counterparty_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::counterparty_field_delta> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::counterparty_field_delta& v);
+    static ores::refdata::messaging::counterparty_field_delta read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::counterparty_field_delta& v);
+    static ores::refdata::messaging::counterparty_field_delta
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::counterparty_change_delta> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::counterparty_change_delta& v);
+    static ores::refdata::messaging::counterparty_change_delta read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::counterparty_change_delta& v);
+    static ores::refdata::messaging::counterparty_change_delta
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_counterparty_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_counterparty_changes_request& v);
+    static ores::refdata::messaging::get_counterparty_changes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_counterparty_changes_request& v);
+    static ores::refdata::messaging::get_counterparty_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::get_counterparty_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::get_counterparty_changes_response& v);
+    static ores::refdata::messaging::get_counterparty_changes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::get_counterparty_changes_response& v);
+    static ores::refdata::messaging::get_counterparty_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::recheck_counterparty_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::recheck_counterparty_changes_request& v);
+    static ores::refdata::messaging::recheck_counterparty_changes_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::recheck_counterparty_changes_request& v);
+    static ores::refdata::messaging::recheck_counterparty_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::recheck_counterparty_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::recheck_counterparty_changes_response& v);
+    static ores::refdata::messaging::recheck_counterparty_changes_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::recheck_counterparty_changes_response& v);
+    static ores::refdata::messaging::recheck_counterparty_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

@@ -359,3 +359,76 @@ class TestTheFacetResolves:
         units, _, _ = resolve_targets(model, CODEGEN_BASE,
                                       address="ores.cpp.http-route")
         assert units == []
+
+
+class TestTheSearchParameter:
+    """A list a caller may search reads the parameter, and no other list does."""
+
+    @staticmethod
+    def _searchable():
+        entity = _entity()
+        entity["has_search"] = True
+        entity["filter_type"] = "messaging::widgets_filter"
+        return entity
+
+    def test_a_searchable_list_reads_the_parameter_and_carries_it(self):
+        # The model says a column is searchable, so the route states the
+        # parameter and hands the text to the filter the request carries.
+        text = _rendered_impl(self._searchable())
+        assert 'req.get_query_param("search")' in text, text[:400]
+        assert "msg.filter = messaging::widgets_filter{};" in text
+        assert "msg.filter->search = raw;" in text
+
+    def test_a_searchable_list_documents_the_parameter(self):
+        text = _rendered_impl(self._searchable())
+        assert '.query_param("search", "string"' in text, text[:400]
+
+    def test_a_list_with_nothing_to_search_reads_no_parameter(self):
+        # Every entity without a searchable column keeps the route it had.
+        text = _rendered_impl(_entity())
+        assert 'get_query_param("search")' not in text
+        assert '.query_param("search"' not in text
+
+
+class TestTheFilterParameters:
+    """A filter member a list record states is a parameter the route reads."""
+
+    @staticmethod
+    def _filtered():
+        entity = _entity()
+        entity["filter_type"] = "messaging::widgets_filter"
+        entity["filter_members"] = [
+            {"member": "type", "column": "type", "is_equals": True,
+             "cpp_type": "std::string", "read_type": "std::string", "is_nullable": False},
+            {"member": "name", "column": "name", "is_equals": True,
+             "cpp_type": "std::optional<std::string>",
+             "read_type": "std::string", "is_nullable": True},
+            {"member": "kind", "column": "kind", "is_one_of": True,
+             "cpp_type": "std::vector<std::string>", "is_nullable": False},
+        ]
+        return entity
+
+    def test_an_equals_member_is_read_under_its_own_prefix(self):
+        # The BFF's lists filter on f.<member>, so the generated route states the
+        # same parameter rather than inventing a second spelling.
+        text = _rendered_impl(self._filtered())
+        assert 'get_query_param("f.type")' in text, text[:400]
+        assert 'msg.filter->type = widget_read_param<std::string>(raw, "f.type");' in text
+
+    def test_a_nullable_member_parses_into_the_type_inside_both_wrappers(self):
+        text = _rendered_impl(self._filtered())
+        assert 'msg.filter->name = widget_read_param<std::string>(raw, "f.name");' in text
+
+    def test_an_equals_member_is_documented_where_it_is_read(self):
+        text = _rendered_impl(self._filtered())
+        assert '.query_param("f.type", "string"' in text
+
+    def test_a_one_of_member_is_not_a_single_valued_parameter(self):
+        # One-of and range members take lists and bounds; a single query value
+        # cannot state them, so the route states nothing rather than guessing.
+        text = _rendered_impl(self._filtered())
+        assert 'get_query_param("f.kind")' not in text
+
+    def test_a_list_with_no_filter_record_reads_no_filter(self):
+        text = _rendered_impl(_entity())
+        assert 'get_query_param("f.' not in text

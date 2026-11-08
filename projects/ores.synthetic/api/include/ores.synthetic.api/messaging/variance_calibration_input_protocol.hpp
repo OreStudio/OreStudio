@@ -25,11 +25,12 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_VARIANCE_CALIBRATION_INPUT_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_VARIANCE_CALIBRATION_INPUT_PROTOCOL_HPP
 
-#include "ores.synthetic.api/domain/variance_calibration_input.hpp"
+#include "ores.synthetic.api/domain/variance_calibration_input_codec.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -52,15 +53,15 @@ struct variance_calibration_input_write {
     boost::uuids::uuid id;
     std::string fixing_uri;
     std::chrono::year_month_day window_end;
-    int window_days;
+    int window_days{};
     std::string base_currency_code;
     std::string quote_currency_code;
     std::string provider_code;
-    bool inverted;
+    bool inverted{};
     boost::uuids::uuid policy_id;
-    int policy_version;
-    int point_count;
-    int used_count;
+    int policy_version{};
+    int point_count{};
+    int used_count{};
 
     friend bool operator==(const variance_calibration_input_write&,
                            const variance_calibration_input_write&) = default;
@@ -105,7 +106,7 @@ struct variance_calibration_input_event {
     boost::uuids::uuid event_id;
     variance_calibration_input_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -115,7 +116,7 @@ struct variance_calibration_input_event {
 
 struct variance_calibration_input_version_key {
     variance_calibration_input_key variance_calibration_input;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const variance_calibration_input_version_key&,
                            const variance_calibration_input_version_key&) = default;
@@ -154,7 +155,7 @@ struct list_variance_calibration_inputs_request {
 struct list_variance_calibration_inputs_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::variance_calibration_input> variance_calibration_inputs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_variance_calibration_inputs_response&,
                            const list_variance_calibration_inputs_response&) = default;
@@ -334,7 +335,7 @@ struct list_variance_calibration_input_versions_request {
 struct list_variance_calibration_input_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::variance_calibration_input> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_variance_calibration_input_versions_response&,
                            const list_variance_calibration_input_versions_response&) = default;

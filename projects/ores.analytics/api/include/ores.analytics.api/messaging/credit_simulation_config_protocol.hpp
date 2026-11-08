@@ -25,11 +25,12 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_CREDIT_SIMULATION_CONFIG_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_CREDIT_SIMULATION_CONFIG_PROTOCOL_HPP
 
-#include "ores.analytics.api/domain/credit_simulation_config.hpp"
+#include "ores.analytics.api/domain/credit_simulation_config_codec.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -54,11 +55,11 @@ struct credit_simulation_config_write {
     boost::uuids::uuid configuration_id;
     std::string market;
     std::string credit;
-    bool zero_market_pnl;
+    bool zero_market_pnl{};
     std::string evaluation;
-    bool double_default;
-    int seed;
-    int paths;
+    bool double_default{};
+    int seed{};
+    int paths{};
     std::string credit_mode;
     std::string loan_exposure_mode;
 
@@ -103,7 +104,7 @@ struct credit_simulation_config_event {
     boost::uuids::uuid event_id;
     credit_simulation_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -113,7 +114,7 @@ struct credit_simulation_config_event {
 
 struct credit_simulation_config_version_key {
     credit_simulation_config_key credit_simulation_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const credit_simulation_config_version_key&,
                            const credit_simulation_config_version_key&) = default;
@@ -151,7 +152,7 @@ struct list_credit_simulation_configs_request {
 struct list_credit_simulation_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_config> configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_credit_simulation_configs_response&,
                            const list_credit_simulation_configs_response&) = default;
@@ -333,7 +334,7 @@ struct list_by_configuration_id_credit_simulation_configs_request {
 struct list_by_configuration_id_credit_simulation_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_config> configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_configuration_id_credit_simulation_configs_response&,
@@ -364,7 +365,7 @@ struct list_credit_simulation_config_versions_request {
 struct list_credit_simulation_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_credit_simulation_config_versions_response&,
                            const list_credit_simulation_config_versions_response&) = default;

@@ -1,0 +1,179 @@
+:PROPERTIES:
+:ID: 91242ECB-E69E-4A63-B113-7C1D9B83F867
+:END:
+#+title: Story: Validate that every trade type is modelled as ORE reads it
+#+description: We model every trade type ORE knows, yet a run of generated trades drops most of them for missing or wrong properties. The XSD is laxer than ORE, and the sample roundtrip checks only that output re-reads, not that it says what the input said. Find a measure of how well each trade type is modelled, and make it a check.
+#+type: story
+#+level: s2
+#+filetags: :trading:ore:synthetic:test:modelling:product_backlog:inbox:
+#+created: 2026-11-03
+#+updated: 2026-11-08
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every trade type states how well it is modelled as a level we measure, from a column for each property ORE needs to a trade ORE builds and prices, and a check fails when a type falls below its level.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | The audit task is done: the corpus roundtrip compares content and loses nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Plan the contract per trade type from ORE's reader, and the modelling level each type states. |
+| Last touched  | 2026-11-06                               |
+
+* Acceptance
+
+- Every test that claims something about a trade's representation states what
+  it proves, and the audit shows, with a planted defect, which defects it
+  catches and which it lets through. A test that claims more than it checks is
+  corrected or renamed.
+- The ORE sample roundtrip compares what it writes with what it read, field by
+  field, and a field the model drops fails it, unless an allowlist names the
+  field and why.
+- Each trade type has a contract of the properties ORE needs and the values it
+  accepts, taken from ORE's own reader and builder rather than from its XSD,
+  and the model and the generator are checked against it.
+- Each trade type has a measured modelling level, from "the model holds every
+  property ORE needs" to "ORE builds and prices a generated trade", and a check
+  fails when a type falls below the level it states.
+
+* Background
+
+A run of the Acme portfolio on 2026-11-03 built 12 of 73 generated trades, and
+London's NPV left out 37 more that the writer refused. The trades failed for
+properties the model does not hold or states wrongly: no option =Style=, a
+barrier type of =KnockOut= where ORE wants =UpAndOut= and its kin, an FX index
+named =GBP/CHF= where ORE wants =FX-<source>-GBP-CHF=, empty schedule dates, no
+=RangeBounds=, no =Underlyings=, an FxSwap with an empty far leg. The detail is
+in [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]].
+
+Yet the tests say every trade type is modelled. Two reasons are known:
+
+1. *The XSD is laxer than ORE.* The writer refuses only what the schema marks
+   required, so 37 trades were caught there. The rest are schema-valid and still
+   fail in ORE: its reader and builder require elements the schema leaves
+   optional (=Style=) and accept a narrower vocabulary than a free text type
+   allows (=KnockOut=).
+2. *The sample roundtrip does not compare what it writes.* The test
+   =roundtrip mirrors every portfolio in the ORE example corpus=
+   (=projects/ores.ore/core/tests/xml_exporter_directory_roundtrip_tests.cpp=)
+   checks that each of the 132 samples converts, that each output re-reads, and
+   that the trade counts match. It never compares the output with the input, so
+   a property the model drops passes as long as the schema does not require it.
+   A trade no family maps is written back as its type and envelope alone, and
+   counted apart as a passthrough rather than failed.
+
+A third reason is likely: the generator builds trades from our own model and
+vocabulary, a path the samples never exercise. A sample that states =Style= reads
+it into our model; a generated trade has nothing to read it from.
+
+* Suggestions
+
+In the order we recommend. The first two are the task
+[[id:8CCC7800-12A8-4E66-829D-E02303C6CA70][Audit what the trade representation tests prove]]: what the tests we have
+actually prove, and a roundtrip that fails when it does not roundtrip. The rest
+build checks on top of that honest base.
+
+1. *Audit the tests we have.* For each test that claims something about a
+   trade's representation (the corpus roundtrip, the per-family projection and
+   roundtrip tests, the generator's tests), state what it asserts and prove it
+   with a planted defect: drop a property in a writer, rename a value in the
+   generator, and see which tests fail. The output is a table of test, claim,
+   defects caught, defects let through. A test that claims a roundtrip and
+   compares nothing is the first finding already.
+2. *Make the roundtrip compare content, with a differ on the value
+   fingerprint.* This is the well known round-trip property test with a
+   canonical comparison. No mainstream C++ XML diff exists (XMLUnit is Java and
+   .NET), and libxml2's C14N keeps number spelling and sibling order, so it
+   would report noise. Our =value_fingerprint= already reads a document into a
+   canonical list of path and value, in memory. A differ on it returns every
+   difference, lost, added or changed, with the values before and after, and a
+   fingerprint scoped to one trade lets the corpus roundtrip compare trade by
+   trade and name the trade, its type and the path. A known-losses list names
+   each accepted loss and why, asserted for equality as =known_export_gaps= is,
+   so it can only shrink; a trade no family maps fails unless its type is
+   listed as unmapped. Everything runs in memory or in the system temp
+   directory.
+3. *Take the contract from ORE, not from its XSD.* ORE's trade classes read
+   their XML in =fromXML= and validate it in =build=: the mandatory children,
+   the parsers that fix each value's vocabulary (=parseBarrierType=,
+   =parseOptionType=, =parseExerciseType=), and the checks =build= makes. Mine
+   them into a per-type table of required properties and accepted values, and
+   check the model has a column for each and the generator fills each with an
+   accepted value. This is stricter than the XSD and is the contract ORE
+   actually holds us to: "Option Style unknown" is a =QL_REQUIRE= in the build
+   of =equitydigitaloption.cpp= and its kin, not a schema rule, and
+   =OREData/ored/portfolio= makes 319 mandatory =getChildValue(..., true)= reads,
+   a pattern regular enough for a script. ORE's source is not in this
+   repository; a checkout lives outside it, so the script's output, the table, is
+   what is checked in, with the ORE version it was mined from, and the checks
+   read the table rather than the source.
+4. *Diff generated trades against the samples.* For each trade type, compare the
+   element paths a generated trade writes, and whether each is empty, with the
+   paths ORE's own samples of that type state. A path the samples always fill
+   and the generator leaves empty or out is a defect. It catches the FxSwap far
+   leg and the empty schedule dates without knowing ORE's rules.
+5. *Generate, write, read, compare.* The other direction, from our model to
+   XML: a property-based test (RapidCheck, which works with Catch2) generates
+   many instruments of each type, writes them and reads them back, and requires
+   equality. It reaches values the samples never state, such as the ones our
+   generator produces.
+6. *Prove the tests catch defects.* Mutation testing makes small changes to the
+   code under test and reports each one no test notices; for C++ the known tool
+   is Mull, built on clang. Run on the projection files, it lists every reader
+   or writer line no test watches. It runs outside the normal build, as an
+   occasional job.
+7. *Let ORE judge.* For each trade type, write generated trades and ask ORE to
+   build them against a complete market (ORE's example market, so a missing
+   curve does not hide a representation defect). Classify each error as
+   representation (parse or build of the trade), market or engine
+   configuration. A build failure of the first kind fails the check. This is
+   the final word, and the costliest, so it runs on few trades per type.
+8. *Constrain the vocabulary.* The ORE element map and the value sets seeded for
+   the reporting parameters already hold ORE's spellings. Use them, or the
+   contract of 3, for the trade fields too, so a domain column such as a barrier
+   type takes ORE's values or maps to them explicitly.
+9. *Publish the level of each type.* A matrix of trade type by level: the model
+   holds every property, the generator fills them, the XSD accepts, the
+   roundtrip keeps content, ORE parses, ORE builds, ORE prices. Each type states
+   the level it claims, and the check of 1 to 7 holds it there. "Modelled" then
+   means a level we measure rather than a word we use.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8CCC7800-12A8-4E66-829D-E02303C6CA70][Audit what the trade representation tests prove]] | DONE | 2026-11-03 | 2026-11-06 | List every test that claims something about how a trade is represented, state what each asserts, and prove it with planted defects: which defects each test catches and which it lets through. |
+
+* Decisions
+
+- A roundtrip is checked by content: a differ on the value fingerprint
+  names every difference, numbers compared as decimals, sibling order
+  ignored and an empty element read as absent, as ORE reads it.
+- The corpus roundtrip keeps a known list of losses asserted exactly; it is
+  empty, so a loss fails the test.
+- Shapes ORE repeats across products are shared rows: barriers and their
+  levels, underlyings, schedules (rules, dates and derived), option blocks,
+  strikes and range bounds. A product's single-valued terms are nullable
+  columns read and written by one table of element and member.
+- An embedded trade (a total return swap's, a composite's, a contract for
+  difference's) is a trade of its own, joined to its parent by a structure;
+  the name the parent gives it is the member's label.
+- A bond position on a basket names no issue: its bonds are underlying rows.
+- A table check that refuses a valid ORE trade is relaxed to the products
+  that state the value, or to the case where it is stated.
+
+* Out of scope
+
+- Fixing the trade types the checks find wanting. That is
+  [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]], which this story gives a
+  measure to.
+- Market data the checks do not need: the subsidiaries' quotes, FX volatility
+  surfaces and the fixings history belong to the market data work.

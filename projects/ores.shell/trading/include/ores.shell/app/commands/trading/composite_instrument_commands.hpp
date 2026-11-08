@@ -87,7 +87,13 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <description> <reason>
+     * @brief add <trade_id> <trade_type_code> <trade_activity_id> <description> <currency>
+     * <notional_calculation> <notional_override> <portfolio_basket> <index_quantity> <return_payer>
+     * <return_currency> <return_observation_lag> <return_observation_convention>
+     * <return_observation_calendar> <return_payment_lag> <return_payment_convention>
+     * <return_payment_calendar> <return_initial_price> <return_initial_price_currency>
+     * <return_fx_index> <return_pay_underlying_cash_flows_immediately> <funding_notional_types>
+     * <underlying_basket_name> <underlying_index_quantity> <underlying_price_is_per_unit> <reason>
      * <commentary>
      */
     static void process_add(std::ostream& out,
@@ -95,7 +101,13 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <description> <reason>
+     * @brief set <trade_id> <trade_type_code> <trade_activity_id> <description> <currency>
+     * <notional_calculation> <notional_override> <portfolio_basket> <index_quantity> <return_payer>
+     * <return_currency> <return_observation_lag> <return_observation_convention>
+     * <return_observation_calendar> <return_payment_lag> <return_payment_convention>
+     * <return_payment_calendar> <return_initial_price> <return_initial_price_currency>
+     * <return_fx_index> <return_pay_underlying_cash_flows_immediately> <funding_notional_types>
+     * <underlying_basket_name> <underlying_index_quantity> <underlying_price_is_per_unit> <reason>
      * <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -104,7 +116,13 @@ public:
 
     /**
      * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <description>
-     * <reason> <commentary>
+     * <currency> <notional_calculation> <notional_override> <portfolio_basket> <index_quantity>
+     * <return_payer> <return_currency> <return_observation_lag> <return_observation_convention>
+     * <return_observation_calendar> <return_payment_lag> <return_payment_convention>
+     * <return_payment_calendar> <return_initial_price> <return_initial_price_currency>
+     * <return_fx_index> <return_pay_underlying_cash_flows_immediately> <funding_notional_types>
+     * <underlying_basket_name> <underlying_index_quantity> <underlying_price_is_per_unit> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

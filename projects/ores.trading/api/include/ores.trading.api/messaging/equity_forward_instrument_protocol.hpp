@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_EQUITY_FORWARD_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_EQUITY_FORWARD_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/equity_forward_instrument.hpp"
+#include "ores.trading.api/domain/equity_forward_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -54,7 +55,7 @@ struct equity_forward_instrument_write {
     boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
     std::string currency;
-    double quantity;
+    double quantity{};
     std::optional<ores::utility::decimal::decimal> forward_price;
     std::chrono::year_month_day expiry_date;
     std::string long_short;
@@ -100,7 +101,7 @@ struct equity_forward_instrument_event {
     boost::uuids::uuid event_id;
     equity_forward_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -110,7 +111,7 @@ struct equity_forward_instrument_event {
 
 struct equity_forward_instrument_version_key {
     equity_forward_instrument_key equity_forward_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_forward_instrument_version_key&,
                            const equity_forward_instrument_version_key&) = default;
@@ -148,7 +149,7 @@ struct list_equity_forward_instruments_request {
 struct list_equity_forward_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_forward_instrument> equity_forward_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_forward_instruments_response&,
                            const list_equity_forward_instruments_response&) = default;
@@ -327,7 +328,7 @@ struct list_equity_forward_instrument_versions_request {
 struct list_equity_forward_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_forward_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_forward_instrument_versions_response&,
                            const list_equity_forward_instrument_versions_response&) = default;

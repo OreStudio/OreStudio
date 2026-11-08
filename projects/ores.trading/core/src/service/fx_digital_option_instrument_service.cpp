@@ -117,6 +117,9 @@ fx_digital_option_instrument_to_domain(const messaging::fx_digital_option_instru
     v.barrier_type = write.barrier_type;
     v.lower_barrier = write.lower_barrier;
     v.upper_barrier = write.upper_barrier;
+    v.barrier_start_date = write.barrier_start_date;
+    v.barrier_calendar = write.barrier_calendar;
+    v.barrier_fixing_index = write.barrier_fixing_index;
     v.description = write.description;
     return v;
 }

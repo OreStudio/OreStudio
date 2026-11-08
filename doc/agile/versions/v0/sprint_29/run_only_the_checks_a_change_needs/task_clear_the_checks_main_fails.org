@@ -28,9 +28,9 @@ Every gate in the modeling and codegen classes was red because of checks that al
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] |
-| Now          | Done.                                  |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance

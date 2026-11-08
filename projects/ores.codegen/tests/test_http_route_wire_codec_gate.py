@@ -73,8 +73,9 @@ def test_an_opted_in_route_names_no_reflector():
         assert "rfl::json::read" not in text, model
 
 
-def test_a_route_that_did_not_opt_in_keeps_the_reflector():
+def test_a_route_without_the_flag_names_no_reflector_either():
+    """Every model has a generated codec, so no branch keeps reflect-cpp."""
     for model, template, section in CASES:
         text = render(model, template, section, False)
-        assert "rfl::json::write(*decoded)" in text, model
-        assert "wire_traits" not in text, model
+        assert "rfl::" not in text, model
+        assert "<rfl/" not in text, model

@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_FX_FORWARD_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_FX_FORWARD_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -58,6 +59,15 @@ struct fx_forward_instrument_write {
     ores::utility::decimal::decimal sold_amount;
     std::chrono::year_month_day value_date;
     std::string settlement;
+    std::optional<std::string> settlement_currency;
+    std::optional<std::string> settlement_fx_index;
+    std::optional<std::chrono::year_month_day> settlement_date;
+    std::optional<std::string> settlement_payment_lag;
+    std::optional<std::string> settlement_payment_calendar;
+    std::optional<std::string> settlement_payment_convention;
+    std::optional<std::chrono::year_month_day> far_date;
+    std::optional<ores::utility::decimal::decimal> far_bought_amount;
+    std::optional<ores::utility::decimal::decimal> far_sold_amount;
     std::string description;
 
     friend bool operator==(const fx_forward_instrument_write&,
@@ -99,7 +109,7 @@ struct fx_forward_instrument_event {
     boost::uuids::uuid event_id;
     fx_forward_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +119,7 @@ struct fx_forward_instrument_event {
 
 struct fx_forward_instrument_version_key {
     fx_forward_instrument_key fx_forward_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const fx_forward_instrument_version_key&,
                            const fx_forward_instrument_version_key&) = default;
@@ -147,7 +157,7 @@ struct list_fx_forward_instruments_request {
 struct list_fx_forward_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_forward_instrument> fx_forward_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_forward_instruments_response&,
                            const list_fx_forward_instruments_response&) = default;
@@ -324,7 +334,7 @@ struct list_fx_forward_instrument_versions_request {
 struct list_fx_forward_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_forward_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_forward_instrument_versions_response&,
                            const list_fx_forward_instrument_versions_response&) = default;
@@ -401,6 +411,20 @@ inline constexpr std::string_view deleted = "trading.v1.events.fx_forward_instru
         utility::codec::field{"sold_amount", &fx_forward_instrument_write::sold_amount},
         utility::codec::field{"value_date", &fx_forward_instrument_write::value_date},
         utility::codec::field{"settlement", &fx_forward_instrument_write::settlement},
+        utility::codec::field{"settlement_currency",
+                              &fx_forward_instrument_write::settlement_currency},
+        utility::codec::field{"settlement_fx_index",
+                              &fx_forward_instrument_write::settlement_fx_index},
+        utility::codec::field{"settlement_date", &fx_forward_instrument_write::settlement_date},
+        utility::codec::field{"settlement_payment_lag",
+                              &fx_forward_instrument_write::settlement_payment_lag},
+        utility::codec::field{"settlement_payment_calendar",
+                              &fx_forward_instrument_write::settlement_payment_calendar},
+        utility::codec::field{"settlement_payment_convention",
+                              &fx_forward_instrument_write::settlement_payment_convention},
+        utility::codec::field{"far_date", &fx_forward_instrument_write::far_date},
+        utility::codec::field{"far_bought_amount", &fx_forward_instrument_write::far_bought_amount},
+        utility::codec::field{"far_sold_amount", &fx_forward_instrument_write::far_sold_amount},
         utility::codec::field{"description", &fx_forward_instrument_write::description},
     };
 }

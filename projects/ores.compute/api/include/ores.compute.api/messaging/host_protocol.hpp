@@ -25,11 +25,12 @@
 #ifndef ORES_COMPUTE_API_MESSAGING_HOST_PROTOCOL_HPP
 #define ORES_COMPUTE_API_MESSAGING_HOST_PROTOCOL_HPP
 
-#include "ores.compute.api/domain/host.hpp"
+#include "ores.compute.api/domain/host_codec.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,11 +52,11 @@ struct host_write {
     boost::uuids::uuid id;
     std::string external_id;
     std::string location;
-    int cpu_count;
-    std::int64_t ram_mb;
+    int cpu_count{};
+    std::int64_t ram_mb{};
     std::string gpu_type;
     std::string display_name;
-    double credit_total;
+    double credit_total{};
 
     friend bool operator==(const host_write&, const host_write&) = default;
 };
@@ -91,7 +92,7 @@ struct host_event {
     boost::uuids::uuid event_id;
     host_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +101,7 @@ struct host_event {
 
 struct host_version_key {
     host_key host;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const host_version_key&, const host_version_key&) = default;
 };
@@ -135,7 +136,7 @@ struct list_hosts_request {
 struct list_hosts_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::host> hosts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_hosts_response&, const list_hosts_response&) = default;
 };
@@ -301,7 +302,7 @@ struct list_host_versions_request {
 struct list_host_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::host> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_host_versions_response&,
                            const list_host_versions_response&) = default;

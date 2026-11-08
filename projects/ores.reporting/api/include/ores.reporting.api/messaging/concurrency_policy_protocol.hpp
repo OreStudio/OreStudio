@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_CONCURRENCY_POLICY_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_CONCURRENCY_POLICY_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/concurrency_policy.hpp"
+#include "ores.reporting.api/domain/concurrency_policy_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,7 +52,7 @@ struct concurrency_policy_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const concurrency_policy_write&,
                            const concurrency_policy_write&) = default;
@@ -92,7 +93,7 @@ struct concurrency_policy_event {
     boost::uuids::uuid event_id;
     concurrency_policy_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +103,7 @@ struct concurrency_policy_event {
 
 struct concurrency_policy_version_key {
     concurrency_policy_key concurrency_policy;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const concurrency_policy_version_key&,
                            const concurrency_policy_version_key&) = default;
@@ -140,7 +141,7 @@ struct list_concurrency_policies_request {
 struct list_concurrency_policies_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::concurrency_policy> policies;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_concurrency_policies_response&,
                            const list_concurrency_policies_response&) = default;
@@ -317,7 +318,7 @@ struct list_concurrency_policy_versions_request {
 struct list_concurrency_policy_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::concurrency_policy> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_concurrency_policy_versions_response&,
                            const list_concurrency_policy_versions_response&) = default;

@@ -64,6 +64,7 @@ struct approval_kind_entity {
     std::optional<std::string> apply_workflow_type;
     std::optional<int> apply_window_hours;
     int approvals_required = 0;
+    std::string auto_approval_code;
     int display_order = 0;
     std::string modified_by;
     std::string performed_by;
@@ -90,6 +91,7 @@ struct approval_kind_entity {
                query_builder::bind("apply_workflow_type", &e::apply_workflow_type) |
                query_builder::bind("apply_window_hours", &e::apply_window_hours) |
                query_builder::bind("approvals_required", &e::approvals_required) |
+               query_builder::bind("auto_approval_code", &e::auto_approval_code) |
                query_builder::bind("display_order", &e::display_order) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

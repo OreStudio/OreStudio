@@ -88,7 +88,7 @@ struct equity_position_option_underlying final {
      * The schema declares the list unbounded and a document's order is the order it stated, so the
      * ordinal is what identifies a row and preserves that order.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.
@@ -156,6 +156,16 @@ struct equity_position_option_underlying final {
      * set (Physical, Cash). PR 4 tightens the soft reference into a real foreign key.
      */
     std::string settlement_type;
+
+    /**
+     * @brief The scheme the entry's underlying is named in, as Underlying/IdentifierType states it.
+     */
+    std::optional<std::string> identifier_type;
+
+    /**
+     * @brief The entry's option exercise date, as OptionData/ExerciseDates/ExerciseDate states it.
+     */
+    std::optional<std::chrono::year_month_day> exercise_date;
 
     /**
      * @brief Username of the person who last modified this equity position option underlying.

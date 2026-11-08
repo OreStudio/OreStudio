@@ -76,6 +76,24 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
+-- Party Product Type Deal Classes
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_party_product_type_deal_classes_tbl enable row level security;
+
+-- Party isolation: a class is read by a session whose visible parties name the one
+-- that states it. FOR SELECT only: the party is a validated reference and the
+-- writes come from the party's own screens.
+drop policy if exists party_product_type_deal_classes_party_isolation_policy
+    on ores_refdata_party_product_type_deal_classes_tbl;
+
+create policy party_product_type_deal_classes_party_isolation_policy
+on ores_refdata_party_product_type_deal_classes_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
 -- Party Contact Informations
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_party_contact_informations_tbl enable row level security;

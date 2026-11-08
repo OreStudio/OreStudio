@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
@@ -237,328 +238,6 @@ void read_accrual(Fact& fact, const record_reader& d) {
 // Reading: the shared children
 // ---------------------------------------------------------------------------
 
-void stamp_schedule_rule(instrument_schedule& row, const record_reader& rule) {
-    row.schedule_kind = "rules";
-    row.start_date = credit_instrument_projection_to_domain_date(
-        credit_instrument_projection_text_of(rule, "StartDate"));
-    if (rule.has("EndDate"))
-        row.end_date = credit_instrument_projection_to_optional_domain_date(
-            credit_instrument_projection_text_of(rule, "EndDate"));
-    if (const auto value = rule.spelling("AdjustEndDateToPreviousMonthEnd"))
-        row.adjust_end_date_to_previous_month_end = *value;
-    row.tenor = credit_instrument_projection_text_of(rule, "Tenor");
-    if (rule.has("Calendar"))
-        row.calendar = credit_instrument_projection_text_of(rule, "Calendar");
-    row.convention = credit_instrument_projection_spelling_of(rule, "Convention");
-    if (rule.has("TermConvention"))
-        row.term_convention = credit_instrument_projection_spelling_of(rule, "TermConvention");
-    if (rule.has("Rule"))
-        row.rule = credit_instrument_projection_spelling_of(rule, "Rule");
-    if (rule.has("EndOfMonth"))
-        row.end_of_month = credit_instrument_projection_spelling_of(rule, "EndOfMonth");
-    if (rule.has("EndOfMonthConvention"))
-        row.end_of_month_convention =
-            credit_instrument_projection_spelling_of(rule, "EndOfMonthConvention");
-    if (rule.has("FirstDate"))
-        row.first_date = credit_instrument_projection_to_optional_domain_date(
-            credit_instrument_projection_text_of(rule, "FirstDate"));
-    if (rule.has("LastDate"))
-        row.last_date = credit_instrument_projection_to_optional_domain_date(
-            credit_instrument_projection_text_of(rule, "LastDate"));
-    if (rule.has("RemoveFirstDate"))
-        row.remove_first_date = credit_instrument_projection_is_flag_on(
-            credit_instrument_projection_text_of(rule, "RemoveFirstDate"));
-    if (rule.has("RemoveLastDate"))
-        row.remove_last_date = credit_instrument_projection_is_flag_on(
-            credit_instrument_projection_text_of(rule, "RemoveLastDate"));
-    credit_instrument_projection_stamp_row(row);
-}
-
-void stamp_schedule_dates(instrument_schedule& row, const record_reader& block) {
-    row.schedule_kind = "dates";
-    if (block.has("Calendar"))
-        row.calendar = credit_instrument_projection_text_of(block, "Calendar");
-    if (block.has("Convention"))
-        row.convention = credit_instrument_projection_spelling_of(block, "Convention");
-    if (block.has("Tenor"))
-        row.tenor = credit_instrument_projection_text_of(block, "Tenor");
-    if (block.has("EndOfMonth"))
-        row.end_of_month = credit_instrument_projection_spelling_of(block, "EndOfMonth");
-    if (block.has("IncludeDuplicateDates"))
-        row.include_duplicate_dates =
-            credit_instrument_projection_spelling_of(block, "IncludeDuplicateDates");
-    credit_instrument_projection_stamp_row(row);
-}
-
-// One schedule of one owner, as rows: each rule block and each date block
-// becomes a schedule row, and a date block's dates become rows of their own.
-// The ordinals run across both arms, in document order.
-void credit_instrument_projection_read_schedule(credit_instrument_data& result,
-                                                const record_reader& schedule,
-                                                std::string_view owner_role,
-                                                int owner_number,
-                                                std::string_view schedule_role) {
-    int sequence_number = 0;
-    for (const auto& rule : schedule.children("Rules")) {
-        instrument_schedule row;
-        row.owner_role = std::string(owner_role);
-        row.owner_number = owner_number;
-        row.schedule_role = std::string(schedule_role);
-        row.sequence_number = ++sequence_number;
-        stamp_schedule_rule(row, rule);
-        result.schedules.push_back(std::move(row));
-    }
-    for (const auto& block : schedule.children("Dates")) {
-        const int parent_sequence = ++sequence_number;
-        instrument_schedule row;
-        row.owner_role = std::string(owner_role);
-        row.owner_number = owner_number;
-        row.schedule_role = std::string(schedule_role);
-        row.sequence_number = parent_sequence;
-        stamp_schedule_dates(row, block);
-        result.schedules.push_back(std::move(row));
-
-        const auto dates = block.child("Dates");
-        if (!dates)
-            continue;
-        int date_number = 0;
-        for (const auto& date : dates->values("Date")) {
-            instrument_schedule_date date_row;
-            date_row.owner_role = std::string(owner_role);
-            date_row.owner_number = owner_number;
-            date_row.schedule_role = std::string(schedule_role);
-            date_row.schedule_sequence_number = parent_sequence;
-            date_row.sequence_number = ++date_number;
-            date_row.schedule_date = credit_instrument_projection_to_domain_date(date);
-            credit_instrument_projection_stamp_row(date_row);
-            result.schedule_dates.push_back(std::move(date_row));
-        }
-    }
-}
-
-void read_premiums(credit_instrument_data& result, const record_reader& option) {
-    const auto block = option.child("Premiums");
-    if (!block)
-        return;
-    int sequence_number = 0;
-    for (const auto& premium : block->children("Premium")) {
-        instrument_option_premium row;
-        row.sequence_number = ++sequence_number;
-        row.amount = credit_instrument_projection_decimal_from_text(
-                         credit_instrument_projection_text_of(premium, "Amount"))
-                         .value_or(decimal{});
-        row.currency = credit_instrument_projection_text_of(premium, "Currency");
-        row.pay_date = credit_instrument_projection_to_domain_date(
-            credit_instrument_projection_text_of(premium, "PayDate"));
-        row.has_settlement = premium.has("SettlementData");
-        if (const auto settlement = premium.child("SettlementData")) {
-            row.settlement_pay_currency =
-                credit_instrument_projection_spelling_of(*settlement, "PayCurrency");
-            row.settlement_fx_index = credit_instrument_projection_text_of(*settlement, "FXIndex");
-            if (settlement->has("FixingDate"))
-                row.settlement_fixing_date = credit_instrument_projection_to_optional_domain_date(
-                    credit_instrument_projection_text_of(*settlement, "FixingDate"));
-        }
-        credit_instrument_projection_stamp_row(row);
-        result.option_premiums.push_back(std::move(row));
-    }
-}
-
-void read_exercise_fees(credit_instrument_data& result, const record_reader& option) {
-    const auto block = option.child("ExerciseFees");
-    if (!block)
-        return;
-    int sequence_number = 0;
-    for (const auto& fee : block->children("ExerciseFee")) {
-        instrument_option_exercise_fee row;
-        row.sequence_number = ++sequence_number;
-        row.amount = credit_instrument_projection_decimal_text(fee);
-        if (fee.has("type"))
-            row.type = credit_instrument_projection_text_of(fee, "type");
-        if (fee.has("startDate"))
-            row.start_date = credit_instrument_projection_to_optional_domain_date(
-                credit_instrument_projection_text_of(fee, "startDate"));
-        if (fee.has("currency"))
-            row.currency = credit_instrument_projection_text_of(fee, "currency");
-        credit_instrument_projection_stamp_row(row);
-        result.option_exercise_fees.push_back(std::move(row));
-    }
-}
-
-void read_payment_dates(credit_instrument_data& result, const record_reader& option) {
-    const auto payment = option.child("PaymentData");
-    if (!payment)
-        return;
-    const auto dates = payment->child("Dates");
-    if (!dates)
-        return;
-    int sequence_number = 0;
-    for (const auto& date : dates->values("Date")) {
-        instrument_option_payment_date row;
-        row.sequence_number = ++sequence_number;
-        row.payment_date = credit_instrument_projection_to_domain_date(date);
-        credit_instrument_projection_stamp_row(row);
-        result.option_payment_dates.push_back(std::move(row));
-    }
-}
-
-// The exercise price list pairs one price with each exercise date the group
-// states, in order.
-auto split_numbers(const std::string& text) -> std::vector<std::string> {
-    std::vector<std::string> out;
-    std::string current;
-    const auto flush = [&]() {
-        if (!current.empty()) {
-            out.push_back(current);
-            current.clear();
-        }
-    };
-    for (const char c : text) {
-        if (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == ',' || c == ';')
-            flush();
-        else
-            current.push_back(c);
-    }
-    flush();
-    return out;
-}
-
-void read_exercise_prices(credit_instrument_data& result,
-                          const record_reader& option,
-                          const std::vector<std::string>& exercise_dates) {
-    const auto prices = option.text("ExercisePrices");
-    if (!prices)
-        return;
-    const auto tokens = split_numbers(*prices);
-    for (std::size_t i = 0; i < tokens.size() && i < exercise_dates.size(); ++i) {
-        const auto parsed = decimal::from_string(tokens[i]);
-        if (!parsed)
-            continue;
-        instrument_option_exercise_price row;
-        row.sequence_number = static_cast<int>(i) + 1;
-        row.exercise_date = credit_instrument_projection_to_domain_date(exercise_dates[i]);
-        row.price = *parsed;
-        credit_instrument_projection_stamp_row(row);
-        result.option_exercise_prices.push_back(std::move(row));
-    }
-}
-
-void read_option_block(credit_instrument_data& result, const record_reader& od) {
-    instrument_option row;
-    row.long_short = credit_instrument_projection_text_of(od, "LongShort");
-    if (od.has("OptionType"))
-        row.option_type = credit_instrument_projection_text_of(od, "OptionType");
-    if (od.has("PayoffType"))
-        row.payoff_type = credit_instrument_projection_text_of(od, "PayoffType");
-    if (od.has("PayoffType2"))
-        row.payoff_type_2 = credit_instrument_projection_text_of(od, "PayoffType2");
-    if (od.has("Style"))
-        row.style = credit_instrument_projection_text_of(od, "Style");
-    if (od.has("NoticePeriod"))
-        row.notice_period = credit_instrument_projection_text_of(od, "NoticePeriod");
-    if (od.has("NoticeCalendar"))
-        row.notice_calendar = credit_instrument_projection_text_of(od, "NoticeCalendar");
-    if (od.has("NoticeConvention"))
-        row.notice_convention = credit_instrument_projection_text_of(od, "NoticeConvention");
-    if (od.has("MidCouponExercise"))
-        row.mid_coupon_exercise = credit_instrument_projection_text_of(od, "MidCouponExercise");
-    if (od.has("Settlement"))
-        row.settlement = credit_instrument_projection_spelling_of(od, "Settlement");
-    if (od.has("SettlementMethod"))
-        row.settlement_method = credit_instrument_projection_spelling_of(od, "SettlementMethod");
-    if (od.has("PayOffAtExpiry"))
-        row.pay_off_at_expiry = credit_instrument_projection_text_of(od, "PayOffAtExpiry");
-    if (od.has("PremiumAmount"))
-        row.premium_amount = credit_instrument_projection_decimal_from_text(
-            credit_instrument_projection_text_of(od, "PremiumAmount"));
-    if (od.has("PremiumCurrency"))
-        row.premium_currency = credit_instrument_projection_text_of(od, "PremiumCurrency");
-    if (od.has("PremiumPayDate"))
-        row.premium_pay_date = credit_instrument_projection_to_optional_domain_date(
-            credit_instrument_projection_text_of(od, "PremiumPayDate"));
-    if (od.has("ExerciseFeeSettlementPeriod"))
-        row.exercise_fee_settlement_period =
-            credit_instrument_projection_text_of(od, "ExerciseFeeSettlementPeriod");
-    if (od.has("ExerciseFeeSettlementCalendar"))
-        row.exercise_fee_settlement_calendar =
-            credit_instrument_projection_text_of(od, "ExerciseFeeSettlementCalendar");
-    if (od.has("ExerciseFeeSettlementConvention"))
-        row.exercise_fee_settlement_convention =
-            credit_instrument_projection_text_of(od, "ExerciseFeeSettlementConvention");
-    if (od.has("AutomaticExercise"))
-        row.automatic_exercise = credit_instrument_projection_spelling_of(od, "AutomaticExercise");
-
-    row.has_exercise_data = od.has("ExerciseData");
-    if (const auto exercise = od.child("ExerciseData")) {
-        row.exercise_date = credit_instrument_projection_to_domain_date(
-            credit_instrument_projection_text_of(*exercise, "Date"));
-        if (exercise->has("Price"))
-            row.exercise_price =
-                credit_instrument_projection_optional_decimal_of(*exercise, "Price");
-    }
-
-    row.has_payment_data = od.has("PaymentData");
-    if (const auto payment = od.child("PaymentData")) {
-        if (const auto rules = payment->child("Rules")) {
-            if (const auto lag = rules->integer("Lag"))
-                row.payment_lag = static_cast<int>(*lag);
-            row.payment_calendar = credit_instrument_projection_text_of(*rules, "Calendar");
-            row.payment_convention = credit_instrument_projection_spelling_of(*rules, "Convention");
-            if (rules->has("RelativeTo"))
-                row.payment_relative_to =
-                    credit_instrument_projection_spelling_of(*rules, "RelativeTo");
-        }
-    }
-
-    row.has_settlement_data = od.has("SettlementData");
-    if (const auto settlement = od.child("SettlementData")) {
-        row.settlement_pay_currency =
-            credit_instrument_projection_spelling_of(*settlement, "PayCurrency");
-        row.settlement_fx_index = credit_instrument_projection_text_of(*settlement, "FXIndex");
-        if (settlement->has("FixingDate"))
-            row.settlement_fixing_date = credit_instrument_projection_to_optional_domain_date(
-                credit_instrument_projection_text_of(*settlement, "FixingDate"));
-    }
-    credit_instrument_projection_stamp_row(row);
-    result.options.push_back(std::move(row));
-
-    read_premiums(result, od);
-    read_exercise_fees(result, od);
-    read_payment_dates(result, od);
-
-    // The exercise dates live in the shared schedule tables under the option
-    // owner, whether the document stated a list or a schedule.
-    const auto group = od.child("ExerciseDates");
-    const auto list = group ? group->values("ExerciseDate") : std::vector<std::string>{};
-    read_exercise_prices(result, od, list);
-    if (group) {
-        instrument_schedule schedule_row;
-        schedule_row.owner_role = "option";
-        schedule_row.owner_number = 1;
-        schedule_row.schedule_role = "exercise_dates";
-        schedule_row.sequence_number = 1;
-        schedule_row.schedule_kind = "dates";
-        credit_instrument_projection_stamp_row(schedule_row);
-        result.schedules.push_back(std::move(schedule_row));
-
-        int date_number = 0;
-        for (const auto& date : list) {
-            instrument_schedule_date date_row;
-            date_row.owner_role = "option";
-            date_row.owner_number = 1;
-            date_row.schedule_role = "exercise_dates";
-            date_row.schedule_sequence_number = 1;
-            date_row.sequence_number = ++date_number;
-            date_row.schedule_date = credit_instrument_projection_to_domain_date(date);
-            credit_instrument_projection_stamp_row(date_row);
-            result.schedule_dates.push_back(std::move(date_row));
-        }
-    } else if (const auto schedule = od.child("ExerciseSchedule")) {
-        credit_instrument_projection_read_schedule(
-            result, *schedule, "option", 1, "exercise_schedule");
-    }
-}
-
 // ---------------------------------------------------------------------------
 // Reading: the legs, their economics and the basket
 // ---------------------------------------------------------------------------
@@ -653,6 +332,10 @@ void append_leg(credit_instrument_data& result, const record_reader& leg, std::s
         result.leg_amounts.push_back(std::move(amount));
     for (auto& rate : read_leg_rates(leg, leg_number))
         result.leg_rates.push_back(std::move(rate));
+    // A leg keeps its own schedule, because the header's dates are the
+    // protection period and not the leg's.
+    if (const auto schedule = leg.child("ScheduleData"))
+        option_block::read_schedule(result, *schedule, "swap", leg_number, "schedule");
 }
 
 /// The legs of one of the four payment groups a credit linked swap states.
@@ -796,7 +479,7 @@ auto read_index_cds_option(const record_reader& trade) -> credit_instrument_data
         }
 
         if (const auto option = od->child("OptionData"))
-            read_option_block(result, *option);
+            option_block::read_option_block(result, *option);
     }
     credit_instrument_projection_stamp_row(fact);
     result.index_credit_default_swap_option_instruments.push_back(std::move(fact));
@@ -888,23 +571,13 @@ auto read_rpa(const record_reader& trade) -> credit_instrument_data {
         result.instrument.maturity_date = credit_instrument_projection_to_optional_domain_date(
             credit_instrument_projection_text_of(*d, "ProtectionEnd"));
 
-        // A leg keeps its own schedule when it states one, because the header's
-        // dates are the protection period and not the leg's.
-        const auto append_with_schedule = [&result](const record_reader& leg,
-                                                    std::string_view group) {
-            const int leg_number = static_cast<int>(result.legs.size()) + 1;
-            append_leg(result, leg, group);
-            if (const auto schedule = leg.child("ScheduleData"))
-                credit_instrument_projection_read_schedule(
-                    result, *schedule, "swap", leg_number, "schedule");
-        };
         if (const auto protection_fee = d->child("ProtectionFee"))
             for (const auto& leg : protection_fee->children("LegData"))
-                append_with_schedule(leg, "protection_fee");
+                append_leg(result, leg, "protection_fee");
 
         if (const auto underlying = d->child("Underlying")) {
             for (const auto& leg : underlying->children("LegData"))
-                append_with_schedule(leg, "underlying");
+                append_leg(result, leg, "underlying");
             if (underlying->has("NakedOption"))
                 fact.naked_option = credit_instrument_projection_is_flag_on(
                     credit_instrument_projection_text_of(*underlying, "NakedOption"));
@@ -912,7 +585,7 @@ auto read_rpa(const record_reader& trade) -> credit_instrument_data {
             // The agreement has no option of its own, so the option rows are
             // the underlying's.
             if (const auto option = underlying->child("OptionData"))
-                read_option_block(result, *option);
+                option_block::read_option_block(result, *option);
         }
     }
     credit_instrument_projection_stamp_row(fact);
@@ -971,38 +644,6 @@ void set_optional_decimal_from_double(record_writer& w,
 // Writing: the shared children
 // ---------------------------------------------------------------------------
 
-std::vector<const instrument_schedule*> schedules_of(const credit_instrument_data& v,
-                                                     std::string_view owner_role,
-                                                     int owner_number,
-                                                     std::string_view schedule_role) {
-    std::vector<const instrument_schedule*> rows;
-    for (const auto& row : v.schedules)
-        if (row.owner_role == owner_role && row.owner_number == owner_number &&
-            row.schedule_role == schedule_role)
-            rows.push_back(&row);
-    std::sort(rows.begin(), rows.end(), [](const auto* a, const auto* b) {
-        return a->sequence_number < b->sequence_number;
-    });
-    return rows;
-}
-
-std::vector<const instrument_schedule_date*> schedule_dates_of(const credit_instrument_data& v,
-                                                               std::string_view owner_role,
-                                                               int owner_number,
-                                                               std::string_view schedule_role,
-                                                               int schedule_sequence_number) {
-    std::vector<const instrument_schedule_date*> rows;
-    for (const auto& row : v.schedule_dates)
-        if (row.owner_role == owner_role && row.owner_number == owner_number &&
-            row.schedule_role == schedule_role &&
-            row.schedule_sequence_number == schedule_sequence_number)
-            rows.push_back(&row);
-    std::sort(rows.begin(), rows.end(), [](const auto* a, const auto* b) {
-        return a->sequence_number < b->sequence_number;
-    });
-    return rows;
-}
-
 void write_schedule_rules(record_writer& schedule,
                           const std::optional<std::chrono::year_month_day>& start_date,
                           const std::optional<std::chrono::year_month_day>& end_date,
@@ -1013,231 +654,6 @@ void write_schedule_rules(record_writer& schedule,
         rule.set_text("EndDate", credit_instrument_projection_to_ore_date(*end_date));
     rule.set_text("Tenor", tenor);
     rule.set_spelling("Convention", "MF", "business day convention");
-}
-
-/// The stored schedule rows of one owner, written back as the document's own
-/// rules and date lists, and whether they stated a schedule at all.
-bool write_stored_schedule(record_writer schedule,
-                           const credit_instrument_data& v,
-                           std::string_view owner_role,
-                           int owner_number,
-                           std::string_view schedule_role) {
-    const auto rows = schedules_of(v, owner_role, owner_number, schedule_role);
-    if (rows.empty())
-        return false;
-
-    for (const auto* row : rows) {
-        if (row->schedule_kind == "rules") {
-            auto rule = schedule.append("Rules");
-            rule.set_text("StartDate", credit_instrument_projection_to_ore_date(row->start_date));
-            if (row->end_date)
-                rule.set_text("EndDate", credit_instrument_projection_to_ore_date(*row->end_date));
-            if (row->adjust_end_date_to_previous_month_end)
-                credit_instrument_projection_set_spelling_or(
-                    rule,
-                    "AdjustEndDateToPreviousMonthEnd",
-                    *row->adjust_end_date_to_previous_month_end,
-                    "N",
-                    "boolean");
-            rule.set_text("Tenor", row->tenor.value_or(""));
-            if (row->calendar)
-                rule.set_text("Calendar", *row->calendar);
-            if (row->convention)
-                credit_instrument_projection_set_spelling_or(
-                    rule, "Convention", *row->convention, "MF", "business day convention");
-            if (row->term_convention)
-                credit_instrument_projection_set_spelling_or(
-                    rule, "TermConvention", *row->term_convention, "MF", "business day convention");
-            if (row->rule)
-                credit_instrument_projection_set_spelling_or(
-                    rule, "Rule", *row->rule, "Forward", "date rule");
-            if (row->end_of_month)
-                credit_instrument_projection_set_spelling_or(
-                    rule, "EndOfMonth", *row->end_of_month, "N", "boolean");
-            if (row->end_of_month_convention)
-                credit_instrument_projection_set_spelling_or(rule,
-                                                             "EndOfMonthConvention",
-                                                             *row->end_of_month_convention,
-                                                             "MF",
-                                                             "business day convention");
-            if (row->first_date)
-                rule.set_text("FirstDate",
-                              credit_instrument_projection_to_ore_date(*row->first_date));
-            if (row->last_date)
-                rule.set_text("LastDate",
-                              credit_instrument_projection_to_ore_date(*row->last_date));
-            if (row->remove_first_date)
-                rule.set_text("RemoveFirstDate",
-                              credit_instrument_projection_flag_text(*row->remove_first_date));
-            if (row->remove_last_date)
-                rule.set_text("RemoveLastDate",
-                              credit_instrument_projection_flag_text(*row->remove_last_date));
-            continue;
-        }
-
-        auto block = schedule.append("Dates");
-        if (row->calendar)
-            block.set_text("Calendar", *row->calendar);
-        if (row->convention)
-            credit_instrument_projection_set_spelling_or(
-                block, "Convention", *row->convention, "MF", "business day convention");
-        if (row->tenor)
-            block.set_text("Tenor", *row->tenor);
-        if (row->end_of_month)
-            credit_instrument_projection_set_spelling_or(
-                block, "EndOfMonth", *row->end_of_month, "N", "boolean");
-        if (row->include_duplicate_dates)
-            credit_instrument_projection_set_spelling_or(
-                block, "IncludeDuplicateDates", *row->include_duplicate_dates, "N", "boolean");
-
-        const auto dates =
-            schedule_dates_of(v, owner_role, owner_number, schedule_role, row->sequence_number);
-        if (dates.empty())
-            continue;
-        auto list = block.child("Dates");
-        for (const auto* date : dates)
-            list.append_value("Date",
-                              credit_instrument_projection_to_ore_date(date->schedule_date));
-    }
-    return true;
-}
-
-/// The exercise dates the option owner stated, in document order.
-std::vector<std::chrono::year_month_day> exercise_dates_of(const credit_instrument_data& v) {
-    std::vector<std::chrono::year_month_day> out;
-    for (const auto* row : schedule_dates_of(v, "option", 1, "exercise_dates", 1))
-        out.push_back(row->schedule_date);
-    return out;
-}
-
-void write_option_block(record_writer option, const credit_instrument_data& v) {
-    if (v.options.empty()) {
-        option.set_text("LongShort", "Long");
-    } else {
-        const auto& row = v.options.front();
-        option.set_text("LongShort", row.long_short);
-        option.set_optional_text("OptionType", row.option_type);
-        option.set_optional_text("PayoffType", row.payoff_type);
-        option.set_optional_text("PayoffType2", row.payoff_type_2);
-        option.set_optional_text("Style", row.style);
-        option.set_optional_text("NoticePeriod", row.notice_period);
-        option.set_optional_text("NoticeCalendar", row.notice_calendar);
-        option.set_optional_text("NoticeConvention", row.notice_convention);
-        option.set_optional_text("MidCouponExercise", row.mid_coupon_exercise);
-        if (row.settlement)
-            credit_instrument_projection_set_spelling_or(
-                option, "Settlement", *row.settlement, "Cash", "settlement type");
-        if (row.settlement_method)
-            credit_instrument_projection_set_spelling_or(option,
-                                                         "SettlementMethod",
-                                                         *row.settlement_method,
-                                                         "PhysicalOTC",
-                                                         "settlement method");
-        option.set_optional_text("PayOffAtExpiry", row.pay_off_at_expiry);
-        if (row.premium_amount)
-            option.set_text("PremiumAmount", row.premium_amount->to_string());
-        option.set_optional_text("PremiumCurrency", row.premium_currency);
-        set_optional_date(option, "PremiumPayDate", row.premium_pay_date);
-        option.set_optional_text("ExerciseFeeSettlementPeriod", row.exercise_fee_settlement_period);
-        option.set_optional_text("ExerciseFeeSettlementCalendar",
-                                 row.exercise_fee_settlement_calendar);
-        option.set_optional_text("ExerciseFeeSettlementConvention",
-                                 row.exercise_fee_settlement_convention);
-        if (row.automatic_exercise)
-            credit_instrument_projection_set_spelling_or(
-                option, "AutomaticExercise", *row.automatic_exercise, "N", "boolean");
-
-        if (!v.option_premiums.empty()) {
-            auto block = option.child("Premiums");
-            for (const auto& premium : v.option_premiums) {
-                auto writer = block.append("Premium");
-                set_decimal_from_double(writer, "Amount", premium.amount.to_double());
-                writer.set_text("Currency", premium.currency);
-                writer.set_text("PayDate",
-                                credit_instrument_projection_to_ore_date(premium.pay_date));
-                if (premium.has_settlement) {
-                    auto settlement = writer.child("SettlementData");
-                    settlement.set_spelling(
-                        "PayCurrency", premium.settlement_pay_currency.value_or(""), "currency");
-                    settlement.set_text("FXIndex", premium.settlement_fx_index.value_or(""));
-                    set_optional_date(settlement, "FixingDate", premium.settlement_fixing_date);
-                }
-            }
-        }
-
-        if (!v.option_exercise_fees.empty()) {
-            auto block = option.child("ExerciseFees");
-            for (const auto& fee : v.option_exercise_fees) {
-                auto writer = block.append("ExerciseFee");
-                writer.set_own_text(fee.amount.to_string());
-                if (fee.type)
-                    writer.set_text("type", *fee.type);
-                if (fee.start_date)
-                    writer.set_text("startDate",
-                                    credit_instrument_projection_to_ore_date(*fee.start_date));
-                if (fee.currency)
-                    writer.set_text("currency", *fee.currency);
-            }
-        }
-
-        if (row.has_exercise_data) {
-            auto exercise = option.child("ExerciseData");
-            exercise.set_text("Date", credit_instrument_projection_to_ore_date(row.exercise_date));
-            if (row.exercise_price)
-                set_decimal_from_double(exercise, "Price", row.exercise_price->to_double());
-        }
-
-        if (row.has_payment_data) {
-            auto payment = option.child("PaymentData");
-            if (!v.option_payment_dates.empty()) {
-                auto dates = payment.child("Dates");
-                for (const auto& date : v.option_payment_dates)
-                    dates.append_value("Date",
-                                       credit_instrument_projection_to_ore_date(date.payment_date));
-            }
-            if (row.payment_lag || row.payment_calendar || row.payment_convention) {
-                auto rules = payment.append("Rules");
-                rules.set_integer("Lag", std::max<std::int64_t>(row.payment_lag.value_or(0), 0));
-                rules.set_text("Calendar", row.payment_calendar.value_or(""));
-                credit_instrument_projection_set_spelling_or(rules,
-                                                             "Convention",
-                                                             row.payment_convention.value_or(""),
-                                                             "MF",
-                                                             "business day convention");
-                if (row.payment_relative_to)
-                    credit_instrument_projection_set_spelling_or(
-                        rules, "RelativeTo", *row.payment_relative_to, "Expiry", "pay relative to");
-            }
-        }
-
-        if (row.has_settlement_data) {
-            auto settlement = option.child("SettlementData");
-            settlement.set_spelling(
-                "PayCurrency", row.settlement_pay_currency.value_or(""), "currency");
-            settlement.set_text("FXIndex", row.settlement_fx_index.value_or(""));
-            set_optional_date(settlement, "FixingDate", row.settlement_fixing_date);
-        }
-
-        if (!v.option_exercise_prices.empty()) {
-            std::string text;
-            for (const auto& price : v.option_exercise_prices) {
-                if (!text.empty())
-                    text += ' ';
-                text += price.price.to_string();
-            }
-            option.set_text("ExercisePrices", text);
-        }
-    }
-
-    const auto dates = exercise_dates_of(v);
-    if (!dates.empty()) {
-        auto list = option.child("ExerciseDates");
-        for (const auto& date : dates)
-            list.append_value("ExerciseDate", credit_instrument_projection_to_ore_date(date));
-    } else if (!schedules_of(v, "option", 1, "exercise_schedule").empty()) {
-        write_stored_schedule(
-            option.child("ExerciseSchedule"), v, "option", 1, "exercise_schedule");
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1318,7 +734,8 @@ void credit_instrument_projection_write_leg(record_writer& leg,
     // The stored schedule is the document's own; a leg that states none gets
     // the period the header spans, which is what the old export wrote.
     auto schedule = leg.child("ScheduleData");
-    if (!write_stored_schedule(schedule, v, "swap", row.identity.leg_number, "schedule"))
+    if (!option_block::write_stored_schedule(
+            schedule, v, "swap", row.identity.leg_number, "schedule"))
         write_schedule_rules(schedule,
                              v.instrument.start_date,
                              v.instrument.maturity_date,
@@ -1516,7 +933,7 @@ void write_index_cds_option(record_writer& trade, const credit_instrument_data& 
     if (strike != v.strikes.end() && strike->bare_value)
         set_decimal_from_double(data, "Strike", strike->bare_value->to_double());
 
-    write_option_block(data.child("OptionData"), v);
+    option_block::write_option_data(data.child("OptionData"), v);
 }
 
 void write_credit_linked_swap(record_writer& trade, const credit_instrument_data& v) {
@@ -1584,7 +1001,7 @@ void write_rpa(record_writer& trade, const credit_instrument_data& v) {
         underlying.set_text("NakedOption",
                             credit_instrument_projection_flag_text(*fact.naked_option));
     if (!v.options.empty())
-        write_option_block(underlying.child("OptionData"), v);
+        option_block::write_option_data(underlying.child("OptionData"), v);
 }
 
 }
@@ -1610,7 +1027,7 @@ auto read_credit_instrument(xml::record_reader trade, std::string_view trade_typ
 auto write_credit_instrument(xml::record_writer& trade,
                              std::string_view trade_type,
                              const trading::domain::trade_instrument& instrument,
-                             const portfolio_reference_curves&) -> bool {
+                             const ores::marketdata::projection::ore_projection&) -> bool {
     const auto* v = std::get_if<credit_instrument_data>(&instrument);
     if (v == nullptr || !is_credit_trade_type(trade_type))
         return false;

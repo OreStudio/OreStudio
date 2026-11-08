@@ -51,9 +51,9 @@ struct bond_issue_leg_schedule_entity {
     constexpr static const char* tablename = "ores_trading_bond_issue_leg_schedules_tbl";
 
     boost::uuids::uuid issue_id;
-    int leg_number;
+    int leg_number{};
     std::string schedule_role;
-    int sequence_number;
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     std::string schedule_kind;

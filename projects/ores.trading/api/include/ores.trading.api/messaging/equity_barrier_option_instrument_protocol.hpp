@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_EQUITY_BARRIER_OPTION_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_EQUITY_BARRIER_OPTION_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/equity_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_barrier_option_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -65,6 +66,9 @@ struct equity_barrier_option_instrument_write {
     std::optional<ores::utility::decimal::decimal> upper_barrier;
     std::string upper_barrier_type;
     std::optional<ores::utility::decimal::decimal> rebate;
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+    std::optional<std::string> barrier_calendar;
+    std::optional<std::string> barrier_fixing_index;
     std::string description;
 
     friend bool operator==(const equity_barrier_option_instrument_write&,
@@ -107,7 +111,7 @@ struct equity_barrier_option_instrument_event {
     boost::uuids::uuid event_id;
     equity_barrier_option_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -117,7 +121,7 @@ struct equity_barrier_option_instrument_event {
 
 struct equity_barrier_option_instrument_version_key {
     equity_barrier_option_instrument_key equity_barrier_option_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_barrier_option_instrument_version_key&,
                            const equity_barrier_option_instrument_version_key&) = default;
@@ -157,7 +161,7 @@ struct list_equity_barrier_option_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_barrier_option_instrument>
         equity_barrier_option_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_barrier_option_instruments_response&,
                            const list_equity_barrier_option_instruments_response&) = default;
@@ -342,7 +346,7 @@ struct list_equity_barrier_option_instrument_versions_request {
 struct list_equity_barrier_option_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_barrier_option_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_equity_barrier_option_instrument_versions_response&,
@@ -439,6 +443,12 @@ wire_fields(std::type_identity<equity_barrier_option_instrument_write>) {
         utility::codec::field{"upper_barrier_type",
                               &equity_barrier_option_instrument_write::upper_barrier_type},
         utility::codec::field{"rebate", &equity_barrier_option_instrument_write::rebate},
+        utility::codec::field{"barrier_start_date",
+                              &equity_barrier_option_instrument_write::barrier_start_date},
+        utility::codec::field{"barrier_calendar",
+                              &equity_barrier_option_instrument_write::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &equity_barrier_option_instrument_write::barrier_fixing_index},
         utility::codec::field{"description", &equity_barrier_option_instrument_write::description},
     };
 }

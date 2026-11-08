@@ -657,8 +657,8 @@ report_execution_handler::record_run_logs(const std::string& tenant_id,
             return {};
         }
         BOOST_LOG_SEV(lg(), info) << "Recorded the log of " << result_ids.size()
-                                  << " result(s) for report instance " << report_instance_id
-                                  << ": " << recorded.stored.errors << " error(s), "
+                                  << " result(s) for report instance " << report_instance_id << ": "
+                                  << recorded.stored.errors << " error(s), "
                                   << recorded.stored.warnings << " warning(s)";
         return recorded.stored;
     } catch (const std::exception& e) {

@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_ASSET_CLASS_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/asset_class.hpp"
+#include "ores.refdata.api/domain/asset_class_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -82,7 +83,7 @@ struct asset_class_event {
     boost::uuids::uuid event_id;
     asset_class_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -91,7 +92,7 @@ struct asset_class_event {
 
 struct asset_class_version_key {
     asset_class_key asset_class;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const asset_class_version_key&,
                            const asset_class_version_key&) = default;
@@ -128,7 +129,7 @@ struct list_asset_classes_request {
 struct list_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::asset_class> asset_classes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_asset_classes_response&,
                            const list_asset_classes_response&) = default;
@@ -303,7 +304,7 @@ struct list_asset_class_versions_request {
 struct list_asset_class_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::asset_class> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_asset_class_versions_response&,
                            const list_asset_class_versions_response&) = default;

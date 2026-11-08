@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_STRUCTURE_KIND_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_STRUCTURE_KIND_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/structure_kind.hpp"
+#include "ores.trading.api/domain/structure_kind_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -50,7 +51,7 @@ struct structure_kind_key {
 struct structure_kind_write {
     std::string code;
     std::string description;
-    bool confirms_as_whole;
+    bool confirms_as_whole{};
 
     friend bool operator==(const structure_kind_write&, const structure_kind_write&) = default;
 };
@@ -86,7 +87,7 @@ struct structure_kind_event {
     boost::uuids::uuid event_id;
     structure_kind_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -95,7 +96,7 @@ struct structure_kind_event {
 
 struct structure_kind_version_key {
     structure_kind_key structure_kind;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const structure_kind_version_key&,
                            const structure_kind_version_key&) = default;
@@ -133,7 +134,7 @@ struct list_structure_kinds_request {
 struct list_structure_kinds_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_kind> structure_kinds;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_structure_kinds_response&,
                            const list_structure_kinds_response&) = default;
@@ -308,7 +309,7 @@ struct list_structure_kind_versions_request {
 struct list_structure_kind_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_kind> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_structure_kind_versions_response&,
                            const list_structure_kind_versions_response&) = default;

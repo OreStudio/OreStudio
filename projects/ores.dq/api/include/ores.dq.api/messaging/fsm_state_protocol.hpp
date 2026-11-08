@@ -25,11 +25,12 @@
 #ifndef ORES_DQ_API_MESSAGING_FSM_STATE_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_FSM_STATE_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/fsm_state.hpp"
+#include "ores.dq.api/domain/fsm_state_codec.hpp"
 #include "ores.dq.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,8 +52,8 @@ struct fsm_state_write {
     boost::uuids::uuid id;
     boost::uuids::uuid machine_id;
     std::string name;
-    bool is_initial;
-    bool is_terminal;
+    bool is_initial{};
+    bool is_terminal{};
 
     friend bool operator==(const fsm_state_write&, const fsm_state_write&) = default;
 };
@@ -88,7 +89,7 @@ struct fsm_state_event {
     boost::uuids::uuid event_id;
     fsm_state_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +98,7 @@ struct fsm_state_event {
 
 struct fsm_state_version_key {
     fsm_state_key fsm_state;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const fsm_state_version_key&, const fsm_state_version_key&) = default;
 };
@@ -134,7 +135,7 @@ struct list_fsm_states_request {
 struct list_fsm_states_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::fsm_state> states;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fsm_states_response&,
                            const list_fsm_states_response&) = default;
@@ -305,7 +306,7 @@ struct list_fsm_state_versions_request {
 struct list_fsm_state_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::fsm_state> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fsm_state_versions_response&,
                            const list_fsm_state_versions_response&) = default;

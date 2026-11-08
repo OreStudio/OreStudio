@@ -19,6 +19,7 @@
 #include "ores.ore.core/xml/roundtrip.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/credit_simulation_projection.hpp"
+#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
@@ -29,6 +30,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <variant>
 
 namespace ores::ore::xml {
@@ -60,41 +62,12 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
     switch (kind) {
         case document_kind::portfolio: {
             const auto t0 = clock_type::now();
-            auto items = importer::import_portfolio_with_context(file);
-            summary.import_ms += std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
-
-            std::vector<trading::messaging::trade_export_item> export_items;
-            trading::domain::instrument_batch instruments;
-            export_items.reserve(items.size());
-            boost::uuids::random_generator uuid_gen;
-            for (const auto& item : items) {
-                // The importer leaves the trade id unset; the planner mints it
-                // on the import path. This walk has no planner, so it mints one
-                // here: the export joins an item to its instrument by that id,
-                // and with every id nil each trade would join to the batch's
-                // first instrument.
-                const auto trade_id = uuid_gen();
-                auto instrument = item.instrument;
-                if (!std::holds_alternative<std::monostate>(instrument))
-                    trading::domain::stamp_ids(instrument, trade_id);
-
-                trading::messaging::trade_export_item export_item;
-                export_item.anchor = item.anchor;
-                export_item.anchor.id = trade_id;
-                export_item.ore_id = item.ore_id;
-                export_item.envelope = item.envelope;
-                trading::domain::append_instrument(instruments, instrument);
-                if (std::holds_alternative<std::monostate>(instrument))
-                    ++summary.trades_passthrough;
-                else
-                    ++summary.trades_mapped;
-                export_items.push_back(std::move(export_item));
-            }
-
-            const auto t1 = clock_type::now();
-            auto xml = exporter::export_portfolio(export_items, instruments);
-            summary.export_ms += std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
-            return xml;
+            auto written = roundtrip_portfolio(ores::platform::filesystem::file::read_content(file),
+                                               file.generic_string());
+            summary.export_ms += std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
+            summary.trades_mapped += written.trades_mapped;
+            summary.trades_passthrough += static_cast<int>(written.passthrough_types.size());
+            return std::move(written.xml);
         }
         case document_kind::currency_config: {
             const auto t0 = clock_type::now();
@@ -175,6 +148,91 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
 }
 
 } // namespace
+
+portfolio_roundtrip roundtrip_portfolio(std::string_view text, std::string_view origin) {
+    auto items =
+        domain::portfolio_projection::map(domain::portfolio_projection::read(text, origin), origin);
+
+    portfolio_roundtrip result;
+    std::vector<trading::messaging::trade_export_item> export_items;
+    trading::domain::instrument_batch instruments;
+    export_items.reserve(items.size());
+    boost::uuids::random_generator uuid_gen;
+    for (const auto& item : items) {
+        // The import leaves the trade id unset; the planner mints it on the
+        // import path. This round trip has no planner, so it mints one here:
+        // the export joins an item to its instrument by that id, and with every
+        // id nil each trade would join to the batch's first instrument.
+        const auto trade_id = uuid_gen();
+        auto instrument = item.instrument;
+        if (!std::holds_alternative<std::monostate>(instrument))
+            trading::domain::stamp_ids(instrument, trade_id);
+
+        trading::messaging::trade_export_item export_item;
+        export_item.anchor = item.anchor;
+        export_item.anchor.id = trade_id;
+        export_item.ore_id = item.ore_id;
+        export_item.envelope = item.envelope;
+        trading::domain::append_instrument(instruments, instrument);
+        // A component is written inside its composite, so only the trades the
+        // document states at its top level are counted.
+        if (!item.membership) {
+            if (std::holds_alternative<std::monostate>(instrument))
+                result.passthrough_types.push_back(item.anchor.trade_type);
+            else
+                ++result.trades_mapped;
+        }
+        export_items.push_back(std::move(export_item));
+    }
+
+    // A composite's components are trades of their own, joined to the
+    // composite by a structure. The import builds it from each component's
+    // membership; this round trip has no import, so it builds it here.
+    std::unordered_map<std::string, std::size_t> position_of;
+    for (std::size_t i = 0; i < items.size(); ++i)
+        if (!items[i].membership)
+            position_of.emplace(items[i].ore_id, i);
+    std::unordered_map<std::string, boost::uuids::uuid> structure_of;
+    const auto join = [&](std::size_t i,
+                          const std::string& role,
+                          int sequence_number,
+                          const boost::uuids::uuid& structure_id,
+                          const std::optional<std::string>& label) {
+        trading::domain::structure_member member;
+        member.trade_id = export_items[i].anchor.id;
+        member.structure_id = structure_id;
+        member.role = role;
+        member.sequence_number = sequence_number;
+        member.member_label = label;
+        instruments.structure_members.push_back(std::move(member));
+    };
+    for (std::size_t i = 0; i < items.size(); ++i) {
+        const auto& membership = items[i].membership;
+        if (!membership)
+            continue;
+        const auto parent = position_of.find(membership->parent_ore_id);
+        if (parent == position_of.end())
+            continue;
+        const auto joined =
+            domain::portfolio_projection::structure_of(items[parent->second].anchor.trade_type);
+        if (!joined)
+            continue;
+        auto [structure, created] = structure_of.try_emplace(membership->parent_ore_id);
+        if (created) {
+            structure->second = uuid_gen();
+            join(parent->second,
+                 std::string(joined->parent_role),
+                 1,
+                 structure->second,
+                 std::nullopt);
+        }
+        join(
+            i, membership->role, membership->sequence_number, structure->second, membership->label);
+    }
+
+    result.xml = exporter::export_portfolio(export_items, instruments);
+    return result;
+}
 
 roundtrip_summary roundtrip(const std::filesystem::path& input_dir,
                             const std::filesystem::path& output_dir) {

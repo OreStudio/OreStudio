@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_REPORT_TEXT_VALUE_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_REPORT_TEXT_VALUE_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/report_text_value.hpp"
+#include "ores.reporting.api/domain/report_text_value_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -53,7 +54,7 @@ struct report_text_value_write {
     boost::uuids::uuid report_instance_id;
     boost::uuids::uuid result_id;
     std::string source;
-    int line;
+    int line{};
     std::chrono::system_clock::time_point as_of;
     boost::uuids::uuid report_definition_id;
     std::string family;
@@ -111,7 +112,7 @@ struct report_text_value_event {
     boost::uuids::uuid event_id;
     report_text_value_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -142,7 +143,7 @@ struct list_report_text_values_request {
 struct list_report_text_values_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_text_value> values;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_text_values_response&,
                            const list_report_text_values_response&) = default;

@@ -73,7 +73,6 @@
 #include "ores.trading.api/domain/commodity_basket_constituent_codec.hpp"
 #include "ores.trading.api/domain/commodity_instrument_codec.hpp"
 #include "ores.trading.api/domain/composite_instrument_codec.hpp"
-#include "ores.trading.api/domain/composite_leg_codec.hpp"
 #include "ores.trading.api/domain/credit_basket_constituent_codec.hpp"
 #include "ores.trading.api/domain/credit_default_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/credit_instrument_codec.hpp"
@@ -103,6 +102,8 @@
 #include "ores.trading.api/domain/index_credit_default_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument_codec.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument_codec.hpp"
+#include "ores.trading.api/domain/instrument_barrier_codec.hpp"
+#include "ores.trading.api/domain/instrument_barrier_level_codec.hpp"
 #include "ores.trading.api/domain/instrument_option_codec.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee_codec.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price_codec.hpp"
@@ -111,13 +112,19 @@
 #include "ores.trading.api/domain/instrument_schedule_codec.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date_codec.hpp"
 #include "ores.trading.api/domain/instrument_strike_codec.hpp"
+#include "ores.trading.api/domain/instrument_underlying_codec.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument_codec.hpp"
 #include "ores.trading.api/domain/range_bound_codec.hpp"
 #include "ores.trading.api/domain/rate_instrument_codec.hpp"
 #include "ores.trading.api/domain/risk_participation_agreement_instrument_codec.hpp"
 #include "ores.trading.api/domain/scripted_instrument_codec.hpp"
+#include "ores.trading.api/domain/scripted_parameter_codec.hpp"
+#include "ores.trading.api/domain/scripted_parameter_value_codec.hpp"
+#include "ores.trading.api/domain/structure_member_codec.hpp"
+#include "ores.trading.api/domain/swap_leg_amortization_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_amount_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_codec.hpp"
+#include "ores.trading.api/domain/swap_leg_indexing_codec.hpp"
 #include "ores.trading.api/domain/swap_leg_rate_codec.hpp"
 #include "ores.trading.api/domain/swaption_instrument_codec.hpp"
 #include "ores.trading.api/domain/synthetic_cdo_instrument_codec.hpp"
@@ -327,10 +334,6 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::commodity_basket_constituent> commodity_basket_constituents;
     /**
-     * @brief The composite_leg rows, keyed by trade id.
-     */
-    std::vector<ores::trading::domain::composite_leg> composite_legs;
-    /**
      * @brief The credit_basket_constituent rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::credit_basket_constituent> credit_basket_constituents;
@@ -384,6 +387,14 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::inflation_swap_instrument> inflation_swap_instruments;
     /**
+     * @brief The instrument_barrier rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::instrument_barrier> instrument_barriers;
+    /**
+     * @brief The instrument_barrier_level rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::instrument_barrier_level> instrument_barrier_levels;
+    /**
      * @brief The instrument_option rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::instrument_option> instrument_options;
@@ -419,6 +430,10 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::instrument_strike> instrument_strikes;
     /**
+     * @brief The instrument_underlying rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::instrument_underlying> instrument_underlyings;
+    /**
      * @brief The knock_out_swap_instrument rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::knock_out_swap_instrument> knock_out_swap_instruments;
@@ -440,9 +455,29 @@ struct instrument_batch {
      */
     std::vector<ores::trading::domain::swap_leg_amount> swap_leg_amounts;
     /**
+     * @brief The swap_leg_indexing rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::swap_leg_indexing> swap_leg_indexings;
+    /**
+     * @brief The swap_leg_amortization rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::swap_leg_amortization> swap_leg_amortizations;
+    /**
      * @brief The swap_leg_rate rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::swap_leg_rate> swap_leg_rates;
+    /**
+     * @brief The scripted_parameter rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::scripted_parameter> scripted_parameters;
+    /**
+     * @brief The scripted_parameter_value rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::scripted_parameter_value> scripted_parameter_values;
+    /**
+     * @brief The structure_member rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::structure_member> structure_members;
     /**
      * @brief The swaption_instrument rows, keyed by trade id.
      */
@@ -786,13 +821,6 @@ inline void append(instrument_batch& batch, commodity_basket_constituent v) {
 }
 
 /**
- * @brief Adds one composite_leg to the array that holds its type.
- */
-inline void append(instrument_batch& batch, composite_leg v) {
-    batch.composite_legs.push_back(std::move(v));
-}
-
-/**
  * @brief Adds one credit_basket_constituent to the array that holds its type.
  */
 inline void append(instrument_batch& batch, credit_basket_constituent v) {
@@ -877,6 +905,20 @@ inline void append(instrument_batch& batch, inflation_swap_instrument v) {
 }
 
 /**
+ * @brief Adds one instrument_barrier to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_barrier v) {
+    batch.instrument_barriers.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one instrument_barrier_level to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_barrier_level v) {
+    batch.instrument_barrier_levels.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one instrument_option to the array that holds its type.
  */
 inline void append(instrument_batch& batch, instrument_option v) {
@@ -933,6 +975,13 @@ inline void append(instrument_batch& batch, instrument_strike v) {
 }
 
 /**
+ * @brief Adds one instrument_underlying to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, instrument_underlying v) {
+    batch.instrument_underlyings.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one knock_out_swap_instrument to the array that holds its type.
  */
 inline void append(instrument_batch& batch, knock_out_swap_instrument v) {
@@ -968,10 +1017,45 @@ inline void append(instrument_batch& batch, swap_leg_amount v) {
 }
 
 /**
+ * @brief Adds one swap_leg_indexing to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, swap_leg_indexing v) {
+    batch.swap_leg_indexings.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one swap_leg_amortization to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, swap_leg_amortization v) {
+    batch.swap_leg_amortizations.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one swap_leg_rate to the array that holds its type.
  */
 inline void append(instrument_batch& batch, swap_leg_rate v) {
     batch.swap_leg_rates.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one scripted_parameter to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, scripted_parameter v) {
+    batch.scripted_parameters.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one scripted_parameter_value to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, scripted_parameter_value v) {
+    batch.scripted_parameter_values.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one structure_member to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, structure_member v) {
+    batch.structure_members.push_back(std::move(v));
 }
 
 /**
@@ -1101,7 +1185,6 @@ template <typename T>
                                       &instrument_batch::cap_floor_instruments},
         ::ores::utility::codec::field{"commodity_basket_constituents",
                                       &instrument_batch::commodity_basket_constituents},
-        ::ores::utility::codec::field{"composite_legs", &instrument_batch::composite_legs},
         ::ores::utility::codec::field{"credit_basket_constituents",
                                       &instrument_batch::credit_basket_constituents},
         ::ores::utility::codec::field{"credit_default_swap_instruments",
@@ -1126,6 +1209,10 @@ template <typename T>
             &instrument_batch::index_credit_default_swap_option_instruments},
         ::ores::utility::codec::field{"inflation_swap_instruments",
                                       &instrument_batch::inflation_swap_instruments},
+        ::ores::utility::codec::field{"instrument_barriers",
+                                      &instrument_batch::instrument_barriers},
+        ::ores::utility::codec::field{"instrument_barrier_levels",
+                                      &instrument_batch::instrument_barrier_levels},
         ::ores::utility::codec::field{"instrument_options", &instrument_batch::instrument_options},
         ::ores::utility::codec::field{"instrument_option_exercise_fees",
                                       &instrument_batch::instrument_option_exercise_fees},
@@ -1140,6 +1227,8 @@ template <typename T>
         ::ores::utility::codec::field{"instrument_schedule_dates",
                                       &instrument_batch::instrument_schedule_dates},
         ::ores::utility::codec::field{"instrument_strikes", &instrument_batch::instrument_strikes},
+        ::ores::utility::codec::field{"instrument_underlyings",
+                                      &instrument_batch::instrument_underlyings},
         ::ores::utility::codec::field{"knock_out_swap_instruments",
                                       &instrument_batch::knock_out_swap_instruments},
         ::ores::utility::codec::field{"range_bounds", &instrument_batch::range_bounds},
@@ -1147,7 +1236,15 @@ template <typename T>
                                       &instrument_batch::risk_participation_agreement_instruments},
         ::ores::utility::codec::field{"swap_legs", &instrument_batch::swap_legs},
         ::ores::utility::codec::field{"swap_leg_amounts", &instrument_batch::swap_leg_amounts},
+        ::ores::utility::codec::field{"swap_leg_indexings", &instrument_batch::swap_leg_indexings},
+        ::ores::utility::codec::field{"swap_leg_amortizations",
+                                      &instrument_batch::swap_leg_amortizations},
         ::ores::utility::codec::field{"swap_leg_rates", &instrument_batch::swap_leg_rates},
+        ::ores::utility::codec::field{"scripted_parameters",
+                                      &instrument_batch::scripted_parameters},
+        ::ores::utility::codec::field{"scripted_parameter_values",
+                                      &instrument_batch::scripted_parameter_values},
+        ::ores::utility::codec::field{"structure_members", &instrument_batch::structure_members},
         ::ores::utility::codec::field{"swaption_instruments",
                                       &instrument_batch::swaption_instruments},
         ::ores::utility::codec::field{"synthetic_cdo_instruments",

@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.api/workflow/identity_workflow.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
 #include <string>
 #include <vector>
 
@@ -53,7 +52,8 @@ identity_steps(const std::string& request_json) {
  * fixture could never execute.
  */
 wf::identity_step_request command_of(const ores::workflow::service::workflow_step_def& step) {
-    const auto parsed = rfl::json::read<wf::identity_step_request>(step.build_command("{}", {}));
+    const auto parsed = ores::utility::codec::json::read_expected<wf::identity_step_request>(
+        step.build_command("{}", {}));
     REQUIRE(parsed.has_value());
     return *parsed;
 }
@@ -106,7 +106,7 @@ TEST_CASE("identity_workflow_compensates_by_completing", "[identity]") {
     const auto steps = identity_steps(R"({"steps":[{"name":"one","compensate":true}]})");
 
     REQUIRE(steps.size() == 1);
-    const auto compensation = rfl::json::read<wf::identity_step_request>(
+    const auto compensation = ores::utility::codec::json::read_expected<wf::identity_step_request>(
         steps[0].build_compensation(steps[0].build_command("{}", {}), "{}", ""));
     REQUIRE(compensation.has_value());
     CHECK(compensation->name == "one");

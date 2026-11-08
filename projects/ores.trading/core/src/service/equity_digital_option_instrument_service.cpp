@@ -116,6 +116,10 @@ domain::equity_digital_option_instrument equity_digital_option_instrument_to_dom
     v.expiry_date = write.expiry_date;
     v.long_short = write.long_short;
     v.payout_amount = write.payout_amount;
+    v.barrier_start_date = write.barrier_start_date;
+    v.barrier_calendar = write.barrier_calendar;
+    v.barrier_fixing_index = write.barrier_fixing_index;
+    v.quantity = write.quantity;
     v.description = write.description;
     return v;
 }

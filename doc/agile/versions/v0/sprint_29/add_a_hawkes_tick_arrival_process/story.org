@@ -23,9 +23,9 @@ Know what the tick library does, what the port into ores.analytics.quant needs, 
 |---------------+----------------------------------------|
 | State         | DONE                                 |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Nothing.                               |
-| Waiting on    | Nothing.                               |
-| Next          | The market-wide regime, its own story. |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-25                             |
 
 * Acceptance

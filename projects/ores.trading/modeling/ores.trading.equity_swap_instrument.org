@@ -194,7 +194,7 @@ std::string("Long")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :economic: true
 :END:
 
@@ -205,6 +205,96 @@ Soft FK to ores_refdata_payment_frequencies_tbl: payment frequencies belong to o
 #+begin_src cpp :name generator
 std::string("Quarterly")
 #+end_src
+
+** fixed_rate
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A worst-of basket swap's funding fixed rate, as =FixedRate= states it.
+
+** floating_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+A worst-of basket swap's funding index, as =FloatingIndex= states it.
+
+** floating_spread
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A worst-of basket swap's spread over its funding index, as =FloatingSpread= states it.
+
+** floating_day_count_fraction
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:economic: true
+:END:
+
+A worst-of basket swap's funding day count, as =FloatingDayCountFraction= states it.
+
+** initial_fixed_rate
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A worst-of basket swap's first period fixed rate, as =InitialFixedRate= states it.
+
+** knock_in_level
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+A worst-of basket swap's knock-in level, as =KnockInLevel= states it.
+
+** bermudan_knock_in
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether a worst-of basket swap knocks in only on its determination dates, as =BermudanKnockIn= states it.
+
+** accruing_fixed_coupons
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether a worst-of basket swap's fixed coupons accrue, as =AccruingFixedCoupons= states it.
+
+** accumulating_fixed_coupons
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether a worst-of basket swap's missed fixed coupons accumulate, as =AccumulatingFixedCoupons= states it.
 
 ** description
 :PROPERTIES:
@@ -280,10 +370,10 @@ is immutable.
 
 | expression |
 |---|
-| ("trade_type_code" = 'EquityWorstOfBasketSwap' and "underlying_name" is null) or ("trade_type_code" = 'EquitySwap' and "underlying_name" is not null) |
+| "trade_type_code" = 'EquityWorstOfBasketSwap' or "underlying_name" is not null |
 | "notional" > 0 |
 | "currency" <> '' |
-| "return_type" in ('Total', 'Price') |
+| "trade_type_code" = 'EquityWorstOfBasketSwap' or "return_type" in ('Total', 'Price') |
 
 ** Indexes
 

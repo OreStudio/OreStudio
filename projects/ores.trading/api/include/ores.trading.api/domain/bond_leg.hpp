@@ -94,7 +94,7 @@ and never carry a role here.
      *
      * Each of the three roles carries one leg, which is always number one.
      */
-    int leg_number;
+    int leg_number{};
 
     /**
      * @brief The activity that wrote this version.

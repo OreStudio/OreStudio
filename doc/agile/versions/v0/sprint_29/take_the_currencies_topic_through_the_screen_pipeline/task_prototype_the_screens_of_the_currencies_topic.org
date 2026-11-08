@@ -33,7 +33,7 @@ off before any code.
 | State        | DONE                              |
 | Parent story | [[id:F211A600-B482-4C76-B4EF-2FFE1FDEB8EB][Take the currencies topic through the screen pipeline]] |
 | Now          | Nothing. |
-| Waiting on   | The owner's sign off of the prototype. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-25                               |
 

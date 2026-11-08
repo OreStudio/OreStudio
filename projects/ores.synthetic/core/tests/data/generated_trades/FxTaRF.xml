@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="9eaa86b0-25a2-5736-9243-94655f7fc82f">
+    <TradeType>FxTaRF</TradeType>
+    <FxTaRFData>
+      <Currency>USD</Currency>
+      <FixingAmount>8284783.79</FixingAmount>
+      <Strike>0.6184</Strike>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>EUR/USD</Name>
+      </Underlying>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1Y</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ScheduleData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>CumulatedProfitCap</Type>
+          <Levels>
+            <Level>16569567.58</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </FxTaRFData>
+  </Trade>
+  <Trade id="1af62728-03a0-560c-904c-56e56a5e265e">
+    <TradeType>FxTaRF</TradeType>
+    <FxTaRFData>
+      <Currency>USD</Currency>
+      <FixingAmount>5666887.39</FixingAmount>
+      <Strike>0.9992</Strike>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>EUR/USD</Name>
+      </Underlying>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>1Y</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ScheduleData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <Barriers>
+        <BarrierData>
+          <Type>CumulatedProfitCap</Type>
+          <Levels>
+            <Level>11333774.78</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </FxTaRFData>
+  </Trade>
+</Portfolio>

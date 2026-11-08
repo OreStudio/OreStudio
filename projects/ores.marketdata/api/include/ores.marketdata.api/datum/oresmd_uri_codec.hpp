@@ -1,0 +1,104 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_MARKETDATA_API_DATUM_ORESMD_URI_CODEC_HPP
+#define ORES_MARKETDATA_API_DATUM_ORESMD_URI_CODEC_HPP
+
+#include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/market_index.hpp"
+#include "ores.marketdata.api/export.hpp"
+#include <expected>
+#include <string>
+#include <string_view>
+
+namespace ores::marketdata::datum {
+
+/**
+ * @brief Writes a market datum as an oresmd URI and reads it back.
+ *
+ * The codec walks the datum's schema row and has no code per instrument type:
+ *
+ * @code
+ * oresmd://credit/ACME?type=quote&instrument=cds&quote=credit_spread
+ *     &seniority=SNRFOR&ccy=USD&doc_clause=XR14&term=5Y
+ * @endcode
+ *
+ * The authority is the row's asset class and the path is its subject field,
+ * percent-encoded with its case kept. The query starts with type (quote for a
+ * datum, series for a series), instrument and quote, the ORE instrument and
+ * quote types in lower case. Each other field follows under its schema name, in
+ * schema order, with the case of its value kept. A field that holds none is
+ * left out.
+ *
+ * The reader is strict about the grammar. It refuses a missing key for a field
+ * that may not be none, an unknown key, a repeated key, an empty value, a
+ * coordinate field in a series, and any text other than the writer's own
+ * spelling, such as a reordered query, so one datum has one URI and stored URIs
+ * compare as text.
+ *
+ * It is not strict about ORE. Every datum the market data model admits has a
+ * URI, whether or not an ORE key can spell it, because the URI is the datum's
+ * identity and an ORE key is a boundary format: a quote type ORE has no token
+ * for is a datum like any other. What ORE can and cannot name is the ORE axis
+ * codec's question, at the edge where ORE XML is read and written.
+ */
+class ORES_MARKETDATA_API_EXPORT oresmd_uri_codec final {
+public:
+    /// The datum or series @p uri names, or why the grammar does not admit it.
+    [[nodiscard]] static std::expected<market_datum, std::string> read(std::string_view uri);
+
+    /// The URI of @p datum, or why the grammar admits no URI for it.
+    [[nodiscard]] static std::expected<std::string, std::string> write(const market_datum& datum);
+
+    /**
+     * @brief The index @p uri names, a fixing's identity, or why it names none.
+     *
+     * @code
+     * oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M
+     * @endcode
+     *
+     * The authority is the family's asset class and the path its subject; the
+     * query is type=fixing, index and the family's other fields in its row's
+     * order. The reader is as strict as for a quote: it refuses an unknown,
+     * repeated or empty key, a missing required field, an index no ORE index
+     * name names, and any spelling but the writer's.
+     */
+    [[nodiscard]] static std::expected<market_index, std::string> read_index(std::string_view uri);
+
+    /// The URI of @p index, or why it has none.
+    [[nodiscard]] static std::expected<std::string, std::string>
+    write_index(const market_index& index);
+
+    /**
+     * @brief The text a URI writes for @p type under =instrument=: the ORE
+     * name in lower case.
+     *
+     * Stated here rather than spelled again by whoever needs to store what a
+     * URI says, so the spelling a reader compares against is the spelling the
+     * writer produces.
+     */
+    [[nodiscard]] static std::string instrument_spelling(instrument_type type);
+
+    /// The text a URI writes for @p quote under =quote=.
+    [[nodiscard]] static std::string quote_spelling(quote_type quote);
+};
+
+}
+
+#endif

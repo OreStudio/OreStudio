@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_EQUITY_ASIAN_OPTION_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_EQUITY_ASIAN_OPTION_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/equity_asian_option_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -61,6 +62,8 @@ namespace ores::trading::domain {
                               &equity_asian_option_instrument::averaging_start_date},
         utility::codec::field{"averaging_end_date",
                               &equity_asian_option_instrument::averaging_end_date},
+        utility::codec::field{"settlement", &equity_asian_option_instrument::settlement},
+        utility::codec::field{"strike_currency", &equity_asian_option_instrument::strike_currency},
         utility::codec::field{"description", &equity_asian_option_instrument::description},
         utility::codec::field{"audit", &equity_asian_option_instrument::audit},
     };

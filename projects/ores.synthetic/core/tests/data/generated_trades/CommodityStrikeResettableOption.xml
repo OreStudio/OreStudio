@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
+    <TradeType>CommodityStrikeResettableOption</TradeType>
+  </Trade>
+  <Trade id="1af62728-03a0-560c-904c-56e56a5e265e">
+    <TradeType>CommodityStrikeResettableOption</TradeType>
+  </Trade>
+</Portfolio>

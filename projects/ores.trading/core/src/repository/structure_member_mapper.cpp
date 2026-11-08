@@ -49,6 +49,7 @@ domain::structure_member structure_member_mapper::map(const structure_member_ent
     r.structure_id = v.structure_id;
     r.role = v.role;
     r.sequence_number = v.sequence_number;
+    r.member_label = v.member_label;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -69,6 +70,7 @@ structure_member_entity structure_member_mapper::map(const domain::structure_mem
     r.structure_id = v.structure_id;
     r.role = v.role;
     r.sequence_number = v.sequence_number;
+    r.member_label = v.member_label;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

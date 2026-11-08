@@ -33,7 +33,6 @@ set(files
     "commodity_basket_constituent_commands_tests.cpp"
     "commodity_instrument_commands_tests.cpp"
     "composite_instrument_commands_tests.cpp"
-    "composite_leg_commands_tests.cpp"
     "credit_basket_constituent_commands_tests.cpp"
     "credit_default_swap_instrument_commands_tests.cpp"
     "credit_instrument_commands_tests.cpp"

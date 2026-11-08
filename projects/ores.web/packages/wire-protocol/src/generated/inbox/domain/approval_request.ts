@@ -36,6 +36,7 @@ export interface ApprovalRequest {
     id: string;
     kind_code: string;
     state_code: string;
+    auto_approval_code: string;
     requested_by: string;
     requested_at: string;
     reason: string;

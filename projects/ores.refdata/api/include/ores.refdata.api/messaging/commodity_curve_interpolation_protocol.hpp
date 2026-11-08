@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COMMODITY_CURVE_INTERPOLATION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COMMODITY_CURVE_INTERPOLATION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/commodity_curve_interpolation.hpp"
+#include "ores.refdata.api/domain/commodity_curve_interpolation_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -94,7 +95,7 @@ struct commodity_curve_interpolation_event {
     boost::uuids::uuid event_id;
     commodity_curve_interpolation_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +105,7 @@ struct commodity_curve_interpolation_event {
 
 struct commodity_curve_interpolation_version_key {
     commodity_curve_interpolation_key commodity_curve_interpolation;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const commodity_curve_interpolation_version_key&,
                            const commodity_curve_interpolation_version_key&) = default;
@@ -143,7 +144,7 @@ struct list_commodity_curve_interpolations_request {
 struct list_commodity_curve_interpolations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_curve_interpolation> interpolations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_curve_interpolations_response&,
                            const list_commodity_curve_interpolations_response&) = default;
@@ -327,7 +328,7 @@ struct list_commodity_curve_interpolation_versions_request {
 struct list_commodity_curve_interpolation_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_curve_interpolation> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_curve_interpolation_versions_response&,
                            const list_commodity_curve_interpolation_versions_response&) = default;

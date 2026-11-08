@@ -25,11 +25,12 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_GENERATION_CONFIG_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_GENERATION_CONFIG_PROTOCOL_HPP
 
-#include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config_codec.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -56,9 +57,9 @@ struct ir_curve_generation_config_write {
     std::string tenor;
     std::string role;
     std::string process_type;
-    int ticks_per_hour;
-    bool enabled;
-    bool auto_start;
+    int ticks_per_hour{};
+    bool enabled{};
+    bool auto_start{};
     std::string price_source;
     std::string description;
     std::string fixed_leg_payment_frequency_code;
@@ -66,9 +67,9 @@ struct ir_curve_generation_config_write {
     std::optional<boost::uuids::uuid> folder_id;
     std::string asset_class_code;
     std::string arrival_mode;
-    double branching_ratio;
-    double decay;
-    double sensitivity;
+    double branching_ratio{};
+    double decay{};
+    double sensitivity{};
 
     friend bool operator==(const ir_curve_generation_config_write&,
                            const ir_curve_generation_config_write&) = default;
@@ -110,7 +111,7 @@ struct ir_curve_generation_config_event {
     boost::uuids::uuid event_id;
     ir_curve_generation_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -120,7 +121,7 @@ struct ir_curve_generation_config_event {
 
 struct ir_curve_generation_config_version_key {
     ir_curve_generation_config_key ir_curve_generation_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const ir_curve_generation_config_version_key&,
                            const ir_curve_generation_config_version_key&) = default;
@@ -159,7 +160,7 @@ struct list_ir_curve_generation_configs_request {
 struct list_ir_curve_generation_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::ir_curve_generation_config> ir_curve_generation_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ir_curve_generation_configs_response&,
                            const list_ir_curve_generation_configs_response&) = default;
@@ -339,7 +340,7 @@ struct list_ir_curve_generation_config_versions_request {
 struct list_ir_curve_generation_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::ir_curve_generation_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ir_curve_generation_config_versions_response&,
                            const list_ir_curve_generation_config_versions_response&) = default;

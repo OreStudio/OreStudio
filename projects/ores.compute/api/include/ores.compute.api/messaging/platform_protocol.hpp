@@ -25,11 +25,12 @@
 #ifndef ORES_COMPUTE_API_MESSAGING_PLATFORM_PROTOCOL_HPP
 #define ORES_COMPUTE_API_MESSAGING_PLATFORM_PROTOCOL_HPP
 
-#include "ores.compute.api/domain/platform.hpp"
+#include "ores.compute.api/domain/platform_codec.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -55,7 +56,7 @@ struct platform_write {
     std::string os_family;
     std::string cpu_arch;
     std::string abi;
-    bool is_active;
+    bool is_active{};
 
     friend bool operator==(const platform_write&, const platform_write&) = default;
 };
@@ -91,7 +92,7 @@ struct platform_event {
     boost::uuids::uuid event_id;
     platform_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +101,7 @@ struct platform_event {
 
 struct platform_version_key {
     platform_key platform;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const platform_version_key&, const platform_version_key&) = default;
 };
@@ -136,7 +137,7 @@ struct list_platforms_request {
 struct list_platforms_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::platform> platforms;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_platforms_response&,
                            const list_platforms_response&) = default;
@@ -307,7 +308,7 @@ struct list_platform_versions_request {
 struct list_platform_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::platform> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_platform_versions_response&,
                            const list_platform_versions_response&) = default;

@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PARTY_ID_SCHEME_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PARTY_ID_SCHEME_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/party_id_scheme.hpp"
+#include "ores.refdata.api/domain/party_id_scheme_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -52,7 +53,7 @@ struct party_id_scheme_write {
     std::string name;
     std::string description;
     std::string coding_scheme_code;
-    int display_order;
+    int display_order{};
     std::optional<int> max_cardinality;
 
     friend bool operator==(const party_id_scheme_write&, const party_id_scheme_write&) = default;
@@ -91,7 +92,7 @@ struct party_id_scheme_event {
     boost::uuids::uuid event_id;
     party_id_scheme_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +101,7 @@ struct party_id_scheme_event {
 
 struct party_id_scheme_version_key {
     party_id_scheme_key party_id_scheme;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const party_id_scheme_version_key&,
                            const party_id_scheme_version_key&) = default;
@@ -138,7 +139,7 @@ struct list_party_id_schemes_request {
 struct list_party_id_schemes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_id_scheme> schemes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_id_schemes_response&,
                            const list_party_id_schemes_response&) = default;
@@ -313,7 +314,7 @@ struct list_party_id_scheme_versions_request {
 struct list_party_id_scheme_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_id_scheme> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_id_scheme_versions_response&,
                            const list_party_id_scheme_versions_response&) = default;

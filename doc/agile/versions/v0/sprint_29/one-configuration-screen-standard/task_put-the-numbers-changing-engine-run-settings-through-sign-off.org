@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-24
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,13 +26,12 @@ Every configuration whose change alters the numbers a run computes goes through 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE |
 | Parent story | [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] |
-| Now          | The lifecycle is built, tested and driven live. |
-| Waiting on   | Nothing.                               |
-| Next         | Review, then mark the conformance line. |
-| Last touched | 2026-10-28                               |
-
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-08 |
 * Acceptance
 
 - A write to a group that changes the numbers produces a proposal; a write to an operational group lands directly with a reason and a history entry.

@@ -54,6 +54,7 @@ struct cap_floor_instrument_entity {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid trade_activity_id;
+    std::optional<std::string> long_short;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -71,6 +72,7 @@ struct cap_floor_instrument_entity {
                query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("trade_activity_id", &e::trade_activity_id) |
+               query_builder::bind("long_short", &e::long_short) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

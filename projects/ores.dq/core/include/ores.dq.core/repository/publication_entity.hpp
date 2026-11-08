@@ -56,10 +56,10 @@ struct publication_entity {
     std::string dataset_code;
     std::string mode;
     std::string target_table;
-    std::int64_t records_inserted;
-    std::int64_t records_updated;
-    std::int64_t records_skipped;
-    std::int64_t records_deleted;
+    std::int64_t records_inserted{};
+    std::int64_t records_updated{};
+    std::int64_t records_skipped{};
+    std::int64_t records_deleted{};
     std::string published_by;
     db_timestamp published_at;
 

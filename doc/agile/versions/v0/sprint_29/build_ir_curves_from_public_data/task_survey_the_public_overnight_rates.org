@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: A177002A-05F2-40D7-963F-7CCEA5EE4AB6
+:END:
+#+title: Task: Find the public overnight rate of each supported currency
+#+description: For each of the 28 currencies the synthetic IR feeds support, name its overnight index, the body that publishes it, how it can be read and on what terms, and record the result in the calibration sources note.
+#+type: task
+#+level: s1
+#+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
+#+owner: marco
+#+branch: feature/plan-the-ir-curves-story
+#+pr: 4467
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-04
+#+updated: 2026-11-04
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each supported currency has a named public source for its overnight rate, or a stated reason it has none. The public curve sources documented so far are the US Treasury par curve, SOFR, SONIA and the ECB's euro short-term rate; the other currencies' publishers, their access routes and their terms are not yet known.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-04                               |
+
+* Acceptance
+
+- The calibration sources note has one row per currency: overnight index, publisher, access route, history available, terms and whether the terms allow the use.
+- The eight currencies of the derived FX pairs are covered first, and each of the other twenty has a row, even where the answer is no source.
+
+* Plan
+
+1. List each currency's synthetic overnight index from the system tenant's IR curve generation configs.
+2. For the eight currencies of the derived FX pairs, read each publisher's terms page and probe its data route with a script.
+3. For the other twenty, name the index's administrator and mark the route and terms as not read.
+4. Check the indices that look ceased or misnamed against the publishers' own statements.
+5. Write the table into the calibration sources note, with each page read and when.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Currencies of the system tenant's synthetic IR feeds | 28 | =select distinct currency_code= on current rows of =ores_synthetic_ir_curve_generation_configs_tbl= of the system tenant | ca336730cd |
+| Routes that answered a script, of the eight probed | 6 of 8: New York Fed, ECB, Bank of England, Bank of Canada, Bank of Japan, SIX; RBA and RBNZ answered 403 | =curl= with a browser user agent, on 2026-11-06 | ca336730cd |
+| Terms pages read, of the eight | 7 of 8; RBNZ answered 403 | WebFetch of each terms page, on 2026-11-06 | ca336730cd |
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4467][#4467]] | [docs] Plan the IR curves story and survey the public overnight rates |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | "The last four rows" no longer points at the right rows | synthetic_calibration_sources.org | Accept | Now "a source whose row says not read", which survives added rows. |
+| 2 | Five usable counts AUD, whose route is open | synthetic_calibration_sources.org | Accept | Four usable: USD, EUR, GBP, CAD; AUD has usable terms and no open route. |
+| 3 | The wrong-index paragraph leaves PLN out of its count | synthetic_calibration_sources.org | Accept | "Four feeds quote the wrong index, and one is unresolved", naming PLN. |
+| 4 | The Bank of Japan request has no owner or step | task_read_public_overnight_rates_through_an_adapter.org | Accept | The adapter task's owner asks before the call rate is loaded, and records the answer. |
+| 5 | Do not count the RBNZ search summary as a source | synthetic_calibration_sources.org | No change | The note already marks it not read and the summary only as a search summary. |
+| 6 | The story seems to promise curves for every currency despite SARON | story.org, two tasks | Accept | A curve is bootstrapped from the synthetic quotes, so CHF keeps a curve at a fixed level; only calibrating its feed from SARON needs the SIX licence. Stated in the story, the calibration task and the publish task. |
+
+* Result
+
+The calibration sources note now has a section, "The overnight rate of each IR currency", with one row for each of the 28 currencies.
+
+- Of the eight currencies of the derived FX pairs, USD, EUR, GBP and CAD are usable now: each has terms that allow our use and a route that answered a script.
+- AUD's terms allow the use, but the RBA's server refused a script, so its route is open.
+- JPY needs the Bank of Japan's permission for any commercial use.
+- CHF's history may be stored, but SIX names yield-curve building as derived data, which needs a SIX Data License even for internal use.
+- NZD's terms page and data both refused a script, so both are open.
+- The other twenty have a row naming the index's administrator, with the route and terms not read.
+- Four feeds quote an index that is not the currency's overnight average: TELBOR for ILS, which ceased after 30 June 2025 and was replaced by SHIR, HIBOR for CNH, the BUBOR overnight quote for HUF, and TAIBOR for TWD. PLN's index is unresolved. The task "Replace the synthetic feeds of ceased or misnamed indices" now covers them with LIBOR.
+
+Not met: the history available from each source was not checked, so the table has no history column. That check moved to "Read the public overnight rates through an adapter", which stores the history.

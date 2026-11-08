@@ -25,7 +25,10 @@
 #ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_CODEC_HPP
 #define ORES_REFDATA_API_DOMAIN_CONVENTION_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/convention_identity.hpp"
+#include "ores.refdata.api/domain/convention_payload.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"

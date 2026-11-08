@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CAP_FLOOR_VOLATILITY_CONFIG_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CAP_FLOOR_VOLATILITY_CONFIG_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
+#include "ores.refdata.api/domain/cap_floor_volatility_config_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -119,7 +120,7 @@ struct cap_floor_volatility_config_event {
     boost::uuids::uuid event_id;
     cap_floor_volatility_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -129,7 +130,7 @@ struct cap_floor_volatility_config_event {
 
 struct cap_floor_volatility_config_version_key {
     cap_floor_volatility_config_key cap_floor_volatility_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const cap_floor_volatility_config_version_key&,
                            const cap_floor_volatility_config_version_key&) = default;
@@ -167,7 +168,7 @@ struct list_cap_floor_volatility_configs_request {
 struct list_cap_floor_volatility_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cap_floor_volatility_config> cap_floor_volatility_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cap_floor_volatility_configs_response&,
                            const list_cap_floor_volatility_configs_response&) = default;
@@ -347,7 +348,7 @@ struct list_cap_floor_volatility_config_versions_request {
 struct list_cap_floor_volatility_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cap_floor_volatility_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cap_floor_volatility_config_versions_response&,
                            const list_cap_floor_volatility_config_versions_response&) = default;

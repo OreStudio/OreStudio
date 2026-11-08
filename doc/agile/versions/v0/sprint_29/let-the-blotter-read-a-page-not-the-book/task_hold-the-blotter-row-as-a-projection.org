@@ -30,7 +30,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Parent story | [[id:44A58042-462F-46E2-93A5-F6936D38B411][Let the blotter read a page, not the book]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Nothing. [[id:7C1F0E52-9A44-4B31-8E6D-2F5C7A1B9D03][The blotter lists trades]] replaces it. |
+| Next         | Nothing. |
 | Last touched | 2026-11-02                               |
 
 * Acceptance

@@ -25,11 +25,12 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_ADAPTER_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_ADAPTER_PROTOCOL_HPP
 
-#include "ores.marketdata.api/domain/adapter.hpp"
+#include "ores.marketdata.api/domain/adapter_codec.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -64,7 +65,7 @@ struct adapter_event {
     boost::uuids::uuid event_id;
     adapter_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -73,7 +74,7 @@ struct adapter_event {
 
 struct adapter_version_key {
     adapter_key adapter;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const adapter_version_key&, const adapter_version_key&) = default;
 };
@@ -109,7 +110,7 @@ struct list_adapters_request {
 struct list_adapters_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::adapter> adapters;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_adapters_response&, const list_adapters_response&) = default;
 };
@@ -183,7 +184,7 @@ struct list_adapter_versions_request {
 struct list_adapter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::adapter> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_adapter_versions_response&,
                            const list_adapter_versions_response&) = default;

@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_SWAP_LEG_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_SWAP_LEG_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/domain/swap_leg_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -43,14 +44,14 @@ namespace ores::trading::messaging {
 
 struct swap_leg_key {
     boost::uuids::uuid trade_id;
-    int leg_number;
+    int leg_number{};
 
     friend bool operator==(const swap_leg_key&, const swap_leg_key&) = default;
 };
 
 struct swap_leg_write {
     boost::uuids::uuid trade_id;
-    int leg_number;
+    int leg_number{};
     boost::uuids::uuid trade_activity_id;
     std::optional<bool> payer;
     std::string leg_type_code;
@@ -60,6 +61,61 @@ struct swap_leg_write {
     std::string floating_index_code;
     std::string currency;
     std::optional<std::string> leg_group;
+    std::optional<int> fixing_days;
+    std::optional<bool> is_in_arrears;
+    std::optional<bool> include_spread;
+    std::optional<bool> is_averaged;
+    std::optional<bool> has_sub_periods;
+    std::optional<bool> notional_initial_exchange;
+    std::optional<bool> notional_final_exchange;
+    std::optional<std::string> payment_lag;
+    std::optional<std::string> payment_calendar;
+    std::optional<std::string> commodity_price_type;
+    std::optional<int> future_month_offset;
+    std::optional<int> daily_expiry_offset;
+    std::optional<std::string> pricing_calendar;
+    std::optional<std::string> equity_return_type;
+    std::optional<std::string> equity_name;
+    std::optional<std::string> equity_underlying_type;
+    std::optional<std::string> equity_underlying_identifier_type;
+    std::optional<double> equity_quantity;
+    std::optional<ores::utility::decimal::decimal> equity_initial_price;
+    std::optional<std::string> equity_initial_price_currency;
+    std::optional<ores::utility::decimal::decimal> equity_dividend_factor;
+    std::optional<bool> equity_notional_reset;
+    std::optional<std::string> equity_currency;
+    std::optional<std::string> fx_index;
+    std::optional<std::string> fx_reset_foreign_currency;
+    std::optional<std::string> fx_reset_start_date;
+    std::optional<ores::utility::decimal::decimal> fx_reset_foreign_amount;
+    std::optional<std::string> fx_reset_fx_index;
+    std::optional<int> fx_reset_fixing_days;
+    std::optional<std::string> fx_reset_fixing_calendar;
+    std::optional<std::string> fixing_calendar;
+    std::optional<std::string> digital_call_position;
+    std::optional<bool> digital_is_call_atm_included;
+    std::optional<std::string> digital_put_position;
+    std::optional<bool> digital_is_put_atm_included;
+    std::optional<ores::utility::decimal::decimal> equity_margin_initial_margin_factor;
+    std::optional<ores::utility::decimal::decimal> equity_margin_multiplier;
+    std::optional<std::string> commodity_pay_relative_to;
+    std::optional<std::string> commodity_quantity_frequency;
+    std::optional<std::string> pricing_date_rule;
+    std::optional<bool> indexings_from_asset_leg;
+    std::optional<std::string> floating_index_code_2;
+    std::optional<int> cms_duration;
+    std::optional<bool> naked_option;
+    std::optional<std::string> lookback;
+    std::optional<int> rate_cutoff;
+    std::optional<bool> local_cap_floor;
+    std::optional<std::string> observation_lag;
+    std::optional<double> cpi_base;
+    std::optional<std::chrono::year_month_day> cpi_start_date;
+    std::optional<std::string> cpi_interpolation;
+    std::optional<bool> cpi_interpolated;
+    std::optional<bool> subtract_inflation_notional;
+    std::optional<std::string> zero_coupon_compounding;
+    std::optional<bool> zero_coupon_subtract_notional;
 
     friend bool operator==(const swap_leg_write&, const swap_leg_write&) = default;
 };
@@ -96,7 +152,7 @@ struct swap_leg_event {
     boost::uuids::uuid event_id;
     swap_leg_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +161,7 @@ struct swap_leg_event {
 
 struct swap_leg_version_key {
     swap_leg_key swap_leg;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const swap_leg_version_key&, const swap_leg_version_key&) = default;
 };
@@ -141,7 +197,7 @@ struct list_swap_legs_request {
 struct list_swap_legs_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg> swap_legs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_swap_legs_response&,
                            const list_swap_legs_response&) = default;
@@ -313,7 +369,7 @@ struct list_by_trade_id_swap_legs_request {
 struct list_by_trade_id_swap_legs_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg> swap_legs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_trade_id_swap_legs_response&,
                            const list_by_trade_id_swap_legs_response&) = default;
@@ -342,7 +398,7 @@ struct list_swap_leg_versions_request {
 struct list_swap_leg_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_swap_leg_versions_response&,
                            const list_swap_leg_versions_response&) = default;
@@ -422,6 +478,75 @@ inline constexpr std::string_view deleted = "trading.v1.events.swap_legs.deleted
         utility::codec::field{"floating_index_code", &swap_leg_write::floating_index_code},
         utility::codec::field{"currency", &swap_leg_write::currency},
         utility::codec::field{"leg_group", &swap_leg_write::leg_group},
+        utility::codec::field{"fixing_days", &swap_leg_write::fixing_days},
+        utility::codec::field{"is_in_arrears", &swap_leg_write::is_in_arrears},
+        utility::codec::field{"include_spread", &swap_leg_write::include_spread},
+        utility::codec::field{"is_averaged", &swap_leg_write::is_averaged},
+        utility::codec::field{"has_sub_periods", &swap_leg_write::has_sub_periods},
+        utility::codec::field{"notional_initial_exchange",
+                              &swap_leg_write::notional_initial_exchange},
+        utility::codec::field{"notional_final_exchange", &swap_leg_write::notional_final_exchange},
+        utility::codec::field{"payment_lag", &swap_leg_write::payment_lag},
+        utility::codec::field{"payment_calendar", &swap_leg_write::payment_calendar},
+        utility::codec::field{"commodity_price_type", &swap_leg_write::commodity_price_type},
+        utility::codec::field{"future_month_offset", &swap_leg_write::future_month_offset},
+        utility::codec::field{"daily_expiry_offset", &swap_leg_write::daily_expiry_offset},
+        utility::codec::field{"pricing_calendar", &swap_leg_write::pricing_calendar},
+        utility::codec::field{"equity_return_type", &swap_leg_write::equity_return_type},
+        utility::codec::field{"equity_name", &swap_leg_write::equity_name},
+        utility::codec::field{"equity_underlying_type", &swap_leg_write::equity_underlying_type},
+        utility::codec::field{"equity_underlying_identifier_type",
+                              &swap_leg_write::equity_underlying_identifier_type},
+        utility::codec::field{"equity_quantity", &swap_leg_write::equity_quantity},
+        utility::codec::field{"equity_initial_price", &swap_leg_write::equity_initial_price},
+        utility::codec::field{"equity_initial_price_currency",
+                              &swap_leg_write::equity_initial_price_currency},
+        utility::codec::field{"equity_dividend_factor", &swap_leg_write::equity_dividend_factor},
+        utility::codec::field{"equity_notional_reset", &swap_leg_write::equity_notional_reset},
+        utility::codec::field{"equity_currency", &swap_leg_write::equity_currency},
+        utility::codec::field{"fx_index", &swap_leg_write::fx_index},
+        utility::codec::field{"fx_reset_foreign_currency",
+                              &swap_leg_write::fx_reset_foreign_currency},
+        utility::codec::field{"fx_reset_start_date", &swap_leg_write::fx_reset_start_date},
+        utility::codec::field{"fx_reset_foreign_amount", &swap_leg_write::fx_reset_foreign_amount},
+        utility::codec::field{"fx_reset_fx_index", &swap_leg_write::fx_reset_fx_index},
+        utility::codec::field{"fx_reset_fixing_days", &swap_leg_write::fx_reset_fixing_days},
+        utility::codec::field{"fx_reset_fixing_calendar",
+                              &swap_leg_write::fx_reset_fixing_calendar},
+        utility::codec::field{"fixing_calendar", &swap_leg_write::fixing_calendar},
+        utility::codec::field{"digital_call_position", &swap_leg_write::digital_call_position},
+        utility::codec::field{"digital_is_call_atm_included",
+                              &swap_leg_write::digital_is_call_atm_included},
+        utility::codec::field{"digital_put_position", &swap_leg_write::digital_put_position},
+        utility::codec::field{"digital_is_put_atm_included",
+                              &swap_leg_write::digital_is_put_atm_included},
+        utility::codec::field{"equity_margin_initial_margin_factor",
+                              &swap_leg_write::equity_margin_initial_margin_factor},
+        utility::codec::field{"equity_margin_multiplier",
+                              &swap_leg_write::equity_margin_multiplier},
+        utility::codec::field{"commodity_pay_relative_to",
+                              &swap_leg_write::commodity_pay_relative_to},
+        utility::codec::field{"commodity_quantity_frequency",
+                              &swap_leg_write::commodity_quantity_frequency},
+        utility::codec::field{"pricing_date_rule", &swap_leg_write::pricing_date_rule},
+        utility::codec::field{"indexings_from_asset_leg",
+                              &swap_leg_write::indexings_from_asset_leg},
+        utility::codec::field{"floating_index_code_2", &swap_leg_write::floating_index_code_2},
+        utility::codec::field{"cms_duration", &swap_leg_write::cms_duration},
+        utility::codec::field{"naked_option", &swap_leg_write::naked_option},
+        utility::codec::field{"lookback", &swap_leg_write::lookback},
+        utility::codec::field{"rate_cutoff", &swap_leg_write::rate_cutoff},
+        utility::codec::field{"local_cap_floor", &swap_leg_write::local_cap_floor},
+        utility::codec::field{"observation_lag", &swap_leg_write::observation_lag},
+        utility::codec::field{"cpi_base", &swap_leg_write::cpi_base},
+        utility::codec::field{"cpi_start_date", &swap_leg_write::cpi_start_date},
+        utility::codec::field{"cpi_interpolation", &swap_leg_write::cpi_interpolation},
+        utility::codec::field{"cpi_interpolated", &swap_leg_write::cpi_interpolated},
+        utility::codec::field{"subtract_inflation_notional",
+                              &swap_leg_write::subtract_inflation_notional},
+        utility::codec::field{"zero_coupon_compounding", &swap_leg_write::zero_coupon_compounding},
+        utility::codec::field{"zero_coupon_subtract_notional",
+                              &swap_leg_write::zero_coupon_subtract_notional},
     };
 }
 

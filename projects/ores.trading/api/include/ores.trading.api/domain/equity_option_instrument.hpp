@@ -116,6 +116,66 @@ struct equity_option_instrument final {
     std::string cliquet_frequency;
 
     /**
+     * @brief The currency the strike is stated in, as StrikeCurrency states it.
+     */
+    std::optional<std::string> strike_currency;
+
+    /**
+     * @brief A cliquet's cap on each period's return, as LocalCap states it.
+     */
+    std::optional<ores::utility::decimal::decimal> local_cap;
+
+    /**
+     * @brief A cliquet's floor on each period's return, as LocalFloor states it.
+     */
+    std::optional<ores::utility::decimal::decimal> local_floor;
+
+    /**
+     * @brief A cliquet's cap on the summed return, as GlobalCap states it.
+     */
+    std::optional<ores::utility::decimal::decimal> global_cap;
+
+    /**
+     * @brief A cliquet's floor on the summed return, as GlobalFloor states it.
+     */
+    std::optional<ores::utility::decimal::decimal> global_floor;
+
+    /**
+     * @brief The days from a cliquet's last fixing to its settlement, as SettlementDays states it.
+     */
+    std::optional<int> settlement_days;
+
+    /**
+     * @brief A cliquet's premium, as Premium states it.
+     */
+    std::optional<ores::utility::decimal::decimal> premium;
+
+    /**
+     * @brief The date a cliquet's premium is paid, as PremiumPaymentDate states it.
+     */
+    std::optional<std::chrono::year_month_day> premium_payment_date;
+
+    /**
+     * @brief An outperformance option's first initial price, as InitialPrice1 states it.
+     */
+    std::optional<ores::utility::decimal::decimal> initial_price_1;
+
+    /**
+     * @brief An outperformance option's second initial price, as InitialPrice2 states it.
+     */
+    std::optional<ores::utility::decimal::decimal> initial_price_2;
+
+    /**
+     * @brief An outperformance option's knock-in price, as KnockInPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> knock_in_price;
+
+    /**
+     * @brief An outperformance option's knock-out price, as KnockOutPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> knock_out_price;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -154,6 +214,18 @@ struct equity_option_instrument final {
     ores::utility::digest::append_member(out, "long_short", v.long_short);
     ores::utility::digest::append_member(out, "settlement_type", v.settlement_type);
     ores::utility::digest::append_member(out, "cliquet_frequency", v.cliquet_frequency);
+    ores::utility::digest::append_member(out, "strike_currency", v.strike_currency);
+    ores::utility::digest::append_member(out, "local_cap", v.local_cap);
+    ores::utility::digest::append_member(out, "local_floor", v.local_floor);
+    ores::utility::digest::append_member(out, "global_cap", v.global_cap);
+    ores::utility::digest::append_member(out, "global_floor", v.global_floor);
+    ores::utility::digest::append_member(out, "settlement_days", v.settlement_days);
+    ores::utility::digest::append_member(out, "premium", v.premium);
+    ores::utility::digest::append_member(out, "premium_payment_date", v.premium_payment_date);
+    ores::utility::digest::append_member(out, "initial_price_1", v.initial_price_1);
+    ores::utility::digest::append_member(out, "initial_price_2", v.initial_price_2);
+    ores::utility::digest::append_member(out, "knock_in_price", v.knock_in_price);
+    ores::utility::digest::append_member(out, "knock_out_price", v.knock_out_price);
     out.push_back('}');
     return out;
 }

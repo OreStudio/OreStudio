@@ -26,6 +26,7 @@ set(files
     "folder_eventing_integration_tests.cpp"
     "fx_spot_fixing_item_eventing_integration_tests.cpp"
     "fx_spot_generation_config_eventing_integration_tests.cpp"
+    "generated_trade_export_tests.cpp"
     "generation_context_tests.cpp"
     "generators_tests.cpp"
     "gmm_component_eventing_integration_tests.cpp"

@@ -27,11 +27,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
-| Now          | The cookie is issued, read and refused, and the session resolves from it. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then sign in and out become resources. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -96,3 +96,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The browser carries an opaque cookie and no token. The door sets it on sign in with
+=HttpOnly=, =SameSite=, =Secure= over TLS and the deployment's name, resolves each
+request from it, and answers an unknown cookie with 401 and =Max-Age=0= so a browser
+drops it instead of retrying. The session path does not verify the token again: the
+store is the authority for it. Merged as #4184.

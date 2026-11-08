@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_RUN_RESULT_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_RUN_RESULT_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/run_result.hpp"
+#include "ores.reporting.api/domain/run_result_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -80,7 +81,7 @@ struct run_result_event {
     boost::uuids::uuid event_id;
     run_result_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +110,7 @@ struct list_run_results_request {
 struct list_run_results_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::run_result> results;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_run_results_response&,
                            const list_run_results_response&) = default;

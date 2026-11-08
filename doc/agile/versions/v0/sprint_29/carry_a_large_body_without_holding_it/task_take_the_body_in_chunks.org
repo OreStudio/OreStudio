@@ -29,9 +29,9 @@ needs a read loop that hands the chunks on instead of collecting them.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | Nothing; #4137 is merged. |
-| Waiting on   | The review of #4137.                   |
-| Next         | The storage routes took it over in the next task. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

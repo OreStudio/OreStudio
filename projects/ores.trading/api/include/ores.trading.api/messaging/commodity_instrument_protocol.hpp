@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_COMMODITY_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_COMMODITY_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.api/domain/commodity_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -54,7 +55,7 @@ struct commodity_instrument_write {
     boost::uuids::uuid trade_activity_id;
     std::string commodity_code;
     std::string currency;
-    double quantity;
+    double quantity{};
     std::string unit;
     std::optional<std::chrono::year_month_day> start_date;
     std::optional<std::chrono::year_month_day> maturity_date;
@@ -77,6 +78,15 @@ struct commodity_instrument_write {
     std::string day_count_fraction_code;
     std::string payment_frequency_code;
     std::optional<std::chrono::year_month_day> swaption_expiry_date;
+    std::optional<std::string> calendar;
+    std::optional<std::string> moment_type;
+    std::optional<bool> add_past_dividends;
+    std::optional<std::string> pay_relative_to;
+    std::optional<std::string> quantity_frequency;
+    std::optional<int> delivery_roll_days;
+    std::optional<int> future_month_offset;
+    std::optional<bool> include_period_end;
+    std::optional<std::string> position;
     std::string description;
 
     friend bool operator==(const commodity_instrument_write&,
@@ -118,7 +128,7 @@ struct commodity_instrument_event {
     boost::uuids::uuid event_id;
     commodity_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -128,7 +138,7 @@ struct commodity_instrument_event {
 
 struct commodity_instrument_version_key {
     commodity_instrument_key commodity_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const commodity_instrument_version_key&,
                            const commodity_instrument_version_key&) = default;
@@ -166,7 +176,7 @@ struct list_commodity_instruments_request {
 struct list_commodity_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::commodity_instrument> commodity_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_instruments_response&,
                            const list_commodity_instruments_response&) = default;
@@ -342,7 +352,7 @@ struct list_commodity_instrument_versions_request {
 struct list_commodity_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::commodity_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_instrument_versions_response&,
                            const list_commodity_instrument_versions_response&) = default;
@@ -446,6 +456,20 @@ inline constexpr std::string_view deleted = "trading.v1.events.commodity_instrum
                               &commodity_instrument_write::payment_frequency_code},
         utility::codec::field{"swaption_expiry_date",
                               &commodity_instrument_write::swaption_expiry_date},
+        utility::codec::field{"calendar", &commodity_instrument_write::calendar},
+        utility::codec::field{"moment_type", &commodity_instrument_write::moment_type},
+        utility::codec::field{"add_past_dividends",
+                              &commodity_instrument_write::add_past_dividends},
+        utility::codec::field{"pay_relative_to", &commodity_instrument_write::pay_relative_to},
+        utility::codec::field{"quantity_frequency",
+                              &commodity_instrument_write::quantity_frequency},
+        utility::codec::field{"delivery_roll_days",
+                              &commodity_instrument_write::delivery_roll_days},
+        utility::codec::field{"future_month_offset",
+                              &commodity_instrument_write::future_month_offset},
+        utility::codec::field{"include_period_end",
+                              &commodity_instrument_write::include_period_end},
+        utility::codec::field{"position", &commodity_instrument_write::position},
         utility::codec::field{"description", &commodity_instrument_write::description},
     };
 }

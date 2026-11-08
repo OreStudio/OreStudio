@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/composite_instrument_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -49,6 +50,12 @@ generate_synthetic_composite_instrument(utility::generation::generation_context&
     r.identity.party_id = ctx.generate_uuid();
     r.identity.trade_activity_id = ctx.generate_uuid();
     r.description = std::string(faker::lorem::sentence());
+    r.notional_override = ores::utility::decimal::decimal::from_string(
+                              std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                              .value();
+    r.return_initial_price = ores::utility::decimal::decimal::from_string(
+                                 std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                                 .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

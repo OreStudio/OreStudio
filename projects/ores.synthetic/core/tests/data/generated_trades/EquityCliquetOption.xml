@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
+    <TradeType>EquityCliquetOption</TradeType>
+    <EquityCliquetOptionData>
+      <Name>GB0005405286</Name>
+      <Currency>GBP</Currency>
+      <Notional>6765247.42</Notional>
+      <LongShort>Short</LongShort>
+      <OptionType>Call</OptionType>
+      <Moneyness>1</Moneyness>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>Quarterly</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ScheduleData>
+    </EquityCliquetOptionData>
+  </Trade>
+  <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
+    <TradeType>EquityCliquetOption</TradeType>
+    <EquityCliquetOptionData>
+      <Name>GB0005405286</Name>
+      <Currency>GBP</Currency>
+      <Notional>4191327.35</Notional>
+      <LongShort>Long</LongShort>
+      <OptionType>Call</OptionType>
+      <Moneyness>1</Moneyness>
+      <ScheduleData>
+        <Rules>
+          <StartDate></StartDate>
+          <Tenor>Quarterly</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ScheduleData>
+    </EquityCliquetOptionData>
+  </Trade>
+</Portfolio>

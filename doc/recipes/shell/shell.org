@@ -23,6 +23,7 @@ End-to-end and per-stage provisioning flows. Each is tangled into the
 runnable script library (=projects/ores.shell/scripts/library/=).
 
 - [[id:BAADE064-43A3-4620-92CF-B8AF7F732C9B][How do I bootstrap a smoke-test system?]]
+- [[id:93C23A49-CC87-4DE0-82DA-932B3CF9E8A5][How do I provision a minimal Acme Corporation for development?]]
 - [[id:463F1441-0A6B-4F7D-B85C-985001B67A3B][How do I provision a party?]]
 - [[id:5C1D6A20-4B7E-4F31-9C2D-8A6E5B4F1D07][How do I provision a second tenant with Northwind Traders?]]
 - [[id:723F21AD-30F6-4D99-849F-7A44B368E4A1][How do I provision a tenant?]]
@@ -915,10 +916,6 @@ tangled into the runnable script library
 * Composite Instruments
 
 - [[id:372A2957-3399-5E89-866D-6E51C93CC646][How do I run the composite_instruments commands from the shell?]]
-
-* Composite Legs
-
-- [[id:C4F89F5E-7468-55B5-A457-A745AE2A906B][How do I run the composite_legs commands from the shell?]]
 
 * Credit Instruments
 
@@ -2127,3 +2124,7 @@ tangled into the runnable script library
 * Variance Calibrations
 
 - [[id:00D9ABEB-CF5C-5B5D-A107-3D0651440DC5][How do I run the variance_calibrations commands from the shell?]]
+
+* Party Product Type Deal Classes
+
+- [[id:031ED9D1-C6DD-5FAD-952B-DF1C069CD510][How do I run the party_product_type_deal_classes commands from the shell?]]

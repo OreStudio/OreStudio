@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: C0BA69C1-6E68-4AD2-896C-0F6283BD3BAF
+:END:
+#+title: Task: Read the public overnight rates through an adapter
+#+description: Each usable public overnight-rate source is a provider in the catalogue, read through an adapter as the public FX rates are through Frankfurter, with its terms accepted at setup and its history stored as fixings.
+#+type: task
+#+level: s1
+#+filetags: :build_ir_curves_from_public_data-remaining:sprint_29:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-04
+#+updated: 2026-11-08
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The public overnight rates the survey finds usable are stored as fixings in the system tenant, with their history, through the same provider, adapter, session and terms path the public FX rates use.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-04                               |
+
+* Acceptance
+
+- Each usable source is a catalogued provider with an adapter and a session, and its terms are accepted at setup like the FX sources.
+- A fresh environment stores each source's history as fixings within minutes of provisioning, and the log names each source and the count it stored.
+- A source whose terms are not accepted is skipped and reported, not failed.
+- The depth of each source's history is measured and written into the calibration sources note, since the survey did not check it.
+- The Bank of Japan's call rate is not loaded until the task's owner has asked the Bank's Public Relations Department whether this use is commercial and written its answer into the calibration sources note.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

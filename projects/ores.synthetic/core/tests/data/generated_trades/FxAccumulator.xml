@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="24f52bd9-ca98-5bf4-b995-457c86123722">
+    <TradeType>FxAccumulator</TradeType>
+    <FxAccumulatorData>
+      <Currency>USD</Currency>
+      <FixingAmount>6103286.3</FixingAmount>
+      <Strike>1.0438</Strike>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>EUR/USD</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StartDate>2025-11-02</StartDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2025-11-02</StartDate>
+          <Tenor>1D</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ObservationDates>
+      <RangeBounds>
+        <RangeBound startDate="2025-11-02">
+          <RangeFrom>1.0438</RangeFrom>
+          <RangeTo>1.1482</RangeTo>
+          <Strike>1.0438</Strike>
+        </RangeBound>
+      </RangeBounds>
+      <Barriers>
+        <BarrierData>
+          <Type>UpAndOut</Type>
+          <Levels>
+            <Level>1.1482</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </FxAccumulatorData>
+  </Trade>
+  <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
+    <TradeType>FxAccumulator</TradeType>
+    <FxAccumulatorData>
+      <Currency>USD</Currency>
+      <FixingAmount>7492174.07</FixingAmount>
+      <Strike>1.3507</Strike>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>EUR/USD</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StartDate>2026-01-02</StartDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2026-01-02</StartDate>
+          <Tenor>1D</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ObservationDates>
+      <RangeBounds>
+        <RangeBound startDate="2026-01-02">
+          <RangeFrom>1.3507</RangeFrom>
+          <RangeTo>1.4858</RangeTo>
+          <Strike>1.3507</Strike>
+        </RangeBound>
+      </RangeBounds>
+      <Barriers>
+        <BarrierData>
+          <Type>UpAndOut</Type>
+          <Levels>
+            <Level>1.4858</Level>
+          </Levels>
+        </BarrierData>
+      </Barriers>
+    </FxAccumulatorData>
+  </Trade>
+</Portfolio>

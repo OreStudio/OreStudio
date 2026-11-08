@@ -34,6 +34,8 @@
 #include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
+#include "ores.utility/codec/json_document.hpp"
+#include "ores.utility/codec/json_document_wire.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -41,7 +43,6 @@
 #include <cstdint>
 #include <format>
 #include <optional>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string_view>
 #include <unordered_map>
@@ -107,71 +108,72 @@ typename Req::response_type run_configuration_operations_call(nats_client& owner
     return *resp;
 }
 
-const std::vector<rfl::Generic>* array_of(const rfl::Generic& value) {
-    return std::get_if<std::vector<rfl::Generic>>(&value.get());
-}
-
-const std::vector<rfl::Generic>* first_array_of(const rfl::Generic::Object& object) {
-    for (const auto& [key, value] : object)
-        if (const auto* array = array_of(value))
-            return array;
-    return nullptr;
-}
-
 // Sends a request the registry names at runtime and returns the decoded
 // response. The families differ only in their subject and their value type, so
-// the wire carries the request as the generic value the codec knows.
-rfl::Generic
-call_subject(nats_client& owners, std::string_view subject, const rfl::Generic& request) {
+// the wire carries the request as a document the codec knows how to encode.
+ores::utility::codec::json_document
+call_subject(nats_client& owners,
+             std::string_view subject,
+             const ores::utility::codec::json_document& request) {
     const auto& codec = ores::nats::default_wire_codec();
     const auto msg = owners.authenticated_request(subject, codec.encode(request));
     const auto error = msg.headers.find("X-Error");
     if (error != msg.headers.end())
         throw std::runtime_error(std::format("Service error on {}: {}", subject, error->second));
-    auto decoded = codec.decode<rfl::Generic>(msg.data);
+    auto decoded = codec.decode<ores::utility::codec::json_document>(msg.data);
     if (!decoded)
         throw std::runtime_error(
             std::format("Failed to parse response from {}: {}", subject, decoded.error().what()));
-    return *decoded;
+    return std::move(*decoded);
 }
 
 // The list request every family's protocol reads: one page, no filter, the
 // default order.
-rfl::Generic family_list_request(std::uint64_t offset, std::uint64_t limit) {
-    rfl::Generic::Object order;
-    order.insert(std::string{"field"}, rfl::Generic{std::string{}});
-    order.insert(std::string{"descending"}, rfl::Generic{false});
-
-    rfl::Generic::Object request;
-    request.insert(std::string{"offset"}, rfl::Generic{static_cast<std::int64_t>(offset)});
-    request.insert(std::string{"limit"}, rfl::Generic{static_cast<std::int64_t>(limit)});
-    request.insert(std::string{"order"}, rfl::Generic{std::move(order)});
-    request.insert(std::string{"filter"}, rfl::Generic{rfl::Generic::Null});
-    request.insert(std::string{"as_of"}, rfl::Generic{rfl::Generic::Null});
-    return rfl::Generic{std::move(request)};
+ores::utility::codec::json_document family_list_request(std::uint64_t offset, std::uint64_t limit) {
+    auto request = ores::utility::codec::json_document::make_object();
+    auto root = request.root();
+    root.set("offset", static_cast<std::int64_t>(offset));
+    root.set("limit", static_cast<std::int64_t>(limit));
+    auto order = root.add_object("order");
+    order.set("field", "");
+    order.set("descending", false);
+    // The services read a list request strictly, so a member they require is
+    // stated even when it holds no value.
+    root.set_null("filter");
+    root.set_null("as_of");
+    return request;
 }
 
 // One family's rows, paged, narrowed to the run's party when the family's
 // table carries a party. World families are the tenant's, so every row stays.
-std::vector<rfl::Generic> read_family(nats_client& owners,
-                                      const ores::refdata::domain::convention_family_entry& family,
-                                      const std::string& party_id) {
+std::vector<ores::utility::codec::json_value>
+read_family(nats_client& owners,
+            const ores::refdata::domain::convention_family_entry& family,
+            const std::string& party_id) {
     const auto subject = std::string(family.subject_stem) + ".list";
     constexpr std::uint64_t page_size = 1000;
-    std::vector<rfl::Generic> rows;
+    std::vector<ores::utility::codec::json_value> rows;
     for (std::uint64_t offset = 0;; offset += page_size) {
         const auto response = call_subject(owners, subject, family_list_request(offset, page_size));
-        const auto* object = std::get_if<rfl::Generic::Object>(&response.get());
-        if (object == nullptr)
+        const auto object = response.root();
+        if (!object.is_object())
             throw std::runtime_error(
                 std::format("The response from {} is not an object.", subject));
-        const auto* array = first_array_of(*object);
-        if (array == nullptr)
+        // The protocol names the rows after its own type, so the first array
+        // the response states is the page.
+        auto array = ores::utility::codec::json_value{};
+        for (const auto& [name, member] : object.members()) {
+            if (member.is_array()) {
+                array = member;
+                break;
+            }
+        }
+        if (!array.exists())
             break;
-        for (const auto& row : *array)
+        for (const auto& row : array.elements())
             if (!family.party_scoped || party_of_family_row(row) == party_id)
                 rows.push_back(row);
-        if (array->size() < page_size)
+        if (array.size() < page_size)
             break;
     }
     return rows;
@@ -216,8 +218,7 @@ domain::conventions_package read_conventions(nats_client& owners, const std::str
     for (const auto& family : ores::refdata::domain::convention_families) {
         int sequence = 0;
         for (const auto& row : read_family(owners, family, party_id))
-            package.bundle.rows.push_back(
-                {std::string(family.key), sequence++, rfl::json::write(row)});
+            package.bundle.rows.push_back({std::string(family.key), sequence++, row.write()});
     }
     // FX conventions have no store, as they have none on the write path.
     return package;
@@ -456,8 +457,8 @@ input_files export_run(nats_client& owners, const std::string& report_definition
     return files;
 }
 
-ores::ore::service::messaging::reference_curve_names
-reference_curve_names_of(nats_client& owners, const std::string& report_definition_id) {
+ores::marketdata::projection::ore_projection
+ore_projection_of(nats_client& owners, const std::string& report_definition_id) {
     const auto run = run_configuration_operations_call(
         owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
 
@@ -535,13 +536,10 @@ reference_curve_names_of(nats_client& owners, const std::string& report_definiti
     }
 
     BOOST_LOG_SEV(run_configuration_operations_lg(), ores::logging::debug)
-        << "reference_curve_names_of: " << index_of_curve_uri.size()
-        << " curve name(s) for definition " << report_definition_id;
+        << "ore_projection_of: " << index_of_curve_uri.size() << " curve name(s) for definition "
+        << report_definition_id;
 
-    return [index_of_curve_uri](const std::string& uri) -> std::string {
-        const auto it = index_of_curve_uri.find(uri);
-        return it == index_of_curve_uri.end() ? uri : it->second;
-    };
+    return ores::marketdata::projection::ore_projection(std::move(index_of_curve_uri));
 }
 
 }

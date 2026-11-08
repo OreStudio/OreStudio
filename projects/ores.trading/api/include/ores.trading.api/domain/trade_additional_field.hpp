@@ -68,7 +68,7 @@ struct trade_additional_field final {
     /**
      * @brief Ordinal of this field among the trade's additional fields, from one.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

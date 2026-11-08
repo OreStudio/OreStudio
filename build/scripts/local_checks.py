@@ -506,6 +506,17 @@ CATALOGUE: tuple[Check, ...] = (
     # route nobody answers, or when a row disagrees with the decisions in
     # route_classification.
     Check(
+        id="route-units",
+        title="Every route unit a component opts into is registered by its aggregate",
+        argv=("python3", "build/scripts/check_route_units.py"),
+        classes=("cpp", "codegen", "tooling"),
+        paths=("projects/ores.http/*",
+               "projects/ores.*/modeling/*",
+               "build/scripts/check_route_units.py"),
+        fix="Add the unit's register_routes call to the component's aggregate, or "
+            "remove the model's :ores.cpp.http-route.enabled: opt-in.",
+    ),
+    Check(
         id="route-inventory",
         title="Every HTTP route is in the inventory",
         argv=("python3", "build/scripts/route_inventory.py", "--check"),
@@ -1147,6 +1158,26 @@ CATALOGUE: tuple[Check, ...] = (
             " compass capture file), which regenerates the indexes, or run"
             " projects/ores.codegen/scripts/regenerate_backlog_indexes.py and"
             " commit the result.",
+    ),
+    Check(
+        id="index-conventions-seed",
+        title="The built-in index conventions match the mined table",
+        argv=(
+            "bash",
+            "-c",
+            "./tools/ore_conventions/generate_builtin_index_conventions.py"
+            " && git diff --exit-code --"
+            " projects/ores.sql/populate/refdata/"
+            "refdata_builtin_index_conventions_populate.sql",
+        ),
+        classes=("sql", "tooling"),
+        paths=(
+            "tools/ore_conventions/*",
+            "external/ore/catalogue/index_builtins.jsonl",
+            "projects/ores.sql/populate/refdata/refdata_builtin_index_conventions_populate.sql",
+        ),
+        fix="Run tools/ore_conventions/generate_builtin_index_conventions.py and "
+            "commit the result.",
     ),
     Check(
         id="ore-output-catalogue",

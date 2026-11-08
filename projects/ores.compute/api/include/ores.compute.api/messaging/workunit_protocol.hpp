@@ -25,11 +25,12 @@
 #ifndef ORES_COMPUTE_API_MESSAGING_WORKUNIT_PROTOCOL_HPP
 #define ORES_COMPUTE_API_MESSAGING_WORKUNIT_PROTOCOL_HPP
 
-#include "ores.compute.api/domain/workunit.hpp"
+#include "ores.compute.api/domain/workunit_codec.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -53,8 +54,8 @@ struct workunit_write {
     boost::uuids::uuid app_version_id;
     std::string input_uri;
     std::string config_uri;
-    int priority;
-    int target_redundancy;
+    int priority{};
+    int target_redundancy{};
     boost::uuids::uuid canonical_result_id;
 
     friend bool operator==(const workunit_write&, const workunit_write&) = default;
@@ -93,7 +94,7 @@ struct workunit_event {
     boost::uuids::uuid event_id;
     workunit_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +103,7 @@ struct workunit_event {
 
 struct workunit_version_key {
     workunit_key workunit;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const workunit_version_key&, const workunit_version_key&) = default;
 };
@@ -138,7 +139,7 @@ struct list_workunits_request {
 struct list_workunits_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::workunit> workunits;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_workunits_response&,
                            const list_workunits_response&) = default;
@@ -310,7 +311,7 @@ struct list_by_batch_id_workunits_request {
 struct list_by_batch_id_workunits_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::workunit> workunits;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_batch_id_workunits_response&,
                            const list_by_batch_id_workunits_response&) = default;
@@ -339,7 +340,7 @@ struct list_workunit_versions_request {
 struct list_workunit_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::workunit> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_workunit_versions_response&,
                            const list_workunit_versions_response&) = default;

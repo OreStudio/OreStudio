@@ -25,11 +25,12 @@
 #ifndef ORES_DQ_API_MESSAGING_CATALOG_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_CATALOG_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/catalog.hpp"
+#include "ores.dq.api/domain/catalog_codec.hpp"
 #include "ores.dq.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -86,7 +87,7 @@ struct catalog_event {
     boost::uuids::uuid event_id;
     catalog_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -95,7 +96,7 @@ struct catalog_event {
 
 struct catalog_version_key {
     catalog_key catalog;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const catalog_version_key&, const catalog_version_key&) = default;
 };
@@ -131,7 +132,7 @@ struct list_catalogs_request {
 struct list_catalogs_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::catalog> catalogs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_catalogs_response&, const list_catalogs_response&) = default;
 };
@@ -300,7 +301,7 @@ struct list_catalog_versions_request {
 struct list_catalog_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::catalog> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_catalog_versions_response&,
                            const list_catalog_versions_response&) = default;

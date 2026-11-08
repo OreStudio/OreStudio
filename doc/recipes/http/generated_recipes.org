@@ -19,6 +19,10 @@ any note beside a link, are hand-written and are kept.
 The hand-written recipes that predate the facet are catalogued separately in
 =doc/recipes/http/http.org=.
 
+* Account Contact Informations
+
+- [[id:04C8F03D-5BB8-58F2-A556-63A54274108F][How do I call the account_contact_informations endpoints over HTTP?]]
+
 * Account Credentials
 
 - [[id:E371920E-98B2-5CAE-9DD8-785EA0308E95][How do I call the account_credentials endpoints over HTTP?]]
@@ -43,9 +47,73 @@ The hand-written recipes that predate the facet are catalogued separately in
 
 - [[id:567A34ED-0B68-5C66-A733-77163A4B45F6][How do I call the bootstrap endpoints over HTTP?]]
 
+* Business Centres
+
+- [[id:0B71D41D-A37C-5094-B7BF-670C74F060D1][How do I call the business_centres endpoints over HTTP?]]
+
+* Business Unit Types
+
+- [[id:76BDBAB6-4C76-5B60-94D6-CF81A519A806][How do I call the business_unit_types endpoints over HTTP?]]
+
+* Business Units
+
+- [[id:000E583B-AFD8-59AF-ABB3-793C651006C8][How do I call the business_units endpoints over HTTP?]]
+
+* Calendar Events
+
+- [[id:B555FCF8-E7F1-5E19-9680-6585BD1DD2A6][How do I call the calendar_events endpoints over HTTP?]]
+
+* Calendar Exceptions
+
+- [[id:6B6F3AD7-3E55-53EB-816B-8332E697D5F7][How do I call the calendar_exceptions endpoints over HTTP?]]
+
+* Calendar Rules
+
+- [[id:17563C50-1133-5AEE-8288-18CF02D4DF7B][How do I call the calendar_rules endpoints over HTTP?]]
+
+* Calendars
+
+- [[id:55C57939-B346-5FAE-B1E5-E7B0FC1FFC7A][How do I call the calendars endpoints over HTTP?]]
+
+* Counterparties
+
+- [[id:F4EF9DE2-4780-5249-AE88-4AB4E0CB848F][How do I call the counterparties endpoints over HTTP?]]
+
+* Countries
+
+- [[id:68AB74F4-E6B4-50CF-A721-3A738BAB70C4][How do I call the countries endpoints over HTTP?]]
+
 * Currencies
 
 - [[id:1C8E834C-6C3E-5655-9887-6CB58081498C][How do I call the currencies endpoints over HTTP?]]
+
+* Currency Calendars
+
+- [[id:6164DD01-790A-5D85-835C-4A54ECED5E3E][How do I call the currency_calendars endpoints over HTTP?]]
+
+* Currency Countries
+
+- [[id:ED5A2310-8B95-5ED1-A46E-C535168E71A0][How do I call the currency_countries endpoints over HTTP?]]
+
+* Currency Currency Groups
+
+- [[id:A49FCBED-4988-5C7F-B3DE-EF60C037FE7E][How do I call the currency_currency_groups endpoints over HTTP?]]
+
+* Currency Groups
+
+- [[id:2E8066E7-9FE6-51ED-9CD4-809B67241282][How do I call the currency_groups endpoints over HTTP?]]
+
+* Currency Pair Convention Calendars
+
+- [[id:6BE10342-5BE6-5AAD-8F11-855C574ED473][How do I call the currency_pair_convention_calendars endpoints over HTTP?]]
+
+* Currency Pair Conventions
+
+- [[id:C06682A7-2F57-5CA1-91C7-D1A797405DFB][How do I call the currency_pair_conventions endpoints over HTTP?]]
+
+* Currency Pairs
+
+- [[id:8467498E-2E7C-5967-AE2F-7172B74B3E30][How do I call the currency_pairs endpoints over HTTP?]]
 
 * Geo Operations
 
@@ -59,6 +127,14 @@ The hand-written recipes that predate the facet are catalogued separately in
 
 - [[id:B631A4E0-4B74-574C-9C61-DEC4597C2710][How do I call the images endpoints over HTTP?]]
 
+* Ir Curve Bootstrap Configs
+
+- [[id:64C11727-78BE-5C81-A8AA-73F697FADB33][How do I call the ir_curve_bootstrap_configs endpoints over HTTP?]]
+
+* Ir Curve Bootstrap Pillars
+
+- [[id:65943862-77B0-5588-A6B3-3F2CB49AC089][How do I call the ir_curve_bootstrap_pillars endpoints over HTTP?]]
+
 * Login
 
 - [[id:79338DD8-35B5-5905-9DCF-620DCB0161B1][How do I call the login endpoints over HTTP?]]
@@ -67,6 +143,34 @@ The hand-written recipes that predate the facet are catalogued separately in
 
 - [[id:E5F57DD2-8258-5688-BB05-DEF61B680A9A][How do I call the login_info endpoints over HTTP?]]
 
+* Parties
+
+- [[id:3BF91809-0EBE-5540-BCF6-B6D52F9CAEBA][How do I call the parties endpoints over HTTP?]]
+
+* Party Contact Informations
+
+- [[id:C1E4FA85-067C-54CE-ACDF-9FE9EA8492F8][How do I call the party_contact_informations endpoints over HTTP?]]
+
+* Party Counterparties
+
+- [[id:CF9A1FBE-4137-5CB8-AA61-634765EDAD21][How do I call the party_counterparties endpoints over HTTP?]]
+
+* Party Countries
+
+- [[id:1C3CAFC3-5713-5574-86E2-8281BF296968][How do I call the party_countries endpoints over HTTP?]]
+
+* Party Currencies
+
+- [[id:AEC91FB7-31FD-532D-841F-5372C8AE7E7F][How do I call the party_currencies endpoints over HTTP?]]
+
+* Party Id Schemes
+
+- [[id:C65D7B78-A0C0-5E88-98E6-6CCA36FE8459][How do I call the party_id_schemes endpoints over HTTP?]]
+
+* Party Identifiers
+
+- [[id:F760D166-11B7-5C39-BA37-F9A8D8588B5B][How do I call the party_identifiers endpoints over HTTP?]]
+
 * Permissions
 
 - [[id:ADCE3FA3-359E-503C-9F11-8DD2E01DA71E][How do I call the permissions endpoints over HTTP?]]
@@ -74,6 +178,10 @@ The hand-written recipes that predate the facet are catalogued separately in
 * Roles
 
 - [[id:62EF06D0-D41D-5D6A-ADD5-6958FF8A43C0][How do I call the roles endpoints over HTTP?]]
+
+* Seed Profiles
+
+- [[id:449D18D1-633D-52B3-85A3-4E2240CA46F0][How do I call the seed_profiles endpoints over HTTP?]]
 
 * Session Operations
 
@@ -94,3 +202,19 @@ The hand-written recipes that predate the facet are catalogued separately in
 * Tags
 
 - [[id:B08A234B-9FEF-5B71-B0FC-DC4A43CAA19A][How do I call the tags endpoints over HTTP?]]
+
+* Tenant Statuses
+
+- [[id:5CF80075-6E0E-57A5-9A76-DD3BC0E17211][How do I call the tenant_statuses endpoints over HTTP?]]
+
+* Tenant Types
+
+- [[id:8427B6C2-8E9C-5846-866B-DBBF5973DAFB][How do I call the tenant_types endpoints over HTTP?]]
+
+* Tenants
+
+- [[id:C22B769D-A74A-552A-9519-5DCF1D14A469][How do I call the tenants endpoints over HTTP?]]
+
+* Yield Curve Process Types
+
+- [[id:6E3169FA-98CD-5ACC-B24A-F2403BFEB51A][How do I call the yield_curve_process_types endpoints over HTTP?]]

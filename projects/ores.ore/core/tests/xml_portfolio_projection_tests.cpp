@@ -29,8 +29,17 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace {
+
+/// The script's row a scripted instrument carries, or nothing for another family.
+const ores::trading::domain::scripted_instrument*
+scripted_of(const ores::trading::domain::trade_instrument& instrument) {
+    const auto* data = std::get_if<ores::trading::domain::scripted_instrument_data>(&instrument);
+    return data == nullptr ? nullptr : &data->instrument;
+}
 
 using namespace ores::logging;
 using namespace ores::ore::domain;
@@ -594,7 +603,7 @@ const char* const commodity_swap_and_forward_document_text = R"(<Portfolio>
   </Trade>
   <Trade id="cmd-2">
     <TradeType>CommoditySwap</TradeType>
-    <CommoditySwapData>
+    <SwapData>
       <LegData>
         <LegType>CommodityFixed</LegType>
         <Payer>false</Payer>
@@ -622,7 +631,7 @@ const char* const commodity_swap_and_forward_document_text = R"(<Portfolio>
           </Rules>
         </ScheduleData>
       </LegData>
-    </CommoditySwapData>
+    </SwapData>
   </Trade>
 </Portfolio>)";
 
@@ -846,6 +855,16 @@ auto rebuild(const ores::ore::xml::trade_import_item& item) -> ores::ore::xml::t
     return back.front();
 }
 
+/// The rows of one owner, so a test about one schedule ignores the legs' own.
+template <typename Row>
+std::vector<const Row*> owned_by(const std::vector<Row>& rows, std::string_view owner_role) {
+    std::vector<const Row*> out;
+    for (const auto& row : rows)
+        if (row.owner_role == owner_role)
+            out.push_back(&row);
+    return out;
+}
+
 }
 
 TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap",
@@ -1013,9 +1032,9 @@ TEST_CASE("a_portfolio_document_projects_a_swaption_and_its_option",
     REQUIRE(instrument->leg_rates.size() == 1);
     CHECK(instrument->leg_rates[0].value.to_string() == "0.045");
 
-    REQUIRE(instrument->schedules.size() == 1);
-    CHECK(instrument->schedules[0].owner_role == "option");
-    CHECK(instrument->schedules[0].schedule_role == "exercise_dates");
+    const auto option_schedules = owned_by(instrument->schedules, "option");
+    REQUIRE(option_schedules.size() == 1);
+    CHECK(option_schedules[0]->schedule_role == "exercise_dates");
     REQUIRE(instrument->schedule_dates.size() == 1);
     CHECK(instrument->schedule_dates[0].schedule_date == date_of(2024, 6, 15));
 
@@ -1127,8 +1146,7 @@ TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products",
     REQUIRE(balance->tranche_notionals.size() == 1);
     CHECK(balance->tranche_notionals[0].tranche_number == 1);
     CHECK(balance->tranche_notionals[0].notional.to_string() == "750000");
-    REQUIRE(balance->schedules.size() == 1);
-    CHECK(balance->schedules[0].owner_role == "tranches");
+    CHECK(owned_by(balance->schedules, "tranches").size() == 1);
 
     const auto* callable =
         std::get_if<ores::trading::domain::swap_instrument_data>(&items[5].instrument);
@@ -1231,8 +1249,7 @@ TEST_CASE("a_portfolio_document_projects_its_trades_and_their_envelopes",
     CHECK(items[0].envelope->additional_fields->at(0).name == "Trader");
     CHECK(items[0].envelope->additional_fields->at(0).value == "marco");
 
-    const auto* instrument =
-        std::get_if<ores::trading::domain::scripted_instrument>(&items[0].instrument);
+    const auto* instrument = scripted_of(items[0].instrument);
     REQUIRE(instrument != nullptr);
     CHECK(instrument->script_name == "heston");
     CHECK(instrument->script_body == "Payoff = 1;");
@@ -1257,7 +1274,8 @@ TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
     item.envelope = items[0].envelope;
 
     ores::trading::domain::instrument_batch batch;
-    auto instrument = std::get<ores::trading::domain::scripted_instrument>(items[0].instrument);
+    auto instrument =
+        std::get<ores::trading::domain::scripted_instrument_data>(items[0].instrument).instrument;
     instrument.identity.trade_id = trade_id;
     batch.scripted_instruments.push_back(std::move(instrument));
 
@@ -1273,8 +1291,7 @@ TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
     REQUIRE(back[0].envelope->additional_fields.has_value());
     CHECK(back[0].envelope->additional_fields->at(0).value == "marco");
 
-    const auto* round =
-        std::get_if<ores::trading::domain::scripted_instrument>(&back[0].instrument);
+    const auto* round = scripted_of(back[0].instrument);
     REQUIRE(round != nullptr);
     CHECK(round->script_name == "heston");
     CHECK(round->script_body == "Payoff = 1;");
@@ -3081,23 +3098,39 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components",
 
     const auto document = portfolio_projection::read(composite_document_text);
     const auto items = portfolio_projection::map(document);
-    REQUIRE(items.size() == 3);
+    // Each component is a trade of its own, placed right after its composite
+    // and naming it, so the import can join them in a structure.
+    // The total return swap's and the contract for difference's underlyings
+    // follow each of them in the same way.
+    REQUIRE(items.size() == 7);
     CHECK(items[0].anchor.trade_type == "CompositeTrade");
-    CHECK(items[1].anchor.trade_type == "TotalReturnSwap");
-    CHECK(items[2].anchor.trade_type == "ContractForDifference");
+    CHECK(!items[0].membership);
+    // A component's ordinal counts within its list: the Trade and the SubTrade
+    // are each the first of their kind.
+    const std::pair<std::string_view, int> expected[] = {{"trade", 1}, {"sub_trade", 1}};
+    for (int i = 1; i <= 2; ++i) {
+        INFO("component " << i);
+        REQUIRE(items[i].membership.has_value());
+        CHECK(items[i].membership->parent_ore_id == items[0].ore_id);
+        CHECK(items[i].membership->role == expected[i - 1].first);
+        CHECK(items[i].membership->sequence_number == expected[i - 1].second);
+        CHECK(!std::holds_alternative<std::monostate>(items[i].instrument));
+    }
+    CHECK(items[1].ore_id == "component-swap");
+    CHECK(items[2].ore_id == "component-fx");
+    CHECK(items[3].anchor.trade_type == "TotalReturnSwap");
+    CHECK(items[5].anchor.trade_type == "ContractForDifference");
+    for (const int i : {4, 6}) {
+        INFO("underlying " << i);
+        REQUIRE(items[i].membership.has_value());
+        CHECK(items[i].membership->parent_ore_id == items[i - 1].ore_id);
+    }
 
     const auto* composite =
         std::get_if<ores::trading::domain::composite_instrument_data>(&items[0].instrument);
     REQUIRE(composite != nullptr);
     CHECK(composite->instrument.identity.trade_type_code == "CompositeTrade");
     CHECK(composite->instrument.description == "ACME-BASKET");
-    REQUIRE(composite->legs.size() == 2);
-    CHECK(composite->legs[0].identity.leg_sequence == 1);
-    CHECK(composite->legs[0].constituent_trade_id == "component-swap");
-    CHECK(composite->legs[0].audit.change_reason_code == "system.external_data_import");
-    CHECK(composite->legs[1].identity.leg_sequence == 2);
-    CHECK(composite->legs[1].constituent_trade_id == "component-fx");
-    CHECK(composite->legs[1].audit.change_reason_code == "system.external_data_import");
 
     const auto back = rebuild(items[0]);
     CHECK(back.anchor.trade_type == "CompositeTrade");
@@ -3106,10 +3139,6 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components",
     REQUIRE(round != nullptr);
     CHECK(round->instrument.identity.trade_type_code == "CompositeTrade");
     CHECK(round->instrument.description == "ACME-BASKET");
-    // The trading domain keeps a component's id and the basket name, not the
-    // component's product, so the write states neither the components nor
-    // anything they held. The loss is stated here rather than left implicit.
-    CHECK(round->legs.empty());
 
     const auto written = portfolio_projection::write(exported(items[0]));
     const auto reread_items = portfolio_projection::map(portfolio_projection::read(written));
@@ -3128,30 +3157,28 @@ TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_
 
     const auto document = portfolio_projection::read(composite_document_text);
     const auto items = portfolio_projection::map(document);
-    REQUIRE(items.size() == 3);
+    REQUIRE(items.size() == 7);
 
     const auto* trs =
-        std::get_if<ores::trading::domain::composite_instrument_data>(&items[1].instrument);
+        std::get_if<ores::trading::domain::composite_instrument_data>(&items[3].instrument);
     REQUIRE(trs != nullptr);
     CHECK(trs->instrument.identity.trade_type_code == "TotalReturnSwap");
     CHECK(trs->instrument.description == "EquityPosition");
-    CHECK(trs->legs.empty());
 
     const auto* cfd =
-        std::get_if<ores::trading::domain::composite_instrument_data>(&items[2].instrument);
+        std::get_if<ores::trading::domain::composite_instrument_data>(&items[5].instrument);
     REQUIRE(cfd != nullptr);
     CHECK(cfd->instrument.identity.trade_type_code == "ContractForDifference");
     CHECK(cfd->instrument.description == "Swap");
-    CHECK(cfd->legs.empty());
 
-    const auto trs_again = rebuild(items[1]);
+    const auto trs_again = rebuild(items[3]);
     REQUIRE(std::get_if<ores::trading::domain::composite_instrument_data>(&trs_again.instrument) !=
             nullptr);
     CHECK(trs_again.anchor.trade_type == "TotalReturnSwap");
     CHECK(std::get<ores::trading::domain::composite_instrument_data>(trs_again.instrument)
               .instrument.identity.trade_type_code == "TotalReturnSwap");
 
-    const auto cfd_again = rebuild(items[2]);
+    const auto cfd_again = rebuild(items[5]);
     REQUIRE(std::get_if<ores::trading::domain::composite_instrument_data>(&cfd_again.instrument) !=
             nullptr);
     CHECK(cfd_again.anchor.trade_type == "ContractForDifference");
@@ -3201,8 +3228,7 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
 
     // The scripted row states no parameter of its own, so the data element the
     // schema requires carries the script's own result and nothing else.
-    const auto* scripted =
-        std::get_if<ores::trading::domain::scripted_instrument>(&items[0].instrument);
+    const auto* scripted = scripted_of(items[0].instrument);
     REQUIRE(scripted != nullptr);
     CHECK(scripted->script_name == "heston");
     CHECK(scripted->parameters_json == R"({"NPV":"Option"})");
@@ -3210,16 +3236,14 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
 
     // The flat table has no column for an underlying's type, so the type rides
     // in the parameters and comes back out of the document it is written to.
-    const auto* double_digital =
-        std::get_if<ores::trading::domain::scripted_instrument>(&items[1].instrument);
+    const auto* double_digital = scripted_of(items[1].instrument);
     REQUIRE(double_digital != nullptr);
     CHECK(double_digital->underlyings_json == R"(["TR20H-EUR-USD","NYMEX:CL"])");
     CHECK(double_digital->parameters_json.find(R"("Underlying2Type":"Commodity")") !=
           std::string::npos);
 
     const auto double_digital_round = rebuild(items[1]);
-    const auto* double_digital_again =
-        std::get_if<ores::trading::domain::scripted_instrument>(&double_digital_round.instrument);
+    const auto* double_digital_again = scripted_of(double_digital_round.instrument);
     REQUIRE(double_digital_again != nullptr);
     CHECK(double_digital_again->underlyings_json == double_digital->underlyings_json);
     CHECK(double_digital_again->parameters_json == double_digital->parameters_json);
@@ -3474,7 +3498,7 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
             row.script_name = std::move(script_name);
             row.underlyings_json = R"(["GB0005405286","US0378331005"])";
             row.parameters_json = std::move(parameters);
-            item.instrument = std::move(row);
+            item.instrument = ores::trading::domain::scripted_instrument_data{std::move(row)};
             return item;
         };
 
@@ -3482,8 +3506,7 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
         rebuild(scripted_item("ScriptedTrade",
                               "AsianBasketOption",
                               R"({"Notional":"1000000.00","PutCall":"Call","Strike":"1.0500"})"));
-    const auto* generic_row =
-        std::get_if<ores::trading::domain::scripted_instrument>(&generic.instrument);
+    const auto* generic_row = scripted_of(generic.instrument);
     REQUIRE(generic_row != nullptr);
     CHECK(generic_row->script_name == "AsianBasketOption");
     CHECK(generic_row->underlyings_json == R"(["GB0005405286","US0378331005"])");
@@ -3493,8 +3516,7 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
         "DoubleDigitalOption",
         "DoubleDigitalOption",
         R"({"Type1":"Equity","Type2":"Equity","Expiry":"2029-10-31","Settlement":"2029-12-31","Position":"Long","PayCcy":"GBP","BinaryPayout":"1000000.00","BinaryLevel1":"1.0500","BinaryLevel2":"1.2000","Underlying1Type":"Equity","Underlying2Type":"Equity"})"));
-    const auto* digital_row =
-        std::get_if<ores::trading::domain::scripted_instrument>(&digital.instrument);
+    const auto* digital_row = scripted_of(digital.instrument);
     REQUIRE(digital_row != nullptr);
     CHECK(digital_row->script_name == "DoubleDigitalOption");
     CHECK(digital_row->parameters_json.find("BinaryPayout") != std::string::npos);
@@ -3503,8 +3525,7 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
         "PerformanceOption_01",
         "PerformanceOption_01",
         R"({"NotionalAmount":"1000000.00","ParticipationRate":"1.0","Strike":"0.9000","ValuationDate":"2029-10-31","SettlementDate":"2029-12-31","Position":"Long","PayCcy":"GBP","StrikePrices":"0.9000,1.0000,1.1000","Underlying1Type":"Equity","Underlying2Type":"Equity"})"));
-    const auto* performance_row =
-        std::get_if<ores::trading::domain::scripted_instrument>(&performance.instrument);
+    const auto* performance_row = scripted_of(performance.instrument);
     REQUIRE(performance_row != nullptr);
     CHECK(performance_row->script_name == "PerformanceOption_01");
     CHECK(performance_row->parameters_json.find("StrikePrices") != std::string::npos);

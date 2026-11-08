@@ -34,7 +34,7 @@ namespace ores::analytics::quant::domain {
 /// requires rows for the same calendar to be contiguous and sorted by date,
 /// exactly what that query gives for free.
 struct calendar_date_row final {
-    std::size_t calendar_index;
+    std::size_t calendar_index{};
     std::chrono::year_month_day date;
 };
 
@@ -43,7 +43,7 @@ struct calendar_date_row final {
 /// code<->index mapping (see the refdata-coupling boundary this component
 /// keeps to).
 struct calendar_query final {
-    std::size_t calendar_index;
+    std::size_t calendar_index{};
     std::chrono::year_month_day date;
 };
 

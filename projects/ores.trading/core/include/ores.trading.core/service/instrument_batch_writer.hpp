@@ -53,7 +53,6 @@
 #include "ores.trading.core/repository/commodity_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/commodity_instrument_repository.hpp"
 #include "ores.trading.core/repository/composite_instrument_repository.hpp"
-#include "ores.trading.core/repository/composite_leg_repository.hpp"
 #include "ores.trading.core/repository/credit_basket_constituent_repository.hpp"
 #include "ores.trading.core/repository/credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/credit_instrument_repository.hpp"
@@ -83,6 +82,8 @@
 #include "ores.trading.core/repository/index_credit_default_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/index_credit_default_swap_option_instrument_repository.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
+#include "ores.trading.core/repository/instrument_barrier_level_repository.hpp"
+#include "ores.trading.core/repository/instrument_barrier_repository.hpp"
 #include "ores.trading.core/repository/instrument_option_exercise_fee_repository.hpp"
 #include "ores.trading.core/repository/instrument_option_exercise_price_repository.hpp"
 #include "ores.trading.core/repository/instrument_option_payment_date_repository.hpp"
@@ -91,12 +92,18 @@
 #include "ores.trading.core/repository/instrument_schedule_date_repository.hpp"
 #include "ores.trading.core/repository/instrument_schedule_repository.hpp"
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
+#include "ores.trading.core/repository/instrument_underlying_repository.hpp"
 #include "ores.trading.core/repository/knock_out_swap_instrument_repository.hpp"
 #include "ores.trading.core/repository/range_bound_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/risk_participation_agreement_instrument_repository.hpp"
 #include "ores.trading.core/repository/scripted_instrument_repository.hpp"
+#include "ores.trading.core/repository/scripted_parameter_repository.hpp"
+#include "ores.trading.core/repository/scripted_parameter_value_repository.hpp"
+#include "ores.trading.core/repository/structure_member_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_amortization_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
+#include "ores.trading.core/repository/swap_leg_indexing_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_rate_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
 #include "ores.trading.core/repository/swaption_instrument_repository.hpp"
@@ -284,7 +291,6 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.cap_floor_instruments, keys, stamp, claim);
     write_rows<repository::commodity_basket_constituent_repository>(
         ctx, batch.commodity_basket_constituents, keys, stamp, claim);
-    write_rows<repository::composite_leg_repository>(ctx, batch.composite_legs, keys, stamp, claim);
     write_rows<repository::credit_basket_constituent_repository>(
         ctx, batch.credit_basket_constituents, keys, stamp, claim);
     write_rows<repository::credit_default_swap_instrument_repository>(
@@ -309,6 +315,10 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.index_credit_default_swap_option_instruments, keys, stamp, claim);
     write_rows<repository::inflation_swap_instrument_repository>(
         ctx, batch.inflation_swap_instruments, keys, stamp, claim);
+    write_rows<repository::instrument_barrier_repository>(
+        ctx, batch.instrument_barriers, keys, stamp, claim);
+    write_rows<repository::instrument_barrier_level_repository>(
+        ctx, batch.instrument_barrier_levels, keys, stamp, claim);
     write_rows<repository::instrument_option_repository>(
         ctx, batch.instrument_options, keys, stamp, claim);
     write_rows<repository::instrument_option_exercise_fee_repository>(
@@ -325,6 +335,8 @@ void write_instrument_batch(ores::database::context ctx,
         ctx, batch.instrument_schedule_dates, keys, stamp, claim);
     write_rows<repository::instrument_strike_repository>(
         ctx, batch.instrument_strikes, keys, stamp, claim);
+    write_rows<repository::instrument_underlying_repository>(
+        ctx, batch.instrument_underlyings, keys, stamp, claim);
     write_rows<repository::knock_out_swap_instrument_repository>(
         ctx, batch.knock_out_swap_instruments, keys, stamp, claim);
     write_rows<repository::range_bound_repository>(ctx, batch.range_bounds, keys, stamp, claim);
@@ -333,7 +345,17 @@ void write_instrument_batch(ores::database::context ctx,
     write_rows<repository::swap_leg_repository>(ctx, batch.swap_legs, keys, stamp, claim);
     write_rows<repository::swap_leg_amount_repository>(
         ctx, batch.swap_leg_amounts, keys, stamp, claim);
+    write_rows<repository::swap_leg_indexing_repository>(
+        ctx, batch.swap_leg_indexings, keys, stamp, claim);
+    write_rows<repository::swap_leg_amortization_repository>(
+        ctx, batch.swap_leg_amortizations, keys, stamp, claim);
     write_rows<repository::swap_leg_rate_repository>(ctx, batch.swap_leg_rates, keys, stamp, claim);
+    write_rows<repository::scripted_parameter_repository>(
+        ctx, batch.scripted_parameters, keys, stamp, claim);
+    write_rows<repository::scripted_parameter_value_repository>(
+        ctx, batch.scripted_parameter_values, keys, stamp, claim);
+    write_rows<repository::structure_member_repository>(
+        ctx, batch.structure_members, keys, stamp, claim);
     write_rows<repository::swaption_instrument_repository>(
         ctx, batch.swaption_instruments, keys, stamp, claim);
     write_rows<repository::synthetic_cdo_instrument_repository>(
@@ -489,8 +511,6 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("cap_floor_instruments");
     if (!batch.commodity_basket_constituents.empty())
         names.emplace_back("commodity_basket_constituents");
-    if (!batch.composite_legs.empty())
-        names.emplace_back("composite_legs");
     if (!batch.credit_basket_constituents.empty())
         names.emplace_back("credit_basket_constituents");
     if (!batch.credit_default_swap_instruments.empty())
@@ -515,6 +535,10 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("index_credit_default_swap_option_instruments");
     if (!batch.inflation_swap_instruments.empty())
         names.emplace_back("inflation_swap_instruments");
+    if (!batch.instrument_barriers.empty())
+        names.emplace_back("instrument_barriers");
+    if (!batch.instrument_barrier_levels.empty())
+        names.emplace_back("instrument_barrier_levels");
     if (!batch.instrument_options.empty())
         names.emplace_back("instrument_options");
     if (!batch.instrument_option_exercise_fees.empty())
@@ -531,6 +555,8 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("instrument_schedule_dates");
     if (!batch.instrument_strikes.empty())
         names.emplace_back("instrument_strikes");
+    if (!batch.instrument_underlyings.empty())
+        names.emplace_back("instrument_underlyings");
     if (!batch.knock_out_swap_instruments.empty())
         names.emplace_back("knock_out_swap_instruments");
     if (!batch.range_bounds.empty())
@@ -541,8 +567,18 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("swap_legs");
     if (!batch.swap_leg_amounts.empty())
         names.emplace_back("swap_leg_amounts");
+    if (!batch.swap_leg_indexings.empty())
+        names.emplace_back("swap_leg_indexings");
+    if (!batch.swap_leg_amortizations.empty())
+        names.emplace_back("swap_leg_amortizations");
     if (!batch.swap_leg_rates.empty())
         names.emplace_back("swap_leg_rates");
+    if (!batch.scripted_parameters.empty())
+        names.emplace_back("scripted_parameters");
+    if (!batch.scripted_parameter_values.empty())
+        names.emplace_back("scripted_parameter_values");
+    if (!batch.structure_members.empty())
+        names.emplace_back("structure_members");
     if (!batch.swaption_instruments.empty())
         names.emplace_back("swaption_instruments");
     if (!batch.synthetic_cdo_instruments.empty())

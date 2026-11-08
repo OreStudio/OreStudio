@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
+    <TradeType>EquityEuropeanBarrierOption</TradeType>
+    <EquityEuropeanBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2029-01-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>2536.37</Level>
+        </Levels>
+      </BarrierData>
+      <Name>.STOXX50E</Name>
+      <Currency>EUR</Currency>
+      <Strike>2818.19</Strike>
+      <Quantity>3051825.57</Quantity>
+    </EquityEuropeanBarrierOptionData>
+  </Trade>
+  <Trade id="0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf">
+    <TradeType>EquityEuropeanBarrierOption</TradeType>
+    <EquityEuropeanBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+          <ExerciseDate>2034-09-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>1168.8</Level>
+        </Levels>
+      </BarrierData>
+      <Name>.STOXX50E</Name>
+      <Currency>EUR</Currency>
+      <Strike>1298.67</Strike>
+      <Quantity>6208184.38</Quantity>
+    </EquityEuropeanBarrierOptionData>
+  </Trade>
+</Portfolio>

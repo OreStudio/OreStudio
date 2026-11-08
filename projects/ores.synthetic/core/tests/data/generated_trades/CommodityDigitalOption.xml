@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="ad2e43ef-f7bb-57e4-9071-01481f80a72f">
+    <TradeType>CommodityDigitalOption</TradeType>
+  </Trade>
+  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+    <TradeType>CommodityDigitalOption</TradeType>
+  </Trade>
+</Portfolio>

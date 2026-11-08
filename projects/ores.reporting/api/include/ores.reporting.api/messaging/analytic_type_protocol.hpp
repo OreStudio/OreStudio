@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_ANALYTIC_TYPE_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_ANALYTIC_TYPE_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/analytic_type.hpp"
+#include "ores.reporting.api/domain/analytic_type_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -53,7 +54,7 @@ struct analytic_type_write {
     std::string description;
     std::optional<std::string> parameter_entity;
     std::optional<std::string> requires_analytic_type_code;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const analytic_type_write&, const analytic_type_write&) = default;
 };
@@ -89,7 +90,7 @@ struct analytic_type_event {
     boost::uuids::uuid event_id;
     analytic_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -98,7 +99,7 @@ struct analytic_type_event {
 
 struct analytic_type_version_key {
     analytic_type_key analytic_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const analytic_type_version_key&,
                            const analytic_type_version_key&) = default;
@@ -136,7 +137,7 @@ struct list_analytic_types_request {
 struct list_analytic_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::analytic_type> types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_analytic_types_response&,
                            const list_analytic_types_response&) = default;
@@ -311,7 +312,7 @@ struct list_analytic_type_versions_request {
 struct list_analytic_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::analytic_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_analytic_type_versions_response&,
                            const list_analytic_type_versions_response&) = default;

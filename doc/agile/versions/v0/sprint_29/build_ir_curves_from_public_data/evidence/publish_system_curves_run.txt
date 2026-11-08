@@ -1,0 +1,40 @@
+publish_system_curves, the run after the step was tightened
+Tenant 'curveprobe' provisioned from profile 'empty_operational' on 2026-11-07 11:49
+
+--- what the CLI printed under the step ---
+  [2/3] publish_system_curves: completed
+      info: published 20 of 20 curve(s)
+
+--- the step's own record, and its log ---
+          started_at           |         completed_at          |      took       |                                step_log_json                                 
+-------------------------------+-------------------------------+-----------------+------------------------------------------------------------------------------
+ 2026-11-07 11:49:42.697955+00 | 2026-11-07 11:49:47.570221+00 | 00:00:04.872266 | [{"level": "info", "context": "", "message": "published 20 of 20 curve(s)"}]
+(1 row)
+
+
+--- the step's result payload ---
+{"kind": "publish_system_curves", "curves": ["KRW-KOFR as of 2026-11-07 11:49:42.828370Z", "MXN-TIIE as of 2026-11-07 11:49:43.105377Z", "COP-IBR as of 2026-11-07 11:49:43.326860Z", "HKD-HONIA as of 2026-11-07 11:49:43.547830Z", "CZK-CZEONIA as of 2026-11-07 11:49:43.771179Z", "SEK-SWESTR as of 2026-11-07 11:49:43.988615Z", "SGD-SORA as of 2026-11-07 11:49:44.199704Z", "EUR-ESTR as of 2026-11-07 11:49:44.395118Z", "AUD-AONIA as of 2026-11-07 11:49:44.602263Z", "CHF-SARON as of 2026-11-07 11:49:44.801314Z", "TRY-TLREF as of 2026-11-07 11:49:45.019113Z", "GBP-SONIA as of 2026-11-07 11:49:45.238382Z", "ZAR-ZARONIA as of 2026-11-07 11:49:45.460929Z", "NZD-NZONIA as of 2026-11-07 11:49:45.678523Z", "CAD-CORRA as of 2026-11-07 11:49:45.903836Z", "DKK-DESTR as of 2026-11-07 11:49:46.115202Z", "CLP-CAMARA as of 2026-11-07 11:49:46.332868Z", "USD-SOFR-FOMC as of 2026-11-07 11:49:46.623618Z", "INR-MIBOR as of 2026-11-07 11:49:46.936134Z", "JPY-TONA as of 2026-11-07 11:49:47.194486Z"], "images": [], "bundles": [], "configs": [], "parties": [], "accounts": [], "datasets": [], "root_lei": "", "tenant_id": "", "trades_planned": 0, "trades_written": 0, "report_schedules": [], "child_instance_id": "", "curves_not_published": [], "trades_already_present": 0}
+
+--- every system curve config has one live published set ---
+ live_published | configs 
+----------------+---------
+             20 |      20
+(1 row)
+
+
+--- the actor of one publish: who asked, who decided ---
+              decided_by              |  asked_by   | state_code |          decided_at           
+--------------------------------------+-------------+------------+-------------------------------
+ ores_prime_origin_marketdata_service | super_admin | approved   | 2026-11-07 11:49:47.272699+00
+(1 row)
+
+--- the policy that closed each publish, and who decided ---
+ state_code | auto_approval_code |                                          comment                                           |              decided_by
+------------+--------------------+--------------------------------------------------------------------------------------------+--------------------------------------
+ approved   | system_tenant      | Approved by policy: a marketdata.curve_publish request raised in the system tenant is the   | ores_prime_origin_marketdata_service
+            |                    | installation acting on its own behalf, so no person stands before it.                      |
+ approved   | system_tenant      | Approved by policy: a marketdata.curve_publish request raised in the system tenant is the   | ores_prime_origin_marketdata_service
+            |                    | installation acting on its own behalf, so no person stands before it.                      |
+
+--- the deployment's own answer ---
+ system.approvals.mode | enforced

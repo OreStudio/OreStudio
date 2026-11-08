@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_TRADE_PORTFOLIO_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_TRADE_PORTFOLIO_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/trade_portfolio.hpp"
+#include "ores.trading.api/domain/trade_portfolio_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -43,14 +44,14 @@ namespace ores::trading::messaging {
 
 struct trade_portfolio_key {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const trade_portfolio_key&, const trade_portfolio_key&) = default;
 };
 
 struct trade_portfolio_write {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     boost::uuids::uuid portfolio_id;
 
@@ -91,7 +92,7 @@ struct trade_portfolio_event {
     boost::uuids::uuid event_id;
     trade_portfolio_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +101,7 @@ struct trade_portfolio_event {
 
 struct trade_portfolio_version_key {
     trade_portfolio_key trade_portfolio;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const trade_portfolio_version_key&,
                            const trade_portfolio_version_key&) = default;
@@ -138,7 +139,7 @@ struct list_trade_portfolios_request {
 struct list_trade_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_portfolio> trade_portfolios;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_portfolios_response&,
                            const list_trade_portfolios_response&) = default;
@@ -314,7 +315,7 @@ struct list_by_trade_id_trade_portfolios_request {
 struct list_by_trade_id_trade_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_portfolio> trade_portfolios;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_trade_id_trade_portfolios_response&,
                            const list_by_trade_id_trade_portfolios_response&) = default;
@@ -343,7 +344,7 @@ struct list_trade_portfolio_versions_request {
 struct list_trade_portfolio_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_portfolio> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_portfolio_versions_response&,
                            const list_trade_portfolio_versions_response&) = default;

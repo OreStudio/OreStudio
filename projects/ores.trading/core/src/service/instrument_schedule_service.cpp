@@ -133,6 +133,8 @@ instrument_schedule_to_domain(const messaging::instrument_schedule_write& write)
     v.remove_first_date = write.remove_first_date;
     v.remove_last_date = write.remove_last_date;
     v.include_duplicate_dates = write.include_duplicate_dates;
+    v.base_schedule = write.base_schedule;
+    v.shift = write.shift;
     return v;
 }
 

@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_REPORT_DEFINITION_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_REPORT_DEFINITION_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/report_definition.hpp"
+#include "ores.reporting.api/domain/report_definition_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -62,7 +63,7 @@ struct report_definition_write {
     std::string prepared_input_key;
     std::string post_processing;
     std::string skipped_families;
-    bool is_official;
+    bool is_official{};
     std::optional<std::string> regulatory_book_type;
     std::optional<std::string> cut_kind_code;
     std::optional<boost::uuids::uuid> cut_id;
@@ -111,7 +112,7 @@ struct report_definition_event {
     boost::uuids::uuid event_id;
     report_definition_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -121,7 +122,7 @@ struct report_definition_event {
 
 struct report_definition_version_key {
     report_definition_key report_definition;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const report_definition_version_key&,
                            const report_definition_version_key&) = default;
@@ -159,7 +160,7 @@ struct list_report_definitions_request {
 struct list_report_definitions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_definition> definitions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_definitions_response&,
                            const list_report_definitions_response&) = default;
@@ -335,7 +336,7 @@ struct list_report_definition_versions_request {
 struct list_report_definition_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_definition> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_definition_versions_response&,
                            const list_report_definition_versions_response&) = default;

@@ -47,6 +47,8 @@ export interface EquityAsianOptionInstrumentWrite {
     average_type: string;
     averaging_start_date: string;
     averaging_end_date: string;
+    settlement: string | null;
+    strike_currency: string | null;
     description: string;
 }
 

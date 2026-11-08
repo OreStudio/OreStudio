@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ci:hotfix:nightly:sprint_29:v0:
 #+created: 2026-11-04
-#+updated: 2026-11-04
+#+updated: 2026-11-08
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,13 +21,12 @@ Every nightly builds, tests and submits its results to CDash, and the codegen dr
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                 |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-11-04                               |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
 - The Windows nightly sets up its database.
@@ -41,6 +40,7 @@ Every nightly builds, tests and submits its results to CDash, and the codegen dr
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:A29DCF7B-92D2-431E-B3DE-E9661C306DFD][Fix the nightly platform failures]] | DONE | 2026-11-04 | 2026-11-04 | Fix the Windows populate line endings, the gcc coroutine frames, the macOS clock test, the memcheck hang and submit, and the codegen drift on main. |
+| [[id:63C1832E-7DC7-4DC6-AE2D-9AB5FA07893A][Fix the failures the first fixes uncovered]] | DONE | 2026-11-06 | 2026-11-06 | With the first fixes merged, the nightlies get further and fail later. |
 
 * Decisions
 

@@ -17,8 +17,8 @@
  *
  */
 #include "ores.database/domain/context.hpp"
-#include "ores.refdata.api/domain/convention.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
+#include "ores.refdata.api/domain/convention_codec.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_codec.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
 #include "ores.refdata.core/repository/bundle_import_repository.hpp"
@@ -28,11 +28,10 @@
 #include "ores.refdata.core/service/bundle_import_operations_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
 #include <string>
 
 namespace {
@@ -78,8 +77,9 @@ TEST_CASE("a part staged before its central row still commits into one row each"
     // The part is staged first on purpose. The apply writes the central family
     // before the families that name it, so stage order must not decide this.
     const auto import_id = begin_import(ctx, uuid());
-    stage(ctx, import_id, "tenor_basis_swap_pay_receive", 0, rfl::json::write(part));
-    stage(ctx, import_id, "convention", 1, rfl::json::write(central));
+    stage(
+        ctx, import_id, "tenor_basis_swap_pay_receive", 0, ores::utility::codec::json::write(part));
+    stage(ctx, import_id, "convention", 1, ores::utility::codec::json::write(central));
 
     ores::refdata::service::bundle_import_operations_service imports(ctx);
     const auto committed = imports.commit({.import_id = import_id});
@@ -111,7 +111,7 @@ TEST_CASE("a commit that cannot decode a family leaves the import staging",
     // An array cannot decode into a deposit convention, so the commit reaches a
     // family it cannot apply and rolls the whole import back.
     const auto import_id = begin_import(ctx, uuid());
-    stage(ctx, import_id, "convention", 0, rfl::json::write(central));
+    stage(ctx, import_id, "convention", 0, ores::utility::codec::json::write(central));
     stage(ctx, import_id, "deposit", 1, "[]");
 
     ores::refdata::service::bundle_import_operations_service imports(ctx);
@@ -138,7 +138,7 @@ TEST_CASE("a second commit of the same import applies nothing", "[bundle_import]
     central.audit.change_reason_code = "system.test";
 
     const auto import_id = begin_import(ctx, uuid());
-    stage(ctx, import_id, "convention", 0, rfl::json::write(central));
+    stage(ctx, import_id, "convention", 0, ores::utility::codec::json::write(central));
 
     ores::refdata::service::bundle_import_operations_service imports(ctx);
     REQUIRE(imports.commit({.import_id = import_id}).success);

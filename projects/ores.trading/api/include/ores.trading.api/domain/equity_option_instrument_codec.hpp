@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_EQUITY_OPTION_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_EQUITY_OPTION_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/equity_option_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -58,6 +59,19 @@ namespace ores::trading::domain {
         utility::codec::field{"long_short", &equity_option_instrument::long_short},
         utility::codec::field{"settlement_type", &equity_option_instrument::settlement_type},
         utility::codec::field{"cliquet_frequency", &equity_option_instrument::cliquet_frequency},
+        utility::codec::field{"strike_currency", &equity_option_instrument::strike_currency},
+        utility::codec::field{"local_cap", &equity_option_instrument::local_cap},
+        utility::codec::field{"local_floor", &equity_option_instrument::local_floor},
+        utility::codec::field{"global_cap", &equity_option_instrument::global_cap},
+        utility::codec::field{"global_floor", &equity_option_instrument::global_floor},
+        utility::codec::field{"settlement_days", &equity_option_instrument::settlement_days},
+        utility::codec::field{"premium", &equity_option_instrument::premium},
+        utility::codec::field{"premium_payment_date",
+                              &equity_option_instrument::premium_payment_date},
+        utility::codec::field{"initial_price_1", &equity_option_instrument::initial_price_1},
+        utility::codec::field{"initial_price_2", &equity_option_instrument::initial_price_2},
+        utility::codec::field{"knock_in_price", &equity_option_instrument::knock_in_price},
+        utility::codec::field{"knock_out_price", &equity_option_instrument::knock_out_price},
         utility::codec::field{"description", &equity_option_instrument::description},
         utility::codec::field{"audit", &equity_option_instrument::audit},
     };

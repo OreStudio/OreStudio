@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CURVE_SEGMENT_PILLAR_RULE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CURVE_SEGMENT_PILLAR_RULE_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/curve_segment_pillar_rule.hpp"
+#include "ores.refdata.api/domain/curve_segment_pillar_rule_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -94,7 +95,7 @@ struct curve_segment_pillar_rule_event {
     boost::uuids::uuid event_id;
     curve_segment_pillar_rule_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +105,7 @@ struct curve_segment_pillar_rule_event {
 
 struct curve_segment_pillar_rule_version_key {
     curve_segment_pillar_rule_key curve_segment_pillar_rule;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_segment_pillar_rule_version_key&,
                            const curve_segment_pillar_rule_version_key&) = default;
@@ -142,7 +143,7 @@ struct list_curve_segment_pillar_rules_request {
 struct list_curve_segment_pillar_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_pillar_rule> segment_pillar_rules;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_segment_pillar_rules_response&,
                            const list_curve_segment_pillar_rules_response&) = default;
@@ -321,7 +322,7 @@ struct list_curve_segment_pillar_rule_versions_request {
 struct list_curve_segment_pillar_rule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_pillar_rule> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_segment_pillar_rule_versions_response&,
                            const list_curve_segment_pillar_rule_versions_response&) = default;

@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CURVE_GLOBAL_REPORT_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CURVE_GLOBAL_REPORT_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/curve_global_report.hpp"
+#include "ores.refdata.api/domain/curve_global_report_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -52,7 +53,7 @@ struct curve_global_report_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_configuration_id;
     std::string family;
-    bool has_report;
+    bool has_report{};
     std::optional<std::string> report_on_delta_grid;
     std::optional<std::string> report_on_moneyness_grid;
     std::optional<std::string> report_on_strike_grid;
@@ -65,7 +66,7 @@ struct curve_global_report_write {
     std::optional<std::string> pillar_dates;
     std::optional<std::string> underlying_tenors;
     std::optional<std::string> continuation_expiry;
-    int position;
+    int position{};
 
     friend bool operator==(const curve_global_report_write&,
                            const curve_global_report_write&) = default;
@@ -106,7 +107,7 @@ struct curve_global_report_event {
     boost::uuids::uuid event_id;
     curve_global_report_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -116,7 +117,7 @@ struct curve_global_report_event {
 
 struct curve_global_report_version_key {
     curve_global_report_key curve_global_report;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_global_report_version_key&,
                            const curve_global_report_version_key&) = default;
@@ -154,7 +155,7 @@ struct list_curve_global_reports_request {
 struct list_curve_global_reports_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_global_report> global_reports;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_global_reports_response&,
                            const list_curve_global_reports_response&) = default;
@@ -330,7 +331,7 @@ struct list_curve_global_report_versions_request {
 struct list_curve_global_report_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_global_report> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_global_report_versions_response&,
                            const list_curve_global_report_versions_response&) = default;

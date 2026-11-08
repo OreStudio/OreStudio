@@ -122,3 +122,48 @@ def test_a_future_dated_tick_fails():
     reasons = evaluate(ev)
 
     assert any("2 tick(s) are dated in the future" in reason for reason in reasons)
+
+
+def service_text_from(tmp_path, monkeypatch, files):
+    """What the check reads when the journal is empty and @p files are on disk."""
+    log_dir = tmp_path / "build" / "output" / "p" / "publish" / "log"
+    log_dir.mkdir(parents=True)
+    for name, text in files.items():
+        (log_dir / name).write_text(text)
+
+    class no_journal:
+        returncode = 1
+        stdout = ""
+
+    monkeypatch.setattr(compass_smoke, "_run", lambda *a, **k: no_journal())
+    env = {"ORES_PRESET": "p", "ORES_CHECKOUT_LABEL": "x"}
+    return compass_smoke._service_text(tmp_path, env, 0.0)
+
+
+def line_of(adapter):
+    return f"Adapter '{adapter}' accepted 1 and rejected 0 of 1 id(s)\n"
+
+
+def test_the_log_of_a_single_replica_service_is_read(tmp_path, monkeypatch):
+    text = service_text_from(tmp_path, monkeypatch, {
+        "ores.marketdata.service.0.log": line_of("demo-a"),
+    })
+
+    assert [x.adapter for x in parse_demand(text)] == ["demo-a"]
+
+
+def test_every_replica_log_is_read(tmp_path, monkeypatch):
+    text = service_text_from(tmp_path, monkeypatch, {
+        "ores.marketdata.service.1.log": line_of("demo-a"),
+        "ores.marketdata.service.2.log": line_of("demo-b"),
+    })
+
+    assert sorted(x.adapter for x in parse_demand(text)) == ["demo-a", "demo-b"]
+
+
+def test_the_log_of_another_service_is_not_read(tmp_path, monkeypatch):
+    text = service_text_from(tmp_path, monkeypatch, {
+        "ores.marketdata.official.0.log": line_of("demo-a"),
+    })
+
+    assert parse_demand(text) == []

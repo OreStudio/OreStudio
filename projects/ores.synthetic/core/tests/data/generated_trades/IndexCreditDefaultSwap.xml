@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="60df601a-7488-5d36-99b7-ea62af9db083">
+    <TradeType>IndexCreditDefaultSwap</TradeType>
+  </Trade>
+  <Trade id="3e175eb0-103d-5028-b5ec-539dbe3443fd">
+    <TradeType>IndexCreditDefaultSwap</TradeType>
+  </Trade>
+</Portfolio>

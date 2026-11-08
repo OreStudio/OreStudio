@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_REPORT_METRIC_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_REPORT_METRIC_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/report_metric.hpp"
+#include "ores.reporting.api/domain/report_metric_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -55,7 +56,7 @@ struct report_metric_write {
     std::chrono::system_clock::time_point as_of;
     std::string measure;
     std::string source;
-    int line;
+    int line{};
     boost::uuids::uuid report_definition_id;
     std::string family;
     std::string subject_type;
@@ -64,7 +65,7 @@ struct report_metric_write {
     std::string scenario;
     std::string factor;
     std::string qualifiers;
-    double value;
+    double value{};
 
     friend bool operator==(const report_metric_write&, const report_metric_write&) = default;
 };
@@ -108,7 +109,7 @@ struct report_metric_event {
     boost::uuids::uuid event_id;
     report_metric_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -138,7 +139,7 @@ struct list_report_metrics_request {
 struct list_report_metrics_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_metric> metrics;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_metrics_response&,
                            const list_report_metrics_response&) = default;

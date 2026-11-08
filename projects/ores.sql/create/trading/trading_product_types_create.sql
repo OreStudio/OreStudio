@@ -48,6 +48,7 @@ create table if not exists "ores_trading_product_types_tbl" (
     "description" text null,
     "source" text null,
     "source_ref" text null,
+    "deal_class" text null,
     "product_family_code" text null,
     "construction" text not null,
     "has_options" boolean not null,
@@ -69,7 +70,8 @@ create table if not exists "ores_trading_product_types_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("construction" in ('native', 'scripted', 'container'))
+    check ("construction" in ('native', 'scripted', 'container')),
+    check ("deal_class" is null or "deal_class" in ('flow', 'non_flow'))
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -27,9 +27,9 @@ measures it, so nothing would notice if streaming regressed to buffering.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] |
-| Now          | Nothing; #4159 is merged. |
-| Waiting on   | Nothing.                               |
-| Next         | The wrapper run is its own task now. |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-10-30                               |
 
 * Acceptance

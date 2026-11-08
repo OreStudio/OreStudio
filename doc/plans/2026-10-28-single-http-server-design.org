@@ -637,9 +637,11 @@ A client that hears a frame refetches the collection it draws. That is what a
 poll does, once per burst instead of once per screen per second, and it is
 correct without knowing what the event was about. Keys return to the frame as
 an optimisation when a per-entity key decoder exists; the event names do not
-change when they do. The window is a fixed period in this version rather than
-one armed by the first event; arming belongs with conflation, where a burst is
-also one frame rather than one per period.
+change when they do. The window is armed by the first change and closes one
+interval later, so a burst that begins between ticks is one frame per collection
+rather than two, and a window is never extended by what arrives inside it: a long
+import is a series of windows. Between windows the clock sleeps, because nothing
+arms it.
 
 *Filtering.* The subject is the same for every tenant, so every event reaches
 the hub and each carries its tenant in the envelope. A session hears its own
@@ -660,18 +662,23 @@ system into the gateway. The namespace removes that copy, one subscription hears
 the events of every component, and the cost of the correction was a new
 =subject_prefix= in every entity's event header.
 
-*The constants, carried over exactly.* =BATCH_WINDOW_MS = 150=, =MAX_KEYS = 20=,
-a watch declaration of at most 50 entries, and both names validated against
-=^[a-z][a-z0-9_]*$= so a browser cannot widen a watch with a wildcard. The window
-is armed by the first event and not extended, so a long burst is a series of
-windows and not one. Changing any of these four numbers is a client-facing
-behaviour change, and the tests must pin them.
+*The constants.* Two of the BFF's four survive the port and are pinned by tests;
+two do not and are recorded here so the difference is not mistaken for an
+oversight. =BATCH_WINDOW_MS = 150= is the window, armed by its first change and
+not extended. The watch declaration and its =^[a-z][a-z0-9_]*$= validation go
+with the watch list: the server's stream is per session and per party, not per
+arbitrary client-chosen collection. =MAX_KEYS = 20= goes with the key list, for
+the reason in the frame-shape paragraph above. Changing the window is a
+client-facing behaviour change and the tests pin it.
 
 *Conflation, and why it is safe.* The payload is a *time*, not a list. A client
 that misses three frames needs one fact: that something changed after its load
 began. So a connection that is behind does not grow a queue; the pending batch
-for each watched entity is overwritten. The ring is 4 KiB and holds one frame
-per watched entity at most.
+holds one frame per collection per tenancy, and a newer frame replaces the one
+still pending instead of queueing behind it. The replaced frame moves to the back
+of the batch, so the ids a client reads keep ascending and its =Last-Event-ID=
+stays a statement it can rely on. The ring is 4 KiB and holds one frame per
+collection at most.
 
 *Two things the BFF does not have, and the port adds.* It sends no keep-alive
 comment on an idle stream, and it has no resume. Both are cheap and both matter

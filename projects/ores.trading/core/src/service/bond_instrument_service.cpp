@@ -105,6 +105,7 @@ domain::bond_instrument bond_instrument_to_domain(const messaging::bond_instrume
     v.identity.trade_type_code = write.trade_type_code;
     v.identity.trade_activity_id = write.trade_activity_id;
     v.issue_id = write.issue_id;
+    v.position_identifier = write.position_identifier;
     v.notional = write.notional;
     return v;
 }

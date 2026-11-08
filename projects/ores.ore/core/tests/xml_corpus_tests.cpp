@@ -105,7 +105,8 @@ auto looks_numeric(std::string_view text) -> bool {
 
 }
 
-TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", "[ore][xml][corpus]") {
+TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out",
+          "[long_running][ore][xml][corpus]") {
     const auto root = examples_dir();
     REQUIRE(fs::is_directory(root));
 
@@ -166,7 +167,8 @@ TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", "[ore][
     CHECK(failures == 0);
 }
 
-TEST_CASE("every_decimal_in_the_corpus_reads_and_writes_as_the_same_value", "[ore][xml][corpus]") {
+TEST_CASE("every_decimal_in_the_corpus_reads_and_writes_as_the_same_value",
+          "[long_running][ore][xml][corpus]") {
     const auto root = examples_dir();
     REQUIRE(fs::is_directory(root));
 
@@ -212,7 +214,7 @@ TEST_CASE("every_decimal_in_the_corpus_reads_and_writes_as_the_same_value", "[or
     CHECK(changed == 0);
 }
 
-TEST_CASE("every_xml_document_in_the_repository_parses", "[ore][xml][corpus]") {
+TEST_CASE("every_xml_document_in_the_repository_parses", "[long_running][ore][xml][corpus]") {
     auto lg(make_logger(test_suite));
 
     const auto roots = corpus_roots();

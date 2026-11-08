@@ -35,6 +35,7 @@
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.http/routes/iam/iam_routes.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
+#include "ores.http/routes/synthetic/synthetic_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
@@ -170,6 +171,9 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
+    ores::http::routes::synthetic::synthetic_routes::register_routes(
+        router, registry, service_nats);
+
     /*
      * The browser's door: a sign-in keeps the token here and gives the browser a
      * cookie. The session's cookie name is the deployment's, so two deployments on
@@ -178,6 +182,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     http::domain::cookie_settings session_cookie;
     session_cookie.name = cfg.web_session_name;
     session_cookie.secure = cfg.server.enable_ssl;
+    session_cookie.path = cfg.web_session_path;
     server.set_cookie_settings(session_cookie);
 
     /*

@@ -112,7 +112,7 @@ struct list_market_series_asset_classes_request {
 struct list_market_series_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_series_asset_class> market_series_asset_classes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_market_series_asset_classes_response&,
                            const list_market_series_asset_classes_response&) = default;
@@ -296,7 +296,7 @@ struct list_by_market_series_id_market_series_asset_classes_request {
 struct list_by_market_series_id_market_series_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_series_asset_class> market_series_asset_classes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_market_series_id_market_series_asset_classes_response&,

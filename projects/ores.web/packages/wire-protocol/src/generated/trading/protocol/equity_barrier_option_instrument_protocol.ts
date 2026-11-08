@@ -49,6 +49,9 @@ export interface EquityBarrierOptionInstrumentWrite {
     upper_barrier: string | null;
     upper_barrier_type: string;
     rebate: string | null;
+    barrier_start_date: string | null;
+    barrier_calendar: string | null;
+    barrier_fixing_index: string | null;
     description: string;
 }
 

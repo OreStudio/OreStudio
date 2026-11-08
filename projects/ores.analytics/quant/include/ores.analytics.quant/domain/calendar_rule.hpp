@@ -97,7 +97,7 @@ struct calendar_exception final {
     std::chrono::year_month_day date;
     /// true = override to open (a business day despite falling on what a
     /// rule would otherwise mark a holiday); false = additional holiday.
-    bool is_business_day;
+    bool is_business_day{};
 };
 
 /// Parses an @c ores_refdata_calendar_rules_tbl.shift code -- the soft-enum

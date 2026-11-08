@@ -119,6 +119,48 @@ struct fx_barrier_option_instrument final {
     std::string underlying_code;
 
     /**
+     * @brief The date the barrier starts to be monitored, as StartDate states it.
+     */
+    std::optional<std::chrono::year_month_day> barrier_start_date;
+
+    /**
+     * @brief The calendar the barrier is monitored in, as Calendar states it.
+     */
+    std::optional<std::string> barrier_calendar;
+
+    /**
+     * @brief The index the barrier is observed against, as FXIndex states it.
+     */
+    std::optional<std::string> barrier_fixing_index;
+
+    /**
+     * @brief A generic barrier option's quantity, as Quantity states it.
+     */
+    std::optional<double> quantity;
+
+    /**
+     * @brief A generic barrier option's strike, as Strike states it.
+     */
+    std::optional<ores::utility::decimal::decimal> strike;
+
+    /**
+     * @brief A cash-or-nothing generic barrier option's amount, as Amount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> amount;
+
+    /**
+     * @brief A generic barrier option's settlement date, as SettlementDate states it.
+     */
+    std::optional<std::chrono::year_month_day> settlement_date;
+
+    /**
+     * @brief How a generic barrier option's knock-in and knock-out barriers combine, as
+     * Barriers/KikoType states it. Its monitoring schedule is the product schedule under the role
+     * barrier_schedule.
+     */
+    std::optional<std::string> kiko_type;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -158,6 +200,14 @@ struct fx_barrier_option_instrument final {
     ores::utility::digest::append_member(out, "lower_barrier", v.lower_barrier);
     ores::utility::digest::append_member(out, "upper_barrier", v.upper_barrier);
     ores::utility::digest::append_member(out, "underlying_code", v.underlying_code);
+    ores::utility::digest::append_member(out, "barrier_start_date", v.barrier_start_date);
+    ores::utility::digest::append_member(out, "barrier_calendar", v.barrier_calendar);
+    ores::utility::digest::append_member(out, "barrier_fixing_index", v.barrier_fixing_index);
+    ores::utility::digest::append_member(out, "quantity", v.quantity);
+    ores::utility::digest::append_member(out, "strike", v.strike);
+    ores::utility::digest::append_member(out, "amount", v.amount);
+    ores::utility::digest::append_member(out, "settlement_date", v.settlement_date);
+    ores::utility::digest::append_member(out, "kiko_type", v.kiko_type);
     out.push_back('}');
     return out;
 }

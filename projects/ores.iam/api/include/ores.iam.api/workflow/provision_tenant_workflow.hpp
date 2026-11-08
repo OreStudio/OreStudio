@@ -20,14 +20,17 @@
 #ifndef ORES_IAM_API_WORKFLOW_PROVISION_TENANT_WORKFLOW_HPP
 #define ORES_IAM_API_WORKFLOW_PROVISION_TENANT_WORKFLOW_HPP
 
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include <algorithm>
-#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
@@ -93,6 +96,7 @@ inline constexpr std::string_view start_tenant_setup_step_kind = "start_tenant_s
 /// The step kinds the notation knows, each named once so a handler that reads
 /// the catalogue by kind names the same string the catalogue declares.
 inline constexpr std::string_view system_provision_step_kind = "system_provision";
+inline constexpr std::string_view publish_system_curves_step_kind = "publish_system_curves";
 inline constexpr std::string_view publish_bundle_step_kind = "publish_bundle";
 inline constexpr std::string_view import_lei_hierarchy_step_kind = "import_lei_hierarchy";
 inline constexpr std::string_view provision_party_step_kind = "provision_party";
@@ -110,6 +114,7 @@ inline constexpr std::string_view schedule_reports_step_kind = "schedule_reports
 /// a second one. Not every kind here is one this build executes; see
 /// @ref provision_executed_step_kinds for the subset a profile may order today.
 inline constexpr std::string_view provision_step_kinds[] = {system_provision_step_kind,
+                                                            publish_system_curves_step_kind,
                                                             publish_bundle_step_kind,
                                                             import_lei_hierarchy_step_kind,
                                                             provision_party_step_kind,
@@ -160,6 +165,12 @@ struct step_kind_words {
         return {"Publish the system's own data",
                 "Publishes the datasets the installation itself is read from into the system "
                 "tenant, before the tenant has any of its own.",
+                orchestrating_step_timeout};
+    if (kind == publish_system_curves_step_kind)
+        return {"Publish the system's curves",
+                "Bootstraps each IR curve the system tenant holds a config for from its quotes "
+                "and publishes it, so forwards can be read at once. A curve whose quotes have not "
+                "arrived in time is named with its reason, and the run goes on.",
                 orchestrating_step_timeout};
     if (kind == publish_bundle_step_kind)
         return {"Publish the reference data",
@@ -233,6 +244,7 @@ struct step_kind_words {
 /// half-provisioned. Growing it is a code change beside the executor.
 inline constexpr std::string_view provision_executed_step_kinds[] = {
     system_provision_step_kind,
+    publish_system_curves_step_kind,
     publish_bundle_step_kind,
     import_lei_hierarchy_step_kind,
     provision_party_step_kind,
@@ -258,14 +270,15 @@ inline constexpr std::string_view provision_executed_step_kinds[] = {
  * The split between the two runs is this predicate. The provisioning of one
  * tenant is two runs joined at the authentication boundary: the caller owns
  * the run whose kinds act in the system tenant, and the new tenant owns the
- * run whose kinds act inside it. @c system_provision is the only system-scoped
- * kind today -- it publishes the installation's own data, which belongs to the
- * system tenant and exists before the new tenant holds anything. A kind added
+ * run whose kinds act inside it. @c system_provision publishes the
+ * installation's own data, which belongs to the system tenant and exists before
+ * the new tenant holds anything, and @c publish_system_curves publishes the
+ * system tenant's curves from the quotes that data's feeds start. A kind added
  * to the catalogue has to be classified here, so that a future kind cannot
  * land in a run by accident.
  */
 [[nodiscard]] inline bool is_system_scoped_step_kind(std::string_view kind) {
-    return kind == system_provision_step_kind;
+    return kind == system_provision_step_kind || kind == publish_system_curves_step_kind;
 }
 
 /**
@@ -279,12 +292,36 @@ struct provision_tenant_step {
 };
 
 /**
+ * @brief The members of provision_tenant_step, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_step>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"kind", &provision_tenant_step::kind},
+                      field{"arguments_json", &provision_tenant_step::arguments_json}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<provision_tenant_step>(),
+              "provision_tenant_step gained a member its wire_fields does not name.");
+
+/**
  * @brief One parameter value the run's steps read, by declared name.
  */
 struct provision_tenant_parameter {
     std::string name;
     std::string value;
 };
+
+/**
+ * @brief The members of provision_tenant_parameter, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_parameter>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"name", &provision_tenant_parameter::name},
+                      field{"value", &provision_tenant_parameter::value}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<provision_tenant_parameter>(),
+              "provision_tenant_parameter gained a member its wire_fields does not name.");
 
 /**
  * @brief What a provision tenant run works from.
@@ -315,6 +352,24 @@ struct provision_tenant_workflow_request {
 };
 
 /**
+ * @brief The members of provision_tenant_workflow_request, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_workflow_request>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{
+        field{"profile_code", &provision_tenant_workflow_request::profile_code},
+        field{"tenant_id", &provision_tenant_workflow_request::tenant_id},
+        field{"tenant_code", &provision_tenant_workflow_request::tenant_code},
+        field{"tenant_hostname", &provision_tenant_workflow_request::tenant_hostname},
+        field{"admin_account_id", &provision_tenant_workflow_request::admin_account_id},
+        field{"parameters", &provision_tenant_workflow_request::parameters},
+        field{"steps", &provision_tenant_workflow_request::steps}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<provision_tenant_workflow_request>(),
+              "provision_tenant_workflow_request gained a member its wire_fields does not name.");
+
+/**
  * @brief What one step of a provisioning run is asked to do.
  *
  * The step handler reads the kind from here, because the engine dispatches
@@ -337,6 +392,23 @@ struct provision_tenant_step_command {
     std::vector<provision_tenant_parameter> parameters;
 };
 
+/**
+ * @brief The members of provision_tenant_step_command, in the order it declares them.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<provision_tenant_step_command>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"kind", &provision_tenant_step_command::kind},
+                      field{"tenant_id", &provision_tenant_step_command::tenant_id},
+                      field{"tenant_code", &provision_tenant_step_command::tenant_code},
+                      field{"tenant_hostname", &provision_tenant_step_command::tenant_hostname},
+                      field{"admin_account_id", &provision_tenant_step_command::admin_account_id},
+                      field{"arguments_json", &provision_tenant_step_command::arguments_json},
+                      field{"parameters", &provision_tenant_step_command::parameters}};
+}
+
+static_assert(::ores::utility::codec::names_every_member<provision_tenant_step_command>(),
+              "provision_tenant_step_command gained a member its wire_fields does not name.");
+
 namespace detail {
 
 /// A name no earlier step of the same run has taken, so that a later step's
@@ -352,7 +424,8 @@ namespace detail {
 /// The run's declaration, or a throw naming what the request lacks.
 [[nodiscard]] inline provision_tenant_workflow_request
 read_workflow_request(const std::string& request_json) {
-    auto parsed = rfl::json::read<provision_tenant_workflow_request>(request_json);
+    auto parsed =
+        ores::utility::codec::json::read_expected<provision_tenant_workflow_request>(request_json);
     if (!parsed)
         throw std::runtime_error(
             "A provisioning run was started with a request this deployment cannot read.");
@@ -392,7 +465,7 @@ make_step(const provision_tenant_workflow_request& run,
 
     step.build_command = [command](const std::string&,
                                    const ores::workflow::service::workflow_step_results&) {
-        return rfl::json::write(command);
+        return ores::utility::codec::json::write(command);
     };
     step.build_compensation = [](const std::string&, const std::string&, const std::string&) {
         return "{}";
@@ -412,6 +485,10 @@ make_step(const provision_tenant_workflow_request& run,
  */
 [[nodiscard]] inline std::vector<std::string_view> needs_of_step_kind(std::string_view kind) {
     if (kind == publish_bundle_step_kind)
+        return {system_provision_step_kind};
+    // The curves read the quotes of the feeds the system data starts, and the
+    // configs that data's bootstrap seed holds.
+    if (kind == publish_system_curves_step_kind)
         return {system_provision_step_kind};
     if (kind == import_lei_hierarchy_step_kind)
         return {publish_bundle_step_kind};

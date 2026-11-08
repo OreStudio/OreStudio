@@ -114,7 +114,7 @@ struct list_report_type_configuration_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_type_configuration_type>
         report_type_configuration_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_type_configuration_types_response&,
                            const list_report_type_configuration_types_response&) = default;
@@ -302,7 +302,7 @@ struct list_by_report_type_code_report_type_configuration_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_type_configuration_type>
         report_type_configuration_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_report_type_code_report_type_configuration_types_response&,

@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_INSTRUMENT_SCHEDULE_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_INSTRUMENT_SCHEDULE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/instrument_schedule.hpp"
+#include "ores.trading.api/domain/instrument_schedule_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -44,9 +45,9 @@ namespace ores::trading::messaging {
 struct instrument_schedule_key {
     boost::uuids::uuid trade_id;
     std::string owner_role;
-    int owner_number;
+    int owner_number{};
     std::string schedule_role;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const instrument_schedule_key&,
                            const instrument_schedule_key&) = default;
@@ -55,9 +56,9 @@ struct instrument_schedule_key {
 struct instrument_schedule_write {
     boost::uuids::uuid trade_id;
     std::string owner_role;
-    int owner_number;
+    int owner_number{};
     std::string schedule_role;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     std::string schedule_kind;
     std::optional<std::chrono::year_month_day> start_date;
@@ -75,6 +76,8 @@ struct instrument_schedule_write {
     std::optional<bool> remove_first_date;
     std::optional<bool> remove_last_date;
     std::optional<std::string> include_duplicate_dates;
+    std::optional<std::string> base_schedule;
+    std::optional<std::string> shift;
 
     friend bool operator==(const instrument_schedule_write&,
                            const instrument_schedule_write&) = default;
@@ -116,7 +119,7 @@ struct instrument_schedule_event {
     boost::uuids::uuid event_id;
     instrument_schedule_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -126,7 +129,7 @@ struct instrument_schedule_event {
 
 struct instrument_schedule_version_key {
     instrument_schedule_key instrument_schedule;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const instrument_schedule_version_key&,
                            const instrument_schedule_version_key&) = default;
@@ -164,7 +167,7 @@ struct list_instrument_schedules_request {
 struct list_instrument_schedules_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_schedule> instrument_schedules;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_schedules_response&,
                            const list_instrument_schedules_response&) = default;
@@ -341,7 +344,7 @@ struct list_by_trade_id_instrument_schedules_request {
 struct list_by_trade_id_instrument_schedules_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_schedule> instrument_schedules;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_trade_id_instrument_schedules_response&,
                            const list_by_trade_id_instrument_schedules_response&) = default;
@@ -371,7 +374,7 @@ struct list_instrument_schedule_versions_request {
 struct list_instrument_schedule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_schedule> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_schedule_versions_response&,
                            const list_instrument_schedule_versions_response&) = default;
@@ -467,6 +470,8 @@ inline constexpr std::string_view deleted = "trading.v1.events.instrument_schedu
         utility::codec::field{"remove_last_date", &instrument_schedule_write::remove_last_date},
         utility::codec::field{"include_duplicate_dates",
                               &instrument_schedule_write::include_duplicate_dates},
+        utility::codec::field{"base_schedule", &instrument_schedule_write::base_schedule},
+        utility::codec::field{"shift", &instrument_schedule_write::shift},
     };
 }
 

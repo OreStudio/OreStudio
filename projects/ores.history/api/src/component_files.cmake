@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "messaging/history_protocol_codec.cpp"
 )
 
 # The headers are listed for the install and IDE targets.

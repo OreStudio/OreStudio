@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_EQUITY_VARIANCE_SWAP_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_EQUITY_VARIANCE_SWAP_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/equity_variance_swap_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -55,10 +56,13 @@ struct equity_variance_swap_instrument_write {
     std::string underlying_name;
     std::string currency;
     ores::utility::decimal::decimal notional;
-    double variance_strike;
+    double variance_strike{};
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;
     std::string long_short;
+    std::optional<std::string> calendar;
+    std::optional<std::string> moment_type;
+    std::optional<bool> add_past_dividends;
     std::string description;
 
     friend bool operator==(const equity_variance_swap_instrument_write&,
@@ -101,7 +105,7 @@ struct equity_variance_swap_instrument_event {
     boost::uuids::uuid event_id;
     equity_variance_swap_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -111,7 +115,7 @@ struct equity_variance_swap_instrument_event {
 
 struct equity_variance_swap_instrument_version_key {
     equity_variance_swap_instrument_key equity_variance_swap_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_variance_swap_instrument_version_key&,
                            const equity_variance_swap_instrument_version_key&) = default;
@@ -151,7 +155,7 @@ struct list_equity_variance_swap_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_variance_swap_instrument>
         equity_variance_swap_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_variance_swap_instruments_response&,
                            const list_equity_variance_swap_instruments_response&) = default;
@@ -336,7 +340,7 @@ struct list_equity_variance_swap_instrument_versions_request {
 struct list_equity_variance_swap_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_variance_swap_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_variance_swap_instrument_versions_response&,
                            const list_equity_variance_swap_instrument_versions_response&) = default;
@@ -423,6 +427,10 @@ wire_fields(std::type_identity<equity_variance_swap_instrument_write>) {
         utility::codec::field{"maturity_date",
                               &equity_variance_swap_instrument_write::maturity_date},
         utility::codec::field{"long_short", &equity_variance_swap_instrument_write::long_short},
+        utility::codec::field{"calendar", &equity_variance_swap_instrument_write::calendar},
+        utility::codec::field{"moment_type", &equity_variance_swap_instrument_write::moment_type},
+        utility::codec::field{"add_past_dividends",
+                              &equity_variance_swap_instrument_write::add_past_dividends},
         utility::codec::field{"description", &equity_variance_swap_instrument_write::description},
     };
 }

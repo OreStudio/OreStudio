@@ -29,6 +29,8 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.security/authorization/grants.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "ores.variability.api/domain/system_setting.hpp"
+#include "ores.variability.core/repository/system_setting_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -190,6 +192,60 @@ decidable_scope approval_lifecycle::decidable_by_role() {
     return scope;
 }
 
+bool approval_lifecycle::enforces_approvals() const {
+    // The installation states it once, and a tenant may state it for itself. A
+    // mode that cannot be read is the enforcing answer, because a deployment that
+    // cannot say whether it enforces approvals keeps the pair it has.
+    auto read_mode = [](const ores::database::context& ctx) -> std::string {
+        try {
+            ores::variability::repository::system_setting_repository repo;
+            const auto found =
+                repo.read_latest_by_name(ctx, std::string(approvals_mode_setting_name));
+            return found.empty() ? std::string{} : found.front().value;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "The approvals mode could not be read: " << e.what();
+            return {};
+        }
+    };
+
+    auto mode = read_mode(ctx_);
+    if (mode.empty()) {
+        // No person is signed in to the installation from here, so the read
+        // names the service, which is who asks.
+        const auto installation =
+            ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account());
+        mode = read_mode(installation);
+    }
+
+    if (mode.empty() || mode == enforced_mode)
+        return true;
+    if (mode == auto_approved_mode)
+        return false;
+
+    BOOST_LOG_SEV(lg(), warn) << "The approvals mode is '" << mode
+                              << "', which this build does not know; enforcing approvals.";
+    return true;
+}
+
+std::optional<auto_approval_rule>
+approval_lifecycle::auto_approval_of(const domain::approval_kind& kind, bool names_parts) const {
+    // The parts are people answering, and a close that skipped them would leave
+    // them open forever.
+    if (names_parts)
+        return std::nullopt;
+
+    if (!enforces_approvals())
+        return auto_approval_rule::deployment;
+
+    if (kind.auto_approval_code == "every_request")
+        return auto_approval_rule::every_request;
+
+    if (kind.auto_approval_code == "system_tenant" && ctx_.tenant_id().is_system())
+        return auto_approval_rule::system_tenant;
+
+    return std::nullopt;
+}
+
 std::optional<boost::uuids::uuid> approval_lifecycle::system_actor_account_id() {
     // The services are the system tenant's accounts, so the system that closes a
     // request nobody decides is read where it lives and not where the request
@@ -239,16 +295,21 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
             codes.push_back(code);
     }
 
-    // A kind that needs no approval is closed by the system in the same act, so
-    // the account that closes it is resolved before the request is written: a
-    // zero-approval request left waiting is one no person can answer.
-    const bool closes_at_once = kind.approvals_required <= 0 && codes.empty();
+    // A raise a policy covers is closed by the system in the same act, so the
+    // account that closes it is resolved before the request is written: a
+    // request left waiting on nobody is one no person can answer.
+    const auto rule = auto_approval_of(kind, !codes.empty());
+    if (!rule && kind.approvals_required <= 0)
+        throw std::logic_error("The " + kind.code +
+                               " kind asks for no approvals and names no policy, so a request of "
+                               "it could only ever wait. State which raises close without a "
+                               "person, or ask for one.");
     std::optional<boost::uuids::uuid> system_actor;
-    if (closes_at_once) {
+    if (rule) {
         system_actor = system_actor_account_id();
         if (!system_actor)
             throw std::runtime_error("A " + kind.code +
-                                     " request needs no approval, and no system account is named "
+                                     " request is closed by policy, and no system account is named "
                                      "to close it with.");
     }
 
@@ -262,6 +323,7 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
     r.requested_by = requested_by;
     r.requested_at = now;
     r.reason = reason;
+    r.auto_approval_code = rule ? std::string(code_of(*rule)) : std::string{};
     if (kind.expires_after_days)
         r.expires_at = now + std::chrono::days(*kind.expires_after_days);
     r.modified_by = ctx_.actor();
@@ -310,24 +372,24 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
     if (!written)
         throw std::runtime_error("The raised request could not be read back.");
 
-    if (!closes_at_once)
+    if (!rule)
         return *written;
 
     try {
-        return close_without_approval(*written, kind, *system_actor);
+        return close_without_approval(*written, kind, *system_actor, *rule);
     } catch (...) {
-        // A request that needs no approval waits on nobody, so one whose close
-        // failed must not stay open: it is withdrawn in the asker's own name,
-        // which is the one decision the asker is allowed to take.
+        // A request a policy closes waits on nobody, so one whose close failed
+        // must not stay open: it is withdrawn in the asker's own name, which is
+        // the one decision the asker is allowed to take.
         BOOST_LOG_SEV(lg(), error) << "Request " << boost::uuids::to_string(r.id)
-                                   << " could not be closed without approval; withdrawing it.";
+                                   << " could not be closed by policy; withdrawing it.";
         try {
             const auto current = request(boost::uuids::to_string(r.id));
             decide(boost::uuids::to_string(r.id),
                    current ? current->version : 1,
                    "withdraw",
                    requested_by,
-                   "The kind needs no approval and the request could not be closed.");
+                   "A policy closes this request and it could not be closed.");
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "The half-raised request was not withdrawn: " << e.what();
         }
@@ -335,24 +397,55 @@ domain::approval_request approval_lifecycle::raise(const domain::approval_kind& 
     }
 }
 
+std::string_view code_of(auto_approval_rule rule) {
+    switch (rule) {
+        case auto_approval_rule::deployment:
+            return "deployment";
+        case auto_approval_rule::system_tenant:
+            return "system_tenant";
+        case auto_approval_rule::every_request:
+            return "every_request";
+    }
+    return "deployment";
+}
+
+namespace {
+
+/// What a person reads about a close nobody signed, in the decision's comment.
+std::string policy_words(auto_approval_rule rule, const std::string& kind_code) {
+    switch (rule) {
+        case auto_approval_rule::deployment:
+            return "Approved by policy: this deployment does not enforce approvals, so nothing "
+                   "waits on a person.";
+        case auto_approval_rule::system_tenant:
+            return "Approved by policy: a " + kind_code +
+                   " request raised in the system tenant is the installation acting on its own "
+                   "behalf, so no person stands before it.";
+        case auto_approval_rule::every_request:
+            return "Approved by policy: the " + kind_code +
+                   " kind states that every raise of it is approved without a person.";
+    }
+    return "Approved by policy.";
+}
+
+}
+
 domain::approval_request
 approval_lifecycle::close_without_approval(const domain::approval_request& request,
                                            const domain::approval_kind& kind,
-                                           const boost::uuids::uuid& system_actor) {
+                                           const boost::uuids::uuid& system_actor,
+                                           auto_approval_rule rule) {
     BOOST_LOG_SEV(lg(), info) << "Closing " << kind.code << " request "
                               << boost::uuids::to_string(request.id)
-                              << " approved: the kind needs no approval.";
+                              << " approved by policy: " << code_of(rule);
     const auto r = decide(boost::uuids::to_string(request.id),
                           request.version,
                           "approve",
                           system_actor,
-                          "No approval is needed for a " + kind.code + " request: its kind names " +
-                              std::to_string(kind.approvals_required) + " approvals.");
+                          policy_words(rule, kind.code));
     if (r.outcome != "ok")
         throw std::runtime_error("A " + kind.code +
-                                 " request that needs no approval was not "
-                                 "closed: " +
-                                 r.message);
+                                 " request a policy closes was not closed: " + r.message);
     const auto closed = this->request(boost::uuids::to_string(request.id));
     if (!closed)
         throw std::runtime_error("The closed request could not be read back.");

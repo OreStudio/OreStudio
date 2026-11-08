@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_FX_VARIANCE_SWAP_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_FX_VARIANCE_SWAP_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -57,9 +58,11 @@ struct fx_variance_swap_instrument_write {
     std::string currency;
     std::string underlying_code;
     std::string long_short;
-    double strike;
+    double strike{};
     ores::utility::decimal::decimal notional;
     std::string moment_type;
+    std::optional<std::string> calendar;
+    std::optional<bool> add_past_dividends;
     std::string description;
 
     friend bool operator==(const fx_variance_swap_instrument_write&,
@@ -101,7 +104,7 @@ struct fx_variance_swap_instrument_event {
     boost::uuids::uuid event_id;
     fx_variance_swap_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -111,7 +114,7 @@ struct fx_variance_swap_instrument_event {
 
 struct fx_variance_swap_instrument_version_key {
     fx_variance_swap_instrument_key fx_variance_swap_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const fx_variance_swap_instrument_version_key&,
                            const fx_variance_swap_instrument_version_key&) = default;
@@ -149,7 +152,7 @@ struct list_fx_variance_swap_instruments_request {
 struct list_fx_variance_swap_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_variance_swap_instrument> fx_variance_swap_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_variance_swap_instruments_response&,
                            const list_fx_variance_swap_instruments_response&) = default;
@@ -329,7 +332,7 @@ struct list_fx_variance_swap_instrument_versions_request {
 struct list_fx_variance_swap_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::fx_variance_swap_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_variance_swap_instrument_versions_response&,
                            const list_fx_variance_swap_instrument_versions_response&) = default;
@@ -414,6 +417,9 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"strike", &fx_variance_swap_instrument_write::strike},
         utility::codec::field{"notional", &fx_variance_swap_instrument_write::notional},
         utility::codec::field{"moment_type", &fx_variance_swap_instrument_write::moment_type},
+        utility::codec::field{"calendar", &fx_variance_swap_instrument_write::calendar},
+        utility::codec::field{"add_past_dividends",
+                              &fx_variance_swap_instrument_write::add_past_dividends},
         utility::codec::field{"description", &fx_variance_swap_instrument_write::description},
     };
 }

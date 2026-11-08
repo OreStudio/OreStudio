@@ -25,11 +25,12 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_FEED_SCOPE_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_FEED_SCOPE_PROTOCOL_HPP
 
-#include "ores.marketdata.api/domain/feed_scope.hpp"
+#include "ores.marketdata.api/domain/feed_scope_codec.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -97,7 +98,7 @@ struct feed_scope_event {
     boost::uuids::uuid event_id;
     feed_scope_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +107,7 @@ struct feed_scope_event {
 
 struct feed_scope_version_key {
     feed_scope_key feed_scope;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const feed_scope_version_key&, const feed_scope_version_key&) = default;
 };
@@ -143,7 +144,7 @@ struct list_feed_scopes_request {
 struct list_feed_scopes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed_scope> scopes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_feed_scopes_response&,
                            const list_feed_scopes_response&) = default;
@@ -316,7 +317,7 @@ struct list_feed_scope_versions_request {
 struct list_feed_scope_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed_scope> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_feed_scope_versions_response&,
                            const list_feed_scope_versions_response&) = default;

@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CURRENCY_PAIR_CONVENTION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CURRENCY_PAIR_CONVENTION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/currency_pair_convention.hpp"
+#include "ores.refdata.api/domain/currency_pair_convention_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -50,9 +51,9 @@ struct currency_pair_convention_key {
 
 struct currency_pair_convention_write {
     std::string pair_code;
-    double pip_factor;
-    double tick_size;
-    int decimal_places;
+    double pip_factor{};
+    double tick_size{};
+    int decimal_places{};
     std::optional<std::string> business_day_convention;
     std::optional<bool> spot_relative;
     std::optional<bool> end_of_month;
@@ -97,7 +98,7 @@ struct currency_pair_convention_event {
     boost::uuids::uuid event_id;
     currency_pair_convention_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +108,7 @@ struct currency_pair_convention_event {
 
 struct currency_pair_convention_version_key {
     currency_pair_convention_key currency_pair_convention;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const currency_pair_convention_version_key&,
                            const currency_pair_convention_version_key&) = default;
@@ -145,7 +146,7 @@ struct list_currency_pair_conventions_request {
 struct list_currency_pair_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_pair_convention> conventions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_currency_pair_conventions_response&,
                            const list_currency_pair_conventions_response&) = default;
@@ -324,7 +325,7 @@ struct list_currency_pair_convention_versions_request {
 struct list_currency_pair_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_pair_convention> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_currency_pair_convention_versions_response&,
                            const list_currency_pair_convention_versions_response&) = default;

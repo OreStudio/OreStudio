@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_REGULATORY_CORPORATE_SECTOR_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_REGULATORY_CORPORATE_SECTOR_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/regulatory_corporate_sector.hpp"
+#include "ores.refdata.api/domain/regulatory_corporate_sector_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -87,7 +88,7 @@ struct regulatory_corporate_sector_event {
     boost::uuids::uuid event_id;
     regulatory_corporate_sector_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +98,7 @@ struct regulatory_corporate_sector_event {
 
 struct regulatory_corporate_sector_version_key {
     regulatory_corporate_sector_key regulatory_corporate_sector;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const regulatory_corporate_sector_version_key&,
                            const regulatory_corporate_sector_version_key&) = default;
@@ -134,7 +135,7 @@ struct list_regulatory_corporate_sectors_request {
 struct list_regulatory_corporate_sectors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::regulatory_corporate_sector> sectors;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_regulatory_corporate_sectors_response&,
                            const list_regulatory_corporate_sectors_response&) = default;
@@ -314,7 +315,7 @@ struct list_regulatory_corporate_sector_versions_request {
 struct list_regulatory_corporate_sector_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::regulatory_corporate_sector> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_regulatory_corporate_sector_versions_response&,
                            const list_regulatory_corporate_sector_versions_response&) = default;

@@ -25,7 +25,7 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COUNTERPARTY_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COUNTERPARTY_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.refdata.api/domain/counterparty_codec.hpp"
 #include "ores.refdata.api/domain/counterparty_contact_information.hpp"
 #include "ores.refdata.api/domain/counterparty_identifier.hpp"
 #include "ores.refdata.api/domain/csa.hpp"
@@ -37,6 +37,7 @@
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -98,7 +99,7 @@ struct counterparty_event {
     boost::uuids::uuid event_id;
     counterparty_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +108,7 @@ struct counterparty_event {
 
 struct counterparty_version_key {
     counterparty_key counterparty;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const counterparty_version_key&,
                            const counterparty_version_key&) = default;
@@ -145,7 +146,7 @@ struct list_counterparties_request {
 struct list_counterparties_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty> counterparties;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_counterparties_response&,
                            const list_counterparties_response&) = default;
@@ -320,7 +321,7 @@ struct list_counterparty_versions_request {
 struct list_counterparty_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_counterparty_versions_response&,
                            const list_counterparty_versions_response&) = default;

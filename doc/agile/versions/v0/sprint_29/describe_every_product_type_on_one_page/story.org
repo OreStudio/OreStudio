@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :trading:refdata:web:sprint_29:v0:
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-08
 #+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -29,32 +29,23 @@ and nothing joins that prose to the catalogue the store holds.
 
 | Field         | Value                                                  |
 |---------------+--------------------------------------------------------|
-| State         | STARTED                                                |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Tasks 1 and 2 in review; the rest raised.              |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                                               |
-| Next          | Merge the analysis, then start Model the product type. |
-| Last touched  | 2026-10-31                                             |
-
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
-- The store holds one product type table, with one current row per code, seeded
-  from the system catalogue. No tenant holds a copy, and no second catalogue
-  states a product type.
-- Every product type carries a description of what the product is, and the
-  source that description came from.
-- A page lists every product type the catalogue holds, by the name a desk uses
-  and the code the store holds.
-- Each type states what it is, the markets it references with its home market
-  named, the family it belongs to, and where its documentation is: the ORE
-  product page, the knowledge document, or both.
-- Each type states what allows it: the books a tenant has enabled for it, and the
-  permission a person needs to book one. Both come from a junction against the
-  catalogue.
-- Every place a product type is named links to its page.
-- The pricing engine types join the catalogue rather than restating it.
-- A type the catalogue holds and no page can describe is listed as undescribed
-  rather than hidden, so the gap is visible.
+The story closes on the tasks it finished:
+
+- Analyse how the pricing engine types join the product type.
+- Author the description of every product type.
+- Hold what allows a product type.
+- Model the product type as the golden source.
+- Publish the catalogue from the system tenant.
+- Settle the axes a product type carries.
+- Classify each product type as flow or non-flow.
 
 * Documents
 
@@ -74,14 +65,7 @@ and nothing joins that prose to the catalogue the store holds.
 | [[id:17A6AB0B-78DA-474D-AEEE-0DB8395EAF08][Publish the catalogue from the system tenant]]               | DONE | 2026-11-02 | 2026-11-02 | Seed the catalogue once into the system tenant, stop the provisioner copying it into each tenant, and let every tenant read the system rows. Point the trade check at the one copy and migrate the copies away.                                                                                                                          |
 | [[id:E2704422-9165-4D5C-9C29-A4C0B6E2B14A][Author the description of every product type]]               | DONE | 2026-11-02 | 2026-11-03 | Write the description of all 121 product types: what the product is, what it pays and when a desk uses it. Each row names the ORE User Guide file it comes from, and the 13 types with no description anywhere are written.                                                                                                              |
 | [[id:BFF00B79-57EC-4382-86BB-C6233BD7EFA3][Hold what allows a product type]]                            | DONE | 2026-11-03 | 2026-11-03 | Add the junctions that say what allows a product type: the books a tenant enables for it, and the permission a person needs to book one. Settle the difference between all types allowed and none.                                                                                                                                       |
-| [[id:C92A71A3-578E-42EC-8EBB-F5265CA40698][Classify each product type as flow or non-flow]]             | BACKLOG |            |            | Hold the flow and non-flow division against the product type, with the party override the capture asks for, and delete the eight-code set in the BFF.                                                                                                                                                                                    |
-| [[id:B1EF45DC-6624-465A-8C2B-D9EF7C7AA204][Serve the product type catalogue to the browser]]            | BACKLOG |            |            | Add the NATS protocol and BFF routes for the product types, the axes they reference and the relations that allow them, with wire-protocol schemas and tests.                                                                                                                                                                             |
-| [[id:87E92BE8-4C30-4060-9034-C369B4E32488][Join the pricing engine types to the product type]]          | BACKLOG |            |            | Implement the join the analysis decided, seed the mapping, and make the pricing-engine screens read the name and the documentation from the product type.                                                                                                                                                                                |
-| [[id:DB56F37C-EB15-4B94-83DE-5FFAD3FF277C][Retire the duplicate product catalogues]]                    | BACKLOG |            |            | Fold the instrument codes into the product type, delete the English asset-class switch, the label and colour maps and the hardcoded Bond, and give the report results column a real value.                                                                                                                                               |
-| [[id:208C399F-560D-43A7-A0C9-FE7B097B19D5][Draw the product type list and page]]                        | BACKLOG |            |            | Draw the list and the detail page under trading: the list grouped by home market and family with search and counts, the page with the description and its source, the markets it references, the note, the routing table, the books and permission, and the engines.                                                                     |
-| [[id:FFD3E3A0-A042-4534-9B7A-B22ECF1D8AA4][Link every mention of a product type]]                       | BACKLOG |            |            | Make every surface that names a product type link to its page: the blotter, the trade page, structure legs, the authorisation queue, the report results, the pricing-engine select and the allowed lists.                                                                                                                                |
-| [[id:1D8C71AD-F3A0-477B-8519-5F904085D87A][Make the knowledge corpus read from the catalogue]]          | BACKLOG |            |            | Point the 88 product notes at the catalogue page instead of restating the identifiers, generate the products-by-asset-class entry page from the catalogue, and make the taxonomy notes name the code sets.                                                                                                                               |
-| [[id:162A3CC4-C1D3-4AC9-BCE1-074ABA76AFEF][Prove the product type catalogue holds one copy]]            | BACKLOG |            |            | Add the checks that keep one catalogue and prove the story end to end: every type described and sourced, no second list, every mention linked, every page opening.                                                                                                                                                                       |
+| [[id:C92A71A3-578E-42EC-8EBB-F5265CA40698][Classify each product type as flow or non-flow]]             | DONE | 2026-11-04 | 2026-11-08 | Hold the flow and non-flow division against the product type, with the party override the capture asks for, and delete the eight-code set in the BFF.                                                                                                                                                                                    |
 
 * Decisions
 
@@ -109,6 +93,7 @@ and nothing joins that prose to the catalogue the store holds.
   holds a code.
 - *The page is a screen.* It reads the store, and it shows what the catalogue
   holds rather than hiding a type it cannot describe.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:5BA1E4ED-CFBF-450A-B4C4-397646762927][Describe every product type on one page — the remaining work]].
 
 * Order of work
 

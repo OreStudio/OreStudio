@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http/routes/iam/iam_routes.hpp"
+#include "ores.http/routes/iam/account_contact_information_routes.hpp"
 #include "ores.http/routes/iam/account_credential_routes.hpp"
 #include "ores.http/routes/iam/account_operations_routes.hpp"
 #include "ores.http/routes/iam/account_routes.hpp"
@@ -29,33 +30,39 @@
 #include "ores.http/routes/iam/login_routes.hpp"
 #include "ores.http/routes/iam/permission_routes.hpp"
 #include "ores.http/routes/iam/role_routes.hpp"
+#include "ores.http/routes/iam/seed_profile_routes.hpp"
 #include "ores.http/routes/iam/session_operations_routes.hpp"
 #include "ores.http/routes/iam/session_routes.hpp"
 #include "ores.http/routes/iam/session_statistics_operations_routes.hpp"
 #include "ores.http/routes/iam/signup_routes.hpp"
-
+#include "ores.http/routes/iam/tenant_routes.hpp"
+#include "ores.http/routes/iam/tenant_status_routes.hpp"
+#include "ores.http/routes/iam/tenant_type_routes.hpp"
 namespace ores::http::routes::iam {
 
 void iam_routes::register_routes(std::shared_ptr<ores::http::net::router> router,
                                  std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                  ores::nats::service::nats_client& session) {
-
     account_routes::register_routes(router, registry, session);
     account_credential_routes::register_routes(router, registry, session);
-    role_routes::register_routes(router, registry, session);
-    permission_routes::register_routes(router, registry, session);
-    session_routes::register_routes(router, registry, session);
-    login_info_routes::register_routes(router, registry, session);
-
+    account_contact_information_routes::register_routes(router, registry, session);
     account_operations_routes::register_routes(router, registry, session);
-    authorization_routes::register_routes(router, registry, session);
-    login_routes::register_routes(router, registry, session);
-    signup_routes::register_routes(router, registry, session);
-    bootstrap_routes::register_routes(router, registry, session);
     auth_event_operations_routes::register_routes(router, registry, session);
+    authorization_routes::register_routes(router, registry, session);
+    bootstrap_routes::register_routes(router, registry, session);
     geo_operations_routes::register_routes(router, registry, session);
-    session_statistics_operations_routes::register_routes(router, registry, session);
+    login_routes::register_routes(router, registry, session);
+    login_info_routes::register_routes(router, registry, session);
+    permission_routes::register_routes(router, registry, session);
+    role_routes::register_routes(router, registry, session);
+    seed_profile_routes::register_routes(router, registry, session);
+    session_routes::register_routes(router, registry, session);
     session_operations_routes::register_routes(router, registry, session);
+    session_statistics_operations_routes::register_routes(router, registry, session);
+    signup_routes::register_routes(router, registry, session);
+    tenant_routes::register_routes(router, registry, session);
+    tenant_status_routes::register_routes(router, registry, session);
+    tenant_type_routes::register_routes(router, registry, session);
 }
 
 }

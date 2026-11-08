@@ -1,0 +1,221 @@
+:PROPERTIES:
+:ID: 1C3CAFC3-5713-5574-86E2-8281BF296968
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the party_countries endpoints over HTTP?
+#+description: Every endpoint the party_countries resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:party_countries:
+
+This file documents the party_countries resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/party_countries=
+:PROPERTIES:
+:ID: C9C964E8-66D1-58BF-A093-EE1C533E700F
+:END:
+
+List party countries. It needs a session.
+
+It forwards to =refdata.v1.party_countries.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_countries
+#+end_example
+
+#+name: party_countries-list
+#+begin_src hurl :tangle party_countries-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_countries
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_countries/00000000-0000-0000-0000-000000000000/__none__=
+:PROPERTIES:
+:ID: 074972B4-F636-50CF-9A25-4B2D128015FB
+:END:
+
+Get one party country. It needs a session.
+
+It forwards to =refdata.v1.party_countries.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_countries/00000000-0000-0000-0000-000000000000/__none__
+#+end_example
+
+#+name: party_countries-get
+#+begin_src hurl :tangle party_countries-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_countries/00000000-0000-0000-0000-000000000000/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_countries/get-many=
+:PROPERTIES:
+:ID: 2B95FF92-5772-5CC6-B8AA-0728CBA9AFF3
+:END:
+
+Get many party countries. It needs a session.
+
+It forwards to =refdata.v1.party_countries.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_countries/get-many
+#+end_example
+
+#+name: party_countries-get-many
+#+begin_src hurl :tangle party_countries-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_countries/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_countries=
+:PROPERTIES:
+:ID: 0F39B561-AC64-58A3-AABA-1D90E6421C9D
+:END:
+
+Create one party country. It needs a session.
+
+It forwards to =refdata.v1.party_countries.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_countries
+#+end_example
+
+#+name: party_countries-add
+#+begin_src hurl :tangle party_countries-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_countries
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/party_countries=
+:PROPERTIES:
+:ID: 3FE23534-40BB-5975-BDF5-4A289B7A9A5F
+:END:
+
+Replace one party country. It needs a session.
+
+It forwards to =refdata.v1.party_countries.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/party_countries
+#+end_example
+
+#+name: party_countries-set
+#+begin_src hurl :tangle party_countries-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/party_countries
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_countries/put-many=
+:PROPERTIES:
+:ID: C3E03A53-3A74-53AD-97BB-5E121F9A4DE6
+:END:
+
+Write many party countries. It needs a session.
+
+It forwards to =refdata.v1.party_countries.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_countries/put-many
+#+end_example
+
+#+name: party_countries-put-many
+#+begin_src hurl :tangle party_countries-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_countries/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/party_countries/00000000-0000-0000-0000-000000000000/__none__=
+:PROPERTIES:
+:ID: 0FA359E2-5EA5-5C15-AB35-EF09CF192217
+:END:
+
+Delete one party country. It needs a session.
+
+It forwards to =refdata.v1.party_countries.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/party_countries/00000000-0000-0000-0000-000000000000/__none__
+#+end_example
+
+#+name: party_countries-delete
+#+begin_src hurl :tangle party_countries-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/party_countries/00000000-0000-0000-0000-000000000000/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_countries/delete-many=
+:PROPERTIES:
+:ID: 5D127838-E5F4-5025-91B5-1D3D9EE07078
+:END:
+
+Delete many party countries. It needs a session.
+
+It forwards to =refdata.v1.party_countries.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_countries/delete-many
+#+end_example
+
+#+name: party_countries-delete-many
+#+begin_src hurl :tangle party_countries-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_countries/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_countries/by-party-id/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 51CAF964-8982-5F78-8418-0A55FDAADF6A
+:END:
+
+List the party countries that reference one party id. It needs a session.
+
+It forwards to =refdata.v1.party_countries.list_by_party_id=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_countries/by-party-id/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: party_countries-by-party-id
+#+begin_src hurl :tangle party_countries-by-party-id.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_countries/by-party-id/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :architecture:compute:tenancy:security:operations:sprint_29:v0:
 #+created: 2026-10-07
-#+updated: 2026-10-24
+#+updated: 2026-11-08
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,26 +21,22 @@ The grid's global view answers which tenant is using what, from what the install
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | The counts per tenant and party are served. The usage over time (cores, duration, outcome) is not. |
-| Waiting on    | The run statistics of the other grid story.                               |
-| Next          | Decide whether the usage row or the run statistics carry the time dimension.            |
-| Last touched  | 2026-10-21 |
-
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
-- The compute service writes a usage row per completed result, carrying the tenant, the host, the app version, the duration, the cores and the outcome, at the moment it already acts inside that tenant.
-- A usage row carries no tenant content: not the input bundle, the config, the output, the stderr or the report definition.
-- The super administrator reads the whole ledger under a permission, and can answer which tenant used what over any window the retention keeps.
-- The grid's load and capacity screens draw per-tenant usage from the ledger, and the work counts they state are true rather than a slice.
+The story closes on the tasks it finished:
+
+- Reconcile the grid stories with the code.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2E997D24-8C39-41EA-AF25-B2703E850B48][Record a usage row as the service works]] | BACKLOG | | | The compute service already enters each tenant to dispatch its work and to take its result back. Record what it did there as installation data. |
-| [[id:35F715F8-27D1-4C3F-B8B8-06E9976F10F0][Serve the usage ledger to the super administrator]] | STARTED | | | The ledger answers the global question, but nothing reads it yet. Serve it whole to the operator, and draw per-tenant usage on the grid's load and capacity screens. |
 | [[id:98C94FC5-BEA5-4558-9FBA-689929B77A45][Reconcile the grid stories with the code]] | BACKLOG | | | Compare the grid stories and backlog captures with what the code does, and correct the paperwork. |
 
 * Decisions
@@ -53,6 +49,7 @@ The grid's global view answers which tenant is using what, from what the install
   heatmap and carry the engine run statistics. The usage row of the first task
   is open until that story decides whether the statistics on the result replace
   it.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:C203DAF2-B554-46B0-91D8-1B31044F51CC][Account for the grid's usage — the remaining work]].
 
 * Out of scope
 

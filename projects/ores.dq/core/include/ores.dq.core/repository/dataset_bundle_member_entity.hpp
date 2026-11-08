@@ -58,7 +58,7 @@ struct dataset_bundle_member_entity {
     int display_order = 0;
 
 
-    bool optional;
+    bool optional{};
 
     std::string modified_by;
     std::string performed_by;

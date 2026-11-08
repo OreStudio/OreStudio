@@ -108,7 +108,7 @@ struct market_input_value final {
      * @brief The value, as the engine stated it and never formatted: a quote, a fixing or a
      * dividend rate.
      */
-    double value;
+    double value{};
 
     /**
      * @brief The day a dividend is paid, empty for a quote or a fixing.

@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_EQUITY_SWAP_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_EQUITY_SWAP_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -57,6 +58,18 @@ namespace ores::trading::domain {
         utility::codec::field{"long_short", &equity_swap_instrument::long_short},
         utility::codec::field{"payment_frequency_code",
                               &equity_swap_instrument::payment_frequency_code},
+        utility::codec::field{"fixed_rate", &equity_swap_instrument::fixed_rate},
+        utility::codec::field{"floating_index", &equity_swap_instrument::floating_index},
+        utility::codec::field{"floating_spread", &equity_swap_instrument::floating_spread},
+        utility::codec::field{"floating_day_count_fraction",
+                              &equity_swap_instrument::floating_day_count_fraction},
+        utility::codec::field{"initial_fixed_rate", &equity_swap_instrument::initial_fixed_rate},
+        utility::codec::field{"knock_in_level", &equity_swap_instrument::knock_in_level},
+        utility::codec::field{"bermudan_knock_in", &equity_swap_instrument::bermudan_knock_in},
+        utility::codec::field{"accruing_fixed_coupons",
+                              &equity_swap_instrument::accruing_fixed_coupons},
+        utility::codec::field{"accumulating_fixed_coupons",
+                              &equity_swap_instrument::accumulating_fixed_coupons},
         utility::codec::field{"description", &equity_swap_instrument::description},
         utility::codec::field{"audit", &equity_swap_instrument::audit},
     };

@@ -63,7 +63,7 @@ struct instrument_option_payment_date final {
     /**
      * @brief Ordinal of this payment date within the option block's list.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:synthetic:calibration:
 #+created: 2026-10-23
-#+updated: 2026-11-03
+#+updated: 2026-11-06
 
 * Summary
 
@@ -45,8 +45,15 @@ On 2026-10-23 the pages below were read from the official site. The rows of the 
 | Frankfurter | the =LICENSE= file of the repository and the documentation, on 2026-10-28 | read |
 | The ECB as a Frankfurter provider | the ECB disclaimer page that =/v2/providers= names, on 2026-10-28 | read |
 | Each other Frankfurter provider | the list of terms pages in =/v2/providers= | not read; 65 of 106 have none |
+| Bank of England SONIA licensing | the SONIA key features and policies page, on 2026-11-06 | read |
+| Bank of Japan | the copyright page, on 2026-11-06 | read |
+| SIX SARON | the SARON licensing FAQ, on 2026-11-06 | read |
+| Reserve Bank of Australia | the copyright and disclaimer notice, on 2026-11-06 | read |
+| Bank of Canada | the terms page, on 2026-11-06 | read |
+| Reserve Bank of New Zealand | the terms page refused the request with 403; a search summary only | not read |
+| The twenty other IR publishers | no page | not read |
 
-A source in the last four rows blocks the storing of its values until its terms page is read and the result is written here.
+A source whose row says not read blocks the storing of its values until its terms page is read and the result is written here.
 
 ** Frankfurter as the access route for FX
 
@@ -67,10 +74,55 @@ What the terms say, read on 2026-10-28:
 
 ** What this page does not settle
 
+- Whether the Bank of Japan allows this project's use of the call rate, which turns on whether the use is commercial.
+- Whether a SIX Data License for SARON is worth having, or CHF keeps a fixed level.
+- How to read the RBA and RBNZ tables, whose servers refused a script, and what the RBNZ terms page says.
+- The route and terms of the twenty IR currencies outside the derived FX pairs, and the overnight index of PLN and TWD.
 - Whether the Treasury feed carries a current licence. The next step is to read the current site policy of the Treasury.
 - Which series of the Bank of England database other than SONIA fall under the Open Government Licence.
 - Whether the FRED terms allow a copy of a series in a stored snapshot. The H.10 notes of each series say whether the word "Copyright" appears. The other route is the Board's own H.10 download, which the Board's public domain notice covers.
 - Which of the 26 FX pairs of [[id:3D0E46BD-02A4-4A2F-863A-B948B7E44FCD][the mapping inventory]] the ECB and the H.10 do not cover. The pairs that no source covers keep a fixed level, and the config says so.
+
+** The overnight rate of each IR currency
+
+The synthetic IR feeds of the system tenant cover 28 currencies, each on the overnight index of its config. The table names, for each, the public overnight rate, its publisher, the route by which it can be read, and what its terms allow. The eight currencies of the derived FX pairs come first, and their terms and routes were read and probed on 2026-11-06. For the other twenty the publisher is the index's administrator as commonly cited, and neither the route nor the terms was read.
+
+A source is usable when its terms allow storing its history and computing from it a synthetic level and a curve, and when a route reads it without a person.
+
+| Currency | Feed index | Public overnight rate | Publisher | Route | Terms | Usable |
+|----------+------------+-----------------------+-----------+-------+-------+--------|
+| USD | SOFR | SOFR | New York Fed | =markets.newyorkfed.org/api/rates/secured/sofr=, JSON; probed, it answered | read 2026-10-23: a licence to use, copy, distribute and modify for business purposes, with the stated notice and disclaimer and a label on modified data | yes |
+| EUR | ESTR | €STR | ECB | =data-api.ecb.europa.eu/service/data/EST/B.EU000A2X2A25.WT=, CSV; probed, it answered | read 2026-10-23: free use with the source cited, and a change stated explicitly | yes |
+| GBP | SONIA | SONIA | Bank of England | the statistical database, series =IUDSOIA=, CSV; probed, it answered | read 2026-11-06 on the SONIA key features page: the database is reproduced under the Open Government Licence; a direct licence is needed to redistribute SONIA to clients or to value clients' portfolios | yes, for our own calibration and curves |
+| JPY | TONA | uncollateralised overnight call rate | Bank of Japan | one Excel file per release day on the =mutan= statistics page; probed. History needs the BOJ Time-Series Data Search, not probed | read 2026-11-06: copying allowed with the Bank credited; copying for commercial purposes needs the Bank's permission in advance | only after the Bank's permission for any commercial use |
+| CHF | SARON | SARON | SIX | the Swiss reference rates page links a download; probed, it answered | read 2026-11-06 in the SIX SARON licensing FAQ: historical SARON may be downloaded and redistributed after one business day with no licence, but derived data, which names yield-curve building, needs a SIX Data License even for internal use | the history yes; a curve from it, no |
+| AUD | AONIA | interbank overnight cash rate | Reserve Bank of Australia | statistical table F1 as CSV; probed, the server refused a script with 403 | read 2026-11-06: the cash rate may be used for personal or commercial use with "Source: RBA [year]", no implied endorsement, and no improper commercial exploitation | the terms yes; the route is open |
+| CAD | CORRA | CORRA | Bank of Canada | the Valet API, series =AVG.INTWO=; probed, it answered | read 2026-11-06: free use, copy and distribution with the Bank credited and any change indicated | yes |
+| NZD | NZONIA | overnight interbank cash rate | Reserve Bank of New Zealand | table B2 on the wholesale interest rates page; probed, the server refused a script with 403 | not read: the terms page also refused with 403; a search summary says reuse is allowed with the Bank acknowledged | open: the terms and the route |
+| BRL | CDI | CDI | B3 | not read | not read | unknown |
+| CLP | CAMARA | Índice Cámara Promedio | Banco Central de Chile | not read | not read | unknown |
+| CNH | HIBOR | CNH HIBOR, a term rate, not an overnight average | Treasury Markets Association | not read | not read | unknown |
+| CNY | SHIBOR | SHIBOR overnight | National Interbank Funding Center | not read | not read | unknown |
+| COP | IBR | IBR overnight | Banco de la República | not read | not read | unknown |
+| CZK | CZEONIA | CZEONIA | Czech National Bank | not read | not read | unknown |
+| DKK | DESTR | DESTR | Danmarks Nationalbank | not read | not read | unknown |
+| HKD | HONIA | HONIA | Treasury Markets Association | not read | not read | unknown |
+| HUF | BUBORON | HUFONIA is the overnight average; BUBOR overnight is a quote | Magyar Nemzeti Bank | not read | not read | unknown |
+| ILS | TELBORON | SHIR; TELBOR ceased after 30 June 2025 | Bank of Israel | not read | not read | unknown |
+| INR | MIBOR | MIBOR overnight | FBIL | not read | not read | unknown |
+| KRW | KOFR | KOFR | Korea Securities Depository | not read | not read | unknown |
+| MXN | TIIE | TIIE de Fondeo | Banco de México | not read | not read | unknown |
+| NOK | NOWA | NOWA | Norges Bank | not read | not read | unknown |
+| PLN | POLONIA | unresolved: sources conflict on POLONIA, WIRON and POLSTR | NBP or GPW Benchmark | not read | not read | unknown |
+| SEK | SWESTR | SWESTR | Sveriges Riksbank | not read | not read | unknown |
+| SGD | SORA | SORA | Monetary Authority of Singapore | not read | not read | unknown |
+| TRY | TLREF | TLREF | Borsa Istanbul | not read | not read | unknown |
+| TWD | TAIBOR | unresolved: TAIBOR is a term rate, and the overnight benchmark was not found | not found | not read | not read | unknown |
+| ZAR | ZARONIA | ZARONIA | South African Reserve Bank | not read | not read | unknown |
+
+Four of the eight are usable now: USD, EUR, GBP and CAD. AUD has usable terms but no open route, because the RBA's server refused a script. JPY waits on the Bank of Japan's view of commercial use, CHF cannot give a curve without a SIX licence, and NZD needs both its terms and a route.
+
+Four feeds quote the wrong index, and one is unresolved. The ILS feed quotes TELBOR, which ceased; the CNH feed quotes HIBOR, a term rate; the HUF feed quotes the BUBOR overnight quote rather than HUFONIA, the overnight average; and the TWD feed quotes TAIBOR, a term rate. The PLN feed is the unresolved one, because the sources conflict on its index.
 
 ** How a generator uses a source
 

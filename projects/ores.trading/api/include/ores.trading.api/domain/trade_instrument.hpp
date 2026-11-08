@@ -49,7 +49,7 @@ using trade_instrument = std::variant<std::monostate,
                                       equity_instrument_data,
                                       commodity_instrument_data,
                                       composite_instrument_data,
-                                      scripted_instrument>;
+                                      scripted_instrument_data>;
 
 inline void
 stamp_ids(trade_instrument& ti, boost::uuids::uuid trade_id, boost::uuids::uuid activity_id = {}) {

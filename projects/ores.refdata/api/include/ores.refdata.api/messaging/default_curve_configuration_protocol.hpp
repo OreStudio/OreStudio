@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_DEFAULT_CURVE_CONFIGURATION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_DEFAULT_CURVE_CONFIGURATION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/default_curve_configuration.hpp"
+#include "ores.refdata.api/domain/default_curve_configuration_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,14 +52,14 @@ struct default_curve_configuration_key {
 struct default_curve_configuration_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
-    bool is_inline;
+    bool is_inline{};
     std::optional<int> priority;
     std::optional<std::string> default_curve_type;
     std::optional<std::string> day_counter;
     std::optional<std::string> recovery_rate;
     std::optional<std::string> extrapolation;
     std::optional<std::string> allow_negative_rates;
-    int position;
+    int position{};
 
     friend bool operator==(const default_curve_configuration_write&,
                            const default_curve_configuration_write&) = default;
@@ -99,7 +100,7 @@ struct default_curve_configuration_event {
     boost::uuids::uuid event_id;
     default_curve_configuration_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +110,7 @@ struct default_curve_configuration_event {
 
 struct default_curve_configuration_version_key {
     default_curve_configuration_key default_curve_configuration;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const default_curve_configuration_version_key&,
                            const default_curve_configuration_version_key&) = default;
@@ -147,7 +148,7 @@ struct list_default_curve_configurations_request {
 struct list_default_curve_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::default_curve_configuration> configurations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_default_curve_configurations_response&,
                            const list_default_curve_configurations_response&) = default;
@@ -327,7 +328,7 @@ struct list_default_curve_configuration_versions_request {
 struct list_default_curve_configuration_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::default_curve_configuration> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_default_curve_configuration_versions_response&,
                            const list_default_curve_configuration_versions_response&) = default;

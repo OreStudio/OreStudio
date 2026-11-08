@@ -86,7 +86,7 @@ struct base_correlation_config final {
     /**
      * @brief The number of settlement days.
      */
-    double settlement_days;
+    double settlement_days{};
 
     /**
      * @brief The surface's calendar, as the document spells it.

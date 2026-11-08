@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 55C57939-B346-5FAE-B1E5-E7B0FC1FFC7A
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the calendars endpoints over HTTP?
+#+description: Every endpoint the calendars resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:calendars:
+
+This file documents the calendars resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/calendars=
+:PROPERTIES:
+:ID: 52AA7DC4-E6F0-5799-B0F4-379B9CB05F3E
+:END:
+
+List calendars. It needs a session.
+
+It forwards to =refdata.v1.calendars.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendars
+#+end_example
+
+#+name: calendars-list
+#+begin_src hurl :tangle calendars-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendars
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendars/__none__=
+:PROPERTIES:
+:ID: 48AF9568-88C4-5C67-B0E3-3E652271A688
+:END:
+
+Get one calendar. It needs a session.
+
+It forwards to =refdata.v1.calendars.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendars/__none__
+#+end_example
+
+#+name: calendars-get
+#+begin_src hurl :tangle calendars-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendars/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendars/get-many=
+:PROPERTIES:
+:ID: 7112CE1A-E7C0-502B-8FA2-E49E80589088
+:END:
+
+Get many calendars. It needs a session.
+
+It forwards to =refdata.v1.calendars.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendars/get-many
+#+end_example
+
+#+name: calendars-get-many
+#+begin_src hurl :tangle calendars-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendars/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendars=
+:PROPERTIES:
+:ID: 9E88E843-8AC3-5DC6-9457-F61E5AB85911
+:END:
+
+Create one calendar. It needs a session.
+
+It forwards to =refdata.v1.calendars.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendars
+#+end_example
+
+#+name: calendars-add
+#+begin_src hurl :tangle calendars-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendars
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/calendars=
+:PROPERTIES:
+:ID: AF9F895A-20E0-5C8F-B1D1-039AB450CC50
+:END:
+
+Replace one calendar. It needs a session.
+
+It forwards to =refdata.v1.calendars.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/calendars
+#+end_example
+
+#+name: calendars-set
+#+begin_src hurl :tangle calendars-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/calendars
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendars/put-many=
+:PROPERTIES:
+:ID: D5409418-854E-5764-9CF3-17B3D907FBED
+:END:
+
+Write many calendars. It needs a session.
+
+It forwards to =refdata.v1.calendars.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendars/put-many
+#+end_example
+
+#+name: calendars-put-many
+#+begin_src hurl :tangle calendars-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendars/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/calendars/__none__=
+:PROPERTIES:
+:ID: 537894B4-C55E-59F1-9662-4CB5D703E76B
+:END:
+
+Delete one calendar. It needs a session.
+
+It forwards to =refdata.v1.calendars.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/calendars/__none__
+#+end_example
+
+#+name: calendars-delete
+#+begin_src hurl :tangle calendars-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/calendars/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendars/delete-many=
+:PROPERTIES:
+:ID: A92C7131-6FF0-551D-BE1B-F124E238A67B
+:END:
+
+Delete many calendars. It needs a session.
+
+It forwards to =refdata.v1.calendars.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendars/delete-many
+#+end_example
+
+#+name: calendars-delete-many
+#+begin_src hurl :tangle calendars-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendars/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendars/__none__/versions=
+:PROPERTIES:
+:ID: C157BC68-45E0-52DD-A5B8-62BCCD353563
+:END:
+
+List the recorded versions of one calendar. It needs a session.
+
+It forwards to =refdata.v1.calendars_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendars/__none__/versions
+#+end_example
+
+#+name: calendars-versions
+#+begin_src hurl :tangle calendars-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendars/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendars/__none__/versions/0=
+:PROPERTIES:
+:ID: 3DB97B8B-A0EE-5785-8ED8-7E64B70D74A1
+:END:
+
+Get one recorded version of one calendar. It needs a session.
+
+It forwards to =refdata.v1.calendars_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendars/__none__/versions/0
+#+end_example
+
+#+name: calendars-version
+#+begin_src hurl :tangle calendars-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendars/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_BOND_ISSUE_LEG_SCHEDULE_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_BOND_ISSUE_LEG_SCHEDULE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -43,9 +44,9 @@ namespace ores::trading::messaging {
 
 struct bond_issue_leg_schedule_key {
     boost::uuids::uuid issue_id;
-    int leg_number;
+    int leg_number{};
     std::string schedule_role;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const bond_issue_leg_schedule_key&,
                            const bond_issue_leg_schedule_key&) = default;
@@ -53,9 +54,9 @@ struct bond_issue_leg_schedule_key {
 
 struct bond_issue_leg_schedule_write {
     boost::uuids::uuid issue_id;
-    int leg_number;
+    int leg_number{};
     std::string schedule_role;
-    int sequence_number;
+    int sequence_number{};
     std::string schedule_kind;
     std::optional<std::chrono::year_month_day> start_date;
     std::optional<std::chrono::year_month_day> end_date;
@@ -105,7 +106,7 @@ struct bond_issue_leg_schedule_event {
     boost::uuids::uuid event_id;
     bond_issue_leg_schedule_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -115,7 +116,7 @@ struct bond_issue_leg_schedule_event {
 
 struct bond_issue_leg_schedule_version_key {
     bond_issue_leg_schedule_key bond_issue_leg_schedule;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bond_issue_leg_schedule_version_key&,
                            const bond_issue_leg_schedule_version_key&) = default;
@@ -152,7 +153,7 @@ struct list_bond_issue_leg_schedules_request {
 struct list_bond_issue_leg_schedules_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_leg_schedule> bond_issue_leg_schedules;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_issue_leg_schedules_response&,
                            const list_bond_issue_leg_schedules_response&) = default;
@@ -329,7 +330,7 @@ struct list_bond_issue_leg_schedule_versions_request {
 struct list_bond_issue_leg_schedule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_leg_schedule> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_issue_leg_schedule_versions_response&,
                            const list_bond_issue_leg_schedule_versions_response&) = default;

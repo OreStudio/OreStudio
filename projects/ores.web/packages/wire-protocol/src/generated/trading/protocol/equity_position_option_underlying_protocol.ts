@@ -45,6 +45,8 @@ export interface EquityPositionOptionUnderlyingWrite {
     option_type: string;
     exercise_type: string;
     settlement_type: string;
+    identifier_type: string | null;
+    exercise_date: string | null;
 }
 
 export interface EquityPositionOptionUnderlyingChange {

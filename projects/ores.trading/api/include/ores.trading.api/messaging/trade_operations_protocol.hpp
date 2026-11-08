@@ -152,7 +152,7 @@ struct execute_trade_request {
      * @brief The version the caller read. A draft that moved since is refused
      * rather than executed on terms nobody read.
      */
-    int expected_version;
+    int expected_version{};
     /**
      * @brief When the deal executed; the clock when absent.
      */
@@ -220,7 +220,7 @@ struct complete_structure_request {
      * not this long is refused, so a truncated list never completes a structure
      * that is missing a leg.
      */
-    int leg_count;
+    int leg_count{};
     /**
      * @brief Why the structure is being completed.
      */
@@ -252,7 +252,7 @@ struct complete_structure_response {
      * @brief The version the structure is at after the write, so a caller can
      * address the structure it just made.
      */
-    int structure_version;
+    int structure_version{};
 
     friend bool operator==(const complete_structure_response&,
                            const complete_structure_response&) = default;

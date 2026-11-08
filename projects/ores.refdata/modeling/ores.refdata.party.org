@@ -1,11 +1,13 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D
 :ores.cpp.nats-event-cache.enabled: true
 :END:
 #+title: ores.refdata.party
 #+description: Codegen entity model for the refdata =party= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
 #+type: ores.codegen.entity
+#+http_area: reference-data
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+brief: An internal legal entity participating in financial transactions.

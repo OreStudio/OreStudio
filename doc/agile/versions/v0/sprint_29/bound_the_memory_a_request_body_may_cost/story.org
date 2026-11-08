@@ -38,9 +38,9 @@ scope here.
 |---------------+----------------------------------------|
 | State         | DONE                                   |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Nothing. Both tasks and the follow-up are merged. |
-| Waiting on    | Nothing.                               |
-| Next          | Increment A3 streams the accepted body and takes the 256 MiB upload under 1 MiB of RSS. |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-30                               |
 
 * Acceptance

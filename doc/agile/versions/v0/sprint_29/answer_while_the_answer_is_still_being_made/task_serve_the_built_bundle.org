@@ -28,11 +28,11 @@ built, so it can serve no bundle at all.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:66DDFAB2-D915-431C-AFEC-9E454373968D][Answer while the answer is still being made]] |
-| Now          | The bundle is served from a manifest the server reads at start-up. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then the health and metrics routes. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -106,3 +106,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The built bundle is served from a manifest: a path resolves by lookup rather than by
+joining the root, a miss that is not an asset answers =index.html= and a miss that
+names one answers 404, and =.br= is served when the build writes it. Merged as #4176.

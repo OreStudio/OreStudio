@@ -25,11 +25,12 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_DELIVERY_COUNT_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_DELIVERY_COUNT_PROTOCOL_HPP
 
-#include "ores.marketdata.api/domain/delivery_count.hpp"
+#include "ores.marketdata.api/domain/delivery_count_codec.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -55,7 +56,7 @@ struct delivery_count_write {
     std::chrono::system_clock::time_point period_start;
     std::chrono::system_clock::time_point flushed_at;
     boost::uuids::uuid feed_id;
-    std::int64_t deliveries;
+    std::int64_t deliveries{};
 
     friend bool operator==(const delivery_count_write&, const delivery_count_write&) = default;
 };
@@ -97,7 +98,7 @@ struct delivery_count_event {
     boost::uuids::uuid event_id;
     delivery_count_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +107,7 @@ struct delivery_count_event {
 
 struct delivery_count_version_key {
     delivery_count_key delivery_count;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const delivery_count_version_key&,
                            const delivery_count_version_key&) = default;
@@ -144,7 +145,7 @@ struct list_delivery_counts_request {
 struct list_delivery_counts_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::delivery_count> delivery_counts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_delivery_counts_response&,
                            const list_delivery_counts_response&) = default;
@@ -319,7 +320,7 @@ struct list_delivery_count_versions_request {
 struct list_delivery_count_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::delivery_count> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_delivery_count_versions_response&,
                            const list_delivery_count_versions_response&) = default;

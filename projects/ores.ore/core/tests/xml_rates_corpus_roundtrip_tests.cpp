@@ -197,9 +197,10 @@ TEST_CASE("every rates trade in the corpus comes back as the same family rows",
 
     INFO("rates documents=" << documents << " trades=" << trades);
     // A document that stops importing drops out of the walk, so the corpus
-    // size is pinned: a change to it is a change to this proof.
-    CHECK(documents == 47);
-    CHECK(trades == 70);
+    // size is pinned: a change to it is a change to this proof. A total return
+    // swap's underlying swap is a trade of its own, and counts as one.
+    CHECK(documents == 48);
+    CHECK(trades == 71);
     if (differing != known_row_differences())
         FAIL_CHECK("the rates documents whose family rows change on the round trip are not the "
                    "known ones:" +

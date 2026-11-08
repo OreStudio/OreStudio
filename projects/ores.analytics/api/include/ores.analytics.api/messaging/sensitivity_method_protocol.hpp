@@ -25,11 +25,12 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_SENSITIVITY_METHOD_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_SENSITIVITY_METHOD_PROTOCOL_HPP
 
-#include "ores.analytics.api/domain/sensitivity_method.hpp"
+#include "ores.analytics.api/domain/sensitivity_method_codec.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,8 +52,8 @@ struct sensitivity_method_write {
     std::string code;
     std::string name;
     std::string description;
-    bool needs_asset_class;
-    int display_order;
+    bool needs_asset_class{};
+    int display_order{};
 
     friend bool operator==(const sensitivity_method_write&,
                            const sensitivity_method_write&) = default;
@@ -93,7 +94,7 @@ struct sensitivity_method_event {
     boost::uuids::uuid event_id;
     sensitivity_method_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +104,7 @@ struct sensitivity_method_event {
 
 struct sensitivity_method_version_key {
     sensitivity_method_key sensitivity_method;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const sensitivity_method_version_key&,
                            const sensitivity_method_version_key&) = default;
@@ -141,7 +142,7 @@ struct list_sensitivity_methods_request {
 struct list_sensitivity_methods_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::sensitivity_method> methods;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sensitivity_methods_response&,
                            const list_sensitivity_methods_response&) = default;
@@ -317,7 +318,7 @@ struct list_sensitivity_method_versions_request {
 struct list_sensitivity_method_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::sensitivity_method> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sensitivity_method_versions_response&,
                            const list_sensitivity_method_versions_response&) = default;

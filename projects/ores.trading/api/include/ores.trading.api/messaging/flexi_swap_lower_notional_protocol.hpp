@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_FLEXI_SWAP_LOWER_NOTIONAL_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_FLEXI_SWAP_LOWER_NOTIONAL_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
+#include "ores.trading.api/domain/flexi_swap_lower_notional_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +44,7 @@ namespace ores::trading::messaging {
 
 struct flexi_swap_lower_notional_key {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const flexi_swap_lower_notional_key&,
                            const flexi_swap_lower_notional_key&) = default;
@@ -51,9 +52,9 @@ struct flexi_swap_lower_notional_key {
 
 struct flexi_swap_lower_notional_write {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
-    int bound_number;
+    int bound_number{};
     std::optional<std::string> currency;
     std::optional<std::chrono::year_month_day> start_date;
     ores::utility::decimal::decimal notional;
@@ -98,7 +99,7 @@ struct flexi_swap_lower_notional_event {
     boost::uuids::uuid event_id;
     flexi_swap_lower_notional_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +109,7 @@ struct flexi_swap_lower_notional_event {
 
 struct flexi_swap_lower_notional_version_key {
     flexi_swap_lower_notional_key flexi_swap_lower_notional;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const flexi_swap_lower_notional_version_key&,
                            const flexi_swap_lower_notional_version_key&) = default;
@@ -146,7 +147,7 @@ struct list_flexi_swap_lower_notionals_request {
 struct list_flexi_swap_lower_notionals_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notionals;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_flexi_swap_lower_notionals_response&,
                            const list_flexi_swap_lower_notionals_response&) = default;
@@ -326,7 +327,7 @@ struct list_by_trade_id_flexi_swap_lower_notionals_request {
 struct list_by_trade_id_flexi_swap_lower_notionals_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::flexi_swap_lower_notional> flexi_swap_lower_notionals;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_trade_id_flexi_swap_lower_notionals_response&,
                            const list_by_trade_id_flexi_swap_lower_notionals_response&) = default;
@@ -356,7 +357,7 @@ struct list_flexi_swap_lower_notional_versions_request {
 struct list_flexi_swap_lower_notional_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::flexi_swap_lower_notional> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_flexi_swap_lower_notional_versions_response&,
                            const list_flexi_swap_lower_notional_versions_response&) = default;

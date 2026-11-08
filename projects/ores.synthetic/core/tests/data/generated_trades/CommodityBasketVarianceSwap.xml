@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="f2c4ae8a-a1b6-5d49-a9c5-03fc6a378431">
+    <TradeType>CommodityBasketVarianceSwap</TradeType>
+  </Trade>
+  <Trade id="5e7c6da9-55db-56f8-a1c3-1a58bbd13c9c">
+    <TradeType>CommodityBasketVarianceSwap</TradeType>
+  </Trade>
+</Portfolio>

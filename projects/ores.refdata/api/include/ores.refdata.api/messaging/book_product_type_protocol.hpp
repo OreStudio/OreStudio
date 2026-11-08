@@ -94,7 +94,7 @@ struct book_product_type_event {
     boost::uuids::uuid event_id;
     book_product_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -124,7 +124,7 @@ struct list_book_product_types_request {
 struct list_book_product_types_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book_product_type> book_product_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_book_product_types_response&,
                            const list_book_product_types_response&) = default;
@@ -301,7 +301,7 @@ struct list_by_book_id_book_product_types_request {
 struct list_by_book_id_book_product_types_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book_product_type> book_product_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_book_id_book_product_types_response&,
                            const list_by_book_id_book_product_types_response&) = default;
@@ -332,7 +332,7 @@ struct list_by_product_type_code_book_product_types_request {
 struct list_by_product_type_code_book_product_types_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book_product_type> book_product_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_product_type_code_book_product_types_response&,
                            const list_by_product_type_code_book_product_types_response&) = default;

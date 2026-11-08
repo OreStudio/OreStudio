@@ -78,6 +78,21 @@ struct approval_request final {
     std::string state_code;
 
     /**
+     * @brief Which rule closed this request without a person, or empty when a person decided it or
+     * nobody has yet.
+     *
+     * It is empty for every request a person answers, and for one still waiting. It names the rule
+     * that closed the request as it was raised: deployment when the installation does not enforce
+     * approvals, system_tenant when the kind accepts a raise in the system tenant, and
+     * every_request when the kind accepts every raise. The decision the close wrote says the same
+     * thing in words, and this column is what a screen filters on and a report counts by.
+     *
+     * The column is the record's, not the kind's: a kind whose policy changes later leaves every
+     * request it closed stating the rule that closed it.
+     */
+    std::string auto_approval_code;
+
+    /**
      * @brief The account that asked. A system may ask on a person's behalf, through its own service
      * account. FK reference to ores_iam_accounts_tbl.
      */

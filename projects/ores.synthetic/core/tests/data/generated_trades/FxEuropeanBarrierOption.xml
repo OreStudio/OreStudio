@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="b650b5a9-29e0-55f6-bed8-d85a96167ab0">
+    <TradeType>FxEuropeanBarrierOption</TradeType>
+    <FxEuropeanBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2032-12-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>KnockOut</Type>
+        <Levels>
+          <Level>0.8094</Level>
+          <Level>0.9892</Level>
+        </Levels>
+      </BarrierData>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>5231367.54</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>5817155.05</SoldAmount>
+    </FxEuropeanBarrierOptionData>
+  </Trade>
+  <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
+    <TradeType>FxEuropeanBarrierOption</TradeType>
+    <FxEuropeanBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2027-08-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>KnockOut</Type>
+        <Levels>
+          <Level>1.3193</Level>
+          <Level>1.6125</Level>
+        </Levels>
+      </BarrierData>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>988311.54</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>674201.2</SoldAmount>
+    </FxEuropeanBarrierOptionData>
+  </Trade>
+</Portfolio>

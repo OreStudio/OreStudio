@@ -25,7 +25,12 @@
 #ifndef ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_PAY_RECEIVE_CODEC_HPP
 #define ORES_REFDATA_API_DOMAIN_TENOR_BASIS_SWAP_PAY_RECEIVE_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_part_identity.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_leg.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_coupon.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_receive_leg.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"

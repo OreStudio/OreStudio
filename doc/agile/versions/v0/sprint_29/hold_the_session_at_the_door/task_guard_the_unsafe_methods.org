@@ -27,11 +27,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:67465051-811E-411C-9F93-AFC61A7E5C4B][Hold the session at the door]] |
-| Now          | A session request that changes something must prove intent. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review, then sign in and out become resources. |
+| Next         | Nothing. |
 | Last touched | 2026-10-31                               |
 
 * Acceptance
@@ -95,3 +95,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The cookie is a credential a browser attaches without being asked, so the unsafe
+methods carry the guards that fact needs. Merged as #4185.

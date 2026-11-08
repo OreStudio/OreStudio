@@ -42,9 +42,8 @@ namespace ores::trading::domain {
  * members. The terms stay flat on the entity. See the decomposition section of
  * doc/knowledge/architecture/data_oriented_design.org.
  *
- * The group is the swap-leg sibling of ores.trading.composite_leg_identity:
- * the shared swap_legs table carries one key and one parent column, and its
- * ordinal is leg_number rather than the basket's leg_sequence.
+ * The shared swap_legs table carries one key and one parent column, and
+ * its ordinal is leg_number.
  */
 struct swap_leg_identity {
     /**

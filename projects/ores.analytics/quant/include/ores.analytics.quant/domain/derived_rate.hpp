@@ -34,7 +34,7 @@ struct derived_rate {
     std::string base_code;
     std::string quote_code;
     /// Only meaningful when @c status != rate_status::unavailable.
-    double rate;
+    double rate{};
     rate_status status;
     /// The oldest contributing driver tick's timestamp on the path between
     /// base and quote -- a chain is only as fresh as its stalest link.

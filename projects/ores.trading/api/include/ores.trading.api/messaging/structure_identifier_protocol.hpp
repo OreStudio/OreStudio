@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_STRUCTURE_IDENTIFIER_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_STRUCTURE_IDENTIFIER_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/structure_identifier.hpp"
+#include "ores.trading.api/domain/structure_identifier_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -95,7 +96,7 @@ struct structure_identifier_event {
     boost::uuids::uuid event_id;
     structure_identifier_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +106,7 @@ struct structure_identifier_event {
 
 struct structure_identifier_version_key {
     structure_identifier_key structure_identifier;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const structure_identifier_version_key&,
                            const structure_identifier_version_key&) = default;
@@ -143,7 +144,7 @@ struct list_structure_identifiers_request {
 struct list_structure_identifiers_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_identifier> identifiers;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_structure_identifiers_response&,
                            const list_structure_identifiers_response&) = default;
@@ -320,7 +321,7 @@ struct list_by_structure_id_structure_identifiers_request {
 struct list_by_structure_id_structure_identifiers_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_identifier> identifiers;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_structure_id_structure_identifiers_response&,
                            const list_by_structure_id_structure_identifiers_response&) = default;
@@ -350,7 +351,7 @@ struct list_structure_identifier_versions_request {
 struct list_structure_identifier_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_identifier> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_structure_identifier_versions_response&,
                            const list_structure_identifier_versions_response&) = default;

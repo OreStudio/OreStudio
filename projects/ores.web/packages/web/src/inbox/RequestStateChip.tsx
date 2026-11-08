@@ -22,10 +22,32 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
 import { Tag } from '../ui/Primitives.js';
-import { stateLabel, stateTone } from './words.js';
+import { autoApprovalRule, stateLabel, stateTone } from './words.js';
 
-/** A request's state, named and painted, wherever a request is drawn. */
-export function RequestStateChip({ stateCode }: { readonly stateCode: string }): ReactNode {
+/**
+ * A request's state, named and painted, wherever a request is drawn.
+ *
+ * A request a policy closed carries the rule beside its state, so a reader never
+ * takes an auto-approved act for one somebody signed. A request a person decided
+ * carries nothing extra.
+ */
+export function RequestStateChip({
+    stateCode,
+    autoApprovalCode = '',
+}: {
+    readonly stateCode: string;
+    readonly autoApprovalCode?: string;
+}): ReactNode {
     const { t } = useTranslation();
-    return <Tag tone={stateTone(stateCode)}>{stateLabel(t, stateCode)}</Tag>;
+    const rule = autoApprovalRule(t, autoApprovalCode);
+    return (
+        <>
+            <Tag tone={stateTone(stateCode)}>{stateLabel(t, stateCode)}</Tag>
+            {rule === '' ? null : (
+                <span title={t('inbox.autoApproval.why', { rule })}>
+                    <Tag tone="muted">{t('inbox.autoApproval.chip')}</Tag>
+                </span>
+            )}
+        </>
+    );
 }

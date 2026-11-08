@@ -25,11 +25,12 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_MARKET_INPUT_VALUE_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_INPUT_VALUE_PROTOCOL_HPP
 
-#include "ores.marketdata.api/domain/market_input_value.hpp"
+#include "ores.marketdata.api/domain/market_input_value_codec.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -53,12 +54,12 @@ struct market_input_value_write {
     boost::uuids::uuid report_instance_id;
     boost::uuids::uuid result_id;
     std::string source;
-    int line;
+    int line{};
     std::chrono::system_clock::time_point as_of;
     boost::uuids::uuid report_definition_id;
     std::string family;
     std::string datum_id;
-    double value;
+    double value{};
     std::optional<std::chrono::system_clock::time_point> payment_date;
 
     friend bool operator==(const market_input_value_write&,
@@ -106,7 +107,7 @@ struct market_input_value_event {
     boost::uuids::uuid event_id;
     market_input_value_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -137,7 +138,7 @@ struct list_market_input_values_request {
 struct list_market_input_values_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_input_value> values;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_market_input_values_response&,
                            const list_market_input_values_response&) = default;

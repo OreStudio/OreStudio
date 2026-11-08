@@ -114,6 +114,8 @@ domain::equity_position_option_underlying equity_position_option_underlying_to_d
     v.option_type = write.option_type;
     v.exercise_type = write.exercise_type;
     v.settlement_type = write.settlement_type;
+    v.identifier_type = write.identifier_type;
+    v.exercise_date = write.exercise_date;
     return v;
 }
 

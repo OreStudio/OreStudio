@@ -41,22 +41,22 @@ const std::string node_reason =
 
 TEST_CASE("a run whose log gave rows states the count and points at the Errors",
           "[reporting][service][failure_message]") {
-    const std::string message =
-        run_failure_message(3, node_reason, {.errors = 24, .warnings = 0});
+    const std::string message = run_failure_message(3, node_reason, {.errors = 24, .warnings = 0});
 
     // The node's verdict is kept, its transcript is not: the rows say that part
     // once, per failure, and a wall of text is what the run is meant to stop
     // showing.
-    CHECK(message ==
-          "The run's compute job failed with outcome 3: Engine exited with code 255. Its log records "
-          "24 errors; the rows are in Errors.");
+    CHECK(
+        message ==
+        "The run's compute job failed with outcome 3: Engine exited with code 255. Its log records "
+        "24 errors; the rows are in Errors.");
     CHECK(message.find("Added trade id") == std::string::npos);
 }
 
 TEST_CASE("a run's summary counts the warnings apart from the errors",
           "[reporting][service][failure_message]") {
-    const auto message = run_failure_message(3, "Engine exited with code 255", {.errors = 1,
-                                                                              .warnings = 2});
+    const auto message =
+        run_failure_message(3, "Engine exited with code 255", {.errors = 1, .warnings = 2});
     CHECK(message.find("records 1 error and 2 warnings;") != std::string::npos);
 }
 

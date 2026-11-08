@@ -1121,10 +1121,12 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [
             'kind_code',
             'state_code',
+            'auto_approval_code',
             'requested_by',
             'id_one_of',
             'kind_code_one_of',
             'state_code_one_of',
+            'auto_approval_code_one_of',
             'requested_by_one_of',
         ],
         rows: [],
@@ -1134,10 +1136,12 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [
             'kind_code',
             'state_code',
+            'auto_approval_code',
             'requested_by',
             'id_one_of',
             'kind_code_one_of',
             'state_code_one_of',
+            'auto_approval_code_one_of',
             'requested_by_one_of',
         ],
         rows: [],
@@ -3630,6 +3634,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.party_product_type_deal_classes.list': {
+        asOf: true,
+        filter: ['party_id', 'id_one_of', 'party_id_one_of'],
+        rows: ['party_product_type_deal_classes'],
+    },
+    'refdata.v1.party_product_type_deal_classes.list_by_party_id': {
+        asOf: false,
+        filter: ['party_id', 'id_one_of', 'party_id_one_of'],
+        rows: ['party_product_type_deal_classes'],
+    },
+    'refdata.v1.party_product_type_deal_classes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.party_relationships.list': {
         asOf: true,
         filter: [],
@@ -5702,21 +5721,6 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
-    'trading.v1.composite_legs.list': {
-        asOf: true,
-        filter: ['trade_id', 'id_one_of', 'trade_id_one_of'],
-        rows: ['composite_legs'],
-    },
-    'trading.v1.composite_legs.list_by_trade_id': {
-        asOf: false,
-        filter: ['trade_id', 'id_one_of', 'trade_id_one_of'],
-        rows: ['composite_legs'],
-    },
-    'trading.v1.composite_legs_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
     'trading.v1.counterparty_scope_types.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -6112,6 +6116,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.instrument_barrier_levels.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_barrier_levels'],
+    },
+    'trading.v1.instrument_barrier_levels.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_barrier_levels'],
+    },
+    'trading.v1.instrument_barrier_levels_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.instrument_barriers.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_barriers'],
+    },
+    'trading.v1.instrument_barriers.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_barriers'],
+    },
+    'trading.v1.instrument_barriers_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.instrument_option_exercise_fees.list': {
         asOf: true,
         filter: ['trade_id', 'trade_id_one_of'],
@@ -6218,6 +6252,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['instrument_strikes'],
     },
     'trading.v1.instrument_strikes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.instrument_underlyings.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_underlyings'],
+    },
+    'trading.v1.instrument_underlyings.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['instrument_underlyings'],
+    },
+    'trading.v1.instrument_underlyings_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
@@ -6387,6 +6436,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.scripted_parameter_values.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['scripted_parameter_values'],
+    },
+    'trading.v1.scripted_parameter_values.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['scripted_parameter_values'],
+    },
+    'trading.v1.scripted_parameter_values_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.scripted_parameters.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['scripted_parameters'],
+    },
+    'trading.v1.scripted_parameters.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['scripted_parameters'],
+    },
+    'trading.v1.scripted_parameters_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.settlement_types.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -6462,6 +6541,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.swap_leg_amortizations.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['swap_leg_amortizations'],
+    },
+    'trading.v1.swap_leg_amortizations.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['swap_leg_amortizations'],
+    },
+    'trading.v1.swap_leg_amortizations_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.swap_leg_amounts.list': {
         asOf: true,
         filter: ['trade_id', 'trade_id_one_of'],
@@ -6473,6 +6567,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['swap_leg_amounts'],
     },
     'trading.v1.swap_leg_amounts_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'trading.v1.swap_leg_indexings.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['swap_leg_indexings'],
+    },
+    'trading.v1.swap_leg_indexings.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['swap_leg_indexings'],
+    },
+    'trading.v1.swap_leg_indexings_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

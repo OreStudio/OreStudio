@@ -118,6 +118,16 @@ struct equity_asian_option_instrument final {
     std::chrono::year_month_day averaging_end_date;
 
     /**
+     * @brief How the option settles, as Settlement states it.
+     */
+    std::optional<std::string> settlement;
+
+    /**
+     * @brief The currency the strike is stated in, as StrikeData/Currency states it.
+     */
+    std::optional<std::string> strike_currency;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -158,6 +168,8 @@ struct equity_asian_option_instrument final {
     ores::utility::digest::append_member(out, "average_type", v.average_type);
     ores::utility::digest::append_member(out, "averaging_start_date", v.averaging_start_date);
     ores::utility::digest::append_member(out, "averaging_end_date", v.averaging_end_date);
+    ores::utility::digest::append_member(out, "settlement", v.settlement);
+    ores::utility::digest::append_member(out, "strike_currency", v.strike_currency);
     out.push_back('}');
     return out;
 }

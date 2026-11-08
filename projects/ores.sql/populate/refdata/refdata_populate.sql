@@ -88,6 +88,7 @@
 \echo ''
 \echo '--- IR Curve Bootstrap Configs Seed Data ---'
 \ir ./refdata_ir_curve_bootstrap_configs_populate.sql
+\ir ./refdata_ir_curve_overnight_configs_populate.sql
 
 \echo ''
 \ir ./refdata_floating_index_types_populate.sql

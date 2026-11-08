@@ -79,7 +79,10 @@ export function MyRequests({ showEmpty = false }: { readonly showEmpty?: boolean
                         <div className="min-w-0 flex-1">
                             <div className="flex flex-wrap items-center gap-2 text-sm">
                                 <span className="font-medium">{summaryOf(t, request)}</span>
-                                <RequestStateChip stateCode={request.stateCode} />
+                                <RequestStateChip
+                                    stateCode={request.stateCode}
+                                    autoApprovalCode={request.autoApprovalCode}
+                                />
                                 <span className="text-xs text-ink-faint">
                                     {t('inbox.mine.asked', {
                                         date: formatDateTime(request.requestedAt, language),

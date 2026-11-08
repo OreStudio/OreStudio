@@ -55,6 +55,7 @@ render_approval_kind_fields(const domain::approval_kind& v) {
         {.name = "Apply Window Hours",
          .value = v.apply_window_hours ? std::to_string(*v.apply_window_hours) : std::string{}});
     fields.push_back({.name = "Approvals Required", .value = std::to_string(v.approvals_required)});
+    fields.push_back({.name = "Auto Approval Code", .value = v.auto_approval_code});
     fields.push_back({.name = "Display Order", .value = std::to_string(v.display_order)});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

@@ -47,6 +47,7 @@ generate_synthetic_approval_request(utility::generation::generation_context& ctx
     r.id = ctx.generate_uuid();
     r.kind_code = std::string(faker::word::noun());
     r.state_code = std::string(faker::word::noun());
+    r.auto_approval_code = std::string(faker::word::noun());
     r.requested_by = ctx.generate_uuid();
     r.requested_at = std::chrono::system_clock::now();
     r.reason = std::string(faker::lorem::sentence());

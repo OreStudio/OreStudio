@@ -20,12 +20,11 @@
 #include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include "ores.iam.core/messaging/report_schedule_selection.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.utility/codec/json_document.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstring>
 #include <fstream>
 #include <iterator>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
 #include <string>
 #include <vector>
 
@@ -202,10 +201,8 @@ TEST_CASE("the schedule row names the parties the staff step loads, and nothing 
     // The row states the parties and nothing else: which definitions a party
     // runs, and what each one's schedule is, are the catalogue's statements and
     // a copy of them here would go stale.
-    const auto generic = rfl::json::read<rfl::Generic>(schedule->arguments_json);
+    const auto generic = ores::utility::codec::json_document::parse(schedule->arguments_json);
     REQUIRE(generic);
-    const auto* object = std::get_if<rfl::Object<rfl::Generic>>(&generic->get());
-    REQUIRE(object != nullptr);
-    CHECK(object->size() == 1);
-    CHECK(object->count("parties") == 1);
+    CHECK(generic->root().size() == 1);
+    CHECK(generic->root().has("parties"));
 }

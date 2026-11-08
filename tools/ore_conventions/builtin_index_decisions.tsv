@@ -1,0 +1,10 @@
+# The calendar names ORE reports for a code where the code does not spell the
+# name, or where more than one code produces it. Anything absent here is
+# resolved by mine_builtin_conventions.py when one code spells the name itself
+# or only one code produces it, and the run names the rest.
+#
+# name	code
+Poland Settlement	PL
+JoinHolidays(London stock exchange, TARGET)	JoinHolidays(London stock exchange, TARGET)
+Bratislava stock exchange	Bratislava stock exchange
+Actual/Actual (ISMA)	ACT/ACT.ISMA

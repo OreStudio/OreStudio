@@ -65,13 +65,13 @@ struct balance_guaranteed_swap_tranche_notional final {
     /**
      * @brief Ordinal of the tranche this notional belongs to, matching the tranche row's own.
      */
-    int tranche_number;
+    int tranche_number{};
 
     /**
      * @brief Ordinal of this notional within the tranche, counting from one, in the order the
      * document states it.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

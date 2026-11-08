@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_CONFIGURATION_TYPE_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_CONFIGURATION_TYPE_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/configuration_type.hpp"
+#include "ores.reporting.api/domain/configuration_type_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -50,7 +51,7 @@ struct configuration_type_key {
 struct configuration_type_write {
     std::string code;
     std::string name;
-    int display_order;
+    int display_order{};
     std::string ore_root_element;
     std::string owning_component;
     std::optional<std::string> run_parameter;
@@ -94,7 +95,7 @@ struct configuration_type_event {
     boost::uuids::uuid event_id;
     configuration_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +105,7 @@ struct configuration_type_event {
 
 struct configuration_type_version_key {
     configuration_type_key configuration_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const configuration_type_version_key&,
                            const configuration_type_version_key&) = default;
@@ -142,7 +143,7 @@ struct list_configuration_types_request {
 struct list_configuration_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_type> types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_configuration_types_response&,
                            const list_configuration_types_response&) = default;
@@ -318,7 +319,7 @@ struct list_configuration_type_versions_request {
 struct list_configuration_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_configuration_type_versions_response&,
                            const list_configuration_type_versions_response&) = default;

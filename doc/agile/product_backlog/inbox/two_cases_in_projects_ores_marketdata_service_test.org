@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F8998855-F4F6-468A-A834-71D06BE04465
+:END:
+#+title: The marketdata service ingest loop fails under parallel ctest
+#+description: Two cases in projects/ores.marketdata/service/tests/app_feed_ingest_loop_tests.cpp fail only when ctest runs them beside three other heavy suites: 'a burst is republished in order' at line 1140 waits for republished == sent, and the backpressure case at line 1310 waits for tap.count() == sent, each with a 60 second wall-clock deadline. Both pass when the suite runs alone, and both failed the same way on main before the hotfix that cleared the six failing checks. The loop is competing for the machine, so the fix is in the suite's timing design: wait on the loop's own progress signal rather than a wall-clock deadline, or give the suite a serial resource lock so it owns the machine.
+#+type: capture
+#+level: cross
+#+filetags: :tests:flaky:marketdata:
+#+created: 2026-11-07
+#+updated: 2026-11-07
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

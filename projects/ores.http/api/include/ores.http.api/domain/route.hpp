@@ -53,7 +53,8 @@ struct query_param final {
 /**
  * @brief Describes the request body schema for OpenAPI.
  *
- * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically
+ * The schema the route publishes comes from the type's wire shape, so it states
+ * the bytes the codec writes rather than a second description of them.
  * from C++ types, ensuring the schema always matches the actual serialization.
  */
 struct request_body_schema final {
@@ -66,7 +67,8 @@ struct request_body_schema final {
 /**
  * @brief Describes the response schema for OpenAPI.
  *
- * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically
+ * The schema the route publishes comes from the type's wire shape, so it states
+ * the bytes the codec writes rather than a second description of them.
  * from C++ types, ensuring the schema always matches the actual serialization.
  */
 struct response_schema final {

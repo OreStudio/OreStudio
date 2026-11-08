@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_REPORTING_REGIME_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_REPORTING_REGIME_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/reporting_regime.hpp"
+#include "ores.refdata.api/domain/reporting_regime_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -85,7 +86,7 @@ struct reporting_regime_event {
     boost::uuids::uuid event_id;
     reporting_regime_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -94,7 +95,7 @@ struct reporting_regime_event {
 
 struct reporting_regime_version_key {
     reporting_regime_key reporting_regime;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const reporting_regime_version_key&,
                            const reporting_regime_version_key&) = default;
@@ -131,7 +132,7 @@ struct list_reporting_regimes_request {
 struct list_reporting_regimes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::reporting_regime> regimes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_reporting_regimes_response&,
                            const list_reporting_regimes_response&) = default;
@@ -306,7 +307,7 @@ struct list_reporting_regime_versions_request {
 struct list_reporting_regime_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::reporting_regime> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_reporting_regime_versions_response&,
                            const list_reporting_regime_versions_response&) = default;

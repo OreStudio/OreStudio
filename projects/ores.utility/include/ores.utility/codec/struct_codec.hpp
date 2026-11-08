@@ -72,7 +72,7 @@ T read_json(std::string_view text, const std::tuple<field<T, Members>...>& field
     if (doc == nullptr)
         throw std::invalid_argument("Not JSON: " + std::string(text));
     try {
-        T out;
+        T out{};
         detail::read_object(yyjson_doc_get_root(doc), out, fields);
         yyjson_doc_free(doc);
         return out;
@@ -121,7 +121,7 @@ T read_msgpack(std::span<const std::byte> data, const std::tuple<field<T, Member
         throw std::invalid_argument("Not one MessagePack value");
     }
     try {
-        T out;
+        T out{};
         detail::read_object(result.data, out, fields);
         msgpack_unpacked_destroy(&result);
         return out;

@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_INSTRUMENT_OPTION_EXERCISE_PRICE_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_INSTRUMENT_OPTION_EXERCISE_PRICE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_price_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -43,7 +44,7 @@ namespace ores::trading::messaging {
 
 struct instrument_option_exercise_price_key {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const instrument_option_exercise_price_key&,
                            const instrument_option_exercise_price_key&) = default;
@@ -51,7 +52,7 @@ struct instrument_option_exercise_price_key {
 
 struct instrument_option_exercise_price_write {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     std::chrono::year_month_day exercise_date;
     ores::utility::decimal::decimal price;
@@ -97,7 +98,7 @@ struct instrument_option_exercise_price_event {
     boost::uuids::uuid event_id;
     instrument_option_exercise_price_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +108,7 @@ struct instrument_option_exercise_price_event {
 
 struct instrument_option_exercise_price_version_key {
     instrument_option_exercise_price_key instrument_option_exercise_price;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const instrument_option_exercise_price_version_key&,
                            const instrument_option_exercise_price_version_key&) = default;
@@ -146,7 +147,7 @@ struct list_instrument_option_exercise_prices_request {
 struct list_instrument_option_exercise_prices_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_price> exercise_prices;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_option_exercise_prices_response&,
                            const list_instrument_option_exercise_prices_response&) = default;
@@ -332,7 +333,7 @@ struct list_by_trade_id_instrument_option_exercise_prices_request {
 struct list_by_trade_id_instrument_option_exercise_prices_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_price> exercise_prices;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_trade_id_instrument_option_exercise_prices_response&,
@@ -363,7 +364,7 @@ struct list_instrument_option_exercise_price_versions_request {
 struct list_instrument_option_exercise_price_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_price> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_instrument_option_exercise_price_versions_response&,

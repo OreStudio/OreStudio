@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_CUT_KIND_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_CUT_KIND_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/cut_kind.hpp"
+#include "ores.reporting.api/domain/cut_kind_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -53,12 +54,12 @@ struct cut_kind_write {
     std::string description;
     std::string family_code;
     std::optional<std::string> approval_kind_code;
-    bool output_is_indicative;
+    bool output_is_indicative{};
     std::string resolution_rule_code;
-    int retention_months;
+    int retention_months{};
     std::string retention_destination_code;
-    bool legal_hold_default;
-    int display_order;
+    bool legal_hold_default{};
+    int display_order{};
 
     friend bool operator==(const cut_kind_write&, const cut_kind_write&) = default;
 };
@@ -94,7 +95,7 @@ struct cut_kind_event {
     boost::uuids::uuid event_id;
     cut_kind_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +104,7 @@ struct cut_kind_event {
 
 struct cut_kind_version_key {
     cut_kind_key cut_kind;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const cut_kind_version_key&, const cut_kind_version_key&) = default;
 };
@@ -139,7 +140,7 @@ struct list_cut_kinds_request {
 struct list_cut_kinds_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_kind> kinds;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cut_kinds_response&,
                            const list_cut_kinds_response&) = default;
@@ -310,7 +311,7 @@ struct list_cut_kind_versions_request {
 struct list_cut_kind_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_kind> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cut_kind_versions_response&,
                            const list_cut_kind_versions_response&) = default;

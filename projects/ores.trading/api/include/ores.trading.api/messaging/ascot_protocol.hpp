@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_ASCOT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_ASCOT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/ascot.hpp"
+#include "ores.trading.api/domain/ascot_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -86,7 +87,7 @@ struct ascot_event {
     boost::uuids::uuid event_id;
     ascot_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -95,7 +96,7 @@ struct ascot_event {
 
 struct ascot_version_key {
     ascot_key ascot;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const ascot_version_key&, const ascot_version_key&) = default;
 };
@@ -130,7 +131,7 @@ struct list_ascots_request {
 struct list_ascots_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::ascot> ascots;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ascots_response&, const list_ascots_response&) = default;
 };
@@ -298,7 +299,7 @@ struct list_ascot_versions_request {
 struct list_ascot_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::ascot> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ascot_versions_response&,
                            const list_ascot_versions_response&) = default;

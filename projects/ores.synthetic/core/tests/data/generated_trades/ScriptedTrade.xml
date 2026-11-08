@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="39b359af-9377-5560-b484-b5f7801ffb67">
+    <TradeType>ScriptedTrade</TradeType>
+    <ScriptedTradeData>
+      <ScriptName>AsianBasketOption</ScriptName>
+      <Data>
+        <Number>
+          <Name>Notional</Name>
+          <Value>723174.17</Value>
+        </Number>
+        <Number>
+          <Name>PutCall</Name>
+          <Value>Call</Value>
+        </Number>
+        <Number>
+          <Name>Strike</Name>
+          <Value>1.0853</Value>
+        </Number>
+        <Index>
+          <Name>Underlying</Name>
+          <Value>.SPX</Value>
+        </Index>
+      </Data>
+    </ScriptedTradeData>
+  </Trade>
+  <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
+    <TradeType>ScriptedTrade</TradeType>
+    <ScriptedTradeData>
+      <ScriptName>AsianBasketOption</ScriptName>
+      <Data>
+        <Number>
+          <Name>Notional</Name>
+          <Value>6765247.42</Value>
+        </Number>
+        <Number>
+          <Name>PutCall</Name>
+          <Value>Call</Value>
+        </Number>
+        <Number>
+          <Name>Strike</Name>
+          <Value>0.8130</Value>
+        </Number>
+        <Index>
+          <Name>Underlying</Name>
+          <Value>GB0005405286</Value>
+        </Index>
+      </Data>
+    </ScriptedTradeData>
+  </Trade>
+</Portfolio>

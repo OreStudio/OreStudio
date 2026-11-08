@@ -48,6 +48,7 @@ cap_floor_instrument_mapper::map(const cap_floor_instrument_entity& v) {
     r.tenant_id = v.tenant_id;
     r.trade_id = v.trade_id;
     r.trade_activity_id = v.trade_activity_id;
+    r.long_short = v.long_short;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -67,6 +68,7 @@ cap_floor_instrument_mapper::map(const domain::cap_floor_instrument& v) {
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.trade_activity_id = v.trade_activity_id;
+    r.long_short = v.long_short;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

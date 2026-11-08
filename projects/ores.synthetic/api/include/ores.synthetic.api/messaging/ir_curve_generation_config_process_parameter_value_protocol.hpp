@@ -25,11 +25,12 @@
 #ifndef ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_GENERATION_CONFIG_PROCESS_PARAMETER_VALUE_PROTOCOL_HPP
 #define ORES_SYNTHETIC_API_MESSAGING_IR_CURVE_GENERATION_CONFIG_PROCESS_PARAMETER_VALUE_PROTOCOL_HPP
 
-#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config_process_parameter_value_codec.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -52,7 +53,7 @@ struct ir_curve_generation_config_process_parameter_value_write {
     boost::uuids::uuid id;
     boost::uuids::uuid config_id;
     boost::uuids::uuid parameter_definition_id;
-    double parameter_value;
+    double parameter_value{};
 
     friend bool
     operator==(const ir_curve_generation_config_process_parameter_value_write&,
@@ -101,7 +102,7 @@ struct ir_curve_generation_config_process_parameter_value_event {
     boost::uuids::uuid event_id;
     ir_curve_generation_config_process_parameter_value_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -113,7 +114,7 @@ struct ir_curve_generation_config_process_parameter_value_event {
 struct ir_curve_generation_config_process_parameter_value_version_key {
     ir_curve_generation_config_process_parameter_value_key
         ir_curve_generation_config_process_parameter_value;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool
     operator==(const ir_curve_generation_config_process_parameter_value_version_key&,
@@ -156,7 +157,7 @@ struct list_ir_curve_generation_config_process_parameter_values_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>
         process_parameter_values;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_ir_curve_generation_config_process_parameter_values_response&,
@@ -360,7 +361,7 @@ struct list_ir_curve_generation_config_process_parameter_value_versions_response
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>
         versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(
         const list_ir_curve_generation_config_process_parameter_value_versions_response&,

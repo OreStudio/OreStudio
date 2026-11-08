@@ -25,6 +25,7 @@
 #include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
+#include "ores.trading.core/repository/instrument_underlying_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/service/ascot_service.hpp"
 #include "ores.trading.core/service/bond_future_service.hpp"
@@ -766,6 +767,11 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_i
     static const instrument_rows no_trade_rows;
     static const issue_leg_rows no_issue_rows;
 
+    std::unordered_map<std::string, std::vector<domain::instrument_underlying>> underlyings;
+    for (auto& row :
+         repository::instrument_underlying_repository().read_by_instruments_batch(ctx_, trade_ids))
+        underlyings[boost::uuids::to_string(row.trade_id)].push_back(std::move(row));
+
     for (auto& row : rows) {
         const auto id = boost::uuids::to_string(row.identity.trade_id);
         const auto issue_id = boost::uuids::to_string(row.issue_id);
@@ -788,6 +794,8 @@ bond_instrument_reader::read_instruments(const std::vector<std::string>& trade_i
         apply_option_block(data, trade_rows);
         apply_strike(data, trade_rows);
         apply_forward(data, trade_rows);
+        if (auto it = underlyings.find(id); it != underlyings.end())
+            data.instrument_underlyings = std::move(it->second);
 
         const auto& ttc = data.instrument.identity.trade_type_code;
         if (ttc == "BondOption")

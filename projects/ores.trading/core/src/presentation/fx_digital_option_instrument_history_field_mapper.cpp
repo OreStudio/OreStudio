@@ -57,6 +57,15 @@ render_fx_digital_option_instrument_fields(const domain::fx_digital_option_instr
                       .value = v.lower_barrier ? v.lower_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Upper Barrier",
                       .value = v.upper_barrier ? v.upper_barrier->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Barrier Start Date",
+         .value = v.barrier_start_date ?
+                      ores::platform::time::datetime::to_iso8601_date(*v.barrier_start_date) :
+                      std::string{}});
+    fields.push_back(
+        {.name = "Barrier Calendar", .value = v.barrier_calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Barrier Fixing Index", .value = v.barrier_fixing_index.value_or(std::string{})});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

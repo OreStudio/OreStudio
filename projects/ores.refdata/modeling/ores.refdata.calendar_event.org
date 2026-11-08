@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: B20050A5-1245-4944-A328-2A0893C92AEC
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
 :ores.cpp.eventing-integration-test.enabled: true
@@ -7,6 +8,7 @@
 #+title: ores.refdata.calendar_event
 #+description: A dated diary entry on a calendar: a central-bank meeting, a scheduled data release, or an open-ended other event, carrying a name, optional description, and optional provenance.
 #+type: ores.codegen.entity
+#+http_area: reference-data
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: calendar_event

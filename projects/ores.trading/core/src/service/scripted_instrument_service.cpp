@@ -112,6 +112,7 @@ scripted_instrument_to_domain(const messaging::scripted_instrument_write& write)
     v.underlyings_json = write.underlyings_json;
     v.parameters_json = write.parameters_json;
     v.description = write.description;
+    v.data_element = write.data_element;
     return v;
 }
 

@@ -21,14 +21,20 @@
 /**
  * Overnight Index Conventions Population Script
  *
- * Seeds one ores_refdata_overnight_index_conventions_tbl row per (currency,
- * RFR family) pair used by the synthetic.feeds.* seed datasets
- * (ore_samples_2016/bloomberg/uniform_demo) -- id is
+ * Seeds the rows the synthetic.feeds.* seed datasets
+ * (ore_samples_2016/bloomberg/uniform_demo) name that ORE does not define
+ * itself: a (currency, RFR family) pair whose id is
  * "<currency_code>-<upper(index_family)>", the shape a curve's
- * (currency_code, index_family) pair names; nothing validates a curve
- * against these rows. fixing_calendar values are refdata.calendars codes (see
- * refdata_calendars_populate.sql); day_count_fraction values are FpML
- * canonical day-count-fraction codes (see
+ * (currency_code, index_family) pair names. The families ORE builds in code
+ * are seeded by refdata_builtin_index_conventions_populate.sql instead, from
+ * the engine, so this script holds only what the engine has no index for, and
+ * nothing validates a curve against these rows.
+ *
+ * fixing_calendar values are still refdata.calendars codes (see
+ * refdata_calendars_populate.sql), which is a different vocabulary from the
+ * ORE calendar names the built-in script states and ORE's parser accepts; see
+ * the capture on the two calendar vocabularies. day_count_fraction values are
+ * FpML canonical day-count-fraction codes (see
  * external/fpml/codelist/day-count-fraction-2-3.xml).
  *
  * Sourced from ORE's own vendored QuantExt/QuantLib index class
@@ -49,38 +55,14 @@ insert into ores_refdata_overnight_index_conventions_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
-    -- Source: QuantLib::Sofr (ql/indexes/ibor/sofr.hpp/.cpp).
-    (ores_utility_system_tenant_id_fn(), 'USD-SOFR', 0, 'UnitedStates.SOFR', 'ACT/360', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantLib::Estr (ql/indexes/ibor/estr.hpp/.cpp).
     (ores_utility_system_tenant_id_fn(), 'EUR-ESTR', 0, 'TARGET', 'ACT/360', 0,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantLib::Tonar (ql/indexes/ibor/tonar.hpp), aka Tona.
     (ores_utility_system_tenant_id_fn(), 'JPY-TONA', 0, 'Japan', 'ACT/365.FIXED', 0,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
-    -- Source: QuantLib::Sonia (ql/indexes/ibor/sonia.hpp/.cpp).
-    (ores_utility_system_tenant_id_fn(), 'GBP-SONIA', 0, 'UnitedKingdom.Exchange', 'ACT/365.FIXED', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
-    -- Source: QuantExt::CHFSaron (qle/indexes/ibor/chfsaron.hpp).
-    (ores_utility_system_tenant_id_fn(), 'CHF-SARON', 0, 'Switzerland', 'ACT/360', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
-    -- Source: QuantLib::Aonia (ql/indexes/ibor/aonia.hpp).
-    (ores_utility_system_tenant_id_fn(), 'AUD-AONIA', 0, 'Australia', 'ACT/365.FIXED', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
-    -- Source: QuantExt::CORRA (qle/indexes/ibor/corra.hpp).
-    (ores_utility_system_tenant_id_fn(), 'CAD-CORRA', 0, 'Canada.Settlement', 'ACT/365.FIXED', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
-    -- Source: QuantExt::HKDHonia (qle/indexes/ibor/hkdhonia.hpp).
-    (ores_utility_system_tenant_id_fn(), 'HKD-HONIA', 0, 'HongKong', 'ACT/365.FIXED', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
-    -- Source: QuantExt::Sora (qle/indexes/ibor/sora.hpp).
-    (ores_utility_system_tenant_id_fn(), 'SGD-SORA', 0, 'Singapore', 'ACT/365.FIXED', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantLib::Swestr (ql/indexes/ibor/swestr.hpp).
     (ores_utility_system_tenant_id_fn(), 'SEK-SWESTR', 0, 'Sweden', 'ACT/360', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
-    -- Source: QuantExt::Nowa (qle/indexes/ibor/nowa.hpp).
-    (ores_utility_system_tenant_id_fn(), 'NOK-NOWA', 0, 'Norway', 'ACT/ACT.ISMA', 0,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantLib::Kofr (ql/indexes/ibor/kofr.hpp).
     (ores_utility_system_tenant_id_fn(), 'KRW-KOFR', 0, 'SouthKorea.Settlement', 'ACT/365.FIXED', 0,
@@ -90,9 +72,6 @@ values
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantLib::Destr (ql/indexes/ibor/destr.hpp).
     (ores_utility_system_tenant_id_fn(), 'DKK-DESTR', 0, 'Denmark', 'ACT/360', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
-    -- Source: QuantExt::PLNPolonia (qle/indexes/ibor/plnpolonia.hpp).
-    (ores_utility_system_tenant_id_fn(), 'PLN-POLONIA', 0, 'Poland', 'ACT/365.FIXED', 1,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- No ORE index class -- corroborated from SARB market-convention publications
     -- (Act/365, South Africa calendar; see task C80D94BB's Notes for sources).
@@ -107,9 +86,6 @@ values
     -- the ones above. Each id and day count is the one ORE's own conventions
     -- use for the benchmark (refdata_conventions_seed_populate.sql), so a
     -- curve the synthetic feeds tick names an index an ORE run can resolve.
-    -- BRL CDI: the interbank deposit rate, compounded on business days / 252.
-    (ores_utility_system_tenant_id_fn(), 'BRL-CDI', 0, 'Brazil', 'BUS/252', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- CZK CZEONIA: the Czech National Bank's overnight rate.
     (ores_utility_system_tenant_id_fn(), 'CZK-CZEONIA', 0, 'CzechRepublic', 'ACT/365.FIXED', 0,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
@@ -122,13 +98,7 @@ values
     -- TRY TLREF: Borsa Istanbul's Turkish lira overnight reference rate.
     (ores_utility_system_tenant_id_fn(), 'TRY-TLREF', 0, 'Turkey', 'ACT/365.FIXED', 0,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
-    -- CLP CAMARA: the Chilean average interbank chamber index (ICP).
-    (ores_utility_system_tenant_id_fn(), 'CLP-CAMARA', 0, 'Chile', 'ACT/360', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- COP IBR: the Colombian overnight interbank reference rate. The calendar
-    -- seed holds no Colombia calendar yet.
-    (ores_utility_system_tenant_id_fn(), 'COP-IBR', 0, 'Colombia', 'ACT/360', 0,
-     current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- CNH HIBOR: the offshore renminbi overnight fixing in Hong Kong.
     (ores_utility_system_tenant_id_fn(), 'CNH-HIBOR', 0, 'HongKong', 'ACT/365.FIXED', 0,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data')

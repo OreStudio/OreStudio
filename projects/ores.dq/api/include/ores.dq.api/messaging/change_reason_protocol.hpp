@@ -25,11 +25,12 @@
 #ifndef ORES_DQ_API_MESSAGING_CHANGE_REASON_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_CHANGE_REASON_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.dq.api/domain/change_reason_codec.hpp"
 #include "ores.dq.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,11 +52,11 @@ struct change_reason_write {
     std::string code;
     std::string description;
     std::string category_code;
-    bool applies_to_new;
-    bool applies_to_amend;
-    bool applies_to_delete;
-    bool requires_commentary;
-    int display_order;
+    bool applies_to_new{};
+    bool applies_to_amend{};
+    bool applies_to_delete{};
+    bool requires_commentary{};
+    int display_order{};
 
     friend bool operator==(const change_reason_write&, const change_reason_write&) = default;
 };
@@ -91,7 +92,7 @@ struct change_reason_event {
     boost::uuids::uuid event_id;
     change_reason_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +101,7 @@ struct change_reason_event {
 
 struct change_reason_version_key {
     change_reason_key change_reason;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const change_reason_version_key&,
                            const change_reason_version_key&) = default;
@@ -138,7 +139,7 @@ struct list_change_reasons_request {
 struct list_change_reasons_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::change_reason> reasons;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_change_reasons_response&,
                            const list_change_reasons_response&) = default;
@@ -313,7 +314,7 @@ struct list_change_reason_versions_request {
 struct list_change_reason_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::change_reason> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_change_reason_versions_response&,
                            const list_change_reason_versions_response&) = default;

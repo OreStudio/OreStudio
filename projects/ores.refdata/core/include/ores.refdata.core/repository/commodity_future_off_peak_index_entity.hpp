@@ -58,7 +58,7 @@ struct commodity_future_off_peak_index_entity {
     boost::uuids::uuid party_id;
     std::string off_peak_index;
     std::string peak_index;
-    double off_peak_hours;
+    double off_peak_hours{};
     std::string peak_calendar;
     std::string modified_by;
     std::string performed_by;

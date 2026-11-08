@@ -1,0 +1,1 @@
+No trade of the portfolio can be written; the first refusal is: required element 'Tranche' is absent from 'tranches' (in Trade '3e175eb0-103d-5028-b5ec-539dbe3443fd')

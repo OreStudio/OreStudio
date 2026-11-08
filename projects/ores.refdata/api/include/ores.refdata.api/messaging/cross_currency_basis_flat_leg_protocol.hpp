@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CROSS_CURRENCY_BASIS_FLAT_LEG_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CROSS_CURRENCY_BASIS_FLAT_LEG_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/cross_currency_basis_flat_leg.hpp"
+#include "ores.refdata.api/domain/cross_currency_basis_flat_leg_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -104,7 +105,7 @@ struct cross_currency_basis_flat_leg_event {
     boost::uuids::uuid event_id;
     cross_currency_basis_flat_leg_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -114,7 +115,7 @@ struct cross_currency_basis_flat_leg_event {
 
 struct cross_currency_basis_flat_leg_version_key {
     cross_currency_basis_flat_leg_key cross_currency_basis_flat_leg;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const cross_currency_basis_flat_leg_version_key&,
                            const cross_currency_basis_flat_leg_version_key&) = default;
@@ -154,7 +155,7 @@ struct list_cross_currency_basis_flat_legs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cross_currency_basis_flat_leg>
         cross_currency_basis_flat_legs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cross_currency_basis_flat_legs_response&,
                            const list_cross_currency_basis_flat_legs_response&) = default;
@@ -342,7 +343,7 @@ struct list_by_convention_id_cross_currency_basis_flat_legs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cross_currency_basis_flat_leg>
         cross_currency_basis_flat_legs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_convention_id_cross_currency_basis_flat_legs_response&,
@@ -373,7 +374,7 @@ struct list_cross_currency_basis_flat_leg_versions_request {
 struct list_cross_currency_basis_flat_leg_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cross_currency_basis_flat_leg> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cross_currency_basis_flat_leg_versions_response&,
                            const list_cross_currency_basis_flat_leg_versions_response&) = default;

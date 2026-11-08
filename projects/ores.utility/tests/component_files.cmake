@@ -20,6 +20,8 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "codec_json_document_tests.cpp"
+    "codec_json_schema_tests.cpp"
     "codec_json_tests.cpp"
     "codec_msgpack_tests.cpp"
     "codec_object_tests.cpp"
@@ -39,6 +41,7 @@ set(files
     "program_options_shared_domain_registry_tests.cpp"
     "rfl_date_reflector_tests.cpp"
     "rfl_decimal_reflector_tests.cpp"
+    "streaming_std_vector_tests.cpp"
     "string_short_code_generator_tests.cpp"
     "tree_builder_tests.cpp"
     "uuid_tenant_id_tests.cpp"

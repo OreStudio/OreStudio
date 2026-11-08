@@ -117,6 +117,8 @@ domain::equity_asian_option_instrument equity_asian_option_instrument_to_domain(
     v.average_type = write.average_type;
     v.averaging_start_date = write.averaging_start_date;
     v.averaging_end_date = write.averaging_end_date;
+    v.settlement = write.settlement;
+    v.strike_currency = write.strike_currency;
     v.description = write.description;
     return v;
 }

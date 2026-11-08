@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "routes/iam/account_contact_information_routes.cpp"
     "routes/iam/account_credential_routes.cpp"
     "routes/iam/account_operations_routes.cpp"
     "routes/iam/account_routes.cpp"
@@ -33,15 +34,20 @@ set(files
     "routes/iam/login_routes.cpp"
     "routes/iam/permission_routes.cpp"
     "routes/iam/role_routes.cpp"
+    "routes/iam/seed_profile_routes.cpp"
     "routes/iam/session_operations_routes.cpp"
     "routes/iam/session_routes.cpp"
     "routes/iam/session_statistics_operations_routes.cpp"
     "routes/iam/signup_routes.cpp"
+    "routes/iam/tenant_routes.cpp"
+    "routes/iam/tenant_status_routes.cpp"
+    "routes/iam/tenant_type_routes.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.iam.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_contact_information_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_credential_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/account_routes.hpp"
@@ -55,8 +61,12 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/login_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/permission_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/role_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/seed_profile_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/session_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/session_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/session_statistics_operations_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/signup_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/tenant_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/tenant_status_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/iam/tenant_type_routes.hpp"
 )

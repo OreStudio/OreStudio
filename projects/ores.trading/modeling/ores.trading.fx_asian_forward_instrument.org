@@ -230,6 +230,16 @@ Total target amount (FxTaRF-specific). Absent for FxAverageForward.
 
 Target strike level (FxTaRF-specific). Absent for FxAverageForward.
 
+** fixed_payer
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:economic: true
+:END:
+
+Whether the holder pays the fixed rate, as =FixedPayer= states it.
+
 ** description
 :PROPERTIES:
 :type:     text

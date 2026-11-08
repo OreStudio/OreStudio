@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 76BDBAB6-4C76-5B60-94D6-CF81A519A806
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the business_unit_types endpoints over HTTP?
+#+description: Every endpoint the business_unit_types resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:business_unit_types:
+
+This file documents the business_unit_types resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/business_unit_types=
+:PROPERTIES:
+:ID: 6889E08A-4873-5090-9BE7-C707507814DC
+:END:
+
+List business unit types. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/business_unit_types
+#+end_example
+
+#+name: business_unit_types-list
+#+begin_src hurl :tangle business_unit_types-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/business_unit_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/business_unit_types/__none__=
+:PROPERTIES:
+:ID: B14F4265-C30B-5047-9F26-2F4ADB8C0822
+:END:
+
+Get one business unit type. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/business_unit_types/__none__
+#+end_example
+
+#+name: business_unit_types-get
+#+begin_src hurl :tangle business_unit_types-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/business_unit_types/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/business_unit_types/get-many=
+:PROPERTIES:
+:ID: 5AC4050B-BE7A-52BA-B6B9-3A7D6965E280
+:END:
+
+Get many business unit types. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/business_unit_types/get-many
+#+end_example
+
+#+name: business_unit_types-get-many
+#+begin_src hurl :tangle business_unit_types-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/business_unit_types/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/business_unit_types=
+:PROPERTIES:
+:ID: DE1EF07F-3DF8-5229-BFAF-BE741828E665
+:END:
+
+Create one business unit type. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/business_unit_types
+#+end_example
+
+#+name: business_unit_types-add
+#+begin_src hurl :tangle business_unit_types-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/business_unit_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/business_unit_types=
+:PROPERTIES:
+:ID: B6A0AC83-DF73-5D6E-96D0-C00614E31723
+:END:
+
+Replace one business unit type. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/business_unit_types
+#+end_example
+
+#+name: business_unit_types-set
+#+begin_src hurl :tangle business_unit_types-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/business_unit_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/business_unit_types/put-many=
+:PROPERTIES:
+:ID: 1D333DCF-9EB6-52CB-83DA-40326942FD38
+:END:
+
+Write many business unit types. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/business_unit_types/put-many
+#+end_example
+
+#+name: business_unit_types-put-many
+#+begin_src hurl :tangle business_unit_types-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/business_unit_types/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/business_unit_types/__none__=
+:PROPERTIES:
+:ID: 4C8E8098-D266-51E9-8413-36574FF3AFFE
+:END:
+
+Delete one business unit type. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/business_unit_types/__none__
+#+end_example
+
+#+name: business_unit_types-delete
+#+begin_src hurl :tangle business_unit_types-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/business_unit_types/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/business_unit_types/delete-many=
+:PROPERTIES:
+:ID: D91DCF39-4C1E-51E1-87C2-2B4FD6724BE7
+:END:
+
+Delete many business unit types. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/business_unit_types/delete-many
+#+end_example
+
+#+name: business_unit_types-delete-many
+#+begin_src hurl :tangle business_unit_types-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/business_unit_types/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/business_unit_types/__none__/versions=
+:PROPERTIES:
+:ID: 06BFEE3D-3368-5D55-AEE3-77BB02CADEE0
+:END:
+
+List the recorded versions of one business unit type. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/business_unit_types/__none__/versions
+#+end_example
+
+#+name: business_unit_types-versions
+#+begin_src hurl :tangle business_unit_types-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/business_unit_types/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/business_unit_types/__none__/versions/0=
+:PROPERTIES:
+:ID: CE43240F-DB9D-5B93-A357-9BB3FE12CA56
+:END:
+
+Get one recorded version of one business unit type. It needs a session.
+
+It forwards to =refdata.v1.business_unit_types_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/business_unit_types/__none__/versions/0
+#+end_example
+
+#+name: business_unit_types-version
+#+begin_src hurl :tangle business_unit_types-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/business_unit_types/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

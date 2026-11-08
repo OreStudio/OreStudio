@@ -135,7 +135,7 @@ inline constexpr expected_document expected_roots[] = {
 }
 
 TEST_CASE("every declared parameter names a document of the kind it states",
-          "[ore][run-document]") {
+          "[long_running][ore][run-document]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto root = ores::testing::project_root::resolve("external/ore/examples");

@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_EQUITY_ACCUMULATOR_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_EQUITY_ACCUMULATOR_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/equity_accumulator_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -60,6 +61,11 @@ namespace ores::trading::domain {
         utility::codec::field{"target_amount", &equity_accumulator_instrument::target_amount},
         utility::codec::field{"target_type", &equity_accumulator_instrument::target_type},
         utility::codec::field{"payoff_type", &equity_accumulator_instrument::payoff_type},
+        utility::codec::field{"settlement_lag", &equity_accumulator_instrument::settlement_lag},
+        utility::codec::field{"settlement_calendar",
+                              &equity_accumulator_instrument::settlement_calendar},
+        utility::codec::field{"settlement_convention",
+                              &equity_accumulator_instrument::settlement_convention},
         utility::codec::field{"description", &equity_accumulator_instrument::description},
         utility::codec::field{"audit", &equity_accumulator_instrument::audit},
     };

@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_EQUITY_DIGITAL_OPTION_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/equity_digital_option_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -59,6 +60,13 @@ namespace ores::trading::domain {
         utility::codec::field{"expiry_date", &equity_digital_option_instrument::expiry_date},
         utility::codec::field{"long_short", &equity_digital_option_instrument::long_short},
         utility::codec::field{"payout_amount", &equity_digital_option_instrument::payout_amount},
+        utility::codec::field{"barrier_start_date",
+                              &equity_digital_option_instrument::barrier_start_date},
+        utility::codec::field{"barrier_calendar",
+                              &equity_digital_option_instrument::barrier_calendar},
+        utility::codec::field{"barrier_fixing_index",
+                              &equity_digital_option_instrument::barrier_fixing_index},
+        utility::codec::field{"quantity", &equity_digital_option_instrument::quantity},
         utility::codec::field{"description", &equity_digital_option_instrument::description},
         utility::codec::field{"audit", &equity_digital_option_instrument::audit},
     };

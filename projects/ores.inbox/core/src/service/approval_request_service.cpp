@@ -105,6 +105,7 @@ approval_request_to_domain(const messaging::approval_request_write& write) {
     v.id = write.id;
     v.kind_code = write.kind_code;
     v.state_code = write.state_code;
+    v.auto_approval_code = write.auto_approval_code;
     v.requested_by = write.requested_by;
     v.requested_at = write.requested_at;
     v.reason = write.reason;
@@ -139,6 +140,12 @@ messaging::list_approval_requests_response approval_request_service::list_approv
         request.filter->state_code_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "state_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->auto_approval_code_one_of &&
+        request.filter->auto_approval_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "auto_approval_code_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->requested_by_one_of &&
@@ -189,6 +196,12 @@ approval_request_service::list_by_kind_code_approval_requests(
         request.filter->state_code_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "state_code_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->auto_approval_code_one_of &&
+        request.filter->auto_approval_code_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "auto_approval_code_one_of", .limit = "1000"});
         return response;
     }
     if (request.filter && request.filter->requested_by_one_of &&

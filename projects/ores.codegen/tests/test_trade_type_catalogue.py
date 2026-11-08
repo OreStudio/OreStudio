@@ -84,8 +84,16 @@ def _described(codes) -> str:
         for code in codes)
 
 
-def _catalogue(rows: str, descriptions: str | None = None) -> str:
+def _classes(codes) -> str:
+    """The body of a * Classes table: the first code flow, the rest unstated."""
+    return f"| {codes[0]} | flow |" if codes else ""
+
+
+def _catalogue(rows: str, descriptions: str | None = None,
+               classes: str | None = None) -> str:
     described = _described(_codes_of(rows)) if descriptions is None else descriptions
+    if classes is None:
+        classes = _classes(_codes_of(rows))
     return f"""\
 :PROPERTIES:
 :ID: 00000000-0000-0000-0000-0000000000E2
@@ -100,6 +108,12 @@ def _catalogue(rows: str, descriptions: str | None = None) -> str:
 |------+------+--------+--------------+---------+-------------+---------------+------------|
 {rows}
 
+* Classes
+
+| code | deal_class |
+|------+------------|
+{classes}
+
 * Descriptions
 
 | code | description | source | source_ref |
@@ -108,12 +122,12 @@ def _catalogue(rows: str, descriptions: str | None = None) -> str:
 """
 
 
-def _write_catalogue(tmp_path, rows, descriptions=None):
+def _write_catalogue(tmp_path, rows, descriptions=None, classes=None):
     modeling = tmp_path / "projects" / "ores.testcomp" / "modeling"
     modeling.mkdir(parents=True)
     (modeling / "ores.testcomp.widget.org").write_text(ENTITY, encoding="utf-8")
     path = modeling / "ores.testcomp.trade_type_catalogue.org"
-    path.write_text(_catalogue(rows, descriptions), encoding="utf-8")
+    path.write_text(_catalogue(rows, descriptions, classes), encoding="utf-8")
     return path
 
 
@@ -245,3 +259,40 @@ def test_every_product_type_is_described_and_sourced():
         if not row["description_sql"] or not row["source_sql"] or not row["source_ref_sql"]
     ]
     assert undescribed == []
+
+
+def test_a_stated_class_is_kept_and_the_rest_default_to_non_flow(tmp_path):
+    path = _write_catalogue(tmp_path, "\n".join([
+        "| Swap | x | swap | native | interest_rates! | false | false | widget |",
+        "| Swaption | y | swaption | native | interest_rates! | true | false | widget |",
+    ]), classes="| Swap | flow |")
+
+    catalogue = load_org_trade_type_catalogue_model(path)["trade_type_catalogue"]
+
+    assert [(row["code"], row["deal_class"]) for row in catalogue["rows"]] == [
+        ("Swap", "flow"), ("Swaption", "non_flow")]
+
+
+@pytest.mark.parametrize("classes,message", [
+    ("| Gadget | flow |", "does not state: Gadget"),
+    ("| Swap | occasionally |", "must be flow or non_flow"),
+    ("| Swap | flow |\n| Swap | non_flow |", "classified twice"),
+])
+def test_the_catalogue_refuses_a_class_it_cannot_honour(tmp_path, classes, message):
+    path = _write_catalogue(
+        tmp_path,
+        "| Swap | x | swap | native | interest_rates! | false | false | widget |",
+        classes=classes)
+
+    with pytest.raises(ValueError, match=message):
+        load_org_trade_type_catalogue_model(path)
+
+
+def test_every_product_type_states_a_class():
+    catalogue = load_org_trade_type_catalogue_model(CATALOGUE)["trade_type_catalogue"]
+
+    unclassified = [
+        row["code"] for row in catalogue["rows"]
+        if row["deal_class"] not in ("flow", "non_flow")
+    ]
+    assert unclassified == []

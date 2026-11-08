@@ -25,11 +25,12 @@
 #ifndef ORES_INBOX_API_MESSAGING_APPROVAL_PART_PROTOCOL_HPP
 #define ORES_INBOX_API_MESSAGING_APPROVAL_PART_PROTOCOL_HPP
 
-#include "ores.inbox.api/domain/approval_part.hpp"
+#include "ores.inbox.api/domain/approval_part_codec.hpp"
 #include "ores.inbox.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -52,8 +53,8 @@ struct approval_part_write {
     std::string name;
     std::string description;
     std::string decide_permission_code;
-    int answer_order;
-    int display_order;
+    int answer_order{};
+    int display_order{};
 
     friend bool operator==(const approval_part_write&, const approval_part_write&) = default;
 };
@@ -89,7 +90,7 @@ struct approval_part_event {
     boost::uuids::uuid event_id;
     approval_part_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -98,7 +99,7 @@ struct approval_part_event {
 
 struct approval_part_version_key {
     approval_part_key approval_part;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const approval_part_version_key&,
                            const approval_part_version_key&) = default;
@@ -136,7 +137,7 @@ struct list_approval_parts_request {
 struct list_approval_parts_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_part> parts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_parts_response&,
                            const list_approval_parts_response&) = default;
@@ -311,7 +312,7 @@ struct list_approval_part_versions_request {
 struct list_approval_part_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_part> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_part_versions_response&,
                            const list_approval_part_versions_response&) = default;

@@ -27,8 +27,10 @@
 
 #include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/instrument_identity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/digest/canonical_form.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -39,13 +41,15 @@ namespace ores::trading::domain {
  * ContractForDifference.
  *
  * Represents the composite product types ORE states. trade_type_code
- * discriminates the exact product, and the constituent trades live in the
- * composite_legs child table keyed by this instrument's trade_id.
+ * discriminates the exact product.
  *
- * The parent row carries only the basket identity and its optional free-text
- * description: the basket's constituents are child rows, so there is no
- * per-leg block to hold here. The table is bi-temporal and audited, so the
- * model takes the ordinary audited shape and needs no shape flag.
+ * A composite trade's components are trades of their own, joined to the
+ * composite by a structure of the CompositeTrade template: the composite
+ * holds the composite role and each component the trade or sub_trade
+ * role it held in the document. This row keeps the composite's own terms:
+ * its currency, how its notional is formed, the basket's name and index
+ * quantity. The table is bi-temporal and audited, so the model takes the
+ * ordinary audited shape and needs no shape flag.
  */
 struct composite_instrument final {
     instrument_identity identity;
@@ -54,6 +58,124 @@ struct composite_instrument final {
      * @brief Optional free-text description.
      */
     std::string description;
+
+    /**
+     * @brief The currency a composite trade is priced in, as Currency states it. Null for a total
+     * return swap or a contract for difference, which state no such field.
+     */
+    std::optional<std::string> currency;
+
+    /**
+     * @brief How the composite's notional is formed from its components', as NotionalCalculation
+     * states it: Sum, Mean, First, Last, Min, Max or Override.
+     */
+    std::optional<std::string> notional_calculation;
+
+    /**
+     * @brief The notional the composite states outright, as NotionalOverride states it, when the
+     * calculation is Override.
+     */
+    std::optional<ores::utility::decimal::decimal> notional_override;
+
+    /**
+     * @brief Whether the composite is a portfolio basket, as PortfolioBasket states it.
+     */
+    std::optional<std::string> portfolio_basket;
+
+    /**
+     * @brief The quantity of a portfolio basket's index, as IndexQuantity states it.
+     */
+    std::optional<double> index_quantity;
+
+    /**
+     * @brief Whether the trade pays the underlying's return, as ReturnData/Payer states it.
+     */
+    std::optional<std::string> return_payer;
+
+    /**
+     * @brief The currency the return is paid in, as ReturnData/Currency states it.
+     */
+    std::optional<std::string> return_currency;
+
+    /**
+     * @brief How far before each period the return is observed, as ReturnData/ObservationLag states
+     * it.
+     */
+    std::optional<std::string> return_observation_lag;
+
+    /**
+     * @brief The business day convention of the observations, as ReturnData/ObservationConvention
+     * states it.
+     */
+    std::optional<std::string> return_observation_convention;
+
+    /**
+     * @brief The calendar the observations are adjusted on, as ReturnData/ObservationCalendar
+     * states it.
+     */
+    std::optional<std::string> return_observation_calendar;
+
+    /**
+     * @brief How far after each period the return is paid, as ReturnData/PaymentLag states it.
+     */
+    std::optional<std::string> return_payment_lag;
+
+    /**
+     * @brief The business day convention of the return payments, as ReturnData/PaymentConvention
+     * states it.
+     */
+    std::optional<std::string> return_payment_convention;
+
+    /**
+     * @brief The calendar the return payments are adjusted on, as ReturnData/PaymentCalendar states
+     * it.
+     */
+    std::optional<std::string> return_payment_calendar;
+
+    /**
+     * @brief The underlying's price at the start, as ReturnData/InitialPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> return_initial_price;
+
+    /**
+     * @brief The currency of the initial price, as ReturnData/InitialPriceCurrency states it.
+     */
+    std::optional<std::string> return_initial_price_currency;
+
+    /**
+     * @brief The FX indices that convert the underlyings' currencies into the return's, as
+     * ReturnData/FXTerms/FXIndex states them, in order and separated by spaces.
+     */
+    std::optional<std::string> return_fx_index;
+
+    /**
+     * @brief Whether the underlying's cash flows are paid when they occur, as
+     * ReturnData/PayUnderlyingCashFlowsImmediately states it.
+     */
+    std::optional<std::string> return_pay_underlying_cash_flows_immediately;
+
+    /**
+     * @brief The notional type of each funding leg, as FundingData/NotionalType states them, in
+     * order and separated by spaces.
+     */
+    std::optional<std::string> funding_notional_types;
+
+    /**
+     * @brief The name of the portfolio index the trade pays the return of, as
+     * UnderlyingData/PortfolioIndexTradeData/BasketName states it.
+     */
+    std::optional<std::string> underlying_basket_name;
+
+    /**
+     * @brief The quantity of that index, as PortfolioIndexTradeData/IndexQuantity states it.
+     */
+    std::optional<std::string> underlying_index_quantity;
+
+    /**
+     * @brief Whether the index's price is per unit, as PortfolioIndexTradeData/PriceIsPerUnit
+     * states it.
+     */
+    std::optional<std::string> underlying_price_is_per_unit;
 
     ores::dq::domain::audit_record audit;
     /**
@@ -76,8 +198,37 @@ struct composite_instrument final {
  * group whose own model declares an economic field. The economic digest hashes
  * this text, so a member the customer did not agree to never moves it.
  */
-[[nodiscard]] inline std::string canonical_form(const composite_instrument&) {
+[[nodiscard]] inline std::string canonical_form(const composite_instrument& v) {
     std::string out = "{";
+    ores::utility::digest::append_member(out, "currency", v.currency);
+    ores::utility::digest::append_member(out, "notional_calculation", v.notional_calculation);
+    ores::utility::digest::append_member(out, "notional_override", v.notional_override);
+    ores::utility::digest::append_member(out, "portfolio_basket", v.portfolio_basket);
+    ores::utility::digest::append_member(out, "index_quantity", v.index_quantity);
+    ores::utility::digest::append_member(out, "return_payer", v.return_payer);
+    ores::utility::digest::append_member(out, "return_currency", v.return_currency);
+    ores::utility::digest::append_member(out, "return_observation_lag", v.return_observation_lag);
+    ores::utility::digest::append_member(
+        out, "return_observation_convention", v.return_observation_convention);
+    ores::utility::digest::append_member(
+        out, "return_observation_calendar", v.return_observation_calendar);
+    ores::utility::digest::append_member(out, "return_payment_lag", v.return_payment_lag);
+    ores::utility::digest::append_member(
+        out, "return_payment_convention", v.return_payment_convention);
+    ores::utility::digest::append_member(out, "return_payment_calendar", v.return_payment_calendar);
+    ores::utility::digest::append_member(out, "return_initial_price", v.return_initial_price);
+    ores::utility::digest::append_member(
+        out, "return_initial_price_currency", v.return_initial_price_currency);
+    ores::utility::digest::append_member(out, "return_fx_index", v.return_fx_index);
+    ores::utility::digest::append_member(out,
+                                         "return_pay_underlying_cash_flows_immediately",
+                                         v.return_pay_underlying_cash_flows_immediately);
+    ores::utility::digest::append_member(out, "funding_notional_types", v.funding_notional_types);
+    ores::utility::digest::append_member(out, "underlying_basket_name", v.underlying_basket_name);
+    ores::utility::digest::append_member(
+        out, "underlying_index_quantity", v.underlying_index_quantity);
+    ores::utility::digest::append_member(
+        out, "underlying_price_is_per_unit", v.underlying_price_is_per_unit);
     out.push_back('}');
     return out;
 }

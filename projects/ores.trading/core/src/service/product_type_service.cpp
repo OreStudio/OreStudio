@@ -101,6 +101,7 @@ domain::product_type product_type_to_domain(const messaging::product_type_write&
     v.description = write.description;
     v.source = write.source;
     v.source_ref = write.source_ref;
+    v.deal_class = write.deal_class;
     v.product_family_code = write.product_family_code;
     v.construction = write.construction;
     v.has_options = write.has_options;

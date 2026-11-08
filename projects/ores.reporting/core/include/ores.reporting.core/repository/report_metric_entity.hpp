@@ -77,7 +77,7 @@ struct report_metric_entity {
     std::optional<std::string> scenario;
     std::optional<std::string> factor;
     std::optional<std::string> qualifiers;
-    double value;
+    double value{};
     db_timestamp valid_from = db_timestamp::max();
     db_timestamp valid_to = db_timestamp::max();
 

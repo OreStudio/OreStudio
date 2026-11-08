@@ -29,7 +29,7 @@ Every interface in ores.analytics.quant, ores.marketdata.api and their consumers
 | State        | DONE                              |
 | Parent story | [[id:589DD051-92EB-4CAA-B4AE-06CBD24A9D21][Add a Hawkes tick arrival process to analytics.quant]] |
 | Now          | Nothing. |
-| Waiting on   | The PR and its review.                 |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-24                               |
 

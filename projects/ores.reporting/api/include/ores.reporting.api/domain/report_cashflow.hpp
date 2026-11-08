@@ -151,7 +151,7 @@ struct report_cashflow final {
     /**
      * @brief The figure, as the engine stated it and never formatted.
      */
-    double value;
+    double value = 0.0;
 
     /**
      * @brief The family and the row the reader read, for provenance.

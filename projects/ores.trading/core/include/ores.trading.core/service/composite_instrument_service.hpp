@@ -183,22 +183,6 @@ public:
     std::vector<domain::composite_instrument>
     get_composite_instrument_history(const std::string& trade_id);
 
-    /**
-     * @brief Reads the legs of one composite instrument, ordered by leg sequence.
-     */
-    std::vector<domain::composite_leg> get_legs(const std::string& trade_id);
-
-    /**
-     * @brief Writes the instrument and replaces its whole leg set.
-     *
-     * One transaction from the caller's view: the instrument row is written
-     * first, then every leg the request states. The legs the instrument
-     * carried before are removed first, so a save states the whole basket
-     * rather than appending to it.
-     */
-    void save_composite_instrument(const domain::composite_instrument& v,
-                                   const std::vector<domain::composite_leg>& legs);
-
 private:
     context ctx_;
     repository::composite_instrument_repository repo_;

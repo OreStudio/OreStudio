@@ -42,6 +42,15 @@ export interface EquitySwapInstrument {
     maturity_date: string;
     long_short: string;
     payment_frequency_code: string;
+    fixed_rate: string | null;
+    floating_index: string | null;
+    floating_spread: string | null;
+    floating_day_count_fraction: string | null;
+    initial_fixed_rate: string | null;
+    knock_in_level: string | null;
+    bermudan_knock_in: boolean | null;
+    accruing_fixed_coupons: boolean | null;
+    accumulating_fixed_coupons: boolean | null;
     description: string;
     audit: AuditRecord;
 }

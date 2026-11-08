@@ -53,7 +53,7 @@ struct instrument_strike_entity {
 
     boost::uuids::uuid trade_id;
     std::string strike_role;
-    int sequence_number;
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid trade_activity_id;
@@ -63,6 +63,7 @@ struct instrument_strike_entity {
     std::optional<std::string> yield_compounding;
     std::optional<ores::utility::decimal::decimal> bare_value;
     std::optional<std::string> bare_currency;
+    std::optional<std::string> long_short;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -88,6 +89,7 @@ struct instrument_strike_entity {
                query_builder::bind("yield_compounding", &e::yield_compounding) |
                query_builder::bind("bare_value", &e::bare_value) |
                query_builder::bind("bare_currency", &e::bare_currency) |
+               query_builder::bind("long_short", &e::long_short) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

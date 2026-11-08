@@ -27,9 +27,15 @@
 
 #include "ores.diff/domain/diff_result.hpp"
 #include "ores.diff/domain/field_value.hpp"
+#include "ores.history.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
+#include <cstddef>
+#include <span>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::history::messaging {
@@ -125,6 +131,90 @@ struct get_entity_history_response {
             std::string("unknown");
     return history_subject_by_component(component);
 }
+/**
+ * @brief The members of entity_history_version, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<entity_history_version>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"version", &entity_history_version::version},
+        ::ores::utility::codec::field{"modified_by", &entity_history_version::modified_by},
+        ::ores::utility::codec::field{"recorded_at", &entity_history_version::recorded_at},
+        ::ores::utility::codec::field{"fields", &entity_history_version::fields},
+        ::ores::utility::codec::field{"changes", &entity_history_version::changes},
+    };
 }
+
+/**
+ * @brief The members of get_entity_history_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_entity_history_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"entity_type", &get_entity_history_request::entity_type},
+        ::ores::utility::codec::field{"entity_id", &get_entity_history_request::entity_id},
+    };
+}
+
+/**
+ * @brief The members of get_entity_history_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_entity_history_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"versions", &get_entity_history_response::versions},
+        ::ores::utility::codec::field{"success", &get_entity_history_response::success},
+        ::ores::utility::codec::field{"message", &get_entity_history_response::message},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_HISTORY_API_EXPORT wire_traits<ores::history::messaging::entity_history_version> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::history::messaging::entity_history_version& v);
+    static ores::history::messaging::entity_history_version read_json(std::string_view text);
+    static std::string write_msgpack(const ores::history::messaging::entity_history_version& v);
+    static ores::history::messaging::entity_history_version
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_HISTORY_API_EXPORT wire_traits<ores::history::messaging::get_entity_history_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::history::messaging::get_entity_history_request& v);
+    static ores::history::messaging::get_entity_history_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::history::messaging::get_entity_history_request& v);
+    static ores::history::messaging::get_entity_history_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_HISTORY_API_EXPORT wire_traits<ores::history::messaging::get_entity_history_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::history::messaging::get_entity_history_response& v);
+    static ores::history::messaging::get_entity_history_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::history::messaging::get_entity_history_response& v);
+    static ores::history::messaging::get_entity_history_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

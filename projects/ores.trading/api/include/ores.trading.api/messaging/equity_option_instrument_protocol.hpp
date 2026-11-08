@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_EQUITY_OPTION_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_EQUITY_OPTION_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/equity_option_instrument.hpp"
+#include "ores.trading.api/domain/equity_option_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -62,6 +63,18 @@ struct equity_option_instrument_write {
     std::string long_short;
     std::string settlement_type;
     std::string cliquet_frequency;
+    std::optional<std::string> strike_currency;
+    std::optional<ores::utility::decimal::decimal> local_cap;
+    std::optional<ores::utility::decimal::decimal> local_floor;
+    std::optional<ores::utility::decimal::decimal> global_cap;
+    std::optional<ores::utility::decimal::decimal> global_floor;
+    std::optional<int> settlement_days;
+    std::optional<ores::utility::decimal::decimal> premium;
+    std::optional<std::chrono::year_month_day> premium_payment_date;
+    std::optional<ores::utility::decimal::decimal> initial_price_1;
+    std::optional<ores::utility::decimal::decimal> initial_price_2;
+    std::optional<ores::utility::decimal::decimal> knock_in_price;
+    std::optional<ores::utility::decimal::decimal> knock_out_price;
     std::string description;
 
     friend bool operator==(const equity_option_instrument_write&,
@@ -103,7 +116,7 @@ struct equity_option_instrument_event {
     boost::uuids::uuid event_id;
     equity_option_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -113,7 +126,7 @@ struct equity_option_instrument_event {
 
 struct equity_option_instrument_version_key {
     equity_option_instrument_key equity_option_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_option_instrument_version_key&,
                            const equity_option_instrument_version_key&) = default;
@@ -151,7 +164,7 @@ struct list_equity_option_instruments_request {
 struct list_equity_option_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_option_instrument> equity_option_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_option_instruments_response&,
                            const list_equity_option_instruments_response&) = default;
@@ -330,7 +343,7 @@ struct list_equity_option_instrument_versions_request {
 struct list_equity_option_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_option_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_option_instrument_versions_response&,
                            const list_equity_option_instrument_versions_response&) = default;
@@ -413,6 +426,19 @@ inline constexpr std::string_view deleted = "trading.v1.events.equity_option_ins
         utility::codec::field{"settlement_type", &equity_option_instrument_write::settlement_type},
         utility::codec::field{"cliquet_frequency",
                               &equity_option_instrument_write::cliquet_frequency},
+        utility::codec::field{"strike_currency", &equity_option_instrument_write::strike_currency},
+        utility::codec::field{"local_cap", &equity_option_instrument_write::local_cap},
+        utility::codec::field{"local_floor", &equity_option_instrument_write::local_floor},
+        utility::codec::field{"global_cap", &equity_option_instrument_write::global_cap},
+        utility::codec::field{"global_floor", &equity_option_instrument_write::global_floor},
+        utility::codec::field{"settlement_days", &equity_option_instrument_write::settlement_days},
+        utility::codec::field{"premium", &equity_option_instrument_write::premium},
+        utility::codec::field{"premium_payment_date",
+                              &equity_option_instrument_write::premium_payment_date},
+        utility::codec::field{"initial_price_1", &equity_option_instrument_write::initial_price_1},
+        utility::codec::field{"initial_price_2", &equity_option_instrument_write::initial_price_2},
+        utility::codec::field{"knock_in_price", &equity_option_instrument_write::knock_in_price},
+        utility::codec::field{"knock_out_price", &equity_option_instrument_write::knock_out_price},
         utility::codec::field{"description", &equity_option_instrument_write::description},
     };
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="a8e51f85-16b5-58f5-b20b-9508a3607763">
+    <TradeType>CommodityBestEntryOption</TradeType>
+  </Trade>
+  <Trade id="9df8ee5f-9ce1-546e-ba4b-05270865af03">
+    <TradeType>CommodityBestEntryOption</TradeType>
+  </Trade>
+</Portfolio>

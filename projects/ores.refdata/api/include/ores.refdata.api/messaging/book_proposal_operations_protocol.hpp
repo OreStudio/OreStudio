@@ -26,10 +26,17 @@
 #define ORES_REFDATA_API_MESSAGING_BOOK_PROPOSAL_OPERATIONS_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/book_change.hpp"
+#include "ores.refdata.api/export.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 namespace ores::refdata::messaging {
@@ -41,7 +48,7 @@ namespace ores::refdata::messaging {
  * the line changes, which is what the policy reads to name the parts.
  */
 struct book_line_outcome {
-    int line_no;
+    int line_no{};
     std::string operation;
     boost::uuids::uuid entity_id;
     std::vector<std::string> columns;
@@ -231,6 +238,302 @@ struct recheck_book_changes_response {
                            const recheck_book_changes_response&) = default;
 };
 
+/**
+ * @brief The members of book_line_outcome, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_line_outcome>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"line_no", &book_line_outcome::line_no},
+        ::ores::utility::codec::field{"operation", &book_line_outcome::operation},
+        ::ores::utility::codec::field{"entity_id", &book_line_outcome::entity_id},
+        ::ores::utility::codec::field{"columns", &book_line_outcome::columns},
+        ::ores::utility::codec::field{"refusal", &book_line_outcome::refusal},
+        ::ores::utility::codec::field{"part_codes", &book_line_outcome::part_codes},
+    };
 }
+
+/**
+ * @brief The members of preview_book_changes_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_book_changes_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"lines", &preview_book_changes_request::lines},
+    };
+}
+
+/**
+ * @brief The members of preview_book_changes_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<preview_book_changes_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &preview_book_changes_response::result},
+        ::ores::utility::codec::field{"lines", &preview_book_changes_response::lines},
+        ::ores::utility::codec::field{"part_codes", &preview_book_changes_response::part_codes},
+    };
+}
+
+/**
+ * @brief The members of raise_book_changes_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_book_changes_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"reason", &raise_book_changes_request::reason},
+        ::ores::utility::codec::field{"lines", &raise_book_changes_request::lines},
+    };
+}
+
+/**
+ * @brief The members of raise_book_changes_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<raise_book_changes_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &raise_book_changes_response::result},
+        ::ores::utility::codec::field{"request_id", &raise_book_changes_response::request_id},
+        ::ores::utility::codec::field{"lines", &raise_book_changes_response::lines},
+        ::ores::utility::codec::field{"part_codes", &raise_book_changes_response::part_codes},
+    };
+}
+
+/**
+ * @brief The members of book_field_delta, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_field_delta>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"name", &book_field_delta::name},
+        ::ores::utility::codec::field{"before", &book_field_delta::before},
+        ::ores::utility::codec::field{"after", &book_field_delta::after},
+        ::ores::utility::codec::field{"changed", &book_field_delta::changed},
+    };
+}
+
+/**
+ * @brief The members of book_change_delta, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<book_change_delta>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"line_no", &book_change_delta::line_no},
+        ::ores::utility::codec::field{"operation", &book_change_delta::operation},
+        ::ores::utility::codec::field{"entity_id", &book_change_delta::entity_id},
+        ::ores::utility::codec::field{"base_version", &book_change_delta::base_version},
+        ::ores::utility::codec::field{"applied", &book_change_delta::applied},
+        ::ores::utility::codec::field{"fields", &book_change_delta::fields},
+    };
+}
+
+/**
+ * @brief The members of get_book_changes_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_changes_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &get_book_changes_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of get_book_changes_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_book_changes_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_book_changes_response::result},
+        ::ores::utility::codec::field{"changes", &get_book_changes_response::changes},
+    };
+}
+
+/**
+ * @brief The members of recheck_book_changes_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<recheck_book_changes_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"request_id", &recheck_book_changes_request::request_id},
+    };
+}
+
+/**
+ * @brief The members of recheck_book_changes_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<recheck_book_changes_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &recheck_book_changes_response::result},
+        ::ores::utility::codec::field{"lines", &recheck_book_changes_response::lines},
+        ::ores::utility::codec::field{"part_codes", &recheck_book_changes_response::part_codes},
+    };
+}
+
+}
+namespace ores::utility::codec {
+
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::book_line_outcome> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::book_line_outcome& v);
+    static ores::refdata::messaging::book_line_outcome read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::book_line_outcome& v);
+    static ores::refdata::messaging::book_line_outcome
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::preview_book_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::preview_book_changes_request& v);
+    static ores::refdata::messaging::preview_book_changes_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::preview_book_changes_request& v);
+    static ores::refdata::messaging::preview_book_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::preview_book_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::preview_book_changes_response& v);
+    static ores::refdata::messaging::preview_book_changes_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::preview_book_changes_response& v);
+    static ores::refdata::messaging::preview_book_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::raise_book_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::raise_book_changes_request& v);
+    static ores::refdata::messaging::raise_book_changes_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::raise_book_changes_request& v);
+    static ores::refdata::messaging::raise_book_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::raise_book_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::raise_book_changes_response& v);
+    static ores::refdata::messaging::raise_book_changes_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::raise_book_changes_response& v);
+    static ores::refdata::messaging::raise_book_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::book_field_delta> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::book_field_delta& v);
+    static ores::refdata::messaging::book_field_delta read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::book_field_delta& v);
+    static ores::refdata::messaging::book_field_delta read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::book_change_delta> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::book_change_delta& v);
+    static ores::refdata::messaging::book_change_delta read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::book_change_delta& v);
+    static ores::refdata::messaging::book_change_delta
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_book_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_book_changes_request& v);
+    static ores::refdata::messaging::get_book_changes_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_book_changes_request& v);
+    static ores::refdata::messaging::get_book_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::get_book_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::get_book_changes_response& v);
+    static ores::refdata::messaging::get_book_changes_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::refdata::messaging::get_book_changes_response& v);
+    static ores::refdata::messaging::get_book_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT wire_traits<ores::refdata::messaging::recheck_book_changes_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::recheck_book_changes_request& v);
+    static ores::refdata::messaging::recheck_book_changes_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::recheck_book_changes_request& v);
+    static ores::refdata::messaging::recheck_book_changes_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::recheck_book_changes_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::refdata::messaging::recheck_book_changes_response& v);
+    static ores::refdata::messaging::recheck_book_changes_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::recheck_book_changes_response& v);
+    static ores::refdata::messaging::recheck_book_changes_response
+    read_msgpack(std::span<const std::byte> data);
+};
+}
+
 
 #endif

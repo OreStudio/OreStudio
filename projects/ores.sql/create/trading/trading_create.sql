@@ -143,12 +143,35 @@
 \ir ./trading_swap_legs_create.sql
 \ir ./trading_swap_legs_notify_trigger_create.sql
 
--- A swap leg's notionals and its rates or spreads are child rows, so they
--- come after the leg they belong to.
+-- A swap leg's notionals, its rates or spreads, its amortization steps and
+-- its indexings are child rows, so they come after the leg they belong to.
 \ir ./trading_swap_leg_amounts_create.sql
 \ir ./trading_swap_leg_amounts_notify_trigger_create.sql
 \ir ./trading_swap_leg_rates_create.sql
 \ir ./trading_swap_leg_rates_notify_trigger_create.sql
+\ir ./trading_swap_leg_amortizations_create.sql
+\ir ./trading_swap_leg_amortizations_notify_trigger_create.sql
+\ir ./trading_swap_leg_indexings_create.sql
+\ir ./trading_swap_leg_indexings_notify_trigger_create.sql
+
+-- A barrier and its levels are children of the trade any barrier product
+-- states them for.
+\ir ./trading_instrument_barriers_create.sql
+\ir ./trading_instrument_barriers_notify_trigger_create.sql
+\ir ./trading_instrument_barrier_levels_create.sql
+\ir ./trading_instrument_barrier_levels_notify_trigger_create.sql
+
+-- An underlying is a child of the trade any product that states an
+-- Underlying block states it for.
+\ir ./trading_instrument_underlyings_create.sql
+\ir ./trading_instrument_underlyings_notify_trigger_create.sql
+
+-- A scripted trade's parameters and their list values are children of the
+-- trade.
+\ir ./trading_scripted_parameters_create.sql
+\ir ./trading_scripted_parameters_notify_trigger_create.sql
+\ir ./trading_scripted_parameter_values_create.sql
+\ir ./trading_scripted_parameter_values_notify_trigger_create.sql
 
 -- Rates instruments (depend on swap_legs and reference data above). The
 -- header goes first: it owns the family's rows, and its delete rule's cascade
@@ -380,8 +403,6 @@
 -- Composite instruments (depends on reference data above)
 \ir ./trading_composite_instruments_create.sql
 \ir ./trading_composite_instruments_notify_trigger_create.sql
-\ir ./trading_composite_legs_create.sql
-\ir ./trading_composite_legs_notify_trigger_create.sql
 
 -- Scripted instruments (depends on reference data above)
 \ir ./trading_scripted_instruments_create.sql

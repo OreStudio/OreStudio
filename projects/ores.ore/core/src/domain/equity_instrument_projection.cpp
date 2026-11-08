@@ -17,8 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/barrier_block_projection.hpp"
+#include "ores.ore.core/domain/leg_block_projection.hpp"
+#include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
+#include "ores.ore.core/domain/scalar_terms_projection.hpp"
+#include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
@@ -270,11 +275,16 @@ auto read_equity_forward(const record_reader& trade) -> equity_forward_instrumen
 // The equity leg states the underlying and the return, the funding leg the
 // currency, the notional and the schedule; a leg that states both overwrites
 // the other's values in the order the document wrote them.
-auto read_equity_swap(const record_reader& trade) -> equity_swap_instrument {
-    auto r = equity_instrument_projection_make_row<equity_swap_instrument>("EquitySwap");
+// The row keeps the swap's summary; the legs themselves land in the shared
+// leg rows, as a rates swap's do.
+auto read_equity_swap(const record_reader& trade) -> equity_instrument_data {
+    equity_instrument_data result{
+        equity_instrument_projection_make_row<equity_swap_instrument>("EquitySwap"), {}};
+    auto& r = std::get<equity_swap_instrument>(result.instrument);
     const auto data = trade.child("EquitySwapData");
     if (!data)
-        return r;
+        return result;
+    leg_block::append_legs(result, *data);
     for (const auto& leg : data->children("LegData")) {
         if (const auto equity = leg.child("EquityLegData")) {
             r.underlying_name = equity_instrument_projection_underlying_name_of(*equity);
@@ -303,7 +313,7 @@ auto read_equity_swap(const record_reader& trade) -> equity_swap_instrument {
             }
         }
     }
-    return r;
+    return result;
 }
 
 auto read_equity_variance_swap(const record_reader& trade) -> equity_variance_swap_instrument {
@@ -446,6 +456,8 @@ auto read_equity_accumulator(const record_reader& trade) -> equity_instrument_da
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.fixing_amount = equity_instrument_projection_decimal_of(*data, "FixingAmount");
     r.strike = equity_instrument_projection_decimal_of(*data, "Strike");
+    if (const auto option = data->child("OptionData"))
+        r.payoff_type = equity_instrument_projection_text_of(*option, "PayoffType");
     if (const auto start = data->text("StartDate"))
         r.start_date = equity_instrument_projection_to_domain_date(*start);
     if (const auto barriers = data->child("Barriers")) {
@@ -460,27 +472,7 @@ auto read_equity_accumulator(const record_reader& trade) -> equity_instrument_da
             break;
         }
     }
-    /*
-     * The document requires at least one range bound, so they are rows of the
-     * shared table and not a column: each states the range it pays inside and
-     * the leverage it pays at.
-     */
-    std::vector<range_bound> bounds;
-    if (const auto rows = data->child("RangeBounds")) {
-        std::uint32_t ordinal = 1;
-        for (const auto& element : rows->children("RangeBound")) {
-            range_bound row;
-            row.sequence_number = static_cast<int>(ordinal++);
-            if (const auto from = element.decimal("RangeFrom"))
-                row.range_from = *from;
-            if (const auto to = element.decimal("RangeTo"))
-                row.range_to = *to;
-            if (const auto leverage = element.decimal("Leverage"))
-                row.leverage = leverage->to_double();
-            bounds.push_back(std::move(row));
-        }
-    }
-    return equity_instrument_data{equity_instrument_variant{r}, {}, {}, {}, std::move(bounds)};
+    return equity_instrument_data{equity_instrument_variant{r}, {}};
 }
 
 auto read_equity_tarf(const record_reader& trade) -> equity_accumulator_instrument {
@@ -493,6 +485,9 @@ auto read_equity_tarf(const record_reader& trade) -> equity_accumulator_instrume
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.fixing_amount = equity_instrument_projection_decimal_of(*data, "FixingAmount");
     r.strike = equity_instrument_projection_decimal_of(*data, "Strike");
+    if (const auto option = data->child("OptionData"))
+        r.payoff_type = equity_instrument_projection_text_of(*option, "PayoffType");
+    r.target_amount = data->decimal("TargetAmount");
     if (const auto barriers = data->child("Barriers")) {
         for (const auto& barrier : barriers->children("BarrierData")) {
             if (equity_instrument_projection_spelling_of(barrier, "Type") != "FixingCap")
@@ -516,6 +511,7 @@ auto read_equity_cliquet_option(const record_reader& trade) -> equity_option_ins
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.notional = equity_instrument_projection_decimal_of(*data, "Notional");
     r.option_type = equity_instrument_projection_spelling_of(*data, "OptionType");
+    r.long_short = equity_instrument_projection_spelling_of(*data, "LongShort");
 
     const auto schedule = data->child("ScheduleData");
     if (!schedule)
@@ -558,6 +554,8 @@ auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_inst
             row.sequence_number = static_cast<int>(ordinal++);
             row.underlying_name = equity_instrument_projection_text_of(underlying, "Name");
             row.underlying_kind = equity_instrument_projection_text_of(underlying, "Type");
+            if (underlying.has("IdentifierType"))
+                row.identifier_type = underlying.text("IdentifierType");
             constituents.push_back(std::move(row));
         }
     }
@@ -622,6 +620,8 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
             if (const auto underlying = entry.child("Underlying")) {
                 row.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
                 row.weight = decimal_as_double(*underlying, "Weight");
+                if (underlying->has("IdentifierType"))
+                    row.identifier_type = underlying->text("IdentifierType");
             }
             row.strike = equity_instrument_projection_decimal_of(entry, "Strike");
             if (const auto option = entry.child("OptionData")) {
@@ -630,6 +630,12 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
                 row.exercise_type = equity_instrument_projection_exercise_style_of(option);
                 row.settlement_type =
                     equity_instrument_projection_spelling_of(*option, "Settlement");
+                if (const auto dates = option->child("ExerciseDates")) {
+                    const auto values = dates->values("ExerciseDate");
+                    if (!values.empty())
+                        row.exercise_date =
+                            equity_instrument_projection_to_domain_date(values.front());
+                }
             }
             equity_instrument_projection_stamp_columns(row);
             underlyings.push_back(std::move(row));
@@ -702,21 +708,47 @@ void write_levels(record_writer& data,
 // Writing: one function per product
 // ---------------------------------------------------------------------------
 
-void write_equity_option(record_writer& trade, const equity_option_instrument& v) {
+/*
+ * A product that states its underlying as a Name or an Underlying block
+ * writes the block from the kept rows, and the name its row keeps when the
+ * trade was stored before the rows were kept.
+ */
+void write_name_or_underlying(record_writer& data,
+                              const equity_instrument_data& carrier,
+                              const std::string& name) {
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying"))
+        data.set_text("Name", name);
+}
+
+void write_underlying_or_equity(record_writer& data,
+                                const equity_instrument_data& carrier,
+                                const std::string& name) {
+    if (underlying_block::write_underlyings(data, "Underlying", carrier, "underlying"))
+        return;
+    auto underlying = data.child("Underlying");
+    underlying.set_text("Name", name);
+    underlying.set_text("Type", "Equity");
+}
+
+void write_equity_option(record_writer& trade,
+                         const equity_option_instrument& v,
+                         const equity_instrument_data& carrier) {
     auto data = trade.child("EquityOptionData");
     write_option_entry(data.child("OptionData"), v);
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_text("Currency", v.currency);
     data.set_decimal("Quantity", v.notional);
     if (!v.strike.is_zero())
         data.set_text("Strike", v.strike.to_string());
 }
 
-void write_equity_forward(record_writer& trade, const equity_forward_instrument& v) {
+void write_equity_forward(record_writer& trade,
+                          const equity_forward_instrument& v,
+                          const equity_instrument_data& carrier) {
     auto data = trade.child("EquityForwardData");
     data.set_spelling("LongShort", "Long", "long short");
     data.set_text("Maturity", equity_instrument_projection_to_ore_date(v.expiry_date));
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_text("Currency", v.currency);
     data.set_decimal("Strike", v.forward_price.value_or(decimal{}));
     set_decimal_from_double(data, "Quantity", v.quantity);
@@ -724,8 +756,20 @@ void write_equity_forward(record_writer& trade, const equity_forward_instrument&
 
 // The per-type row states one notional and the document states it on two legs,
 // so the same amount is written to both.
-void write_equity_swap(record_writer& trade, const equity_swap_instrument& v) {
+void write_equity_swap(record_writer& trade,
+                       const equity_swap_instrument& v,
+                       const equity_instrument_data& carrier) {
     auto data = trade.child("EquitySwapData");
+    if (!carrier.legs.empty()) {
+        const auto stated = [](const std::chrono::year_month_day& d) {
+            return d.ok() ? std::optional(d) : std::nullopt;
+        };
+        leg_block::write_legs(data, stated(v.start_date), stated(v.maturity_date), carrier);
+        return;
+    }
+
+    // A swap stored before its legs were rows states only its summary, so its
+    // legs are rebuilt from it.
 
     auto equity_leg = data.append("LegData");
     equity_leg.set_spelling("LegType", "Equity", "leg type");
@@ -745,12 +789,14 @@ void write_equity_swap(record_writer& trade, const equity_swap_instrument& v) {
         funding_leg.child("Notionals").append("Notional").set_own_text(v.notional.to_string());
 }
 
-void write_equity_variance_swap(record_writer& trade, const equity_variance_swap_instrument& v) {
+void write_equity_variance_swap(record_writer& trade,
+                                const equity_variance_swap_instrument& v,
+                                const equity_instrument_data& carrier) {
     auto data = trade.child("EquityVarianceSwapData");
     data.set_text("StartDate", equity_instrument_projection_to_ore_date(v.start_date));
     data.set_text("EndDate", equity_instrument_projection_to_ore_date(v.maturity_date));
     data.set_spelling("Currency", v.currency, "currency");
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_text("LongShort", "Long");
     set_decimal_from_double(data, "Strike", v.variance_strike);
     data.set_decimal("Notional", v.notional);
@@ -764,14 +810,17 @@ void write_equity_variance_swap(record_writer& trade, const equity_variance_swap
 void write_equity_barrier_option(record_writer& trade,
                                  std::string_view element,
                                  const equity_barrier_option_instrument& v,
-                                 bool writes_upper) {
+                                 bool writes_upper,
+                                 const equity_instrument_data& carrier) {
     auto data = trade.child(element);
     write_option_entry(data.child("OptionData"), v);
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Quantity", v.notional);
     if (!v.strike.is_zero())
         data.set_text("Strike", v.strike.to_string());
+    if (barrier_block::write_kept_barriers(data, "", carrier, "barrier"))
+        return;
     if (v.lower_barrier_type.empty())
         return;
     auto barrier = data.child("BarrierData");
@@ -783,37 +832,49 @@ void write_equity_barrier_option(record_writer& trade,
         levels.append_decimal("Level", *v.upper_barrier);
 }
 
-void write_equity_asian_option(record_writer& trade, const equity_asian_option_instrument& v) {
+void write_equity_asian_option(record_writer& trade,
+                               const equity_asian_option_instrument& v,
+                               const equity_instrument_data& carrier) {
     auto data = trade.child("EquityAsianOptionData");
     write_option_entry(data.child("OptionData"), v);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Quantity", v.notional);
     if (!v.strike.is_zero())
         data.child("StrikeData").set_decimal("Value", v.strike);
-    if (!v.underlying_name.empty()) {
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying") &&
+        !v.underlying_name.empty()) {
         auto underlying = data.child("Underlying");
         underlying.set_text("Name", v.underlying_name);
         underlying.set_text("Type", "Equity");
     }
+    option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
 }
 
-void write_equity_digital_option(record_writer& trade, const equity_digital_option_instrument& v) {
+void write_equity_digital_option(record_writer& trade,
+                                 const equity_digital_option_instrument& v,
+                                 const equity_instrument_data& carrier) {
     auto data = trade.child("EquityDigitalOptionData");
     write_option_entry(data.child("OptionData"), v);
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_decimal("Strike", v.strike.value_or(decimal{}));
+    if (!v.currency.empty())
+        data.set_spelling("PayoffCurrency", v.currency, "currency");
     data.set_decimal("PayoffAmount", v.notional);
     // The schema requires a quantity and the row keeps the payoff amount alone,
     // which the export states as the payout of one unit.
     data.set_decimal("Quantity", decimal_from_double(1.0));
 }
 
-void write_equity_touch_option(record_writer& trade, const equity_digital_option_instrument& v) {
+void write_equity_touch_option(record_writer& trade,
+                               const equity_digital_option_instrument& v,
+                               const equity_instrument_data& carrier) {
     auto data = trade.child("EquityTouchOptionData");
     write_option_entry(data.child("OptionData"), v);
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_spelling("PayoffCurrency", v.currency, "currency");
     data.set_decimal("PayoffAmount", v.notional);
+    if (barrier_block::write_kept_barriers(data, "", carrier, "barrier"))
+        return;
     if (v.barrier_type.empty())
         return;
     auto barrier = data.child("BarrierData");
@@ -851,71 +912,67 @@ void write_equity_outperformance_option(record_writer& trade, const equity_optio
 
 void write_equity_accumulator(record_writer& trade,
                               const equity_accumulator_instrument& v,
-                              const std::vector<range_bound>& rows) {
+                              const std::vector<range_bound>& rows,
+                              const equity_instrument_data& carrier) {
     auto data = trade.child("EquityAccumulatorData");
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("FixingAmount", v.fixing_amount);
     if (!v.strike.is_zero())
         data.set_decimal("Strike", v.strike);
-    auto underlying = data.child("Underlying");
-    underlying.set_text("Name", v.underlying_name);
-    underlying.set_text("Type", "Equity");
+    write_underlying_or_equity(data, carrier, v.underlying_name);
     data.child("OptionData").set_text("LongShort", "Long");
     if (v.start_date.ok())
         data.set_text("StartDate", equity_instrument_projection_to_ore_date(v.start_date));
 
-    write_schedule_rule(data.child("ObservationDates"),
-                        equity_instrument_projection_to_ore_date(v.start_date),
-                        "1D");
+    if (!option_block::write_product_schedule(
+            data, carrier, "ObservationDates", "observation_schedule"))
+        write_schedule_rule(data.child("ObservationDates"),
+                            equity_instrument_projection_to_ore_date(v.start_date),
+                            "1D");
+    option_block::write_product_schedule(data, carrier, "PricingDates", "pricing_schedule");
 
     /*
      * The document requires at least one range bound, so a row set that holds
      * none is written as none and the schema refuses it: the bounds are the
      * economics of the product, not a decoration.
      */
-    if (!rows.empty()) {
-        auto ordered = rows;
-        std::sort(ordered.begin(), ordered.end(), [](const auto& lhs, const auto& rhs) {
-            return lhs.sequence_number < rhs.sequence_number;
-        });
-        auto bounds = data.child("RangeBounds");
-        for (const auto& row : ordered) {
-            auto bound = bounds.append("RangeBound");
-            if (row.range_from.has_value())
-                bound.set_decimal("RangeFrom", *row.range_from);
-            if (row.range_to.has_value())
-                bound.set_decimal("RangeTo", *row.range_to);
-            if (row.leverage.has_value())
-                set_decimal_from_double(bound, "Leverage", *row.leverage);
-        }
-    }
+    option_block::write_range_bounds(data, rows);
+    barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier");
 }
 
-void write_equity_tarf(record_writer& trade, const equity_accumulator_instrument& v) {
+void write_equity_tarf(record_writer& trade,
+                       const equity_accumulator_instrument& v,
+                       const equity_instrument_data& carrier) {
     auto data = trade.child("EquityTaRFData");
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("FixingAmount", v.fixing_amount);
     if (!v.strike.is_zero())
         data.set_decimal("Strike", v.strike);
-    auto underlying = data.child("Underlying");
-    underlying.set_text("Name", v.underlying_name);
-    underlying.set_text("Type", "Equity");
+    write_underlying_or_equity(data, carrier, v.underlying_name);
     data.child("OptionData").set_text("LongShort", "Long");
-    write_schedule_rule(data.child("ScheduleData"), "", "1Y");
+    if (v.target_amount)
+        data.set_decimal("TargetAmount", *v.target_amount);
+    option_block::write_range_bounds(data, carrier.range_bounds);
+    if (!option_block::write_product_schedule(data, carrier, "ScheduleData", "product_schedule"))
+        write_schedule_rule(data.child("ScheduleData"), "", "1Y");
 
-    // The schema requires a barrier, and the cap the row keeps is the one the
-    // document states.
-    auto barrier = data.child("Barriers").append("BarrierData");
-    barrier.set_spelling("Type", "FixingCap", "barrier type");
-    barrier.child("Levels").append_decimal("Level", v.knock_out_level.value_or(decimal{}));
+    // The schema requires a barrier. A row stored before the barriers were kept
+    // states only its cap, and that is the barrier it writes.
+    if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier")) {
+        auto barrier = data.child("Barriers").append("BarrierData");
+        barrier.set_spelling("Type", "FixingCap", "barrier type");
+        barrier.child("Levels").append_decimal("Level", v.knock_out_level.value_or(decimal{}));
+    }
 }
 
-void write_equity_cliquet_option(record_writer& trade, const equity_option_instrument& v) {
+void write_equity_cliquet_option(record_writer& trade,
+                                 const equity_option_instrument& v,
+                                 const equity_instrument_data& carrier) {
     auto data = trade.child("EquityCliquetOptionData");
-    data.set_text("Name", v.underlying_name);
+    write_name_or_underlying(data, carrier, v.underlying_name);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Notional", v.notional);
-    data.set_spelling("LongShort", "Long", "long short");
+    data.set_spelling("LongShort", v.long_short.empty() ? "Long" : v.long_short, "long short");
     if (v.option_type == "Put" || v.option_type == "Call")
         data.set_spelling("OptionType", v.option_type, "option type");
     else
@@ -927,15 +984,18 @@ void write_equity_cliquet_option(record_writer& trade, const equity_option_instr
     set_decimal_from_double(data, "Moneyness", 1.0);
     // The schema requires a schedule, and a row that keeps no frequency states
     // the element without a rule rather than dropping it.
-    auto schedule = data.child("ScheduleData");
-    if (!v.cliquet_frequency.empty())
-        write_schedule_rule(schedule, "", v.cliquet_frequency);
+    if (!option_block::write_product_schedule(data, carrier, "ScheduleData", "product_schedule")) {
+        auto schedule = data.child("ScheduleData");
+        if (!v.cliquet_frequency.empty())
+            write_schedule_rule(schedule, "", v.cliquet_frequency);
+    }
 }
 
 void write_equity_worst_of_basket_swap(record_writer& trade,
                                        const equity_swap_instrument& v,
                                        const std::vector<equity_basket_constituent>& rows,
-                                       const std::vector<equity_swap_period>& periods) {
+                                       const std::vector<equity_swap_period>& periods,
+                                       const equity_instrument_data& carrier) {
     auto data = trade.child("EquityWorstOfBasketSwapData");
     data.set_spelling("LongShort", "Long", "long short");
     data.set_spelling("Currency", v.currency, "currency");
@@ -959,30 +1019,39 @@ void write_equity_worst_of_basket_swap(record_writer& trade,
     struct named_constituent {
         std::string name;
         std::string kind;
+        std::optional<std::string> identifier_type;
     };
     std::vector<named_constituent> members;
     std::vector<decimal> prices;
     for (const auto& row : ordered_rows) {
         if (row.underlying_name.empty())
             continue;
-        members.push_back({row.underlying_name, row.underlying_kind});
+        members.push_back({row.underlying_name, row.underlying_kind, row.identifier_type});
         if (row.initial_price.has_value())
             prices.push_back(*row.initial_price);
     }
     if (members.empty() && !v.underlying_name.empty())
-        members.push_back({v.underlying_name, "Equity"});
+        members.push_back({v.underlying_name, "Equity", std::nullopt});
     if (!members.empty()) {
         auto underlyings = data.child("Underlyings");
         for (const auto& member : members) {
             auto underlying = underlyings.append("Underlying");
             underlying.set_text("Name", member.name);
             underlying.set_text("Type", member.kind);
+            if (member.identifier_type)
+                underlying.set_text("IdentifierType", *member.identifier_type);
         }
     }
 
     // The schema requires a rule on each schedule and the row states none.
-    write_schedule_rule(data.child("FloatingPeriodSchedule"), "", "6M");
-    write_schedule_rule(data.child("FloatingPayDates"), "", "6M");
+    if (!option_block::write_product_schedule(
+            data, carrier, "FloatingPeriodSchedule", "floating_period_schedule"))
+        write_schedule_rule(data.child("FloatingPeriodSchedule"), "", "6M");
+    if (!option_block::write_product_schedule(
+            data, carrier, "FloatingPayDates", "floating_pay_schedule"))
+        write_schedule_rule(data.child("FloatingPayDates"), "", "6M");
+    option_block::write_product_schedule(
+        data, carrier, "FloatingFixingSchedule", "floating_fixing_schedule");
 
     write_levels(data, "InitialPrices", "InitialPrice", prices);
 
@@ -1002,10 +1071,13 @@ void write_equity_worst_of_basket_swap(record_writer& trade,
     write_levels(data, "FixedTriggerLevels", "FixedTriggerLevel", triggers);
 }
 
-void write_equity_position(record_writer& trade, const equity_position_instrument& v) {
+void write_equity_position(record_writer& trade,
+                           const equity_position_instrument& v,
+                           const equity_instrument_data& carrier) {
     auto data = trade.child("EquityPositionData");
     set_decimal_from_double(data, "Quantity", v.quantity);
-    if (!v.underlying_name.empty()) {
+    if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying") &&
+        !v.underlying_name.empty()) {
         auto underlying = data.append("Underlying");
         underlying.set_text("Type", "Equity");
         underlying.set_text("Name", v.underlying_name);
@@ -1031,9 +1103,15 @@ void write_equity_option_position(record_writer& trade,
         auto underlying = entry.child("Underlying");
         underlying.set_text("Type", "Equity");
         underlying.set_text("Name", row->underlying_name);
+        if (row->identifier_type)
+            underlying.set_text("IdentifierType", *row->identifier_type);
         if (row->weight)
             set_decimal_from_double(underlying, "Weight", *row->weight);
         auto option = entry.child("OptionData");
+        if (row->exercise_date)
+            option.child("ExerciseDates")
+                .append_value("ExerciseDate",
+                              equity_instrument_projection_to_ore_date(*row->exercise_date));
         option.set_text("LongShort", row->long_short);
         if (!row->option_type.empty())
             option.set_text("OptionType", row->option_type);
@@ -1046,13 +1124,138 @@ void write_equity_option_position(record_writer& trade,
     }
 }
 
+/**
+ * @brief The element of an equity product that states an OptionData block, or
+ * nothing for a product that states none.
+ *
+ * Listed rather than probed, because asking a record type for a field it does
+ * not declare is an error.
+ */
+/// The single-valued terms each equity product row keeps, by its element.
+constexpr scalar_terms::term<equity_variance_swap_instrument> equity_variance_swap_terms[] = {
+    {"Calendar", &equity_variance_swap_instrument::calendar},
+    {"MomentType", &equity_variance_swap_instrument::moment_type},
+    {"AddPastDividends", &equity_variance_swap_instrument::add_past_dividends},
+};
+
+constexpr scalar_terms::term<equity_accumulator_instrument> equity_accumulator_terms[] = {
+    {"SettlementLag", &equity_accumulator_instrument::settlement_lag},
+    {"SettlementCalendar", &equity_accumulator_instrument::settlement_calendar},
+    {"SettlementConvention", &equity_accumulator_instrument::settlement_convention},
+};
+
+constexpr scalar_terms::term<equity_option_instrument> equity_option_terms[] = {
+    {"StrikeCurrency", &equity_option_instrument::strike_currency},
+    {"LocalCap", &equity_option_instrument::local_cap},
+    {"LocalFloor", &equity_option_instrument::local_floor},
+    {"GlobalCap", &equity_option_instrument::global_cap},
+    {"GlobalFloor", &equity_option_instrument::global_floor},
+    {"SettlementDays", &equity_option_instrument::settlement_days},
+    {"Premium", &equity_option_instrument::premium},
+    {"PremiumPaymentDate", &equity_option_instrument::premium_payment_date},
+    {"InitialPrice1", &equity_option_instrument::initial_price_1},
+    {"InitialPrice2", &equity_option_instrument::initial_price_2},
+    {"KnockInPrice", &equity_option_instrument::knock_in_price},
+    {"KnockOutPrice", &equity_option_instrument::knock_out_price},
+};
+
+constexpr scalar_terms::term<equity_swap_instrument> equity_swap_terms[] = {
+    {"FixedRate", &equity_swap_instrument::fixed_rate},
+    {"FloatingIndex", &equity_swap_instrument::floating_index},
+    {"FloatingSpread", &equity_swap_instrument::floating_spread},
+    {"FloatingDayCountFraction", &equity_swap_instrument::floating_day_count_fraction},
+    {"InitialFixedRate", &equity_swap_instrument::initial_fixed_rate},
+    {"KnockInLevel", &equity_swap_instrument::knock_in_level},
+    {"BermudanKnockIn", &equity_swap_instrument::bermudan_knock_in},
+    {"AccruingFixedCoupons", &equity_swap_instrument::accruing_fixed_coupons},
+    {"AccumulatingFixedCoupons", &equity_swap_instrument::accumulating_fixed_coupons},
+};
+
+constexpr scalar_terms::term<equity_asian_option_instrument> equity_asian_option_terms[] = {
+    {"Settlement", &equity_asian_option_instrument::settlement},
+};
+
+constexpr scalar_terms::term<equity_digital_option_instrument> equity_digital_option_terms[] = {
+    {"Quantity", &equity_digital_option_instrument::quantity},
+};
+
+/// Calls the function with the row's term table, for a row that keeps terms.
+template <typename Row, typename Fn>
+void with_equity_terms(Fn&& fn) {
+    if constexpr (std::is_same_v<Row, equity_variance_swap_instrument>)
+        fn(equity_variance_swap_terms);
+    else if constexpr (std::is_same_v<Row, equity_accumulator_instrument>)
+        fn(equity_accumulator_terms);
+    else if constexpr (std::is_same_v<Row, equity_option_instrument>)
+        fn(equity_option_terms);
+    else if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
+        fn(equity_asian_option_terms);
+    else if constexpr (std::is_same_v<Row, equity_swap_instrument>)
+        fn(equity_swap_terms);
+    else if constexpr (std::is_same_v<Row, equity_digital_option_instrument>)
+        fn(equity_digital_option_terms);
 }
 
-auto read_equity_instrument(xml::record_reader trade, std::string_view trade_type)
-    -> std::optional<trading::domain::trade_instrument> {
-    if (!is_equity_trade_type(trade_type))
-        return std::nullopt;
+/// Where an equity product states its underlyings.
+constexpr underlying_block::underlying_holder equity_underlying_holders[] = {
+    {"EquityOption", "", "Underlying", "underlying"},
+    {"EquityForward", "", "Underlying", "underlying"},
+    {"EquityVarianceSwap", "", "Underlying", "underlying"},
+    {"EquityBarrierOption", "", "Underlying", "underlying"},
+    {"EquityDoubleBarrierOption", "", "Underlying", "underlying"},
+    {"EquityEuropeanBarrierOption", "", "Underlying", "underlying"},
+    {"EquityAsianOption", "", "Underlying", "underlying"},
+    {"EquityDigitalOption", "", "Underlying", "underlying"},
+    {"EquityTouchOption", "", "Underlying", "underlying"},
+    {"EquityCliquetOption", "", "Underlying", "underlying"},
+    {"EquityAccumulator", "", "Underlying", "underlying"},
+    {"EquityTaRF", "", "Underlying", "underlying"},
+    {"EquityPosition", "", "Underlying", "underlying"},
+};
 
+/// Where an equity product states its barriers.
+constexpr barrier_block::barrier_holder equity_barrier_holders[] = {
+    {"EquityBarrierOption", "", "barrier"},
+    {"EquityDoubleBarrierOption", "", "barrier"},
+    {"EquityEuropeanBarrierOption", "", "barrier"},
+    {"EquityTouchOption", "", "barrier"},
+    {"EquityAccumulator", "Barriers", "barrier"},
+    {"EquityTaRF", "Barriers", "barrier"},
+};
+
+/// The schedules an equity product states on its own element.
+constexpr option_block::product_schedule equity_product_schedules[] = {
+    {"EquityAccumulator", "ObservationDates", "observation_schedule"},
+    {"EquityAccumulator", "PricingDates", "pricing_schedule"},
+    {"EquityAsianOption", "ObservationDates", "observation_schedule"},
+    {"EquityTaRF", "ScheduleData", "product_schedule"},
+    {"EquityCliquetOption", "ScheduleData", "product_schedule"},
+    {"EquityWorstOfBasketSwap", "FloatingPeriodSchedule", "floating_period_schedule"},
+    {"EquityWorstOfBasketSwap", "FloatingPayDates", "floating_pay_schedule"},
+    {"EquityWorstOfBasketSwap", "FloatingFixingSchedule", "floating_fixing_schedule"},
+};
+
+std::optional<std::string> equity_option_data_element(std::string_view trade_type) {
+    static constexpr std::string_view with_option_data[] = {
+        "EquityOption",
+        "EquityBarrierOption",
+        "EquityDoubleBarrierOption",
+        "EquityEuropeanBarrierOption",
+        "EquityAsianOption",
+        "EquityDigitalOption",
+        "EquityTouchOption",
+        "EquityOutperformanceOption",
+        "EquityAccumulator",
+        "EquityTaRF",
+    };
+    for (const auto type : with_option_data)
+        if (type == trade_type)
+            return std::string(trade_type) + "Data";
+    return std::nullopt;
+}
+
+auto read_equity_product(const xml::record_reader& trade,
+                         std::string_view trade_type) -> trading::domain::trade_instrument {
     if (trade_type == "EquityPosition")
         return trading::domain::trade_instrument{read_equity_position(trade)};
     if (trade_type == "EquityOptionPosition")
@@ -1067,7 +1270,7 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
     if (trade_type == "EquityForward")
         return wrap(read_equity_forward(trade));
     if (trade_type == "EquitySwap")
-        return wrap(read_equity_swap(trade));
+        return trading::domain::trade_instrument{read_equity_swap(trade)};
     if (trade_type == "EquityVarianceSwap")
         return wrap(read_equity_variance_swap(trade));
     if (trade_type == "EquityBarrierOption")
@@ -1094,10 +1297,53 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
     return read_equity_worst_of_basket_swap(trade);
 }
 
+}
+
+auto read_equity_instrument(xml::record_reader trade, std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument> {
+    if (!is_equity_trade_type(trade_type))
+        return std::nullopt;
+
+    auto instrument = read_equity_product(trade, trade_type);
+    // The product's row keeps its own terms; the block's shared terms land in
+    // the option rows every option family reads and writes.
+    if (auto* data = std::get_if<equity_instrument_data>(&instrument)) {
+        if (const auto element = equity_option_data_element(trade_type)) {
+            if (const auto product = trade.child(*element)) {
+                if (const auto option = product->child("OptionData"))
+                    option_block::read_option_block(*data, *option);
+            }
+        }
+        option_block::read_product_schedules(*data, trade, trade_type, equity_product_schedules);
+        barrier_block::read_product_barriers(*data, trade, trade_type, equity_barrier_holders);
+        underlying_block::read_product_underlyings(
+            *data, trade, trade_type, equity_underlying_holders);
+        const auto element = std::string(trade_type) + "Data";
+        if (const auto product = trade.declares(element) ? trade.child(element) : std::nullopt) {
+            if (trade_type == "EquityAccumulator" || trade_type == "EquityTaRF")
+                option_block::read_range_bounds(*data, *product);
+            std::visit(
+                [&](auto& row) {
+                    using Row = std::decay_t<decltype(row)>;
+                    if constexpr (barrier_block::monitored<Row>)
+                        barrier_block::read_monitoring(row, *product, "EQIndex");
+                    with_equity_terms<Row>(
+                        [&](const auto& terms) { scalar_terms::read_terms(row, *product, terms); });
+                    if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
+                        if (const auto strike = product->child("StrikeData"))
+                            if (strike->has("Currency"))
+                                row.strike_currency = scalar_terms::read_text(*strike, "Currency");
+                },
+                data->instrument);
+        }
+    }
+    return instrument;
+}
+
 auto write_equity_instrument(xml::record_writer& trade,
                              std::string_view trade_type,
                              const trading::domain::trade_instrument& instrument,
-                             const portfolio_reference_curves&) -> bool {
+                             const ores::marketdata::projection::ore_projection&) -> bool {
     const auto* v = std::get_if<equity_instrument_data>(&instrument);
     if (v == nullptr || !is_equity_trade_type(trade_type))
         return false;
@@ -1114,69 +1360,98 @@ auto write_equity_instrument(xml::record_writer& trade,
                     write_equity_option_position(trade, row, v->underlyings);
                     matched = true;
                 } else {
-                    write_equity_position(trade, row);
+                    write_equity_position(trade, row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_option_instrument>) {
                 if (trade_type == "EquityOption") {
-                    write_equity_option(trade, row);
+                    write_equity_option(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "EquityCliquetOption") {
-                    write_equity_cliquet_option(trade, row);
+                    write_equity_cliquet_option(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "EquityOutperformanceOption") {
                     write_equity_outperformance_option(trade, row);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_forward_instrument>) {
-                write_equity_forward(trade, row);
+                write_equity_forward(trade, row, *v);
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_swap_instrument>) {
                 if (trade_type == "EquitySwap") {
-                    write_equity_swap(trade, row);
+                    write_equity_swap(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "EquityWorstOfBasketSwap") {
                     write_equity_worst_of_basket_swap(
-                        trade, row, v->basket_constituents, v->periods);
+                        trade, row, v->basket_constituents, v->periods, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_variance_swap_instrument>) {
-                write_equity_variance_swap(trade, row);
+                write_equity_variance_swap(trade, row, *v);
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_barrier_option_instrument>) {
                 if (trade_type == "EquityBarrierOption") {
-                    write_equity_barrier_option(trade, "EquityBarrierOptionData", row, false);
+                    write_equity_barrier_option(trade, "EquityBarrierOptionData", row, false, *v);
                     matched = true;
                 } else if (trade_type == "EquityDoubleBarrierOption") {
-                    write_equity_barrier_option(trade, "EquityDoubleBarrierOptionData", row, true);
+                    write_equity_barrier_option(
+                        trade, "EquityDoubleBarrierOptionData", row, true, *v);
                     matched = true;
                 } else if (trade_type == "EquityEuropeanBarrierOption") {
                     write_equity_barrier_option(
-                        trade, "EquityEuropeanBarrierOptionData", row, true);
+                        trade, "EquityEuropeanBarrierOptionData", row, true, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_asian_option_instrument>) {
-                write_equity_asian_option(trade, row);
+                write_equity_asian_option(trade, row, *v);
                 matched = true;
             } else if constexpr (std::is_same_v<Row, equity_digital_option_instrument>) {
                 if (trade_type == "EquityDigitalOption") {
-                    write_equity_digital_option(trade, row);
+                    write_equity_digital_option(trade, row, *v);
                     matched = true;
                 } else if (trade_type == "EquityTouchOption") {
-                    write_equity_touch_option(trade, row);
+                    write_equity_touch_option(trade, row, *v);
                     matched = true;
                 }
             } else if constexpr (std::is_same_v<Row, equity_accumulator_instrument>) {
                 if (trade_type == "EquityAccumulator") {
-                    write_equity_accumulator(trade, row, v->range_bounds);
+                    write_equity_accumulator(trade, row, v->range_bounds, *v);
                     matched = true;
                 } else if (trade_type == "EquityTaRF") {
-                    write_equity_tarf(trade, row);
+                    write_equity_tarf(trade, row, *v);
                     matched = true;
                 }
             }
         },
         v->instrument);
+
+    if (matched && !v->options.empty()) {
+        if (const auto element = equity_option_data_element(trade_type)) {
+            if (auto product = trade.chosen_child(*element)) {
+                auto option = product->child("OptionData");
+                option_block::write_option_block(option, *v);
+            }
+        }
+    }
+    if (const auto element = std::string(trade_type) + "Data"; matched && trade.declares(element)) {
+        if (auto product = trade.chosen_child(element)) {
+            std::visit(
+                [&](const auto& row) {
+                    using Row = std::decay_t<decltype(row)>;
+                    if constexpr (barrier_block::monitored<Row>)
+                        barrier_block::write_monitoring(*product, row, "EQIndex");
+                    with_equity_terms<Row>([&](const auto& terms) {
+                        scalar_terms::write_terms(*product, row, terms);
+                    });
+                    if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
+                        if (row.strike_currency) {
+                            auto strike = product->child("StrikeData");
+                            scalar_terms::write_text(strike, "Currency", *row.strike_currency);
+                        }
+                },
+                v->instrument);
+        }
+    }
     return matched;
 }
 

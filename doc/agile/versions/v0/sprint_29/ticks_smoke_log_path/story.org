@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 742E3C86-9768-4CF5-8ED1-F4973F168208
+:END:
+#+title: Story: Hotfix: read the marketdata log the launcher writes
+#+description: The ticks smoke check reads a log name the launcher does not write, so it fails on a healthy system.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The ticks smoke check reads the marketdata logs the launcher writes, so a healthy system passes it and a system with no demand still fails it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- The check finds demand replies in the log of each marketdata replica.
+- The check reads no other service's log.
+- The ticks smoke passes on a healthy system.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DC87C99A-FB17-4DD3-A20B-3689DC298CDC][Scaffold story: Hotfix: read the marketdata log the launcher writes]] | DONE | 2026-11-08 | 2026-11-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:396D1181-3DC2-4FF1-8F6D-47CDC0FF6A22][Read every marketdata replica log in the ticks smoke]] | DONE | 2026-11-08 | 2026-11-08 | Initial task for: Hotfix: read the marketdata log the launcher writes |
+
+* Decisions
+
+* Out of scope
+
+-

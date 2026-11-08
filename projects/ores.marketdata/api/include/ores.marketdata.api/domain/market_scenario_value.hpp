@@ -113,7 +113,7 @@ struct market_scenario_value final {
     /**
      * @brief The value, as the engine stated it and never formatted.
      */
-    double value;
+    double value{};
 
     /**
      * @brief Value equality.

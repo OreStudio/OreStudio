@@ -113,7 +113,7 @@ struct list_app_version_platforms_request {
 struct list_app_version_platforms_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version_platform> app_version_platforms;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_app_version_platforms_response&,
                            const list_app_version_platforms_response&) = default;
@@ -290,7 +290,7 @@ struct list_by_app_version_id_app_version_platforms_request {
 struct list_by_app_version_id_app_version_platforms_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version_platform> app_version_platforms;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_app_version_id_app_version_platforms_response&,
                            const list_by_app_version_id_app_version_platforms_response&) = default;

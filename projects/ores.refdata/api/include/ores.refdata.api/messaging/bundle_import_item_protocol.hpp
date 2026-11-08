@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_BUNDLE_IMPORT_ITEM_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_BUNDLE_IMPORT_ITEM_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/bundle_import_item.hpp"
+#include "ores.refdata.api/domain/bundle_import_item_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,7 +52,7 @@ struct bundle_import_item_write {
     boost::uuids::uuid id;
     boost::uuids::uuid import_id;
     std::string family;
-    int sequence;
+    int sequence{};
     std::string payload;
     std::optional<std::string> checksum;
 
@@ -96,7 +97,7 @@ struct bundle_import_item_event {
     boost::uuids::uuid event_id;
     bundle_import_item_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +107,7 @@ struct bundle_import_item_event {
 
 struct bundle_import_item_version_key {
     bundle_import_item_key bundle_import_item;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bundle_import_item_version_key&,
                            const bundle_import_item_version_key&) = default;
@@ -144,7 +145,7 @@ struct list_bundle_import_items_request {
 struct list_bundle_import_items_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bundle_import_item> bundle_import_items;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bundle_import_items_response&,
                            const list_bundle_import_items_response&) = default;
@@ -321,7 +322,7 @@ struct list_by_import_id_bundle_import_items_request {
 struct list_by_import_id_bundle_import_items_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bundle_import_item> bundle_import_items;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_import_id_bundle_import_items_response&,
                            const list_by_import_id_bundle_import_items_response&) = default;
@@ -350,7 +351,7 @@ struct list_bundle_import_item_versions_request {
 struct list_bundle_import_item_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bundle_import_item> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bundle_import_item_versions_response&,
                            const list_bundle_import_item_versions_response&) = default;

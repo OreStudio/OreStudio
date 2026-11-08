@@ -34,8 +34,12 @@
  * rate_role says which arm stated the row. The leg itself carries no rate and
  * no spread, because a single column cannot hold a schedule.
  *
- * rate_role is data, not a table: the closed set is fixed and spread, and
- * the schema states it.
+ * rate_role is data, not a table: the closed set is fixed, spread,
+ * gearing, cap, floor and price, and the schema states it. A commodity
+ * fixed leg states its prices on CommodityFixedLegData/Prices, which land here
+ * as price. A floating leg states
+ * its spreads, gearings, caps and floors each as a schedule of its own, and a
+ * value applies from its start date.
  *
  * The row is a child of the leg rather than an entity with a life of its own:
  * swap_leg names the trade and the ordinal, and this row adds its role and its
@@ -70,7 +74,7 @@ create table if not exists "ores_trading_swap_leg_rates_tbl" (
     check ("valid_from" < "valid_to"),
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("rate_role" <> ''),
-    check ("rate_role" in ('fixed', 'spread')),
+    check ("rate_role" in ('fixed', 'spread', 'gearing', 'cap', 'floor', 'price', 'historical_fixing', 'call_strike', 'call_payoff', 'put_strike', 'put_payoff')),
     check ("sequence_number" >= 1)
 );
 

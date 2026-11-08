@@ -25,11 +25,12 @@
 #ifndef ORES_IAM_API_MESSAGING_ACCOUNT_CREDENTIAL_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_ACCOUNT_CREDENTIAL_PROTOCOL_HPP
 
-#include "ores.iam.api/domain/account_credential.hpp"
+#include "ores.iam.api/domain/account_credential_codec.hpp"
 #include "ores.iam.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -68,7 +69,7 @@ struct account_credential_event {
     boost::uuids::uuid event_id;
     account_credential_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -78,7 +79,7 @@ struct account_credential_event {
 
 struct account_credential_version_key {
     account_credential_key account_credential;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const account_credential_version_key&,
                            const account_credential_version_key&) = default;
@@ -116,7 +117,7 @@ struct list_account_credentials_request {
 struct list_account_credentials_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_credential> account_credentials;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_account_credentials_response&,
                            const list_account_credentials_response&) = default;
@@ -195,7 +196,7 @@ struct list_by_account_id_account_credentials_request {
 struct list_by_account_id_account_credentials_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_credential> account_credentials;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_account_id_account_credentials_response&,
                            const list_by_account_id_account_credentials_response&) = default;
@@ -224,7 +225,7 @@ struct list_account_credential_versions_request {
 struct list_account_credential_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_credential> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_account_credential_versions_response&,
                            const list_account_credential_versions_response&) = default;

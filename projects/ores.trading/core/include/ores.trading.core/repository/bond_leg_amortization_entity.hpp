@@ -53,8 +53,8 @@ struct bond_leg_amortization_entity {
 
     boost::uuids::uuid trade_id;
     std::string leg_role;
-    int leg_number;
-    int sequence_number;
+    int leg_number{};
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid trade_activity_id;

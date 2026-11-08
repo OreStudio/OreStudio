@@ -25,11 +25,12 @@
 #ifndef ORES_MARKETDATA_API_MESSAGING_MARKET_DATA_VENDOR_INSTRUMENT_PROTOCOL_HPP
 #define ORES_MARKETDATA_API_MESSAGING_MARKET_DATA_VENDOR_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
+#include "ores.marketdata.api/domain/market_data_vendor_instrument_codec.hpp"
 #include "ores.marketdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -54,7 +55,7 @@ struct market_data_vendor_instrument_write {
     std::string id_scheme;
     std::string external_id;
     std::string field;
-    bool minted;
+    bool minted{};
     std::string deviation_note;
 
     friend bool operator==(const market_data_vendor_instrument_write&,
@@ -106,7 +107,7 @@ struct market_data_vendor_instrument_event {
     boost::uuids::uuid event_id;
     market_data_vendor_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -116,7 +117,7 @@ struct market_data_vendor_instrument_event {
 
 struct market_data_vendor_instrument_version_key {
     market_data_vendor_instrument_key market_data_vendor_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const market_data_vendor_instrument_version_key&,
                            const market_data_vendor_instrument_version_key&) = default;
@@ -155,7 +156,7 @@ struct list_market_data_vendor_instruments_request {
 struct list_market_data_vendor_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_data_vendor_instrument> vendor_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_market_data_vendor_instruments_response&,
                            const list_market_data_vendor_instruments_response&) = default;
@@ -339,7 +340,7 @@ struct list_market_data_vendor_instrument_versions_request {
 struct list_market_data_vendor_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_data_vendor_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_market_data_vendor_instrument_versions_response&,
                            const list_market_data_vendor_instrument_versions_response&) = default;

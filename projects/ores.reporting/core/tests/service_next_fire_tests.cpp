@@ -323,6 +323,7 @@ TEST_CASE("a scheduler nobody serves reads as unavailable", failure_tags) {
     f.serve_the_read();
 
     const auto response = f.read();
+    INFO("the read answered: " << response.result.message);
     CHECK(response.result.outcome == ores::utility::domain::outcome::unavailable);
     CHECK(response.result.code == "services_unavailable");
     CHECK(response.schedules.empty());

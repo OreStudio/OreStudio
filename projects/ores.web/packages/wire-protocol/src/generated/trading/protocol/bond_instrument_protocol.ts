@@ -37,6 +37,7 @@ export interface BondInstrumentWrite {
     trade_type_code: string;
     trade_activity_id: string;
     issue_id: string;
+    position_identifier: string | null;
     notional: string | null;
 }
 

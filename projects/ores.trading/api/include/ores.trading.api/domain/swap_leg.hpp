@@ -30,6 +30,7 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -95,24 +96,30 @@ struct swap_leg final {
     std::string leg_type_code;
 
     /**
-     * @brief Day count fraction code (soft FK to ores_refdata_day_count_fraction_types_tbl).
+     * @brief Day count fraction code (soft FK to ores_refdata_day_count_fraction_types_tbl), when
+     * the leg states one. ORE's LegData makes DayCounter optional, and a Cashflow leg states none.
      */
     std::string day_count_fraction_code;
 
     /**
      * @brief Business day convention code (soft FK to
-     * ores_refdata_business_day_convention_types_tbl).
+     * ores_refdata_business_day_convention_types_tbl), when the leg states one. ORE's LegData makes
+     * PaymentConvention optional.
      */
     std::string business_day_convention_code;
 
     /**
-     * @brief Payment frequency code (soft FK to ores_refdata_payment_frequencies_tbl).
+     * @brief Payment frequency code (soft FK to ores_refdata_payment_frequencies_tbl), when the leg
+     * has a schedule to take it from. A Cashflow leg has none.
      */
     std::string payment_frequency_code;
 
     /**
-     * @brief Floating index code of a floating leg (soft FK to
-     * ores_refdata_floating_index_types_tbl).
+     * @brief The index the leg's payoff observes, of whatever kind its leg type names: an IBOR or
+     * overnight index for a floating leg (soft FK to ores_refdata_floating_index_types_tbl), a swap
+     * index for a CMS leg, an inflation index for a CPI or YY leg, a commodity for a commodity
+     * floating leg and the formula itself for a formula based leg. The trigger validates none of
+     * them, because no one reference table holds every kind.
      *
      * Empty for a fixed leg; validated only when stated.
      */
@@ -136,6 +143,310 @@ struct swap_leg final {
      * one table holds every family's legs and the group is the one column the credit family adds.
      */
     std::optional<std::string> leg_group;
+
+    /**
+     * @brief The fixing days of a floating leg's index, as FixingDays states them. Null when the
+     * leg states none and the index's own convention applies.
+     */
+    std::optional<int> fixing_days;
+
+    /**
+     * @brief Whether a floating leg fixes in arrears, as IsInArrears states it. Null when the leg
+     * states none.
+     */
+    std::optional<bool> is_in_arrears;
+
+    /**
+     * @brief Whether an overnight leg compounds its spread, as IncludeSpread states it.
+     */
+    std::optional<bool> include_spread;
+
+    /**
+     * @brief Whether an overnight leg averages rather than compounds, as IsAveraged states it.
+     */
+    std::optional<bool> is_averaged;
+
+    /**
+     * @brief Whether a floating leg pays on sub periods, as HasSubPeriods states it.
+     */
+    std::optional<bool> has_sub_periods;
+
+    /**
+     * @brief Whether the leg exchanges its notional at the start, as
+     * Notionals/Exchanges/NotionalInitialExchange states it.
+     */
+    std::optional<bool> notional_initial_exchange;
+
+    /**
+     * @brief Whether the leg exchanges its notional at the end, as
+     * Notionals/Exchanges/NotionalFinalExchange states it.
+     */
+    std::optional<bool> notional_final_exchange;
+
+    /**
+     * @brief The leg's payment lag as the document spells it, a number of days or a period such as
+     * 2D. Kept as text, because ORE reads both.
+     */
+    std::optional<std::string> payment_lag;
+
+    /**
+     * @brief The calendar the leg's payments are adjusted on, as PaymentCalendar states it.
+     */
+    std::optional<std::string> payment_calendar;
+
+    /**
+     * @brief The price a commodity floating leg observes, as PriceType states it: Spot or
+     * FutureSettlement. Null for a leg that is not a commodity floating leg.
+     */
+    std::optional<std::string> commodity_price_type;
+
+    /**
+     * @brief How many contract months past the period a commodity floating leg's future settles, as
+     * FutureMonthOffset states it.
+     */
+    std::optional<int> future_month_offset;
+
+    /**
+     * @brief The offset, in business days, of a daily commodity future's expiry, as
+     * DailyExpiryOffset states it.
+     */
+    std::optional<int> daily_expiry_offset;
+
+    /**
+     * @brief The calendar a commodity floating leg's pricing dates are adjusted on, as
+     * PricingCalendar states it.
+     */
+    std::optional<std::string> pricing_calendar;
+
+    /**
+     * @brief What an equity leg pays, as ReturnType states it: Price or Total.
+     */
+    std::optional<std::string> equity_return_type;
+
+    /**
+     * @brief The equity an equity leg observes, as Name or Underlying/Name states it.
+     */
+    std::optional<std::string> equity_name;
+
+    /**
+     * @brief The type of the equity leg's Underlying block, such as Equity. Null when the leg names
+     * its equity with a bare Name, so the writer knows which form the document used.
+     */
+    std::optional<std::string> equity_underlying_type;
+
+    /**
+     * @brief The identifier type of the equity leg's Underlying block, such as RIC.
+     */
+    std::optional<std::string> equity_underlying_identifier_type;
+
+    /**
+     * @brief The number of shares an equity leg pays on, as Quantity states it.
+     */
+    std::optional<double> equity_quantity;
+
+    /**
+     * @brief The equity's price at the start of the first period, as InitialPrice states it.
+     */
+    std::optional<ores::utility::decimal::decimal> equity_initial_price;
+
+    /**
+     * @brief The currency of the initial price, as InitialPriceCurrency states it.
+     */
+    std::optional<std::string> equity_initial_price_currency;
+
+    /**
+     * @brief The share of dividends a total return equity leg pays, as DividendFactor states it.
+     */
+    std::optional<ores::utility::decimal::decimal> equity_dividend_factor;
+
+    /**
+     * @brief Whether an equity leg resets its notional each period, as NotionalReset states it.
+     */
+    std::optional<bool> equity_notional_reset;
+
+    /**
+     * @brief The currency the equity is quoted in, when it differs from the leg's, as
+     * FXTerms/EquityCurrency states it.
+     */
+    std::optional<std::string> equity_currency;
+
+    /**
+     * @brief The FX index that converts the equity currency into the leg's, as FXTerms/FXIndex
+     * states it.
+     */
+    std::optional<std::string> fx_index;
+
+    /**
+     * @brief The currency of the notional the leg resets from, as Notionals/FXReset/ForeignCurrency
+     * states it. A leg with no FX reset states none of the FX reset terms.
+     */
+    std::optional<std::string> fx_reset_foreign_currency;
+
+    /**
+     * @brief The date the FX reset starts, as Notionals/FXReset/StartDate states it.
+     */
+    std::optional<std::string> fx_reset_start_date;
+
+    /**
+     * @brief The notional in the foreign currency, as Notionals/FXReset/ForeignAmount states it.
+     */
+    std::optional<ores::utility::decimal::decimal> fx_reset_foreign_amount;
+
+    /**
+     * @brief The FX index the notional resets against, as Notionals/FXReset/FXIndex states it.
+     */
+    std::optional<std::string> fx_reset_fx_index;
+
+    /**
+     * @brief The fixing days of the FX reset, as Notionals/FXReset/FixingDays states it.
+     */
+    std::optional<int> fx_reset_fixing_days;
+
+    /**
+     * @brief The calendar of the FX reset's fixings, as Notionals/FXReset/FixingCalendar states it.
+     */
+    std::optional<std::string> fx_reset_fixing_calendar;
+
+    /**
+     * @brief The calendar a leg's fixings are taken in, as FixingCalendar states it on a formula
+     * based leg.
+     */
+    std::optional<std::string> fixing_calendar;
+
+    /**
+     * @brief The position in the digital call, as CallPosition states it on a digital CMS or CMS
+     * spread leg. Its strikes and payoffs are rate rows under call_strike and call_payoff.
+     */
+    std::optional<std::string> digital_call_position;
+
+    /**
+     * @brief Whether a call struck at the money pays, as IsCallATMIncluded states it.
+     */
+    std::optional<bool> digital_is_call_atm_included;
+
+    /**
+     * @brief The position in the digital put, as PutPosition states it. Its strikes and payoffs are
+     * rate rows under put_strike and put_payoff.
+     */
+    std::optional<std::string> digital_put_position;
+
+    /**
+     * @brief Whether a put struck at the money pays, as IsPutATMIncluded states it.
+     */
+    std::optional<bool> digital_is_put_atm_included;
+
+    /**
+     * @brief The initial margin factor of an equity margin leg, as InitialMarginFactor states it.
+     * The leg's equity terms are the equity columns and its rates are rate rows under fixed.
+     */
+    std::optional<ores::utility::decimal::decimal> equity_margin_initial_margin_factor;
+
+    /**
+     * @brief The multiplier of an equity margin leg, as Multiplier states it.
+     */
+    std::optional<ores::utility::decimal::decimal> equity_margin_multiplier;
+
+    /**
+     * @brief What a commodity leg's payment dates are relative to, as CommodityPayRelativeTo states
+     * it.
+     */
+    std::optional<std::string> commodity_pay_relative_to;
+
+    /**
+     * @brief How often a commodity floating leg's quantity applies, as CommodityQuantityFrequency
+     * states it.
+     */
+    std::optional<std::string> commodity_quantity_frequency;
+
+    /**
+     * @brief How a commodity floating leg's pricing dates are chosen, as PricingDateRule states it.
+     */
+    std::optional<std::string> pricing_date_rule;
+
+    /**
+     * @brief Whether the leg takes its indexings from the asset leg, as Indexings/FromAssetLeg
+     * states it. The indexings themselves are swap_leg_indexing rows.
+     */
+    std::optional<bool> indexings_from_asset_leg;
+
+    /**
+     * @brief The second index of a CMS spread leg, as Index2 states it. The first is
+     * floating_index_code.
+     */
+    std::optional<std::string> floating_index_code_2;
+
+    /**
+     * @brief The duration, in years, a duration adjusted CMS leg scales its rate by, as Duration
+     * states it.
+     */
+    std::optional<int> cms_duration;
+
+    /**
+     * @brief Whether a capped or floored leg pays only the embedded option, as NakedOption states
+     * it.
+     */
+    std::optional<bool> naked_option;
+
+    /**
+     * @brief The lookback period of an overnight floating leg, as Lookback states it, such as 2D.
+     */
+    std::optional<std::string> lookback;
+
+    /**
+     * @brief The number of days before the period end at which an overnight rate stops fixing, as
+     * RateCutoff states it.
+     */
+    std::optional<int> rate_cutoff;
+
+    /**
+     * @brief Whether an overnight leg's cap and floor apply to each daily rate rather than to the
+     * period's rate, as LocalCapFloor states it.
+     */
+    std::optional<bool> local_cap_floor;
+
+    /**
+     * @brief The observation lag of an inflation leg's index, as ObservationLag states it, such as
+     * 3M.
+     */
+    std::optional<std::string> observation_lag;
+
+    /**
+     * @brief The base CPI a CPI leg indexes from, as BaseCPI states it.
+     */
+    std::optional<double> cpi_base;
+
+    /**
+     * @brief The date a CPI leg's base CPI applies from, as StartDate states it.
+     */
+    std::optional<std::chrono::year_month_day> cpi_start_date;
+
+    /**
+     * @brief How a CPI leg interpolates its index, as Interpolation states it: Flat or Linear.
+     */
+    std::optional<std::string> cpi_interpolation;
+
+    /**
+     * @brief Whether a CPI leg interpolates its index, as the older Interpolated flag states it.
+     */
+    std::optional<bool> cpi_interpolated;
+
+    /**
+     * @brief Whether a CPI leg's final flow subtracts the notional, as SubtractInflationNotional
+     * states it.
+     */
+    std::optional<bool> subtract_inflation_notional;
+
+    /**
+     * @brief How a zero coupon fixed leg compounds its rate, as Compounding states it: Simple or
+     * Compounded.
+     */
+    std::optional<std::string> zero_coupon_compounding;
+
+    /**
+     * @brief Whether a zero coupon fixed leg's flow subtracts the notional, as SubtractNotional
+     * states it.
+     */
+    std::optional<bool> zero_coupon_subtract_notional;
 
     ores::dq::domain::audit_record audit;
     /**

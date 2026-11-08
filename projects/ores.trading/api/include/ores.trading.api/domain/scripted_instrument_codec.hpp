@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_SCRIPTED_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_SCRIPTED_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -54,6 +55,7 @@ namespace ores::trading::domain {
         utility::codec::field{"underlyings_json", &scripted_instrument::underlyings_json},
         utility::codec::field{"parameters_json", &scripted_instrument::parameters_json},
         utility::codec::field{"description", &scripted_instrument::description},
+        utility::codec::field{"data_element", &scripted_instrument::data_element},
         utility::codec::field{"audit", &scripted_instrument::audit},
     };
 }

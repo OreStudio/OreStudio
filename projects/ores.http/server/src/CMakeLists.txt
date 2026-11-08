@@ -58,6 +58,7 @@ target_link_libraries(${lib_target_name}
         ores.http.core.lib
         ores.http.iam.lib
         ores.http.refdata.lib
+        ores.http.synthetic.lib
         ores.eventing.core.lib
         ores.iam.client.lib
         ores.nats.lib

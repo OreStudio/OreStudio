@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.api/generators/swap_leg_generator.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
@@ -52,6 +53,24 @@ domain::swap_leg generate_synthetic_swap_leg(utility::generation::generation_con
     r.business_day_convention_code = std::string("ModifiedFollowing");
     r.payment_frequency_code = std::string("Annual");
     r.currency = std::string("USD");
+    r.equity_initial_price = ores::utility::decimal::decimal::from_string(
+                                 std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                                 .value();
+    r.equity_dividend_factor = ores::utility::decimal::decimal::from_string(
+                                   std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                                   .value();
+    r.fx_reset_foreign_amount = ores::utility::decimal::decimal::from_string(
+                                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                                    .value();
+    r.equity_margin_initial_margin_factor =
+        ores::utility::decimal::decimal::from_string(
+            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+            .value();
+    r.equity_margin_multiplier = ores::utility::decimal::decimal::from_string(
+                                     std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                                     .value();
+    r.cpi_start_date =
+        std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

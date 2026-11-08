@@ -26,6 +26,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>
@@ -75,7 +76,7 @@ inline std::string extract_workflow_header(const ores::nats::message& msg,
  *   if (!wf) return;           // not a workflow command
  *   try {
  *       auto result = do_work(wf->tenant_id, ...);
- *       wf->complete(rfl::json::write(result));
+ *       wf->complete(ores::utility::codec::json::write(result));
  *   } catch (const std::exception& e) {
  *       wf->fail(e.what());
  *   }
@@ -113,6 +114,22 @@ struct workflow_step_context {
      */
     void complete(const std::string& result_json) const {
         publish(ores::workflow::messaging::step_outcome::completed, result_json, "", {});
+    }
+
+    /**
+     * @brief Publishes a successful step-completed event with a record of the run.
+     *
+     * Use when the step succeeded but waited or recovered along the way, so the
+     * run's own record says why it took the time it took. A step that merely
+     * retried and then did its work is completed, not completed with warnings:
+     * only a step that left work undone says so through warn().
+     *
+     * @param result_json Serialised JSON result payload.
+     * @param log         Ordered list of entries recorded while the step ran.
+     */
+    void complete(const std::string& result_json,
+                  const std::vector<ores::workflow::messaging::step_log_entry>& log) const {
+        publish(ores::workflow::messaging::step_outcome::completed, result_json, "", log);
     }
 
     /**

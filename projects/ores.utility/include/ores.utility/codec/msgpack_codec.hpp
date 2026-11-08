@@ -130,7 +130,7 @@ struct msgpack_codec {
 
     static T read(const msgpack_object& v) {
         if constexpr (states_wire_form<T>) {
-            T out;
+            T out{};
             detail::read_object(v, out, wire_fields(std::type_identity<T>{}));
             return out;
         } else {

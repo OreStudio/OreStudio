@@ -25,11 +25,12 @@
 #ifndef ORES_DQ_API_MESSAGING_DATASET_PROTOCOL_HPP
 #define ORES_DQ_API_MESSAGING_DATASET_PROTOCOL_HPP
 
-#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/dataset_codec.hpp"
 #include "ores.dq.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -63,7 +64,7 @@ struct dataset_write {
     std::string source_system_id;
     std::string business_context;
     std::optional<boost::uuids::uuid> upstream_derivation_id;
-    int lineage_depth;
+    int lineage_depth{};
     std::chrono::system_clock::time_point as_of_date;
     std::chrono::system_clock::time_point ingestion_timestamp;
     std::optional<std::string> license_info;
@@ -103,7 +104,7 @@ struct dataset_event {
     boost::uuids::uuid event_id;
     dataset_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -112,7 +113,7 @@ struct dataset_event {
 
 struct dataset_version_key {
     dataset_key dataset;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const dataset_version_key&, const dataset_version_key&) = default;
 };
@@ -148,7 +149,7 @@ struct list_datasets_request {
 struct list_datasets_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset> datasets;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_datasets_response&, const list_datasets_response&) = default;
 };
@@ -317,7 +318,7 @@ struct list_dataset_versions_request {
 struct list_dataset_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_dataset_versions_response&,
                            const list_dataset_versions_response&) = default;

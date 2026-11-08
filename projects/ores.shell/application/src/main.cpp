@@ -19,12 +19,16 @@
  */
 #include "ores.shell/app/host.hpp"
 #include "ores.shell/config/parser_exception.hpp"
-#include <boost/scope_exit.hpp>
 #include <iostream>
 #include <openssl/crypto.h>
 
 int main(int argc, char** argv) {
-    BOOST_SCOPE_EXIT_ALL(&) { OPENSSL_cleanup(); };
+    // Runs OPENSSL_cleanup() however main returns.
+    struct openssl_cleanup final {
+        ~openssl_cleanup() {
+            OPENSSL_cleanup();
+        }
+    } cleanup;
 
     using namespace ores::shell;
     try {

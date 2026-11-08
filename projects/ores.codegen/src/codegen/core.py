@@ -434,6 +434,45 @@ def _insert_org_marker(rendered, template_name):
 _RENDERER = pystache.Renderer(escape=lambda s: s)
 
 
+# A member of one of these types is indeterminate unless its struct sets it.
+_VALUE_INIT_CPP_TYPES = frozenset({
+    "bool", "char", "int", "long", "long long", "short", "unsigned",
+    "unsigned int", "unsigned long", "unsigned long long", "double", "float",
+    "std::ptrdiff_t",
+    "std::int8_t", "std::int16_t", "std::int32_t", "std::int64_t",
+    "std::uint8_t", "std::uint16_t", "std::uint32_t", "std::uint64_t",
+    "std::size_t",
+})
+
+# The templates that declare C++ members from a field's cpp_type.
+_VALUE_INIT_TEMPLATES = frozenset({
+    "cpp_protocol.hpp.mustache",
+    "cpp_field_group.hpp.mustache",
+    "cpp_domain_type_class.hpp.mustache",
+    "cpp_domain_type_entity.hpp.mustache",
+})
+
+
+def _mark_value_init(node, seen):
+    """Set cpp_value_init on every field dict reachable from node.
+
+    A non-scalar field gets the empty string rather than no key, because
+    mustache resolves a missing name by walking up the context stack.
+    """
+    if not isinstance(node, (dict, list)) or id(node) in seen:
+        return
+    seen.add(id(node))
+    if isinstance(node, list):
+        for item in node:
+            _mark_value_init(item, seen)
+        return
+    if 'cpp_type' in node:
+        node['cpp_value_init'] = (
+            '{}' if node['cpp_type'] in _VALUE_INIT_CPP_TYPES else '')
+    for value in node.values():
+        _mark_value_init(value, seen)
+
+
 def render_template(template_path, data):
     """
     Render a mustache template with the provided data.
@@ -462,6 +501,9 @@ def render_template(template_path, data):
                 f"{extended_data[licence_key]}\n"
                 f"{generated_marker(template_name, cmake=cmake)}"
             )
+
+    if template_name in _VALUE_INIT_TEMPLATES:
+        _mark_value_init(extended_data, set())
 
     rendered = _RENDERER.render(template_content, extended_data)
     if _emits_org(template_name):
@@ -1698,6 +1740,32 @@ def _domain_header(component_include, name, codec=True):
     return f"{component_include}/domain/{name}{suffix}.hpp"
 
 
+def _foreign_root(model_path, owner, name):
+    """The include root of another component's domain type, and whether its
+    shape is in a codec header of its own.
+
+    Most components keep their domain types in their api part, and a flat
+    component, such as ores.diff, keeps them at its own root. The header that
+    exists decides, and a type with no header or with two is refused, so the
+    generator never writes an include that is not there.
+    """
+    projects = next((q for q in Path(model_path).resolve().parents if q.name == "projects"),
+                    None)
+    if projects is None:
+        raise ValueError(f"{model_path}: no projects folder above the model, so the "
+                         f"header of {owner}'s {name} cannot be found")
+    candidates = ((owner, projects / owner / "include" / owner),
+                  (f"{owner}.api", projects / owner / "api" / "include" / f"{owner}.api"))
+    found = [(root, base) for root, base in candidates
+             if (base / "domain" / f"{name}.hpp").is_file()]
+    if len(found) != 1:
+        raise ValueError(
+            f"{model_path}: {owner}'s {name} needs exactly one domain header, found "
+            f"{len(found)} among {[str(b / 'domain' / (name + '.hpp')) for _, b in candidates]}")
+    root, base = found[0]
+    return root, (base / "domain" / f"{name}_codec.hpp").is_file()
+
+
 def _member_headers(cpp_types, model_path, domain_entity):
     """The headers that declare the shape of every type these names hold.
 
@@ -1760,7 +1828,11 @@ def _member_headers(cpp_types, model_path, domain_entity):
             # A type of the model's own component is under the model's own
             # root, which is its api subcomponent for most and core for some.
             owner = f"{parts[0]}.{parts[1]}"
-            add_named(name, root if owner == own else f"{owner}.api")
+            if owner == own:
+                add_named(name, root)
+            else:
+                foreign, codec = _foreign_root(model_path, owner, name)
+                add(_domain_header(foreign, name, codec=codec))
         # A message in the component's own namespace names its types as
         # "domain::x", which is neither of the two forms above.
         for name in re.findall(r"(?<![\w:])domain::(\w+)", cpp_type):

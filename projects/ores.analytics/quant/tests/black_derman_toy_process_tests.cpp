@@ -313,7 +313,7 @@ TEST_CASE("black_derman_toy_process: branching is the standard 1/2, 1/2 binomial
 }
 
 TEST_CASE("black_derman_toy_process: tree prices match Monte-Carlo path discounts",
-          "[black_derman_toy_process]") {
+          "[long_running][black_derman_toy_process]") {
     const std::vector<double> curve = {0.97, 0.93, 0.88, 0.82, 0.75, 0.67};
     const std::vector<double> sigma_path = {0.25, 0.2, 0.3, 0.15, 0.25, 0.2};
     const std::size_t ticks = 8; // six fitted ticks, then two flat ones

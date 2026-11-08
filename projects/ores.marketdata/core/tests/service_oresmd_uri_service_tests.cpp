@@ -18,9 +18,9 @@
  *
  */
 #include "datum_catalogue.hpp"
-#include "ores.marketdata.core/datum/ore_index_codec.hpp"
-#include "ores.marketdata.core/datum/ore_key_codec.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/ore_index_codec.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/service/oresmd_uri_service.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
@@ -117,7 +117,7 @@ std::set<std::string> index_uris() {
 }
 
 TEST_CASE("every URI the codec writes for the catalogue parses and composes back to itself",
-          "[marketdata][service][oresmd_uri_service]") {
+          "[long_running][marketdata][service][oresmd_uri_service]") {
     const auto uris = catalogue_uris();
     REQUIRE(uris.size() > 100);
     std::vector<std::string> failures;

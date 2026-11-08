@@ -332,6 +332,12 @@ def _catalogue_in(tmp_path, entity_text, digest_rows, shared_rows=""):
 |------+------+--------+--------------+---------+-------------+---------------+------------|
 | Swap | Swap | swap   | native       | interest_rates! | false | false | widget |
 
+* Classes
+
+| code | deal_class |
+|------+------------|
+| Swap | flow |
+
 * Descriptions
 
 | code | description | source | source_ref |

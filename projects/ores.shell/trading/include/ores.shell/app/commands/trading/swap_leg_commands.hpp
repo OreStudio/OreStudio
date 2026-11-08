@@ -89,7 +89,22 @@ public:
     /**
      * @brief add <leg_number> <trade_activity_id> <payer> <leg_type_code> <day_count_fraction_code>
      * <business_day_convention_code> <payment_frequency_code> <floating_index_code> <currency>
-     * <leg_group> <reason> <commentary>
+     * <leg_group> <fixing_days> <is_in_arrears> <include_spread> <is_averaged> <has_sub_periods>
+     * <notional_initial_exchange> <notional_final_exchange> <payment_lag> <payment_calendar>
+     * <commodity_price_type> <future_month_offset> <daily_expiry_offset> <pricing_calendar>
+     * <equity_return_type> <equity_name> <equity_underlying_type>
+     * <equity_underlying_identifier_type> <equity_quantity> <equity_initial_price>
+     * <equity_initial_price_currency> <equity_dividend_factor> <equity_notional_reset>
+     * <equity_currency> <fx_index> <fx_reset_foreign_currency> <fx_reset_start_date>
+     * <fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days>
+     * <fx_reset_fixing_calendar> <fixing_calendar> <digital_call_position>
+     * <digital_is_call_atm_included> <digital_put_position> <digital_is_put_atm_included>
+     * <equity_margin_initial_margin_factor> <equity_margin_multiplier> <commodity_pay_relative_to>
+     * <commodity_quantity_frequency> <pricing_date_rule> <indexings_from_asset_leg>
+     * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
+     * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
+     * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>
+     * <zero_coupon_subtract_notional> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -98,7 +113,22 @@ public:
     /**
      * @brief set <trade_id> <leg_number> <trade_activity_id> <payer> <leg_type_code>
      * <day_count_fraction_code> <business_day_convention_code> <payment_frequency_code>
-     * <floating_index_code> <currency> <leg_group> <reason> <commentary> [--version <n>]
+     * <floating_index_code> <currency> <leg_group> <fixing_days> <is_in_arrears> <include_spread>
+     * <is_averaged> <has_sub_periods> <notional_initial_exchange> <notional_final_exchange>
+     * <payment_lag> <payment_calendar> <commodity_price_type> <future_month_offset>
+     * <daily_expiry_offset> <pricing_calendar> <equity_return_type> <equity_name>
+     * <equity_underlying_type> <equity_underlying_identifier_type> <equity_quantity>
+     * <equity_initial_price> <equity_initial_price_currency> <equity_dividend_factor>
+     * <equity_notional_reset> <equity_currency> <fx_index> <fx_reset_foreign_currency>
+     * <fx_reset_start_date> <fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days>
+     * <fx_reset_fixing_calendar> <fixing_calendar> <digital_call_position>
+     * <digital_is_call_atm_included> <digital_put_position> <digital_is_put_atm_included>
+     * <equity_margin_initial_margin_factor> <equity_margin_multiplier> <commodity_pay_relative_to>
+     * <commodity_quantity_frequency> <pricing_date_rule> <indexings_from_asset_leg>
+     * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
+     * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
+     * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>
+     * <zero_coupon_subtract_notional> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -107,7 +137,22 @@ public:
     /**
      * @brief put-many --count <n> <trade_id> <leg_number> <trade_activity_id> <payer>
      * <leg_type_code> <day_count_fraction_code> <business_day_convention_code>
-     * <payment_frequency_code> <floating_index_code> <currency> <leg_group> <reason> <commentary>
+     * <payment_frequency_code> <floating_index_code> <currency> <leg_group> <fixing_days>
+     * <is_in_arrears> <include_spread> <is_averaged> <has_sub_periods> <notional_initial_exchange>
+     * <notional_final_exchange> <payment_lag> <payment_calendar> <commodity_price_type>
+     * <future_month_offset> <daily_expiry_offset> <pricing_calendar> <equity_return_type>
+     * <equity_name> <equity_underlying_type> <equity_underlying_identifier_type> <equity_quantity>
+     * <equity_initial_price> <equity_initial_price_currency> <equity_dividend_factor>
+     * <equity_notional_reset> <equity_currency> <fx_index> <fx_reset_foreign_currency>
+     * <fx_reset_start_date> <fx_reset_foreign_amount> <fx_reset_fx_index> <fx_reset_fixing_days>
+     * <fx_reset_fixing_calendar> <fixing_calendar> <digital_call_position>
+     * <digital_is_call_atm_included> <digital_put_position> <digital_is_put_atm_included>
+     * <equity_margin_initial_margin_factor> <equity_margin_multiplier> <commodity_pay_relative_to>
+     * <commodity_quantity_frequency> <pricing_date_rule> <indexings_from_asset_leg>
+     * <floating_index_code_2> <cms_duration> <naked_option> <lookback> <rate_cutoff>
+     * <local_cap_floor> <observation_lag> <cpi_base> <cpi_start_date> <cpi_interpolation>
+     * <cpi_interpolated> <subtract_inflation_notional> <zero_coupon_compounding>
+     * <zero_coupon_subtract_notional> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

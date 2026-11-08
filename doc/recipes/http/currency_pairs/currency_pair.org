@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 8467498E-2E7C-5967-AE2F-7172B74B3E30
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the currency_pairs endpoints over HTTP?
+#+description: Every endpoint the currency_pairs resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:currency_pairs:
+
+This file documents the currency_pairs resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/currency_pairs=
+:PROPERTIES:
+:ID: 6F5EA669-5FD6-5D8C-A7FE-A1233E27D482
+:END:
+
+List currency pairs. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_pairs
+#+end_example
+
+#+name: currency_pairs-list
+#+begin_src hurl :tangle currency_pairs-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_pairs
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_pairs/__none__=
+:PROPERTIES:
+:ID: 0D6A370D-C909-5ED4-A201-7628A674DD64
+:END:
+
+Get one currency pair. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_pairs/__none__
+#+end_example
+
+#+name: currency_pairs-get
+#+begin_src hurl :tangle currency_pairs-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_pairs/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_pairs/get-many=
+:PROPERTIES:
+:ID: 06829D92-80BC-51BF-9BE0-F0C7A48DD57A
+:END:
+
+Get many currency pairs. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_pairs/get-many
+#+end_example
+
+#+name: currency_pairs-get-many
+#+begin_src hurl :tangle currency_pairs-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_pairs/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_pairs=
+:PROPERTIES:
+:ID: BEC0D025-8259-50F4-86F9-003F2283AF53
+:END:
+
+Create one currency pair. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_pairs
+#+end_example
+
+#+name: currency_pairs-add
+#+begin_src hurl :tangle currency_pairs-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_pairs
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/currency_pairs=
+:PROPERTIES:
+:ID: 1AC64939-8954-546C-9411-E9FD7CC4E5E5
+:END:
+
+Replace one currency pair. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/currency_pairs
+#+end_example
+
+#+name: currency_pairs-set
+#+begin_src hurl :tangle currency_pairs-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/currency_pairs
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_pairs/put-many=
+:PROPERTIES:
+:ID: 617E644A-B5A9-5C67-AC21-5D009F998DD4
+:END:
+
+Write many currency pairs. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_pairs/put-many
+#+end_example
+
+#+name: currency_pairs-put-many
+#+begin_src hurl :tangle currency_pairs-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_pairs/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/currency_pairs/__none__=
+:PROPERTIES:
+:ID: 684CACD2-9E9A-5FC6-BA47-1D4686E4D752
+:END:
+
+Delete one currency pair. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/currency_pairs/__none__
+#+end_example
+
+#+name: currency_pairs-delete
+#+begin_src hurl :tangle currency_pairs-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/currency_pairs/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_pairs/delete-many=
+:PROPERTIES:
+:ID: DCAE0110-04CC-5543-AA16-D3BCA11818AF
+:END:
+
+Delete many currency pairs. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_pairs/delete-many
+#+end_example
+
+#+name: currency_pairs-delete-many
+#+begin_src hurl :tangle currency_pairs-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_pairs/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_pairs/__none__/versions=
+:PROPERTIES:
+:ID: 3DBE6F02-F578-58D4-AF7A-94497B41FCF4
+:END:
+
+List the recorded versions of one currency pair. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_pairs/__none__/versions
+#+end_example
+
+#+name: currency_pairs-versions
+#+begin_src hurl :tangle currency_pairs-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_pairs/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_pairs/__none__/versions/0=
+:PROPERTIES:
+:ID: 24CA1C6C-D753-5F48-AF39-D961846128CE
+:END:
+
+Get one recorded version of one currency pair. It needs a session.
+
+It forwards to =refdata.v1.currency_pairs_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_pairs/__none__/versions/0
+#+end_example
+
+#+name: currency_pairs-version
+#+begin_src hurl :tangle currency_pairs-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_pairs/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

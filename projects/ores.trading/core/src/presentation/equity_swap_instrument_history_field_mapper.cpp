@@ -28,6 +28,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_swap_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -52,6 +53,29 @@ render_equity_swap_instrument_fields(const domain::equity_swap_instrument& v) {
                       .value = ores::platform::time::datetime::to_iso8601_date(v.maturity_date)});
     fields.push_back({.name = "Long Short", .value = v.long_short});
     fields.push_back({.name = "Payment Frequency Code", .value = v.payment_frequency_code});
+    fields.push_back(
+        {.name = "Fixed Rate", .value = v.fixed_rate ? v.fixed_rate->to_string() : std::string{}});
+    fields.push_back({.name = "Floating Index", .value = v.floating_index.value_or(std::string{})});
+    fields.push_back({.name = "Floating Spread",
+                      .value = v.floating_spread ? v.floating_spread->to_string() : std::string{}});
+    fields.push_back({.name = "Floating Day Count Fraction",
+                      .value = v.floating_day_count_fraction.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Initial Fixed Rate",
+         .value = v.initial_fixed_rate ? v.initial_fixed_rate->to_string() : std::string{}});
+    fields.push_back({.name = "Knock In Level",
+                      .value = v.knock_in_level ? v.knock_in_level->to_string() : std::string{}});
+    fields.push_back(
+        {.name = "Bermudan Knock In",
+         .value = v.bermudan_knock_in ? (*v.bermudan_knock_in ? "true" : "false") : std::string{}});
+    fields.push_back({.name = "Accruing Fixed Coupons",
+                      .value = v.accruing_fixed_coupons ?
+                                   (*v.accruing_fixed_coupons ? "true" : "false") :
+                                   std::string{}});
+    fields.push_back({.name = "Accumulating Fixed Coupons",
+                      .value = v.accumulating_fixed_coupons ?
+                                   (*v.accumulating_fixed_coupons ? "true" : "false") :
+                                   std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

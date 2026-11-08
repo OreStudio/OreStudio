@@ -25,11 +25,12 @@
 #ifndef ORES_ANALYTICS_API_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_PROTOCOL_HPP
 #define ORES_ANALYTICS_API_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_PROTOCOL_HPP
 
-#include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
+#include "ores.analytics.api/domain/pricing_model_product_parameter_codec.hpp"
 #include "ores.analytics.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -55,7 +56,7 @@ struct pricing_model_product_parameter_write {
     std::string parameter_scope;
     std::string parameter_name;
     std::string parameter_value;
-    int position;
+    int position{};
 
     friend bool operator==(const pricing_model_product_parameter_write&,
                            const pricing_model_product_parameter_write&) = default;
@@ -97,7 +98,7 @@ struct pricing_model_product_parameter_event {
     boost::uuids::uuid event_id;
     pricing_model_product_parameter_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +108,7 @@ struct pricing_model_product_parameter_event {
 
 struct pricing_model_product_parameter_version_key {
     pricing_model_product_parameter_key pricing_model_product_parameter;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const pricing_model_product_parameter_version_key&,
                            const pricing_model_product_parameter_version_key&) = default;
@@ -146,7 +147,7 @@ struct list_pricing_model_product_parameters_request {
 struct list_pricing_model_product_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_product_parameter> parameters;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_pricing_model_product_parameters_response&,
                            const list_pricing_model_product_parameters_response&) = default;
@@ -330,7 +331,7 @@ struct list_pricing_model_product_parameter_versions_request {
 struct list_pricing_model_product_parameter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_product_parameter> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_pricing_model_product_parameter_versions_response&,
                            const list_pricing_model_product_parameter_versions_response&) = default;

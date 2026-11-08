@@ -1,0 +1,267 @@
+:PROPERTIES:
+:ID: C1E4FA85-067C-54CE-ACDF-9FE9EA8492F8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the party_contact_informations endpoints over HTTP?
+#+description: Every endpoint the party_contact_informations resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:party_contact_informations:
+
+This file documents the party_contact_informations resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/party_contact_informations=
+:PROPERTIES:
+:ID: 5F7D580E-4472-5F62-B30A-7BFBB68F5529
+:END:
+
+List party contact informations. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_contact_informations
+#+end_example
+
+#+name: party_contact_informations-list
+#+begin_src hurl :tangle party_contact_informations-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_contact_informations
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_contact_informations/__none__=
+:PROPERTIES:
+:ID: 87F6B778-CA66-5EC2-B02F-AB3F47C63DE8
+:END:
+
+Get one party contact information. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_contact_informations/__none__
+#+end_example
+
+#+name: party_contact_informations-get
+#+begin_src hurl :tangle party_contact_informations-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_contact_informations/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_contact_informations/get-many=
+:PROPERTIES:
+:ID: 9A6F3A64-9B02-5917-A492-03D261AD4486
+:END:
+
+Get many party contact informations. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_contact_informations/get-many
+#+end_example
+
+#+name: party_contact_informations-get-many
+#+begin_src hurl :tangle party_contact_informations-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_contact_informations/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_contact_informations=
+:PROPERTIES:
+:ID: 39156A1F-1B7D-59D0-A812-7AF8FCBBABF2
+:END:
+
+Create one party contact information. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_contact_informations
+#+end_example
+
+#+name: party_contact_informations-add
+#+begin_src hurl :tangle party_contact_informations-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_contact_informations
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/party_contact_informations=
+:PROPERTIES:
+:ID: B27DFC4F-2A0F-5A03-8B08-9BC99E3B2C44
+:END:
+
+Replace one party contact information. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/party_contact_informations
+#+end_example
+
+#+name: party_contact_informations-set
+#+begin_src hurl :tangle party_contact_informations-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/party_contact_informations
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_contact_informations/put-many=
+:PROPERTIES:
+:ID: 1977583A-2C5C-5D32-9D5A-9A5402248C75
+:END:
+
+Write many party contact informations. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_contact_informations/put-many
+#+end_example
+
+#+name: party_contact_informations-put-many
+#+begin_src hurl :tangle party_contact_informations-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_contact_informations/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/party_contact_informations/__none__=
+:PROPERTIES:
+:ID: CF4555A6-4BBE-54AE-AEEB-61502952D5E9
+:END:
+
+Delete one party contact information. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/party_contact_informations/__none__
+#+end_example
+
+#+name: party_contact_informations-delete
+#+begin_src hurl :tangle party_contact_informations-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/party_contact_informations/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_contact_informations/delete-many=
+:PROPERTIES:
+:ID: A0714F80-F3AE-57B1-9B8E-34F2A2B60BB2
+:END:
+
+Delete many party contact informations. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_contact_informations/delete-many
+#+end_example
+
+#+name: party_contact_informations-delete-many
+#+begin_src hurl :tangle party_contact_informations-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_contact_informations/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_contact_informations/by-party-id/__none__=
+:PROPERTIES:
+:ID: 13D2608D-61ED-5C2C-B080-1507491C45C1
+:END:
+
+List the party contact informations that reference one party id. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations.list_by_party_id=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_contact_informations/by-party-id/__none__
+#+end_example
+
+#+name: party_contact_informations-by-party-id
+#+begin_src hurl :tangle party_contact_informations-by-party-id.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_contact_informations/by-party-id/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_contact_informations/__none__/versions=
+:PROPERTIES:
+:ID: D27CF11C-A248-5217-8D66-B747FB9BE5B1
+:END:
+
+List the recorded versions of one party contact information. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_contact_informations/__none__/versions
+#+end_example
+
+#+name: party_contact_informations-versions
+#+begin_src hurl :tangle party_contact_informations-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_contact_informations/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_contact_informations/__none__/versions/0=
+:PROPERTIES:
+:ID: 20A1B595-A7A8-50D2-9211-179C651F28D6
+:END:
+
+Get one recorded version of one party contact information. It needs a session.
+
+It forwards to =refdata.v1.party_contact_informations_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_contact_informations/__none__/versions/0
+#+end_example
+
+#+name: party_contact_informations-version
+#+begin_src hurl :tangle party_contact_informations-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_contact_informations/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

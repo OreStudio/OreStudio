@@ -29,7 +29,7 @@ Every metric family is read by one declaration-driven reader into rows of subjec
 | State        | DONE                              |
 | Parent story | [[id:2D80126D-6ADC-482D-A46A-B098752C29BC][Model every output ORE writes]] |
 | Now          | Nothing. |
-| Waiting on   | The column roles, so a reader knows what a heading is. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
 | Last touched | 2026-10-31 |
 

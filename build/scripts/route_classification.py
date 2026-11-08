@@ -339,17 +339,27 @@ RULES = (
          "The folders and the feeds under each at any depth, two collections woven, with the"
          " count of each kind so no screen reads the feeds."),
 
-    Rule("the currency collection",
-         ("prefix", "GET /api/v1/reference-data/currencies"),
+    Rule("a reference data collection",
+         ("regex", r"^GET /api/v1/reference-data/\w"),
          CPP, RESOURCE, "reference-data",
-         "The currency collection, generated with list, create, replace, remove, bulk get and"
-         " put, and a version read; the first collection to answer under its published area"
-         " rather than under the component's name."),
-    Rule("the currency collection writes",
-         ("regex", r"^(POST|PUT|DELETE) /api/v1/reference-data/currencies"),
+         "A generated reference data collection, answering under its published area rather"
+         " than under the component's name: the list, one row by key or by one of its"
+         " lookups, its versions, and the bulk get."),
+    Rule("a reference data collection writes",
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/reference-data/\w"),
          CPP, RESOURCE, "reference-data",
-         "A generated write of the currency collection: create, replace, remove, or one of"
-         " the bulk get, put and delete calls."),
+         "A generated write of a reference data collection: create, replace, remove, or one"
+         " of the bulk put and delete calls."),
+    Rule("a synthetic collection",
+         ("regex", r"^GET /api/v1/simulation/\w"),
+         CPP, RESOURCE, "simulation",
+         "A generated synthetic collection, answering under the published simulation area:"
+         " the list, one row by key, its versions, and the bulk get."),
+    Rule("a synthetic collection writes",
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/simulation/\w"),
+         CPP, RESOURCE, "simulation",
+         "A generated write of a synthetic collection: create, replace, remove, or one of"
+         " the bulk put and delete calls."),
     Rule("the ORE currency document",
          ("regex", r"^(GET|POST) /api/refdata/currencies/ore-"),
          BFF, RESOURCE, "reference-data",
@@ -742,6 +752,16 @@ RULES = (
          ("exact", "POST /api/v1/iam/roles_permissions/put"),
          CPP, RESOURCE, "access",
          "Replaces the permissions one role grants with exactly the set sent."),
+    Rule("an access collection",
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/access/(?!accounts|permissions|roles|sessions)\w"),
+         CPP, RESOURCE, "access",
+         "A generated collection of the access area that is not one of the four the"
+         " gateway served first: its rows, a row by key or by a lookup, and its writes."),
+    Rule("an auth collection",
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/v1/auth/(?!sessions|login_info|account_credentials)\w"),
+         CPP, RESOURCE, "auth",
+         "A generated collection of the auth area beyond the door's own: its rows and its"
+         " writes, published under the area rather than under the component's name."),
     Rule("the account operations",
          ("regex", r"^POST /api/v1/iam/ops/(update_account|lock_account|unlock_account)$"),
          CPP, RESOURCE, "access",
@@ -752,6 +772,16 @@ RULES = (
          CPP, RESOURCE, "access",
          "The roles one account holds and the permissions one role grants, read or written"
          " through an RPC-shaped verb."),
+    Rule("a tenancy collection",
+         ("regex", r"^GET /api/v1/tenancy/\w"),
+         CPP, RESOURCE, "tenancy",
+         "A generated tenancy collection: the list, one row by key, its versions and the"
+         " bulk get, published under the area a tenant's own rows answer on."),
+    Rule("a tenancy collection write",
+         ("regex", r"^(POST|PUT|DELETE) /api/v1/tenancy/\w"),
+         CPP, RESOURCE, "tenancy",
+         "A generated write of a tenancy collection: create, replace, remove, or one of the"
+         " bulk put and delete calls."),
     Rule("the bootstrap operations",
          ("regex", r"^POST /api/v1/iam/ops/(bootstrap_status|create_initial_admin)$"),
          CPP, RESOURCE, "tenancy",

@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: 8F10C573-02A6-40AC-9145-B6377BE58E39
+:END:
+#+title: Task: Stand up the synthetic adapter and serve its first collection
+#+description: Give ores.http its own synthetic adapter part, and prove it by serving one synthetic lookup collection.
+#+type: task
+#+level: s1
+#+filetags: :http:rest:synthetic:component:serve_one_screen_from_the_new_server:sprint_29:v0:
+#+owner: marco
+#+branch: feature/serve-the-synthetic-collections
+#+pr: 4493
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-07
+#+updated: 2026-11-08
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The synthetic domain has no adapter part in =ores.http=, so none of its
+twenty entity models can be served. This task stands the part up and proves
+it on one collection: the yield-curve process types. After it, adding the
+rest is the same five mechanical steps the other areas already follow,
+because the part and its place in the build exist.
+
+The part is the tenth adapter the gateway gains, and the first one created
+since the seam rules were written down. The task therefore also records what
+a new part costs, so the next one is a checklist and not an investigation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE |
+| Parent story | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve what the BFF serves, then retire it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-08 |
+* Acceptance
+
+- =projects/ores.http/synthetic= exists as =#+component_kind: adapter=, is a
+  part of the =ores.http= composite, and builds as =ores.http.synthetic.lib=.
+- The composite's generated root CMake lists the part, and the server links
+  and registers its routes.
+- The yield-curve process types are answered on the gateway: list, get, add,
+  set, delete, versions and version, forwarding the caller's token.
+- =check_route_units= sees the new aggregate and the unit it registers.
+- =ores.http.synthetic.tests= builds and passes, and the full gate is green.
+
+* Plan
+
+1. Write =synthetic/modeling/component_overview.org= with
+   =#+component_kind: adapter=, the link blocks the part needs, and the
+   shared sentence the other adapters use: the units hold no service,
+   repository or database context.
+2. Add the part to the composite's =#+parts:= and its Sub-components table,
+   then regenerate =projects/ores.http/CMakeLists.txt= so the composite root
+   names it.
+3. Hand-write the four CMake files (root, =src=, =tests=, =modeling=) by
+   copying the refdata part's, because the link libraries belong to the HTTP
+   surface and not to the domain.
+4. Write the aggregate (=synthetic_routes.hpp/.cpp=), the umbrella header and
+   the test main.
+5. Register the part in the server's link line and in =application.cpp=.
+6. Opt in =ores.synthetic.yield_curve_process_type=, regenerate the route
+   facet, and add the unit to the aggregate.
+7. Regenerate the component file lists, the composite root, and the route
+   inventory; run the gate.
+
+The scaffold order matters: a part must have its own =CMakeLists.txt= files
+before the composite root names it, otherwise configure stops at
+=add_subdirectory= with "does not contain a CMakeLists.txt file". That was
+the one thing the earlier attempt got wrong, and it is why the CMake files
+come before the composite wiring here.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Parts of the gateway composite | 8 | =grep '^#+parts:' projects/ores.http/modeling/component_overview.org= | this branch |
+| Routes the inventory holds | 735 | =python3 build/scripts/route_inventory.py --check= | this branch |
+| Route aggregates the link check reads | 4 | =python3 build/scripts/check_route_units.py= | this branch |
+| Component tests | 2 cases, 41 assertions | =./publish/bin/ores.http.synthetic.tests= | this branch |
+| Simulation area, BFF routes | 28 | counted from the inventory's table | this branch |
+| Simulation area, new server's routes | 10 | counted from the inventory's table | this branch |
+| Components the drift check knows | 24, of which this branch changes 2 | =check_component_drift.py --changed --base origin/main= | this branch |
+| The gate's failing suite | =ores.marketdata.service.tests=, 2 of 206 cases | =ctest --preset linux-clang-release-ninja -j 4= | this branch |
+| The same suite alone | 206 cases, 1848 assertions, 29.8 s, passing | =ctest -R ores.marketdata.service.tests= | this branch |
+| The same suite beside its whole family | passing, 27.0 s | =ctest -R ores.marketdata -j 4= | this branch |
+| Machine load when the gate's ctest ran | 7.1 on 8 cores, from the other worktrees | =uptime= | this branch |
+
+* Notes
+
+*What a new part costs, and what it does not.* The part is copyable in full:
+the four CMake files, the umbrella header, the test main and the aggregate are
+copied from an existing adapter with the name swapped, and only the aggregate's
+body is genuinely new code. The model, the composite entry and the server
+registration are each one line or one block. Nothing needs a registry edit:
+=check_component_drift= found the new part from its own
+=component_overview.org=, so a component exists when its model does.
+
+*The order is the only trap.* Configuring after the composite root names the
+part but before the part's own =CMakeLists.txt= files exist stops with "does
+not contain a CMakeLists.txt file", which reads as a generator fault and is a
+missing file. The recipe states the order because of it.
+
+*Two facets look alike and are not.* =ores.cmake.component= writes an adapter's
+two =component_files.cmake= lists and its diagram target, and writes none of
+the part's other CMake files; =ores.cmake.service= writes a service's
+=src/CMakeLists.txt=. A gateway part needs both addresses run, and the server
+needs =ores.cmake.service= run whenever its link block changes.
+
+*The route facet now depends on the protocol facet.* =ores.synthetic'=
+=yield_curve_process_type= is a lookup whose protocol the entity model itself
+owns, so one generation wrote unit, test and recipe. An entity whose protocol
+an operation model owns still refuses the facet, as the previous task found.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4493][#4493]] | [http] Stand up the synthetic adapter and serve its first collection |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=ores.http.synthetic= exists, is the eighth part of the gateway, builds as
+=ores.http.synthetic.lib=, is linked into =ores.http.server= and registered in
+it, and answers the yield-curve process types on
+=/api/v1/simulation/yield_curve_process_types=: the list, one row by key or by
+one of its lookups, the bulk get, create, replace, the bulk put, remove, the
+bulk delete, its versions, and one version. Every route forwards the caller's
+own token, so the synthetic service still decides.
+
+The part is proven mechanically rather than live: the fleet's database does not
+match this checkout, so no browser run is possible. The evidence is the compiled
+unit's two cases and 41 assertions, the inventory's ten rows for the area, the
+link check seeing the new aggregate, and the gate, whose every check passes but
+whose ctest phase fails on a marketdata deadline this branch does not touch
+(below).
+
+The area is now one of the six the new server serves, at 10 routes against the
+BFF's 28. The remaining nineteen synthetic models are the same five mechanical
+steps and are the next increment.
+
+=doc/recipes/http/how_do_i_add_an_adapter_part.org= states the order, so the
+next part is copied rather than rediscovered.
+
+* The gate's one red check, and why it is not this branch's
+
+=ctest= fails in =ores.marketdata.service.tests=: two cases of 206, both
+=wait_until= calls with a sixty-second budget in
+=app_feed_ingest_loop_tests.cpp= (:1123 and :1310). The branch changes no
+marketdata file, so the failure is a property of the machine, not of the code.
+Measured, three ways:
+
+- the suite alone passes, 206 cases and 1848 assertions, in 29.8 s;
+- the suite beside every marketdata suite at =-j 4= passes, in 27.0 s;
+- the suite inside the gate's full =ctest -j 4= fails, and in that run it
+  started beside three other database-heavy suites (=ores.refdata.core.tests=
+  240 s, =ores.web.tests= 124 s, =ores.reporting.core.tests= 98 s).
+
+The machine was at load 7.1 on 8 cores while the gate ran, because the fleet's
+other worktrees were building. Four database-heavy suites contending for the
+same cores is what the sixty-second wait cannot survive. It is a real defect in
+that test's deadline, not in the route work, and it wants its own fix rather
+than a quiet retry loop.

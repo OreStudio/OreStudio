@@ -55,7 +55,7 @@ struct product_type_asset_class_entity {
 
     int version = 0;
 
-    bool is_home;
+    bool is_home{};
 
     std::string modified_by;
     std::string performed_by;

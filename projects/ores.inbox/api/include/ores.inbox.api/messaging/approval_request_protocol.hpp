@@ -25,11 +25,12 @@
 #ifndef ORES_INBOX_API_MESSAGING_APPROVAL_REQUEST_PROTOCOL_HPP
 #define ORES_INBOX_API_MESSAGING_APPROVAL_REQUEST_PROTOCOL_HPP
 
-#include "ores.inbox.api/domain/approval_request.hpp"
+#include "ores.inbox.api/domain/approval_request_codec.hpp"
 #include "ores.inbox.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,6 +52,7 @@ struct approval_request_write {
     boost::uuids::uuid id;
     std::string kind_code;
     std::string state_code;
+    std::string auto_approval_code;
     boost::uuids::uuid requested_by;
     std::chrono::system_clock::time_point requested_at;
     std::string reason;
@@ -86,10 +88,12 @@ struct approval_request_lookup {
 struct approval_requests_filter {
     std::optional<std::string> kind_code;
     std::optional<std::string> state_code;
+    std::optional<std::string> auto_approval_code;
     std::optional<boost::uuids::uuid> requested_by;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<std::string>> kind_code_one_of;
     std::optional<std::vector<std::string>> state_code_one_of;
+    std::optional<std::vector<std::string>> auto_approval_code_one_of;
     std::optional<std::vector<boost::uuids::uuid>> requested_by_one_of;
 
     friend bool operator==(const approval_requests_filter&,
@@ -100,7 +104,7 @@ struct approval_request_event {
     boost::uuids::uuid event_id;
     approval_request_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +113,7 @@ struct approval_request_event {
 
 struct approval_request_version_key {
     approval_request_key approval_request;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const approval_request_version_key&,
                            const approval_request_version_key&) = default;
@@ -147,7 +151,7 @@ struct list_approval_requests_request {
 struct list_approval_requests_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request> requests;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_requests_response&,
                            const list_approval_requests_response&) = default;
@@ -323,7 +327,7 @@ struct list_by_kind_code_approval_requests_request {
 struct list_by_kind_code_approval_requests_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request> requests;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_kind_code_approval_requests_response&,
                            const list_by_kind_code_approval_requests_response&) = default;
@@ -352,7 +356,7 @@ struct list_approval_request_versions_request {
 struct list_approval_request_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_request_versions_response&,
                            const list_approval_request_versions_response&) = default;
@@ -422,6 +426,7 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_requests.d
         utility::codec::field{"id", &approval_request_write::id},
         utility::codec::field{"kind_code", &approval_request_write::kind_code},
         utility::codec::field{"state_code", &approval_request_write::state_code},
+        utility::codec::field{"auto_approval_code", &approval_request_write::auto_approval_code},
         utility::codec::field{"requested_by", &approval_request_write::requested_by},
         utility::codec::field{"requested_at", &approval_request_write::requested_at},
         utility::codec::field{"reason", &approval_request_write::reason},
@@ -486,10 +491,13 @@ inline constexpr std::string_view deleted = "inbox.v1.events.approval_requests.d
     return std::tuple{
         utility::codec::field{"kind_code", &approval_requests_filter::kind_code},
         utility::codec::field{"state_code", &approval_requests_filter::state_code},
+        utility::codec::field{"auto_approval_code", &approval_requests_filter::auto_approval_code},
         utility::codec::field{"requested_by", &approval_requests_filter::requested_by},
         utility::codec::field{"id_one_of", &approval_requests_filter::id_one_of},
         utility::codec::field{"kind_code_one_of", &approval_requests_filter::kind_code_one_of},
         utility::codec::field{"state_code_one_of", &approval_requests_filter::state_code_one_of},
+        utility::codec::field{"auto_approval_code_one_of",
+                              &approval_requests_filter::auto_approval_code_one_of},
         utility::codec::field{"requested_by_one_of",
                               &approval_requests_filter::requested_by_one_of},
     };

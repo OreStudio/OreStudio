@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-approval_requests add <kind_code> <state_code> <requested_by> <requested_at> <reason> <expires_at> <reason> <commentary>
+approval_requests add <kind_code> <state_code> <auto_approval_code> <requested_by> <requested_at> <reason> <expires_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =inbox.v1.approval_requests.put=.
 
 #+name: approval_requests-add
 #+begin_src ores-shell :tangle approval_requests-add.ores :exports none
-approval_requests add __none__ __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+approval_requests add __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-approval_requests set <id> <kind_code> <state_code> <requested_by> <requested_at> <reason> <expires_at> <reason> <commentary> [--version <n>]
+approval_requests set <id> <kind_code> <state_code> <auto_approval_code> <requested_by> <requested_at> <reason> <expires_at> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =inbox.v1.approval_requests.put=.
 
 #+name: approval_requests-set
 #+begin_src ores-shell :tangle approval_requests-set.ores :exports none
-approval_requests set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+approval_requests set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-approval_requests put-many --count <n> <id> <kind_code> <state_code> <requested_by> <requested_at> <reason> <expires_at> <reason> <commentary>
+approval_requests put-many --count <n> <id> <kind_code> <state_code> <auto_approval_code> <requested_by> <requested_at> <reason> <expires_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =inbox.v1.approval_requests.put_many=.
 
 #+name: approval_requests-put-many
 #+begin_src ores-shell :tangle approval_requests-put-many.ores :exports none
-approval_requests put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
+approval_requests put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z __none__ - system.new_record generated_script
 #+end_src
 
 ** =delete=

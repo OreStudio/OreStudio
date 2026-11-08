@@ -35,6 +35,7 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
 export interface BondInstrument {
     identity: InstrumentIdentity;
     issue_id: string;
+    position_identifier: string | null;
     notional: string | null;
     audit: AuditRecord;
 }

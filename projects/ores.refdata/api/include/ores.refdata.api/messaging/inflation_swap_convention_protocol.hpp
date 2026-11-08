@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_INFLATION_SWAP_CONVENTION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_INFLATION_SWAP_CONVENTION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/inflation_swap_convention.hpp"
+#include "ores.refdata.api/domain/inflation_swap_convention_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -54,9 +55,9 @@ struct inflation_swap_convention_write {
     std::string fix_convention;
     std::string day_count_fraction;
     std::string index;
-    bool interpolated;
+    bool interpolated{};
     std::string observation_lag;
-    bool adjust_inflation_observation_dates;
+    bool adjust_inflation_observation_dates{};
     std::string inflation_calendar;
     std::string inflation_convention;
     std::optional<std::string> publication_roll;
@@ -107,7 +108,7 @@ struct inflation_swap_convention_event {
     boost::uuids::uuid event_id;
     inflation_swap_convention_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -117,7 +118,7 @@ struct inflation_swap_convention_event {
 
 struct inflation_swap_convention_version_key {
     inflation_swap_convention_key inflation_swap_convention;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const inflation_swap_convention_version_key&,
                            const inflation_swap_convention_version_key&) = default;
@@ -155,7 +156,7 @@ struct list_inflation_swap_conventions_request {
 struct list_inflation_swap_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_swap_convention> inflation_swap_conventions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_inflation_swap_conventions_response&,
                            const list_inflation_swap_conventions_response&) = default;
@@ -334,7 +335,7 @@ struct list_inflation_swap_convention_versions_request {
 struct list_inflation_swap_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_swap_convention> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_inflation_swap_convention_versions_response&,
                            const list_inflation_swap_convention_versions_response&) = default;

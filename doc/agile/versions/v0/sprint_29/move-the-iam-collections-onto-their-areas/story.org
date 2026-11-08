@@ -23,9 +23,9 @@ The IAM entity collections answer under the area they belong to, and no two rout
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Six IAM collections answer on access or auth, and the session door keeps the path the collection wanted. |
-| Waiting on    | Nothing.                               |
-| Next          | The operation routes still answer under /api/v1/iam and need a declaration per operation. |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-31                               |
 
 * Acceptance

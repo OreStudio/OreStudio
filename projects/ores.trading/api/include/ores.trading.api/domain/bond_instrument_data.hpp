@@ -40,6 +40,7 @@
 #include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_strike_data.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <optional>
@@ -207,6 +208,14 @@ struct bond_instrument_data {
     bond_leg_data ascot_swap_leg;
 
     /**
+     * @brief A bond position's basket, one row per Underlying bond.
+
+A basket position names no single issue, so its bonds are the shared underlying
+rows, as an equity position's are.
+     */
+    std::vector<instrument_underlying> instrument_underlyings;
+
+    /**
      * @brief Value equality.
      *
      * A field group is a value like the entity that holds it: the entity's
@@ -256,6 +265,8 @@ struct bond_instrument_data {
         utility::codec::field{"trs_funding_leg", &bond_instrument_data::trs_funding_leg},
         utility::codec::field{"repo_leg", &bond_instrument_data::repo_leg},
         utility::codec::field{"ascot_swap_leg", &bond_instrument_data::ascot_swap_leg},
+        utility::codec::field{"instrument_underlyings",
+                              &bond_instrument_data::instrument_underlyings},
     };
 }
 

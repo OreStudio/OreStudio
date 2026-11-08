@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_ACTIVITY_TYPE_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_ACTIVITY_TYPE_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/activity_type.hpp"
+#include "ores.trading.api/domain/activity_type_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -50,10 +51,10 @@ struct activity_type_key {
 struct activity_type_write {
     std::string code;
     std::string category;
-    bool requires_confirmation;
-    bool is_economic;
-    bool is_real;
-    int priority;
+    bool requires_confirmation{};
+    bool is_economic{};
+    bool is_real{};
+    int priority{};
     std::string description;
     std::string fpml_event_type_code;
     std::optional<boost::uuids::uuid> fsm_transition_id;
@@ -92,7 +93,7 @@ struct activity_type_event {
     boost::uuids::uuid event_id;
     activity_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +102,7 @@ struct activity_type_event {
 
 struct activity_type_version_key {
     activity_type_key activity_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const activity_type_version_key&,
                            const activity_type_version_key&) = default;
@@ -139,7 +140,7 @@ struct list_activity_types_request {
 struct list_activity_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::activity_type> activity_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_activity_types_response&,
                            const list_activity_types_response&) = default;
@@ -314,7 +315,7 @@ struct list_activity_type_versions_request {
 struct list_activity_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::activity_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_activity_type_versions_response&,
                            const list_activity_type_versions_response&) = default;

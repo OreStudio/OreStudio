@@ -65,7 +65,7 @@ struct instrument_option_exercise_price final {
     /**
      * @brief Ordinal of this exercise price within the option block's list.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

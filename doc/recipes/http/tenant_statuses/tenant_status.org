@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 5CF80075-6E0E-57A5-9A76-DD3BC0E17211
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the tenant_statuses endpoints over HTTP?
+#+description: Every endpoint the tenant_statuses resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:tenant_statuses:
+
+This file documents the tenant_statuses resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/tenancy/tenant_statuses=
+:PROPERTIES:
+:ID: 30111FA9-B197-5C1D-8A9E-94A90D4DFD35
+:END:
+
+List tenant statuses. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenant_statuses
+#+end_example
+
+#+name: tenant_statuses-list
+#+begin_src hurl :tangle tenant_statuses-list.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenant_statuses
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/tenant_statuses/__none__=
+:PROPERTIES:
+:ID: 01EDCC1D-56F8-50A6-908F-EE91FC0DAB2C
+:END:
+
+Get one tenant status. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenant_statuses/__none__
+#+end_example
+
+#+name: tenant_statuses-get
+#+begin_src hurl :tangle tenant_statuses-get.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenant_statuses/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenant_statuses/get-many=
+:PROPERTIES:
+:ID: BFD5BFD8-EFA3-5977-9837-B15B44C0A585
+:END:
+
+Get many tenant statuses. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenant_statuses/get-many
+#+end_example
+
+#+name: tenant_statuses-get-many
+#+begin_src hurl :tangle tenant_statuses-get-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenant_statuses/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenant_statuses=
+:PROPERTIES:
+:ID: FDB5D6D7-79BF-51E1-ABBC-5D02C0A0800B
+:END:
+
+Create one tenant status. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenant_statuses
+#+end_example
+
+#+name: tenant_statuses-add
+#+begin_src hurl :tangle tenant_statuses-add.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenant_statuses
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/tenancy/tenant_statuses=
+:PROPERTIES:
+:ID: 14E0FAF2-55D1-5180-A4DE-630CCCE266BD
+:END:
+
+Replace one tenant status. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/tenancy/tenant_statuses
+#+end_example
+
+#+name: tenant_statuses-set
+#+begin_src hurl :tangle tenant_statuses-set.hurl :exports none
+PUT {{base_url}}/api/v1/tenancy/tenant_statuses
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenant_statuses/put-many=
+:PROPERTIES:
+:ID: 80E91401-2FBB-5C0B-91B6-258A2B06A5B0
+:END:
+
+Write many tenant statuses. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenant_statuses/put-many
+#+end_example
+
+#+name: tenant_statuses-put-many
+#+begin_src hurl :tangle tenant_statuses-put-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenant_statuses/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/tenancy/tenant_statuses/__none__=
+:PROPERTIES:
+:ID: B619F382-8B1B-5B16-BB16-336403A6DF23
+:END:
+
+Delete one tenant status. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/tenancy/tenant_statuses/__none__
+#+end_example
+
+#+name: tenant_statuses-delete
+#+begin_src hurl :tangle tenant_statuses-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/tenancy/tenant_statuses/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenant_statuses/delete-many=
+:PROPERTIES:
+:ID: 5AA71394-7645-5635-8FA1-32F9BB4C26BB
+:END:
+
+Delete many tenant statuses. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenant_statuses/delete-many
+#+end_example
+
+#+name: tenant_statuses-delete-many
+#+begin_src hurl :tangle tenant_statuses-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenant_statuses/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/tenant_statuses/__none__/versions=
+:PROPERTIES:
+:ID: AC23D625-EE2B-58A1-B44E-B20CAD67BAC9
+:END:
+
+List the recorded versions of one tenant status. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenant_statuses/__none__/versions
+#+end_example
+
+#+name: tenant_statuses-versions
+#+begin_src hurl :tangle tenant_statuses-versions.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenant_statuses/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/tenant_statuses/__none__/versions/0=
+:PROPERTIES:
+:ID: DCFAE387-883F-5583-A3FC-7E85A8567455
+:END:
+
+Get one recorded version of one tenant status. It needs a session.
+
+It forwards to =iam.v1.tenant_statuses_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenant_statuses/__none__/versions/0
+#+end_example
+
+#+name: tenant_statuses-version
+#+begin_src hurl :tangle tenant_statuses-version.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenant_statuses/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

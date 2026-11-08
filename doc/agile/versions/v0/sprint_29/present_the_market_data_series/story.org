@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 30CD1858-317A-416F-9953-1FCB39D1C1EA
+:END:
+#+title: Story: Present the market data series
+#+description: A slide series that explains how ORE Studio builds synthetic market data generators.
+#+type: story
+#+level: s2
+#+filetags: :presentation:market_data:synthetic:sprint_29:v0:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Give engineers a slide series that explains synthetic market data generation, from the raw data to the models, and anchor it on real market data.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Part 1 is written.                     |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. Later parts need a new story. |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- Part 1 exists as a Beamer deck under doc/presentations/market_data_series/part_1.
+- The deck uses the ORE Studio colours and logo.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E749631F-6910-4FE6-A8A2-17A1BAF21FD1][Write part 1 of the market data series]] | DONE | 2026-11-08 | 2026-11-08 | A Beamer deck on synthetic market data generators, with a companion spreadsheet over real GBP/USD rates. |
+
+* Decisions
+
+- The deck charts real GBP/USD rates. The first spreadsheet held simulated
+  prices, and a slide about observing reality cannot show those.
+- The slides are dark and use the application's colour tokens, because the
+  application is dark.
+
+* Out of scope
+
+- Part 2 and later parts of the series.

@@ -155,10 +155,12 @@ std::string("Fixed")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
-Day count fraction code (soft FK to ores_refdata_day_count_fraction_types_tbl).
+Day count fraction code (soft FK to ores_refdata_day_count_fraction_types_tbl),
+when the leg states one. ORE's LegData makes DayCounter optional, and a
+Cashflow leg states none.
 
 #+begin_src cpp :name generator
 std::string("A365F")
@@ -168,11 +170,12 @@ std::string("A365F")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
 Business day convention code (soft FK to
-ores_refdata_business_day_convention_types_tbl).
+ores_refdata_business_day_convention_types_tbl), when the leg states one.
+ORE's LegData makes PaymentConvention optional.
 
 #+begin_src cpp :name generator
 std::string("ModifiedFollowing")
@@ -182,10 +185,11 @@ std::string("ModifiedFollowing")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
-Payment frequency code (soft FK to ores_refdata_payment_frequencies_tbl).
+Payment frequency code (soft FK to ores_refdata_payment_frequencies_tbl),
+when the leg has a schedule to take it from. A Cashflow leg has none.
 
 #+begin_src cpp :name generator
 std::string("Annual")
@@ -198,8 +202,12 @@ std::string("Annual")
 :nullable: true
 :END:
 
-Floating index code of a floating leg (soft FK to
-ores_refdata_floating_index_types_tbl).
+The index the leg's payoff observes, of whatever kind its leg type names: an
+IBOR or overnight index for a floating leg (soft FK to
+ores_refdata_floating_index_types_tbl), a swap index for a CMS leg, an
+inflation index for a CPI or YY leg, a commodity for a commodity floating
+leg and the formula itself for a formula based leg. The trigger validates
+none of them, because no one reference table holds every kind.
 
 Empty for a fixed leg; validated only when stated.
 
@@ -232,6 +240,511 @@ participation agreement states the legs of its underlying beside its own. The
 group tells them apart: =premium=, =independent=, =contingent=, =default=,
 =recovery= or =underlying=. The legs are keyed by the trade, so one table holds
 every family's legs and the group is the one column the credit family adds.
+
+
+** fixing_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The fixing days of a floating leg's index, as =FixingDays= states them. Null when
+the leg states none and the index's own convention applies.
+
+** is_in_arrears
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a floating leg fixes in arrears, as =IsInArrears= states it. Null when
+the leg states none.
+
+** include_spread
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether an overnight leg compounds its spread, as =IncludeSpread= states it.
+
+** is_averaged
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether an overnight leg averages rather than compounds, as =IsAveraged= states it.
+
+** has_sub_periods
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a floating leg pays on sub periods, as =HasSubPeriods= states it.
+
+** notional_initial_exchange
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the leg exchanges its notional at the start, as =Notionals/Exchanges/NotionalInitialExchange= states it.
+
+** notional_final_exchange
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the leg exchanges its notional at the end, as =Notionals/Exchanges/NotionalFinalExchange= states it.
+
+** payment_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The leg's payment lag as the document spells it, a number of days or a period
+such as =2D=. Kept as text, because ORE reads both.
+
+** payment_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar the leg's payments are adjusted on, as =PaymentCalendar= states it.
+
+** commodity_price_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The price a commodity floating leg observes, as =PriceType= states it: =Spot=
+or =FutureSettlement=. Null for a leg that is not a commodity floating leg.
+
+** future_month_offset
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+How many contract months past the period a commodity floating leg's future
+settles, as =FutureMonthOffset= states it.
+
+** daily_expiry_offset
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The offset, in business days, of a daily commodity future's expiry, as
+=DailyExpiryOffset= states it.
+
+** pricing_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar a commodity floating leg's pricing dates are adjusted on, as
+=PricingCalendar= states it.
+
+** equity_return_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What an equity leg pays, as =ReturnType= states it: =Price= or =Total=.
+
+** equity_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The equity an equity leg observes, as =Name= or =Underlying/Name= states it.
+
+** equity_underlying_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The type of the equity leg's =Underlying= block, such as =Equity=. Null when the leg names its equity with a bare =Name=, so the writer knows which form the document used.
+
+** equity_underlying_identifier_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The identifier type of the equity leg's =Underlying= block, such as =RIC=.
+
+** equity_quantity
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The number of shares an equity leg pays on, as =Quantity= states it.
+
+** equity_initial_price
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The equity's price at the start of the first period, as =InitialPrice= states it.
+
+** equity_initial_price_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of the initial price, as =InitialPriceCurrency= states it.
+
+** equity_dividend_factor
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The share of dividends a total return equity leg pays, as =DividendFactor= states it.
+
+** equity_notional_reset
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether an equity leg resets its notional each period, as =NotionalReset= states it.
+
+** equity_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency the equity is quoted in, when it differs from the leg's, as =FXTerms/EquityCurrency= states it.
+
+** fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The FX index that converts the equity currency into the leg's, as =FXTerms/FXIndex= states it.
+
+** fx_reset_foreign_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The currency of the notional the leg resets from, as =Notionals/FXReset/ForeignCurrency= states it. A leg with no FX reset states none of the FX reset terms.
+
+** fx_reset_start_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The date the FX reset starts, as =Notionals/FXReset/StartDate= states it.
+
+** fx_reset_foreign_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The notional in the foreign currency, as =Notionals/FXReset/ForeignAmount= states it.
+
+** fx_reset_fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The FX index the notional resets against, as =Notionals/FXReset/FXIndex= states it.
+
+** fx_reset_fixing_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The fixing days of the FX reset, as =Notionals/FXReset/FixingDays= states it.
+
+** fx_reset_fixing_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar of the FX reset's fixings, as =Notionals/FXReset/FixingCalendar= states it.
+
+** fixing_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The calendar a leg's fixings are taken in, as =FixingCalendar= states it on a formula based leg.
+
+** digital_call_position
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The position in the digital call, as =CallPosition= states it on a digital CMS or CMS spread leg. Its strikes and payoffs are rate rows under =call_strike= and =call_payoff=.
+
+** digital_is_call_atm_included
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a call struck at the money pays, as =IsCallATMIncluded= states it.
+
+** digital_put_position
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The position in the digital put, as =PutPosition= states it. Its strikes and payoffs are rate rows under =put_strike= and =put_payoff=.
+
+** digital_is_put_atm_included
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a put struck at the money pays, as =IsPutATMIncluded= states it.
+
+** equity_margin_initial_margin_factor
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The initial margin factor of an equity margin leg, as =InitialMarginFactor= states it. The leg's equity terms are the equity columns and its rates are rate rows under =fixed=.
+
+** equity_margin_multiplier
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The multiplier of an equity margin leg, as =Multiplier= states it.
+
+** commodity_pay_relative_to
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What a commodity leg's payment dates are relative to, as =CommodityPayRelativeTo= states it.
+
+** commodity_quantity_frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How often a commodity floating leg's quantity applies, as =CommodityQuantityFrequency= states it.
+
+** pricing_date_rule
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How a commodity floating leg's pricing dates are chosen, as =PricingDateRule= states it.
+
+** indexings_from_asset_leg
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether the leg takes its indexings from the asset leg, as
+=Indexings/FromAssetLeg= states it. The indexings themselves are
+=swap_leg_indexing= rows.
+
+** floating_index_code_2
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The second index of a CMS spread leg, as =Index2= states it. The first is =floating_index_code=.
+
+** cms_duration
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The duration, in years, a duration adjusted CMS leg scales its rate by, as =Duration= states it.
+
+** naked_option
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a capped or floored leg pays only the embedded option, as =NakedOption= states it.
+
+** lookback
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The lookback period of an overnight floating leg, as =Lookback= states it, such as =2D=.
+
+** rate_cutoff
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+The number of days before the period end at which an overnight rate stops fixing, as =RateCutoff= states it.
+
+** local_cap_floor
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether an overnight leg's cap and floor apply to each daily rate rather than to the period's rate, as =LocalCapFloor= states it.
+
+** observation_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The observation lag of an inflation leg's index, as =ObservationLag= states it, such as =3M=.
+
+** cpi_base
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The base CPI a CPI leg indexes from, as =BaseCPI= states it.
+
+** cpi_start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+The date a CPI leg's base CPI applies from, as =StartDate= states it.
+
+** cpi_interpolation
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How a CPI leg interpolates its index, as =Interpolation= states it: =Flat= or =Linear=.
+
+** cpi_interpolated
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a CPI leg interpolates its index, as the older =Interpolated= flag states it.
+
+** subtract_inflation_notional
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a CPI leg's final flow subtracts the notional, as =SubtractInflationNotional= states it.
+
+** zero_coupon_compounding
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How a zero coupon fixed leg compounds its rate, as =Compounding= states it: =Simple= or =Compounded=.
+
+** zero_coupon_subtract_notional
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+Whether a zero coupon fixed leg's flow subtracts the notional, as =SubtractNotional= states it.
 
 * Foreign keys
 
@@ -320,7 +833,6 @@ is immutable.
 | day_count_fraction_code | ores_refdata_validate_day_count_fraction_type_fn |
 | business_day_convention_code | ores_refdata_validate_business_day_convention_type_fn |
 | payment_frequency_code | ores_refdata_validate_payment_frequency_fn |
-| floating_index_code | ores_refdata_validate_floating_index_type_fn |
 
 * C++
 
@@ -358,6 +870,8 @@ nest.
 
 #+begin_src cpp :name includes
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
 #include <string>
 #include "ores.utility/decimal/decimal.hpp"
 #+end_src

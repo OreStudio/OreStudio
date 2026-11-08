@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CURVE_DEFINITION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CURVE_DEFINITION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/curve_definition.hpp"
+#include "ores.refdata.api/domain/curve_definition_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -53,7 +54,7 @@ struct curve_definition_write {
     std::string section_code;
     std::string curve_id;
     std::optional<std::string> description;
-    int position;
+    int position{};
 
     friend bool operator==(const curve_definition_write&, const curve_definition_write&) = default;
 };
@@ -93,7 +94,7 @@ struct curve_definition_event {
     boost::uuids::uuid event_id;
     curve_definition_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +103,7 @@ struct curve_definition_event {
 
 struct curve_definition_version_key {
     curve_definition_key curve_definition;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_definition_version_key&,
                            const curve_definition_version_key&) = default;
@@ -140,7 +141,7 @@ struct list_curve_definitions_request {
 struct list_curve_definitions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_definition> curves;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_definitions_response&,
                            const list_curve_definitions_response&) = default;
@@ -315,7 +316,7 @@ struct list_curve_definition_versions_request {
 struct list_curve_definition_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_definition> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_definition_versions_response&,
                            const list_curve_definition_versions_response&) = default;

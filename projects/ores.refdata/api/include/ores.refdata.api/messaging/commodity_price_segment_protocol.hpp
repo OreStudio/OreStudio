@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_COMMODITY_PRICE_SEGMENT_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_COMMODITY_PRICE_SEGMENT_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/commodity_price_segment.hpp"
+#include "ores.refdata.api/domain/commodity_price_segment_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -54,11 +55,11 @@ struct commodity_price_segment_write {
     std::string segment_type;
     std::optional<int> priority;
     std::optional<std::string> conventions;
-    bool has_quotes;
+    bool has_quotes{};
     std::optional<std::string> peak_price_curve_id;
     std::optional<std::string> peak_price_calendar;
-    bool has_off_peak_daily;
-    int position;
+    bool has_off_peak_daily{};
+    int position{};
 
     friend bool operator==(const commodity_price_segment_write&,
                            const commodity_price_segment_write&) = default;
@@ -99,7 +100,7 @@ struct commodity_price_segment_event {
     boost::uuids::uuid event_id;
     commodity_price_segment_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +110,7 @@ struct commodity_price_segment_event {
 
 struct commodity_price_segment_version_key {
     commodity_price_segment_key commodity_price_segment;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const commodity_price_segment_version_key&,
                            const commodity_price_segment_version_key&) = default;
@@ -147,7 +148,7 @@ struct list_commodity_price_segments_request {
 struct list_commodity_price_segments_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_price_segment> price_segments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_price_segments_response&,
                            const list_commodity_price_segments_response&) = default;
@@ -324,7 +325,7 @@ struct list_commodity_price_segment_versions_request {
 struct list_commodity_price_segment_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_price_segment> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_price_segment_versions_response&,
                            const list_commodity_price_segment_versions_response&) = default;

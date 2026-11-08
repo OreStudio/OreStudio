@@ -44,6 +44,10 @@ export interface EquityDigitalOptionInstrument {
     expiry_date: string;
     long_short: string;
     payout_amount: string | null;
+    barrier_start_date: string | null;
+    barrier_calendar: string | null;
+    barrier_fixing_index: string | null;
+    quantity: number | null;
     description: string;
     audit: AuditRecord;
 }

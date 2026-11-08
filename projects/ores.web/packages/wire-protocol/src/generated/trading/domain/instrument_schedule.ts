@@ -55,6 +55,8 @@ export interface InstrumentSchedule {
     remove_first_date: boolean | null;
     remove_last_date: boolean | null;
     include_duplicate_dates: string | null;
+    base_schedule: string | null;
+    shift: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

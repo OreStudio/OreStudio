@@ -20,6 +20,12 @@
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
+#include "ores.platform/environment/environment.hpp"
+#include "ores.refdata.api/domain/convention_codec.hpp"
+#include "ores.refdata.api/domain/inflation_swap_convention_codec.hpp"
+#include "ores.refdata.api/domain/intraday_power_load_convention_codec.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short_codec.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive_codec.hpp"
 #include "ores.testing/conventions_rows.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.utility/crypto/sha256.hpp"
@@ -162,7 +168,8 @@ std::vector<std::string> ids_in(const conventions& document, const std::string& 
 // that come back from the export are the rows that went in, field for field,
 // because the mapper stores canonical spellings and the value is what has to
 // survive.
-TEST_CASE("every_conventions_family_round_trips", "[ore][xml][roundtrip][conventions]") {
+TEST_CASE("every_conventions_family_round_trips",
+          "[long_running][ore][xml][roundtrip][conventions]") {
     for (const auto& f : families()) {
         INFO("family " << f.key);
         int files = 0;
@@ -349,7 +356,7 @@ TEST_CASE("conventions_cross_currency_fix_float_without_a_part_is_refused",
 // corpus lands its central row and exactly one of each part, the parts carry
 // what the element states, and the export writes the document back unchanged.
 TEST_CASE("conventions_cross_currency_fix_float_round_trips",
-          "[ore][xml][roundtrip][conventions]") {
+          "[long_running][ore][xml][roundtrip][conventions]") {
     namespace rd = ores::refdata::domain;
     int files = 0;
 
@@ -436,7 +443,8 @@ TEST_CASE("conventions_cross_currency_basis_without_a_part_is_refused",
 // The element is one central row and three parts. Every convention in the
 // corpus lands its central row and exactly one of each part, each leg carries
 // its own index and tenor, and the export writes the document back unchanged.
-TEST_CASE("conventions_cross_currency_basis_round_trips", "[ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_cross_currency_basis_round_trips",
+          "[long_running][ore][xml][roundtrip][conventions]") {
     namespace rd = ores::refdata::domain;
     int files = 0;
 
@@ -553,7 +561,8 @@ TEST_CASE("conventions_commodity_future_without_its_contract_terms_is_refused",
 // parts. Every convention in the corpus lands its central row and its contract
 // terms, an optional part exactly when the element states that block, and the
 // export writes the document back unchanged.
-TEST_CASE("conventions_commodity_future_round_trips", "[ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_commodity_future_round_trips",
+          "[long_running][ore][xml][roundtrip][conventions]") {
     namespace rd = ores::refdata::domain;
     int files = 0;
     std::size_t anchors = 0;
@@ -696,7 +705,8 @@ TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted",
     CHECK(unmodelled.at("ZeroInflationIndex.RebasingEvents") == 1);
 }
 
-TEST_CASE("conventions_tenor_basis_swap_round_trips", "[ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_tenor_basis_swap_round_trips",
+          "[long_running][ore][xml][roundtrip][conventions]") {
     int files = 0;
 
     for (const auto& path :
@@ -757,7 +767,7 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", "[ore][xml][roundtrip][con
 }
 
 TEST_CASE("conventions_files_using_only_modelled_categories_round_trip",
-          "[ore][xml][roundtrip][conventions]") {
+          "[long_running][ore][xml][roundtrip][conventions]") {
     const auto kind = conventions_kind();
     int walked = 0;
 
@@ -906,7 +916,9 @@ TEST_CASE("the exported conventions corpus matches its recorded digests",
     const auto root = xml_roundtrip_conventions_corpus_root();
     const auto recorded = read_digests(digests_path());
     REQUIRE_FALSE(recorded.empty());
-    const bool regenerate = std::getenv("ORES_REGEN_CONVENTIONS_DIGESTS") != nullptr;
+    const bool regenerate =
+        ores::platform::environment::environment::get_value("ORES_REGEN_CONVENTIONS_DIGESTS")
+            .has_value();
     std::map<std::string, std::string> computed;
 
     int compared = 0;

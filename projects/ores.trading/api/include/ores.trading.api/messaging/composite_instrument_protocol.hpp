@@ -25,12 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_COMPOSITE_INSTRUMENT_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_COMPOSITE_INSTRUMENT_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/composite_instrument.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.api/domain/composite_instrument_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -54,6 +54,27 @@ struct composite_instrument_write {
     std::string trade_type_code;
     boost::uuids::uuid trade_activity_id;
     std::string description;
+    std::optional<std::string> currency;
+    std::optional<std::string> notional_calculation;
+    std::optional<ores::utility::decimal::decimal> notional_override;
+    std::optional<std::string> portfolio_basket;
+    std::optional<double> index_quantity;
+    std::optional<std::string> return_payer;
+    std::optional<std::string> return_currency;
+    std::optional<std::string> return_observation_lag;
+    std::optional<std::string> return_observation_convention;
+    std::optional<std::string> return_observation_calendar;
+    std::optional<std::string> return_payment_lag;
+    std::optional<std::string> return_payment_convention;
+    std::optional<std::string> return_payment_calendar;
+    std::optional<ores::utility::decimal::decimal> return_initial_price;
+    std::optional<std::string> return_initial_price_currency;
+    std::optional<std::string> return_fx_index;
+    std::optional<std::string> return_pay_underlying_cash_flows_immediately;
+    std::optional<std::string> funding_notional_types;
+    std::optional<std::string> underlying_basket_name;
+    std::optional<std::string> underlying_index_quantity;
+    std::optional<std::string> underlying_price_is_per_unit;
 
     friend bool operator==(const composite_instrument_write&,
                            const composite_instrument_write&) = default;
@@ -94,7 +115,7 @@ struct composite_instrument_event {
     boost::uuids::uuid event_id;
     composite_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +125,7 @@ struct composite_instrument_event {
 
 struct composite_instrument_version_key {
     composite_instrument_key composite_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const composite_instrument_version_key&,
                            const composite_instrument_version_key&) = default;
@@ -142,7 +163,7 @@ struct list_composite_instruments_request {
 struct list_composite_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::composite_instrument> composite_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_composite_instruments_response&,
                            const list_composite_instruments_response&) = default;
@@ -318,7 +339,7 @@ struct list_composite_instrument_versions_request {
 struct list_composite_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::composite_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_composite_instrument_versions_response&,
                            const list_composite_instrument_versions_response&) = default;
@@ -347,64 +368,6 @@ struct get_composite_instrument_version_response {
 
     friend bool operator==(const get_composite_instrument_version_response&,
                            const get_composite_instrument_version_response&) = default;
-};
-
-/**
- * @brief Writes a composite instrument and replaces its whole leg set.
- *
- * One request rather than two, because the store refuses a leg whose
- * parent is not current: the instrument row and its legs have to reach
- * one handler in order. The leg set the request states replaces whatever
- * the instrument carried before.
- */
-struct put_composite_instrument_with_legs_request {
-    using response_type = struct put_composite_instrument_with_legs_response;
-    static constexpr std::string_view nats_subject =
-        "trading.v1.ops.put_composite_instrument_with_legs";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    ores::trading::domain::composite_instrument instrument;
-    std::vector<ores::trading::domain::composite_leg> legs;
-
-    friend bool operator==(const put_composite_instrument_with_legs_request&,
-                           const put_composite_instrument_with_legs_request&) = default;
-};
-
-struct put_composite_instrument_with_legs_response {
-    ores::utility::domain::result result;
-    ores::trading::domain::composite_instrument instrument;
-
-    friend bool operator==(const put_composite_instrument_with_legs_response&,
-                           const put_composite_instrument_with_legs_response&) = default;
-};
-
-struct get_composite_instrument_legs_request {
-    using response_type = struct get_composite_instrument_legs_response;
-    static constexpr std::string_view nats_subject = "trading.v1.ops.get_composite_instrument_legs";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string trade_id;
-
-    friend bool operator==(const get_composite_instrument_legs_request&,
-                           const get_composite_instrument_legs_request&) = default;
-};
-
-struct get_composite_instrument_legs_response {
-    ores::utility::domain::result result;
-    std::vector<ores::trading::domain::composite_leg> legs;
-
-    friend bool operator==(const get_composite_instrument_legs_response&,
-                           const get_composite_instrument_legs_response&) = default;
 };
 
 /**
@@ -448,6 +411,42 @@ inline constexpr std::string_view deleted = "trading.v1.events.composite_instrum
         utility::codec::field{"trade_type_code", &composite_instrument_write::trade_type_code},
         utility::codec::field{"trade_activity_id", &composite_instrument_write::trade_activity_id},
         utility::codec::field{"description", &composite_instrument_write::description},
+        utility::codec::field{"currency", &composite_instrument_write::currency},
+        utility::codec::field{"notional_calculation",
+                              &composite_instrument_write::notional_calculation},
+        utility::codec::field{"notional_override", &composite_instrument_write::notional_override},
+        utility::codec::field{"portfolio_basket", &composite_instrument_write::portfolio_basket},
+        utility::codec::field{"index_quantity", &composite_instrument_write::index_quantity},
+        utility::codec::field{"return_payer", &composite_instrument_write::return_payer},
+        utility::codec::field{"return_currency", &composite_instrument_write::return_currency},
+        utility::codec::field{"return_observation_lag",
+                              &composite_instrument_write::return_observation_lag},
+        utility::codec::field{"return_observation_convention",
+                              &composite_instrument_write::return_observation_convention},
+        utility::codec::field{"return_observation_calendar",
+                              &composite_instrument_write::return_observation_calendar},
+        utility::codec::field{"return_payment_lag",
+                              &composite_instrument_write::return_payment_lag},
+        utility::codec::field{"return_payment_convention",
+                              &composite_instrument_write::return_payment_convention},
+        utility::codec::field{"return_payment_calendar",
+                              &composite_instrument_write::return_payment_calendar},
+        utility::codec::field{"return_initial_price",
+                              &composite_instrument_write::return_initial_price},
+        utility::codec::field{"return_initial_price_currency",
+                              &composite_instrument_write::return_initial_price_currency},
+        utility::codec::field{"return_fx_index", &composite_instrument_write::return_fx_index},
+        utility::codec::field{
+            "return_pay_underlying_cash_flows_immediately",
+            &composite_instrument_write::return_pay_underlying_cash_flows_immediately},
+        utility::codec::field{"funding_notional_types",
+                              &composite_instrument_write::funding_notional_types},
+        utility::codec::field{"underlying_basket_name",
+                              &composite_instrument_write::underlying_basket_name},
+        utility::codec::field{"underlying_index_quantity",
+                              &composite_instrument_write::underlying_index_quantity},
+        utility::codec::field{"underlying_price_is_per_unit",
+                              &composite_instrument_write::underlying_price_is_per_unit},
     };
 }
 
@@ -849,71 +848,6 @@ wire_fields(std::type_identity<get_composite_instrument_version_response>) {
     };
 }
 
-/**
- * @brief The members of put_composite_instrument_with_legs_request, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(std::type_identity<put_composite_instrument_with_legs_request>) {
-    return std::tuple{
-        utility::codec::field{"instrument",
-                              &put_composite_instrument_with_legs_request::instrument},
-        utility::codec::field{"legs", &put_composite_instrument_with_legs_request::legs},
-    };
-}
-
-/**
- * @brief The members of put_composite_instrument_with_legs_response, named as the wire names them
- * and in the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(std::type_identity<put_composite_instrument_with_legs_response>) {
-    return std::tuple{
-        utility::codec::field{"result", &put_composite_instrument_with_legs_response::result},
-        utility::codec::field{"instrument",
-                              &put_composite_instrument_with_legs_response::instrument},
-    };
-}
-
-/**
- * @brief The members of get_composite_instrument_legs_request, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(std::type_identity<get_composite_instrument_legs_request>) {
-    return std::tuple{
-        utility::codec::field{"trade_id", &get_composite_instrument_legs_request::trade_id},
-    };
-}
-
-/**
- * @brief The members of get_composite_instrument_legs_response, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(std::type_identity<get_composite_instrument_legs_response>) {
-    return std::tuple{
-        utility::codec::field{"result", &get_composite_instrument_legs_response::result},
-        utility::codec::field{"legs", &get_composite_instrument_legs_response::legs},
-    };
-}
-
 
 }
 namespace ores::utility::codec {
@@ -1270,62 +1204,6 @@ struct ORES_TRADING_API_EXPORT
     static std::string
     write_msgpack(const ores::trading::messaging::get_composite_instrument_version_response& v);
     static ores::trading::messaging::get_composite_instrument_version_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT
-    wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::trading::messaging::put_composite_instrument_with_legs_request& v);
-    static ores::trading::messaging::put_composite_instrument_with_legs_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::trading::messaging::put_composite_instrument_with_legs_request& v);
-    static ores::trading::messaging::put_composite_instrument_with_legs_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT
-    wire_traits<ores::trading::messaging::put_composite_instrument_with_legs_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::trading::messaging::put_composite_instrument_with_legs_response& v);
-    static ores::trading::messaging::put_composite_instrument_with_legs_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::trading::messaging::put_composite_instrument_with_legs_response& v);
-    static ores::trading::messaging::put_composite_instrument_with_legs_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT
-    wire_traits<ores::trading::messaging::get_composite_instrument_legs_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::trading::messaging::get_composite_instrument_legs_request& v);
-    static ores::trading::messaging::get_composite_instrument_legs_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::trading::messaging::get_composite_instrument_legs_request& v);
-    static ores::trading::messaging::get_composite_instrument_legs_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_TRADING_API_EXPORT
-    wire_traits<ores::trading::messaging::get_composite_instrument_legs_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::trading::messaging::get_composite_instrument_legs_response& v);
-    static ores::trading::messaging::get_composite_instrument_legs_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::trading::messaging::get_composite_instrument_legs_response& v);
-    static ores::trading::messaging::get_composite_instrument_legs_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

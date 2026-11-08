@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_CURVE_ROLE_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_CURVE_ROLE_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/curve_role.hpp"
+#include "ores.refdata.api/domain/curve_role_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -51,7 +52,7 @@ struct curve_role_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const curve_role_write&, const curve_role_write&) = default;
 };
@@ -87,7 +88,7 @@ struct curve_role_event {
     boost::uuids::uuid event_id;
     curve_role_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -96,7 +97,7 @@ struct curve_role_event {
 
 struct curve_role_version_key {
     curve_role_key curve_role;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_role_version_key&, const curve_role_version_key&) = default;
 };
@@ -133,7 +134,7 @@ struct list_curve_roles_request {
 struct list_curve_roles_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_role> roles;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_roles_response&,
                            const list_curve_roles_response&) = default;
@@ -306,7 +307,7 @@ struct list_curve_role_versions_request {
 struct list_curve_role_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_role> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_role_versions_response&,
                            const list_curve_role_versions_response&) = default;

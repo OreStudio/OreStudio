@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 36D992FD-0E21-4C21-915E-17D8717A0E23
+:END:
+#+title: Story: Rework the market data feeds into a market data service with adapters — the remaining work
+#+description: Move the simulated feeds behind a market data service: vendor ids and a mapping, sources with a kind, subscriptions and routes, adapters on NATS, metering and cost, and the simulator as one adapter, so the system treats live and simulated data in the same way.
+#+type: story
+#+level: s2
+#+filetags: :product_backlog:inbox:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.marketdata owns the catalogue, the mapping, the ingest path, routing and metering. Adapters, including the simulator, publish vendor-id ticks over NATS and answer a demand set. Every simulated feed belongs to the system tenant and the system party, a party takes a provider by subscription, and no part of the system behaves differently because a source is simulated.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started. Split from [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- The catalogue holds providers, sources with a kind, vendor instruments and mappings, installed by a system bundle.
+- An adapter announces itself, answers a demand set, publishes vendor-id ticks and sends a heartbeat, and the service maps, checks, stores and delivers them.
+- A party holds a subscription with rights and one route per provider, and a source switch is audited and effective-dated.
+- The simulator is an adapter under ores.marketdata.synthetic, its generators belong to the system tenant and system party, and no subject, table or constraint carries a mark of the simulator.
+- Usage events, rate cards, rating and allocation give each party a bill, and a simulated source gives a shadow bill.
+- The screens and the shell follow the architecture pages, and a scenario shows a development party on a simulated source and a prelive party on a live source side by side.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A712C3E7-ED5C-4E71-B6FB-5D1932354F6D][Add a replay adapter]] | BACKLOG | | | Add an adapter that replays recorded vendor ticks as a source of kind replay. |
+| [[id:8A951C62-4081-4CF1-9051-862533FA17B9][Bind a sensitivity configuration to a report definition]] | BACKLOG | | | A sensitivity run must name the factors it shifts: bind a SensitivityAnalysis document into the configuration slot a report definition already has for it. |
+| [[id:CC276A2C-4676-4DE3-8114-C496CAB0C082][Build the cross-gamma ladder]] | BACKLOG | | | The cross terms are present in the sensitivity report as rows with two factors; crossgamma.csv has no writer at 1.8.17.0, so the ladder reads the rows. |
+| [[id:5E222CAA-EC8C-4A16-A835-6C76FD660406][Build the curve blueprint screens]] | BACKLOG | 2026-10-28 | | Implement the signed-off prototype with the standard record infrastructure. |
+| [[id:3DD3449A-CF81-458D-BE3D-07951A1E0EC2][Build the .1 ATM and surface vol ladders]] | BACKLOG | | | The .1 ATM ladder shifts one point per expiry; the .1 surface ladder shifts every configured strike. Both are the same report over two sensitivity documents. |
+| [[id:FABF9F45-2B9B-4844-9200-DEFECB81CC69][Build the rates delta and gamma ladders]] | BACKLOG | | | The bucketed delta and gamma report over the discount, index and yield curves: one figure per curve and tenor, read from the sensitivity report. |
+| [[id:AFA116AA-0FF8-4FA0-88B4-1DF2F26022F5][Build the par-rate DV01 and theta ladders]] | BACKLOG | | | The two ladders whose whole result is one figure per trade: the par-rate DV01 from the par conversion, and theta from the clock. |
+| [[id:3614B1D7-0D9C-4004-B190-2D8968C6A721][Build the market data service screens]] | BACKLOG | | | Build the catalogue, subscriptions and routes, usage and cost, and source status screens, and retire the bindings screen. |
+| [[id:816F6540-89B4-4847-A289-88A1948DC682][Check a development party and a prelive party side by side]] | BACKLOG | | | Write and run a scenario with one party routed to the simulated source and one to the live-kind source, both running. |
+| [[id:0C0F9826-403E-4C62-B03F-050888E9F88B][Derive the risk reversal and strangle ladders]] | BACKLOG | | | The engine has no risk reversal factor, so the RR and STR ladders are a change of basis over the surface-point deltas of the surface run. |
+| [[id:C744E1F5-AFAA-4147-9F42-87A3909934F8][Design the .1 and greek ladder reports]] | BACKLOG | 2026-11-03 | | The .1 family and the wider greek ladders are prose only; research ORE and design the reports before seeding. |
+| [[id:56D38654-9CC3-45A9-B23A-78EAEE1A402C][Draw the prototypes and wireframes for the new journeys]] | BACKLOG | | | Draw the wireframes and prototypes for the subscriptions, sources and offer-a-collection journeys. |
+| [[id:1FE82E68-ECA0-4E28-98C4-655AC612B728][Refresh the simulator adapters when the catalogue changes]] | BACKLOG | | | The simulator builds its adapters once, at start. A new simulated source needs a restart. |
+| [[id:8D5C8A02-A6E3-4195-9FD1-140A0293C78B][Remove the marks of the simulator from names, subjects and constraints]] | BACKLOG | | | Remove the synthetic prefix, subjects, constraints and screen marks so that nothing in the system depends on the simulator. |
+| [[id:FD3DF4E8-DD1D-4CC2-96A0-D3DF3624B5A2][Rename the simulator component to ores.marketdata.synthetic]] | BACKLOG | | | Rename the synthetic component to ores.marketdata.synthetic, with the codegen identity, the paths and the namespaces. |
+| [[id:4512DD80-5A5D-42DC-996B-9C62DC88E16B][Repair the baseline drift the gate reports]] | BACKLOG | | | Commodity, workflow and reporting merges left generated artefacts, seeded permissions and pgTAP expectations stale. |
+| [[id:9814C1C5-E599-4405-B79F-3525C0314A7C][Rework the shell commands for the market data service]] | BACKLOG | | | Add shell commands for the catalogue, subscriptions, routes, sources and usage, and move the simulator commands. |
+| [[id:D168771B-BC57-46D7-93B5-F9FA10A4A4B7][Seed the sensitivity shift families]] | BACKLOG | | | One sensitivity document per risk class, with the shift sizes a desk reads as the .1 and the basis-point families selected by key. |
+| [[id:AF826E35-6ED4-411D-B1E3-79D3B2103778][Split trade generation into ores.trading.synthetic]] | BACKLOG | | | Move the trade generators out of ores.synthetic into ores.trading.synthetic. |
+| [[id:A8FFF8B9-0240-472E-929E-E0E37641DB87][Store one tick for each source]] | BACKLOG | | | Write each tick once under the system tenant, point the per-party series at it, and remove the ingest's routes read. |
+| [[id:5CCD3099-EC5D-4F43-A106-33E3F235115B][Write the vendor tickers of the curve pillars]] | BACKLOG | | | Give each rate curve pillar of Bloomberg and LSEG a vendor id, so the native simulator can serve curves. |
+
+* Decisions
+
+- Split from [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+-
+

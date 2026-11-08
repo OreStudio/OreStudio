@@ -170,6 +170,28 @@ BEGIN
         'integer',
         'How long an answered approval request stays in the queue''s answered tail, in seconds. Default is 86400 (one day).'
     );
+
+    -- -----------------------------------------------------------------------------
+    -- Approval enforcement
+    -- -----------------------------------------------------------------------------
+    -- A maker and checker pair exists to put a second person in front of what a
+    -- person proposed. A deployment that is not carrying anyone's book -- a
+    -- development installation, a test bed, a demonstration being set up -- gains
+    -- nothing from waiting on a click it will always be given, and loses the time
+    -- it spends waiting. So the installation states whether it enforces approvals
+    -- at all, and every auto-approved request says in its decision which of the
+    -- two closed it.
+    --
+    -- 'enforced' is the answer everywhere a decision has consequences. A
+    -- deployment that answers 'auto_approved' approves every request as it is
+    -- raised, with the system as its decider, and that is visible on the screen
+    -- that reads the approvals and in the shell.
+    PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.approvals.mode',
+        'enforced',
+        'string',
+        'Whether this installation enforces approvals: enforced or auto_approved. Default is enforced.'
+    );
 END $$;
 
 

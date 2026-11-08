@@ -83,7 +83,7 @@ struct commodity_future_off_peak_index final {
     /**
      * @brief Hours of the day that count as off-peak.
      */
-    double off_peak_hours;
+    double off_peak_hours{};
 
     /**
      * @brief Calendar the peak hours are read on.

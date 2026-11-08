@@ -60,10 +60,13 @@ struct equity_variance_swap_instrument_entity {
     std::string underlying_name;
     std::string currency;
     ores::utility::decimal::decimal notional;
-    double variance_strike;
+    double variance_strike{};
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;
     std::string long_short;
+    std::optional<std::string> calendar;
+    std::optional<std::string> moment_type;
+    std::optional<bool> add_past_dividends;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -91,6 +94,9 @@ struct equity_variance_swap_instrument_entity {
                query_builder::bind("start_date", &e::start_date) |
                query_builder::bind("maturity_date", &e::maturity_date) |
                query_builder::bind("long_short", &e::long_short) |
+               query_builder::bind("calendar", &e::calendar) |
+               query_builder::bind("moment_type", &e::moment_type) |
+               query_builder::bind("add_past_dividends", &e::add_past_dividends) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

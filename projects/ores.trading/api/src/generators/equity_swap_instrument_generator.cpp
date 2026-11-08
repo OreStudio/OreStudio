@@ -57,6 +57,18 @@ generate_synthetic_equity_swap_instrument(utility::generation::generation_contex
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2026} / 1 / 15};
     r.long_short = std::string("Long");
     r.payment_frequency_code = std::string("Quarterly");
+    r.fixed_rate = ores::utility::decimal::decimal::from_string(
+                       std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                       .value();
+    r.floating_spread = ores::utility::decimal::decimal::from_string(
+                            std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                            .value();
+    r.initial_fixed_rate = ores::utility::decimal::decimal::from_string(
+                               std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                               .value();
+    r.knock_in_level = ores::utility::decimal::decimal::from_string(
+                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                           .value();
     r.audit.modified_by = modified_by;
     r.audit.performed_by = modified_by;
     r.audit.change_reason_code = "system.test";

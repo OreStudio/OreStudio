@@ -25,11 +25,12 @@
 #ifndef ORES_REPORTING_API_MESSAGING_REPORT_CONFIGURATION_PROTOCOL_HPP
 #define ORES_REPORTING_API_MESSAGING_REPORT_CONFIGURATION_PROTOCOL_HPP
 
-#include "ores.reporting.api/domain/report_configuration.hpp"
+#include "ores.reporting.api/domain/report_configuration_codec.hpp"
 #include "ores.reporting.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -99,7 +100,7 @@ struct report_configuration_event {
     boost::uuids::uuid event_id;
     report_configuration_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +110,7 @@ struct report_configuration_event {
 
 struct report_configuration_version_key {
     report_configuration_key report_configuration;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const report_configuration_version_key&,
                            const report_configuration_version_key&) = default;
@@ -147,7 +148,7 @@ struct list_report_configurations_request {
 struct list_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_configurations_response&,
                            const list_report_configurations_response&) = default;
@@ -326,7 +327,7 @@ struct list_by_report_definition_id_report_configurations_request {
 struct list_by_report_definition_id_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_report_definition_id_report_configurations_response&,
@@ -359,7 +360,7 @@ struct list_by_configuration_type_code_report_configurations_request {
 struct list_by_configuration_type_code_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_configuration_type_code_report_configurations_response&,
@@ -391,7 +392,7 @@ struct list_by_configuration_id_report_configurations_request {
 struct list_by_configuration_id_report_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> report_configurations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_configuration_id_report_configurations_response&,
@@ -422,7 +423,7 @@ struct list_report_configuration_versions_request {
 struct list_report_configuration_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_configuration> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_configuration_versions_response&,
                            const list_report_configuration_versions_response&) = default;

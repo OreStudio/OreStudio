@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="8f2c08ef-f6c9-5ff2-a0f5-37b3df0624a2">
+    <TradeType>EquityTouchOption</TradeType>
+    <EquityTouchOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <ExerciseDates>
+          <ExerciseDate>2026-12-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>3162.62</Level>
+        </Levels>
+      </BarrierData>
+      <Name>MSFT.O</Name>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>5709785.78</PayoffAmount>
+    </EquityTouchOptionData>
+  </Trade>
+  <Trade id="cb0ae711-d2b3-56a1-aa47-2ba729f3a8a1">
+    <TradeType>EquityTouchOption</TradeType>
+    <EquityTouchOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <ExerciseDates>
+          <ExerciseDate>2031-08-02</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels>
+          <Level>1743.96</Level>
+        </Levels>
+      </BarrierData>
+      <Name>MSFT.O</Name>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>3658095.79</PayoffAmount>
+    </EquityTouchOptionData>
+  </Trade>
+</Portfolio>

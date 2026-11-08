@@ -61,6 +61,9 @@ equity_variance_swap_instrument_mapper::map(const equity_variance_swap_instrumen
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.long_short = v.long_short;
+    r.calendar = v.calendar;
+    r.moment_type = v.moment_type;
+    r.add_past_dividends = v.add_past_dividends;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -90,6 +93,9 @@ equity_variance_swap_instrument_mapper::map(const domain::equity_variance_swap_i
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.long_short = v.long_short;
+    r.calendar = v.calendar;
+    r.moment_type = v.moment_type;
+    r.add_past_dividends = v.add_past_dividends;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_COMPOSITE_INSTRUMENT_CODEC_HPP
 #define ORES_TRADING_API_DOMAIN_COMPOSITE_INSTRUMENT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -49,6 +50,38 @@ namespace ores::trading::domain {
     return std::tuple{
         utility::codec::field{"identity", &composite_instrument::identity},
         utility::codec::field{"description", &composite_instrument::description},
+        utility::codec::field{"currency", &composite_instrument::currency},
+        utility::codec::field{"notional_calculation", &composite_instrument::notional_calculation},
+        utility::codec::field{"notional_override", &composite_instrument::notional_override},
+        utility::codec::field{"portfolio_basket", &composite_instrument::portfolio_basket},
+        utility::codec::field{"index_quantity", &composite_instrument::index_quantity},
+        utility::codec::field{"return_payer", &composite_instrument::return_payer},
+        utility::codec::field{"return_currency", &composite_instrument::return_currency},
+        utility::codec::field{"return_observation_lag",
+                              &composite_instrument::return_observation_lag},
+        utility::codec::field{"return_observation_convention",
+                              &composite_instrument::return_observation_convention},
+        utility::codec::field{"return_observation_calendar",
+                              &composite_instrument::return_observation_calendar},
+        utility::codec::field{"return_payment_lag", &composite_instrument::return_payment_lag},
+        utility::codec::field{"return_payment_convention",
+                              &composite_instrument::return_payment_convention},
+        utility::codec::field{"return_payment_calendar",
+                              &composite_instrument::return_payment_calendar},
+        utility::codec::field{"return_initial_price", &composite_instrument::return_initial_price},
+        utility::codec::field{"return_initial_price_currency",
+                              &composite_instrument::return_initial_price_currency},
+        utility::codec::field{"return_fx_index", &composite_instrument::return_fx_index},
+        utility::codec::field{"return_pay_underlying_cash_flows_immediately",
+                              &composite_instrument::return_pay_underlying_cash_flows_immediately},
+        utility::codec::field{"funding_notional_types",
+                              &composite_instrument::funding_notional_types},
+        utility::codec::field{"underlying_basket_name",
+                              &composite_instrument::underlying_basket_name},
+        utility::codec::field{"underlying_index_quantity",
+                              &composite_instrument::underlying_index_quantity},
+        utility::codec::field{"underlying_price_is_per_unit",
+                              &composite_instrument::underlying_price_is_per_unit},
         utility::codec::field{"audit", &composite_instrument::audit},
     };
 }

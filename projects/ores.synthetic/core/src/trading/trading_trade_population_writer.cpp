@@ -37,27 +37,6 @@
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_trade_type_protocol.hpp"
-#include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
-#include "ores.trading.api/domain/bond_instruments.hpp"
-#include "ores.trading.api/domain/callable_swap_instrument.hpp"
-#include "ores.trading.api/domain/cap_floor_instrument.hpp"
-#include "ores.trading.api/domain/commodity_instruments.hpp"
-#include "ores.trading.api/domain/credit_instruments.hpp"
-#include "ores.trading.api/domain/equity_instruments.hpp"
-#include "ores.trading.api/domain/flexi_swap_instrument.hpp"
-#include "ores.trading.api/domain/fra_instrument.hpp"
-#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
-#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_instruments.hpp"
-#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
-#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
-#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
-#include "ores.trading.api/domain/rate_instruments.hpp"
-#include "ores.trading.api/domain/swaption_instrument.hpp"
-#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
 #include "ores.trading.api/messaging/bond_issue_protocol.hpp"
 #include "ores.trading.api/messaging/structure_member_protocol.hpp"
 #include "ores.trading.api/messaging/structure_protocol.hpp"
@@ -113,6 +92,24 @@ constexpr std::string_view internal_id_type = "Internal";
  */
 constexpr std::array<std::string_view, 2> booking_permissions{
     "trading::trades:write", "trading::trades:write_service_origin"};
+
+/*
+ * States the population's reason on a row of the batch. A document container
+ * states it on the instrument it holds, a header on its audit group, and a
+ * child on its own flat columns.
+ */
+template <typename Row>
+void state_reason(Row& row) {
+    if constexpr (requires { row.instrument; }) {
+        state_reason(row.instrument);
+    } else if constexpr (requires { row.audit.change_reason_code; }) {
+        row.audit.change_reason_code = std::string(population_reason);
+        row.audit.change_commentary = "Generated trade population.";
+    } else if constexpr (requires { row.change_reason_code; }) {
+        row.change_reason_code = std::string(population_reason);
+        row.change_commentary = "Generated trade population.";
+    }
+}
 
 }
 
@@ -588,211 +585,35 @@ trading_trade_population_writer::book_request_for(const domain::trade_population
     book_req.identifiers.push_back(identifier);
 
     /*
-     * A family that states its rows states all of them, so the writer persists
-     * what the plan carries and reads no bag for it.
+     * The plan states every row of the trade, so the request carries all of
+     * them: a row the writer left behind would be a term the trade never
+     * holds. Each row states why it was written, as its table states its
+     * audit columns.
+     *
+     * The issue's own rows do not travel with the trade. They belong to the
+     * security, and =ensure_issue= has already written them, so a booking that
+     * carried them would ask the store to create them a second time and be
+     * refused.
      */
-    if (!slot.instruments.commodity_instruments.empty()) {
-        for (auto row : slot.instruments.commodity_instruments) {
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.commodity_instruments.push_back(row);
-        }
-        for (auto constituent : slot.instruments.commodity_basket_constituents) {
-            constituent.change_reason_code = std::string(population_reason);
-            constituent.change_commentary = "Generated trade population.";
-            book_req.instruments.commodity_basket_constituents.push_back(constituent);
-        }
-    } else if (!slot.instruments.bond_instruments.empty()) {
-        /*
-         * The header is not the product: what makes a repo a repo, or a future a
-         * future, is the row set beside it. Each is stamped flat, as its table
-         * states its audit columns.
-         */
-        for (auto row : slot.instruments.bond_instruments) {
-            row.instrument.audit.change_reason_code = std::string(population_reason);
-            row.instrument.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.bond_instruments.push_back(row);
-        }
-        const auto append_bond_facts = [&](const auto& rows, auto& into) {
-            for (auto row : rows) {
-                row.change_reason_code = std::string(population_reason);
-                row.change_commentary = "Generated trade population.";
-                into.push_back(row);
-            }
-        };
-        append_bond_facts(slot.instruments.bond_options, book_req.instruments.bond_options);
-        append_bond_facts(slot.instruments.bond_forwards, book_req.instruments.bond_forwards);
-        append_bond_facts(slot.instruments.bond_futures, book_req.instruments.bond_futures);
-        append_bond_facts(slot.instruments.bond_repos, book_req.instruments.bond_repos);
-        append_bond_facts(slot.instruments.bond_trs, book_req.instruments.bond_trs);
-        append_bond_facts(slot.instruments.ascots, book_req.instruments.ascots);
-    } else if (!slot.instruments.rate_instruments.empty()) {
-        /*
-         * The rows were built in the planner, so the writer states the audit
-         * columns on each and sends. The strikes carry the reason and the
-         * commentary themselves rather than an audit block.
-         */
-        for (auto row : slot.instruments.rate_instruments) {
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.rate_instruments.push_back(row);
-        }
-        for (auto leg : slot.instruments.swap_legs) {
-            leg.audit.change_reason_code = std::string(population_reason);
-            leg.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.swap_legs.push_back(leg);
-        }
-        for (auto amount : slot.instruments.swap_leg_amounts) {
-            amount.change_reason_code = std::string(population_reason);
-            amount.change_commentary = "Generated trade population.";
-            book_req.instruments.swap_leg_amounts.push_back(amount);
-        }
-        for (auto leg_rate : slot.instruments.swap_leg_rates) {
-            leg_rate.change_reason_code = std::string(population_reason);
-            leg_rate.change_commentary = "Generated trade population.";
-            book_req.instruments.swap_leg_rates.push_back(leg_rate);
-        }
-        for (auto strike : slot.instruments.instrument_strikes) {
-            strike.change_reason_code = std::string(population_reason);
-            strike.change_commentary = "Generated trade population.";
-            book_req.instruments.instrument_strikes.push_back(strike);
-        }
-        const auto append_facts = [&](const auto& facts, auto& into) {
-            for (auto fact : facts) {
-                fact.change_reason_code = std::string(population_reason);
-                fact.change_commentary = "Generated trade population.";
-                into.push_back(fact);
-            }
-        };
-        append_facts(slot.instruments.vanilla_swap_instruments,
-                     book_req.instruments.vanilla_swap_instruments);
-        append_facts(slot.instruments.fra_instruments, book_req.instruments.fra_instruments);
-        append_facts(slot.instruments.cap_floor_instruments,
-                     book_req.instruments.cap_floor_instruments);
-        append_facts(slot.instruments.swaption_instruments,
-                     book_req.instruments.swaption_instruments);
-        append_facts(slot.instruments.callable_swap_instruments,
-                     book_req.instruments.callable_swap_instruments);
-        append_facts(slot.instruments.knock_out_swap_instruments,
-                     book_req.instruments.knock_out_swap_instruments);
-        append_facts(slot.instruments.flexi_swap_instruments,
-                     book_req.instruments.flexi_swap_instruments);
-        append_facts(slot.instruments.balance_guaranteed_swap_instruments,
-                     book_req.instruments.balance_guaranteed_swap_instruments);
-        append_facts(slot.instruments.inflation_swap_instruments,
-                     book_req.instruments.inflation_swap_instruments);
-    } else if (!slot.instruments.fx_forward_instruments.empty() ||
-               !slot.instruments.fx_barrier_option_instruments.empty() ||
-               !slot.instruments.fx_digital_option_instruments.empty() ||
-               !slot.instruments.fx_vanilla_option_instruments.empty() ||
-               !slot.instruments.fx_asian_forward_instruments.empty() ||
-               !slot.instruments.fx_variance_swap_instruments.empty() ||
-               !slot.instruments.fx_accumulator_instruments.empty()) {
-        /*
-         * The rows were built in the planner, so the writer states the audit
-         * columns on each and sends. The accumulator's range bounds carry the
-         * reason and the commentary themselves.
-         */
-        const auto append_rows = [&](const auto& rows, auto& into) {
-            for (auto row : rows) {
-                row.audit.change_reason_code = std::string(population_reason);
-                row.audit.change_commentary = "Generated trade population.";
-                into.push_back(row);
-            }
-        };
-        append_rows(slot.instruments.fx_forward_instruments,
-                    book_req.instruments.fx_forward_instruments);
-        append_rows(slot.instruments.fx_barrier_option_instruments,
-                    book_req.instruments.fx_barrier_option_instruments);
-        append_rows(slot.instruments.fx_digital_option_instruments,
-                    book_req.instruments.fx_digital_option_instruments);
-        append_rows(slot.instruments.fx_vanilla_option_instruments,
-                    book_req.instruments.fx_vanilla_option_instruments);
-        append_rows(slot.instruments.fx_asian_forward_instruments,
-                    book_req.instruments.fx_asian_forward_instruments);
-        append_rows(slot.instruments.fx_variance_swap_instruments,
-                    book_req.instruments.fx_variance_swap_instruments);
-        append_rows(slot.instruments.fx_accumulator_instruments,
-                    book_req.instruments.fx_accumulator_instruments);
-        for (auto bound : slot.instruments.range_bounds) {
-            bound.change_reason_code = std::string(population_reason);
-            bound.change_commentary = "Generated trade population.";
-            book_req.instruments.range_bounds.push_back(bound);
-        }
-    } else if (!slot.instruments.equity_forward_instruments.empty() ||
-               !slot.instruments.equity_option_instruments.empty() ||
-               !slot.instruments.equity_asian_option_instruments.empty() ||
-               !slot.instruments.equity_barrier_option_instruments.empty() ||
-               !slot.instruments.equity_digital_option_instruments.empty() ||
-               !slot.instruments.equity_swap_instruments.empty() ||
-               !slot.instruments.equity_variance_swap_instruments.empty() ||
-               !slot.instruments.equity_accumulator_instruments.empty() ||
-               !slot.instruments.equity_position_instruments.empty()) {
-        /*
-         * The rows were built in the planner, so the writer states the audit
-         * columns on each and sends. A child row states its audit columns flat
-         * rather than as a struct, so it is stamped by its own walk.
-         */
-        const auto append_rows = [&](const auto& rows, auto& into) {
-            for (auto row : rows) {
-                row.audit.change_reason_code = std::string(population_reason);
-                row.audit.change_commentary = "Generated trade population.";
-                into.push_back(row);
-            }
-        };
-        const auto append_children = [&](const auto& rows, auto& into) {
-            for (auto row : rows) {
-                row.change_reason_code = std::string(population_reason);
-                row.change_commentary = "Generated trade population.";
-                into.push_back(row);
-            }
-        };
-        append_rows(slot.instruments.equity_forward_instruments,
-                    book_req.instruments.equity_forward_instruments);
-        append_rows(slot.instruments.equity_option_instruments,
-                    book_req.instruments.equity_option_instruments);
-        append_rows(slot.instruments.equity_asian_option_instruments,
-                    book_req.instruments.equity_asian_option_instruments);
-        append_rows(slot.instruments.equity_barrier_option_instruments,
-                    book_req.instruments.equity_barrier_option_instruments);
-        append_rows(slot.instruments.equity_digital_option_instruments,
-                    book_req.instruments.equity_digital_option_instruments);
-        append_rows(slot.instruments.equity_swap_instruments,
-                    book_req.instruments.equity_swap_instruments);
-        append_rows(slot.instruments.equity_variance_swap_instruments,
-                    book_req.instruments.equity_variance_swap_instruments);
-        append_rows(slot.instruments.equity_accumulator_instruments,
-                    book_req.instruments.equity_accumulator_instruments);
-        append_rows(slot.instruments.equity_position_instruments,
-                    book_req.instruments.equity_position_instruments);
-        append_children(slot.instruments.equity_basket_constituents,
-                        book_req.instruments.equity_basket_constituents);
-        append_children(slot.instruments.equity_swap_periods,
-                        book_req.instruments.equity_swap_periods);
-        append_children(slot.instruments.equity_position_option_underlyings,
-                        book_req.instruments.equity_position_option_underlyings);
-        append_children(slot.instruments.range_bounds, book_req.instruments.range_bounds);
-    } else if (!slot.instruments.credit_instruments.empty()) {
-        for (auto row : slot.instruments.credit_instruments) {
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.credit_instruments.push_back(row);
-        }
-    } else if (!slot.instruments.scripted_instruments.empty()) {
-        /*
-         * A scripted trade is one flat row: the script's name, the underlyings
-         * it observes and the parameters it is given, all text the store keeps
-         * as it stands.
-         */
-        for (auto row : slot.instruments.scripted_instruments) {
-            row.audit.change_reason_code = std::string(population_reason);
-            row.audit.change_commentary = "Generated trade population.";
-            book_req.instruments.scripted_instruments.push_back(row);
-        }
-    } else {
+    book_req.instruments = slot.instruments;
+    book_req.instruments.bond_issue_call_dates.clear();
+    book_req.instruments.bond_issue_conversion_targets.clear();
+    std::size_t rows = 0;
+    std::apply(
+        [&](const auto&... fields) {
+            (
+                [&] {
+                    for (auto& row : book_req.instruments.*(fields.member)) {
+                        state_reason(row);
+                        ++rows;
+                    }
+                }(),
+                ...);
+        },
+        wire_fields(std::type_identity<ores::trading::domain::instrument_batch>{}));
+    if (rows == 0)
         throw trade_population_write_error(
             "The slot states no rows this writer knows how to book.");
-    }
 
     return book_req;
 }

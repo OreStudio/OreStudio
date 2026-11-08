@@ -25,11 +25,12 @@
 #ifndef ORES_TRADING_API_MESSAGING_BOND_REPO_PROTOCOL_HPP
 #define ORES_TRADING_API_MESSAGING_BOND_REPO_PROTOCOL_HPP
 
-#include "ores.trading.api/domain/bond_repo.hpp"
+#include "ores.trading.api/domain/bond_repo_codec.hpp"
 #include "ores.trading.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -88,7 +89,7 @@ struct bond_repo_event {
     boost::uuids::uuid event_id;
     bond_repo_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +98,7 @@ struct bond_repo_event {
 
 struct bond_repo_version_key {
     bond_repo_key bond_repo;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bond_repo_version_key&, const bond_repo_version_key&) = default;
 };
@@ -134,7 +135,7 @@ struct list_bond_repos_request {
 struct list_bond_repos_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_repo> repos;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_repos_response&,
                            const list_bond_repos_response&) = default;
@@ -305,7 +306,7 @@ struct list_bond_repo_versions_request {
 struct list_bond_repo_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_repo> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_repo_versions_response&,
                            const list_bond_repo_versions_response&) = default;

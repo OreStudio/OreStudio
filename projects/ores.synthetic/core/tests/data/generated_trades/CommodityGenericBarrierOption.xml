@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
+    <TradeType>CommodityGenericBarrierOption</TradeType>
+  </Trade>
+  <Trade id="ad68af1f-8e57-5bc6-ac16-2bd6295b5bbf">
+    <TradeType>CommodityGenericBarrierOption</TradeType>
+  </Trade>
+</Portfolio>

@@ -692,32 +692,6 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
--- Composite Legs
--- -----------------------------------------------------------------------------
-alter table ores_trading_composite_legs_tbl enable row level security;
-
-drop policy if exists composite_legs_tenant_isolation_policy
-    on ores_trading_composite_legs_tbl;
-
-create policy composite_legs_tenant_isolation_policy on ores_trading_composite_legs_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
-drop policy if exists composite_legs_party_isolation_policy
-    on ores_trading_composite_legs_tbl;
-
-create policy composite_legs_party_isolation_policy
-on ores_trading_composite_legs_tbl
-as restrictive
-for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
-);
-
--- -----------------------------------------------------------------------------
 -- Swap Legs
 -- -----------------------------------------------------------------------------
 alter table ores_trading_swap_legs_tbl enable row level security;

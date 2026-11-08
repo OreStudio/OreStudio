@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 35649881-C6FE-4FC6-97D7-DA18A05A0355
+:END:
+#+title: Story: Serve what the BFF serves, then retire it
+#+description: The C++ server answers a fraction of what the BFF answers, and the browser calls none of it. Port the layer to parity one functionality at a time, merge each as it lands, and leave the BFF serving the browser until every route it answers has an equivalent. Retiring the BFF is a later set of pull requests, once the coverage is complete.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-11-06
+#+updated: 2026-11-08
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every route the BFF answers has an equivalent on the C++ server, merged and proved as
+it lands, and the browser keeps calling the BFF until the last one does.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
+* Coverage, counted from the inventory
+
+The route inventory is the measure, not a claim, and reading it on 2026-11-07 gives the
+picture below. The count is of routes and not of collections: a generated collection
+answers seven verbs where the BFF answers one or two, so a C++ count above the BFF's is
+what parity looks like from this angle, not a surplus.
+
+| Area | BFF routes | New server's routes |
+|------+------------+---------------------|
+| access | 31 | 44 |
+| auth | 18 | 31 |
+| assets | 5 | 29 |
+| changes | 2 | 1 |
+| reference-data | 30 | 247 |
+| simulation | 28 | 10 |
+| tenancy | 21 | 42 |
+| agile | 6 | 0 |
+| analytics | 6 | 0 |
+| grid | 14 | 0 |
+| market-data | 30 | 0 |
+| operations | 5 | 1 |
+| qa | 6 | 0 |
+| reporting | 44 | 0 |
+| trading | 24 | 0 |
+| workflow | 17 | 0 |
+
+The six areas at the top are served; the rest are untouched. Three of the served areas
+are only partly so: the access area's views and the tenancy area's views are composed
+views, which the V increments own, and simulation has one collection of its twenty
+models, which is the adapter's first step.
+
+The column favours the new server because a generated collection answers seven verbs
+where the BFF's hand-written route answers one or two. A large number is not a surplus.
+
+* Acceptance
+
+The story closes on the tasks it finished:
+
+- Serve the reference data catalogue, and let a list be searched.
+- Keep every route unit reachable.
+- Read a list's filter members.
+- Scaffold story: Serve one screen from the new server.
+- Serve the contact collection, and guard an entity whose protocol another model owns.
+- Stand up the synthetic adapter and serve its first collection.
+- Serve the tenancy collections.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:18835766-D75B-4438-BF90-4B6A148631E4][Scaffold story: Serve one screen from the new server]] | DONE | 2026-11-06 | 2026-11-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:506FB5FA-42AD-4F95-BFC2-CB2E52079DD7][Serve the reference data catalogue, and let a list be searched]] | DONE | 2026-11-06 | 2026-11-07 | Port the BFF's generic reference data router to generated routes, and let a searchable list be searched. |
+| [[id:B914EAE1-E73B-424C-8196-F9C68EEFDB54][Keep every route unit reachable]] | DONE | 2026-11-07 | 2026-11-07 | A route unit the component aggregate never registers compiles, links, passes its cases and answers nothing, and nothing reports it. Gate the link: every model that opts into the route facet has its unit called by its component's aggregate, once. |
+| [[id:A441EC2F-9B64-445B-97A9-50A73A44ACDD][Read a list's filter members]] | DONE | 2026-11-07 | 2026-11-07 | The BFF's lists filter on the members a resource names, under an f.<member> parameter, and the generated C++ list route reads none of them. Read the single-valued filter members into the filter the request carries, and document each one where it is read. |
+| [[id:114A065F-7B4B-4DF1-B339-84FC6FEF466F][Serve the tenancy collections]] | DONE | 2026-11-07 | 2026-11-07 | The tenants, their statuses and types, and the seed profiles the browser reads are answered by the BFF only. Serve them from the new server under the tenancy area, and classify the family in the inventory as one rule rather than a row at a time. |
+| [[id:24983ABA-4F85-4776-A6D3-F02FBA336ED5][Serve the contact collection, and guard an entity whose protocol another model owns]] | DONE | | 2026-11-07 | The contact information the browser reads for a person is answered by the BFF alone. Serve it, and refuse the route facet for an entity whose protocol an operation model owns, which is how auth_event was caught: its generated unit included a header that does not exist. |
+| [[id:8F10C573-02A6-40AC-9145-B6377BE58E39][Stand up the synthetic adapter and serve its first collection]] | DONE | 2026-11-07 | 2026-11-08 | The synthetic domain has no adapter part in the gateway, so none of its twenty entities can be served. Stand the part up, prove it on one lookup collection, and write down what a new part costs so the next one is a checklist. |
+
+* Decisions
+
+*Parity first, screens after, and the BFF stays where it is.* Moving a screen first
+would make the port a rewrite of the client and the server at once, and a failure
+would have two possible causes. The browser keeps calling the BFF until every route it
+needs has an equivalent, so each step is judged against a layer that already works.
+The other reason is the sharper one: a request must never depend on both servers at
+once. A screen split across them would carry two sessions, two cookie stores and two
+answers to the same question, and a fault would be a fault in the seam rather than in
+either side. Building the layer behind the BFF means no request ever crosses that seam
+during the migration, and the cutover is one switch thrown once rather than a hundred
+screens half moved.
+
+*A cutover at parity is the shortest one there is.* If every route the browser uses is
+already answered and proved by the new server, the removal is an act of configuration
+and deletion rather than a second migration: the work left is the switch, the fleet
+entry and the old unit, not a list of screens still to fix.
+
+*One functionality per pull request, merged as it lands.* A pull request that closes a
+feature and a pull request that removes the BFF are different kinds of change, so they
+do not share one. The BFF's removal is a set of pull requests written after the
+coverage is complete, against a layer that has nothing left to prove.
+
+*Coverage is the route inventory, not a claim.* =doc/knowledge/architecture/http_route_inventory.org=
+already lists every route both servers answer and the kind each one is. A resource the
+C++ server does not answer is a row the table shows as the BFF's, so progress is read
+from the table rather than from a story saying it is done.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]].
+
+* Out of scope
+
+-

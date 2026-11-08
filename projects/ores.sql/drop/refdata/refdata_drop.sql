@@ -340,6 +340,8 @@
 \ir ./refdata_counterparty_identifiers_notify_trigger_drop.sql
 \ir ./refdata_counterparty_identifiers_drop.sql
 \ir ./refdata_party_identifiers_notify_trigger_drop.sql
+\ir ./refdata_party_product_type_deal_classes_notify_trigger_drop.sql
+\ir ./refdata_party_product_type_deal_classes_drop.sql
 \ir ./refdata_party_identifiers_drop.sql
 
 -- Party-currency and party-country visibility junctions (drop before parties)

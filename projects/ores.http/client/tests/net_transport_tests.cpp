@@ -138,6 +138,12 @@ public:
     }
 
     ~local_server() {
+        // A client that never connected leaves the thread blocked in accept, so
+        // a connection of our own releases it and the test reports its failure.
+        boost::system::error_code ec;
+        tcp::socket waker(io_);
+        waker.connect(acceptor_.local_endpoint(ec), ec);
+        waker.close(ec);
         if (thread_.joinable())
             thread_.join();
     }

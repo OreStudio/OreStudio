@@ -82,7 +82,7 @@ struct instrument_schedule_date final {
     /**
      * @brief Ordinal of the owner within its list, counting from one.
      */
-    int owner_number;
+    int owner_number{};
 
     /**
      * @brief Which of the owner's schedules the owning row is.
@@ -96,7 +96,7 @@ struct instrument_schedule_date final {
      * The parent's sequence_number reaches this table under this name, so a date stays bound to the
      * entry that holds it when one owner states several entries under one role.
      */
-    int schedule_sequence_number;
+    int schedule_sequence_number{};
 
     /**
      * @brief Ordinal of this date within the schedule's list.
@@ -104,7 +104,7 @@ struct instrument_schedule_date final {
      * The schema declares the list unbounded, and a document's order is the order it stated. The
      * ordinal preserves that order, so export re-emits the dates as the document held them.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

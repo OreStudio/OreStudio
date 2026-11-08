@@ -253,6 +253,10 @@ BEGIN
 
     -- Party identifier scheme permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_id_schemes:read',   'View party identifier schemes');
+    -- Party product type deal classes: where a party draws the flow line
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_type_deal_classes:read',   'View the class a party works a product type as');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_type_deal_classes:write',  'State the class a party works a product type as');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_type_deal_classes:delete', 'Drop a party''s class and take the catalogue''s');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_id_schemes:write',  'Create and modify party identifier schemes');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_id_schemes:delete', 'Delete party identifier schemes');
 
@@ -1478,9 +1482,6 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::composite_instruments:read',                 'View composite instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::composite_instruments:write',                'Create and modify composite instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::composite_instruments:delete',               'Delete composite instruments');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::composite_legs:read',                        'View composite legs');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::composite_legs:write',                       'Create and modify composite legs');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::composite_legs:delete',                      'Delete composite legs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::credit_instruments:read',                    'View credit instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::credit_instruments:write',                   'Create and modify credit instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::credit_instruments:delete',                  'Delete credit instruments');
@@ -1592,6 +1593,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::inflation_swap_instruments:read',            'View inflation swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::inflation_swap_instruments:write',           'Create and modify inflation swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::inflation_swap_instruments:delete',          'Delete inflation swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barriers:read',                         'View instrument barriers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barriers:write',                        'Create and modify instrument barriers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barriers:delete',                       'Delete instrument barriers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barrier_levels:read',                         'View instrument barrier levels');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barrier_levels:write',                        'Create and modify instrument barrier levels');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_barrier_levels:delete',                       'Delete instrument barrier levels');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_underlyings:read',                         'View instrument underlyings');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_underlyings:write',                        'Create and modify instrument underlyings');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_underlyings:delete',                       'Delete instrument underlyings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_fees:read',       'View instrument option exercise fees');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_fees:write',      'Create and modify instrument option exercise fees');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::instrument_option_exercise_fees:delete',     'Delete instrument option exercise fees');
@@ -1667,6 +1677,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_template_roles:read',              'View structure template roles');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_template_roles:write',             'Create and modify structure template roles');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_template_roles:delete',            'Delete structure template roles');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::scripted_parameters:read',                         'View scripted parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::scripted_parameters:write',                        'Create and modify scripted parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::scripted_parameters:delete',                       'Delete scripted parameters');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::scripted_parameter_values:read',                         'View scripted parameter values');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::scripted_parameter_values:write',                        'Create and modify scripted parameter values');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::scripted_parameter_values:delete',                       'Delete scripted parameter values');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_members:read',                       'View structure members');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_members:write',                      'Link a trade into a structure');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structure_members:delete',                     'Unlink a trade from a structure');
@@ -1675,7 +1691,13 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::structures:delete',                          'Delete structures');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amounts:read',                           'View swap leg amounts');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amounts:write',                          'Create and modify swap leg amounts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amortizations:read',                     'View swap leg amortizations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amortizations:write',                    'Create and modify swap leg amortizations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amortizations:delete',                   'Delete swap leg amortizations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_amounts:delete',                         'Delete swap leg amounts');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_indexings:read',                        'View swap leg indexings');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_indexings:write',                       'Create and modify swap leg indexings');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_indexings:delete',                      'Delete swap leg indexings');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_rates:read',                             'View swap leg rates');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_rates:write',                            'Create and modify swap leg rates');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::swap_leg_rates:delete',                           'Delete swap leg rates');

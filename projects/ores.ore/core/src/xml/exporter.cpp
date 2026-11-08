@@ -242,10 +242,10 @@ std::string exporter::export_conventions(const domain::conventions_package& pack
 std::string
 exporter::export_portfolio(const std::vector<trading::messaging::trade_export_item>& items,
                            const trading::domain::instrument_batch& instruments,
-                           const reference_curve_names& reference_curves) {
+                           const ores::marketdata::projection::ore_projection& projection) {
     BOOST_LOG_SEV(lg(), debug) << "Started portfolio export. Items: " << items.size();
 
-    const auto document = portfolio_projection::reverse(items, instruments, reference_curves);
+    const auto document = portfolio_projection::reverse(items, instruments, projection);
     auto result = portfolio_projection::write(document);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished portfolio export. Trades: " << document.trade.size();
@@ -255,8 +255,8 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
 domain::written_portfolio exporter::export_portfolio_leaving_out(
     const std::vector<trading::messaging::trade_export_item>& items,
     const trading::domain::instrument_batch& instruments,
-    const reference_curve_names& reference_curves) {
-    const auto document = portfolio_projection::reverse(items, instruments, reference_curves);
+    const ores::marketdata::projection::ore_projection& projection) {
+    const auto document = portfolio_projection::reverse(items, instruments, projection);
     auto result = portfolio_projection::write_leaving_out(document);
     for (const auto& refused : result.refused)
         BOOST_LOG_SEV(lg(), warn) << "Left trade " << refused.trade_id << " (" << refused.trade_type

@@ -20,8 +20,8 @@
 #include "ores.marketdata.core/service/oresmd_schema_describer.hpp"
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/ore_types.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/schema.hpp"
-#include "ores.marketdata.core/datum/oresmd_uri_codec.hpp"
 #include <string>
 #include <string_view>
 #include <utility>

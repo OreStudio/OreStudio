@@ -26,7 +26,6 @@
 #include "ores.trading.api/domain/commodity_basket_constituent.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
-#include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/credit_basket_constituent.hpp"
 #include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
@@ -45,6 +44,8 @@
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
+#include "ores.trading.api/domain/instrument_barrier.hpp"
+#include "ores.trading.api/domain/instrument_barrier_level.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
@@ -53,12 +54,18 @@
 #include "ores.trading.api/domain/instrument_schedule.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
 #include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
+#include "ores.trading.api/domain/scripted_instrument.hpp"
+#include "ores.trading.api/domain/scripted_parameter.hpp"
+#include "ores.trading.api/domain/scripted_parameter_value.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
+#include "ores.trading.api/domain/swap_leg_amortization.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
+#include "ores.trading.api/domain/swap_leg_indexing.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -95,12 +102,6 @@ concept TradeKeyed = requires(T t) {
 template <typename T>
 concept NestedInstrument = Instrument<T>;
 
-template <typename T, typename Leg>
-struct with_legs {
-    T instrument;
-    std::vector<Leg> legs;
-};
-
 // The rates family states one header row, the product's own fact row, a leg
 // collection, and for a callable swap the schedule of dates its owner may
 // exercise the call on. The header holds the identity, the dates and the
@@ -132,9 +133,52 @@ struct swap_instrument_data {
     std::vector<flexi_swap_lower_notional> lower_notionals;
     std::vector<balance_guaranteed_swap_tranche> tranches;
     std::vector<balance_guaranteed_swap_tranche_notional> tranche_notionals;
+    std::vector<swap_leg_amortization> leg_amortizations;
+    std::vector<swap_leg_indexing> leg_indexings;
+    std::vector<instrument_barrier> barriers;
+    std::vector<instrument_barrier_level> barrier_levels;
 };
 
-using composite_instrument_data = with_legs<composite_instrument, composite_leg>;
+/**
+ * @brief A composite trade, a total return swap or a contract for
+ * difference: the row, and a swap's funding legs and return schedules.
+ *
+ * The trades a composite states inline, and a swap's underlyings, are trades
+ * of their own, joined to it by a structure, so the carrier holds no list of
+ * them. A total return swap's funding legs are rows of the shared leg tables,
+ * and its return schedule and payment dates rows of the shared schedule
+ * tables under the owner "trs".
+ */
+struct composite_instrument_data {
+    composite_instrument instrument;
+    std::vector<swap_leg> legs;
+    std::vector<swap_leg_amount> leg_amounts;
+    std::vector<swap_leg_rate> leg_rates;
+    std::vector<swap_leg_amortization> leg_amortizations;
+    std::vector<swap_leg_indexing> leg_indexings;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
+};
+
+/**
+ * @brief A scripted trade: the script's row and its named parameters.
+ *
+ * ORE reads every scripted trade as a script and named parameters of five
+ * kinds. Each parameter is a row; a list parameter's values are rows of their
+ * own, and an event parameter's schedule lands in the shared schedule rows
+ * under the owner "scripted".
+ */
+struct scripted_instrument_data {
+    scripted_instrument instrument;
+    std::vector<scripted_parameter> parameters;
+    std::vector<scripted_parameter_value> parameter_values;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
+    /**
+     * @brief The product's Underlying blocks, one row per block.
+     */
+    std::vector<instrument_underlying> instrument_underlyings;
+};
 
 // A commodity basket states a constituent collection beside the instrument
 // that owns it, so the carrier holds the two together and each constituent
@@ -143,6 +187,40 @@ using composite_instrument_data = with_legs<composite_instrument, composite_leg>
 struct commodity_instrument_data {
     commodity_instrument instrument;
     std::vector<commodity_basket_constituent> constituents;
+    /**
+     * @brief The legs of a commodity swap, in the shared swap leg rows.
+     *
+     * ORE states a commodity swap's legs as LegData, as it does a rates swap's,
+     * so the legs, their quantities, prices, amortizations and schedules land
+     * in the rows every leg reads and writes. A product with no legs leaves
+     * them empty.
+     */
+    std::vector<swap_leg> legs;
+    std::vector<swap_leg_amount> leg_amounts;
+    std::vector<swap_leg_rate> leg_rates;
+    std::vector<swap_leg_amortization> leg_amortizations;
+    std::vector<swap_leg_indexing> leg_indexings;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
+    /**
+     * @brief The OptionData block of a commodity option, in the shared option
+     * rows every option family reads and writes.
+     */
+    std::vector<instrument_option> options;
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<instrument_option_payment_date> option_payment_dates;
+    std::vector<instrument_option_exercise_price> option_exercise_prices;
+    std::vector<instrument_barrier> barriers;
+    std::vector<instrument_barrier_level> barrier_levels;
+    /**
+     * @brief The product's Underlying blocks, one row per block.
+     */
+    std::vector<instrument_underlying> instrument_underlyings;
+    /**
+     * @brief An option strip's call and put strikes, each with its position.
+     */
+    std::vector<instrument_strike> strikes;
 };
 
 // A credit trade states its legs as rows of the shared leg tables, and an index
@@ -313,6 +391,38 @@ struct equity_instrument_data {
      * accumulator states them beside its facts as the FX accumulator does.
      */
     std::vector<range_bound> range_bounds;
+    /**
+     * @brief The OptionData block of an equity option, in the shared option rows.
+     *
+     * The product's own row states its option type and expiry; the block's
+     * other terms, its direction, style, settlement and premiums, live in the
+     * rows every option family reads and writes.
+     */
+    std::vector<instrument_option> options;
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<instrument_option_payment_date> option_payment_dates;
+    std::vector<instrument_option_exercise_price> option_exercise_prices;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
+    /**
+     * @brief The legs of an equity swap, in the shared swap leg rows.
+     *
+     * ORE states an equity swap's legs as LegData, as it does a rates swap's,
+     * so the equity leg and the funding leg land in the rows every leg reads
+     * and writes. A product with no legs leaves them empty.
+     */
+    std::vector<swap_leg> legs;
+    std::vector<swap_leg_amount> leg_amounts;
+    std::vector<swap_leg_rate> leg_rates;
+    std::vector<swap_leg_amortization> leg_amortizations;
+    std::vector<swap_leg_indexing> leg_indexings;
+    std::vector<instrument_barrier> barriers;
+    std::vector<instrument_barrier_level> barrier_levels;
+    /**
+     * @brief The product's Underlying blocks, one row per block.
+     */
+    std::vector<instrument_underlying> instrument_underlyings;
 };
 
 /**
@@ -370,6 +480,29 @@ struct fx_instrument_data {
      * the visitor that picks the product never reads it.
      */
     std::vector<range_bound> range_bounds;
+    /**
+     * @brief The OptionData block of an FX option, in the shared option rows.
+     *
+     * An FX product's own row states its option type and expiry; the block's
+     * other terms, its style, settlement, payoff timing and premiums, are the
+     * ones every option family states and they live in the shared rows.
+     */
+    std::vector<instrument_option> options;
+    std::vector<instrument_option_premium> option_premiums;
+    std::vector<instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<instrument_option_payment_date> option_payment_dates;
+    std::vector<instrument_option_exercise_price> option_exercise_prices;
+    std::vector<instrument_schedule> schedules;
+    std::vector<instrument_schedule_date> schedule_dates;
+    /**
+     * @brief The product's barriers and their levels, one row per BarrierData.
+     */
+    std::vector<instrument_barrier> barriers;
+    std::vector<instrument_barrier_level> barrier_levels;
+    /**
+     * @brief The product's Underlying blocks, one row per block.
+     */
+    std::vector<instrument_underlying> instrument_underlyings;
 
     /**
      * @brief Value equality.
@@ -407,7 +540,18 @@ inline constexpr auto fx_instrument_arrays = std::tuple{&fx_instrument_data::for
  * list. Every walk that stamps or joins the carrier reads it, because a child
  * row is keyed by the same trade the product row is.
  */
-inline constexpr auto fx_instrument_child_arrays = std::tuple{&fx_instrument_data::range_bounds};
+inline constexpr auto fx_instrument_child_arrays =
+    std::tuple{&fx_instrument_data::range_bounds,
+               &fx_instrument_data::options,
+               &fx_instrument_data::option_premiums,
+               &fx_instrument_data::option_exercise_fees,
+               &fx_instrument_data::option_payment_dates,
+               &fx_instrument_data::option_exercise_prices,
+               &fx_instrument_data::schedules,
+               &fx_instrument_data::schedule_dates,
+               &fx_instrument_data::barriers,
+               &fx_instrument_data::barrier_levels,
+               &fx_instrument_data::instrument_underlyings};
 
 /**
  * @brief Calls a function on the first row the carrier holds, and on no other.
@@ -487,15 +631,24 @@ void stamp_ids(std::variant<Ts...>& v,
     std::visit([&](auto& fact) { stamp_ids(fact, trade_id, activity_id); }, v);
 }
 
-template <typename T, typename Leg>
-void stamp_ids(with_legs<T, Leg>& data,
-               boost::uuids::uuid trade_id,
-               boost::uuids::uuid activity_id = {}) {
+inline void stamp_ids(composite_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
     stamp_ids(data.instrument, trade_id, activity_id);
     for (auto& leg : data.legs) {
         leg.identity.trade_id = trade_id;
         leg.identity.trade_activity_id = activity_id;
     }
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows)
+            stamp_ids(row, trade_id, activity_id);
+    };
+    stamp_one(data.leg_amounts);
+    stamp_one(data.leg_rates);
+    stamp_one(data.leg_amortizations);
+    stamp_one(data.leg_indexings);
+    stamp_one(data.schedules);
+    stamp_one(data.schedule_dates);
 }
 
 inline void stamp_ids(swap_instrument_data& data,
@@ -540,6 +693,18 @@ inline void stamp_ids(swap_instrument_data& data,
     for (auto& exercise_price : data.option_exercise_prices) {
         stamp_ids(exercise_price, trade_id, activity_id);
     }
+    for (auto& amortization : data.leg_amortizations) {
+        stamp_ids(amortization, trade_id, activity_id);
+    }
+    for (auto& indexing : data.leg_indexings) {
+        stamp_ids(indexing, trade_id, activity_id);
+    }
+    for (auto& barrier : data.barriers) {
+        stamp_ids(barrier, trade_id, activity_id);
+    }
+    for (auto& level : data.barrier_levels) {
+        stamp_ids(level, trade_id, activity_id);
+    }
     for (auto& lower_notional : data.lower_notionals) {
         stamp_ids(lower_notional, trade_id, activity_id);
     }
@@ -551,6 +716,21 @@ inline void stamp_ids(swap_instrument_data& data,
     }
 }
 
+inline void stamp_ids(scripted_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    stamp_ids(data.instrument, trade_id, activity_id);
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows)
+            stamp_ids(row, trade_id, activity_id);
+    };
+    stamp_one(data.parameters);
+    stamp_one(data.parameter_values);
+    stamp_one(data.schedules);
+    stamp_one(data.schedule_dates);
+    stamp_one(data.instrument_underlyings);
+}
+
 inline void stamp_ids(commodity_instrument_data& data,
                       boost::uuids::uuid trade_id,
                       boost::uuids::uuid activity_id = {}) {
@@ -559,6 +739,29 @@ inline void stamp_ids(commodity_instrument_data& data,
         constituent.trade_id = trade_id;
         constituent.trade_activity_id = activity_id;
     }
+    for (auto& leg : data.legs) {
+        leg.identity.trade_id = trade_id;
+        leg.identity.trade_activity_id = activity_id;
+    }
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows)
+            stamp_ids(row, trade_id, activity_id);
+    };
+    stamp_one(data.leg_amounts);
+    stamp_one(data.leg_rates);
+    stamp_one(data.leg_amortizations);
+    stamp_one(data.leg_indexings);
+    stamp_one(data.barriers);
+    stamp_one(data.barrier_levels);
+    stamp_one(data.schedules);
+    stamp_one(data.schedule_dates);
+    stamp_one(data.options);
+    stamp_one(data.option_premiums);
+    stamp_one(data.option_exercise_fees);
+    stamp_one(data.option_payment_dates);
+    stamp_one(data.option_exercise_prices);
+    stamp_one(data.instrument_underlyings);
+    stamp_one(data.strikes);
 }
 
 inline void stamp_ids(credit_instrument_data& data,
@@ -630,6 +833,28 @@ inline void stamp_ids(equity_instrument_data& data,
         underlying.trade_id = trade_id;
         underlying.trade_activity_id = activity_id;
     }
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows)
+            stamp_ids(row, trade_id, activity_id);
+    };
+    stamp_one(data.options);
+    stamp_one(data.option_premiums);
+    stamp_one(data.option_exercise_fees);
+    stamp_one(data.option_payment_dates);
+    stamp_one(data.option_exercise_prices);
+    stamp_one(data.schedules);
+    stamp_one(data.schedule_dates);
+    for (auto& leg : data.legs) {
+        leg.identity.trade_id = trade_id;
+        leg.identity.trade_activity_id = activity_id;
+    }
+    stamp_one(data.leg_amounts);
+    stamp_one(data.leg_rates);
+    stamp_one(data.leg_amortizations);
+    stamp_one(data.leg_indexings);
+    stamp_one(data.barriers);
+    stamp_one(data.barrier_levels);
+    stamp_one(data.instrument_underlyings);
 }
 
 inline void stamp_ids(fx_instrument_data& data,

@@ -204,7 +204,7 @@ is immutable.
 
 | expression                                                                     |
 |--------------------------------------------------------------------------------|
-| "owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap', 'tranches') |
+| "owner_role" in ('trs_funding', 'repo', 'ascot_swap', 'option', 'trs', 'swap', 'tranches', 'scripted') |
 | "owner_number" > 0                                                             |
 | "schedule_sequence_number" > 0                                                 |
 | "sequence_number" > 0                                                          |

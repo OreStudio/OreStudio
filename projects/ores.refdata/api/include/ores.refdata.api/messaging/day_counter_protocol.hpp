@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_DAY_COUNTER_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_DAY_COUNTER_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/day_counter.hpp"
+#include "ores.refdata.api/domain/day_counter_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -85,7 +86,7 @@ struct day_counter_event {
     boost::uuids::uuid event_id;
     day_counter_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -94,7 +95,7 @@ struct day_counter_event {
 
 struct day_counter_version_key {
     day_counter_key day_counter;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const day_counter_version_key&,
                            const day_counter_version_key&) = default;
@@ -132,7 +133,7 @@ struct list_day_counters_request {
 struct list_day_counters_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::day_counter> day_counters;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_day_counters_response&,
                            const list_day_counters_response&) = default;
@@ -307,7 +308,7 @@ struct list_day_counter_versions_request {
 struct list_day_counter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::day_counter> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_day_counter_versions_response&,
                            const list_day_counter_versions_response&) = default;

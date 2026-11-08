@@ -18,18 +18,17 @@
  *
  */
 #include "ores.eventing.api/domain/event_channel_info_json_io.hpp"
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include "ores.utility/codec/json_codec.hpp"
 
 namespace ores::eventing::domain {
 
 std::ostream& operator<<(std::ostream& s, const event_channel_info& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<event_channel_info>& v) {
-    rfl::json::write(v, s);
+    s << ores::utility::codec::json::write(v);
     return s;
 }
 

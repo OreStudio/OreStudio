@@ -86,7 +86,7 @@ struct bond_issue_leg final {
      *
      * The issue's leg list is unbounded, and a bond states one leg per coupon.
      */
-    int leg_number;
+    int leg_number{};
 
     /**
      * @brief True when the leg's payer is the counterparty rather than the party.

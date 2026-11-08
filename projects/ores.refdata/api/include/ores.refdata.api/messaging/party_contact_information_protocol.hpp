@@ -62,7 +62,7 @@ struct party_contact_information_write {
     std::string phone;
     std::string email;
     std::string web_page;
-    bool is_primary;
+    bool is_primary{};
 
     friend bool operator==(const party_contact_information_write&,
                            const party_contact_information_write&) = default;
@@ -105,7 +105,7 @@ struct party_contact_information_event {
     boost::uuids::uuid event_id;
     party_contact_information_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -115,7 +115,7 @@ struct party_contact_information_event {
 
 struct party_contact_information_version_key {
     party_contact_information_key party_contact_information;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const party_contact_information_version_key&,
                            const party_contact_information_version_key&) = default;
@@ -153,7 +153,7 @@ struct list_party_contact_informations_request {
 struct list_party_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_contact_information> party_contact_informations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_contact_informations_response&,
                            const list_party_contact_informations_response&) = default;
@@ -333,7 +333,7 @@ struct list_by_party_id_party_contact_informations_request {
 struct list_by_party_id_party_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_contact_information> party_contact_informations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_party_id_party_contact_informations_response&,
                            const list_by_party_id_party_contact_informations_response&) = default;
@@ -363,7 +363,7 @@ struct list_party_contact_information_versions_request {
 struct list_party_contact_information_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_contact_information> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_contact_information_versions_response&,
                            const list_party_contact_information_versions_response&) = default;

@@ -55,9 +55,9 @@ struct subscription_interval_write {
     std::string provider_code;
     std::chrono::system_clock::time_point interval_from;
     boost::uuids::uuid feed_id;
-    bool display;
-    bool non_display;
-    bool derived;
+    bool display{};
+    bool non_display{};
+    bool derived{};
     std::optional<std::chrono::system_clock::time_point> interval_to;
 
     friend bool operator==(const subscription_interval_write&,
@@ -105,7 +105,7 @@ struct subscription_interval_event {
     boost::uuids::uuid event_id;
     subscription_interval_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -115,7 +115,7 @@ struct subscription_interval_event {
 
 struct subscription_interval_version_key {
     subscription_interval_key subscription_interval;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const subscription_interval_version_key&,
                            const subscription_interval_version_key&) = default;
@@ -153,7 +153,7 @@ struct list_subscription_intervals_request {
 struct list_subscription_intervals_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription_interval> subscription_intervals;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_subscription_intervals_response&,
                            const list_subscription_intervals_response&) = default;
@@ -332,7 +332,7 @@ struct list_subscription_interval_versions_request {
 struct list_subscription_interval_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::subscription_interval> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_subscription_interval_versions_response&,
                            const list_subscription_interval_versions_response&) = default;

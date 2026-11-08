@@ -76,12 +76,12 @@ struct bond_leg_amortization final {
     /**
      * @brief Ordinal of the leg within its list, counting from one.
      */
-    int leg_number;
+    int leg_number{};
 
     /**
      * @brief Ordinal of this step within the leg's amortization list.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

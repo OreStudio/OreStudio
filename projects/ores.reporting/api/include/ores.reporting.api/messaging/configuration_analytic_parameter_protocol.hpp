@@ -54,7 +54,7 @@ struct configuration_analytic_parameter_write {
     boost::uuids::uuid configuration_analytic_id;
     boost::uuids::uuid ore_parameter_id;
     std::string value;
-    int position;
+    int position{};
 
     friend bool operator==(const configuration_analytic_parameter_write&,
                            const configuration_analytic_parameter_write&) = default;
@@ -100,7 +100,7 @@ struct configuration_analytic_parameter_event {
     boost::uuids::uuid event_id;
     configuration_analytic_parameter_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -110,7 +110,7 @@ struct configuration_analytic_parameter_event {
 
 struct configuration_analytic_parameter_version_key {
     configuration_analytic_parameter_key configuration_analytic_parameter;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const configuration_analytic_parameter_version_key&,
                            const configuration_analytic_parameter_version_key&) = default;
@@ -149,7 +149,7 @@ struct list_configuration_analytic_parameters_request {
 struct list_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> parameter_values;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_configuration_analytic_parameters_response&,
                            const list_configuration_analytic_parameters_response&) = default;
@@ -337,7 +337,7 @@ struct list_by_configuration_analytic_id_configuration_analytic_parameters_reque
 struct list_by_configuration_analytic_id_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> parameter_values;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(
         const list_by_configuration_analytic_id_configuration_analytic_parameters_response&,
@@ -372,7 +372,7 @@ struct list_by_ore_parameter_id_configuration_analytic_parameters_request {
 struct list_by_ore_parameter_id_configuration_analytic_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> parameter_values;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(
         const list_by_ore_parameter_id_configuration_analytic_parameters_response&,
@@ -403,7 +403,7 @@ struct list_configuration_analytic_parameter_versions_request {
 struct list_configuration_analytic_parameter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic_parameter> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_configuration_analytic_parameter_versions_response&,

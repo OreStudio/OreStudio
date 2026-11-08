@@ -95,7 +95,7 @@ struct party_identifier_event {
     boost::uuids::uuid event_id;
     party_identifier_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct party_identifier_event {
 
 struct party_identifier_version_key {
     party_identifier_key party_identifier;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const party_identifier_version_key&,
                            const party_identifier_version_key&) = default;
@@ -142,7 +142,7 @@ struct list_party_identifiers_request {
 struct list_party_identifiers_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_identifier> party_identifiers;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_identifiers_response&,
                            const list_party_identifiers_response&) = default;
@@ -319,7 +319,7 @@ struct list_by_party_id_party_identifiers_request {
 struct list_by_party_id_party_identifiers_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_identifier> party_identifiers;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_party_id_party_identifiers_response&,
                            const list_by_party_id_party_identifiers_response&) = default;
@@ -348,7 +348,7 @@ struct list_party_identifier_versions_request {
 struct list_party_identifier_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_identifier> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_identifier_versions_response&,
                            const list_party_identifier_versions_response&) = default;

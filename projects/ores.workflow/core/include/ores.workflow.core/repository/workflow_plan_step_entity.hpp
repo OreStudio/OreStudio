@@ -60,7 +60,7 @@ struct workflow_plan_step_entity {
     std::string description;
     std::string command_subject;
     std::string compensation_subject;
-    std::int32_t timeout_seconds;
+    std::int32_t timeout_seconds{};
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

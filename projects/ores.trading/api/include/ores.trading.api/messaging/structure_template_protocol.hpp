@@ -92,7 +92,7 @@ struct structure_template_event {
     boost::uuids::uuid event_id;
     structure_template_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +102,7 @@ struct structure_template_event {
 
 struct structure_template_version_key {
     structure_template_key structure_template;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const structure_template_version_key&,
                            const structure_template_version_key&) = default;
@@ -140,7 +140,7 @@ struct list_structure_templates_request {
 struct list_structure_templates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_template> structure_templates;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_structure_templates_response&,
                            const list_structure_templates_response&) = default;
@@ -315,7 +315,7 @@ struct list_structure_template_versions_request {
 struct list_structure_template_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure_template> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_structure_template_versions_response&,
                            const list_structure_template_versions_response&) = default;

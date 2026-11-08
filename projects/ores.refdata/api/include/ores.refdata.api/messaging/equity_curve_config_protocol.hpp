@@ -58,9 +58,9 @@ struct equity_curve_config_write {
     std::string equity_type;
     std::optional<std::string> exercise_style;
     std::string spot_quote;
-    bool has_quotes;
+    bool has_quotes{};
     std::optional<std::string> day_counter;
-    bool has_dividend_interpolation;
+    bool has_dividend_interpolation{};
     std::optional<std::string> dividend_interpolation_variable;
     std::optional<std::string> dividend_interpolation_method;
     std::optional<std::string> dividend_extrapolation;
@@ -105,7 +105,7 @@ struct equity_curve_config_event {
     boost::uuids::uuid event_id;
     equity_curve_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -115,7 +115,7 @@ struct equity_curve_config_event {
 
 struct equity_curve_config_version_key {
     equity_curve_config_key equity_curve_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_curve_config_version_key&,
                            const equity_curve_config_version_key&) = default;
@@ -153,7 +153,7 @@ struct list_equity_curve_configs_request {
 struct list_equity_curve_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::equity_curve_config> equity_curve_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_curve_configs_response&,
                            const list_equity_curve_configs_response&) = default;
@@ -329,7 +329,7 @@ struct list_equity_curve_config_versions_request {
 struct list_equity_curve_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::equity_curve_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_curve_config_versions_response&,
                            const list_equity_curve_config_versions_response&) = default;

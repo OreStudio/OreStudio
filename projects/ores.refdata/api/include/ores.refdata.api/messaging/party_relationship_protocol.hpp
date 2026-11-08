@@ -87,7 +87,7 @@ struct party_relationship_event {
     boost::uuids::uuid event_id;
     party_relationship_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +97,7 @@ struct party_relationship_event {
 
 struct party_relationship_version_key {
     party_relationship_key party_relationship;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const party_relationship_version_key&,
                            const party_relationship_version_key&) = default;
@@ -134,7 +134,7 @@ struct list_party_relationships_request {
 struct list_party_relationships_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_relationship> relationships;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_relationships_response&,
                            const list_party_relationships_response&) = default;
@@ -309,7 +309,7 @@ struct list_party_relationship_versions_request {
 struct list_party_relationship_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_relationship> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_relationship_versions_response&,
                            const list_party_relationship_versions_response&) = default;

@@ -197,7 +197,7 @@ struct cms_payload {
     std::string_view element;
     std::string_view index;
     std::string_view index_2;
-    bool has_duration;
+    bool has_duration{};
 };
 
 inline constexpr cms_payload cms_payloads[] = {
@@ -213,7 +213,7 @@ inline constexpr cms_payload cms_payloads[] = {
 struct digital_payload {
     std::string_view leg_type;
     std::string_view element;
-    std::size_t cms;
+    std::size_t cms{};
 };
 
 inline constexpr digital_payload digital_payloads[] = {

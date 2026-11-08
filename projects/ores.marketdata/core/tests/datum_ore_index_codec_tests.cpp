@@ -254,7 +254,7 @@ TEST_CASE("the_index_codec_reads_every_corpus_index_name_as_ore_does",
 }
 
 TEST_CASE("every_index_round_trips_through_its_fixing_uri",
-          "[marketdata][datum][ore_index_codec]") {
+          "[long_running][marketdata][datum][ore_index_codec]") {
     std::vector<std::string> failures;
     std::set<std::string> uris;
     std::set<std::string> names;

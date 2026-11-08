@@ -52,11 +52,11 @@ struct fx_spot_fixing_item_key {
 struct fx_spot_fixing_item_write {
     boost::uuids::uuid id;
     boost::uuids::uuid fx_spot_config_id;
-    int rank;
+    int rank{};
     std::string item;
     std::string provider_code;
     std::string policy;
-    int window_days;
+    int window_days{};
 
     friend bool operator==(const fx_spot_fixing_item_write&,
                            const fx_spot_fixing_item_write&) = default;
@@ -99,7 +99,7 @@ struct fx_spot_fixing_item_event {
     boost::uuids::uuid event_id;
     fx_spot_fixing_item_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +109,7 @@ struct fx_spot_fixing_item_event {
 
 struct fx_spot_fixing_item_version_key {
     fx_spot_fixing_item_key fx_spot_fixing_item;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const fx_spot_fixing_item_version_key&,
                            const fx_spot_fixing_item_version_key&) = default;
@@ -147,7 +147,7 @@ struct list_fx_spot_fixing_items_request {
 struct list_fx_spot_fixing_items_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::fx_spot_fixing_item> fx_spot_fixing_items;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_spot_fixing_items_response&,
                            const list_fx_spot_fixing_items_response&) = default;
@@ -324,7 +324,7 @@ struct list_fx_spot_fixing_item_versions_request {
 struct list_fx_spot_fixing_item_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::fx_spot_fixing_item> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_spot_fixing_item_versions_response&,
                            const list_fx_spot_fixing_item_versions_response&) = default;

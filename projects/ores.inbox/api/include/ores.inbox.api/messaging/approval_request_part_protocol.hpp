@@ -111,7 +111,7 @@ struct list_approval_request_parts_request {
 struct list_approval_request_parts_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request_part> approval_request_parts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_request_parts_response&,
                            const list_approval_request_parts_response&) = default;
@@ -288,7 +288,7 @@ struct list_by_request_id_approval_request_parts_request {
 struct list_by_request_id_approval_request_parts_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request_part> approval_request_parts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_request_id_approval_request_parts_response&,
                            const list_by_request_id_approval_request_parts_response&) = default;

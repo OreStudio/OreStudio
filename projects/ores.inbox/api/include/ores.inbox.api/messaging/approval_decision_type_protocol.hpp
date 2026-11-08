@@ -53,8 +53,8 @@ struct approval_decision_type_write {
     std::string code;
     std::string name;
     std::string description;
-    bool requires_comment;
-    int display_order;
+    bool requires_comment{};
+    int display_order{};
 
     friend bool operator==(const approval_decision_type_write&,
                            const approval_decision_type_write&) = default;
@@ -95,7 +95,7 @@ struct approval_decision_type_event {
     boost::uuids::uuid event_id;
     approval_decision_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct approval_decision_type_event {
 
 struct approval_decision_type_version_key {
     approval_decision_type_key approval_decision_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const approval_decision_type_version_key&,
                            const approval_decision_type_version_key&) = default;
@@ -143,7 +143,7 @@ struct list_approval_decision_types_request {
 struct list_approval_decision_types_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_decision_type> decision_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_decision_types_response&,
                            const list_approval_decision_types_response&) = default;
@@ -319,7 +319,7 @@ struct list_approval_decision_type_versions_request {
 struct list_approval_decision_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_decision_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_decision_type_versions_response&,
                            const list_approval_decision_type_versions_response&) = default;

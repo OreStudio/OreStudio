@@ -53,7 +53,7 @@ struct seed_profile_step_write {
     boost::uuids::uuid seed_profile_id;
     std::string step_kind;
     std::string arguments_json;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const seed_profile_step_write&,
                            const seed_profile_step_write&) = default;
@@ -96,7 +96,7 @@ struct seed_profile_step_event {
     boost::uuids::uuid event_id;
     seed_profile_step_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct seed_profile_step_event {
 
 struct seed_profile_step_version_key {
     seed_profile_step_key seed_profile_step;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const seed_profile_step_version_key&,
                            const seed_profile_step_version_key&) = default;
@@ -144,7 +144,7 @@ struct list_seed_profile_steps_request {
 struct list_seed_profile_steps_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_step> seed_profile_steps;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_seed_profile_steps_response&,
                            const list_seed_profile_steps_response&) = default;
@@ -321,7 +321,7 @@ struct list_by_seed_profile_id_seed_profile_steps_request {
 struct list_by_seed_profile_id_seed_profile_steps_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_step> seed_profile_steps;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_seed_profile_id_seed_profile_steps_response&,
                            const list_by_seed_profile_id_seed_profile_steps_response&) = default;
@@ -350,7 +350,7 @@ struct list_seed_profile_step_versions_request {
 struct list_seed_profile_step_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile_step> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_seed_profile_step_versions_response&,
                            const list_seed_profile_step_versions_response&) = default;

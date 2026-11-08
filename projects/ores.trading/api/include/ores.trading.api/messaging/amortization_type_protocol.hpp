@@ -91,7 +91,7 @@ struct amortization_type_event {
     boost::uuids::uuid event_id;
     amortization_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +101,7 @@ struct amortization_type_event {
 
 struct amortization_type_version_key {
     amortization_type_key amortization_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const amortization_type_version_key&,
                            const amortization_type_version_key&) = default;
@@ -139,7 +139,7 @@ struct list_amortization_types_request {
 struct list_amortization_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::amortization_type> amortization_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_amortization_types_response&,
                            const list_amortization_types_response&) = default;
@@ -314,7 +314,7 @@ struct list_amortization_type_versions_request {
 struct list_amortization_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::amortization_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_amortization_type_versions_response&,
                            const list_amortization_type_versions_response&) = default;

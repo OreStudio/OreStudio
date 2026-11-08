@@ -50,7 +50,7 @@ struct deposit_convention_key {
 
 struct deposit_convention_write {
     std::string id;
-    bool index_based;
+    bool index_based{};
     std::optional<std::string> index;
     std::optional<std::string> calendar;
     std::optional<std::string> convention;
@@ -98,7 +98,7 @@ struct deposit_convention_event {
     boost::uuids::uuid event_id;
     deposit_convention_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +108,7 @@ struct deposit_convention_event {
 
 struct deposit_convention_version_key {
     deposit_convention_key deposit_convention;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const deposit_convention_version_key&,
                            const deposit_convention_version_key&) = default;
@@ -146,7 +146,7 @@ struct list_deposit_conventions_request {
 struct list_deposit_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::deposit_convention> deposit_conventions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_deposit_conventions_response&,
                            const list_deposit_conventions_response&) = default;
@@ -321,7 +321,7 @@ struct list_deposit_convention_versions_request {
 struct list_deposit_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::deposit_convention> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_deposit_convention_versions_response&,
                            const list_deposit_convention_versions_response&) = default;

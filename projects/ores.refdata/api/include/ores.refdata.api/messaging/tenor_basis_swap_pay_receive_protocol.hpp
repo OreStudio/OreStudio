@@ -103,7 +103,7 @@ struct tenor_basis_swap_pay_receive_event {
     boost::uuids::uuid event_id;
     tenor_basis_swap_pay_receive_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -113,7 +113,7 @@ struct tenor_basis_swap_pay_receive_event {
 
 struct tenor_basis_swap_pay_receive_version_key {
     tenor_basis_swap_pay_receive_key tenor_basis_swap_pay_receive;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const tenor_basis_swap_pay_receive_version_key&,
                            const tenor_basis_swap_pay_receive_version_key&) = default;
@@ -152,7 +152,7 @@ struct list_tenor_basis_swap_pay_receives_request {
 struct list_tenor_basis_swap_pay_receives_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> tenor_basis_swap_pay_receives;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenor_basis_swap_pay_receives_response&,
                            const list_tenor_basis_swap_pay_receives_response&) = default;
@@ -334,7 +334,7 @@ struct list_by_convention_id_tenor_basis_swap_pay_receives_request {
 struct list_by_convention_id_tenor_basis_swap_pay_receives_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> tenor_basis_swap_pay_receives;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_convention_id_tenor_basis_swap_pay_receives_response&,
@@ -365,7 +365,7 @@ struct list_tenor_basis_swap_pay_receive_versions_request {
 struct list_tenor_basis_swap_pay_receive_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenor_basis_swap_pay_receive_versions_response&,
                            const list_tenor_basis_swap_pay_receive_versions_response&) = default;

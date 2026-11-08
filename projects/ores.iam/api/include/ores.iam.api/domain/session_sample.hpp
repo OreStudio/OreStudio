@@ -67,17 +67,17 @@ struct session_sample final {
     /**
      * @brief Bytes the session sent.
      */
-    std::int64_t bytes_sent;
+    std::int64_t bytes_sent{};
 
     /**
      * @brief Bytes the session received.
      */
-    std::int64_t bytes_received;
+    std::int64_t bytes_received{};
 
     /**
      * @brief The latency of the heartbeat, in milliseconds.
      */
-    std::int64_t latency_ms;
+    std::int64_t latency_ms{};
 
     /**
      * @brief Value equality.

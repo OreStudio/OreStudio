@@ -53,7 +53,7 @@ struct day_count_fraction_type_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const day_count_fraction_type_write&,
                            const day_count_fraction_type_write&) = default;
@@ -94,7 +94,7 @@ struct day_count_fraction_type_event {
     boost::uuids::uuid event_id;
     day_count_fraction_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct day_count_fraction_type_event {
 
 struct day_count_fraction_type_version_key {
     day_count_fraction_type_key day_count_fraction_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const day_count_fraction_type_version_key&,
                            const day_count_fraction_type_version_key&) = default;
@@ -142,7 +142,7 @@ struct list_day_count_fraction_types_request {
 struct list_day_count_fraction_types_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::day_count_fraction_type> types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_day_count_fraction_types_response&,
                            const list_day_count_fraction_types_response&) = default;
@@ -319,7 +319,7 @@ struct list_day_count_fraction_type_versions_request {
 struct list_day_count_fraction_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::day_count_fraction_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_day_count_fraction_type_versions_response&,
                            const list_day_count_fraction_type_versions_response&) = default;

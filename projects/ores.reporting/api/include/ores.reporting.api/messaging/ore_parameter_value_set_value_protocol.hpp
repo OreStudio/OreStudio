@@ -55,8 +55,8 @@ struct ore_parameter_value_set_value_write {
     std::string value;
     std::string label;
     std::string description;
-    int display_order;
-    bool is_active;
+    int display_order{};
+    bool is_active{};
     std::string canonical_value;
 
     friend bool operator==(const ore_parameter_value_set_value_write&,
@@ -99,7 +99,7 @@ struct ore_parameter_value_set_value_event {
     boost::uuids::uuid event_id;
     ore_parameter_value_set_value_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +109,7 @@ struct ore_parameter_value_set_value_event {
 
 struct ore_parameter_value_set_value_version_key {
     ore_parameter_value_set_value_key ore_parameter_value_set_value;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const ore_parameter_value_set_value_version_key&,
                            const ore_parameter_value_set_value_version_key&) = default;
@@ -148,7 +148,7 @@ struct list_ore_parameter_value_set_values_request {
 struct list_ore_parameter_value_set_values_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_value> values;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ore_parameter_value_set_values_response&,
                            const list_ore_parameter_value_set_values_response&) = default;
@@ -332,7 +332,7 @@ struct list_ore_parameter_value_set_value_versions_request {
 struct list_ore_parameter_value_set_value_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_value> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ore_parameter_value_set_value_versions_response&,
                            const list_ore_parameter_value_set_value_versions_response&) = default;

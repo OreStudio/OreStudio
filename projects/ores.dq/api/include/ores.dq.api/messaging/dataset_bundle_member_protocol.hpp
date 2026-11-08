@@ -52,8 +52,8 @@ struct dataset_bundle_member_key {
 struct dataset_bundle_member_write {
     std::string bundle_code;
     std::string dataset_code;
-    int display_order;
-    bool optional;
+    int display_order{};
+    bool optional{};
 
     friend bool operator==(const dataset_bundle_member_write&,
                            const dataset_bundle_member_write&) = default;
@@ -95,7 +95,7 @@ struct dataset_bundle_member_event {
     boost::uuids::uuid event_id;
     dataset_bundle_member_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -125,7 +125,7 @@ struct list_dataset_bundle_members_request {
 struct list_dataset_bundle_members_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset_bundle_member> dataset_bundle_members;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_dataset_bundle_members_response&,
                            const list_dataset_bundle_members_response&) = default;
@@ -302,7 +302,7 @@ struct list_by_bundle_code_dataset_bundle_members_request {
 struct list_by_bundle_code_dataset_bundle_members_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset_bundle_member> dataset_bundle_members;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_bundle_code_dataset_bundle_members_response&,
                            const list_by_bundle_code_dataset_bundle_members_response&) = default;

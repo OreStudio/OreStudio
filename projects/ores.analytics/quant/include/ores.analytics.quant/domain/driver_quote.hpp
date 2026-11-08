@@ -36,7 +36,7 @@ struct driver_quote {
     std::string base_code;
     std::string quote_code;
     /// Spot rate: 1 unit of @c base_code = @c rate units of @c quote_code.
-    double rate;
+    double rate{};
     std::chrono::system_clock::time_point observed_at;
 };
 

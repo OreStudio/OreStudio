@@ -60,7 +60,7 @@ struct equity_variance_swap_instrument_entity {
     std::string underlying_name;
     std::string currency;
     ores::utility::decimal::decimal notional;
-    double variance_strike;
+    double variance_strike{};
     std::chrono::year_month_day start_date;
     std::chrono::year_month_day maturity_date;
     std::string long_short;

@@ -56,7 +56,7 @@ struct rate_card_component_write {
     std::string licence_right;
     std::chrono::system_clock::time_point effective_from;
     std::string currency;
-    std::int64_t charge_micros;
+    std::int64_t charge_micros{};
     std::optional<std::chrono::system_clock::time_point> effective_to;
 
     friend bool operator==(const rate_card_component_write&,
@@ -102,7 +102,7 @@ struct rate_card_component_event {
     boost::uuids::uuid event_id;
     rate_card_component_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -112,7 +112,7 @@ struct rate_card_component_event {
 
 struct rate_card_component_version_key {
     rate_card_component_key rate_card_component;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const rate_card_component_version_key&,
                            const rate_card_component_version_key&) = default;
@@ -150,7 +150,7 @@ struct list_rate_card_components_request {
 struct list_rate_card_components_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::rate_card_component> rate_card_components;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_rate_card_components_response&,
                            const list_rate_card_components_response&) = default;
@@ -327,7 +327,7 @@ struct list_rate_card_component_versions_request {
 struct list_rate_card_component_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::rate_card_component> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_rate_card_component_versions_response&,
                            const list_rate_card_component_versions_response&) = default;

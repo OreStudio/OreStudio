@@ -91,7 +91,7 @@ struct bond_issue_leg_schedule final {
     /**
      * @brief Ordinal of the leg within the issue's leg list, counting from one.
      */
-    int leg_number;
+    int leg_number{};
 
     /**
      * @brief Which of the leg's schedules this row is.
@@ -109,7 +109,7 @@ struct bond_issue_leg_schedule final {
      * interleaves the two arms. One leg can therefore state several entries under one role, and the
      * role alone does not identify a row. The ordinal preserves the order the document stated.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief Which arm of the schema's choice the document stated: rules or dates.

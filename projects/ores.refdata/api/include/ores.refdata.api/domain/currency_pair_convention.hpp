@@ -66,12 +66,12 @@ struct currency_pair_convention final {
     /**
      * @brief Converts pips to absolute rate moves (0.0001 for most pairs, 0.01 for JPY crosses).
      */
-    double pip_factor;
+    double pip_factor{};
 
     /**
      * @brief Minimum rate increment, in pips.
      */
-    double tick_size;
+    double tick_size{};
 
     /**
      * @brief Decimal places for rate display.

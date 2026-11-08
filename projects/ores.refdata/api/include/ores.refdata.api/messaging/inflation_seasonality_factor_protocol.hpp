@@ -53,7 +53,7 @@ struct inflation_seasonality_factor_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
     std::string factor;
-    int position;
+    int position{};
 
     friend bool operator==(const inflation_seasonality_factor_write&,
                            const inflation_seasonality_factor_write&) = default;
@@ -94,7 +94,7 @@ struct inflation_seasonality_factor_event {
     boost::uuids::uuid event_id;
     inflation_seasonality_factor_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct inflation_seasonality_factor_event {
 
 struct inflation_seasonality_factor_version_key {
     inflation_seasonality_factor_key inflation_seasonality_factor;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const inflation_seasonality_factor_version_key&,
                            const inflation_seasonality_factor_version_key&) = default;
@@ -143,7 +143,7 @@ struct list_inflation_seasonality_factors_request {
 struct list_inflation_seasonality_factors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_seasonality_factor> seasonality_factors;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_inflation_seasonality_factors_response&,
                            const list_inflation_seasonality_factors_response&) = default;
@@ -323,7 +323,7 @@ struct list_inflation_seasonality_factor_versions_request {
 struct list_inflation_seasonality_factor_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_seasonality_factor> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_inflation_seasonality_factor_versions_response&,
                            const list_inflation_seasonality_factor_versions_response&) = default;

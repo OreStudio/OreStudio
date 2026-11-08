@@ -51,13 +51,13 @@ struct balance_guaranteed_swap_tranche_entity {
     constexpr static const char* tablename = "ores_trading_balance_guaranteed_swap_tranches_tbl";
 
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid trade_activity_id;
     std::optional<std::string> description;
     std::string security_id;
-    std::int64_t seniority;
+    std::int64_t seniority{};
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

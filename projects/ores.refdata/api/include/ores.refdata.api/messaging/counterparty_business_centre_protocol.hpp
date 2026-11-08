@@ -93,7 +93,7 @@ struct counterparty_business_centre_event {
     boost::uuids::uuid event_id;
     counterparty_business_centre_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -124,7 +124,7 @@ struct list_counterparty_business_centres_request {
 struct list_counterparty_business_centres_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_business_centre> counterparty_business_centres;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_counterparty_business_centres_response&,
                            const list_counterparty_business_centres_response&) = default;
@@ -306,7 +306,7 @@ struct list_by_counterparty_id_counterparty_business_centres_request {
 struct list_by_counterparty_id_counterparty_business_centres_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_business_centre> counterparty_business_centres;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_counterparty_id_counterparty_business_centres_response&,

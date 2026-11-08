@@ -31,10 +31,10 @@ namespace ores::analytics::quant::domain {
  */
 struct periodic_law final {
     /// Arrivals per operational second.
-    double rate;
+    double rate{};
     /// The fraction of a gap left before the next arrival: the drawn phase before
     /// the first event, and one after it.
-    double offset;
+    double offset{};
 };
 
 /**
@@ -42,7 +42,7 @@ struct periodic_law final {
  */
 struct poisson_law final {
     /// Arrivals per operational second.
-    double rate;
+    double rate{};
 };
 
 /**
@@ -53,13 +53,13 @@ struct poisson_law final {
  */
 struct hawkes_law final {
     /// mu, in arrivals per operational second.
-    double baseline;
+    double baseline{};
     /// alpha, the excess one event adds.
-    double jump;
+    double jump{};
     /// beta, in one over an operational second.
-    double decay;
+    double decay{};
     /// The excess at the last event, after its jump.
-    double excess;
+    double excess{};
 };
 
 /**

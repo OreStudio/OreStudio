@@ -62,12 +62,12 @@ struct scripted_parameter_value final {
     /**
      * @brief The ordinal of the parameter this value belongs to, matching the parameter row's own.
      */
-    int parameter_sequence_number;
+    int parameter_sequence_number{};
 
     /**
      * @brief 1-based ordinal of this value within the parameter's list.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

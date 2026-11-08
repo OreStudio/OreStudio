@@ -153,3 +153,8 @@ def test_a_tree_with_nothing_to_compare_is_not_read_as_a_pass(tmp_path, monkeypa
     monkeypatch.setattr(sys, "argv", ["check", "--root", str(tmp_path)])
     assert check.compare(tmp_path).compared == 0
     assert check.main() == 1
+
+
+def test_a_value_initialised_member_is_read_as_a_member():
+    text = "struct row {\n    int sequence_number{};\n};\n"
+    assert check.row_members(text) == {"sequence_number": "int"}

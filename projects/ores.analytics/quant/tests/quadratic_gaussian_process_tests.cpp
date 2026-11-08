@@ -145,7 +145,7 @@ TEST_CASE("quadratic gaussian zero-sigma prices the deterministic path",
 }
 
 TEST_CASE("quadratic gaussian bond price matches the brute-force expectation",
-          "[quadratic_gaussian_process]") {
+          "[long_running][quadratic_gaussian_process]") {
     // The recursion's authoritative check: the bond price is the
     // expectation of the pathwise discount over the exact per-tick
     // Gaussian transitions, estimated here by simulation. The recursion
@@ -194,7 +194,7 @@ TEST_CASE("quadratic gaussian bond price matches the brute-force expectation",
 }
 
 TEST_CASE("quadratic gaussian first-tick moments match the closed forms",
-          "[quadratic_gaussian_process]") {
+          "[long_running][quadratic_gaussian_process]") {
     // One-tick statistics of the quadratic rate against the closed
     // forms: with X' = theta + exp(-kappas*dt) * (X_0 - theta) + sqrt(V) z,
     //     E[r']  = delta_0 + deltas * mu + gamma * (mu^2 + V)

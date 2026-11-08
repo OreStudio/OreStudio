@@ -53,9 +53,9 @@ struct session_sample_entity {
     boost::uuids::uuid session_id;
     db_timestamp sample_time;
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-    std::int64_t bytes_sent;
-    std::int64_t bytes_received;
-    std::int64_t latency_ms;
+    std::int64_t bytes_sent{};
+    std::int64_t bytes_received{};
+    std::int64_t latency_ms{};
 
     /**
      * @brief The columns of the table, named as the members, with the key.

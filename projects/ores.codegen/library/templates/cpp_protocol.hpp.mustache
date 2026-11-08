@@ -51,7 +51,7 @@ struct {{name}} {
 {{#comment}}
 {{{.}}}
 {{/comment}}
-    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
+    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}}{{^default}}{{{cpp_value_init}}}{{/default}};
 {{/fields}}
 
     friend bool operator==(const {{name}}&, const {{name}}&) = default;
@@ -159,7 +159,7 @@ struct {{name}} {
 {{#comment}}
 {{{.}}}
 {{/comment}}
-    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
+    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}}{{^default}}{{{cpp_value_init}}}{{/default}};
 {{/fields}}
 
     friend bool operator==(const {{name}}&, const {{name}}&) = default;
@@ -250,7 +250,7 @@ struct {{name}} {
 {{#comment}}
 {{{.}}}
 {{/comment}}
-    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
+    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}}{{^default}}{{{cpp_value_init}}}{{/default}};
 {{/fields}}
 
     friend bool operator==(const {{name}}&, const {{name}}&) = default;
@@ -384,7 +384,7 @@ struct {{name}} {
 {{#comment}}
 {{{.}}}
 {{/comment}}
-    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}};
+    {{{cpp_type}}} {{name}}{{#default}} = {{{default}}}{{/default}}{{^default}}{{{cpp_value_init}}}{{/default}};
 {{/fields}}
 
     friend bool operator==(const {{name}}&, const {{name}}&) = default;

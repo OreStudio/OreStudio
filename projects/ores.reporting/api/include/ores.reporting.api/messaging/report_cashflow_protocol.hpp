@@ -66,7 +66,7 @@ struct report_cashflow_write {
     std::string flow_type;
     std::string currency;
     std::string qualifiers;
-    double value;
+    double value{};
     std::string source;
 
     friend bool operator==(const report_cashflow_write&, const report_cashflow_write&) = default;
@@ -117,7 +117,7 @@ struct report_cashflow_event {
     boost::uuids::uuid event_id;
     report_cashflow_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -147,7 +147,7 @@ struct list_report_cashflows_request {
 struct list_report_cashflows_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_cashflow> cashflows;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_cashflows_response&,
                            const list_report_cashflows_response&) = default;

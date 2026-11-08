@@ -51,7 +51,7 @@ struct average_ois_convention_key {
 
 struct average_ois_convention_write {
     std::string id;
-    int spot_lag;
+    int spot_lag{};
     std::string fixed_tenor;
     std::string fixed_day_count_fraction;
     std::optional<std::string> fixed_calendar;
@@ -102,7 +102,7 @@ struct average_ois_convention_event {
     boost::uuids::uuid event_id;
     average_ois_convention_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -112,7 +112,7 @@ struct average_ois_convention_event {
 
 struct average_ois_convention_version_key {
     average_ois_convention_key average_ois_convention;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const average_ois_convention_version_key&,
                            const average_ois_convention_version_key&) = default;
@@ -150,7 +150,7 @@ struct list_average_ois_conventions_request {
 struct list_average_ois_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::average_ois_convention> average_ois_conventions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_average_ois_conventions_response&,
                            const list_average_ois_conventions_response&) = default;
@@ -327,7 +327,7 @@ struct list_average_ois_convention_versions_request {
 struct list_average_ois_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::average_ois_convention> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_average_ois_convention_versions_response&,
                            const list_average_ois_convention_versions_response&) = default;

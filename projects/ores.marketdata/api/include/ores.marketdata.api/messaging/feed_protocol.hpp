@@ -55,7 +55,7 @@ struct feed_write {
     std::string session_code;
     std::string service;
     std::string provider_key;
-    bool is_default;
+    bool is_default{};
     std::string description;
 
     friend bool operator==(const feed_write&, const feed_write&) = default;
@@ -99,7 +99,7 @@ struct feed_event {
     boost::uuids::uuid event_id;
     feed_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +108,7 @@ struct feed_event {
 
 struct feed_version_key {
     feed_key feed;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const feed_version_key&, const feed_version_key&) = default;
 };
@@ -143,7 +143,7 @@ struct list_feeds_request {
 struct list_feeds_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed> feeds;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_feeds_response&, const list_feeds_response&) = default;
 };
@@ -309,7 +309,7 @@ struct list_feed_versions_request {
 struct list_feed_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::feed> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_feed_versions_response&,
                            const list_feed_versions_response&) = default;

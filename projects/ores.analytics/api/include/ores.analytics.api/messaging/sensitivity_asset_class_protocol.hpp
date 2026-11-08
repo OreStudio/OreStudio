@@ -54,7 +54,7 @@ struct sensitivity_asset_class_write {
     std::string template_prefix;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const sensitivity_asset_class_write&,
                            const sensitivity_asset_class_write&) = default;
@@ -95,7 +95,7 @@ struct sensitivity_asset_class_event {
     boost::uuids::uuid event_id;
     sensitivity_asset_class_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct sensitivity_asset_class_event {
 
 struct sensitivity_asset_class_version_key {
     sensitivity_asset_class_key sensitivity_asset_class;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const sensitivity_asset_class_version_key&,
                            const sensitivity_asset_class_version_key&) = default;
@@ -143,7 +143,7 @@ struct list_sensitivity_asset_classes_request {
 struct list_sensitivity_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::sensitivity_asset_class> asset_classes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sensitivity_asset_classes_response&,
                            const list_sensitivity_asset_classes_response&) = default;
@@ -323,7 +323,7 @@ struct list_sensitivity_asset_class_versions_request {
 struct list_sensitivity_asset_class_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::sensitivity_asset_class> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sensitivity_asset_class_versions_response&,
                            const list_sensitivity_asset_class_versions_response&) = default;

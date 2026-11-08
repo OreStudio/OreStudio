@@ -105,7 +105,7 @@ struct counterparty_contact_information_event {
     boost::uuids::uuid event_id;
     counterparty_contact_information_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -115,7 +115,7 @@ struct counterparty_contact_information_event {
 
 struct counterparty_contact_information_version_key {
     counterparty_contact_information_key counterparty_contact_information;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const counterparty_contact_information_version_key&,
                            const counterparty_contact_information_version_key&) = default;
@@ -155,7 +155,7 @@ struct list_counterparty_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_contact_information>
         counterparty_contact_informations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_counterparty_contact_informations_response&,
                            const list_counterparty_contact_informations_response&) = default;
@@ -343,7 +343,7 @@ struct list_by_counterparty_id_counterparty_contact_informations_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_contact_information>
         counterparty_contact_informations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_counterparty_id_counterparty_contact_informations_response&,
@@ -374,7 +374,7 @@ struct list_counterparty_contact_information_versions_request {
 struct list_counterparty_contact_information_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_contact_information> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_counterparty_contact_information_versions_response&,

@@ -53,14 +53,14 @@ struct credit_simulation_matrix_row_config_write {
     boost::uuids::uuid id;
     boost::uuids::uuid transition_matrix_id;
     std::string from_rating;
-    double p_aaa;
-    double p_aa;
-    double p_a;
-    double p_baa;
-    double p_ba;
-    double p_b;
-    double p_c;
-    double p_default;
+    double p_aaa{};
+    double p_aa{};
+    double p_a{};
+    double p_baa{};
+    double p_ba{};
+    double p_b{};
+    double p_c{};
+    double p_default{};
 
     friend bool operator==(const credit_simulation_matrix_row_config_write&,
                            const credit_simulation_matrix_row_config_write&) = default;
@@ -104,7 +104,7 @@ struct credit_simulation_matrix_row_config_event {
     boost::uuids::uuid event_id;
     credit_simulation_matrix_row_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -114,7 +114,7 @@ struct credit_simulation_matrix_row_config_event {
 
 struct credit_simulation_matrix_row_config_version_key {
     credit_simulation_matrix_row_config_key credit_simulation_matrix_row_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const credit_simulation_matrix_row_config_version_key&,
                            const credit_simulation_matrix_row_config_version_key&) = default;
@@ -153,7 +153,7 @@ struct list_credit_simulation_matrix_row_configs_request {
 struct list_credit_simulation_matrix_row_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_matrix_row_config> rows;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_credit_simulation_matrix_row_configs_response&,
                            const list_credit_simulation_matrix_row_configs_response&) = default;
@@ -342,7 +342,7 @@ struct list_by_transition_matrix_id_credit_simulation_matrix_row_configs_request
 struct list_by_transition_matrix_id_credit_simulation_matrix_row_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_matrix_row_config> rows;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_transition_matrix_id_credit_simulation_matrix_row_configs_response&,
@@ -375,7 +375,7 @@ struct list_credit_simulation_matrix_row_config_versions_request {
 struct list_credit_simulation_matrix_row_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::credit_simulation_matrix_row_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_credit_simulation_matrix_row_config_versions_response&,

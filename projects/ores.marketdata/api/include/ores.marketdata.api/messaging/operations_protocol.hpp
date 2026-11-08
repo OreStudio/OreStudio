@@ -783,7 +783,7 @@ struct point_provenance {
     /** The recipe that built a derived point. Empty unless the point is derived. */
     std::string derivation_config_id;
     /** The recipe version the point was built under. Zero unless the point is derived. */
-    int derivation_config_version;
+    int derivation_config_version{};
     /** The as-of of the upstream data the derivation read. The epoch unless the point is derived.
      */
     std::chrono::system_clock::time_point source_as_of;

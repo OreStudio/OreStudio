@@ -214,7 +214,7 @@ private:
     double unit_dwell(std::size_t k);
 
     market_config config_;
-    double calm_multiplier_;
+    double calm_multiplier_{};
     math::rng_stream stream_;
     std::deque<double> upcoming_dwells_;
 

@@ -87,7 +87,7 @@ struct bond_issue_leg_rate final {
     /**
      * @brief Ordinal of the leg within its list, counting from one.
      */
-    int leg_number;
+    int leg_number{};
 
     /**
      * @brief Which arm of the schema's rate group the document engaged: fixed, floating or

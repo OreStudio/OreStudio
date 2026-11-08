@@ -44,7 +44,7 @@ namespace ores::trading::messaging {
 
 struct equity_basket_constituent_key {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const equity_basket_constituent_key&,
                            const equity_basket_constituent_key&) = default;
@@ -52,7 +52,7 @@ struct equity_basket_constituent_key {
 
 struct equity_basket_constituent_write {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
     std::optional<std::string> identifier_type;
@@ -92,7 +92,7 @@ struct equity_basket_constituent_event {
     boost::uuids::uuid event_id;
     equity_basket_constituent_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +102,7 @@ struct equity_basket_constituent_event {
 
 struct equity_basket_constituent_version_key {
     equity_basket_constituent_key equity_basket_constituent;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_basket_constituent_version_key&,
                            const equity_basket_constituent_version_key&) = default;
@@ -139,7 +139,7 @@ struct list_equity_basket_constituents_request {
 struct list_equity_basket_constituents_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_basket_constituent> equity_basket_constituents;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_basket_constituents_response&,
                            const list_equity_basket_constituents_response&) = default;
@@ -318,7 +318,7 @@ struct list_equity_basket_constituent_versions_request {
 struct list_equity_basket_constituent_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_basket_constituent> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_basket_constituent_versions_response&,
                            const list_equity_basket_constituent_versions_response&) = default;

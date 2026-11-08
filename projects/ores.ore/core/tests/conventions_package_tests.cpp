@@ -221,7 +221,8 @@ TEST_CASE("every_family_the_package_names_is_one_the_registry_names",
 // The central convention family holds only the tenor basis swap rows, because
 // every other kind packs into a family of its own. The difference therefore
 // still sees a changed deposit, which is what these two cases pin.
-TEST_CASE("the_difference_of_a_document_with_itself_is_empty", "[ore][conventions][package]") {
+TEST_CASE("the_difference_of_a_document_with_itself_is_empty",
+          "[long_running][ore][conventions][package]") {
     int walked = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {

@@ -53,7 +53,7 @@ struct app_version_write {
     boost::uuids::uuid app_id;
     std::string wrapper_version;
     std::string engine_version;
-    int min_ram_mb;
+    int min_ram_mb{};
     std::string release_note;
 
     friend bool operator==(const app_version_write&, const app_version_write&) = default;
@@ -92,7 +92,7 @@ struct app_version_event {
     boost::uuids::uuid event_id;
     app_version_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +101,7 @@ struct app_version_event {
 
 struct app_version_version_key {
     app_version_key app_version;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const app_version_version_key&,
                            const app_version_version_key&) = default;
@@ -139,7 +139,7 @@ struct list_app_versions_request {
 struct list_app_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version> app_versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_app_versions_response&,
                            const list_app_versions_response&) = default;
@@ -315,7 +315,7 @@ struct list_by_app_id_app_versions_request {
 struct list_by_app_id_app_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version> app_versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_app_id_app_versions_response&,
                            const list_by_app_id_app_versions_response&) = default;
@@ -344,7 +344,7 @@ struct list_app_version_versions_request {
 struct list_app_version_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app_version> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_app_version_versions_response&,
                            const list_app_version_versions_response&) = default;

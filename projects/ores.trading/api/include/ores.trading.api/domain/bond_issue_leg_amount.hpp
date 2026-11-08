@@ -72,7 +72,7 @@ struct bond_issue_leg_amount final {
     /**
      * @brief Ordinal of the leg within its list, counting from one.
      */
-    int leg_number;
+    int leg_number{};
 
     /**
      * @brief Which of the leg's six amount lists this row belongs to: notional, rate, spread, cap,
@@ -89,7 +89,7 @@ struct bond_issue_leg_amount final {
      * The schema declares every one of the six lists unbounded, and a document's order is the order
      * it stated. The ordinal preserves that order.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The amount, as a decimal.

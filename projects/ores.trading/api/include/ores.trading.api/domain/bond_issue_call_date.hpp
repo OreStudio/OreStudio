@@ -68,7 +68,7 @@ struct bond_issue_call_date final {
      * The ER names this member sequence; the org spells it sequence_number to keep the SQL keyword
      * out of the identifier. The emitted SQL shows whether the spelling matters.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The call date (ISO 8601 date string).

@@ -53,7 +53,7 @@ struct trade_link_type_write {
     std::string description;
     std::string from_role;
     std::string to_role;
-    bool has_economic_effect;
+    bool has_economic_effect{};
 
     friend bool operator==(const trade_link_type_write&, const trade_link_type_write&) = default;
 };
@@ -91,7 +91,7 @@ struct trade_link_type_event {
     boost::uuids::uuid event_id;
     trade_link_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +100,7 @@ struct trade_link_type_event {
 
 struct trade_link_type_version_key {
     trade_link_type_key trade_link_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const trade_link_type_version_key&,
                            const trade_link_type_version_key&) = default;
@@ -138,7 +138,7 @@ struct list_trade_link_types_request {
 struct list_trade_link_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_link_type> link_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_link_types_response&,
                            const list_trade_link_types_response&) = default;
@@ -313,7 +313,7 @@ struct list_trade_link_type_versions_request {
 struct list_trade_link_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_link_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_link_type_versions_response&,
                            const list_trade_link_type_versions_response&) = default;

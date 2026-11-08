@@ -35,7 +35,7 @@ namespace ores::analytics::quant::domain {
 struct ccy_pair {
     currency_id base;
     currency_id quote;
-    bool is_driver;
+    bool is_driver{};
 
     friend constexpr bool operator==(const ccy_pair& lhs, const ccy_pair& rhs) noexcept {
         return lhs.base == rhs.base && lhs.quote == rhs.quote && lhs.is_driver == rhs.is_driver;

@@ -44,7 +44,7 @@ TABLENAME = re.compile(r'constexpr static const char\* tablename = "(\w+)"')
 # may hold them, so the type is read up to the member name.
 MEMBER = re.compile(
     r"^ {4}([A-Za-z_][A-Za-z0-9_:<>, ]*?) +([a-z_][A-Za-z0-9_]*)"
-    r"(?: *= *[^;]*)?;$",
+    r"(?:\{\}| *= *[^;]*)?;$",
     re.MULTILINE)
 
 BINDING = re.compile(

@@ -89,7 +89,7 @@ struct methodology_event {
     boost::uuids::uuid event_id;
     methodology_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -98,7 +98,7 @@ struct methodology_event {
 
 struct methodology_version_key {
     methodology_key methodology;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const methodology_version_key&,
                            const methodology_version_key&) = default;
@@ -136,7 +136,7 @@ struct list_methodologies_request {
 struct list_methodologies_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::methodology> methodologies;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_methodologies_response&,
                            const list_methodologies_response&) = default;
@@ -311,7 +311,7 @@ struct list_methodology_versions_request {
 struct list_methodology_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::methodology> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_methodology_versions_response&,
                            const list_methodology_versions_response&) = default;

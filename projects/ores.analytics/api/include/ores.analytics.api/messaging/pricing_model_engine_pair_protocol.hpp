@@ -54,7 +54,7 @@ struct pricing_model_engine_pair_write {
     std::string model;
     std::string engine;
     std::string pricing_engine_type_code;
-    bool is_usual;
+    bool is_usual{};
     std::string note;
 
     friend bool operator==(const pricing_model_engine_pair_write&,
@@ -96,7 +96,7 @@ struct pricing_model_engine_pair_event {
     boost::uuids::uuid event_id;
     pricing_model_engine_pair_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct pricing_model_engine_pair_event {
 
 struct pricing_model_engine_pair_version_key {
     pricing_model_engine_pair_key pricing_model_engine_pair;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const pricing_model_engine_pair_version_key&,
                            const pricing_model_engine_pair_version_key&) = default;
@@ -144,7 +144,7 @@ struct list_pricing_model_engine_pairs_request {
 struct list_pricing_model_engine_pairs_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_engine_pair> pairs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_pricing_model_engine_pairs_response&,
                            const list_pricing_model_engine_pairs_response&) = default;
@@ -324,7 +324,7 @@ struct list_pricing_model_engine_pair_versions_request {
 struct list_pricing_model_engine_pair_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model_engine_pair> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_pricing_model_engine_pair_versions_response&,
                            const list_pricing_model_engine_pair_versions_response&) = default;

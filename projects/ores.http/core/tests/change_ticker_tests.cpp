@@ -108,21 +108,21 @@ TEST_CASE("a_change_inside_the_window_does_not_extend_it", "[change_ticker]") {
     change_coalescer coalescer;
     change_hub hub(ticker_system_tenant);
     auto stream = hub.subscribe({.tenant = "acme", .party = "ops"});
-    change_ticker ticker(coalescer, hub, std::chrono::milliseconds(100));
+    change_ticker ticker(coalescer, hub, std::chrono::milliseconds(500));
 
     boost::asio::io_context io;
     boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); }, boost::asio::detached);
 
     coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
-    io.run_for(std::chrono::milliseconds(80));
+    io.run_for(std::chrono::milliseconds(400));
 
     // A change that lands inside the window is gathered into it, not waited for.
     coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
-    io.run_for(std::chrono::milliseconds(60));
+    io.run_for(std::chrono::milliseconds(300));
     ticker.stop();
     io.run();
 
-    // A window pushed back by the second change would still be open at 140 ms.
+    // A window pushed back by the second change would still be open at 700 ms.
     REQUIRE(stream->size() == 1);
     REQUIRE(stream->try_pop()->find("event: iam.book") != std::string::npos);
 }

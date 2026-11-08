@@ -80,6 +80,12 @@ add_compile_options(
 #
 set(ORES_CATCH2_ARGS --allow-running-no-tests --durations yes --filenames-as-tags -r compact)
 
+# A sweep repeats one code path across a whole corpus, which valgrind slows past
+# a suite's budget and which tells it little the smaller tests do not.
+if(WITH_MEMCHECK)
+    list(APPEND ORES_CATCH2_ARGS "~[long_running]")
+endif()
+
 #
 # Projects
 #

@@ -54,8 +54,8 @@ struct curve_segment_weighted_average_write {
     boost::uuids::uuid curve_segment_id;
     std::string reference_curve_1;
     std::string reference_curve_2;
-    double weight_1;
-    double weight_2;
+    double weight_1{};
+    double weight_2{};
 
     friend bool operator==(const curve_segment_weighted_average_write&,
                            const curve_segment_weighted_average_write&) = default;
@@ -97,7 +97,7 @@ struct curve_segment_weighted_average_event {
     boost::uuids::uuid event_id;
     curve_segment_weighted_average_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +107,7 @@ struct curve_segment_weighted_average_event {
 
 struct curve_segment_weighted_average_version_key {
     curve_segment_weighted_average_key curve_segment_weighted_average;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_segment_weighted_average_version_key&,
                            const curve_segment_weighted_average_version_key&) = default;
@@ -146,7 +146,7 @@ struct list_curve_segment_weighted_averages_request {
 struct list_curve_segment_weighted_averages_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_weighted_average> segment_weighted_averages;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_segment_weighted_averages_response&,
                            const list_curve_segment_weighted_averages_response&) = default;
@@ -330,7 +330,7 @@ struct list_curve_segment_weighted_average_versions_request {
 struct list_curve_segment_weighted_average_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_weighted_average> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_segment_weighted_average_versions_response&,
                            const list_curve_segment_weighted_average_versions_response&) = default;

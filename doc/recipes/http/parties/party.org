@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 3BF91809-0EBE-5540-BCF6-B6D52F9CAEBA
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the parties endpoints over HTTP?
+#+description: Every endpoint the parties resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:parties:
+
+This file documents the parties resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/parties=
+:PROPERTIES:
+:ID: AEFEC2B1-1E43-58F2-806C-184579B715D3
+:END:
+
+List parties. It needs a session.
+
+It forwards to =refdata.v1.parties.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/parties
+#+end_example
+
+#+name: parties-list
+#+begin_src hurl :tangle parties-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/parties
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/parties/__none__=
+:PROPERTIES:
+:ID: 7F9D5687-AB51-59F3-AFE6-E5D6FC779F3D
+:END:
+
+Get one party. It needs a session.
+
+It forwards to =refdata.v1.parties.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/parties/__none__
+#+end_example
+
+#+name: parties-get
+#+begin_src hurl :tangle parties-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/parties/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/parties/get-many=
+:PROPERTIES:
+:ID: 037ADD3F-AE4E-5E7F-BD60-4C54E3953E74
+:END:
+
+Get many parties. It needs a session.
+
+It forwards to =refdata.v1.parties.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/parties/get-many
+#+end_example
+
+#+name: parties-get-many
+#+begin_src hurl :tangle parties-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/parties/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/parties=
+:PROPERTIES:
+:ID: 72EA7C06-1B47-5CE9-978B-441AC67DBF84
+:END:
+
+Create one party. It needs a session.
+
+It forwards to =refdata.v1.parties.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/parties
+#+end_example
+
+#+name: parties-add
+#+begin_src hurl :tangle parties-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/parties
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/parties=
+:PROPERTIES:
+:ID: B863248C-0AB6-5E98-B924-629699C2D95E
+:END:
+
+Replace one party. It needs a session.
+
+It forwards to =refdata.v1.parties.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/parties
+#+end_example
+
+#+name: parties-set
+#+begin_src hurl :tangle parties-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/parties
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/parties/put-many=
+:PROPERTIES:
+:ID: 82C01D12-EB48-5342-8821-0FF8D8A07450
+:END:
+
+Write many parties. It needs a session.
+
+It forwards to =refdata.v1.parties.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/parties/put-many
+#+end_example
+
+#+name: parties-put-many
+#+begin_src hurl :tangle parties-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/parties/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/parties/__none__=
+:PROPERTIES:
+:ID: 9A33D43D-DE5B-51DC-A4B9-F9F247E6D3C8
+:END:
+
+Delete one party. It needs a session.
+
+It forwards to =refdata.v1.parties.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/parties/__none__
+#+end_example
+
+#+name: parties-delete
+#+begin_src hurl :tangle parties-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/parties/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/parties/delete-many=
+:PROPERTIES:
+:ID: DE14B2AA-3C3C-59CF-887B-3671C41E73B4
+:END:
+
+Delete many parties. It needs a session.
+
+It forwards to =refdata.v1.parties.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/parties/delete-many
+#+end_example
+
+#+name: parties-delete-many
+#+begin_src hurl :tangle parties-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/parties/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/parties/__none__/versions=
+:PROPERTIES:
+:ID: 69508997-F39D-5875-89D9-3EC59687E8B3
+:END:
+
+List the recorded versions of one party. It needs a session.
+
+It forwards to =refdata.v1.parties_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/parties/__none__/versions
+#+end_example
+
+#+name: parties-versions
+#+begin_src hurl :tangle parties-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/parties/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/parties/__none__/versions/0=
+:PROPERTIES:
+:ID: C7CC5A44-5F16-53DA-A44D-4D933FBD8D22
+:END:
+
+Get one recorded version of one party. It needs a session.
+
+It forwards to =refdata.v1.parties_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/parties/__none__/versions/0
+#+end_example
+
+#+name: parties-version
+#+begin_src hurl :tangle parties-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/parties/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

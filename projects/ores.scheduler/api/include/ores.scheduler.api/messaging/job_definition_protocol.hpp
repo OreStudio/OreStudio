@@ -56,7 +56,7 @@ struct job_definition_write {
     domain::cron_expression schedule_expression;
     std::string action_type;
     std::string action_payload;
-    bool is_active;
+    bool is_active{};
 
     friend bool operator==(const job_definition_write&, const job_definition_write&) = default;
 };
@@ -92,7 +92,7 @@ struct job_definition_event {
     boost::uuids::uuid event_id;
     job_definition_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +101,7 @@ struct job_definition_event {
 
 struct job_definition_version_key {
     job_definition_key job_definition;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const job_definition_version_key&,
                            const job_definition_version_key&) = default;
@@ -139,7 +139,7 @@ struct list_job_definitions_request {
 struct list_job_definitions_response {
     ores::utility::domain::result result;
     std::vector<ores::scheduler::domain::job_definition> definitions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_job_definitions_response&,
                            const list_job_definitions_response&) = default;
@@ -314,7 +314,7 @@ struct list_job_definition_versions_request {
 struct list_job_definition_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::scheduler::domain::job_definition> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_job_definition_versions_response&,
                            const list_job_definition_versions_response&) = default;

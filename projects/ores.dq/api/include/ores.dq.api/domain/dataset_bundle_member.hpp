@@ -79,7 +79,7 @@ struct dataset_bundle_member final {
      *
      * Optional datasets are skipped if not available during bundle installation.
      */
-    bool optional;
+    bool optional{};
 
     /**
      * @brief Username of the person who last modified this dataset bundle member.

@@ -1,0 +1,221 @@
+:PROPERTIES:
+:ID: AEC91FB7-31FD-532D-841F-5372C8AE7E7F
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the party_currencies endpoints over HTTP?
+#+description: Every endpoint the party_currencies resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:party_currencies:
+
+This file documents the party_currencies resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/party_currencies=
+:PROPERTIES:
+:ID: D6C42391-5292-5A4B-9239-0FB239D396E5
+:END:
+
+List party currencies. It needs a session.
+
+It forwards to =refdata.v1.party_currencies.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_currencies
+#+end_example
+
+#+name: party_currencies-list
+#+begin_src hurl :tangle party_currencies-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_currencies
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_currencies/00000000-0000-0000-0000-000000000000/__none__=
+:PROPERTIES:
+:ID: A139022F-8EE4-5911-9807-880881380817
+:END:
+
+Get one party currency. It needs a session.
+
+It forwards to =refdata.v1.party_currencies.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_currencies/00000000-0000-0000-0000-000000000000/__none__
+#+end_example
+
+#+name: party_currencies-get
+#+begin_src hurl :tangle party_currencies-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_currencies/00000000-0000-0000-0000-000000000000/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_currencies/get-many=
+:PROPERTIES:
+:ID: 86091908-A24B-5255-A2A1-816031371082
+:END:
+
+Get many party currencies. It needs a session.
+
+It forwards to =refdata.v1.party_currencies.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_currencies/get-many
+#+end_example
+
+#+name: party_currencies-get-many
+#+begin_src hurl :tangle party_currencies-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_currencies/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_currencies=
+:PROPERTIES:
+:ID: 8954D297-5FF6-5602-BDB5-CFEEFDC59C37
+:END:
+
+Create one party currency. It needs a session.
+
+It forwards to =refdata.v1.party_currencies.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_currencies
+#+end_example
+
+#+name: party_currencies-add
+#+begin_src hurl :tangle party_currencies-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_currencies
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/party_currencies=
+:PROPERTIES:
+:ID: 086C3F6E-E902-5A50-A0FB-428CA10FEB11
+:END:
+
+Replace one party currency. It needs a session.
+
+It forwards to =refdata.v1.party_currencies.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/party_currencies
+#+end_example
+
+#+name: party_currencies-set
+#+begin_src hurl :tangle party_currencies-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/party_currencies
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_currencies/put-many=
+:PROPERTIES:
+:ID: E92D2B79-6281-5CE5-9338-85DEEEF62EF3
+:END:
+
+Write many party currencies. It needs a session.
+
+It forwards to =refdata.v1.party_currencies.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_currencies/put-many
+#+end_example
+
+#+name: party_currencies-put-many
+#+begin_src hurl :tangle party_currencies-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_currencies/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/party_currencies/00000000-0000-0000-0000-000000000000/__none__=
+:PROPERTIES:
+:ID: EB3DEC74-67F5-539A-9ED9-3C0A5CB73714
+:END:
+
+Delete one party currency. It needs a session.
+
+It forwards to =refdata.v1.party_currencies.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/party_currencies/00000000-0000-0000-0000-000000000000/__none__
+#+end_example
+
+#+name: party_currencies-delete
+#+begin_src hurl :tangle party_currencies-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/party_currencies/00000000-0000-0000-0000-000000000000/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_currencies/delete-many=
+:PROPERTIES:
+:ID: E184E5B7-4819-5583-A10D-50EF8543E59C
+:END:
+
+Delete many party currencies. It needs a session.
+
+It forwards to =refdata.v1.party_currencies.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_currencies/delete-many
+#+end_example
+
+#+name: party_currencies-delete-many
+#+begin_src hurl :tangle party_currencies-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_currencies/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_currencies/by-party-id/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 403B3336-2331-5959-838A-FF7FCA452E4B
+:END:
+
+List the party currencies that reference one party id. It needs a session.
+
+It forwards to =refdata.v1.party_currencies.list_by_party_id=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_currencies/by-party-id/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: party_currencies-by-party-id
+#+begin_src hurl :tangle party_currencies-by-party-id.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_currencies/by-party-id/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -70,6 +70,10 @@
       "links": "ores.iam.core.lib"
     },
     {
+      "core": "ores.inbox.core.lib",
+      "links": "ores.variability.core.lib"
+    },
+    {
       "core": "ores.marketdata.core.lib",
       "links": "ores.history.core.lib"
     },

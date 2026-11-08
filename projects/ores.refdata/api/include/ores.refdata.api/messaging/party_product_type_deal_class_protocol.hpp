@@ -25,11 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_PARTY_PRODUCT_TYPE_DEAL_CLASS_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_PARTY_PRODUCT_TYPE_DEAL_CLASS_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/party_product_type_deal_class.hpp"
+#include "ores.refdata.api/domain/party_product_type_deal_class_codec.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/domain/protocol_codec.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstddef>
 #include <cstdint>
@@ -96,7 +97,7 @@ struct party_product_type_deal_class_event {
     boost::uuids::uuid event_id;
     party_product_type_deal_class_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +107,7 @@ struct party_product_type_deal_class_event {
 
 struct party_product_type_deal_class_version_key {
     party_product_type_deal_class_key party_product_type_deal_class;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const party_product_type_deal_class_version_key&,
                            const party_product_type_deal_class_version_key&) = default;
@@ -146,7 +147,7 @@ struct list_party_product_type_deal_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_product_type_deal_class>
         party_product_type_deal_classes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_product_type_deal_classes_response&,
                            const list_party_product_type_deal_classes_response&) = default;
@@ -334,7 +335,7 @@ struct list_by_party_id_party_product_type_deal_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_product_type_deal_class>
         party_product_type_deal_classes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_party_id_party_product_type_deal_classes_response&,
@@ -365,7 +366,7 @@ struct list_party_product_type_deal_class_versions_request {
 struct list_party_product_type_deal_class_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_product_type_deal_class> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_product_type_deal_class_versions_response&,
                            const list_party_product_type_deal_class_versions_response&) = default;

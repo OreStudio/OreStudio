@@ -410,13 +410,6 @@ void calendar_event_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_events.get operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .response<messaging::get_calendar_event_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
     const auto get_built = get_route.build();
@@ -429,13 +422,6 @@ void calendar_event_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_events.get_many operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .body<messaging::get_many_calendar_events_request>()
             .response<messaging::get_many_calendar_events_response>()
             .handler([&session](const http_request& req) { return handle_get_many(req, session); });
@@ -449,13 +435,6 @@ void calendar_event_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_events.put operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .body<messaging::put_calendar_event_request>()
             .response<messaging::put_calendar_event_response>()
             .handler([&session](const http_request& req) { return handle_add(req, session); });
@@ -469,13 +448,6 @@ void calendar_event_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_events.put operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_calendar_event_request>()
             .response<messaging::put_calendar_event_response>()
@@ -490,13 +462,6 @@ void calendar_event_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_events.put_many operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .body<messaging::put_many_calendar_events_request>()
             .response<messaging::put_many_calendar_events_response>()
             .handler([&session](const http_request& req) { return handle_put_many(req, session); });
@@ -510,13 +475,6 @@ void calendar_event_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_events.delete operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
             .query_param("version", "integer", "", false, "Version")
@@ -532,13 +490,6 @@ void calendar_event_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_events.delete_many operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .body<messaging::delete_many_calendar_events_request>()
             .response<messaging::delete_many_calendar_events_response>()
             .handler(
@@ -558,13 +509,6 @@ void calendar_event_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .query_param("scope", "string", "", false, "direct or subtree")
             .response<messaging::list_by_calendar_code_calendar_events_response>()
             .handler([&session](const http_request& req) {
@@ -585,13 +529,6 @@ void calendar_event_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .query_param("scope", "string", "", false, "direct or subtree")
             .response<messaging::list_by_diary_entry_type_calendar_events_response>()
             .handler([&session](const http_request& req) {
@@ -611,13 +548,6 @@ void calendar_event_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .response<messaging::list_calendar_event_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
     const auto versions_built = versions_route.build();
@@ -630,13 +560,6 @@ void calendar_event_routes::register_routes(
             .description("Forwards to the refdata.v1.calendar_events_versions.get operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param(
-                "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
-            .query_param("f.diary_entry_type",
-                         "string",
-                         "",
-                         false,
-                         "Rows whose diary_entry_type is this value")
             .response<messaging::get_calendar_event_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });
     const auto version_built = version_route.build();

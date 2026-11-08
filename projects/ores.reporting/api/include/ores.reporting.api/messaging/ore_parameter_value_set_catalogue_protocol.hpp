@@ -54,7 +54,7 @@ struct ore_parameter_value_set_catalogue_write {
     std::string name;
     std::string relation;
     std::string description;
-    bool is_active;
+    bool is_active{};
 
     friend bool operator==(const ore_parameter_value_set_catalogue_write&,
                            const ore_parameter_value_set_catalogue_write&) = default;
@@ -96,7 +96,7 @@ struct ore_parameter_value_set_catalogue_event {
     boost::uuids::uuid event_id;
     ore_parameter_value_set_catalogue_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct ore_parameter_value_set_catalogue_event {
 
 struct ore_parameter_value_set_catalogue_version_key {
     ore_parameter_value_set_catalogue_key ore_parameter_value_set_catalogue;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const ore_parameter_value_set_catalogue_version_key&,
                            const ore_parameter_value_set_catalogue_version_key&) = default;
@@ -145,7 +145,7 @@ struct list_ore_parameter_value_set_catalogues_request {
 struct list_ore_parameter_value_set_catalogues_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_catalogue> catalogues;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ore_parameter_value_set_catalogues_response&,
                            const list_ore_parameter_value_set_catalogues_response&) = default;
@@ -331,7 +331,7 @@ struct list_ore_parameter_value_set_catalogue_versions_request {
 struct list_ore_parameter_value_set_catalogue_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_set_catalogue> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_ore_parameter_value_set_catalogue_versions_response&,

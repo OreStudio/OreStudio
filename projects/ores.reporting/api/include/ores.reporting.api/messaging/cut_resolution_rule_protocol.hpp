@@ -53,7 +53,7 @@ struct cut_resolution_rule_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const cut_resolution_rule_write&,
                            const cut_resolution_rule_write&) = default;
@@ -94,7 +94,7 @@ struct cut_resolution_rule_event {
     boost::uuids::uuid event_id;
     cut_resolution_rule_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct cut_resolution_rule_event {
 
 struct cut_resolution_rule_version_key {
     cut_resolution_rule_key cut_resolution_rule;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const cut_resolution_rule_version_key&,
                            const cut_resolution_rule_version_key&) = default;
@@ -142,7 +142,7 @@ struct list_cut_resolution_rules_request {
 struct list_cut_resolution_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_resolution_rule> rules;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cut_resolution_rules_response&,
                            const list_cut_resolution_rules_response&) = default;
@@ -319,7 +319,7 @@ struct list_cut_resolution_rule_versions_request {
 struct list_cut_resolution_rule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut_resolution_rule> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cut_resolution_rule_versions_response&,
                            const list_cut_resolution_rule_versions_response&) = default;

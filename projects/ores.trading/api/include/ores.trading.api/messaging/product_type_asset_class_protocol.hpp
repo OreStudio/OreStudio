@@ -52,7 +52,7 @@ struct product_type_asset_class_key {
 struct product_type_asset_class_write {
     std::string product_type_code;
     std::string asset_class_code;
-    bool is_home;
+    bool is_home{};
 
     friend bool operator==(const product_type_asset_class_write&,
                            const product_type_asset_class_write&) = default;
@@ -94,7 +94,7 @@ struct product_type_asset_class_event {
     boost::uuids::uuid event_id;
     product_type_asset_class_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -124,7 +124,7 @@ struct list_product_type_asset_classes_request {
 struct list_product_type_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::product_type_asset_class> product_type_asset_classes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_product_type_asset_classes_response&,
                            const list_product_type_asset_classes_response&) = default;
@@ -305,7 +305,7 @@ struct list_by_product_type_code_product_type_asset_classes_request {
 struct list_by_product_type_code_product_type_asset_classes_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::product_type_asset_class> product_type_asset_classes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_product_type_code_product_type_asset_classes_response&,

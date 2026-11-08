@@ -121,11 +121,7 @@ TEST_CASE("executable_build_time_does_not_postdate_the_test_run", "[process][exe
     const auto value = executable_build_time();
     REQUIRE(value != "unknown");
 
-    std::tm parsed{};
-    REQUIRE(strptime(value.c_str(), "%Y/%m/%d %H:%M:%S", &parsed) != nullptr);
-    parsed.tm_isdst = 0;
-    const auto built_at = timegm(&parsed);
+    const auto built_at = datetime::from_utc_format(value, "%Y/%m/%d %H:%M:%S");
 
-    const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    CHECK(built_at <= now);
+    CHECK(built_at <= std::chrono::system_clock::now());
 }

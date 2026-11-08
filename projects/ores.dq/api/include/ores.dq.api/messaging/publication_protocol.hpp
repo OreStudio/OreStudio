@@ -54,10 +54,10 @@ struct publication_write {
     std::string dataset_code;
     std::string mode;
     std::string target_table;
-    std::int64_t records_inserted;
-    std::int64_t records_updated;
-    std::int64_t records_skipped;
-    std::int64_t records_deleted;
+    std::int64_t records_inserted{};
+    std::int64_t records_updated{};
+    std::int64_t records_skipped{};
+    std::int64_t records_deleted{};
     std::string published_by;
     std::chrono::system_clock::time_point published_at;
 
@@ -95,7 +95,7 @@ struct publication_event {
     boost::uuids::uuid event_id;
     publication_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -124,7 +124,7 @@ struct list_publications_request {
 struct list_publications_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::publication> publications;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_publications_response&,
                            const list_publications_response&) = default;

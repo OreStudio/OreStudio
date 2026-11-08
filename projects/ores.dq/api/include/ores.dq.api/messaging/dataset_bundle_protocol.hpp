@@ -88,7 +88,7 @@ struct dataset_bundle_event {
     boost::uuids::uuid event_id;
     dataset_bundle_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +97,7 @@ struct dataset_bundle_event {
 
 struct dataset_bundle_version_key {
     dataset_bundle_key dataset_bundle;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const dataset_bundle_version_key&,
                            const dataset_bundle_version_key&) = default;
@@ -135,7 +135,7 @@ struct list_dataset_bundles_request {
 struct list_dataset_bundles_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset_bundle> bundles;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_dataset_bundles_response&,
                            const list_dataset_bundles_response&) = default;
@@ -310,7 +310,7 @@ struct list_dataset_bundle_versions_request {
 struct list_dataset_bundle_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::dataset_bundle> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_dataset_bundle_versions_response&,
                            const list_dataset_bundle_versions_response&) = default;

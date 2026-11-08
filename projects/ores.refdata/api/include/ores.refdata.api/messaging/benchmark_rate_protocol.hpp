@@ -83,7 +83,7 @@ struct benchmark_rate_event {
     boost::uuids::uuid event_id;
     benchmark_rate_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -92,7 +92,7 @@ struct benchmark_rate_event {
 
 struct benchmark_rate_version_key {
     benchmark_rate_key benchmark_rate;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const benchmark_rate_version_key&,
                            const benchmark_rate_version_key&) = default;
@@ -129,7 +129,7 @@ struct list_benchmark_rates_request {
 struct list_benchmark_rates_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::benchmark_rate> rates;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_benchmark_rates_response&,
                            const list_benchmark_rates_response&) = default;
@@ -304,7 +304,7 @@ struct list_benchmark_rate_versions_request {
 struct list_benchmark_rate_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::benchmark_rate> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_benchmark_rate_versions_response&,
                            const list_benchmark_rate_versions_response&) = default;

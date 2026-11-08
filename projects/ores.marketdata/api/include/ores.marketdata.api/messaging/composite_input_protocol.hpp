@@ -53,7 +53,7 @@ struct composite_input_write {
     boost::uuids::uuid composite_id;
     std::string provider_code;
     std::string oresmd_uri;
-    int position;
+    int position{};
 
     friend bool operator==(const composite_input_write&, const composite_input_write&) = default;
 };
@@ -95,7 +95,7 @@ struct composite_input_event {
     boost::uuids::uuid event_id;
     composite_input_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct composite_input_event {
 
 struct composite_input_version_key {
     composite_input_key composite_input;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const composite_input_version_key&,
                            const composite_input_version_key&) = default;
@@ -142,7 +142,7 @@ struct list_composite_inputs_request {
 struct list_composite_inputs_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::composite_input> composite_inputs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_composite_inputs_response&,
                            const list_composite_inputs_response&) = default;
@@ -317,7 +317,7 @@ struct list_composite_input_versions_request {
 struct list_composite_input_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::composite_input> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_composite_input_versions_response&,
                            const list_composite_input_versions_response&) = default;

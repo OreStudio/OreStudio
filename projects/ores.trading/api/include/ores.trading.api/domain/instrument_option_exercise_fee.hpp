@@ -69,7 +69,7 @@ struct instrument_option_exercise_fee final {
     /**
      * @brief Ordinal of this exercise fee within the option block's list.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

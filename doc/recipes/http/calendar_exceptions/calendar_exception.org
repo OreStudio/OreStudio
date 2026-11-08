@@ -1,0 +1,267 @@
+:PROPERTIES:
+:ID: 6B6F3AD7-3E55-53EB-816B-8332E697D5F7
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the calendar_exceptions endpoints over HTTP?
+#+description: Every endpoint the calendar_exceptions resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:calendar_exceptions:
+
+This file documents the calendar_exceptions resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/calendar_exceptions=
+:PROPERTIES:
+:ID: B3CAE284-2267-5070-AB79-12DC8452763D
+:END:
+
+List calendar exceptions. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_exceptions
+#+end_example
+
+#+name: calendar_exceptions-list
+#+begin_src hurl :tangle calendar_exceptions-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_exceptions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 87976810-2B37-575E-AB70-134ED14038EB
+:END:
+
+Get one calendar exception. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: calendar_exceptions-get
+#+begin_src hurl :tangle calendar_exceptions-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_exceptions/get-many=
+:PROPERTIES:
+:ID: 1114E97B-6F57-574F-B759-3B53D4CA92BC
+:END:
+
+Get many calendar exceptions. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_exceptions/get-many
+#+end_example
+
+#+name: calendar_exceptions-get-many
+#+begin_src hurl :tangle calendar_exceptions-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_exceptions/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_exceptions=
+:PROPERTIES:
+:ID: D0E110A6-E56D-5699-8FEF-AFAB96E40D50
+:END:
+
+Create one calendar exception. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_exceptions
+#+end_example
+
+#+name: calendar_exceptions-add
+#+begin_src hurl :tangle calendar_exceptions-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_exceptions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/calendar_exceptions=
+:PROPERTIES:
+:ID: AAE51298-CAAC-5F0D-A20F-1BFFDE41663A
+:END:
+
+Replace one calendar exception. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/calendar_exceptions
+#+end_example
+
+#+name: calendar_exceptions-set
+#+begin_src hurl :tangle calendar_exceptions-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/calendar_exceptions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_exceptions/put-many=
+:PROPERTIES:
+:ID: A7B27976-F2BF-5BE4-ABA3-EC64829CD6D0
+:END:
+
+Write many calendar exceptions. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_exceptions/put-many
+#+end_example
+
+#+name: calendar_exceptions-put-many
+#+begin_src hurl :tangle calendar_exceptions-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_exceptions/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 1A361C63-C421-5625-BC2C-F0C82EF27A0A
+:END:
+
+Delete one calendar exception. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: calendar_exceptions-delete
+#+begin_src hurl :tangle calendar_exceptions-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_exceptions/delete-many=
+:PROPERTIES:
+:ID: EE9DB0A1-F762-5DBB-9F3A-D634050C053E
+:END:
+
+Delete many calendar exceptions. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_exceptions/delete-many
+#+end_example
+
+#+name: calendar_exceptions-delete-many
+#+begin_src hurl :tangle calendar_exceptions-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_exceptions/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_exceptions/by-calendar-code/__none__=
+:PROPERTIES:
+:ID: 7DCAE2D2-4C85-5EF2-9F9E-E5CA8A1712A4
+:END:
+
+List the calendar exceptions that reference one calendar code. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions.list_by_calendar_code=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_exceptions/by-calendar-code/__none__
+#+end_example
+
+#+name: calendar_exceptions-by-calendar-code
+#+begin_src hurl :tangle calendar_exceptions-by-calendar-code.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_exceptions/by-calendar-code/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000/versions=
+:PROPERTIES:
+:ID: C0E68014-2BA7-58D9-8427-A4206D3B542F
+:END:
+
+List the recorded versions of one calendar exception. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000/versions
+#+end_example
+
+#+name: calendar_exceptions-versions
+#+begin_src hurl :tangle calendar_exceptions-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000/versions/0=
+:PROPERTIES:
+:ID: 265CCFFF-9337-5E85-BE4E-03B5B45DC579
+:END:
+
+Get one recorded version of one calendar exception. It needs a session.
+
+It forwards to =refdata.v1.calendar_exceptions_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000/versions/0
+#+end_example
+
+#+name: calendar_exceptions-version
+#+begin_src hurl :tangle calendar_exceptions-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_exceptions/00000000-0000-0000-0000-000000000000/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -250,7 +250,7 @@ TEST_CASE("affine zero deltas price a constant rate", "[affine_term_structure_pr
 }
 
 TEST_CASE("affine correlated moments match the exact transition",
-          "[affine_term_structure_process]") {
+          "[long_running][affine_term_structure_process]") {
     // One-tick statistics of the two-factor transition with full
     // covariance, against the closed forms:
     //     E[X_i'] = theta_i + exp(-kappas_i*dt) * (X_0,i - theta_i)

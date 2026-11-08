@@ -44,7 +44,7 @@ namespace ores::trading::messaging {
 
 struct equity_position_option_underlying_key {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const equity_position_option_underlying_key&,
                            const equity_position_option_underlying_key&) = default;
@@ -52,7 +52,7 @@ struct equity_position_option_underlying_key {
 
 struct equity_position_option_underlying_write {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     std::string underlying_name;
     ores::utility::decimal::decimal strike;
@@ -105,7 +105,7 @@ struct equity_position_option_underlying_event {
     boost::uuids::uuid event_id;
     equity_position_option_underlying_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -115,7 +115,7 @@ struct equity_position_option_underlying_event {
 
 struct equity_position_option_underlying_version_key {
     equity_position_option_underlying_key equity_position_option_underlying;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_position_option_underlying_version_key&,
                            const equity_position_option_underlying_version_key&) = default;
@@ -155,7 +155,7 @@ struct list_equity_position_option_underlyings_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_position_option_underlying>
         equity_position_option_underlyings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_position_option_underlyings_response&,
                            const list_equity_position_option_underlyings_response&) = default;
@@ -344,7 +344,7 @@ struct list_by_trade_id_equity_position_option_underlyings_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_position_option_underlying>
         equity_position_option_underlyings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_trade_id_equity_position_option_underlyings_response&,
@@ -376,7 +376,7 @@ struct list_equity_position_option_underlying_versions_request {
 struct list_equity_position_option_underlying_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_position_option_underlying> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_equity_position_option_underlying_versions_response&,

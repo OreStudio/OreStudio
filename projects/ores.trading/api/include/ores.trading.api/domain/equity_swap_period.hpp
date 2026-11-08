@@ -83,7 +83,7 @@ struct equity_swap_period final {
      * A level list and a date list are two lists that run in step, so the ordinal is what pairs a
      * level with the date it belongs to.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The determination date the period's levels are observed on, when the document states a

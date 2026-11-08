@@ -52,13 +52,7 @@ target_link_libraries(${lib_target_name}
 # A component declares here what the profile cannot know: the libraries it
 # needs beyond the baseline above, and the find_package calls they bring.
 
-# The datum URI codec decodes oresmd URIs through Boost.URL, and the library
-# resolves those symbols itself so no consumer has to name them.
 find_package(Boost REQUIRED COMPONENTS url)
-
-target_link_libraries(${lib_target_name}
-    PRIVATE
-        Boost::url)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -68,7 +62,8 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.logging.lib
         faker-cxx::faker-cxx
-        libfort::fort)
+        libfort::fort
+        Boost::url)
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 

@@ -102,22 +102,22 @@ struct node_sample final {
     /**
      * @brief Mean task duration over the tasks since the last sample.
      */
-    std::int64_t avg_task_duration_ms;
+    std::int64_t avg_task_duration_ms{};
 
     /**
      * @brief Longest task duration over the tasks since the last sample.
      */
-    std::int64_t max_task_duration_ms;
+    std::int64_t max_task_duration_ms{};
 
     /**
      * @brief Bytes the node fetched for those tasks.
      */
-    std::int64_t input_bytes_fetched;
+    std::int64_t input_bytes_fetched{};
 
     /**
      * @brief Bytes the node uploaded for those tasks.
      */
-    std::int64_t output_bytes_uploaded;
+    std::int64_t output_bytes_uploaded{};
 
     /**
      * @brief Seconds since the node last heartbeated.

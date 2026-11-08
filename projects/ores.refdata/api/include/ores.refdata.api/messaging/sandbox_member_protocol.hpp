@@ -91,7 +91,7 @@ struct sandbox_member_event {
     boost::uuids::uuid event_id;
     sandbox_member_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +100,7 @@ struct sandbox_member_event {
 
 struct sandbox_member_version_key {
     sandbox_member_key sandbox_member;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const sandbox_member_version_key&,
                            const sandbox_member_version_key&) = default;
@@ -138,7 +138,7 @@ struct list_sandbox_members_request {
 struct list_sandbox_members_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::sandbox_member> sandbox_members;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sandbox_members_response&,
                            const list_sandbox_members_response&) = default;
@@ -315,7 +315,7 @@ struct list_by_sandbox_id_sandbox_members_request {
 struct list_by_sandbox_id_sandbox_members_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::sandbox_member> sandbox_members;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_sandbox_id_sandbox_members_response&,
                            const list_by_sandbox_id_sandbox_members_response&) = default;
@@ -346,7 +346,7 @@ struct list_by_account_id_sandbox_members_request {
 struct list_by_account_id_sandbox_members_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::sandbox_member> sandbox_members;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_account_id_sandbox_members_response&,
                            const list_by_account_id_sandbox_members_response&) = default;
@@ -375,7 +375,7 @@ struct list_sandbox_member_versions_request {
 struct list_sandbox_member_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::sandbox_member> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sandbox_member_versions_response&,
                            const list_sandbox_member_versions_response&) = default;

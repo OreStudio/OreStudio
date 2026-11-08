@@ -95,7 +95,7 @@ struct swaption_volatility_smile_event {
     boost::uuids::uuid event_id;
     swaption_volatility_smile_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct swaption_volatility_smile_event {
 
 struct swaption_volatility_smile_version_key {
     swaption_volatility_smile_key swaption_volatility_smile;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const swaption_volatility_smile_version_key&,
                            const swaption_volatility_smile_version_key&) = default;
@@ -143,7 +143,7 @@ struct list_swaption_volatility_smiles_request {
 struct list_swaption_volatility_smiles_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swaption_volatility_smile> swaption_volatility_smiles;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_swaption_volatility_smiles_response&,
                            const list_swaption_volatility_smiles_response&) = default;
@@ -322,7 +322,7 @@ struct list_swaption_volatility_smile_versions_request {
 struct list_swaption_volatility_smile_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swaption_volatility_smile> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_swaption_volatility_smile_versions_response&,
                            const list_swaption_volatility_smile_versions_response&) = default;

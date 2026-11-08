@@ -61,7 +61,7 @@ public:
 
 private:
     static constexpr std::uint16_t invalid_index = std::numeric_limits<std::uint16_t>::max();
-    std::uint16_t index_;
+    std::uint16_t index_{};
 };
 
 } // namespace ores::analytics::quant::domain

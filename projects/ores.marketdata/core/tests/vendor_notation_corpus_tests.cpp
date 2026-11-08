@@ -174,7 +174,7 @@ TEST_CASE("every_id_in_the_corpus_reads_as_the_corpus_says_and_roundtrips",
 }
 
 TEST_CASE("every_pillar_in_the_corpus_writes_as_the_corpus_says_and_roundtrips",
-          "[vendor_notation][corpus]") {
+          "[long_running][vendor_notation][corpus]") {
     std::size_t written_ids = 0;
     std::size_t refusals = 0;
     for (const auto& row : rows_of("ir_curve_pillar_descriptions.csv")) {

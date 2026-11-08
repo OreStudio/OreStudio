@@ -44,14 +44,14 @@ namespace ores::trading::messaging {
 
 struct bond_issue_leg_key {
     boost::uuids::uuid issue_id;
-    int leg_number;
+    int leg_number{};
 
     friend bool operator==(const bond_issue_leg_key&, const bond_issue_leg_key&) = default;
 };
 
 struct bond_issue_leg_write {
     boost::uuids::uuid issue_id;
-    int leg_number;
+    int leg_number{};
     std::optional<bool> payer;
     std::optional<std::string> leg_type;
     std::optional<std::string> currency;
@@ -94,7 +94,7 @@ struct bond_issue_leg_event {
     boost::uuids::uuid event_id;
     bond_issue_leg_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +103,7 @@ struct bond_issue_leg_event {
 
 struct bond_issue_leg_version_key {
     bond_issue_leg_key bond_issue_leg;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bond_issue_leg_version_key&,
                            const bond_issue_leg_version_key&) = default;
@@ -140,7 +140,7 @@ struct list_bond_issue_legs_request {
 struct list_bond_issue_legs_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_leg> bond_issue_legs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_issue_legs_response&,
                            const list_bond_issue_legs_response&) = default;
@@ -315,7 +315,7 @@ struct list_bond_issue_leg_versions_request {
 struct list_bond_issue_leg_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_leg> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_issue_leg_versions_response&,
                            const list_bond_issue_leg_versions_response&) = default;

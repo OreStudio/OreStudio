@@ -95,7 +95,7 @@ struct sandbox_event {
     boost::uuids::uuid event_id;
     sandbox_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct sandbox_event {
 
 struct sandbox_version_key {
     sandbox_key sandbox;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const sandbox_version_key&, const sandbox_version_key&) = default;
 };
@@ -140,7 +140,7 @@ struct list_sandboxes_request {
 struct list_sandboxes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::sandbox> sandboxes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sandboxes_response&,
                            const list_sandboxes_response&) = default;
@@ -312,7 +312,7 @@ struct list_by_anchor_portfolio_id_sandboxes_request {
 struct list_by_anchor_portfolio_id_sandboxes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::sandbox> sandboxes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_anchor_portfolio_id_sandboxes_response&,
                            const list_by_anchor_portfolio_id_sandboxes_response&) = default;
@@ -341,7 +341,7 @@ struct list_sandbox_versions_request {
 struct list_sandbox_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::sandbox> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_sandbox_versions_response&,
                            const list_sandbox_versions_response&) = default;

@@ -54,7 +54,7 @@ struct todays_market_configuration_binding_write {
     boost::uuids::uuid todays_market_configuration_id;
     std::string collection;
     std::string reference;
-    int position;
+    int position{};
 
     friend bool operator==(const todays_market_configuration_binding_write&,
                            const todays_market_configuration_binding_write&) = default;
@@ -98,7 +98,7 @@ struct todays_market_configuration_binding_event {
     boost::uuids::uuid event_id;
     todays_market_configuration_binding_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +108,7 @@ struct todays_market_configuration_binding_event {
 
 struct todays_market_configuration_binding_version_key {
     todays_market_configuration_binding_key todays_market_configuration_binding;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const todays_market_configuration_binding_version_key&,
                            const todays_market_configuration_binding_version_key&) = default;
@@ -147,7 +147,7 @@ struct list_todays_market_configuration_bindings_request {
 struct list_todays_market_configuration_bindings_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_configuration_binding> bindings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_todays_market_configuration_bindings_response&,
                            const list_todays_market_configuration_bindings_response&) = default;
@@ -337,7 +337,7 @@ struct list_by_todays_market_configuration_id_todays_market_configuration_bindin
 struct list_by_todays_market_configuration_id_todays_market_configuration_bindings_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_configuration_binding> bindings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(
         const list_by_todays_market_configuration_id_todays_market_configuration_bindings_response&,
@@ -370,7 +370,7 @@ struct list_todays_market_configuration_binding_versions_request {
 struct list_todays_market_configuration_binding_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_configuration_binding> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_todays_market_configuration_binding_versions_response&,

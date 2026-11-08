@@ -59,7 +59,7 @@ struct curve_quote_write {
     std::optional<std::string> optional_flag;
     std::optional<std::string> rate_quote;
     std::optional<std::string> spread_quote;
-    int position;
+    int position{};
 
     friend bool operator==(const curve_quote_write&, const curve_quote_write&) = default;
 };
@@ -95,7 +95,7 @@ struct curve_quote_event {
     boost::uuids::uuid event_id;
     curve_quote_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct curve_quote_event {
 
 struct curve_quote_version_key {
     curve_quote_key curve_quote;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_quote_version_key&,
                            const curve_quote_version_key&) = default;
@@ -142,7 +142,7 @@ struct list_curve_quotes_request {
 struct list_curve_quotes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_quote> quotes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_quotes_response&,
                            const list_curve_quotes_response&) = default;
@@ -317,7 +317,7 @@ struct list_curve_quote_versions_request {
 struct list_curve_quote_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_quote> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_quote_versions_response&,
                            const list_curve_quote_versions_response&) = default;

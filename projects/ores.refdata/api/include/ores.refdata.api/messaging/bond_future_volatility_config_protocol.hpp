@@ -60,7 +60,7 @@ struct bond_future_volatility_config_write {
     std::optional<std::string> use_only_put_call;
     std::optional<std::string> prefer_out_of_the_money;
     std::optional<std::string> treat_as_european;
-    bool has_volatility_config;
+    bool has_volatility_config{};
 
     friend bool operator==(const bond_future_volatility_config_write&,
                            const bond_future_volatility_config_write&) = default;
@@ -102,7 +102,7 @@ struct bond_future_volatility_config_event {
     boost::uuids::uuid event_id;
     bond_future_volatility_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -112,7 +112,7 @@ struct bond_future_volatility_config_event {
 
 struct bond_future_volatility_config_version_key {
     bond_future_volatility_config_key bond_future_volatility_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bond_future_volatility_config_version_key&,
                            const bond_future_volatility_config_version_key&) = default;
@@ -152,7 +152,7 @@ struct list_bond_future_volatility_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bond_future_volatility_config>
         bond_future_volatility_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_future_volatility_configs_response&,
                            const list_bond_future_volatility_configs_response&) = default;
@@ -337,7 +337,7 @@ struct list_bond_future_volatility_config_versions_request {
 struct list_bond_future_volatility_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bond_future_volatility_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_future_volatility_config_versions_response&,
                            const list_bond_future_volatility_config_versions_response&) = default;

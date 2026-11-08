@@ -54,7 +54,7 @@ struct convention_kind_write {
     std::string description;
     std::string asset_class;
     std::optional<std::string> ore_element;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const convention_kind_write&, const convention_kind_write&) = default;
 };
@@ -92,7 +92,7 @@ struct convention_kind_event {
     boost::uuids::uuid event_id;
     convention_kind_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +101,7 @@ struct convention_kind_event {
 
 struct convention_kind_version_key {
     convention_kind_key convention_kind;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const convention_kind_version_key&,
                            const convention_kind_version_key&) = default;
@@ -139,7 +139,7 @@ struct list_convention_kinds_request {
 struct list_convention_kinds_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::convention_kind> kinds;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_convention_kinds_response&,
                            const list_convention_kinds_response&) = default;
@@ -314,7 +314,7 @@ struct list_convention_kind_versions_request {
 struct list_convention_kind_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::convention_kind> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_convention_kind_versions_response&,
                            const list_convention_kind_versions_response&) = default;

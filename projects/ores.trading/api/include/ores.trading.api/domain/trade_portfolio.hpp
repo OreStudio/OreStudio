@@ -67,7 +67,7 @@ struct trade_portfolio final {
     /**
      * @brief Ordinal of this portfolio among the trade's portfolios, from one.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

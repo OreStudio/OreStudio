@@ -44,7 +44,7 @@ namespace ores::trading::messaging {
 
 struct balance_guaranteed_swap_tranche_key {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const balance_guaranteed_swap_tranche_key&,
                            const balance_guaranteed_swap_tranche_key&) = default;
@@ -52,11 +52,11 @@ struct balance_guaranteed_swap_tranche_key {
 
 struct balance_guaranteed_swap_tranche_write {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     std::optional<std::string> description;
     std::string security_id;
-    std::int64_t seniority;
+    std::int64_t seniority{};
 
     friend bool operator==(const balance_guaranteed_swap_tranche_write&,
                            const balance_guaranteed_swap_tranche_write&) = default;
@@ -99,7 +99,7 @@ struct balance_guaranteed_swap_tranche_event {
     boost::uuids::uuid event_id;
     balance_guaranteed_swap_tranche_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +109,7 @@ struct balance_guaranteed_swap_tranche_event {
 
 struct balance_guaranteed_swap_tranche_version_key {
     balance_guaranteed_swap_tranche_key balance_guaranteed_swap_tranche;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const balance_guaranteed_swap_tranche_version_key&,
                            const balance_guaranteed_swap_tranche_version_key&) = default;
@@ -149,7 +149,7 @@ struct list_balance_guaranteed_swap_tranches_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::balance_guaranteed_swap_tranche>
         balance_guaranteed_swap_tranches;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_balance_guaranteed_swap_tranches_response&,
                            const list_balance_guaranteed_swap_tranches_response&) = default;
@@ -337,7 +337,7 @@ struct list_by_trade_id_balance_guaranteed_swap_tranches_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::balance_guaranteed_swap_tranche>
         balance_guaranteed_swap_tranches;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_trade_id_balance_guaranteed_swap_tranches_response&,
@@ -368,7 +368,7 @@ struct list_balance_guaranteed_swap_tranche_versions_request {
 struct list_balance_guaranteed_swap_tranche_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::balance_guaranteed_swap_tranche> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_balance_guaranteed_swap_tranche_versions_response&,
                            const list_balance_guaranteed_swap_tranche_versions_response&) = default;

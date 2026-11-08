@@ -52,7 +52,7 @@ struct calendar_exception_write {
     boost::uuids::uuid id;
     std::string calendar_code;
     std::chrono::year_month_day exception_date;
-    bool is_business_day;
+    bool is_business_day{};
     std::optional<std::string> description;
 
     friend bool operator==(const calendar_exception_write&,
@@ -96,7 +96,7 @@ struct calendar_exception_event {
     boost::uuids::uuid event_id;
     calendar_exception_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct calendar_exception_event {
 
 struct calendar_exception_version_key {
     calendar_exception_key calendar_exception;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const calendar_exception_version_key&,
                            const calendar_exception_version_key&) = default;
@@ -144,7 +144,7 @@ struct list_calendar_exceptions_request {
 struct list_calendar_exceptions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_exception> calendar_exceptions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_calendar_exceptions_response&,
                            const list_calendar_exceptions_response&) = default;
@@ -321,7 +321,7 @@ struct list_by_calendar_code_calendar_exceptions_request {
 struct list_by_calendar_code_calendar_exceptions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_exception> calendar_exceptions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_calendar_code_calendar_exceptions_response&,
                            const list_by_calendar_code_calendar_exceptions_response&) = default;
@@ -350,7 +350,7 @@ struct list_calendar_exception_versions_request {
 struct list_calendar_exception_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_exception> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_calendar_exception_versions_response&,
                            const list_calendar_exception_versions_response&) = default;

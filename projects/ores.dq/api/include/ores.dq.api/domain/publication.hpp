@@ -85,22 +85,22 @@ struct publication final {
     /**
      * @brief Records the publication inserted.
      */
-    std::int64_t records_inserted;
+    std::int64_t records_inserted{};
 
     /**
      * @brief Records the publication updated.
      */
-    std::int64_t records_updated;
+    std::int64_t records_updated{};
 
     /**
      * @brief Records the publication left alone.
      */
-    std::int64_t records_skipped;
+    std::int64_t records_skipped{};
 
     /**
      * @brief Records the publication removed.
      */
-    std::int64_t records_deleted;
+    std::int64_t records_deleted{};
 
     /**
      * @brief Who asked for the publication.

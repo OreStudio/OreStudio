@@ -113,7 +113,7 @@ struct commodity_future_contract_terms_event {
     boost::uuids::uuid event_id;
     commodity_future_contract_terms_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -123,7 +123,7 @@ struct commodity_future_contract_terms_event {
 
 struct commodity_future_contract_terms_version_key {
     commodity_future_contract_terms_key commodity_future_contract_terms;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const commodity_future_contract_terms_version_key&,
                            const commodity_future_contract_terms_version_key&) = default;
@@ -163,7 +163,7 @@ struct list_commodity_future_contract_terms_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_future_contract_terms>
         commodity_future_contract_terms;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_future_contract_terms_response&,
                            const list_commodity_future_contract_terms_response&) = default;
@@ -351,7 +351,7 @@ struct list_by_convention_id_commodity_future_contract_terms_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_future_contract_terms>
         commodity_future_contract_terms;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_convention_id_commodity_future_contract_terms_response&,
@@ -382,7 +382,7 @@ struct list_commodity_future_contract_terms_versions_request {
 struct list_commodity_future_contract_terms_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_future_contract_terms> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_future_contract_terms_versions_response&,
                            const list_commodity_future_contract_terms_versions_response&) = default;

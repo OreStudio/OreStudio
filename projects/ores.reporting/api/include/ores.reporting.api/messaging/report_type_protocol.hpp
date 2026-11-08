@@ -52,7 +52,7 @@ struct report_type_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
     std::string workflow_type;
 
     friend bool operator==(const report_type_write&, const report_type_write&) = default;
@@ -89,7 +89,7 @@ struct report_type_event {
     boost::uuids::uuid event_id;
     report_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -98,7 +98,7 @@ struct report_type_event {
 
 struct report_type_version_key {
     report_type_key report_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const report_type_version_key&,
                            const report_type_version_key&) = default;
@@ -136,7 +136,7 @@ struct list_report_types_request {
 struct list_report_types_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_type> types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_types_response&,
                            const list_report_types_response&) = default;
@@ -311,7 +311,7 @@ struct list_report_type_versions_request {
 struct list_report_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_type_versions_response&,
                            const list_report_type_versions_response&) = default;

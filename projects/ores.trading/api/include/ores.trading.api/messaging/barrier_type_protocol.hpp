@@ -86,7 +86,7 @@ struct barrier_type_event {
     boost::uuids::uuid event_id;
     barrier_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -95,7 +95,7 @@ struct barrier_type_event {
 
 struct barrier_type_version_key {
     barrier_type_key barrier_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const barrier_type_version_key&,
                            const barrier_type_version_key&) = default;
@@ -133,7 +133,7 @@ struct list_barrier_types_request {
 struct list_barrier_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::barrier_type> barrier_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_barrier_types_response&,
                            const list_barrier_types_response&) = default;
@@ -308,7 +308,7 @@ struct list_barrier_type_versions_request {
 struct list_barrier_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::barrier_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_barrier_type_versions_response&,
                            const list_barrier_type_versions_response&) = default;

@@ -1,0 +1,267 @@
+:PROPERTIES:
+:ID: F760D166-11B7-5C39-BA37-F9A8D8588B5B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the party_identifiers endpoints over HTTP?
+#+description: Every endpoint the party_identifiers resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:party_identifiers:
+
+This file documents the party_identifiers resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/party_identifiers=
+:PROPERTIES:
+:ID: 9FB66842-688A-54E0-A1BE-18FDFD9E5064
+:END:
+
+List party identifiers. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_identifiers
+#+end_example
+
+#+name: party_identifiers-list
+#+begin_src hurl :tangle party_identifiers-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_identifiers
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_identifiers/__none__=
+:PROPERTIES:
+:ID: 9D2854F0-BA7B-5D8B-BDC0-3A98F066C516
+:END:
+
+Get one party identifier. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_identifiers/__none__
+#+end_example
+
+#+name: party_identifiers-get
+#+begin_src hurl :tangle party_identifiers-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_identifiers/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_identifiers/get-many=
+:PROPERTIES:
+:ID: 9FDE2FD1-C2D7-5518-A9C5-F8A7678E4EAD
+:END:
+
+Get many party identifiers. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_identifiers/get-many
+#+end_example
+
+#+name: party_identifiers-get-many
+#+begin_src hurl :tangle party_identifiers-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_identifiers/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_identifiers=
+:PROPERTIES:
+:ID: 702D5DF5-DD3C-57B8-9235-3B5F0D45FF98
+:END:
+
+Create one party identifier. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_identifiers
+#+end_example
+
+#+name: party_identifiers-add
+#+begin_src hurl :tangle party_identifiers-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_identifiers
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/party_identifiers=
+:PROPERTIES:
+:ID: AD27CA17-958F-5E29-8813-15CF2B12D442
+:END:
+
+Replace one party identifier. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/party_identifiers
+#+end_example
+
+#+name: party_identifiers-set
+#+begin_src hurl :tangle party_identifiers-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/party_identifiers
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_identifiers/put-many=
+:PROPERTIES:
+:ID: 3C3D68B6-F465-540E-96EE-680E3EC9F3F6
+:END:
+
+Write many party identifiers. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_identifiers/put-many
+#+end_example
+
+#+name: party_identifiers-put-many
+#+begin_src hurl :tangle party_identifiers-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_identifiers/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/party_identifiers/__none__=
+:PROPERTIES:
+:ID: 8AA12568-4765-58BB-9B4D-50D31D2D7F11
+:END:
+
+Delete one party identifier. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/party_identifiers/__none__
+#+end_example
+
+#+name: party_identifiers-delete
+#+begin_src hurl :tangle party_identifiers-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/party_identifiers/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_identifiers/delete-many=
+:PROPERTIES:
+:ID: DC9576D5-C60F-5AD0-A633-1C9C1C1B13AF
+:END:
+
+Delete many party identifiers. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_identifiers/delete-many
+#+end_example
+
+#+name: party_identifiers-delete-many
+#+begin_src hurl :tangle party_identifiers-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_identifiers/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_identifiers/by-party-id/__none__=
+:PROPERTIES:
+:ID: 3CA3259A-169A-5AC7-911A-95846FEF44B9
+:END:
+
+List the party identifiers that reference one party id. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers.list_by_party_id=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_identifiers/by-party-id/__none__
+#+end_example
+
+#+name: party_identifiers-by-party-id
+#+begin_src hurl :tangle party_identifiers-by-party-id.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_identifiers/by-party-id/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_identifiers/__none__/versions=
+:PROPERTIES:
+:ID: 883CA3A9-C924-5B4C-934A-8C29F3E4D900
+:END:
+
+List the recorded versions of one party identifier. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_identifiers/__none__/versions
+#+end_example
+
+#+name: party_identifiers-versions
+#+begin_src hurl :tangle party_identifiers-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_identifiers/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_identifiers/__none__/versions/0=
+:PROPERTIES:
+:ID: FFEC08F0-E6CA-5958-A295-8ECFE10286E2
+:END:
+
+Get one recorded version of one party identifier. It needs a session.
+
+It forwards to =refdata.v1.party_identifiers_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_identifiers/__none__/versions/0
+#+end_example
+
+#+name: party_identifiers-version
+#+begin_src hurl :tangle party_identifiers-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_identifiers/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -92,7 +92,7 @@ struct business_centre_event {
     boost::uuids::uuid event_id;
     business_centre_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +101,7 @@ struct business_centre_event {
 
 struct business_centre_version_key {
     business_centre_key business_centre;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const business_centre_version_key&,
                            const business_centre_version_key&) = default;
@@ -139,7 +139,7 @@ struct list_business_centres_request {
 struct list_business_centres_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_centre> centres;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_business_centres_response&,
                            const list_business_centres_response&) = default;
@@ -314,7 +314,7 @@ struct list_business_centre_versions_request {
 struct list_business_centre_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_centre> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_business_centre_versions_response&,
                            const list_business_centre_versions_response&) = default;

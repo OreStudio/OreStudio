@@ -1,0 +1,267 @@
+:PROPERTIES:
+:ID: 04C8F03D-5BB8-58F2-A556-63A54274108F
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the account_contact_informations endpoints over HTTP?
+#+description: Every endpoint the account_contact_informations resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:account_contact_informations:
+
+This file documents the account_contact_informations resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/access/account_contact_informations=
+:PROPERTIES:
+:ID: F42886D2-76BF-5BB2-972C-35C11517278B
+:END:
+
+List account contact informations. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/access/account_contact_informations
+#+end_example
+
+#+name: account_contact_informations-list
+#+begin_src hurl :tangle account_contact_informations-list.hurl :exports none
+GET {{base_url}}/api/v1/access/account_contact_informations
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/access/account_contact_informations/__none__=
+:PROPERTIES:
+:ID: 20767BDD-9EE5-5AEE-88DC-C0F797E295D0
+:END:
+
+Get one account contact information. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/access/account_contact_informations/__none__
+#+end_example
+
+#+name: account_contact_informations-get
+#+begin_src hurl :tangle account_contact_informations-get.hurl :exports none
+GET {{base_url}}/api/v1/access/account_contact_informations/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/access/account_contact_informations/get-many=
+:PROPERTIES:
+:ID: D5E458FB-2662-5647-8AE3-A5DC2F3E5F4A
+:END:
+
+Get many account contact informations. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/access/account_contact_informations/get-many
+#+end_example
+
+#+name: account_contact_informations-get-many
+#+begin_src hurl :tangle account_contact_informations-get-many.hurl :exports none
+POST {{base_url}}/api/v1/access/account_contact_informations/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/access/account_contact_informations=
+:PROPERTIES:
+:ID: EA93F955-C6E6-5A9B-8922-4C8E6AA74FA3
+:END:
+
+Create one account contact information. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/access/account_contact_informations
+#+end_example
+
+#+name: account_contact_informations-add
+#+begin_src hurl :tangle account_contact_informations-add.hurl :exports none
+POST {{base_url}}/api/v1/access/account_contact_informations
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/access/account_contact_informations=
+:PROPERTIES:
+:ID: 268CEEEE-56A5-5C50-AEB5-58E9CBA44CD5
+:END:
+
+Replace one account contact information. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/access/account_contact_informations
+#+end_example
+
+#+name: account_contact_informations-set
+#+begin_src hurl :tangle account_contact_informations-set.hurl :exports none
+PUT {{base_url}}/api/v1/access/account_contact_informations
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/access/account_contact_informations/put-many=
+:PROPERTIES:
+:ID: 5F52836E-6022-5FFD-B9E5-1CA65F9520BC
+:END:
+
+Write many account contact informations. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/access/account_contact_informations/put-many
+#+end_example
+
+#+name: account_contact_informations-put-many
+#+begin_src hurl :tangle account_contact_informations-put-many.hurl :exports none
+POST {{base_url}}/api/v1/access/account_contact_informations/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/access/account_contact_informations/__none__=
+:PROPERTIES:
+:ID: 23BD2CA1-501A-5106-92B4-CEBC43A7C6E4
+:END:
+
+Delete one account contact information. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/access/account_contact_informations/__none__
+#+end_example
+
+#+name: account_contact_informations-delete
+#+begin_src hurl :tangle account_contact_informations-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/access/account_contact_informations/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/access/account_contact_informations/delete-many=
+:PROPERTIES:
+:ID: 1AE5A2DA-AA62-574A-80DE-BC2DD1425422
+:END:
+
+Delete many account contact informations. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/access/account_contact_informations/delete-many
+#+end_example
+
+#+name: account_contact_informations-delete-many
+#+begin_src hurl :tangle account_contact_informations-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/access/account_contact_informations/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/access/account_contact_informations/by-account-id/__none__=
+:PROPERTIES:
+:ID: 4DD63800-7EFB-5F3D-89D0-9665D1A4799D
+:END:
+
+List the account contact informations that reference one account id. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations.list_by_account_id=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/access/account_contact_informations/by-account-id/__none__
+#+end_example
+
+#+name: account_contact_informations-by-account-id
+#+begin_src hurl :tangle account_contact_informations-by-account-id.hurl :exports none
+GET {{base_url}}/api/v1/access/account_contact_informations/by-account-id/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/access/account_contact_informations/__none__/versions=
+:PROPERTIES:
+:ID: 0F4D2FCB-25A1-5060-A8CD-12DD36043C2A
+:END:
+
+List the recorded versions of one account contact information. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/access/account_contact_informations/__none__/versions
+#+end_example
+
+#+name: account_contact_informations-versions
+#+begin_src hurl :tangle account_contact_informations-versions.hurl :exports none
+GET {{base_url}}/api/v1/access/account_contact_informations/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/access/account_contact_informations/__none__/versions/0=
+:PROPERTIES:
+:ID: 11E54D74-2488-593A-8F37-2A89542F2B07
+:END:
+
+Get one recorded version of one account contact information. It needs a session.
+
+It forwards to =iam.v1.account_contact_informations_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/access/account_contact_informations/__none__/versions/0
+#+end_example
+
+#+name: account_contact_informations-version
+#+begin_src hurl :tangle account_contact_informations-version.hurl :exports none
+GET {{base_url}}/api/v1/access/account_contact_informations/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

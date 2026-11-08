@@ -70,7 +70,7 @@ struct balance_guaranteed_swap_tranche final {
      * The schema declares the list unbounded and a document's order is the order it stated, so the
      * ordinal identifies a row and preserves that order.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.
@@ -93,7 +93,7 @@ struct balance_guaranteed_swap_tranche final {
     /**
      * @brief Rank of the tranche in the payment waterfall; a lower number is more senior.
      */
-    std::int64_t seniority;
+    std::int64_t seniority{};
 
     /**
      * @brief Username of the person who last modified this balance guaranteed swap tranche.

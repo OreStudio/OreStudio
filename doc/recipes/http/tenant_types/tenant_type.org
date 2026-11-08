@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 8427B6C2-8E9C-5846-866B-DBBF5973DAFB
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the tenant_types endpoints over HTTP?
+#+description: Every endpoint the tenant_types resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:tenant_types:
+
+This file documents the tenant_types resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/tenancy/tenant_types=
+:PROPERTIES:
+:ID: CACC757A-3820-5692-A7FB-20B9CCB1842C
+:END:
+
+List tenant types. It needs a session.
+
+It forwards to =iam.v1.tenant_types.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenant_types
+#+end_example
+
+#+name: tenant_types-list
+#+begin_src hurl :tangle tenant_types-list.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenant_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/tenant_types/__none__=
+:PROPERTIES:
+:ID: 1DE72809-4F71-5292-866B-B3B5182BEB55
+:END:
+
+Get one tenant type. It needs a session.
+
+It forwards to =iam.v1.tenant_types.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenant_types/__none__
+#+end_example
+
+#+name: tenant_types-get
+#+begin_src hurl :tangle tenant_types-get.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenant_types/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenant_types/get-many=
+:PROPERTIES:
+:ID: 67291ABB-F475-59A9-80AC-6A3A0730576C
+:END:
+
+Get many tenant types. It needs a session.
+
+It forwards to =iam.v1.tenant_types.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenant_types/get-many
+#+end_example
+
+#+name: tenant_types-get-many
+#+begin_src hurl :tangle tenant_types-get-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenant_types/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenant_types=
+:PROPERTIES:
+:ID: C7454CE6-7586-5DB0-A264-139937449C37
+:END:
+
+Create one tenant type. It needs a session.
+
+It forwards to =iam.v1.tenant_types.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenant_types
+#+end_example
+
+#+name: tenant_types-add
+#+begin_src hurl :tangle tenant_types-add.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenant_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/tenancy/tenant_types=
+:PROPERTIES:
+:ID: 6780E2FF-B89B-5247-81CA-C40367F289EE
+:END:
+
+Replace one tenant type. It needs a session.
+
+It forwards to =iam.v1.tenant_types.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/tenancy/tenant_types
+#+end_example
+
+#+name: tenant_types-set
+#+begin_src hurl :tangle tenant_types-set.hurl :exports none
+PUT {{base_url}}/api/v1/tenancy/tenant_types
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenant_types/put-many=
+:PROPERTIES:
+:ID: D8102011-6CF5-573F-B7A6-6B74BDE076D7
+:END:
+
+Write many tenant types. It needs a session.
+
+It forwards to =iam.v1.tenant_types.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenant_types/put-many
+#+end_example
+
+#+name: tenant_types-put-many
+#+begin_src hurl :tangle tenant_types-put-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenant_types/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/tenancy/tenant_types/__none__=
+:PROPERTIES:
+:ID: AF237AD9-F65B-585A-96A9-84FF57CB3193
+:END:
+
+Delete one tenant type. It needs a session.
+
+It forwards to =iam.v1.tenant_types.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/tenancy/tenant_types/__none__
+#+end_example
+
+#+name: tenant_types-delete
+#+begin_src hurl :tangle tenant_types-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/tenancy/tenant_types/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenant_types/delete-many=
+:PROPERTIES:
+:ID: 16E0A01B-A4FF-59EA-88D5-4D6A4F362AB2
+:END:
+
+Delete many tenant types. It needs a session.
+
+It forwards to =iam.v1.tenant_types.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenant_types/delete-many
+#+end_example
+
+#+name: tenant_types-delete-many
+#+begin_src hurl :tangle tenant_types-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenant_types/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/tenant_types/__none__/versions=
+:PROPERTIES:
+:ID: 745B8C7B-62D0-569D-8C9B-4F005A7E15FA
+:END:
+
+List the recorded versions of one tenant type. It needs a session.
+
+It forwards to =iam.v1.tenant_types_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenant_types/__none__/versions
+#+end_example
+
+#+name: tenant_types-versions
+#+begin_src hurl :tangle tenant_types-versions.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenant_types/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/tenant_types/__none__/versions/0=
+:PROPERTIES:
+:ID: 04622FA5-139E-5726-998A-52FEED1AAE91
+:END:
+
+Get one recorded version of one tenant type. It needs a session.
+
+It forwards to =iam.v1.tenant_types_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenant_types/__none__/versions/0
+#+end_example
+
+#+name: tenant_types-version
+#+begin_src hurl :tangle tenant_types-version.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenant_types/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

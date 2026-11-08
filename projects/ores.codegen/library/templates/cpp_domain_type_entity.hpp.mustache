@@ -47,7 +47,7 @@ struct {{entity_singular}}_entity {
     db_timestamp {{column}};
 {{/is_timestamp}}
 {{#is_int}}
-    int {{column}};
+    int {{column}}{};
 {{/is_int}}
 {{#is_text}}
     std::string {{column}};
@@ -85,7 +85,7 @@ struct {{entity_singular}}_entity {
 {{/is_optional_timestamp}}
 {{/is_timestamp}}
 {{^is_uuid}}{{^is_optional_uuid}}{{^is_date}}{{^is_timestamp}}{{^is_optional_timestamp}}
-    {{{cpp_type}}} {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{{cpp_type}}} {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
 {{/is_optional_timestamp}}{{/is_timestamp}}{{/is_date}}{{/is_optional_uuid}}{{/is_uuid}}
 {{/natural_keys}}
 {{#columns}}
@@ -140,7 +140,7 @@ struct {{entity_singular}}_entity {
 {{/is_enum}}
 {{/render_is_enum}}
 {{#is_simple}}
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
 {{/is_simple}}
 {{/columns}}
 {{#has_audit_columns}}
@@ -286,7 +286,7 @@ struct {{name_singular}}_entity {
     std::string {{name}};
 {{/is_base64}}
 {{^is_uuid}}{{^is_optional_uuid}}{{^is_optional_timestamp}}{{^is_required_timestamp}}{{^is_date}}{{^is_base64}}
-    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
 {{/is_base64}}{{/is_date}}{{/is_required_timestamp}}{{/is_optional_timestamp}}{{/is_optional_uuid}}{{/is_uuid}}
 {{/columns}}
     std::string modified_by;

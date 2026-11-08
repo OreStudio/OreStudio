@@ -55,7 +55,7 @@ struct commodity_instrument_write {
     boost::uuids::uuid trade_activity_id;
     std::string commodity_code;
     std::string currency;
-    double quantity;
+    double quantity{};
     std::string unit;
     std::optional<std::chrono::year_month_day> start_date;
     std::optional<std::chrono::year_month_day> maturity_date;
@@ -128,7 +128,7 @@ struct commodity_instrument_event {
     boost::uuids::uuid event_id;
     commodity_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -138,7 +138,7 @@ struct commodity_instrument_event {
 
 struct commodity_instrument_version_key {
     commodity_instrument_key commodity_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const commodity_instrument_version_key&,
                            const commodity_instrument_version_key&) = default;
@@ -176,7 +176,7 @@ struct list_commodity_instruments_request {
 struct list_commodity_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::commodity_instrument> commodity_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_instruments_response&,
                            const list_commodity_instruments_response&) = default;
@@ -352,7 +352,7 @@ struct list_commodity_instrument_versions_request {
 struct list_commodity_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::commodity_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_instrument_versions_response&,
                            const list_commodity_instrument_versions_response&) = default;

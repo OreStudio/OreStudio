@@ -84,9 +84,8 @@ auto xml_roundtrip_values_read_file(const fs::path& path) -> std::string {
  * is allowed to order and spell things its own way; the records are.
  */
 template <typename Record>
-auto round_trip_values(const document_type& doc,
-                       std::string_view text,
-                       std::string& report) -> bool {
+auto round_trip_values(const document_type& doc, std::string_view text, std::string& report)
+    -> bool {
     Record first{};
     const auto bound = binder::bind(doc, text, &first);
     if (!bound) {
@@ -250,7 +249,7 @@ TEST_CASE("the_walk_names_the_value_that_changed", "[ore][xml][roundtrip-values]
 }
 
 TEST_CASE("every_generated_family_keeps_its_values_across_the_writing",
-          "[ore][xml][roundtrip-values]") {
+          "[long_running][ore][xml][roundtrip-values]") {
     auto lg(make_logger(test_suite));
 
     const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";

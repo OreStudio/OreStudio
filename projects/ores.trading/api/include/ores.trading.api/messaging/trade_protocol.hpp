@@ -57,7 +57,7 @@ struct trade_write {
     ores::trading::domain::entry_channel entry_channel;
     ores::trading::domain::origin origin;
     std::string origin_reference;
-    int external_version;
+    int external_version{};
     std::string draft_reason_code;
     std::string economic_digest;
 
@@ -102,7 +102,7 @@ struct trade_event {
     boost::uuids::uuid event_id;
     trade_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -111,7 +111,7 @@ struct trade_event {
 
 struct trade_version_key {
     trade_key trade;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const trade_version_key&, const trade_version_key&) = default;
 };
@@ -146,7 +146,7 @@ struct list_trades_request {
 struct list_trades_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade> trades;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trades_response&, const list_trades_response&) = default;
 };
@@ -314,7 +314,7 @@ struct list_trade_versions_request {
 struct list_trade_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_versions_response&,
                            const list_trade_versions_response&) = default;

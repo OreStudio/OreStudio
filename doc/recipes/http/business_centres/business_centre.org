@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 0B71D41D-A37C-5094-B7BF-670C74F060D1
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the business_centres endpoints over HTTP?
+#+description: Every endpoint the business_centres resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:business_centres:
+
+This file documents the business_centres resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/business_centres=
+:PROPERTIES:
+:ID: 4C58E834-3A71-57D2-8D76-60D84E8F79C8
+:END:
+
+List business centres. It needs a session.
+
+It forwards to =refdata.v1.business_centres.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/business_centres
+#+end_example
+
+#+name: business_centres-list
+#+begin_src hurl :tangle business_centres-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/business_centres
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/business_centres/__none__=
+:PROPERTIES:
+:ID: 893BCE19-48BF-5500-827A-41683285AFA1
+:END:
+
+Get one business centre. It needs a session.
+
+It forwards to =refdata.v1.business_centres.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/business_centres/__none__
+#+end_example
+
+#+name: business_centres-get
+#+begin_src hurl :tangle business_centres-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/business_centres/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/business_centres/get-many=
+:PROPERTIES:
+:ID: 8013413D-5CFC-5CFF-861B-C8C3A6F5A47F
+:END:
+
+Get many business centres. It needs a session.
+
+It forwards to =refdata.v1.business_centres.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/business_centres/get-many
+#+end_example
+
+#+name: business_centres-get-many
+#+begin_src hurl :tangle business_centres-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/business_centres/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/business_centres=
+:PROPERTIES:
+:ID: BB1B96B7-B99A-521F-8E73-6305F1DAF317
+:END:
+
+Create one business centre. It needs a session.
+
+It forwards to =refdata.v1.business_centres.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/business_centres
+#+end_example
+
+#+name: business_centres-add
+#+begin_src hurl :tangle business_centres-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/business_centres
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/business_centres=
+:PROPERTIES:
+:ID: D272C926-7629-57C1-B81B-C75E7A1D3D8C
+:END:
+
+Replace one business centre. It needs a session.
+
+It forwards to =refdata.v1.business_centres.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/business_centres
+#+end_example
+
+#+name: business_centres-set
+#+begin_src hurl :tangle business_centres-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/business_centres
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/business_centres/put-many=
+:PROPERTIES:
+:ID: FD733EFD-EA68-5433-A6C6-A26533B1C319
+:END:
+
+Write many business centres. It needs a session.
+
+It forwards to =refdata.v1.business_centres.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/business_centres/put-many
+#+end_example
+
+#+name: business_centres-put-many
+#+begin_src hurl :tangle business_centres-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/business_centres/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/business_centres/__none__=
+:PROPERTIES:
+:ID: F7241708-1D82-5367-AB27-7FF152BBE1D1
+:END:
+
+Delete one business centre. It needs a session.
+
+It forwards to =refdata.v1.business_centres.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/business_centres/__none__
+#+end_example
+
+#+name: business_centres-delete
+#+begin_src hurl :tangle business_centres-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/business_centres/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/business_centres/delete-many=
+:PROPERTIES:
+:ID: 8357C8BA-61EF-513E-903E-81044ACEF52E
+:END:
+
+Delete many business centres. It needs a session.
+
+It forwards to =refdata.v1.business_centres.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/business_centres/delete-many
+#+end_example
+
+#+name: business_centres-delete-many
+#+begin_src hurl :tangle business_centres-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/business_centres/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/business_centres/__none__/versions=
+:PROPERTIES:
+:ID: 21141F4D-3BFF-5A77-9312-D85116A7C07D
+:END:
+
+List the recorded versions of one business centre. It needs a session.
+
+It forwards to =refdata.v1.business_centres_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/business_centres/__none__/versions
+#+end_example
+
+#+name: business_centres-versions
+#+begin_src hurl :tangle business_centres-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/business_centres/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/business_centres/__none__/versions/0=
+:PROPERTIES:
+:ID: 76311AF4-F025-54A5-8AC8-5625D44306DD
+:END:
+
+Get one recorded version of one business centre. It needs a session.
+
+It forwards to =refdata.v1.business_centres_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/business_centres/__none__/versions/0
+#+end_example
+
+#+name: business_centres-version
+#+begin_src hurl :tangle business_centres-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/business_centres/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

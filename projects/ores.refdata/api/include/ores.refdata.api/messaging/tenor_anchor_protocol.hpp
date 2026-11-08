@@ -51,7 +51,7 @@ struct tenor_anchor_key {
 struct tenor_anchor_write {
     std::string code;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const tenor_anchor_write&, const tenor_anchor_write&) = default;
 };
@@ -87,7 +87,7 @@ struct tenor_anchor_event {
     boost::uuids::uuid event_id;
     tenor_anchor_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -96,7 +96,7 @@ struct tenor_anchor_event {
 
 struct tenor_anchor_version_key {
     tenor_anchor_key tenor_anchor;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const tenor_anchor_version_key&,
                            const tenor_anchor_version_key&) = default;
@@ -134,7 +134,7 @@ struct list_tenor_anchors_request {
 struct list_tenor_anchors_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_anchor> anchors;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenor_anchors_response&,
                            const list_tenor_anchors_response&) = default;
@@ -309,7 +309,7 @@ struct list_tenor_anchor_versions_request {
 struct list_tenor_anchor_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::tenor_anchor> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenor_anchor_versions_response&,
                            const list_tenor_anchor_versions_response&) = default;

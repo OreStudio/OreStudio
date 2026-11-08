@@ -66,7 +66,7 @@ struct bond_issue_conversion_target final {
     /**
      * @brief Ordinal of this conversion target within the issue's target list.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief Identifier of the equity share the issue converts into, as the document names it.

@@ -93,7 +93,7 @@ struct curve_configuration_section_event {
     boost::uuids::uuid event_id;
     curve_configuration_section_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +103,7 @@ struct curve_configuration_section_event {
 
 struct curve_configuration_section_version_key {
     curve_configuration_section_key curve_configuration_section;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_configuration_section_version_key&,
                            const curve_configuration_section_version_key&) = default;
@@ -141,7 +141,7 @@ struct list_curve_configuration_sections_request {
 struct list_curve_configuration_sections_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_configuration_section> sections;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_configuration_sections_response&,
                            const list_curve_configuration_sections_response&) = default;
@@ -321,7 +321,7 @@ struct list_curve_configuration_section_versions_request {
 struct list_curve_configuration_section_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_configuration_section> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_configuration_section_versions_response&,
                            const list_curve_configuration_section_versions_response&) = default;

@@ -52,7 +52,7 @@ struct account_status_write {
     std::string status;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const account_status_write&, const account_status_write&) = default;
 };
@@ -89,7 +89,7 @@ struct account_status_event {
     boost::uuids::uuid event_id;
     account_status_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -98,7 +98,7 @@ struct account_status_event {
 
 struct account_status_version_key {
     account_status_key account_status;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const account_status_version_key&,
                            const account_status_version_key&) = default;
@@ -136,7 +136,7 @@ struct list_account_statuses_request {
 struct list_account_statuses_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_status> statuses;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_account_statuses_response&,
                            const list_account_statuses_response&) = default;
@@ -311,7 +311,7 @@ struct list_account_status_versions_request {
 struct list_account_status_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account_status> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_account_status_versions_response&,
                            const list_account_status_versions_response&) = default;

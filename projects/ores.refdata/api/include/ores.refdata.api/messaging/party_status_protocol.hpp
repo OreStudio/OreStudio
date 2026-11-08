@@ -52,7 +52,7 @@ struct party_status_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const party_status_write&, const party_status_write&) = default;
 };
@@ -88,7 +88,7 @@ struct party_status_event {
     boost::uuids::uuid event_id;
     party_status_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +97,7 @@ struct party_status_event {
 
 struct party_status_version_key {
     party_status_key party_status;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const party_status_version_key&,
                            const party_status_version_key&) = default;
@@ -135,7 +135,7 @@ struct list_party_statuses_request {
 struct list_party_statuses_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_status> statuses;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_statuses_response&,
                            const list_party_statuses_response&) = default;
@@ -310,7 +310,7 @@ struct list_party_status_versions_request {
 struct list_party_status_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::party_status> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_party_status_versions_response&,
                            const list_party_status_versions_response&) = default;

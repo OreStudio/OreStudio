@@ -52,7 +52,7 @@ struct swap_leg_entity {
     constexpr static const char* tablename = "ores_trading_swap_legs_tbl";
 
     boost::uuids::uuid trade_id;
-    int leg_number;
+    int leg_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid party_id;

@@ -110,7 +110,7 @@ struct run_result final {
     /**
      * @brief The figure, as the engine stated it and never formatted.
      */
-    double figure;
+    double figure{};
 
     /**
      * @brief The family the figure came from, for provenance.

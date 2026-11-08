@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 65943862-77B0-5588-A6B3-3F2CB49AC089
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the ir_curve_bootstrap_pillars endpoints over HTTP?
+#+description: Every endpoint the ir_curve_bootstrap_pillars resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:ir_curve_bootstrap_pillars:
+
+This file documents the ir_curve_bootstrap_pillars resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/ir_curve_bootstrap_pillars=
+:PROPERTIES:
+:ID: D939B2DD-1C3F-5179-85C0-5866B0BF02A7
+:END:
+
+List ir curve bootstrap pillars. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/ir_curve_bootstrap_pillars
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-list
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: E0B4BF45-8F90-56B2-8827-6BA339989DAE
+:END:
+
+Get one ir curve bootstrap pillar. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-get
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/ir_curve_bootstrap_pillars/get-many=
+:PROPERTIES:
+:ID: 5E3E09B6-4B95-57E1-BA14-7F072FE95AAC
+:END:
+
+Get many ir curve bootstrap pillars. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/ir_curve_bootstrap_pillars/get-many
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-get-many
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/ir_curve_bootstrap_pillars=
+:PROPERTIES:
+:ID: 454542E2-2D0B-5264-BAD4-DF455DE0424E
+:END:
+
+Create one ir curve bootstrap pillar. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/ir_curve_bootstrap_pillars
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-add
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/ir_curve_bootstrap_pillars=
+:PROPERTIES:
+:ID: FD1200CA-244E-53E0-B3F1-00132335F086
+:END:
+
+Replace one ir curve bootstrap pillar. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/ir_curve_bootstrap_pillars
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-set
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/ir_curve_bootstrap_pillars/put-many=
+:PROPERTIES:
+:ID: 34FDA9C9-26C4-5E1D-86E3-E33621B3EC24
+:END:
+
+Write many ir curve bootstrap pillars. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/ir_curve_bootstrap_pillars/put-many
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-put-many
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: AD65E269-4059-5088-BA49-AE620F3B9A6E
+:END:
+
+Delete one ir curve bootstrap pillar. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-delete
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/ir_curve_bootstrap_pillars/delete-many=
+:PROPERTIES:
+:ID: 36242CC5-89A3-5032-822A-16A5CF9BFDA8
+:END:
+
+Delete many ir curve bootstrap pillars. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/ir_curve_bootstrap_pillars/delete-many
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-delete-many
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000/versions=
+:PROPERTIES:
+:ID: 9D03D849-BB5C-5622-9B72-0896D29E5FF1
+:END:
+
+List the recorded versions of one ir curve bootstrap pillar. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000/versions
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-versions
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000/versions/0=
+:PROPERTIES:
+:ID: DAF9C76E-080A-5812-84CD-4248F65318C0
+:END:
+
+Get one recorded version of one ir curve bootstrap pillar. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_pillars_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000/versions/0
+#+end_example
+
+#+name: ir_curve_bootstrap_pillars-version
+#+begin_src hurl :tangle ir_curve_bootstrap_pillars-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars/00000000-0000-0000-0000-000000000000/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

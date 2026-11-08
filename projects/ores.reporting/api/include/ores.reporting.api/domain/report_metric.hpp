@@ -144,7 +144,7 @@ struct report_metric final {
     /**
      * @brief The figure, as the engine stated it and never formatted.
      */
-    double value;
+    double value{};
 
     /**
      * @brief Value equality.

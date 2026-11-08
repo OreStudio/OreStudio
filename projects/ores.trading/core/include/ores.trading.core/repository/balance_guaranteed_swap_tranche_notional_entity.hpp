@@ -52,8 +52,8 @@ struct balance_guaranteed_swap_tranche_notional_entity {
     constexpr static const char* tablename = "ores_trading_bg_swap_tranche_notionals_tbl";
 
     boost::uuids::uuid trade_id;
-    int tranche_number;
-    int sequence_number;
+    int tranche_number{};
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid trade_activity_id;

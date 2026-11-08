@@ -55,7 +55,7 @@ struct counterparty_identifier_write {
     std::string id_scheme;
     std::string id_value;
     std::string description;
-    bool is_authoritative;
+    bool is_authoritative{};
 
     friend bool operator==(const counterparty_identifier_write&,
                            const counterparty_identifier_write&) = default;
@@ -98,7 +98,7 @@ struct counterparty_identifier_event {
     boost::uuids::uuid event_id;
     counterparty_identifier_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +108,7 @@ struct counterparty_identifier_event {
 
 struct counterparty_identifier_version_key {
     counterparty_identifier_key counterparty_identifier;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const counterparty_identifier_version_key&,
                            const counterparty_identifier_version_key&) = default;
@@ -146,7 +146,7 @@ struct list_counterparty_identifiers_request {
 struct list_counterparty_identifiers_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_identifier> counterparty_identifiers;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_counterparty_identifiers_response&,
                            const list_counterparty_identifiers_response&) = default;
@@ -325,7 +325,7 @@ struct list_by_counterparty_id_counterparty_identifiers_request {
 struct list_by_counterparty_id_counterparty_identifiers_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_identifier> counterparty_identifiers;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_counterparty_id_counterparty_identifiers_response&,
@@ -356,7 +356,7 @@ struct list_counterparty_identifier_versions_request {
 struct list_counterparty_identifier_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::counterparty_identifier> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_counterparty_identifier_versions_response&,
                            const list_counterparty_identifier_versions_response&) = default;

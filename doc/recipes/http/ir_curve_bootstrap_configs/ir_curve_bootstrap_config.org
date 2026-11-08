@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 64C11727-78BE-5C81-A8AA-73F697FADB33
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the ir_curve_bootstrap_configs endpoints over HTTP?
+#+description: Every endpoint the ir_curve_bootstrap_configs resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:ir_curve_bootstrap_configs:
+
+This file documents the ir_curve_bootstrap_configs resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/ir_curve_bootstrap_configs=
+:PROPERTIES:
+:ID: 510583FF-54FF-5F18-8A6C-F4046375D937
+:END:
+
+List ir curve bootstrap configs. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/ir_curve_bootstrap_configs
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-list
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: BC4CE579-2433-590D-B938-617B798DBA69
+:END:
+
+Get one ir curve bootstrap config. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-get
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/ir_curve_bootstrap_configs/get-many=
+:PROPERTIES:
+:ID: FD3AF9BE-FC3C-5C80-A5D2-E24C7835AC6D
+:END:
+
+Get many ir curve bootstrap configs. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/ir_curve_bootstrap_configs/get-many
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-get-many
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/ir_curve_bootstrap_configs=
+:PROPERTIES:
+:ID: D10A6791-4680-5D57-B9A0-FC9897CCA036
+:END:
+
+Create one ir curve bootstrap config. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/ir_curve_bootstrap_configs
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-add
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/ir_curve_bootstrap_configs=
+:PROPERTIES:
+:ID: 2C691280-3304-560B-AC20-67DA871F2F93
+:END:
+
+Replace one ir curve bootstrap config. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/ir_curve_bootstrap_configs
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-set
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/ir_curve_bootstrap_configs/put-many=
+:PROPERTIES:
+:ID: F8CEF42C-FC5E-58D2-920B-668EC545983D
+:END:
+
+Write many ir curve bootstrap configs. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/ir_curve_bootstrap_configs/put-many
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-put-many
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: A1EFFD01-90AE-54A9-8E7B-C63BA227B7DD
+:END:
+
+Delete one ir curve bootstrap config. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-delete
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/ir_curve_bootstrap_configs/delete-many=
+:PROPERTIES:
+:ID: 7394F03B-20B7-50B0-A377-C59EF7CEB3DE
+:END:
+
+Delete many ir curve bootstrap configs. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/ir_curve_bootstrap_configs/delete-many
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-delete-many
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000/versions=
+:PROPERTIES:
+:ID: 97494968-66CD-54E4-B4F7-C96B04F094F3
+:END:
+
+List the recorded versions of one ir curve bootstrap config. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000/versions
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-versions
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000/versions/0=
+:PROPERTIES:
+:ID: E56DD944-1B2E-5D35-95D1-8F6C991B5BB2
+:END:
+
+Get one recorded version of one ir curve bootstrap config. It needs a session.
+
+It forwards to =refdata.v1.ir_curve_bootstrap_configs_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000/versions/0
+#+end_example
+
+#+name: ir_curve_bootstrap_configs-version
+#+begin_src hurl :tangle ir_curve_bootstrap_configs-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_configs/00000000-0000-0000-0000-000000000000/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

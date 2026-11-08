@@ -48,7 +48,7 @@ namespace ores::refdata::messaging {
  * the line changes, which is what the policy reads to name the parts.
  */
 struct book_line_outcome {
-    int line_no;
+    int line_no{};
     std::string operation;
     boost::uuids::uuid entity_id;
     std::vector<std::string> columns;

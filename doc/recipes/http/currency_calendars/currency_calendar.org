@@ -1,0 +1,221 @@
+:PROPERTIES:
+:ID: 6164DD01-790A-5D85-835C-4A54ECED5E3E
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the currency_calendars endpoints over HTTP?
+#+description: Every endpoint the currency_calendars resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:currency_calendars:
+
+This file documents the currency_calendars resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/currency_calendars=
+:PROPERTIES:
+:ID: 8B3F6234-CBD6-5C43-9CC3-93A6C6E5A86A
+:END:
+
+List currency calendars. It needs a session.
+
+It forwards to =refdata.v1.currency_calendars.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_calendars
+#+end_example
+
+#+name: currency_calendars-list
+#+begin_src hurl :tangle currency_calendars-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_calendars
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_calendars/__none__/__none__=
+:PROPERTIES:
+:ID: B688ECCD-699C-586E-9F4B-DB977C1B4DDB
+:END:
+
+Get one currency calendar. It needs a session.
+
+It forwards to =refdata.v1.currency_calendars.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_calendars/__none__/__none__
+#+end_example
+
+#+name: currency_calendars-get
+#+begin_src hurl :tangle currency_calendars-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_calendars/__none__/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_calendars/get-many=
+:PROPERTIES:
+:ID: F116A6B9-E439-5A63-9917-73E1D0F6EB76
+:END:
+
+Get many currency calendars. It needs a session.
+
+It forwards to =refdata.v1.currency_calendars.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_calendars/get-many
+#+end_example
+
+#+name: currency_calendars-get-many
+#+begin_src hurl :tangle currency_calendars-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_calendars/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_calendars=
+:PROPERTIES:
+:ID: 44F54CFB-0732-51EA-8F7B-82DF799FF88B
+:END:
+
+Create one currency calendar. It needs a session.
+
+It forwards to =refdata.v1.currency_calendars.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_calendars
+#+end_example
+
+#+name: currency_calendars-add
+#+begin_src hurl :tangle currency_calendars-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_calendars
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/currency_calendars=
+:PROPERTIES:
+:ID: 30DF150C-0AA3-5E04-A66E-4727AC6A4958
+:END:
+
+Replace one currency calendar. It needs a session.
+
+It forwards to =refdata.v1.currency_calendars.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/currency_calendars
+#+end_example
+
+#+name: currency_calendars-set
+#+begin_src hurl :tangle currency_calendars-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/currency_calendars
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_calendars/put-many=
+:PROPERTIES:
+:ID: 1EAF46CB-E15F-556D-9121-EEDA86F50980
+:END:
+
+Write many currency calendars. It needs a session.
+
+It forwards to =refdata.v1.currency_calendars.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_calendars/put-many
+#+end_example
+
+#+name: currency_calendars-put-many
+#+begin_src hurl :tangle currency_calendars-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_calendars/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/currency_calendars/__none__/__none__=
+:PROPERTIES:
+:ID: 43BF5917-A513-5CF2-B6BF-9D33666C1162
+:END:
+
+Delete one currency calendar. It needs a session.
+
+It forwards to =refdata.v1.currency_calendars.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/currency_calendars/__none__/__none__
+#+end_example
+
+#+name: currency_calendars-delete
+#+begin_src hurl :tangle currency_calendars-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/currency_calendars/__none__/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_calendars/delete-many=
+:PROPERTIES:
+:ID: 07AADED2-A799-5558-926B-3C87CED55800
+:END:
+
+Delete many currency calendars. It needs a session.
+
+It forwards to =refdata.v1.currency_calendars.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_calendars/delete-many
+#+end_example
+
+#+name: currency_calendars-delete-many
+#+begin_src hurl :tangle currency_calendars-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_calendars/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_calendars/by-currency-iso-code/__none__=
+:PROPERTIES:
+:ID: E4C0EDF9-46BC-5E9C-83F4-F95BCB96962C
+:END:
+
+List the currency calendars that reference one currency iso code. It needs a session.
+
+It forwards to =refdata.v1.currency_calendars.list_by_currency_iso_code=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_calendars/by-currency-iso-code/__none__
+#+end_example
+
+#+name: currency_calendars-by-currency-iso-code
+#+begin_src hurl :tangle currency_calendars-by-currency-iso-code.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_calendars/by-currency-iso-code/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

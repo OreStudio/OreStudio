@@ -75,7 +75,7 @@ struct product_type_asset_class final {
     /**
      * @brief True on the one market the catalogue groups the product type under.
      */
-    bool is_home;
+    bool is_home{};
 
     /**
      * @brief Username of the person who last modified this product type market.

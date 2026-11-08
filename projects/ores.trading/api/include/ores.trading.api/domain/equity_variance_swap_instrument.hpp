@@ -70,7 +70,7 @@ struct equity_variance_swap_instrument final {
      * and a numeric does not: an infinite or not-a-number strike has no meaning and would poison
      * every comparison downstream.
      */
-    double variance_strike;
+    double variance_strike{};
 
     /**
      * @brief ISO 8601 date string (YYYY-MM-DD).

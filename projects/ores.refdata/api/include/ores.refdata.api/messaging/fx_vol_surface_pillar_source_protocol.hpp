@@ -55,7 +55,7 @@ struct fx_vol_surface_pillar_source_write {
     boost::uuids::uuid pillar_id;
     boost::uuids::uuid market_series_id;
     std::string contributor_code;
-    double weight;
+    double weight{};
 
     friend bool operator==(const fx_vol_surface_pillar_source_write&,
                            const fx_vol_surface_pillar_source_write&) = default;
@@ -98,7 +98,7 @@ struct fx_vol_surface_pillar_source_event {
     boost::uuids::uuid event_id;
     fx_vol_surface_pillar_source_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +108,7 @@ struct fx_vol_surface_pillar_source_event {
 
 struct fx_vol_surface_pillar_source_version_key {
     fx_vol_surface_pillar_source_key fx_vol_surface_pillar_source;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const fx_vol_surface_pillar_source_version_key&,
                            const fx_vol_surface_pillar_source_version_key&) = default;
@@ -147,7 +147,7 @@ struct list_fx_vol_surface_pillar_sources_request {
 struct list_fx_vol_surface_pillar_sources_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::fx_vol_surface_pillar_source> pillar_sources;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_vol_surface_pillar_sources_response&,
                            const list_fx_vol_surface_pillar_sources_response&) = default;
@@ -327,7 +327,7 @@ struct list_fx_vol_surface_pillar_source_versions_request {
 struct list_fx_vol_surface_pillar_source_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::fx_vol_surface_pillar_source> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_vol_surface_pillar_source_versions_response&,
                            const list_fx_vol_surface_pillar_source_versions_response&) = default;

@@ -71,7 +71,7 @@ struct curve_publish_event {
     boost::uuids::uuid event_id;
     curve_publish_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -80,7 +80,7 @@ struct curve_publish_event {
 
 struct curve_publish_version_key {
     curve_publish_key curve_publish;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_publish_version_key&,
                            const curve_publish_version_key&) = default;
@@ -118,7 +118,7 @@ struct list_curve_publishes_request {
 struct list_curve_publishes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::curve_publish> curve_publishes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_publishes_response&,
                            const list_curve_publishes_response&) = default;
@@ -197,7 +197,7 @@ struct list_by_request_id_curve_publishes_request {
 struct list_by_request_id_curve_publishes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::curve_publish> curve_publishes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_request_id_curve_publishes_response&,
                            const list_by_request_id_curve_publishes_response&) = default;
@@ -226,7 +226,7 @@ struct list_curve_publish_versions_request {
 struct list_curve_publish_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::curve_publish> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_publish_versions_response&,
                            const list_curve_publish_versions_response&) = default;

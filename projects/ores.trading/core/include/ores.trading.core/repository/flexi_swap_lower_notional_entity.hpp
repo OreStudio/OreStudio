@@ -52,7 +52,7 @@ struct flexi_swap_lower_notional_entity {
     constexpr static const char* tablename = "ores_trading_flexi_swap_lower_notionals_tbl";
 
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid trade_activity_id;

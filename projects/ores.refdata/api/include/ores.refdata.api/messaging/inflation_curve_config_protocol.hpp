@@ -55,7 +55,7 @@ struct inflation_curve_config_write {
     std::string nominal_term_structure;
     std::string inflation_type;
     std::optional<std::string> conventions;
-    bool has_quotes;
+    bool has_quotes{};
     std::optional<std::string> extrapolation;
     std::string calendar;
     std::optional<std::string> day_counter;
@@ -106,7 +106,7 @@ struct inflation_curve_config_event {
     boost::uuids::uuid event_id;
     inflation_curve_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -116,7 +116,7 @@ struct inflation_curve_config_event {
 
 struct inflation_curve_config_version_key {
     inflation_curve_config_key inflation_curve_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const inflation_curve_config_version_key&,
                            const inflation_curve_config_version_key&) = default;
@@ -154,7 +154,7 @@ struct list_inflation_curve_configs_request {
 struct list_inflation_curve_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_curve_config> inflation_curve_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_inflation_curve_configs_response&,
                            const list_inflation_curve_configs_response&) = default;
@@ -331,7 +331,7 @@ struct list_inflation_curve_config_versions_request {
 struct list_inflation_curve_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_curve_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_inflation_curve_config_versions_response&,
                            const list_inflation_curve_config_versions_response&) = default;

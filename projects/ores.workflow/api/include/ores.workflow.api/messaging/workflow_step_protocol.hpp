@@ -51,7 +51,7 @@ struct workflow_step_key {
 struct workflow_step_write {
     boost::uuids::uuid id;
     boost::uuids::uuid workflow_id;
-    int step_index;
+    int step_index{};
     std::string name;
     boost::uuids::uuid state_id;
     std::string request_json;
@@ -100,7 +100,7 @@ struct workflow_step_event {
     boost::uuids::uuid event_id;
     workflow_step_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +109,7 @@ struct workflow_step_event {
 
 struct workflow_step_version_key {
     workflow_step_key workflow_step;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const workflow_step_version_key&,
                            const workflow_step_version_key&) = default;
@@ -147,7 +147,7 @@ struct list_workflow_steps_request {
 struct list_workflow_steps_response {
     ores::utility::domain::result result;
     std::vector<ores::workflow::domain::workflow_step> steps;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_workflow_steps_response&,
                            const list_workflow_steps_response&) = default;
@@ -324,7 +324,7 @@ struct list_by_workflow_id_workflow_steps_request {
 struct list_by_workflow_id_workflow_steps_response {
     ores::utility::domain::result result;
     std::vector<ores::workflow::domain::workflow_step> steps;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_workflow_id_workflow_steps_response&,
                            const list_by_workflow_id_workflow_steps_response&) = default;
@@ -353,7 +353,7 @@ struct list_workflow_step_versions_request {
 struct list_workflow_step_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::workflow::domain::workflow_step> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_workflow_step_versions_response&,
                            const list_workflow_step_versions_response&) = default;

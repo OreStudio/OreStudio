@@ -94,7 +94,7 @@ struct commodity_curve_config_event {
     boost::uuids::uuid event_id;
     commodity_curve_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct commodity_curve_config_event {
 
 struct commodity_curve_config_version_key {
     commodity_curve_config_key commodity_curve_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const commodity_curve_config_version_key&,
                            const commodity_curve_config_version_key&) = default;
@@ -142,7 +142,7 @@ struct list_commodity_curve_configs_request {
 struct list_commodity_curve_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_curve_config> commodity_curve_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_curve_configs_response&,
                            const list_commodity_curve_configs_response&) = default;
@@ -319,7 +319,7 @@ struct list_commodity_curve_config_versions_request {
 struct list_commodity_curve_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity_curve_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_curve_config_versions_response&,
                            const list_commodity_curve_config_versions_response&) = default;

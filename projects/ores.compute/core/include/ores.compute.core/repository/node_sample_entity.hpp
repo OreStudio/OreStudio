@@ -58,10 +58,10 @@ struct node_sample_entity {
     int tasks_completed = 0;
     int tasks_failed = 0;
     int tasks_since_last = 0;
-    std::int64_t avg_task_duration_ms;
-    std::int64_t max_task_duration_ms;
-    std::int64_t input_bytes_fetched;
-    std::int64_t output_bytes_uploaded;
+    std::int64_t avg_task_duration_ms{};
+    std::int64_t max_task_duration_ms{};
+    std::int64_t input_bytes_fetched{};
+    std::int64_t output_bytes_uploaded{};
     int seconds_since_hb = 0;
 
     /**

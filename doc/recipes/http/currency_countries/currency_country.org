@@ -1,0 +1,221 @@
+:PROPERTIES:
+:ID: ED5A2310-8B95-5ED1-A46E-C535168E71A0
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the currency_countries endpoints over HTTP?
+#+description: Every endpoint the currency_countries resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:currency_countries:
+
+This file documents the currency_countries resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/currency_countries=
+:PROPERTIES:
+:ID: C1ACEAA3-3C79-5979-AD69-649775CFF3F3
+:END:
+
+List currency countries. It needs a session.
+
+It forwards to =refdata.v1.currency_countries.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_countries
+#+end_example
+
+#+name: currency_countries-list
+#+begin_src hurl :tangle currency_countries-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_countries
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_countries/__none__/__none__=
+:PROPERTIES:
+:ID: 973E77F0-9EA2-5065-91AF-0EE7707C08ED
+:END:
+
+Get one currency country. It needs a session.
+
+It forwards to =refdata.v1.currency_countries.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_countries/__none__/__none__
+#+end_example
+
+#+name: currency_countries-get
+#+begin_src hurl :tangle currency_countries-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_countries/__none__/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_countries/get-many=
+:PROPERTIES:
+:ID: 604F199A-9079-527B-9DA8-B5D7FC66C82C
+:END:
+
+Get many currency countries. It needs a session.
+
+It forwards to =refdata.v1.currency_countries.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_countries/get-many
+#+end_example
+
+#+name: currency_countries-get-many
+#+begin_src hurl :tangle currency_countries-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_countries/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_countries=
+:PROPERTIES:
+:ID: 7A75F5A2-4A50-5FEA-87A2-B42613737E25
+:END:
+
+Create one currency country. It needs a session.
+
+It forwards to =refdata.v1.currency_countries.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_countries
+#+end_example
+
+#+name: currency_countries-add
+#+begin_src hurl :tangle currency_countries-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_countries
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/currency_countries=
+:PROPERTIES:
+:ID: 1A8AD092-245D-5557-992E-2A766C8E12DA
+:END:
+
+Replace one currency country. It needs a session.
+
+It forwards to =refdata.v1.currency_countries.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/currency_countries
+#+end_example
+
+#+name: currency_countries-set
+#+begin_src hurl :tangle currency_countries-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/currency_countries
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_countries/put-many=
+:PROPERTIES:
+:ID: F23A5C9B-7FB8-503D-9408-F9CE346C3BB3
+:END:
+
+Write many currency countries. It needs a session.
+
+It forwards to =refdata.v1.currency_countries.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_countries/put-many
+#+end_example
+
+#+name: currency_countries-put-many
+#+begin_src hurl :tangle currency_countries-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_countries/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/currency_countries/__none__/__none__=
+:PROPERTIES:
+:ID: D44187C4-6C0C-5F4A-A335-66CE9A8CC002
+:END:
+
+Delete one currency country. It needs a session.
+
+It forwards to =refdata.v1.currency_countries.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/currency_countries/__none__/__none__
+#+end_example
+
+#+name: currency_countries-delete
+#+begin_src hurl :tangle currency_countries-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/currency_countries/__none__/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_countries/delete-many=
+:PROPERTIES:
+:ID: 8199CE21-ED1A-5566-BD74-F00B181FAFCB
+:END:
+
+Delete many currency countries. It needs a session.
+
+It forwards to =refdata.v1.currency_countries.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_countries/delete-many
+#+end_example
+
+#+name: currency_countries-delete-many
+#+begin_src hurl :tangle currency_countries-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_countries/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_countries/by-currency-iso-code/__none__=
+:PROPERTIES:
+:ID: F774E29C-0FC9-50E1-8F8F-D4BF5458CADB
+:END:
+
+List the currency countries that reference one currency iso code. It needs a session.
+
+It forwards to =refdata.v1.currency_countries.list_by_currency_iso_code=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_countries/by-currency-iso-code/__none__
+#+end_example
+
+#+name: currency_countries-by-currency-iso-code
+#+begin_src hurl :tangle currency_countries-by-currency-iso-code.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_countries/by-currency-iso-code/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

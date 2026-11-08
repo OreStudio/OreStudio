@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 27717925-6A3B-4586-BFC3-6E8B1E91D643
+:END:
+#+title: Remove the inbox core link to variability core
+#+description: approval_lifecycle reads the approvals mode through the variability core repository, an edge the core link rule forbids and the baseline accepts for now.
+#+type: capture
+#+level: cross
+#+filetags: :inbox:variability:architecture:ci:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Remove the link from =ores.inbox.core.lib= to =ores.variability.core.lib=. =approval_lifecycle::enforces_approvals= reads the approvals mode through =system_setting_repository=. Read the mode over NATS with =variability.v1.ops.get_setting= through a reader passed to the =approval_lifecycle= constructor, then remove the edge from =core_link_edges_baseline.json=.
+
+* Why
+
+A core may link another component's API and not its core. The =Core link edges= workflow failed on this edge, so the baseline accepts it for now.
+
+The change is larger than a read:
+
+- =approval_lifecycle= takes only a database context. It has about 50 production call sites in inbox, reporting, refdata, marketdata and trading, and 109 test call sites.
+- =get_setting= reads in the tenant of the request token. A service token loses the override of a tenant, so the caller's identity must travel with the request.
+- =get_setting= needs =variability::system_settings:read=. A caller without it is denied, and the lifecycle then enforces approvals, so an =auto_approved= installation can start to wait for approvers.
+- The read happens on each raise, so the result depends on the variability service being up.
+- =approval_auto_approval_tests.cpp= writes the setting directly to the database, and no variability service runs in that suite.
+
+Acceptance needs tests for the tenant override, the denied read and an unavailable service.
+
+* References
+
+- =projects/ores.inbox/core/src/service/approval_lifecycle.cpp=
+- =projects/ores.inbox/service/src/app/approval_windows.cpp=, which already reads a setting over NATS
+- =projects/ores.codegen/scripts/core_link_edges_baseline.json=
+
+* See also
+
+- =projects/ores.codegen/scripts/check_core_link_edges.py=, which states the rule

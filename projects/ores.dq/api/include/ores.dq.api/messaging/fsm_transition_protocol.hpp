@@ -90,7 +90,7 @@ struct fsm_transition_event {
     boost::uuids::uuid event_id;
     fsm_transition_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -99,7 +99,7 @@ struct fsm_transition_event {
 
 struct fsm_transition_version_key {
     fsm_transition_key fsm_transition;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const fsm_transition_version_key&,
                            const fsm_transition_version_key&) = default;
@@ -137,7 +137,7 @@ struct list_fsm_transitions_request {
 struct list_fsm_transitions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::fsm_transition> transitions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fsm_transitions_response&,
                            const list_fsm_transitions_response&) = default;
@@ -312,7 +312,7 @@ struct list_fsm_transition_versions_request {
 struct list_fsm_transition_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::fsm_transition> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fsm_transition_versions_response&,
                            const list_fsm_transition_versions_response&) = default;

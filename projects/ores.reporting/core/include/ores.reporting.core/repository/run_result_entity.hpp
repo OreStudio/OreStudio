@@ -61,7 +61,7 @@ struct run_result_entity {
     std::string measure;
     std::string currency;
     std::optional<boost::uuids::uuid> counterparty_id;
-    double figure;
+    double figure{};
     std::string source;
 
     /**

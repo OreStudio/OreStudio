@@ -90,7 +90,7 @@ struct system_setting_event {
     boost::uuids::uuid event_id;
     system_setting_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -99,7 +99,7 @@ struct system_setting_event {
 
 struct system_setting_version_key {
     system_setting_key system_setting;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const system_setting_version_key&,
                            const system_setting_version_key&) = default;
@@ -137,7 +137,7 @@ struct list_system_settings_request {
 struct list_system_settings_response {
     ores::utility::domain::result result;
     std::vector<ores::variability::domain::system_setting> settings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_system_settings_response&,
                            const list_system_settings_response&) = default;
@@ -312,7 +312,7 @@ struct list_system_setting_versions_request {
 struct list_system_setting_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::variability::domain::system_setting> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_system_setting_versions_response&,
                            const list_system_setting_versions_response&) = default;

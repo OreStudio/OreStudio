@@ -86,7 +86,7 @@ struct data_domain_event {
     boost::uuids::uuid event_id;
     data_domain_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -95,7 +95,7 @@ struct data_domain_event {
 
 struct data_domain_version_key {
     data_domain_key data_domain;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const data_domain_version_key&,
                            const data_domain_version_key&) = default;
@@ -133,7 +133,7 @@ struct list_data_domains_request {
 struct list_data_domains_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::data_domain> domains;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_data_domains_response&,
                            const list_data_domains_response&) = default;
@@ -308,7 +308,7 @@ struct list_data_domain_versions_request {
 struct list_data_domain_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::data_domain> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_data_domain_versions_response&,
                            const list_data_domain_versions_response&) = default;

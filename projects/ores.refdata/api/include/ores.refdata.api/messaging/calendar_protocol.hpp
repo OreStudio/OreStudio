@@ -55,7 +55,7 @@ struct calendar_write {
     std::string country_code;
     std::optional<boost::uuids::uuid> image_id;
     std::string source;
-    bool is_editable;
+    bool is_editable{};
     std::optional<std::string> base_calendar_code;
 
     friend bool operator==(const calendar_write&, const calendar_write&) = default;
@@ -93,7 +93,7 @@ struct calendar_event {
     boost::uuids::uuid event_id;
     calendar_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +102,7 @@ struct calendar_event {
 
 struct calendar_version_key {
     calendar_key calendar;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const calendar_version_key&, const calendar_version_key&) = default;
 };
@@ -138,7 +138,7 @@ struct list_calendars_request {
 struct list_calendars_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar> calendars;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_calendars_response&,
                            const list_calendars_response&) = default;
@@ -309,7 +309,7 @@ struct list_calendar_versions_request {
 struct list_calendar_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_calendar_versions_response&,
                            const list_calendar_versions_response&) = default;

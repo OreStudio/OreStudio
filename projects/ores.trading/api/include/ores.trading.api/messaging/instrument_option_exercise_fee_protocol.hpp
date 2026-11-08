@@ -44,7 +44,7 @@ namespace ores::trading::messaging {
 
 struct instrument_option_exercise_fee_key {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const instrument_option_exercise_fee_key&,
                            const instrument_option_exercise_fee_key&) = default;
@@ -52,7 +52,7 @@ struct instrument_option_exercise_fee_key {
 
 struct instrument_option_exercise_fee_write {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     ores::utility::decimal::decimal amount;
     std::optional<std::string> type;
@@ -100,7 +100,7 @@ struct instrument_option_exercise_fee_event {
     boost::uuids::uuid event_id;
     instrument_option_exercise_fee_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -110,7 +110,7 @@ struct instrument_option_exercise_fee_event {
 
 struct instrument_option_exercise_fee_version_key {
     instrument_option_exercise_fee_key instrument_option_exercise_fee;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const instrument_option_exercise_fee_version_key&,
                            const instrument_option_exercise_fee_version_key&) = default;
@@ -149,7 +149,7 @@ struct list_instrument_option_exercise_fees_request {
 struct list_instrument_option_exercise_fees_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_fee> exercise_fees;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_option_exercise_fees_response&,
                            const list_instrument_option_exercise_fees_response&) = default;
@@ -335,7 +335,7 @@ struct list_by_trade_id_instrument_option_exercise_fees_request {
 struct list_by_trade_id_instrument_option_exercise_fees_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_fee> exercise_fees;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_trade_id_instrument_option_exercise_fees_response&,
@@ -366,7 +366,7 @@ struct list_instrument_option_exercise_fee_versions_request {
 struct list_instrument_option_exercise_fee_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_option_exercise_fee> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_option_exercise_fee_versions_response&,
                            const list_instrument_option_exercise_fee_versions_response&) = default;

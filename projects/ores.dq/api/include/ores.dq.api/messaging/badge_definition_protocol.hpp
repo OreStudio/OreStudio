@@ -56,7 +56,7 @@ struct badge_definition_write {
     std::string text_colour;
     std::string severity_code;
     std::string css_class;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const badge_definition_write&, const badge_definition_write&) = default;
 };
@@ -96,7 +96,7 @@ struct badge_definition_event {
     boost::uuids::uuid event_id;
     badge_definition_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct badge_definition_event {
 
 struct badge_definition_version_key {
     badge_definition_key badge_definition;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const badge_definition_version_key&,
                            const badge_definition_version_key&) = default;
@@ -143,7 +143,7 @@ struct list_badge_definitions_request {
 struct list_badge_definitions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_definition> definitions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_badge_definitions_response&,
                            const list_badge_definitions_response&) = default;
@@ -318,7 +318,7 @@ struct list_badge_definition_versions_request {
 struct list_badge_definition_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_definition> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_badge_definition_versions_response&,
                            const list_badge_definition_versions_response&) = default;

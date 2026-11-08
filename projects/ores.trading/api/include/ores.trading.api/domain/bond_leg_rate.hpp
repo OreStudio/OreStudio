@@ -94,7 +94,7 @@ struct bond_leg_rate final {
     /**
      * @brief Ordinal of the leg within its list, counting from one.
      */
-    int leg_number;
+    int leg_number{};
 
     /**
      * @brief The activity that wrote this version.

@@ -92,7 +92,7 @@ curve_configuration_projection::document read_document(const std::string& text) 
 }
 
 TEST_CASE("every_curve_configuration_in_the_corpus_round_trips",
-          "[ore][xml][roundtrip][curveconfig]") {
+          "[long_running][ore][xml][roundtrip][curveconfig]") {
     auto lg(make_logger(test_suite));
 
     std::size_t documents = 0;

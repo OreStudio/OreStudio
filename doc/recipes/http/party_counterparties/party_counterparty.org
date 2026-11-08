@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: CF9A1FBE-4137-5CB8-AA61-634765EDAD21
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the party_counterparties endpoints over HTTP?
+#+description: Every endpoint the party_counterparties resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:party_counterparties:
+
+This file documents the party_counterparties resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/party_counterparties=
+:PROPERTIES:
+:ID: E9EA53C9-AAFD-5777-B035-236ED90DC5F5
+:END:
+
+List party counterparties. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_counterparties
+#+end_example
+
+#+name: party_counterparties-list
+#+begin_src hurl :tangle party_counterparties-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_counterparties
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_counterparties/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: C89BFB92-E8F4-5897-98FD-99C1AB3CA8EB
+:END:
+
+Get one party counterparty. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_counterparties/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: party_counterparties-get
+#+begin_src hurl :tangle party_counterparties-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_counterparties/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_counterparties/get-many=
+:PROPERTIES:
+:ID: CCC86DF5-54F6-5766-9042-7EE3BD4BE9B6
+:END:
+
+Get many party counterparties. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_counterparties/get-many
+#+end_example
+
+#+name: party_counterparties-get-many
+#+begin_src hurl :tangle party_counterparties-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_counterparties/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_counterparties=
+:PROPERTIES:
+:ID: DE395AA2-363E-5A22-AFD8-A31685157FE5
+:END:
+
+Create one party counterparty. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_counterparties
+#+end_example
+
+#+name: party_counterparties-add
+#+begin_src hurl :tangle party_counterparties-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_counterparties
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/party_counterparties=
+:PROPERTIES:
+:ID: 292EF650-E667-5DFF-A538-76E3FE94AC7B
+:END:
+
+Replace one party counterparty. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/party_counterparties
+#+end_example
+
+#+name: party_counterparties-set
+#+begin_src hurl :tangle party_counterparties-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/party_counterparties
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_counterparties/put-many=
+:PROPERTIES:
+:ID: F9D47EC5-BBFB-5A44-972A-6CC2D819F25A
+:END:
+
+Write many party counterparties. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_counterparties/put-many
+#+end_example
+
+#+name: party_counterparties-put-many
+#+begin_src hurl :tangle party_counterparties-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_counterparties/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/party_counterparties/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 8E95039D-38C9-5138-A5C4-CA5D9CF873E3
+:END:
+
+Delete one party counterparty. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/party_counterparties/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: party_counterparties-delete
+#+begin_src hurl :tangle party_counterparties-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/party_counterparties/00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/party_counterparties/delete-many=
+:PROPERTIES:
+:ID: 218032D5-6916-5D9E-A4B1-4339256201BD
+:END:
+
+Delete many party counterparties. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/party_counterparties/delete-many
+#+end_example
+
+#+name: party_counterparties-delete-many
+#+begin_src hurl :tangle party_counterparties-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/party_counterparties/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_counterparties/by-party-id/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 138E8EEE-EFAC-5A6F-BA78-AF00080FA07F
+:END:
+
+List the party counterparties that reference one party id. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.list_by_party_id=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_counterparties/by-party-id/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: party_counterparties-by-party-id
+#+begin_src hurl :tangle party_counterparties-by-party-id.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_counterparties/by-party-id/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/party_counterparties/by-counterparty-id/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: DC42EF9B-0E88-5BF1-9555-7ADB78ADB2AD
+:END:
+
+List the party counterparties that reference one counterparty id. It needs a session.
+
+It forwards to =refdata.v1.party_counterparties.list_by_counterparty_id=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/party_counterparties/by-counterparty-id/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: party_counterparties-by-counterparty-id
+#+begin_src hurl :tangle party_counterparties-by-counterparty-id.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/party_counterparties/by-counterparty-id/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

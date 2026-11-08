@@ -88,7 +88,7 @@ struct long_short_type_event {
     boost::uuids::uuid event_id;
     long_short_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +97,7 @@ struct long_short_type_event {
 
 struct long_short_type_version_key {
     long_short_type_key long_short_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const long_short_type_version_key&,
                            const long_short_type_version_key&) = default;
@@ -135,7 +135,7 @@ struct list_long_short_types_request {
 struct list_long_short_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::long_short_type> long_short_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_long_short_types_response&,
                            const list_long_short_types_response&) = default;
@@ -310,7 +310,7 @@ struct list_long_short_type_versions_request {
 struct list_long_short_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::long_short_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_long_short_type_versions_response&,
                            const list_long_short_type_versions_response&) = default;

@@ -87,7 +87,7 @@ struct app_event {
     boost::uuids::uuid event_id;
     app_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -96,7 +96,7 @@ struct app_event {
 
 struct apps_version_key {
     app_key app;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const apps_version_key&, const apps_version_key&) = default;
 };
@@ -131,7 +131,7 @@ struct list_apps_request {
 struct list_apps_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app> apps;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_apps_response&, const list_apps_response&) = default;
 };
@@ -295,7 +295,7 @@ struct list_apps_versions_request {
 struct list_apps_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::app> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_apps_versions_response&,
                            const list_apps_versions_response&) = default;

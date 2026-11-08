@@ -166,7 +166,8 @@ TEST_CASE("every_documented_form_round_trips_through_its_uri",
     datum_oresmd_uri_codec_report(t);
 }
 
-TEST_CASE("every_corpus_key_round_trips_through_its_uri", "[marketdata][datum][oresmd_uri_codec]") {
+TEST_CASE("every_corpus_key_round_trips_through_its_uri",
+          "[long_running][marketdata][datum][oresmd_uri_codec]") {
     const auto t = datum_oresmd_uri_codec_check(catalogue_corpus());
     const auto accepted = std::ranges::count_if(catalogue_corpus(), accepted_by_ore);
     CHECK(t.datums == static_cast<std::size_t>(accepted));

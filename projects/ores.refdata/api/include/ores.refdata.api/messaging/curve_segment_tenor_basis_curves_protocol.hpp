@@ -97,7 +97,7 @@ struct curve_segment_tenor_basis_curves_event {
     boost::uuids::uuid event_id;
     curve_segment_tenor_basis_curves_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +107,7 @@ struct curve_segment_tenor_basis_curves_event {
 
 struct curve_segment_tenor_basis_curves_version_key {
     curve_segment_tenor_basis_curves_key curve_segment_tenor_basis_curves;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_segment_tenor_basis_curves_version_key&,
                            const curve_segment_tenor_basis_curves_version_key&) = default;
@@ -146,7 +146,7 @@ struct list_curve_segment_tenor_basis_curves_request {
 struct list_curve_segment_tenor_basis_curves_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_tenor_basis_curves> segment_tenor_basis_curves;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_segment_tenor_basis_curves_response&,
                            const list_curve_segment_tenor_basis_curves_response&) = default;
@@ -330,7 +330,7 @@ struct list_curve_segment_tenor_basis_curves_versions_request {
 struct list_curve_segment_tenor_basis_curves_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment_tenor_basis_curves> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_curve_segment_tenor_basis_curves_versions_response&,

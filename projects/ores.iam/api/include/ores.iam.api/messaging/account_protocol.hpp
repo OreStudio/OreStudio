@@ -66,7 +66,7 @@ struct account_event {
     boost::uuids::uuid event_id;
     account_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -75,7 +75,7 @@ struct account_event {
 
 struct account_version_key {
     account_key account;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const account_version_key&, const account_version_key&) = default;
 };
@@ -111,7 +111,7 @@ struct list_accounts_request {
 struct list_accounts_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account> accounts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_accounts_response&, const list_accounts_response&) = default;
 };
@@ -185,7 +185,7 @@ struct list_account_versions_request {
 struct list_account_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::account> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_account_versions_response&,
                            const list_account_versions_response&) = default;

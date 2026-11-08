@@ -56,7 +56,7 @@ struct approval_policy_write {
     std::string operation;
     std::optional<std::string> field_name;
     std::string part_code;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const approval_policy_write&, const approval_policy_write&) = default;
 };
@@ -94,7 +94,7 @@ struct approval_policy_event {
     boost::uuids::uuid event_id;
     approval_policy_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +103,7 @@ struct approval_policy_event {
 
 struct approval_policy_version_key {
     approval_policy_key approval_policy;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const approval_policy_version_key&,
                            const approval_policy_version_key&) = default;
@@ -141,7 +141,7 @@ struct list_approval_policies_request {
 struct list_approval_policies_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_policy> policies;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_policies_response&,
                            const list_approval_policies_response&) = default;
@@ -316,7 +316,7 @@ struct list_approval_policy_versions_request {
 struct list_approval_policy_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_policy> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_policy_versions_response&,
                            const list_approval_policy_versions_response&) = default;

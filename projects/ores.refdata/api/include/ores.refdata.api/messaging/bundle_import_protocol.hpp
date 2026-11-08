@@ -89,7 +89,7 @@ struct bundle_import_event {
     boost::uuids::uuid event_id;
     bundle_import_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -98,7 +98,7 @@ struct bundle_import_event {
 
 struct bundle_import_version_key {
     bundle_import_key bundle_import;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bundle_import_version_key&,
                            const bundle_import_version_key&) = default;
@@ -136,7 +136,7 @@ struct list_bundle_imports_request {
 struct list_bundle_imports_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bundle_import> bundle_imports;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bundle_imports_response&,
                            const list_bundle_imports_response&) = default;
@@ -311,7 +311,7 @@ struct list_bundle_import_versions_request {
 struct list_bundle_import_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bundle_import> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bundle_import_versions_response&,
                            const list_bundle_import_versions_response&) = default;

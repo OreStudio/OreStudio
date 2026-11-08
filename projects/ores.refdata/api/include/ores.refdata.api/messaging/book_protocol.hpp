@@ -62,8 +62,8 @@ struct book_write {
     std::string regulatory_book_type;
     std::string book_purpose_type;
     std::string ledger_feed_type;
-    bool is_sweepable;
-    bool restricts_product_types;
+    bool is_sweepable{};
+    bool restricts_product_types{};
     std::string rates_centre_code;
     std::optional<boost::uuids::uuid> sandbox_id;
 
@@ -103,7 +103,7 @@ struct book_event {
     boost::uuids::uuid event_id;
     book_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -112,7 +112,7 @@ struct book_event {
 
 struct book_version_key {
     book_key book;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const book_version_key&, const book_version_key&) = default;
 };
@@ -147,7 +147,7 @@ struct list_books_request {
 struct list_books_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book> books;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_books_response&, const list_books_response&) = default;
 };
@@ -314,7 +314,7 @@ struct list_by_parent_portfolio_id_books_request {
 struct list_by_parent_portfolio_id_books_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book> books;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_parent_portfolio_id_books_response&,
                            const list_by_parent_portfolio_id_books_response&) = default;
@@ -343,7 +343,7 @@ struct list_book_versions_request {
 struct list_book_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_book_versions_response&,
                            const list_book_versions_response&) = default;

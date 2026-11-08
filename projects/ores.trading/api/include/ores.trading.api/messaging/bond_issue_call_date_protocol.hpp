@@ -44,7 +44,7 @@ namespace ores::trading::messaging {
 
 struct bond_issue_call_date_key {
     boost::uuids::uuid issue_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const bond_issue_call_date_key&,
                            const bond_issue_call_date_key&) = default;
@@ -52,7 +52,7 @@ struct bond_issue_call_date_key {
 
 struct bond_issue_call_date_write {
     boost::uuids::uuid issue_id;
-    int sequence_number;
+    int sequence_number{};
     std::chrono::year_month_day call_date;
 
     friend bool operator==(const bond_issue_call_date_write&,
@@ -87,7 +87,7 @@ struct bond_issue_call_date_event {
     boost::uuids::uuid event_id;
     bond_issue_call_date_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +97,7 @@ struct bond_issue_call_date_event {
 
 struct bond_issue_call_date_version_key {
     bond_issue_call_date_key bond_issue_call_date;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bond_issue_call_date_version_key&,
                            const bond_issue_call_date_version_key&) = default;
@@ -134,7 +134,7 @@ struct list_bond_issue_call_dates_request {
 struct list_bond_issue_call_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_call_date> call_dates;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_issue_call_dates_response&,
                            const list_bond_issue_call_dates_response&) = default;
@@ -310,7 +310,7 @@ struct list_bond_issue_call_date_versions_request {
 struct list_bond_issue_call_date_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_issue_call_date> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_issue_call_date_versions_response&,
                            const list_bond_issue_call_date_versions_response&) = default;

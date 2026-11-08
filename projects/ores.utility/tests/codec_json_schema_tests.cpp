@@ -28,7 +28,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace {
+namespace schema_example {
 
 enum class side { buy, sell };
 
@@ -56,7 +56,7 @@ struct example_row {
 }
 
 TEST_CASE("a schema states each member's type", "[codec][json][schema]") {
-    const auto schema = ores::utility::codec::json_schema<example_row>();
+    const auto schema = ores::utility::codec::json_schema<schema_example::example_row>();
 
     CHECK(schema.find(R"("type":"object")") != std::string::npos);
     CHECK(schema.find(R"("name":{"type":"string"})") != std::string::npos);
@@ -68,14 +68,14 @@ TEST_CASE("a schema states each member's type", "[codec][json][schema]") {
 }
 
 TEST_CASE("an enumeration names the text each value has", "[codec][json][schema]") {
-    const auto schema = ores::utility::codec::json_schema<example_row>();
+    const auto schema = ores::utility::codec::json_schema<schema_example::example_row>();
 
     CHECK(schema.find(R"("direction":{"type":"string","enum":["buy","sell"]})") !=
           std::string::npos);
 }
 
 TEST_CASE("a member the shape leaves out is not required", "[codec][json][schema]") {
-    const auto schema = ores::utility::codec::json_schema<example_row>();
+    const auto schema = ores::utility::codec::json_schema<schema_example::example_row>();
 
     CHECK(schema.find(R"("required":["name","count","ratio","live","direction","codes"])") !=
           std::string::npos);

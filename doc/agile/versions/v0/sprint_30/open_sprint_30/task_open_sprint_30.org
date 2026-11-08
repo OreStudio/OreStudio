@@ -87,3 +87,5 @@ via its "Verifies task" field.
 * Result
 
 Sprint 30 is open and is the current sprint. The project is on version 0.0.30, the readme and site point at the v0.0.29 screenshot, and vcpkg is on its latest tracked commit. No stories moved, because sprint 29's unfinished work is already in the product backlog. The mission is provisional: it takes the priority the sprint 29 release notes name.
+
+The same branch makes a release carry its packages: a tag now builds the Linux package, and each platform attaches its packages to the GitHub release. The workflows upload by pattern, so a version bump no longer edits them, and the bump recipe says so.

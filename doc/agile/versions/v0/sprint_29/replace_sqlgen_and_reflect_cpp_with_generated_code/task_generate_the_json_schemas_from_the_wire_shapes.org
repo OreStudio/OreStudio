@@ -26,7 +26,7 @@ The router's request and response schemas are generated from wire_fields, with n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |

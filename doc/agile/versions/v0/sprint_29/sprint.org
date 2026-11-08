@@ -31,7 +31,7 @@ Finish the work carried out of sprint 28 before drawing anything new from the pr
 | Now            | Nothing. |
 | Waiting on     | Nothing. |
 | Next           | Nothing. |
-| Release Notes  | Added at end of sprint.                |
+| Release Notes  | [[id:A1B62B01-E23B-4E10-80EC-ACB1310FFCCE][ORE Studio Sprint 29 – Release Notes]] |
 | Last touched   | 2026-11-08                               |
 
 * Stories

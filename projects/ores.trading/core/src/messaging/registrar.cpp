@@ -61,7 +61,13 @@
 #include "ores.trading.core/messaging/credit_linked_swap_instrument_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/draft_reason_registrar.hpp"
 #include "ores.trading.core/messaging/entry_channel_type_registrar.hpp"
+#include "ores.trading.core/messaging/equity_basket_constituent_registrar.hpp"
+#include "ores.trading.core/messaging/equity_cliquet_option_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/equity_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/equity_outperformance_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/equity_position_option_underlying_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/equity_swap_period_registrar.hpp"
+#include "ores.trading.core/messaging/equity_tarf_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/exercise_type_registrar.hpp"
 #include "ores.trading.core/messaging/flexi_swap_lower_notional_history_provider_registrar.hpp"
@@ -69,6 +75,8 @@
 #include "ores.trading.core/messaging/fpml_event_type_registrar.hpp"
 #include "ores.trading.core/messaging/index_credit_default_swap_instrument_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/index_credit_default_swap_option_instrument_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_barrier_level_registrar.hpp"
+#include "ores.trading.core/messaging/instrument_barrier_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_exercise_fee_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_exercise_price_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/instrument_option_history_provider_registrar.hpp"
@@ -85,6 +93,7 @@
 #include "ores.trading.core/messaging/moment_type_registrar.hpp"
 #include "ores.trading.core/messaging/option_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/option_type_registrar.hpp"
+#include "ores.trading.core/messaging/origin_type_registrar.hpp"
 #include "ores.trading.core/messaging/party_role_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/party_role_type_registrar.hpp"
 #include "ores.trading.core/messaging/payoff_type_history_provider_registrar.hpp"
@@ -99,6 +108,8 @@
 #include "ores.trading.core/messaging/return_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/return_type_registrar.hpp"
 #include "ores.trading.core/messaging/risk_participation_agreement_instrument_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/scripted_parameter_registrar.hpp"
+#include "ores.trading.core/messaging/scripted_parameter_value_registrar.hpp"
 #include "ores.trading.core/messaging/settlement_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/settlement_type_registrar.hpp"
 #include "ores.trading.core/messaging/structure_history_provider_registrar.hpp"
@@ -113,6 +124,10 @@
 #include "ores.trading.core/messaging/structure_template_registrar.hpp"
 #include "ores.trading.core/messaging/structure_template_role_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/structure_template_role_registrar.hpp"
+#include "ores.trading.core/messaging/swap_leg_amortization_registrar.hpp"
+#include "ores.trading.core/messaging/swap_leg_amount_registrar.hpp"
+#include "ores.trading.core/messaging/swap_leg_indexing_registrar.hpp"
+#include "ores.trading.core/messaging/swap_leg_rate_registrar.hpp"
 #include "ores.trading.core/messaging/synthetic_cdo_instrument_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_activity_registrar.hpp"
 #include "ores.trading.core/messaging/trade_additional_field_history_provider_registrar.hpp"
@@ -255,6 +270,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_trade_booking_handlers(nats, ctx, verifier));
     append(register_trade_id_type_handlers(nats, ctx, verifier));
     append(register_product_type_asset_class_handlers(nats, ctx, verifier));
+    append(register_equity_basket_constituent_handlers(nats, ctx, verifier));
+    append(register_equity_cliquet_option_instrument_handlers(nats, ctx, verifier));
+    append(register_equity_instrument_handlers(nats, ctx, verifier));
+    append(register_equity_outperformance_option_instrument_handlers(nats, ctx, verifier));
+    append(register_equity_swap_period_handlers(nats, ctx, verifier));
+    append(register_equity_tarf_instrument_handlers(nats, ctx, verifier));
+    append(register_instrument_barrier_handlers(nats, ctx, verifier));
+    append(register_instrument_barrier_level_handlers(nats, ctx, verifier));
+    append(register_origin_type_handlers(nats, ctx, verifier));
+    append(register_scripted_parameter_handlers(nats, ctx, verifier));
+    append(register_scripted_parameter_value_handlers(nats, ctx, verifier));
+    append(register_swap_leg_amortization_handlers(nats, ctx, verifier));
+    append(register_swap_leg_amount_handlers(nats, ctx, verifier));
+    append(register_swap_leg_indexing_handlers(nats, ctx, verifier));
+    append(register_swap_leg_rate_handlers(nats, ctx, verifier));
     append(register_structure_handlers(nats, ctx, verifier));
     append(register_structure_kind_handlers(nats, ctx, verifier));
     append(register_structure_member_handlers(nats, ctx, verifier));

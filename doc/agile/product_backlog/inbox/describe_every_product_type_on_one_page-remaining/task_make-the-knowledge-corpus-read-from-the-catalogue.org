@@ -1,33 +1,33 @@
 :PROPERTIES:
-:ID: B1EF45DC-6624-465A-8C2B-D9EF7C7AA204
+:ID: 1D8C71AD-F3A0-477B-8519-5F904085D87A
 :END:
-#+title: Task: Serve the product type catalogue to the browser
-#+description: Add the NATS protocol and BFF routes for the product types, the axes they reference and the relations that allow them, with wire-protocol schemas and tests.
+#+title: Task: Make the knowledge corpus read from the catalogue
+#+description: Point the 88 product notes at the catalogue page instead of restating the identifiers, generate the products-by-asset-class entry page from the catalogue, and make the taxonomy notes name the code sets.
 #+type: task
 #+level: s1
-#+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-08
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5BA1E4ED-CFBF-450A-B4C4-397646762927][Describe every product type on one page — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The browser reads product types from one endpoint, and no screen joins trade types on the server to find them.
+The corpus describes products in one place and links to the store for the rest. No note carries a second copy of an identifier table or a description.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
+| Parent story | [[id:5BA1E4ED-CFBF-450A-B4C4-397646762927][Describe every product type on one page — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,10 +35,10 @@ The browser reads product types from one endpoint, and no screen joins trade typ
 
 * Acceptance
 
-- A list call returns every product type with its axis codes and names, and a count for each group.
-- A detail call returns one type with its description, source, note, routing table, allowed books, permission and pricing engines.
-- The wire-protocol schemas cover both calls, and the BFF routes have tests.
-- The joins that read trade types today move onto the route, and none keeps a list of its own.
+- A product note names the page and carries no duplicated identifier table.
+- products_by_asset_class is generated from the catalogue rather than copied from the notes.
+- The family and asset-class notes name the code sets that now exist.
+- The trade population weights note names the catalogue codes it weights and accounts for the codes it omits.
 
 * Plan
 

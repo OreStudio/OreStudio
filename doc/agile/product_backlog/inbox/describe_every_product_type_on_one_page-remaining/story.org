@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 5BA1E4ED-CFBF-450A-B4C4-397646762927
+:END:
+#+title: Story: Describe every product type on one page — the remaining work
+#+description: The catalogue holds the product types a tenant can book, and the screens name them one trade at a time. There is no page a person can read to see the whole set, what each one is, where its documentation lives, and which books and permissions allow it. Add the catalogue's own page.
+#+type: story
+#+level: s2
+#+filetags: :trading:refdata:web:product_backlog:inbox:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One page a person can read to find out what a product type is before they book
+it: every type the tenant may book, what each one means, where its documentation
+lives, and which books and permissions allow it.
+
+Today the catalogue is stated in rows a screen reads one deal at a time. A
+trader who has never booked a =BondOption= has no page to open, and an
+operations person who is asked why a book refuses a type has no page to quote.
+The knowledge corpus describes the families in prose, one document per family,
+and nothing joins that prose to the catalogue the store holds.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started. Split from [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- The store holds one product type table, with one current row per code, seeded
+  from the system catalogue. No tenant holds a copy, and no second catalogue
+  states a product type.
+- Every product type carries a description of what the product is, and the
+  source that description came from.
+- A page lists every product type the catalogue holds, by the name a desk uses
+  and the code the store holds.
+- Each type states what it is, the markets it references with its home market
+  named, the family it belongs to, and where its documentation is: the ORE
+  product page, the knowledge document, or both.
+- Each type states what allows it: the books a tenant has enabled for it, and the
+  permission a person needs to book one. Both come from a junction against the
+  catalogue.
+- Every place a product type is named links to its page.
+- The pricing engine types join the catalogue rather than restating it.
+- A type the catalogue holds and no page can describe is listed as undescribed
+  rather than hidden, so the gap is visible.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:208C399F-560D-43A7-A0C9-FE7B097B19D5][Draw the product type list and page]]                        | BACKLOG |            |            | Draw the list and the detail page under trading: the list grouped by home market and family with search and counts, the page with the description and its source, the markets it references, the note, the routing table, the books and permission, and the engines.                                                                     |
+| [[id:87E92BE8-4C30-4060-9034-C369B4E32488][Join the pricing engine types to the product type]]          | BACKLOG |            |            | Implement the join the analysis decided, seed the mapping, and make the pricing-engine screens read the name and the documentation from the product type.                                                                                                                                                                                |
+| [[id:FFD3E3A0-A042-4534-9B7A-B22ECF1D8AA4][Link every mention of a product type]]                       | BACKLOG |            |            | Make every surface that names a product type link to its page: the blotter, the trade page, structure legs, the authorisation queue, the report results, the pricing-engine select and the allowed lists.                                                                                                                                |
+| [[id:1D8C71AD-F3A0-477B-8519-5F904085D87A][Make the knowledge corpus read from the catalogue]]          | BACKLOG |            |            | Point the 88 product notes at the catalogue page instead of restating the identifiers, generate the products-by-asset-class entry page from the catalogue, and make the taxonomy notes name the code sets.                                                                                                                               |
+| [[id:162A3CC4-C1D3-4AC9-BCE1-074ABA76AFEF][Prove the product type catalogue holds one copy]]            | BACKLOG |            |            | Add the checks that keep one catalogue and prove the story end to end: every type described and sourced, no second list, every mention linked, every page opening.                                                                                                                                                                       |
+| [[id:DB56F37C-EB15-4B94-83DE-5FFAD3FF277C][Retire the duplicate product catalogues]]                    | BACKLOG |            |            | Fold the instrument codes into the product type, delete the English asset-class switch, the label and colour maps and the hardcoded Bond, and give the report results column a real value.                                                                                                                                               |
+| [[id:B1EF45DC-6624-465A-8C2B-D9EF7C7AA204][Serve the product type catalogue to the browser]]            | BACKLOG |            |            | Add the NATS protocol and BFF routes for the product types, the axes they reference and the relations that allow them, with wire-protocol schemas and tests.                                                                                                                                                                             |
+
+* Decisions
+
+- Split from [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+- The desk-facing product type. A desk treats four configurations of =Swap= as
+  four products. That is a finer classification many-to-one onto this catalogue,
+  and it stays a capture.
+- Risk classes per product type. [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] proposes the relationship, and it
+  belongs to the risk work.
+- The trade population weights as data. The note links the codes it weights;
+  weighting the generator is the population story's work.
+- The asset class taxonomy beyond the code sets the axes need.
+  [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] carries its own analysis.
+

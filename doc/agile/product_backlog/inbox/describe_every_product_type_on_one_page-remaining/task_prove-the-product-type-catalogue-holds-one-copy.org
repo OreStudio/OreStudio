@@ -5,18 +5,18 @@
 #+description: Add the checks that keep one catalogue and prove the story end to end: every type described and sourced, no second list, every mention linked, every page opening.
 #+type: task
 #+level: s1
-#+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-31
-#+updated: 2026-10-31
+#+updated: 2026-11-08
 #+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5BA1E4ED-CFBF-450A-B4C4-397646762927][Describe every product type on one page — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ The one catalogue stays one catalogue, and the story acceptance is demonstrated 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
+| Parent story | [[id:5BA1E4ED-CFBF-450A-B4C4-397646762927][Describe every product type on one page — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

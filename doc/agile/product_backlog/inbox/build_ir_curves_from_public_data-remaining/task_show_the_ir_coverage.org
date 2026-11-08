@@ -1,33 +1,33 @@
 :PROPERTIES:
-:ID: 37E35846-59E3-41E8-A9AF-6B9F1E167EB3
+:ID: 7FC9444F-77FA-44E2-A288-A8ED85A48DA7
 :END:
-#+title: Task: Keep the curve publishes of the integration tests out of the development database
-#+description: The integration tests leave curve publishes, withdrawals and supersessions in the development database under random users and a test as-of, so a provisioned tenant appears to hold published curves it never published.
+#+title: Task: Show the IR coverage of each currency
+#+description: A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage.
 #+type: task
 #+level: s1
-#+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
+#+filetags: :build_ir_curves_from_public_data-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
-#+updated: 2026-11-04
+#+updated: 2026-11-08
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A reader of the development database sees only the curves the system published. After a full ctest run, the 75 publishes found under Acme on 2026-11-04 were all test rows: random user names, as-of 2026-03-02, reasons system.curve_published, system.curve_withdrawn and system.curve_superseded.
+A person can see at a glance which currencies have a public source, a calibrated synthetic feed, a bootstrap config and a published curve, and which do not and why.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,8 +35,8 @@ A reader of the development database sees only the curves the system published. 
 
 * Acceptance
 
-- The integration tests that publish curves write into a tenant of their own, or roll back, and leave no curve publish in a provisioned tenant.
-- A provisioned environment holds no curve publish after a full ctest run that it did not hold before.
+- The calibration screen lists each supported currency with its source, policy, bootstrap config and latest published curve with its as-of.
+- A currency with a gap shows the gap and its recorded reason.
 
 * Plan
 

@@ -1,33 +1,33 @@
 :PROPERTIES:
-:ID: 7FC9444F-77FA-44E2-A288-A8ED85A48DA7
+:ID: 4B5701D6-16C6-445B-BDD4-C60050FED95C
 :END:
-#+title: Task: Show the IR coverage of each currency
-#+description: A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage.
+#+title: Task: Replace the synthetic feeds of ceased or misnamed indices
+#+description: The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed.
 #+type: task
 #+level: s1
-#+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
+#+filetags: :build_ir_curves_from_public_data-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
-#+updated: 2026-11-04
+#+updated: 2026-11-08
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A person can see at a glance which currencies have a public source, a calibrated synthetic feed, a bootstrap config and a published curve, and which do not and why.
+No synthetic feed quotes an index that is no longer published, or names a term rate as a currency's overnight index, unless a reason is recorded. The survey in the calibration sources note found: LIBOR for USD, GBP, JPY and CHF, ceased; TELBOR for ILS, ceased after 30 June 2025 and replaced by SHIR; HIBOR for CNH and TAIBOR for TWD, term rates; and the BUBOR overnight quote for HUF, where HUFONIA is the overnight average. The PLN index is unresolved. For each currency the decision names the replacement, or none, and the feeds, their templates and anything that reads them follow it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,8 +35,9 @@ A person can see at a glance which currencies have a public source, a calibrated
 
 * Acceptance
 
-- The calibration screen lists each supported currency with its source, policy, bootstrap config and latest published curve with its as-of.
-- A currency with a gap shows the gap and its recorded reason.
+- The decision for each of these currencies, and for PLN, is recorded in the story's Decisions with its reason.
+- Each such feed is removed or replaced, and anything that read it reads its replacement or is changed.
+- A fresh environment provisions with no such feed, or with the ones the decision keeps.
 
 * Plan
 

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_29:v0:
 #+created: 2026-11-06
-#+updated: 2026-11-06
+#+updated: 2026-11-08
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -22,13 +22,12 @@ it lands, and the browser keeps calling the BFF until the last one does.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Six areas answer on the new server: access, auth, assets, changes, reference data and tenancy. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | The next area by resource count: reporting, market data or trading, and the rest of simulation once its adapter is proven. |
-| Last touched  | 2026-11-06                               |
-
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Coverage, counted from the inventory
 
 The route inventory is the measure, not a claim, and reading it on 2026-11-07 gives the
@@ -65,14 +64,15 @@ where the BFF's hand-written route answers one or two. A large number is not a s
 
 * Acceptance
 
-- [ ] Every resource route the BFF answers has a C++ equivalent, area by area, merged as
-      it lands.
-- [ ] Every composed view is answered by the server that owns it, with its name, its
-      schema, its owner, its computation and its cache policy.
-- [ ] A generated list route carries what the BFF's lists carry: the page, the order,
-      the search and the filter's own members.
-- [ ] The coverage is counted from the route inventory, not claimed.
-- [ ] The local gate is green on every pull request.
+The story closes on the tasks it finished:
+
+- Serve the reference data catalogue, and let a list be searched.
+- Keep every route unit reachable.
+- Read a list's filter members.
+- Scaffold story: Serve one screen from the new server.
+- Serve the contact collection, and guard an entity whose protocol another model owns.
+- Stand up the synthetic adapter and serve its first collection.
+- Serve the tenancy collections.
 
 * Tasks
 
@@ -113,6 +113,7 @@ coverage is complete, against a layer that has nothing left to prove.
 already lists every route both servers answer and the kind each one is. A resource the
 C++ server does not answer is a row the table shows as the BFF's, so progress is read
 from the table rather than from a story saying it is done.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]].
 
 * Out of scope
 

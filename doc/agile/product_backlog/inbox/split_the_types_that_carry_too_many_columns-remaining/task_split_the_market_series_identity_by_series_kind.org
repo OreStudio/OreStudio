@@ -1,33 +1,33 @@
 :PROPERTIES:
-:ID: 8A68BFFA-EF99-45A4-915D-92172BD042AA
+:ID: CC94A796-F6C1-4F59-B89E-CB5EB3133EC2
 :END:
-#+title: Task: Split the trading instrument parts by leg-data arm
-#+description: Five trading types are one arm of the schema's leg-data choice per row, or a rule block and a date list in one row: instrument option, bond leg rate, bond issue leg rate, instrument schedule and bond issue leg schedule. This is the trading owner's call, handed over with the inventory's reading.
+#+title: Task: Split the market series identity by series kind
+#+description: market_series_identity is the widest type in the tree at 57 members and 54 nullable columns, with one column per identity field of a series kind and no discriminator to say which kind a row is. This is the market data owner's call, handed over with the inventory's reading.
 #+type: task
 #+level: s1
-#+filetags: :data-oriented-design:modeling:trading:codegen:split_the_types_that_carry_too_many_columns:sprint_29:v0:
+#+filetags: :data-oriented-design:modeling:marketdata:codegen:split_the_types_that_carry_too_many_columns-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-10-29
+#+updated: 2026-11-08
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23FBE0B5-A263-49B8-90F5-B45B42DD46F1][Split the types that carry too many columns — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Each of the five types holds one arm. The option's premium, exercise, fee and payment blocks, the leg-data arms of the two rate parts, and the rule-block-or-date-list choice of the two schedules become parts.
+A series row says what kind it is, and the identity fields that belong to one kind are that kind's part. No row holds fields it can never use.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:C06B0512-AA7D-44A8-8CC9-D98F073839C6][Split the types that carry too many columns]] |
+| Parent story | [[id:23FBE0B5-A263-49B8-90F5-B45B42DD46F1][Split the types that carry too many columns — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,10 +35,10 @@ Each of the five types holds one arm. The option's premium, exercise, fee and pa
 
 * Acceptance
 
-- No row carries a column that belongs to an arm it is not.
-- The two schedule types model the rule block and the date list as separate parts, which the models' own briefs describe.
-- The trading owner confirms each verdict before the split is made; the inventory's reading is put to them, not imposed on their component.
-- Each verdict is an owner-confirmed statement about which invariant each arm holds, and the confirmation is recorded in the task's Result.
+- The series kinds' identity fields are parts, and the series carries the kind.
+- The generated codec and the wire carry one typed array per part.
+- The market data owner confirms the split before it is made.
+- The split is argued from what each kind's identity fields mean, not from the type's width, and the argument is in the task's Result.
 
 * Plan
 
@@ -64,30 +64,22 @@ does not restate them. In short:
 
 ** This grouping
 
-Five trading types are one arm of the schema's leg-data choice per row, or a rule
-block and a date list in one row:
+=market_series_identity= is the widest type in the tree: 57 members and 54
+nullable columns, one column per identity field of a series kind, and no
+discriminator to say which kind a row is. The kinds are the components, and the
+row is the union of all of them written as nullable columns.
 
-| Type | Members | Columns | Why it is more than one component |
-|------+---------+---------+-----------------------------------|
-| =instrument_option= | 33 | 33 | premium, exercise, fee and payment blocks |
-| =bond_leg_rate= | 29 | 29 | one arm of the leg-data choice per row |
-| =bond_issue_leg_rate= | 27 | 27 | the same arms |
-| =instrument_schedule= | 22 | 22 | a rule block or a date list |
-| =bond_issue_leg_schedule= | 20 | 15 | the same choice |
-
-The instrument's own schema already holds option premiums, exercise fees and
-payment dates as separate child rows, so a flat option row repeats that shape
-inside one type.
-
-This is the trading owner's component. The verdicts are the inventory's reading
-and are put to that owner; the task is not started until they confirm them.
+This is the market data owner's component. The verdict is the inventory's
+reading and is put to that owner; the task is not started until they confirm it.
 
 ** What proves it
 
-- Each arm's fields live in the arm's part, and a row states which arm it is.
-- The rule block and the date list are separate parts, which the models' own
-  briefs already describe.
-- The ORE projection of the traded family is unchanged in what it states.
+- A series row states its kind, and the fields that belong to one kind live in
+  that kind's part.
+- The codec and the wire carry one typed array per part, joined by the series
+  key.
+- The widest remaining type in the component is inside the inventory's
+  threshold.
 
 * Measurements
 

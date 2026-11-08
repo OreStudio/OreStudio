@@ -1,44 +1,43 @@
 :PROPERTIES:
-:ID: 619CE2BF-C972-47CF-8900-AC2742AC2CD9
+:ID: FFD3E3A0-A042-4534-9B7A-B22ECF1D8AA4
 :END:
-#+title: Task: Calibrate the synthetic IR feeds from the public rates
-#+description: The IR asset class gets a calibration policy, as FX has, so each synthetic overnight-index feed starts from its currency's latest public rate and its fit is reviewed like an FX fit.
+#+title: Task: Link every mention of a product type
+#+description: Make every surface that names a product type link to its page: the blotter, the trade page, structure legs, the authorisation queue, the report results, the pricing-engine select and the allowed lists.
 #+type: task
 #+level: s1
-#+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-11-04
-#+updated: 2026-11-04
-#+environment: prime_origin
+#+created: 2026-10-31
+#+updated: 2026-11-08
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5BA1E4ED-CFBF-450A-B4C4-397646762927][Describe every product type on one page — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A synthetic IR curve feed with a public source starts from that source's latest stored rate and moves from there, under a calibration policy of the IR class reviewed through the same capture, fit and approval chain as FX. Today the seed of synthetic_calibration_policies_populate.sql covers FX alone and every IR feed starts from a fixed level.
+Wherever a product type is named, a person can open it. No mention is a dead string.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
+| Parent story | [[id:5BA1E4ED-CFBF-450A-B4C4-397646762927][Describe every product type on one page — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- The IR class has a calibration policy naming the provider order and window for each currency with a source.
-- Each such feed's start record names the calibration it runs and the public rate it started from.
-- A feed with no source keeps a stated fixed level, and the calibration screen says why.
-- The CHF feed is not calibrated from SARON without a SIX Data License, because SIX counts a curve built from SARON as derived data; it keeps a fixed level until that is decided.
+- Each named surface renders a link to the product type page.
+- A test fails when a mention renders a plain string instead of a link.
+- No link points to a page that cannot open.
 
 * Plan
 

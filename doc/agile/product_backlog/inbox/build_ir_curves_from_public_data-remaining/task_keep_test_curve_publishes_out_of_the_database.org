@@ -1,43 +1,42 @@
 :PROPERTIES:
-:ID: FFD3E3A0-A042-4534-9B7A-B22ECF1D8AA4
+:ID: 37E35846-59E3-41E8-A9AF-6B9F1E167EB3
 :END:
-#+title: Task: Link every mention of a product type
-#+description: Make every surface that names a product type link to its page: the blotter, the trade page, structure legs, the authorisation queue, the report results, the pricing-engine select and the allowed lists.
+#+title: Task: Keep the curve publishes of the integration tests out of the development database
+#+description: The integration tests leave curve publishes, withdrawals and supersessions in the development database under random users and a test as-of, so a provisioned tenant appears to hold published curves it never published.
 #+type: task
 #+level: s1
-#+filetags: :describe_every_product_type_on_one_page:sprint_29:v0:
+#+filetags: :build_ir_curves_from_public_data-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-10-31
-#+updated: 2026-10-31
-#+environment: merry_newton
+#+created: 2026-11-04
+#+updated: 2026-11-08
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Wherever a product type is named, a person can open it. No mention is a dead string.
+A reader of the development database sees only the curves the system published. After a full ctest run, the 75 publishes found under Acme on 2026-11-04 were all test rows: random user names, as-of 2026-03-02, reasons system.curve_published, system.curve_withdrawn and system.curve_superseded.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
+| Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-31                               |
+| Last touched | 2026-11-04                               |
 
 * Acceptance
 
-- Each named surface renders a link to the product type page.
-- A test fails when a mention renders a plain string instead of a link.
-- No link points to a page that cannot open.
+- The integration tests that publish curves write into a tenant of their own, or roll back, and leave no curve publish in a provisioned tenant.
+- A provisioned environment holds no curve publish after a full ctest run that it did not hold before.
 
 * Plan
 

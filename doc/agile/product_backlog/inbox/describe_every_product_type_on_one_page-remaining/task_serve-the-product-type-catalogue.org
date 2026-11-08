@@ -1,43 +1,44 @@
 :PROPERTIES:
-:ID: 4B5701D6-16C6-445B-BDD4-C60050FED95C
+:ID: B1EF45DC-6624-465A-8C2B-D9EF7C7AA204
 :END:
-#+title: Task: Replace the synthetic feeds of ceased or misnamed indices
-#+description: The system tenant runs synthetic feeds of indices that have ceased or are not the currency's overnight average: LIBOR for USD, GBP, JPY and CHF, TELBOR for ILS, HIBOR for CNH, the BUBOR overnight quote for HUF and TAIBOR for TWD; decide per currency what replaces each, and remove or replace the feed.
+#+title: Task: Serve the product type catalogue to the browser
+#+description: Add the NATS protocol and BFF routes for the product types, the axes they reference and the relations that allow them, with wire-protocol schemas and tests.
 #+type: task
 #+level: s1
-#+filetags: :build_ir_curves_from_public_data:sprint_29:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:sprint_29:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-11-04
-#+updated: 2026-11-04
-#+environment: prime_origin
+#+created: 2026-10-31
+#+updated: 2026-11-08
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5BA1E4ED-CFBF-450A-B4C4-397646762927][Describe every product type on one page — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-No synthetic feed quotes an index that is no longer published, or names a term rate as a currency's overnight index, unless a reason is recorded. The survey in the calibration sources note found: LIBOR for USD, GBP, JPY and CHF, ceased; TELBOR for ILS, ceased after 30 June 2025 and replaced by SHIR; HIBOR for CNH and TAIBOR for TWD, term rates; and the BUBOR overnight quote for HUF, where HUFONIA is the overnight average. The PLN index is unresolved. For each currency the decision names the replacement, or none, and the feeds, their templates and anything that reads them follow it.
+The browser reads product types from one endpoint, and no screen joins trade types on the server to find them.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:9AE251D9-F9B9-4690-98C6-0D71F81FB3E1][Build the IR curves of every supported currency from public data]] |
+| Parent story | [[id:5BA1E4ED-CFBF-450A-B4C4-397646762927][Describe every product type on one page — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Last touched | 2026-10-31                               |
 
 * Acceptance
 
-- The decision for each of these currencies, and for PLN, is recorded in the story's Decisions with its reason.
-- Each such feed is removed or replaced, and anything that read it reads its replacement or is changed.
-- A fresh environment provisions with no such feed, or with the ones the decision keeps.
+- A list call returns every product type with its axis codes and names, and a count for each group.
+- A detail call returns one type with its description, source, note, routing table, allowed books, permission and pricing engines.
+- The wire-protocol schemas cover both calls, and the BFF routes have tests.
+- The joins that read trade types today move onto the route, and none keeps a list of its own.
 
 * Plan
 

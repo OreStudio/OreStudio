@@ -382,9 +382,33 @@ task files: "Let the plan state domain rows, not a bag" and "Trade Blotter — t
 remaining work". The closed "Rework the market data feeds" also has one row
 fewer than its files. This cleanup left these as they were.
 
-Still to do for the close: resolve the six live stories, write the Achievements
-and the Retrospective, regenerate the charts, write the release notes, and mark
-the sprint DONE.
+*** Second pass: scope the live stories to what merged
+
+The owner then asked for five of the six live stories to close this sprint on
+their merged work, with the rest in a follow-up story for the next sprint. The
+sqlgen story stays STARTED, because PR #4492 is still in progress.
+
+| Story | DONE tasks kept | Tasks moved | Follow-up holds |
+|-------+-----------------+-------------+-----------------|
+| Describe every product type on one page | 6 | 8 | The page, the serve, the joins and the retirement of the duplicates. |
+| Split the types that carry too many columns | 9 | 2 | The market series identity and the instrument parts. |
+| Serve what the BFF serves, then retire it | 7 | 0 | The original Acceptance only. It needs tasks. |
+| Prove generated trades value against the ORE samples | 3 | 4 | The trade builders, the seed and the references. |
+| Build the IR curves of every supported currency from public data | 4 | 6 | The adapter, the calibration and the coverage. |
+
+Each closed story narrows its Acceptance to its done tasks, so a close records
+what merged and does not claim the original Acceptance. Three moved tasks have
+unmerged work on a live branch, and their ids are unchanged: "Classify each
+product type as flow or non-flow" (#4471, merry_newton), "Split the market
+series identity by series kind" (bright_faraday) and "Seed ORE's built-in index
+conventions" (swift_curie). Those branches must rebase onto the moved paths.
+
+After this pass the sprint table holds 66 DONE, 60 ABANDONED and 1 STARTED. The
+audit reports no finding.
+
+Still to do for the close: resolve the sqlgen story, write the Achievements and
+the Retrospective, regenerate the charts, write the release notes, and mark the
+sprint DONE.
 
 *** What this review did not check
 

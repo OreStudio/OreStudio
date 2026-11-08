@@ -5,18 +5,18 @@
 #+description: Population seeds the Ibor and overnight index conventions ORE defines in code (indexparser.cpp), each with its oresmd address, so a convention lookup can answer for EURIBOR, SOFR and the rest in every tenant.
 #+type: task
 #+level: s1
-#+filetags: :refdata:oresmd:seed:prove_generated_trades_value_against_the_ore_samples:sprint_29:v0:
+#+filetags: :refdata:oresmd:seed:prove_generated_trades_value_against_the_ore_samples-remaining:sprint_29:v0:
 #+owner: marco
 #+branch: feature/seed-ores-built-in-index-conventions
 #+pr: 4494
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
-#+updated: 2026-11-07
+#+updated: 2026-11-08
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Prove generated trades value against the ORE samples — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,8 +26,8 @@ Every tenant holds the Ibor and overnight index conventions ORE defines in code,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
-| Parent story | [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] |
+| State        | BACKLOG                              |
+| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Prove generated trades value against the ORE samples — the remaining work]] |
 | Now          | Shipped in #4494; the database-backed test and the tenant override remain. |
 | Waiting on   | Nothing.                               |
 | Next         | A test over what population writes, and one over a tenant's override. |

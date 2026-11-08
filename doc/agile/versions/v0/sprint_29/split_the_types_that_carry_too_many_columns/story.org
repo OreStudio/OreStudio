@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :data-oriented-design:modeling:refdata:sprint_29:v0:
 #+created: 2026-10-29
-#+updated: 2026-11-02
+#+updated: 2026-11-08
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,20 +23,25 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Refdata splits and the re-inventory done. Open: the swaption and inflation split, the trading task and the market data task. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Split the swaption smile and the inflation seasonality. |
-| Last touched  | 2026-11-02                             |
-
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
 * Acceptance
 
-- Every generated persistent type is classified against the data-oriented model's criteria, with its member count, its column count and the reason for its verdict, at a named commit.
-- Every type the inventory calls one aggregate over several components is split, each part with its own key, codec, repository and row, and the model, SQL, C++, TypeScript twins and fixtures move in one change.
-- No split is made to satisfy a compiler, and no type is split that the inventory clears.
-- The wire stays one typed array per component joined by key, and each split states its wire change explicitly.
-- The rule a new model is checked against is recorded on the data-oriented design page, so the inventory does not have to be redone by hand.
+The story closes on the tasks it finished:
+
+- Every report run fails on an orphan commodity future part.
+- Inventory the types that carry too many columns.
+- Model the volatility smile configuration and the moneyness surface.
+- Re-inventory what the splits leave.
+- Split the conventions that are still flat.
+- Split the curve segment by element.
+- Split the ORE curve entries by construction.
+- Split the ORE volatility entries by kind.
+- Split the swaption smile and the inflation seasonality.
 
 * Tasks
 
@@ -48,8 +53,6 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
 | [[id:3C77F18B-294C-4C4F-B967-F0862AD107AD][Split the conventions that are still flat]] | DONE | 2026-10-31 | 2026-11-02 | The conventions family has a central row and a part per kind, and three kinds never moved onto it: commodity future with five blocks in one row, and the cross currency basis and fix float conventions, each carrying two legs as flat columns. |
 | [[id:98901652-FEC5-4197-BE47-99F0C8453072][Split the curve segment by element]] | DONE | 2026-11-02 | 2026-11-02 | curve_segment holds segment_type and twenty columns that exist for one of twelve elements alone: projection curves for simple and tenor basis segments, a discount curve and a spot rate for cross currency ones, a reference curve for zero spread ones. |
 | [[id:40C8D641-A53C-4FB7-94E5-29812C70E66B][Split the ORE curve entries by construction]] | DONE | 2026-11-02 | 2026-11-02 | Two refdata curve entries are one row per construction: commodity curve config hides a whole basis curve behind has_basis_configuration, and default curve configuration carries one column per construction type behind default_curve_type. |
-| [[id:8A68BFFA-EF99-45A4-915D-92172BD042AA][Split the trading instrument parts by leg-data arm]] | BACKLOG | | | Five trading types are one arm of the schema's leg-data choice per row, or a rule block and a date list in one row: instrument option, bond leg rate, bond issue leg rate, instrument schedule and bond issue leg schedule. This is the trading owner's call, handed over with the inventory's reading. |
-| [[id:CC94A796-F6C1-4F59-B89E-CB5EB3133EC2][Split the market series identity by series kind]] | BACKLOG | | | market_series_identity is the widest type in the tree at 57 members and 54 nullable columns, with one column per identity field of a series kind and no discriminator to say which kind a row is. This is the market data owner's call, handed over with the inventory's reading. |
 | [[id:51839336-1AF9-4EFD-84E0-0CB983DC385B][Re-inventory what the splits leave]] | DONE | 2026-11-02 | 2026-11-02 | Once the split tasks are done, re-run the inventory and read what is left: the six types the first inventory marked group, any type the splits moved across the threshold, and whether the C1202 the story started from still reproduces. |
 | [[id:DB2C3AFB-777A-405F-A208-B97B25B9C93C][Model the volatility smile configuration and the moneyness surface]] | DONE | 2026-10-31 | 2026-10-31 | The volatility split leaves three things out: ParametricSmileConfiguration, which both surface types state as an optional element and no part carries; the moneyness surface, which has no part and which the projection refuses; and a shell address for each of the ten parts, whose permissions are seeded with no caller. |
 | [[id:0393A6B0-A31E-4375-9BE4-8B7CFC4B0208][Every report run fails on an orphan commodity future part]] | DONE | 2026-11-02 | 2026-11-02 | Since the conventions split, building a run's input refuses with 'Commodity future part commodity_future_averaging_terms names no commodity future convention' on a freshly provisioned Acme tenant, so no report runs. |
@@ -98,6 +101,7 @@ So the work is modelling, not compilers. Find the types whose shape the data-ori
   on 12-column entities, so width was never the cause. The query builder's
   growing tuple was, and 6feebec946 replaced it. The story's rule that no split
   is made for a compiler held.
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:23FBE0B5-A263-49B8-90F5-B45B42DD46F1][Split the types that carry too many columns — the remaining work]].
 
 * Notes
 

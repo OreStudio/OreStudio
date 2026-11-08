@@ -107,6 +107,10 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 
 -   **Add a Hawkes tick arrival process to analytics.quant**: Know what the tick library does, what the port into ores.analytics.quant needs, and where the process fits in the generator design, before any code changes.
 
+![ore_studio-v0.0.29-synthetic-hawkes.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-synthetic-hawkes.png)
+
+*The synthetic market: its regime and heat set the pace, and the intensity λ(t) is drawn against the ticks it produced.*
+
 ![ore_studio-v0.0.29-synthetic-dashboard.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-synthetic-dashboard.png)
 
 *Synthetic market data by provider: what runs, what it simulates and the ticks per minute.*

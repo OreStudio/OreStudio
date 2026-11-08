@@ -437,7 +437,7 @@ async function catalogueOf(
         session,
         marketSubjects.list_product_type_asset_classes_request,
         'product_type_asset_classes',
-        { filter: { product_type_code_one_of: null } },
+        {},
     );
     /* The market the catalogue groups a type under is the one it marks home. */
     const homeOf = new Map<string, string>();

@@ -53,7 +53,7 @@ struct convention_family_entry {
     std::string_view entity;
     std::string_view domain_type;
     std::string_view subject_stem;
-    bool party_scoped;
+    bool party_scoped{};
     convention_write_mode write_mode;
 };
 

@@ -8,7 +8,7 @@
 #+filetags: :http:rest:synthetic:component:serve_one_screen_from_the_new_server:sprint_29:v0:
 #+owner: marco
 #+branch: feature/serve-the-synthetic-collections
-#+pr:
+#+pr: 4493
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-07
@@ -143,7 +143,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4493][#4493]] | [http] Stand up the synthetic adapter and serve its first collection |
 
 * Review
 

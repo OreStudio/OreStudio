@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_29:v0:
 #+owner: marco
 #+branch: doc/sprint-health-review
-#+pr:
+#+pr: 4499
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-08
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4499][#4499]] | [agile] Resolve the sprint 29 stories for the close |
 
 * Review
 

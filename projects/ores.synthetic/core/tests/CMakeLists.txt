@@ -52,7 +52,6 @@ target_link_libraries(${tests_target_name}
         ores.eventing.api.lib
         ores.eventing.core.lib
         ores.trading.core.lib
-        ores.ore.core.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         Threads::Threads)

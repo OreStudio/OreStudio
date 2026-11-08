@@ -158,13 +158,17 @@ convention_lookup::index_definition_of(const market_reference& index) const {
     if (!overnight && overnight.error().kind == lookup_refusal_kind::more_than_one_match)
         return std::unexpected(overnight.error());
 
-    if (ibor && overnight)
-        return refuse(lookup_refusal_kind::more_than_one_match,
-                      index,
-                      std::format("both the Ibor index convention {} and the overnight index "
-                                  "convention {} state it",
-                                  ibor->id,
-                                  overnight->id));
+    /*
+     * ORE builds a few families both ways: USD-SOFR is the overnight index and
+     * USD-SOFR-3M is a term rate, from different classes with different
+     * conventions. The tenor the index states is what tells them apart, so a
+     * family both types state is not a conflict; the kind decides.
+     */
+    const bool states_a_tenor = named->get("tenor") != nullptr;
+    if (states_a_tenor && ibor)
+        return index_definition{std::move(*ibor)};
+    if (!states_a_tenor && overnight)
+        return index_definition{std::move(*overnight)};
     if (ibor)
         return index_definition{std::move(*ibor)};
     if (overnight)

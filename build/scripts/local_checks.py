@@ -1160,6 +1160,26 @@ CATALOGUE: tuple[Check, ...] = (
             " commit the result.",
     ),
     Check(
+        id="index-conventions-seed",
+        title="The built-in index conventions match the mined table",
+        argv=(
+            "bash",
+            "-c",
+            "./tools/ore_conventions/generate_builtin_index_conventions.py"
+            " && git diff --exit-code --"
+            " projects/ores.sql/populate/refdata/"
+            "refdata_builtin_index_conventions_populate.sql",
+        ),
+        classes=("sql", "tooling"),
+        paths=(
+            "tools/ore_conventions/*",
+            "external/ore/catalogue/index_builtins.jsonl",
+            "projects/ores.sql/populate/refdata/refdata_builtin_index_conventions_populate.sql",
+        ),
+        fix="Run tools/ore_conventions/generate_builtin_index_conventions.py and "
+            "commit the result.",
+    ),
+    Check(
         id="ore-output-catalogue",
         title="The output catalogue matches the ORE samples",
         argv=("python3", "projects/ores.ore/scripts/generate_output_catalogue.py",

@@ -17,11 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <boost/core/demangle.hpp>
-#include <iostream>
-#include <ored/configuration/conventions.hpp>
-#include <ored/utilities/indexparser.hpp>
-#include <ored/utilities/to_string.hpp>
 #include <ql/indexes/iborindex.hpp>
 #include <ql/indexes/inflationindex.hpp>
 #include <ql/indexes/swapindex.hpp>
@@ -32,6 +27,11 @@
 #include <qle/indexes/fxindex.hpp>
 #include <qle/indexes/genericindex.hpp>
 #include <qle/indexes/intradaypowerindex.hpp>
+#include <boost/core/demangle.hpp>
+#include <iostream>
+#include <ored/configuration/conventions.hpp>
+#include <ored/utilities/indexparser.hpp>
+#include <ored/utilities/to_string.hpp>
 #include <string>
 #include <typeinfo>
 #include <utility>
@@ -72,6 +72,27 @@ std::string date_text(const QuantLib::Date& d) {
     return d == QuantLib::Date() ? "null" : ore::data::to_string(d);
 }
 
+/// The business day convention @p c as ORE's configuration spells it.
+std::string business_day_convention_text(QuantLib::BusinessDayConvention c) {
+    switch (c) {
+        case QuantLib::Following:
+            return "Following";
+        case QuantLib::ModifiedFollowing:
+            return "ModifiedFollowing";
+        case QuantLib::Preceding:
+            return "Preceding";
+        case QuantLib::ModifiedPreceding:
+            return "ModifiedPreceding";
+        case QuantLib::Unadjusted:
+            return "Unadjusted";
+        case QuantLib::HalfMonthModifiedFollowing:
+            return "HalfMonthModifiedFollowing";
+        case QuantLib::Nearest:
+            return "Nearest";
+    }
+    return "Unadjusted";
+}
+
 /// The inspectors of the family @p index belongs to, most specific first.
 field_list family_fields(const QuantLib::ext::shared_ptr<QuantLib::Index>& index) {
     field_list f;
@@ -81,6 +102,19 @@ field_list family_fields(const QuantLib::ext::shared_ptr<QuantLib::Index>& index
         f.emplace_back("familyName", i->familyName());
         f.emplace_back("tenor", ore::data::to_string(i->tenor()));
         f.emplace_back("currency", i->currency().code());
+    }
+    /*
+     * The physical fields a convention holds: what an index is fixed on, how its
+     * rate is counted, and the schedule its fixing follows. ORE states them in
+     * the class the index is built from, so a seed read from here cannot drift
+     * from what the engine does.
+     */
+    if (auto i = QuantLib::ext::dynamic_pointer_cast<QuantLib::IborIndex>(index)) {
+        f.emplace_back("settlementDays", std::to_string(i->fixingDays()));
+        f.emplace_back("fixingCalendar", i->fixingCalendar().name());
+        f.emplace_back("dayCounter", i->dayCounter().name());
+        f.emplace_back("convention", business_day_convention_text(i->businessDayConvention()));
+        f.emplace_back("endOfMonth", i->endOfMonth() ? "true" : "false");
     }
     if (auto i = QuantLib::ext::dynamic_pointer_cast<QuantLib::ZeroInflationIndex>(index)) {
         f.emplace_back("familyName", i->familyName());

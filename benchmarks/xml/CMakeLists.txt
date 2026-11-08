@@ -31,4 +31,7 @@ add_executable(${bench_target_name} bench.cpp)
 target_link_libraries(${bench_target_name}
     PRIVATE
         ores.ore.core.lib
-        pugixml::pugixml)
+        pugixml::pugixml
+        # ores.marketdata.api decodes oresmd URIs through Boost.URL, and this
+        # target names its dependencies itself.
+        Boost::url)

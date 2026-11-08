@@ -1,0 +1,16 @@
+import { mkdir, copyFile, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+const pkg = JSON.parse(await readFile('package.json', 'utf8'));
+const files = {};
+for (const [name, source] of Object.entries({ 'agent.mjs': 'build/agent.mjs', 'service.mjs': 'scripts/service.mjs' })) files[name] = createHash('sha256').update(await readFile(source)).digest('hex');
+const sourceRevision = process.env.ORES_AGENT_SOURCE_REVISION ?? execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+if (!/^[0-9a-f]{40}$/.test(sourceRevision)) throw Error('Build source revision must be a full Git SHA.');
+const manifest = { component: 'ores.agent', version: pkg.version, node: '>=22.11.0', sourceRevision, files };
+manifest.id = createHash('sha256').update(JSON.stringify(manifest)).digest('hex');
+const folder = `artifacts/ores-agent-${pkg.version}-${manifest.id.slice(0, 12)}`;
+await mkdir(folder, { recursive: true });
+await copyFile('build/agent.mjs', `${folder}/agent.mjs`);
+await copyFile('scripts/service.mjs', `${folder}/service.mjs`);
+await writeFile(`${folder}/manifest.json`, JSON.stringify(manifest, null, 2) + '\n');
+console.log(folder);

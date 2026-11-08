@@ -1,0 +1,229 @@
+:PROPERTIES:
+:ID: 9BACE972-57A4-430F-A9C1-C0F48CB0E78A
+:END:
+#+title: Task: Build and verify the independent agent stages
+#+description: Implement and push runnable checkpoints for foundation, NATS tools, MCP, CUDA inference, the agent loop and independent deployment.
+#+type: task
+#+level: s1
+#+filetags: :agent:mcp:local_ai_assistant:sprint_29:v0:
+#+owner: alexhock
+#+branch: feature/local-ai-assistant
+#+pr: 4498
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-06
+#+updated: 2026-11-08
+#+environment: orestudio
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Deliver independently runnable, tested and pushed agent checkpoints. Declare necessary backend prerequisites separately and keep any native build focused; avoid restarting the main fleet.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] |
+| Now          | Nothing. |
+| Waiting on   | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-07                               |
+
+* Acceptance
+
+- [X] Combined independent agent/MCP process with NATS-only backend access.
+- [X] Shared authenticated read-only tools, standard external MCP client and bounded agent loop.
+- [X] Official LFM3 QAD model with full CUDA offload on native Windows.
+- [X] Independent checksummed packages, installation and lifecycle, tested on Windows/Linux.
+- [X] Real currency/missing-observation answers; main backend remains running.
+- [X] CPU model CI on Windows/Linux, with fixture evaluations and explicit blocked cases.
+
+* Deferred validation
+
+- Native Linux NVIDIA execution.
+- Restricted broker subjects, low-permission/cross-tenant proof and hosted authentication.
+- Report execution, booking and executable quote capabilities.
+
+These are outside this completed local read-only delivery. The parent story remains open.
+
+* Plan
+
+- Scope correction, 2026-11-07: follow =projects/ores.agent/README.md#design-and-current-scope= for agent/eval-only work. Active 4 builds the evaluation runner and baseline, 5 improves agent behavior and 6 makes local evaluation/release repeatable. Existing client-side financial composition stays in place. Do not implement or deploy reporting/server/ORE, schema/business-data or broker changes to close an evaluation gap.
+- Stage 4 acceptance is a runnable harness and complete honest report, even if most model/business cases fail. Distinguish handling correctness from business fulfillment, retain all denominators, classify blocked data/backend/identity cases and errors, and keep deterministic safeguards/harness tests passing. Use existing APIs/data and labelled fixtures; do not provision data or execute reports/booking from evaluations.
+- =projects/ores.agent/docs/architecture-future-prs.md= retains proposals F1–F10 for project-lead review and separate future PRs, including the record of the now-reverted historical cc917e0d36 backend addition. These proposals are not authorised implementations or blockers for active evaluation. No branch rewrite, PR or runtime change is part of this planning update; task stays STARTED.
+
+- Business Stage 3 raw Greek checkpoint: =753a54b4550b9b73a602fc19a7b42b9393e773ad=, separate release =0.1.5-cf24e13db443=. Windows and pinned Linux =npm test= pass 77 tests; manifests match. =scripts/smoke-greeks.mjs= passes full external MCP/CSV reference reconciliation, GPU Delta/Gamma/DV01, run clarification and isolation checks.
+- The independent =scripts/reconcile-greek-reference.py= validates all 510 stored Delta/Gamma figures against actual CSV lines, using Decimal and no agent arithmetic. Complete FX-book GBP 1Y/0.0001 buckets give Delta GBP -6502.44 and Gamma GBP 0.14; sparse parent buckets withhold totals rather than inventing zero contributions. Positive live vega remains unavailable in this dataset.
+- Evidence: =build/output/agent-greeks-windows-check.log=, =agent-greeks-linux-check.log=, =agent-greeks-smoke.log= and =projects/ores.agent/docs/validation.md=. Operator setup, all attempts and automatic-execution gaps are in =https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/greek-validation.md=. No server/broker deployment was ultimately required. Task remains STARTED for subsequent business/security/Linux gates.
+
+- Business Stage 3 NPV checkpoint: =558452611601852436ccb3820efc1b10e6b8d7a0=, independent release =0.1.4-754c262be033=. Windows and pinned Linux =npm test= pass 68 tests; manifests match.
+- Independent =scripts/smoke-scope-reporting.mjs= checks every contributor against Python Decimal for two books and their parent (63, 10 and 73 trades). GPU tool selection, run clarification, party isolation and partial-run withholding pass; Greeks remain unsupported.
+- Evidence: =build/output/agent-scope-windows-check.log=, =agent-scope-linux-check.log=, =agent-scope-smoke.log= and =projects/ores.agent/docs/validation.md=. No raw data or credentials are committed. Task remains STARTED because Greek/hosted-security/Linux NVIDIA gates remain open.
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Component tests | 12 pass on Windows and Linux | =npm test=; Linux output in =build/output/agent-linux-check.log= | =88fe926d56fa64653a70e4c009cab53eaa3cbda3= |
+| CUDA model layers | 25/25 offloaded | =scripts/smoke-inference.mjs= and runtime =run/stderr.log= | =88fe926d56fa64653a70e4c009cab53eaa3cbda3= |
+| Artifact identity | 512b6069701e, identical Windows/Linux | =npm run package= and =manifest.json= | =88fe926d56fa64653a70e4c009cab53eaa3cbda3= |
+| Native backend/broker processes | 25 PIDs unchanged | =smoke-isolation.mjs= plus PowerShell before/after =Compare-Object= | =88fe926d56fa64653a70e4c009cab53eaa3cbda3= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4498][#4498]] | [agent] Add standalone read-only assistant, MCP and evaluation CI |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered the standalone read-only agent/MCP application, separate CUDA/CPU inference,
+Markdown chat, and repeatable evaluations. CPU CI passes on Windows/Linux: 114 agent
+tests, five installer tests and 40/40 handling checks per platform. Six business
+cases remain blocked. No net main/reporting-server, schema or NATS configuration
+change is included. Six guides describe use, deployment, evaluation, validation
+and future architecture. Broader business and hosted/GPU gates remain separate.
+
+* Implementation checkpoints
+
+- Stage 1: health/configuration, checksummed package and separate installation; three Windows tests passed. Linux/Windows CI workflow added (manual dispatch); remote CI not yet run.
+- Model: user approved official LFM3-1.7B QAD Q4_0, approximately 1.05 GB, replacing Qwen.
+- Stage 2: =ad58eefcf4=, authenticated NATS/session/tool adapter.
+- Stage 3: =6520bca6ed=, official SDK MCP endpoint and independent client smoke.
+- Stage 4: =da3599e08b=, pinned official CUDA runtime and approved LiquidAI model.
+- Stage 5: =a3cc72d40b=, bounded direct tool loop and separate UI.
+- Stage 6: =88fe926d56=, immutable release and independent lifecycle controls.
+- Validation: 12 tests pass on Windows/Linux; identical artifact =512b6069701e=.
+- Live release: =88fe926d56fa64653a70e4c009cab53eaa3cbda3=; all 25/25 model layers offloaded on the RTX 4070. Main native backend/broker PID set unchanged across AI lifecycle checks.
+- Remaining: native Linux NVIDIA validation, hosted auth/client enrollment and broker ACL hardening. Task/story remain STARTED; no unverified completion is claimed.
+
+* FX/IR lookup enhancement
+
+- Commit: =7cc8511292a2416da54c25fe8bd54530326b37c7=; release =0.1.1-86a407144a11=.
+- =npm test=: 24 tests pass on Windows and Linux; same artifact identity on both.
+- =scripts/smoke-market.mjs=: external MCP, provider clarification and actual CUDA-backed historical FX lookup pass; sampled IR series correctly returns no observation.
+- Before/after native backend, NATS and inference PID sets unchanged. No server build, broker configuration, new subjects or data mutation.
+- Freshness, exact point matching, selected-party restrictions and bounded complete scans are documented in =projects/ores.agent/docs/agent.md#market-data=.
+- Remaining broader story acceptance items (Linux GPU and hosted isolation) stay open.
+
+* Business use cases: Stage 0
+
+- Validated implementation commit: =8e83cc9f7b99df31e6a1f77929294fe2eb67dd73=.
+- =npm test=: 28 tests pass on Windows and Linux; local Linux evidence in =build/output/agent-business-linux-check.log=.
+- =scripts/inspect-business.mjs=: successful real NATS reads for selected-party trades, books, portfolios, report definitions/instances/results and IR catalogue observations.
+- Live sample at 2026-11-06 20:33 UTC: 73 trades, 2 books, 3 portfolios, 25 report definitions, 61 runs and 584 result rows. Four runs were clean, but none established the required matching clean trade-NPV example. All 32 selected-party IR series were empty.
+- Inspection delivered; clean-NPV and populated-IR data readiness remain open. Discovery can proceed; no reporting result acceptance is claimed from fixtures.
+- Existing stopped backend services were restored for inspection. No server rebuild, broker configuration change, database recreation, report trigger or feed import was performed by the probe.
+- Reproduction, concrete record IDs and next actions: =https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/business-baseline.md=. Scope and later stages: =projects/ores.agent/README.md#design-and-current-scope=.
+
+* Business use cases: Stage 1
+
+- Implementation: =065e5dc857=; final exact-identity guard =26217842d462e4f5b193b55d4e02ce366adb728d=.
+- =npm test=: 37 passing Windows/Linux tests. =npm run package=: identical artifact =0.1.2-adeb734cfeb9= on both systems.
+- =scripts/smoke-discovery.mjs=: independent MCP, real book membership, FX-forward economics, portfolio hierarchy, counterparty code and CUDA chat/clarification pass. A separate selected-party login cannot read the first party's known trade.
+- Native backend, broker and inference PID sets unchanged across standalone agent deployment. Existing market-data/currency regressions pass; no server/broker configuration changes or business writes were introduced.
+- Scope limits: tenant-wide counterparties have explicit paged name searches; Bond economics expose reference/notional only. No valuation/reporting capability is claimed by this release. See =projects/ores.agent/docs/agent.md#discovery-and-trade-values=.
+- Next: Stage 2 stored trade valuation results, with the clean-NPV data gate from Stage 0 still open.
+
+* Business use cases: Stage 2 reporting read slice
+
+- Implementation =5ff7160a7b=; final unit-boundary correction =bf08fba92c6cfe2da67ec172f6c207272501b4ff=.
+- =npm test=: 48 passing Windows/Linux tests. =npm run package=: identical =0.1.3-5b23d543cb79= artifact.
+- =scripts/smoke-reporting.mjs=: actual independent MCP, report provenance, default withholding, explicit partial inspection and second-party isolation pass. GPU model selects NPV/status reads; exact explicit partial commands preserve IDs via validated direct execution.
+- Discovery and market regression scripts pass. Native backend, NATS and inference PIDs remain unchanged; main web app HTTP 200. No report execution, server build, broker change or business data import was introduced.
+- Clean live valuation acceptance remains open. Existing applicable runs completed with errors; fixture success is not substituted for that gate. Diagnose/prepare one approved clean run separately before claiming full Stage 2 business acceptance or reconciled aggregates.
+- Reproduction and limits: =projects/ores.agent/docs/agent.md#discovery-and-trade-values=; evidence summary in =projects/ores.agent/docs/validation.md=.
+
+* Business use cases: Stage 2 clean live acceptance
+
+- Passed on 2026-11-07 using installed agent =0.1.3-5b23d543cb79=; no new agent deployment.
+- Isolated definition =39eb7b57-db88-4669-ae7e-fbe3dbf40016=; clean run =884d0bc9-932d-4c4c-9b66-ee97d2b810bb= priced at 2026-11-06 and completed 2026-11-06 21:43:39.214032 UTC.
+- Example trade =05dcc4f0-4af9-597f-8e20-94c3018c6b4c=: NPV GBP -7,998,696.427339, source =npv.csv=. Direct authenticated NATS, independent MCP and GPU chat reconcile; second-party access is refused. Existing clean/partial/status reporting smoke passes.
+- Original regulatory output failed on Bond SA-CCR/netting data. A first isolated attempt failed on absent scope and remains failed. The corrected report gathered 73 trades from two books.
+- Declared backend prerequisite: =reporting.v1.ops.copy_run_scope=, ownership/permission gated, atomic, empty/unshared destination only. Five reporting compilation units and its DLL rebuilt with two jobs. A temporary instance verified unauthenticated/wrong-party/same-configuration/populated-shared/replay refusals, copied the scope and was stopped before the corrected run.
+- Main fleet not restarted/replaced; no broker ACL/configuration changes or queue purge. Original fleet does not permanently serve the new subject; native Linux validation of this backend addition remains open. Agent remains read-only.
+- The existing 48 Windows agent tests passed; the unchanged artifact had already passed 48 tests/packaging on Linux. No native Linux backend or least-privilege/cross-tenant proof is claimed.
+- Evidence, reproduction, warnings and backend API observations: =https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/valuation-validation.md=. Next: Stage 3 scoped summaries and available Greeks, with explicit completeness and units.
+
+* Business Stage 4 evaluation checkpoint
+
+- Implementation =ebb7fe7849d2089da0444f250bbe32edddfbf405=; corpus 1.0.0 contains 26 cases. All 85 component/harness tests pass on Windows and pinned Linux. Linux replay reproduces Windows outcomes with matching source fingerprints; its archive report records unknown Git revision.
+- Replay handling passes 26/26, model/fixture handling 14/21 and live-read handling 13/18. Overall passes are 22/26, 12/21 and 11/18. Blocked cases stay in denominators and business fulfillment is separate. One repetition is baseline evidence, not a broad accuracy benchmark.
+- Failed automated checks remain recorded. Booking refusal has a known lexical-oracle false negative; preserve the frozen result and review/version any correction during Stage 5. Missing IR/vega and report/booking capabilities remain explicit.
+- Usage, safe aggregate and private evidence paths: =projects/ores.agent/docs/evaluation.md= and =https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/evaluation-baseline.md=. Normal completed reports return 0 despite quality failures; strict replay returns the expected 2.
+- No production agent/backend source or business records changed. Existing read-only NATS plus normal session lifecycle only; installed 0.1.5, 19 native/broker/inference PIDs, agent PID and private config remain unchanged. Main app and agent health/readiness return HTTP 200.
+- Next: agent/eval-only Stage 5; backend proposals remain separate future PRs. Task/story remain STARTED for later stages.
+
+* Business Stage 5 agent/evaluation checkpoint
+
+- Final implementation =17cb7bc4a07cb9108ab81fe7abf69d8afb7303be=; separate release =0.1.6-4317a6cd1870=. All 94 tests pass on Windows/Linux with identical manifests and replay source fingerprints. Native Linux NVIDIA validation remains open.
+- Added typed bounded intent/catalogue selection, preservation of literal dates/factors/scenarios, deterministic command refusal, identity-bound expiring clarification and explicit withholding on unit/provenance validation failures. No financial semantics or backend migration was introduced.
+- Original Stage 4 corpus/grader/model settings are unchanged. Two-repetition handling scores: 42/42 model/fixture, 33/36 live, versus Stage 4 14/21 and 13/18 with one repetition. Eight separate paraphrase/clarification cases retain their own denominator; small samples are not broad benchmarks. Full failures and blocked data/backend capabilities remain recorded.
+- Earlier live findings at 0ca93f8aa3 remain preserved, including run-status substitution and a generation-limit response. The former prompted the final scope catalogue correction; generation allowance and unit checks were not relaxed. Existing trade base-NPV currency-unit validation still withholds the positive result.
+- Installed authenticated chat smoke checks pass; 19 native/broker/inference PIDs and private config hash remain unchanged. Main app and agent health/readiness return HTTP 200. Only the standalone agent lifecycle changed; no new reporting/server/ORE, schema/business-record or broker changes.
+- Evidence: =https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/stage5-validation.md= and reviewed =evals/baselines/stage5-2026-11-07.json=. Next: agent/eval-only Stage 6; backend architecture stays separate future PRs. Task/story remain STARTED.
+
+* Business Stage 6 reproducible evaluation/release checkpoint
+
+- Implementation =5004b5e7c8e36f7c26e70788227ca92fdfa1675f=; installed independent release =0.1.7-0a1d2f580ce4=. All 101 tests and both replay handling gates pass on Windows/Linux with identical fingerprints/manifests. Remote CI is configured, not dispatched; native Linux NVIDIA and local Node 22 validation are not claimed.
+- Added =npm run verify=, =eval:doctor= and =eval:compare= commands, strict/non-overwriting comparisons, explicit provenance checks and argument/tool/clarification/refusal/numeric-attribution/latency sample metrics. Private chat spans correlate HTTP request IDs across inference, intent/catalogue selection, tools, adapter reads and formatter attempts without payloads/identities/error text. No financial semantics changed.
+- Frozen cases/grader/model settings are unchanged. Two-repetition handling is 42/42 model/fixtures and 32/36 live; separate paraphrase profiles pass 8/8 each. Strict live comparison returns 2 for scope-run-clarification (prior 1/2, now 0/2); native-NPV mixed units and existing base-NPV unit errors remain withheld. No oracle weakening or best-of reruns hide the finding.
+- Standalone agent rollout and five installed checks pass, including 62 request-correlated timing events across all six phases. Main app and agent health/readiness return HTTP 200. All 19 native/broker/inference PIDs and private config hash remain unchanged; previous 0.1.6 remains for rollback. No new reporting/main-server/ORE, schema/business-record or broker changes.
+- Evidence: =https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/stage6-validation.md=, =projects/ores.agent/docs/evaluation.md#compare-and-measure= and reviewed =evals/baselines/stage6-2026-11-07.json=. Active local Stages 0-6 are delivered with explicit gaps; broader feature/story remain STARTED for unimplemented business/hosted/Linux-GPU gates. Review future scope with the project lead; this does not authorise backend PRs or claim production readiness.
+
+* Exclude historical reporting addition
+
+- At the user's explicit request, reverse =cc917e0d36352a5265e862c66e358f5593c2cef7=, including its reporting protocol/handler/repository/modeling/generated changes and operator-only =copy-validation-scope.mjs= helper. Reporting source matches the branch base; the original commit and reversal remain auditable without a force-push. No PR is opened.
+- Agent/MCP/evaluation runtime does not call that operation. Existing stored NPV/Greek data and installed agent 0.1.7/native/NATS/inference services remain untouched. Fixture profiles need no live data; reproducing the historical live dataset on a new environment requires separately agreed preparation, not the removed API.
+- Keep the negative evaluation mutation-blocking test. Historical setup evidence remains labelled historical, and future backend work stays outside the current agent-only scope.
+- Validation: =npm run verify= passes all 101 tests and both offline replay handling gates; all 40 component documentation checks pass. The complete net branch diff is limited to agent files, its dedicated workflow and agile documentation. Reporting source is byte-for-byte identical to the branch base. No native rebuild or application redeployment is required.
+
+* Review-driven agent cleanup
+
+- Final code =055af005e05aa5bdc59c3993609a4937baa3bf85=; structural checkpoint =80b04ac08b=; installed =0.1.8-c1371bb8918e=. All 107 tests and three replay handling gates pass on Windows/Linux with identical source fingerprints/manifests. Native Linux NVIDIA/remote CI remain open.
+- Fixed explicit trade/run substitution, negated/absent partial consent, provider phrase corruption and false native/base evaluation passes. Added a typed RequestPlan, one identity-bound pending-choice store, deterministic scope continuation, single presentation dispatch, cached catalogues and shared bounded pagination. Existing financial/identity/coverage checks remain in adapters; evaluation options/reporting are separated and readable.
+- Frozen corpus/grader and legacy fixture bytes are unchanged. New review-2.0.0 has 11 immutable-fixture cases with explicit measure/value/currency/basis assertions. Actual fixture version/hash is recorded and compared. Two-repetition handling is 42/42 original model, 34/36 live and 22/22 review-model; paraphrases 8/8 each. The former continuation regression now passes 2/2. Existing live base-NPV unit and IR/vega/command gaps remain explicit, with no data/server repair.
+- Seven installed chat/timing checks pass, including typed run continuation, provider wording and factor punctuation. Main/agent health/readiness return HTTP 200. All 19 native/broker/inference PIDs and private config hash are unchanged; prior 0.1.7 remains for rollback. The removed reporting addition stays reverted and no backend/broker/schema/business records change.
+- Evidence: =https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/review-validation.md=, =projects/ores.agent/docs/agent.md#api-mcp-and-request-handling= and reviewed =evals/baselines/review-2026-11-08.json=. Broader feature gates remain STARTED; future architecture/server work is separately scoped with the project lead.
+
+* Chat Markdown update
+
+- Added headings, tables, lists and code blocks. Record lists and result contributors use tables. Raw HTML and images are disabled. Evidence stays plain text.
+- Windows and Linux: 112 tests and all replay gates pass. Release manifests match. Edge checks pass at desktop and phone sizes, including cancel and sign-out.
+- Installed agent 0.1.9. Live NPV and Greek replies show headings, tables and exact values. All 19 backend, broker and inference processes and the private config are unchanged.
+- Agent-only change. No main server, reporting service or NATS changes.

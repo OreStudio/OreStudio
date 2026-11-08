@@ -1,0 +1,593 @@
+{
+  "version": "review-2.0.0",
+  "cases": [
+    {
+      "id": "review-preserve-tradeid",
+      "group": "identity",
+      "intent": "review-preserve-tradeid",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "What is the base NPV of trade 11111111-1111-4111-8111-000000000005 from run 11111111-1111-4111-8111-000000000007 on 2026-11-06?",
+          "replay": [
+            {
+              "tool": "read_trade_results",
+              "arguments": {
+                "tradeId": "11111111-1111-4111-8111-000000000006",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "npv_base",
+                "valuationDate": "2026-11-06"
+              }
+            },
+            {
+              "tool": "read_trade_results",
+              "arguments": {
+                "tradeId": "11111111-1111-4111-8111-000000000005",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "npv_base",
+                "valuationDate": "2026-11-06"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_trade_results",
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "tradeId": "11111111-1111-4111-8111-000000000005",
+              "runId": "11111111-1111-4111-8111-000000000007",
+              "measure": "npv_base",
+              "valuationDate": "2026-11-06"
+            },
+            "checks": [
+              {
+                "path": "result.measure",
+                "equals": "npv_base"
+              },
+              {
+                "path": "result.figure",
+                "equals": 0.1
+              },
+              {
+                "path": "result.currency",
+                "equals": "GBP"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-preserve-runid",
+      "group": "identity",
+      "intent": "review-preserve-runid",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "What is the base NPV of trade 11111111-1111-4111-8111-000000000005 from run 11111111-1111-4111-8111-000000000007 on 2026-11-06?",
+          "replay": [
+            {
+              "tool": "read_trade_results",
+              "arguments": {
+                "tradeId": "11111111-1111-4111-8111-000000000005",
+                "runId": "11111111-1111-4111-8111-000000000006",
+                "measure": "npv_base",
+                "valuationDate": "2026-11-06"
+              }
+            },
+            {
+              "tool": "read_trade_results",
+              "arguments": {
+                "tradeId": "11111111-1111-4111-8111-000000000005",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "npv_base",
+                "valuationDate": "2026-11-06"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_trade_results",
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "tradeId": "11111111-1111-4111-8111-000000000005",
+              "runId": "11111111-1111-4111-8111-000000000007",
+              "measure": "npv_base",
+              "valuationDate": "2026-11-06"
+            },
+            "checks": [
+              {
+                "path": "result.measure",
+                "equals": "npv_base"
+              },
+              {
+                "path": "result.figure",
+                "equals": 0.1
+              },
+              {
+                "path": "result.currency",
+                "equals": "GBP"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-provider-2",
+      "group": "market",
+      "intent": "review-provider-2",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "EUR/USD spot from provider ore on 2016-12-30",
+          "replay": [
+            {
+              "tool": "read_fx_spot",
+              "arguments": {
+                "baseCurrency": "EUR",
+                "quoteCurrency": "USD",
+                "provider": "ore",
+                "asOf": "2016-12-30"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_fx_spot",
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "baseCurrency": "EUR",
+              "quoteCurrency": "USD",
+              "provider": "ore",
+              "asOf": "2016-12-30"
+            },
+            "checks": [
+              {
+                "path": "observation.value",
+                "equals": "1.0552"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-provider-3",
+      "group": "market",
+      "intent": "review-provider-3",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "EUR/USD spot using provider ore on 2016-12-30",
+          "replay": [
+            {
+              "tool": "read_fx_spot",
+              "arguments": {
+                "baseCurrency": "EUR",
+                "quoteCurrency": "USD",
+                "provider": "ore",
+                "asOf": "2016-12-30"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_fx_spot",
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "baseCurrency": "EUR",
+              "quoteCurrency": "USD",
+              "provider": "ore",
+              "asOf": "2016-12-30"
+            },
+            "checks": [
+              {
+                "path": "observation.value",
+                "equals": "1.0552"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-provider-4",
+      "group": "market",
+      "intent": "review-provider-4",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "EUR/USD spot provider: ore on 2016-12-30",
+          "replay": [
+            {
+              "tool": "read_fx_spot",
+              "arguments": {
+                "baseCurrency": "EUR",
+                "quoteCurrency": "USD",
+                "provider": "ore",
+                "asOf": "2016-12-30"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_fx_spot",
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "baseCurrency": "EUR",
+              "quoteCurrency": "USD",
+              "provider": "ore",
+              "asOf": "2016-12-30"
+            },
+            "checks": [
+              {
+                "path": "observation.value",
+                "equals": "1.0552"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-no-partial",
+      "group": "reporting",
+      "intent": "review-no-partial",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "partial",
+      "capability": {
+        "status": "not_applicable"
+      },
+      "turns": [
+        {
+          "message": "What is the base NPV of trade 11111111-1111-4111-8111-000000000005 from run 11111111-1111-4111-8111-000000000007 on 2026-11-06? Do not show partial results.",
+          "replay": [
+            {
+              "tool": "read_trade_results",
+              "arguments": {
+                "tradeId": "11111111-1111-4111-8111-000000000005",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "npv_base",
+                "valuationDate": "2026-11-06",
+                "allowPartial": true
+              }
+            },
+            {
+              "tool": "read_trade_results",
+              "arguments": {
+                "tradeId": "11111111-1111-4111-8111-000000000005",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "npv_base",
+                "valuationDate": "2026-11-06",
+                "allowPartial": false
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_trade_results",
+            "statuses": [
+              "unavailable"
+            ],
+            "arguments": {
+              "allowPartial": false,
+              "measure": "npv_base"
+            },
+            "noFigures": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-explicit-partial",
+      "group": "reporting",
+      "intent": "review-explicit-partial",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "partial",
+      "capability": {
+        "status": "not_applicable"
+      },
+      "turns": [
+        {
+          "message": "Inspect partial base NPV of trade 11111111-1111-4111-8111-000000000005 from run 11111111-1111-4111-8111-000000000007 on 2026-11-06",
+          "replay": [
+            {
+              "content": "Typed explicit inspection; no model call needed."
+            }
+          ],
+          "expect": {
+            "tool": "read_trade_results",
+            "statuses": [
+              "partial"
+            ],
+            "arguments": {
+              "tradeId": "11111111-1111-4111-8111-000000000005",
+              "runId": "11111111-1111-4111-8111-000000000007",
+              "measure": "npv_base",
+              "valuationDate": "2026-11-06",
+              "allowPartial": true
+            },
+            "checks": [
+              {
+                "path": "result.figure",
+                "equals": 0.1
+              },
+              {
+                "path": "result.currency",
+                "equals": "GBP"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-native-trade",
+      "group": "reporting",
+      "intent": "review-native-trade",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Native NPV of trade 11111111-1111-4111-8111-000000000005 from run 11111111-1111-4111-8111-000000000007 on 2026-11-06",
+          "replay": [
+            {
+              "tool": "read_trade_results",
+              "arguments": {
+                "tradeId": "11111111-1111-4111-8111-000000000005",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "npv",
+                "valuationDate": "2026-11-06"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "read_trade_results",
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "tradeId": "11111111-1111-4111-8111-000000000005",
+              "runId": "11111111-1111-4111-8111-000000000007",
+              "measure": "npv",
+              "valuationDate": "2026-11-06"
+            },
+            "checks": [
+              {
+                "path": "result.measure",
+                "equals": "npv"
+              },
+              {
+                "path": "result.figure",
+                "equals": 10
+              },
+              {
+                "path": "result.currency",
+                "equals": "EUR"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-base-scope",
+      "group": "reporting",
+      "intent": "review-base-scope",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Base-currency NPV for book \"Fixture FX Book\" from run 11111111-1111-4111-8111-000000000007 on 2026-11-06",
+          "replay": [
+            {
+              "tool": "summarize_scope_results",
+              "arguments": {
+                "scopeType": "book",
+                "scope": "Fixture FX Book",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "npv",
+                "valuationDate": "2026-11-06"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "summarize_scope_results",
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "scopeType": "book",
+              "scope": "Fixture FX Book",
+              "runId": "11111111-1111-4111-8111-000000000007",
+              "measure": "npv_base",
+              "valuationDate": "2026-11-06"
+            },
+            "checks": [
+              {
+                "path": "total.measure",
+                "equals": "npv_base"
+              },
+              {
+                "path": "total.figure",
+                "equals": "0.3"
+              },
+              {
+                "path": "total.currency",
+                "equals": "GBP"
+              },
+              {
+                "path": "total.currencyBasis",
+                "equals": "typed_metric.BaseCurrency"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-run-plan",
+      "group": "conversation",
+      "intent": "review-run-plan",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "available"
+      },
+      "turns": [
+        {
+          "message": "Base NPV for book \"Fixture FX Book\" on 2026-11-06",
+          "replay": [
+            {
+              "content": "No inference required."
+            }
+          ],
+          "expect": {
+            "selectionRequired": "runId",
+            "noTools": true
+          }
+        },
+        {
+          "message": "11111111-1111-4111-8111-000000000007",
+          "replay": [
+            {
+              "content": "Typed continuation; no inference required."
+            }
+          ],
+          "expect": {
+            "tool": "summarize_scope_results",
+            "statuses": [
+              "ok"
+            ],
+            "arguments": {
+              "scopeType": "book",
+              "scope": "Fixture FX Book",
+              "runId": "11111111-1111-4111-8111-000000000007",
+              "measure": "npv_base",
+              "valuationDate": "2026-11-06"
+            },
+            "checks": [
+              {
+                "path": "total.measure",
+                "equals": "npv_base"
+              },
+              {
+                "path": "total.figure",
+                "equals": "0.3"
+              },
+              {
+                "path": "total.currency",
+                "equals": "GBP"
+              },
+              {
+                "path": "total.currencyBasis",
+                "equals": "typed_metric.BaseCurrency"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "review-mixed-native-scope",
+      "group": "reporting",
+      "intent": "review-mixed-native-scope",
+      "profiles": [
+        "replay",
+        "model"
+      ],
+      "scenario": "default",
+      "capability": {
+        "status": "not_applicable"
+      },
+      "turns": [
+        {
+          "message": "Native NPV for book \"Fixture FX Book\" from run 11111111-1111-4111-8111-000000000007 on 2026-11-06",
+          "replay": [
+            {
+              "tool": "summarize_scope_results",
+              "arguments": {
+                "scopeType": "book",
+                "scope": "Fixture FX Book",
+                "runId": "11111111-1111-4111-8111-000000000007",
+                "measure": "npv",
+                "valuationDate": "2026-11-06"
+              }
+            }
+          ],
+          "expect": {
+            "tool": "summarize_scope_results",
+            "statuses": [
+              "ambiguous"
+            ],
+            "arguments": {
+              "measure": "npv"
+            },
+            "noFigures": true
+          }
+        }
+      ]
+    }
+  ]
+}

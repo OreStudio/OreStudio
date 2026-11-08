@@ -20,6 +20,7 @@
 #ifndef ORES_NATS_SERVICE_NATS_CONNECT_ERROR_HPP
 #define ORES_NATS_SERVICE_NATS_CONNECT_ERROR_HPP
 
+#include "ores.nats/export.hpp"
 #include <stdexcept>
 #include <string>
 
@@ -53,7 +54,7 @@ enum class nats_error_kind {
  * "TLS is misconfigured", "services are not started", etc. and surface
  * a readable message in the login dialog.
  */
-class nats_connect_error : public std::runtime_error {
+class ORES_NATS_EXPORT nats_connect_error : public std::runtime_error {
 public:
     nats_connect_error(nats_error_kind kind, const std::string& msg)
         : std::runtime_error(msg)

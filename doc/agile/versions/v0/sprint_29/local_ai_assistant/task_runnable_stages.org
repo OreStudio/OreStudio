@@ -210,5 +210,6 @@ via its "Verifies task" field.
 * Chat Markdown update
 
 - Added headings, tables, lists and code blocks. Record lists and result contributors use tables. Raw HTML and images are disabled. Evidence stays plain text.
-- Windows: 112 tests and all replay gates pass. Edge checks pass at desktop and phone sizes, including cancel and sign-out.
+- Windows and Linux: 112 tests and all replay gates pass. Release manifests match. Edge checks pass at desktop and phone sizes, including cancel and sign-out.
+- Installed agent 0.1.9. Live NPV and Greek replies show headings, tables and exact values. All 19 backend, broker and inference processes and the private config are unchanged.
 - Agent-only change. No main server, reporting service or NATS changes.

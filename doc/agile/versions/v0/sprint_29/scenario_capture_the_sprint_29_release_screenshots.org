@@ -49,7 +49,7 @@ Rules for every capture:
 | Parent story  | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]   |
 | Target screen | The web client screens named in each step |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PASSED |
 
 * Steps
 
@@ -63,6 +63,11 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Capture the trade blotter
 
 - Open =http://localhost:20802/trading/blotter=.
@@ -72,6 +77,12 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 - Caption for the release notes: /The trade blotter reads a page at a time, and its rail counts the rows at each node./
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step2_20261108_215555.png]]; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step2_20261108_215611.png]] |
+
 
 ** Capture a trade booked as draft
 
@@ -83,6 +94,12 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step3_20261108_215711.png]] |
+
+
 ** Capture a structure
 
 - Open =http://localhost:20802/trading/structures=.
@@ -93,6 +110,12 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step4_20261108_220508.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step4_20261108_220546.png]] |
+
+
 ** Capture the Connectivity screen
 
 - Open =http://localhost:20802/market-data/connectivity=.
@@ -101,6 +124,12 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 - Caption for the release notes: /Connectivity shows the delivery tree of suppliers, sessions and feeds./
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step5_20261108_220613.png]]; ; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step5_20261108_220632.png]]; [[file:scenario_capture_the_sprint_29_release_screenshots_step5_20261108_220657.png]] |
+
 
 ** Capture the Public rates screen
 
@@ -111,15 +140,27 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step6_20261108_220722.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step6_20261108_220742.png]] |
+
+
 ** Capture the fixing series
 
-- Open =http://localhost:20802/market-data/fixings=.
+- Open =http://localhost:20802/market-data/fixings?uri=oresmd%3A%2F%2Ffx%2FEUR%3Ftype%3Dfixing%26index%3Dfx%26source%3DECB%26ccy%3DCNY=.
 - Open a series with history if one exists.
 - Record FAIL if no fixings exist.
 - Save the screenshot as =assets/images/ore_studio-v0.0.29-fixings.png=.
 - Caption for the release notes: /Public fixings are published through an adapter./
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step7_20261108_221042.png]] |
+
 
 ** Capture the synthetic feeds
 
@@ -129,6 +170,12 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 - Caption for the release notes: /Synthetic feeds, with the richer tick arrival models./
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step8_20261108_221102.png]]; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step8_20261108_221117.png]]; ; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step8_20261108_221148.png]] |
+
 
 ** Capture a convention record
 
@@ -140,6 +187,12 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step9_20261108_221220.png]]; ; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step9_20261108_221234.png]]; [[file:scenario_capture_the_sprint_29_release_screenshots_step9_20261108_221246.png]] |
+
+
 ** Capture a curve configuration
 
 - Open =http://localhost:20802/reporting/curve-configurations=.
@@ -150,6 +203,12 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step10_20261108_221314.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step10_20261108_221327.png]]; [[file:scenario_capture_the_sprint_29_release_screenshots_step10_20261108_221339.png]] |
+
+
 ** Capture a currency record
 
 - Open =http://localhost:20802/refdata/currencies=.
@@ -159,6 +218,12 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 - Caption for the release notes: /Currencies went through the screen pipeline./
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step11_20261108_221400.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step11_20261108_221415.png]] |
+
 
 ** Capture the dark theme
 
@@ -171,6 +236,12 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step12_20261108_221441.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step12_20261108_221450.png]] |
+
+
 ** Capture the release hero image
 
 - Open =http://localhost:20802/operations=.
@@ -181,12 +252,18 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_29_release_screenshots_step13_20261108_221511.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step13_20261108_221550.png]]; ; ; [[file:scenario_capture_the_sprint_29_release_screenshots_step13_20261108_221608.png]] |
+
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
+| Status        | PASSED |
+| Completed at  | 2026-11-08T22:16:16Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

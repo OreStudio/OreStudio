@@ -1,3 +1,7 @@
+![ore_studio-v0.0.29.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29.png)
+
+*Market data feeds in operations: every feed, its adapter state, and what it accepted and refused.*
+
 *November 2026*
 
 Sprint 29 merged 781 pull requests across the whole product. The C++ server took on more of the web tier: it streams changes and responses, holds the session at the door, and bounds and streams request bodies. `ores.ore` became the only owner of ORE formats, every output ORE writes is modelled, and generated trades are proved against the ORE samples. Market data gained suppliers, sessions and feeds, public fixings through an adapter, volatility surfaces, the Connectivity and Public rates screens, and new tick arrival models. The trade blotter, draft booking, the product type page and the ACME trade population all moved forward. Record and configuration screens now follow one standard, driven through a repeatable screen pipeline. Generated code replaced most of sqlgen and reflect-cpp, every wire type gained a generated roundtrip test, pricing runs on native Windows workers, and the local gate runs only the checks a change needs. The mission was to finish the work carried from sprint 28, and that did not happen: the sprint ran eight days past its plan and 61 stories return to the product backlog.
@@ -37,6 +41,15 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 -   **Fix the tenor basis swap convention model and the document TU — the remaining work**: The tenor basis swap convention carries its identity, legs, coupon treatment, market-data annex and change audit as separate field groups, so no reflected literal is wide.
 -   **Gather each trade set and its market data — the remaining work**: Partition a report's trade population into trade sets and record them against the run, export one trade set as an archive and map it into the ORE portfolio, resolve and export each set's market data at its as-of, hand each configuration to its owner by id at an as-of, and assemble the package only when every declared input is present.
 -   **Let the blotter read a page, not the book**: A desk opens the blotter and has its rows in well under a second, at any size the tenant has written, and its rail states how many rows sit at each node without reading the book to find out.
+
+![ore_studio-v0.0.29-blotter.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-blotter.png)
+
+*The trade blotter reads one page at a time, and its rail counts the rows under each book.*
+
+![ore_studio-v0.0.29-blotter-book.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-blotter-book.png)
+
+*The same blotter narrowed to one portfolio, with its swaps, caps and floors.*
+
 -   **Make ores.ore the only owner of ORE formats**: ores.ore converts between ORE formats and our domain types and does nothing else.
 -   **Model every output ORE writes**: Every output family ORE writes is named in one catalogue, read by ores.ore from the samples checked in, and stored by the component that owns the data.
 -   **Prove generated trades value against the ORE samples**: Every product type the generator books has a trade that ORE builds and values, and a test that fails when the trade XML or the generated data drifts from the ORE samples.
@@ -46,9 +59,40 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 -   **Trade Blotter — the remaining work**: Build the Trade Blotter: the primary front-office screen from which traders, sales, and middle office view, manage, and act on the live book of trades &#x2013; booking new deals, amending existing ones, and routing trades through their lifecycle (expiry, fixing, delivery, exercise, settlement).
 -   **Describe every product type on one page**: One page a person can read to find out what a product type is before they book it: every type the tenant may book, what each one means, where its documentation lives, and which books and permissions allow it.
 -   **Book a trade as a draft**: (Describe the user-visible outcome this story delivers.)
+
+![ore_studio-v0.0.29-book-a-trade.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-book-a-trade.png)
+
+*Booking a trade: a draft reason captures the deal as a draft, and no reason books it live.*
+
 -   **Let the model state how the store keeps a column**: (Describe the user-visible outcome this story delivers.)
 -   **Draw every ORE leaf the same way, starting with conventions**: One standard says how every screen draws a leaf of an ORE document and the element type it belongs to, with the exact words, and an Allium specification carries its state rules so tests can follow them.
+
+![ore_studio-v0.0.29-conventions.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-conventions.png)
+
+*The conventions, grouped by asset class, with the kinds whose terms are drawn.*
+
+![ore_studio-v0.0.29-convention-kind.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-convention-kind.png)
+
+*The documents one convention kind holds.*
+
+![ore_studio-v0.0.29-convention.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-convention.png)
+
+*A convention record: each term shows its value and its documentation.*
+
 -   **Standardise the curve configuration's parameters on the one contract**: A curve configuration is drawn like every other configuration that comes off an ORE document.
+
+![ore_studio-v0.0.29-curve-configurations.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-curve-configurations.png)
+
+*Curve configurations, one row per configuration.*
+
+![ore_studio-v0.0.29-curve-configuration.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-curve-configuration.png)
+
+*A curve configuration follows the same record standard as every other configuration.*
+
+![ore_studio-v0.0.29-curve-configuration-curves.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-curve-configuration-curves.png)
+
+*The curves of a configuration, each with its documented parameters.*
+
 -   **A write checks the version of another party's row**: A write from a party that sees other parties is checked against its own row.
 -   **Let the plan state domain rows, not a bag**: A trade has one description, in the domain.
 
@@ -56,12 +100,52 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 ## Market Data & Curves
 
 -   **Publish public fixings through an adapter**: A synthetic feed that starts takes the most recent rate that a central bank or public body published, and every publisher it can draw on is a market data provider like any other, with its terms accepted, its vendor ids mapped, and its fixings stored for good.
+
+![ore_studio-v0.0.29-fixings.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-fixings.png)
+
+*The stored fixings of one item, with the series they belong to.*
+
 -   **Add a Hawkes tick arrival process to analytics.quant**: Know what the tick library does, what the port into ores.analytics.quant needs, and where the process fits in the generator design, before any code changes.
+
+![ore_studio-v0.0.29-synthetic-dashboard.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-synthetic-dashboard.png)
+
+*Synthetic market data by provider: what runs, what it simulates and the ticks per minute.*
+
+![ore_studio-v0.0.29-synthetic-provider.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-synthetic-provider.png)
+
+*The feeds of one provider, with their engines and frequencies.*
+
+![ore_studio-v0.0.29-synthetic-calibration.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-synthetic-calibration.png)
+
+*The calibration of a synthetic feed, with its GJR-GARCH daily variance.*
+
 -   **Model suppliers, sessions and feeds**: A system administrator configures a supplier session once, with its endpoint, environment, credential and settings, and adds the publisher feeds that come off it.
 -   **Build the IR curves of every supported currency from public data**: Every currency the synthetic IR feeds support has a published overnight-index curve in the system tenant, bootstrapped from that currency's quotes, and those quotes start from the currency's public overnight rate.
 -   **Present the market data series**: Give engineers a slide series that explains synthetic market data generation, from the raw data to the models, and anchor it on real market data.
 -   **Build the Connectivity screens**: The signed-off Connectivity prototype becomes the screen: the delivery tree, the supplier dashboard, the adapter catalogue, the session and feed records, and the two setup flows, backed by reads and writes.
+
+![ore_studio-v0.0.29-connectivity.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-connectivity.png)
+
+*Connectivity: the delivery tree of suppliers, sessions and feeds.*
+
+![ore_studio-v0.0.29-connectivity-feed.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-connectivity-feed.png)
+
+*A feed and the underlyings it carries.*
+
+![ore_studio-v0.0.29-connectivity-adapters.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-connectivity-adapters.png)
+
+*The adapter catalogue: the code modules the release provides.*
+
 -   **Build the Public rates screens**: Public rates reads the model: publisher and class rows, the routed feed and supplier, freshness from the feed schedule, availability and compare, and a service-aware fetch.
+
+![ore_studio-v0.0.29-public-rates.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-public-rates.png)
+
+*Public rates: each publisher, its terms and its freshness.*
+
+![ore_studio-v0.0.29-public-rates-publisher.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-public-rates-publisher.png)
+
+*One publisher: how its rates arrive, and the rates themselves.*
+
 -   **Support volatility surfaces**: The system holds, builds and serves volatility surfaces as market data, and pricing reads them.
 
 
@@ -86,12 +170,39 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 -   **Bring the existing screens to the entity screen specification**: Every existing screen follows the entity screen specification: paging on the server, people as links, history as a timeline, edit in a dialog, flags, states and words.
 -   **Make every configuration screen follow one standard**: One screen standard covers every configuration that comes off an ORE XML document: the same list, the same record page, the same sections, the same documentation, the same reach, the same history, the same import and the same lifecycle.
 -   **Complete a structure from a screen**: (Describe the user-visible outcome this story delivers.)
+
+![ore_studio-v0.0.29-structure-bond.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-structure-bond.png)
+
+*A package of two bonds, with its tree of legs and how it confirms and prices.*
+
+![ore_studio-v0.0.29-structure-rates.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-structure-rates.png)
+
+*A rates package: a forward rate agreement and a cap or floor.*
+
 -   **Inventory the Qt reference data screens and audit the UX standards**: The epic starts from facts.
 -   **Settle the UX language for record screens**: A reviewer or a check can point at a rule by its identifier, and the rule has one answer.
 -   **Check every record screen against the UX language**: The checks exist before the screens change, so the first screen work proves the checks.
 -   **Take the first reference data topic through the screen pipeline**: One reference data topic goes end to end through the pipeline, and the pipeline is written down so the next topic repeats it without discussion.
 -   **Take the currencies topic through the screen pipeline**: The second topic of Screen pipeline topics, currencies and pairs, goes through the screen pipeline runbook: the currency, the desk group, the currency pair and the currency pair convention, with the classifications their pickers offer.
+
+![ore_studio-v0.0.29-currencies.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-currencies.png)
+
+*Currencies, after the screen pipeline.*
+
+![ore_studio-v0.0.29-currency.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-currency.png)
+
+*A currency record.*
+
 -   **Switch the interface between light and dark, and choose the language from the header**: (Describe the user-visible outcome this story delivers.)
+
+![ore_studio-v0.0.29-light-theme.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-light-theme.png)
+
+*The light theme.*
+
+![ore_studio-v0.0.29-dark-theme.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-dark-theme.png)
+
+*The dark theme.*
+
 -   **Normalise every ORE parameter representation**: Every ORE parameter whose reader accepts more than one rendering of a value is stored in one canonical representation, and the map from a rendering to that representation is data the database holds, not a table compiled into a binary.
 -   **Serve one screen from the new server**: Sign in, one list and the change stream all work on the C++ server, and no screen calls them: the browser still reaches the BFF for everything.
 

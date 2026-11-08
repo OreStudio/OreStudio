@@ -26,11 +26,11 @@ The authorisation queue reads a deal class from the store, and no trade type cod
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6BE6A380-05E2-4FD4-A737-7155A027C8A2][Describe every product type on one page]] |
-| Now          | The class is on the catalogue, a party may override it, and the queue reads it. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review the pull request, then merge. |
+| Next         | Nothing. |
 | Last touched | 2026-11-04                               |
 
 * Acceptance

@@ -48,6 +48,7 @@ domain::product_type product_type_mapper::map(const product_type_entity& v) {
     r.description = v.description.value_or("");
     r.source = v.source.value_or("");
     r.source_ref = v.source_ref.value_or("");
+    r.deal_class = v.deal_class.value_or("");
     r.product_family_code = v.product_family_code.value_or("");
     r.construction = v.construction;
     r.has_options = v.has_options;
@@ -76,6 +77,7 @@ product_type_entity product_type_mapper::map(const domain::product_type& v) {
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.source = v.source.empty() ? std::nullopt : std::optional(v.source);
     r.source_ref = v.source_ref.empty() ? std::nullopt : std::optional(v.source_ref);
+    r.deal_class = v.deal_class.empty() ? std::nullopt : std::optional(v.deal_class);
     r.product_family_code =
         v.product_family_code.empty() ? std::nullopt : std::optional(v.product_family_code);
     r.construction = v.construction;

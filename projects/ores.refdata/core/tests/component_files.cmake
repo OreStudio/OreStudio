@@ -162,6 +162,7 @@ set(files
     "party_eventing_integration_tests.cpp"
     "party_id_scheme_eventing_integration_tests.cpp"
     "party_identifier_eventing_integration_tests.cpp"
+    "party_product_type_deal_class_eventing_integration_tests.cpp"
     "party_relationship_eventing_integration_tests.cpp"
     "party_rls_isolation_tests.cpp"
     "party_role_eventing_integration_tests.cpp"

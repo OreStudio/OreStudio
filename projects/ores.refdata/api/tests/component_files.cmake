@@ -385,6 +385,8 @@ set(files
     "party_id_scheme_protocol_codec_roundtrip_tests.cpp"
     "party_identifier_codec_roundtrip_tests.cpp"
     "party_identifier_protocol_codec_roundtrip_tests.cpp"
+    "party_product_type_deal_class_codec_roundtrip_tests.cpp"
+    "party_product_type_deal_class_protocol_codec_roundtrip_tests.cpp"
     "party_protocol_codec_roundtrip_tests.cpp"
     "party_relationship_codec_roundtrip_tests.cpp"
     "party_relationship_protocol_codec_roundtrip_tests.cpp"

@@ -3634,6 +3634,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.party_product_type_deal_classes.list': {
+        asOf: true,
+        filter: ['party_id', 'id_one_of', 'party_id_one_of'],
+        rows: ['party_product_type_deal_classes'],
+    },
+    'refdata.v1.party_product_type_deal_classes.list_by_party_id': {
+        asOf: false,
+        filter: ['party_id', 'id_one_of', 'party_id_one_of'],
+        rows: ['party_product_type_deal_classes'],
+    },
+    'refdata.v1.party_product_type_deal_classes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.party_relationships.list': {
         asOf: true,
         filter: [],

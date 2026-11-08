@@ -50,6 +50,7 @@ domain::product_type generate_synthetic_product_type(utility::generation::genera
     r.description = std::string(faker::lorem::sentence());
     r.source = std::string("ORE User Guide");
     r.source_ref = std::string("https://www.fpml.org/");
+    r.deal_class = std::string("flow");
     r.product_family_code = std::string("swap");
     r.construction = std::string("native");
     r.has_options = false;

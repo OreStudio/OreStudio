@@ -2124,3 +2124,7 @@ tangled into the runnable script library
 * Variance Calibrations
 
 - [[id:00D9ABEB-CF5C-5B5D-A107-3D0651440DC5][How do I run the variance_calibrations commands from the shell?]]
+
+* Party Product Type Deal Classes
+
+- [[id:031ED9D1-C6DD-5FAD-952B-DF1C069CD510][How do I run the party_product_type_deal_classes commands from the shell?]]

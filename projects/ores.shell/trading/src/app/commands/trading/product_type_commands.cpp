@@ -139,7 +139,7 @@ void product_type_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <name> <description> <source> <source_ref> <product_family_code> "
+        "add <code> <name> <description> <source> <source_ref> <deal_class> <product_family_code> "
         "<construction> <has_options> <has_extension> <instrument_table> <display_order> "
         "<knowledge_note> <reason> <commentary>");
 
@@ -148,7 +148,7 @@ void product_type_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <code> <name> <description> <source> <source_ref> <product_family_code> "
+        "set <code> <name> <description> <source> <source_ref> <deal_class> <product_family_code> "
         "<construction> <has_options> <has_extension> <instrument_table> <display_order> "
         "<knowledge_note> <reason> <commentary> [--version <n>]");
 
@@ -157,7 +157,7 @@ void product_type_commands::register_commands(cli::Menu& root_menu, nats_client&
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <code> <name> <description> <source> <source_ref> "
+        "put-many --count <n> <code> <name> <description> <source> <source_ref> <deal_class> "
         "<product_family_code> <construction> <has_options> <has_extension> <instrument_table> "
         "<display_order> <knowledge_note> <reason> <commentary>");
 
@@ -360,8 +360,8 @@ void product_type_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -372,6 +372,8 @@ void product_type_commands::process_add(std::ostream& out,
         product_type_read_token(req.change.write.source, parsed->positionals[next++], "source");
         product_type_read_token(
             req.change.write.source_ref, parsed->positionals[next++], "source_ref");
+        product_type_read_token(
+            req.change.write.deal_class, parsed->positionals[next++], "deal_class");
         product_type_read_token(req.change.write.product_family_code,
                                 parsed->positionals[next++],
                                 "product_family_code");
@@ -431,8 +433,8 @@ void product_type_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 12 + 2) {
-            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -443,6 +445,8 @@ void product_type_commands::process_set(std::ostream& out,
         product_type_read_token(req.change.write.source, parsed->positionals[next++], "source");
         product_type_read_token(
             req.change.write.source_ref, parsed->positionals[next++], "source_ref");
+        product_type_read_token(
+            req.change.write.deal_class, parsed->positionals[next++], "deal_class");
         product_type_read_token(req.change.write.product_family_code,
                                 parsed->positionals[next++],
                                 "product_family_code");
@@ -514,8 +518,8 @@ void product_type_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 12 + 2) {
-            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 13 + 2) {
+            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -528,6 +532,8 @@ void product_type_commands::process_put_many(std::ostream& out,
             product_type_read_token(change.write.source, parsed->positionals[next++], "source");
             product_type_read_token(
                 change.write.source_ref, parsed->positionals[next++], "source_ref");
+            product_type_read_token(
+                change.write.deal_class, parsed->positionals[next++], "deal_class");
             product_type_read_token(change.write.product_family_code,
                                     parsed->positionals[next++],
                                     "product_family_code");

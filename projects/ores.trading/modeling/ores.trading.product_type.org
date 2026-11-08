@@ -107,6 +107,23 @@ Where in that body the description is stated, as a link.
 std::string("https://www.fpml.org/")
 #+end_src
 
+** deal_class
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Whether a deal of this type is flow or non-flow work: =flow= for the plain
+trades Operations signs off a few rows at a time, =non_flow= for the structured
+ones that get the closer look. Null means nobody has classified the type, which
+the queue reads as =non_flow=: a deal nobody has called routine draws the closer
+look.
+
+#+begin_src cpp :name generator
+std::string("flow")
+#+end_src
+
 ** product_family_code
 :PROPERTIES:
 :type:     text
@@ -214,6 +231,7 @@ std::string("00000000-0000-0000-0000-000000000000")
 | expression |
 |------------|
 | "construction" in ('native', 'scripted', 'container') |
+| "deal_class" is null or "deal_class" in ('flow', 'non_flow') |
 
 ** Extra drops
 

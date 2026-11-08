@@ -89,6 +89,8 @@ bond_view bond_of(const domain::trade_population_slot& slot) {
     return view;
 }
 
+namespace {
+
 const boost::uuids::uuid config_id =
     boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
 const boost::uuids::uuid party_id =
@@ -103,6 +105,8 @@ const boost::uuids::uuid second_bank =
     boost::uuids::string_generator()("55555555-5555-5555-5555-555555555555");
 const boost::uuids::uuid trader_account =
     boost::uuids::string_generator()("66666666-6666-6666-6666-666666666666");
+
+} // namespace
 
 /*
  * How many trades each book of the scene receives. The case states it rather

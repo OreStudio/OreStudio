@@ -7,12 +7,15 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 
 # ✅ Highlights
 
--   **Changes reach the browser as they happen.** The server streams changes, and a response streams while it is made.
--   **The session is held at the door.** Request bodies also have a bounded memory cost.
--   **ores.ore owns the ORE formats.** Every output ORE writes is modelled.
--   **Public fixings and volatility surfaces.** Public fixings are published through an adapter, and volatility surfaces are supported.
--   **Generated code replaces most of sqlgen and reflect-cpp.** The remaining tasks are carried in the product backlog.
--   **The local check gate runs only what a change needs.** CI failures across Windows, Linux and macOS were addressed at the end of the sprint.
+-   **The C++ server takes on the web tier.** Changes stream to the browser as they happen, a response streams while it is made, the session is held at the door, and request bodies are bounded and streamed. Sign in, one list and the change stream work on the new server.
+-   **ores.ore owns the ORE formats.** It alone converts between ORE formats and domain types. Every output family ORE writes is named in one catalogue, and generated trades are proved against the ORE samples.
+-   **One standard for screens.** Record and configuration screens follow one specification, with rules a check can point at. The reference data and currencies topics went through a repeatable screen pipeline. The interface switches between light and dark and chooses its language from the header.
+-   **Market data grew into a service with adapters.** Suppliers, sessions and feeds are modelled, public fixings publish through an adapter, volatility surfaces are held and served, and the Connectivity and Public rates screens read the model.
+-   **Trading moved forward.** The blotter reads a page rather than the book, a trade books as a draft, one page describes every product type, and the ACME books hold a broader trade population.
+-   **Richer synthetic data.** Hawkes tick arrivals and a market-wide regime let generated series speed up together.
+-   **Generated code replaces most of sqlgen and reflect-cpp.** Every wire type has a generated JSON and MessagePack roundtrip test. The remaining tasks are carried in the product backlog.
+-   **Safer writes.** A write checks the version of the acting party's row, and a delete or unclaimed write stays within that party.
+-   **Pricing on native Windows, and a cheaper gate.** Workers price on native x64 Windows with the same engine revision as Linux, and the local gate runs only the checks a change needs.
 
 
 # 🛠️ Key Improvements

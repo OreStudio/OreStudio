@@ -710,13 +710,13 @@ join_composites(Nats& nats,
                                        error);
                 continue;
             }
-            if (auto error = join(composite.anchor.id,
-                                  structure_id,
-                                  std::string(joined->parent_role),
-                                  1,
-                                  std::nullopt);
-                !error.empty()) {
-                failed(error);
+            if (auto join_error = join(composite.anchor.id,
+                                       structure_id,
+                                       std::string(joined->parent_role),
+                                       1,
+                                       std::nullopt);
+                !join_error.empty()) {
+                failed(join_error);
                 continue;
             }
         }

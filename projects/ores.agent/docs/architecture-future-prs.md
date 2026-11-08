@@ -3,35 +3,60 @@
 For project-lead review. Updated: 2026-11-08.
 
 **No new server component or service process is proposed.** All components below
-already exist. The agent is implemented in this fork. Proposed work adds APIs,
-moves rules or connects existing functions.
+already exist. The agent is implemented in this fork. Reuse existing APIs first.
+Server additions below are conditional proposals, not prerequisites for agent work.
 
 Server changes need lead approval and separate PRs. Current work remains
 [agent and evaluations only](business-use-cases-plan.md).
 
+## Where logic belongs, and why
+
+The boundary is who defines and guarantees a business result. A calculation does
+not automatically belong in the server.
+
+| Server responsibility | Agent responsibility |
+| --- | --- |
+| Enforce access, tenant and party rules. | Interpret questions and ask for missing details. |
+| Define stored measures, units, trade terms and booking rules. | Select tools, manage conversation and format replies. |
+| Commit bookings and manage durable report/business processes. | Obtain confirmation and display progress. |
+| Provide a shared result when clients need the same business guarantee. | Calculate temporary analysis from returned data, with its basis and limits stated. |
+
+Before moving a rule, ask:
+
+1. Do other clients need the same rule?
+2. Must the rule hold even if the agent makes a mistake?
+3. Does it require a consistent database view or a transaction?
+4. Does client-side work cause a measured latency or reliability problem?
+
+First check existing APIs. Shared calculations can use a library if no server
+transaction or data guarantee is needed.
+
+Keep current agent aggregation and checks. State the run, dates, units, source
+and coverage. Label client-derived totals. Move logic only for an agreed business
+guarantee or measured problem. Keep defensive agent checks after any move.
+
 ## Existing components and proposed changes
 
-**Existing:** present in this source; not necessarily tested live.
-**Verify:** check for a gap before changing code.
-**Keep:** no component change proposed.
+**Existing:** present in source; not necessarily tested live. **Verify:** check
+for a gap first. **Keep:** no change proposed. **Optional:** not needed for the current agent.
 
 | Existing component | Existing function | Proposed change |
 | --- | --- | --- |
-| `ores.agent` | Read-only chat, MCP tools, clarification, financial summaries and evaluations. Separate deployment. | **Change:** use new server queries in F1–F3. Add reviewed command tools in F5–F7 and F10. |
+| `ores.agent` | Read-only chat/MCP, clarification, summaries, evaluations and separate releases. | **Keep** reads/analysis. Add approved action tools. F1–F3 queries are optional. |
 | `llama.cpp` | Model inference and proposed tool calls. Separate process. | **Keep.** No new inference server. |
-| `ores.reporting` | Report definitions, run triggers, status, stored value rows and sensitivity rows. | **Change F1–F3:** add checked value and risk queries. **Verify/fix F5:** report execution gaps. |
-| `ores.trading` | Trade terms, historical bookings, transactional `book_trade`, draft capture and version-checked `execute_trade`. | **Verify F6–F7:** reuse these operations. Add only missing draft-validation or retry guarantees. |
+| `ores.reporting` | Report definitions, triggers, status, value rows and sensitivity metrics. | **Optional F1–F3:** shared queries. **Verify F5:** execution blockers. |
+| `ores.trading` | Trade terms, historical bookings, transactional booking and version-checked draft execution. | **Reuse F6–F7.** Add only confirmed missing guarantees. |
 | `ores.refdata` | Currencies, counterparties, books, portfolios and hierarchy. | **Keep:** use existing reads. Verify required conventions in F6/F8. |
-| `ores.marketdata` | Series, observations, fixings, identity resolution and dated reads. | **Data F8:** provide missing rate/volatility data. **Verify:** existing APIs before adding point-selection rules. |
-| `ores.analytics` | Pricing-model configuration and product-to-engine mappings. | **Change F9:** proposed owner of a new bid/offer quote API. Lead to confirm. |
-| `ores.ore` | ORE file conversion and report-package preparation. | **Verify/fix F5:** missing sensitivity configuration export found in earlier validation. |
+| `ores.marketdata` | Series, observations, fixings, identity resolution and dated reads. | **Data F8:** missing observations. Keep conversational selection in the agent. |
+| `ores.analytics` | Pricing-model configuration and product-to-engine mappings. | **Conditional F9:** executable quote contract. Confirm owner and existing support. |
+| `ores.ore` | ORE file conversion and report-package preparation. | **Verify F5:** fix the recorded export gap only for affected report paths. |
 | ORE engine and `ores.compute` | Price/risk calculations, worker jobs and output collection. | **Keep:** reuse for F5/F9. Verify required product calculations. |
-| `ores.workflow` | Stored process steps, progress and recovery. | **Change F10:** add a business process definition. Reuse the engine. Verify report steps in F5. |
+| `ores.workflow` | Stored process steps, progress and recovery. | **Conditional F10:** add a missing business process, not a new workflow engine. |
 | `ores.scheduler` / `ores.storage` | Timed jobs / input and output file storage. | **Keep.** No replacement or new API proposed. |
-| `ores.iam` / `ores.service` | Accounts, sessions, caller validation and access checks. | **Verify F4:** existing access controls. Add hosted identity support only if hosting is required. |
+| `ores.iam` / `ores.service` | Accounts, sessions, caller validation and access checks. | **Verify F4:** access controls. Hosted identity only if required. |
 | NATS / `ores.nats` | Requests, replies, events and broker access controls. | **Verify F4:** subject permissions. Change grants only where tests identify a gap. |
 | `ores.http` | HTTP gateway to NATS operations. | **Keep.** The agent continues to use NATS directly. |
-| Main application UI | Manual booking forms and draft capture. | **Change F6:** connect agent-prepared terms to review. Verify product support before extending forms. |
+| Main application UI | Manual booking forms and draft capture. | **Optional F6:** review handoff. Agent-side review needs no main UI change. |
 
 Keep the combined agent/MCP application separate, with one tool executor.
 Business calls use NATS. Model calls use HTTP. No extra gateway is proposed.
@@ -39,21 +64,21 @@ Business calls use NATS. Model calls use HTTP. No extra gateway is proposed.
 Keep the existing structure: `api` defines messages; `core` holds rules, data
 access and handlers; `service` starts the process.
 
-## Proposed work by natural-language question
+## Proposals reviewed against this boundary
 
-Each section separates current support from new work. These are review proposals,
-not approved implementation stages.
+F1–F3 are optional improvements. F4 starts with verification. F5–F10 depend on
+the selected business action. None is required for current agent evaluation.
 
 ### F1 — One stored trade value
 
 **Question:** “What is the base NPV of trade X from run Y?”
 
-**Exists:** Reporting provides result rows and run health. The agent reads these
-and checks dates, units and sources. Some invalid data is withheld.
+**Exists:** Reporting returns rows and run health. The agent checks dates,
+units and sources.
 
-**New:** Add one reporting query that performs these checks and returns a typed
-value with decimal-string amount, currency, run, pricing date, source and status.
-Move these rules from the agent so other clients get the same checked result.
+**Proposal — optional:** Add a checked reporting query if other clients need
+the same result. Fix missing server metadata at its source. Otherwise, keep
+current reads and agent checks.
 
 **Check:** Match an independent client. Reject invalid units and denied access.
 
@@ -61,55 +86,55 @@ Move these rules from the agent so other clients get the same checked result.
 
 **Question:** “What is the NPV of book Group FX Hedges? Show the contributors.”
 
-**Exists:** Trading provides historical bookings. Reference data provides the
-hierarchy. Reporting provides stored values. The agent combines them into totals.
+**Exists:** The agent combines historical bookings, portfolio hierarchy and
+stored values from existing APIs.
 
-**New:** Add a reporting query for membership, coverage, totals and contributors.
-Reuse the existing domain reads. Move aggregation from the agent to reporting.
-Keep historical booking membership separate from direct portfolio assignments.
+**Proposal — optional:** Keep agent totals. Add a reporting summary only for a
+shared business total, consistent historical result set or measured read cost.
+One endpoint alone does not guarantee consistency.
 
-**Check:** Match contributors and totals. Require complete coverage, stable pages
-and one currency.
+**Check:** Verify membership, coverage, stable pages, exact sums and currency.
+Keep booking membership separate from direct portfolio assignments.
 
 ### F3 — Greeks
 
 **Question:** “Show GBP one-year Delta for this book and report run.”
 
-**Exists:** Reporting stores sensitivity metrics. The agent checks and groups
-available Delta, Gamma, signed one-basis-point rate Delta and stated-shift vega.
+**Exists:** Reporting stores metrics. The agent validates and groups available
+Delta, Gamma, signed one-basis-point rate Delta and stated-shift vega.
 
-**New:** Add a reporting risk query. Move grouping, coverage checks, exact sums
-and contributor ranking from the agent. Preserve factors, shifts, scenarios,
-currencies and raw/par separation. This gives all clients the same definitions.
+**Proposal — optional:** Keep grouping and analysis in the agent. The server
+must describe units and shifts correctly. Add shared risk totals only when
+reuse or consistency justifies them.
 
-**Check:** Match CSV results. Missing rows are not zero. Incomplete groups have
-no total. Per-unit Greeks and live vega need separate proof.
+**Check:** Match CSV results. Preserve factor, shift, scenario, currency and
+raw/par groups. These are stored cash differences. Per-unit Greeks need separate
+proof. Missing rows are not zero. Incomplete groups have no total.
 
 ### F4 — Access and separate deployment
 
 **Question:** “Show the risk for my party's books.”
 
-**Exists:** IAM sessions, service access checks, NATS TLS, separate agent releases
-and request timing. Current live checks mainly use an administrator account.
+**Exists:** Sessions, server access checks, NATS TLS, separate agent releases
+and timing. Live checks mainly use an administrator.
 
-**New:** Add low-permission and cross-tenant/party tests. Verify broker subject
-permissions; change configuration only if needed. Hosted MCP authentication is
-new work only if remote hosting is selected. Separate deployment already works.
+**Proposal — verify first:** Test low-permission and cross-tenant/party access.
+Fix only confirmed gaps. Server access rules must hold even if the agent fails.
+Hosted authentication is conditional on remote hosting.
 
-**Check:** Test access, failures and rollback. Measure latency and Windows/Linux
-GPU use. Exclude secrets from logs.
+**Check:** Test expiry, denial, failures and rollback. Measure latency. Verify
+Windows/Linux GPU use. Exclude secrets from logs.
 
 ### F5 — Start a report
 
 **Question:** “Run the approved NPV report for book X at date Y.”
 
-**Exists:** Reporting has `trigger_report_instance` and run status. ORE packaging,
-workflow execution and compute workers exist. The agent has no execution tool.
+**Exists:** Report trigger/status APIs, packaging, workflow and compute workers.
+The agent has no execution tool.
 
-**New:** Add an agent tool for reviewed report submission. Verify that the existing
-trigger supports user context and safe retries. Earlier validation found package
-export and pending-to-running defects; fix them if still present. See the
-[record](greek-validation.md). No new report engine is proposed.
+**Proposal — agent integration first:** Reuse the trigger. Server execution
+must survive agent failure. Add only missing user-context or outcome guarantees.
+Recheck the recorded [export/run-state defects](greek-validation.md) before fixing them.
 
 **Check:** Confirm scope, date and resource use. Resolve timeouts before retries.
 Closing chat does not cancel a report.
@@ -118,68 +143,68 @@ Closing chat does not cancel a report.
 
 **Question:** “Buy 20M EUR/USD six-month forward with counterparty X.”
 
-**Exists:** Trading supports draft capture and product records. The main web
-application has manual booking/draft support. The agent has no booking tools.
+**Exists:** Trading draft capture, product records and manual web booking.
+The agent has no booking tools.
 
-**New:** Extract terms in the agent, ask for missing details and open a review
-flow. Reuse trading operations. Verify the chosen product's validation and UI
-support before proposing extra server APIs or form changes.
+**Proposal — agent/UI work first:** Extract terms, ask questions and show a
+review. An unsaved draft can stay in the agent. Trading validates saved records.
+Extend server validation or UI handoff only for a confirmed product gap.
 
-**Check:** Allow correction or discard. A saved server draft must not trigger
-live processing.
+**Check:** Allow correction or discard. A saved draft must not trigger live processing.
 
 ### F7 — Confirm a booking
 
 **Question:** “Book this reviewed draft.”
 
-**Exists:** `book_trade` writes related records in one transaction. A repeated
-trade ID returns a conflict. `execute_trade` takes a draft live and checks its
-version. Basic transactional booking is not new work.
+**Exists:** Transactional `book_trade`; duplicate-ID conflicts; version-checked
+`execute_trade`. Basic transactional booking already exists.
 
-**New:** Connect explicit user confirmation to these operations. Bind it to the
-exact draft version, user and party. Add durable retry/result handling only where
-existing operations are insufficient. A duplicate-ID conflict alone does not
-return the original successful booking result.
+**Proposal — reuse first:** Bind agent confirmation to the exact draft version, user and party.
+Use existing transactions and read back the trade ID and terms after a timeout.
+Add server retry support only if existing reads cannot establish the outcome.
+A duplicate-ID conflict alone does not prove success.
 
-**Check:** One confirmation creates one booking. Test changed drafts, revoked
-approval, repeats, restarts and uncertain outcomes.
+**Check:** One confirmation creates one booking. Test edits, repeats, expiry,
+revocation, restarts and uncertain outcomes.
 
 ### F8 — Add products and market data
 
 **Question:** “Show the six-month GBP rate.” Later: “Prepare an option draft.”
 
-**Exists:** Market-data and product models. The agent has FX spot and basic rate
-lookup tools. The evaluated local data lacks a positive supported IR lookup.
+**Exists:** Market/product models and agent FX/rate tools. The evaluated local
+data lacks a positive supported IR lookup.
 
-**New:** Supply required data through a separate data task. Verify product support
-before adding agent tools. Extend trading validation, conventions or forms only
-for confirmed gaps. Existing models do not prove a complete booking flow.
+**Proposal — data first:** Supply observations separately. Missing data does not
+justify API redesign. Add tools for supported products. Change server validation
+or conventions only for confirmed product gaps.
 
-**Check:** Record each product's supported functions. Label test data and gaps.
+**Check:** Record supported functions and data gaps for each product.
 
 ### F9 — Bid and offer prices
 
 **Question:** “Give me a bid and offer for a EUR/USD risk reversal.”
 
-**Exists:** Pricing configuration, engine calculations and stored NPV reads.
-No executable bid/offer quote flow has been verified for this use case.
+**Exists:** Pricing configuration and engine calculations. No executable quote
+flow has been verified for this use case.
 
-**New:** Propose a quote API in `ores.analytics`, subject to lead approval.
-It needs product pricing, volatility data, spreads, limits, quote ID and expiry.
-The agent asks for terms and displays the quote. Stored NPV is not a quote.
+**Proposal — required for executable quotes:** Verify existing pricing first.
+Add only the missing quote contract; proposed owner: `ores.analytics`.
+The server guarantees terms, pricing basis, spreads, limits, ID and expiry.
+The agent collects terms and presents results. Stored NPV cannot supply this guarantee.
 
-**Check:** Verify sides, units, expiry and linkage to reviewed booking.
+**Check:** Verify prices, sides, units, expiry and linkage to reviewed booking.
 
 ### F10 — Business processes with saved progress
 
 **Question:** “Start the approved funding process and show its progress.”
 
-**Exists:** The workflow engine stores steps and supports recovery. This does not
-prove that a funding or wash process exists.
+**Exists:** A workflow engine with saved steps and recovery. A funding or wash
+process has not been established here.
 
-**New:** Define one process in its business component. Add workflow steps and an
-agent start/status tool. The lead must select the business owner. Reuse the engine;
-do not let the model generate SQL, shell commands or server step sequences.
+**Proposal — conditional business work:** Reuse an existing process or have its
+business owner define one. Server workflows must survive agent downtime.
+The agent starts work and reads status. Ordinary read-only tool sequences can
+stay in the agent.
 
 **Check:** Verify one process ID, recovery, duplicates and supported cancellation.
 
@@ -189,10 +214,10 @@ Confirm the gap in the current API and deployment. Each PR needs an owner,
 API version, access rules and rollback plan. Declare schema, native-build and
 NATS changes. Use other components' APIs, not their SQL tables.
 
-For F1–F3, compare old and new results. Switch one tool at a time, then remove
-its duplicate financial rules. Keep response and identity checks. Server errors
-must not silently activate old calculations. Model output cannot grant permission
-or replace user confirmation.
+If F1–F3 are approved, compare old and new results. Move one tool at a time.
+Remove only the rules covered by the new server guarantee. Keep response and
+identity checks. Do not silently replace a failed server guarantee with local
+analysis. Model output cannot grant permission or replace user confirmation.
 
 ## Historical backend addition excluded from this branch's changes
 
@@ -203,9 +228,9 @@ separate agreement. The [historical notes](valuation-validation.md) are not setu
 
 ## Decisions for the lead
 
-1. Confirm the changed responsibilities in the table; retain the existing components.
-2. Select the first server query. Proposed start: F1, then F2 and F3.
-3. Confirm gaps before approving booking, report, market-data or quote work.
+1. Keep the server unchanged for current agent development and evaluation.
+2. Decide whether other clients, data consistency or measured performance justify F1–F3.
+3. Select the next business action. Approve only the server gaps that block it.
 
 Source checks: [report operations](../../ores.reporting/modeling/ores.reporting.operations.org),
 [booking operations](../../ores.trading/modeling/ores.trading.trade_operations.org),

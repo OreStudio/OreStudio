@@ -8,7 +8,7 @@
 #+filetags: :ticks_smoke_log_path:sprint_29:v0:
 #+owner: marco
 #+branch: hotfix/ticks-smoke-log-path
-#+pr:
+#+pr: 4497
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-08
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4497][#4497]] | [compass] Read the marketdata log the launcher writes |
 
 * Review
 

@@ -256,7 +256,8 @@ TEST_CASE("lmm one-tick forwards and optionlets are priced exactly",
             Catch::Approx(0.0).epsilon(1e-15));
 }
 
-TEST_CASE("lmm one-tick increments follow the drift", "[long_running][libor_market_model_process]") {
+TEST_CASE("lmm one-tick increments follow the drift",
+          "[long_running][libor_market_model_process]") {
     // The Euler step applies the drift and the diffusion from the
     // current state, so the mean increment of each rate is its
     // spot-measure drift times dt; the diffusion contributes nothing
@@ -355,7 +356,8 @@ TEST_CASE("lmm increment variance scales with dt", "[long_running][libor_market_
     }
 }
 
-TEST_CASE("lmm discounted rates are martingales up to fixing", "[long_running][libor_market_model_process]") {
+TEST_CASE("lmm discounted rates are martingales up to fixing",
+          "[long_running][libor_market_model_process]") {
     // The defining LMM property: under the spot measure the rate
     // rebased by the rolled money-market account is a martingale up to
     // its fixing time,
@@ -403,7 +405,8 @@ TEST_CASE("lmm discounted rates are martingales up to fixing", "[long_running][l
     }
 }
 
-TEST_CASE("lmm displacement keeps the log domain positive", "[long_running][libor_market_model_process]") {
+TEST_CASE("lmm displacement keeps the log domain positive",
+          "[long_running][libor_market_model_process]") {
     // The volatility applies to L_i + s_i: the log domain L_i + s_i >
     // 0 is the model's support, and with a moderate volatility the
     // Euler step stays inside it over long runs. (With a very high

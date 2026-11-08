@@ -168,7 +168,8 @@ std::vector<std::string> ids_in(const conventions& document, const std::string& 
 // that come back from the export are the rows that went in, field for field,
 // because the mapper stores canonical spellings and the value is what has to
 // survive.
-TEST_CASE("every_conventions_family_round_trips", "[long_running][ore][xml][roundtrip][conventions]") {
+TEST_CASE("every_conventions_family_round_trips",
+          "[long_running][ore][xml][roundtrip][conventions]") {
     for (const auto& f : families()) {
         INFO("family " << f.key);
         int files = 0;
@@ -442,7 +443,8 @@ TEST_CASE("conventions_cross_currency_basis_without_a_part_is_refused",
 // The element is one central row and three parts. Every convention in the
 // corpus lands its central row and exactly one of each part, each leg carries
 // its own index and tenor, and the export writes the document back unchanged.
-TEST_CASE("conventions_cross_currency_basis_round_trips", "[long_running][ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_cross_currency_basis_round_trips",
+          "[long_running][ore][xml][roundtrip][conventions]") {
     namespace rd = ores::refdata::domain;
     int files = 0;
 
@@ -559,7 +561,8 @@ TEST_CASE("conventions_commodity_future_without_its_contract_terms_is_refused",
 // parts. Every convention in the corpus lands its central row and its contract
 // terms, an optional part exactly when the element states that block, and the
 // export writes the document back unchanged.
-TEST_CASE("conventions_commodity_future_round_trips", "[long_running][ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_commodity_future_round_trips",
+          "[long_running][ore][xml][roundtrip][conventions]") {
     namespace rd = ores::refdata::domain;
     int files = 0;
     std::size_t anchors = 0;
@@ -702,7 +705,8 @@ TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted",
     CHECK(unmodelled.at("ZeroInflationIndex.RebasingEvents") == 1);
 }
 
-TEST_CASE("conventions_tenor_basis_swap_round_trips", "[long_running][ore][xml][roundtrip][conventions]") {
+TEST_CASE("conventions_tenor_basis_swap_round_trips",
+          "[long_running][ore][xml][roundtrip][conventions]") {
     int files = 0;
 
     for (const auto& path :

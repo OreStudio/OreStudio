@@ -200,7 +200,8 @@ TEST_CASE("p_minus of a skewed mixture matches its sample estimate", "[gjr_garch
     CHECK(std::abs(total / n - closed) < 3e-3);
 }
 
-TEST_CASE("p_minus of a day matches a sample of standardised daily sums", "[long_running][gjr_garch]") {
+TEST_CASE("p_minus of a day matches a sample of standardised daily sums",
+          "[long_running][gjr_garch]") {
     const mixture skewed{
         .means = {0.0004, -0.0016}, .stdevs = {0.001, 0.003}, .weights = {0.8, 0.2}};
     constexpr int ticks = 50;

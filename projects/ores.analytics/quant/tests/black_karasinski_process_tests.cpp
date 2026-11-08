@@ -414,7 +414,8 @@ TEST_CASE("build_black_karasinski_tree matches mean and variance at a shifted no
     CHECK(aligned.child_probabilities[2] == Catch::Approx(1.0 / 6.0).epsilon(1e-12));
 }
 
-TEST_CASE("build_black_karasinski_tree is valid for any horizon", "[long_running][black_karasinski_process]") {
+TEST_CASE("build_black_karasinski_tree is valid for any horizon",
+          "[long_running][black_karasinski_process]") {
     // The failure mode of a drift-matched binomial: horizons with
     // kappa*T >> 1 push the probabilities outside [0, 1]. The centered
     // adaptive trinomial must keep every probability valid, every branch

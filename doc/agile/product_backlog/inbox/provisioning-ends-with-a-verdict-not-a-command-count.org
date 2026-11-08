@@ -3,6 +3,20 @@
 :END:
 #+title: A provisioning run should end with one line that says whethe…
 #+description: A provisioning run should end with one line that says whether it succeeded, and if not, which step failed and why. Today it ends with 'Script complete: 5 commands executed', which says the script ran and nothing about what the tenant got.
+#+type: capture
+#+level: cross
+#+filetags: :shell:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A provisioning run should end with one line that says whether it succeeded, and if not, which step failed and why. Today it ends with 'Script complete: 5 commands executed', which says the script ran and nothing about what the tenant got.
+
+* Why
 
 The evidence is my own reporting error. I ran the ACME provisioning script, filtered its output through grep for the words I expected, saw nothing, and concluded that the run had never reached generate_trades. The output had been there: the script runner prints 'Script complete: N commands executed' or 'Script aborted at line N: <command>', and neither line matched my filter. The tool was clear and I destroyed the evidence.
 
@@ -19,26 +33,11 @@ The requirement:
 4. The same for the workflow poller: when a step fails, the last line should be that failure and not the enclosing command.
 
 And separately, a rule for me: a compass command is never piped, because a filter hides both the output and the exit status. That rule exists in CLAUDE.md and I broke it here.
-#+type: capture
-#+level: cross
-#+filetags: :shell:
-#+created: 2026-10-28
-#+updated: 2026-10-28
-
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
-
-* What
-
-(One paragraph: the idea.)
-
-* Why
-
-(Motivation, problem being solved, related context.)
 
 * References
 
--
+- Recovered from commit ca89e4312b on branch hotfix/publish-the-commodity-catalogue.
 
 * See also
 
--
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]]

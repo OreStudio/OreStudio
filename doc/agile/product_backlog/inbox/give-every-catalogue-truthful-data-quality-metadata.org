@@ -3,6 +3,20 @@
 :END:
 #+title: Every catalogue in the platform is seeded with the same boil…
 #+description: Every catalogue in the platform is seeded with the same boilerplate data quality metadata, so none of it says where the data came from or what it is worth.
+#+type: capture
+#+level: cross
+#+filetags: :dq:
+#+created: 2026-10-28
+#+updated: 2026-10-28
+
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every catalogue in the platform is seeded with the same boilerplate data quality metadata, so none of it says where the data came from or what it is worth.
+
+* Why
 
 Both the commodity and the equity catalogue record: methodology 'OreStudio Code Generation Methodology', source system ORESTUDIO, licence 'Internal Use Only', business context 'Seed data for the <x> Librarian bundle', as-of date the day the seed ran, coding scheme NONE, origin Primary, nature Actual, treatment Raw.
 
@@ -18,26 +32,11 @@ Almost every one of those is wrong for these two datasets:
 The DQ model already has the fields for this: coding_scheme_code, origin_code, nature_code, treatment_code, methodology_id, source_system_id, business_context, upstream_derivation_id, lineage_depth, as_of_date, license_info. The requirement is that a catalogue states them truthfully, that the identifier scheme and the source document are recorded per row where they differ, and that an editorial decision such as assigning a currency is recorded as a decision rather than silently applied.
 
 Two things are needed beyond the fields: a source system for the ORE corpus, and a place to record a per-row origin, which the artefact tables do not have today.
-#+type: capture
-#+level: cross
-#+filetags: :dq:
-#+created: 2026-10-28
-#+updated: 2026-10-28
-
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
-
-* What
-
-(One paragraph: the idea.)
-
-* Why
-
-(Motivation, problem being solved, related context.)
 
 * References
 
--
+- Recovered from commit 2e346d7431 on branch hotfix/publish-the-commodity-catalogue.
 
 * See also
 
--
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]]

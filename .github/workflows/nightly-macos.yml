@@ -280,6 +280,8 @@ jobs:
         run: sccache --show-stats
 
       - name: Upload a Build Artifact
+        # CTest.cmake builds no package for a macOS debug build.
+        if: ${{ matrix.buildtype == 'release' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja

@@ -436,7 +436,9 @@ _RENDERER = pystache.Renderer(escape=lambda s: s)
 
 # A member of one of these types is indeterminate unless its struct sets it.
 _VALUE_INIT_CPP_TYPES = frozenset({
-    "bool", "int", "long", "long long", "short", "unsigned", "double", "float",
+    "bool", "char", "int", "long", "long long", "short", "unsigned",
+    "unsigned int", "unsigned long", "unsigned long long", "double", "float",
+    "std::ptrdiff_t",
     "std::int8_t", "std::int16_t", "std::int32_t", "std::int64_t",
     "std::uint8_t", "std::uint16_t", "std::uint32_t", "std::uint64_t",
     "std::size_t",

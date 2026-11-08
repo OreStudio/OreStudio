@@ -26,9 +26,9 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <atomic>
-#include <memory>
 #include <cstddef>
 #include <functional>
+#include <memory>
 #include <type_traits>
 #include <utility>
 

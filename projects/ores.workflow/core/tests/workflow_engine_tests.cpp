@@ -2085,9 +2085,10 @@ TEST_CASE("a finished run carries the times it ran and was last touched", "[engi
         return nullptr;
     }();
     REQUIRE(second != nullptr);
+    const auto second_step_id = boost::uuids::to_string(second->id);
 
     f.engine->on_step_completed(as_message(
-        completion_for(instance_id, boost::uuids::to_string(second->id), step_outcome::completed)));
+        completion_for(instance_id, second_step_id, step_outcome::completed)));
 
     const auto finished = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(finished.size() == 1);
@@ -2137,7 +2138,7 @@ TEST_CASE("a finished run carries the times it ran and was last touched", "[engi
     // The completion is when the run finished, not when its row was last
     // written: a redelivery of the last answer must not move it on.
     f.engine->on_step_completed(as_message(
-        completion_for(instance_id, boost::uuids::to_string(second->id), step_outcome::completed)));
+        completion_for(instance_id, second_step_id, step_outcome::completed)));
     const auto after_duplicate = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(after_duplicate.size() == 1);
     REQUIRE(after_duplicate.front().completed_at.has_value());

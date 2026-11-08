@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: CE5E2BC9-1F99-4707-A2F7-D830D5ED498B
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: Recurring System 2 health reviews of sprint 29, covering goal alignment, load, PR velocity, story and task balance, focus signal, and bookkeeping hygiene.
+#+type: story
+#+level: s2
+#+filetags: :sprint_29:v0:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A System 2 review of sprint 29. Each review measures the dimensions the skill names, challenges its own readings, and writes one verdict with the evidence behind it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-08                               |
+
+* Acceptance
+
+- The review measures goal alignment, sprint load, PR velocity, story and task balance, focus signal, velocity and the overall verdict.
+- Every number in the review is a measurement with the command that produced it and the commit it was taken at, or is marked as an estimate with its basis.
+- The sprint's Health Review table carries the review's summary row.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1E86440B-ECED-416C-A3CC-1FFD9A7AF18A][Health review 1 — sprint 29 overrun analysis]] | DONE | 2026-11-08 | 2026-11-08 | System 2 health review 1 of sprint 29. |
+
+* Decisions
+
+* Out of scope
+
+-

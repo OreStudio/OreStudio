@@ -48,7 +48,6 @@ import type { InstrumentUnderlying } from './instrument_underlying.js';
 export interface BondInstrumentData {
     instrument: BondInstrument;
     issue: BondIssue;
-    instrument_underlyings: InstrumentUnderlying[];
     call_dates: BondIssueCallDate[];
     conversion_targets: BondIssueConversionTarget[];
     option: BondOption | null;

@@ -74,14 +74,6 @@ The instrument header row: identity, issue_id and audit.
 
 The issue row holding the bond terms of this trade's security.
 
-** instrument_underlyings
-:PROPERTIES:
-:cpp_type: std::vector<instrument_underlying>
-:END:
-
-The underlying block: every underlying a bond or a convertible names, in the
-order the document states them.
-
 ** call_dates
 :PROPERTIES:
 :cpp_type: std::vector<bond_issue_call_date>

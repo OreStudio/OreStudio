@@ -8,7 +8,7 @@
 #+filetags: :take_the_currencies_topic_through_the_screen_pipeline-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/test-and-sign-off-the-screens-of-the-currencies-topic
-#+pr:
+#+pr: 4507
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4507][#4507]] | [refdata] Test the currencies screens and fill their sign off sheets |
 
 * Review
 

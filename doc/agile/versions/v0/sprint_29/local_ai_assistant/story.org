@@ -21,11 +21,11 @@ Provide the independent agent/MCP application described in issue #4295, backed o
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] |
-| Now           | Local agent 0.1.9 delivered; CPU CI validated on Windows/Linux; upstream review next.                       |
+| Now           | Nothing. |
 | Waiting on    | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
-| Next          | Review the read-only delivery PR; agree separate business/security/GPU follow-ups.            |
+| Next          | Nothing. |
 | Last touched  | 2026-11-08                               |
 
 * Acceptance

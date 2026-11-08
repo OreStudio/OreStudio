@@ -22,15 +22,16 @@ Finish the work carried out of sprint 28 before drawing anything new from the pr
 
 | Field          | Value                                  |
 |----------------+----------------------------------------|
-| State          | STARTED                              |
+| State          | DONE |
 | Parent version | [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]] |
 | Previous       | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Start          | 2026-10-24                               |
-| End (expected) | 2026-10-31                           |
-| Now            | Stories resolved for the close, apart from the sqlgen story. |
-| Waiting on     | PR #4492 and the sqlgen story.         |
-| Next           | Resolve the sqlgen story, then run the close. |
-| Release Notes  | Added at end of sprint.                |
+| End (expected) | 2026-10-31 |
+| End            | 2026-11-08 |
+| Now            | Nothing. |
+| Waiting on     | Nothing. |
+| Next           | Nothing. |
+| Release Notes  | [[id:A1B62B01-E23B-4E10-80EC-ACB1310FFCCE][ORE Studio Sprint 29 – Release Notes]] |
 | Last touched   | 2026-11-08                               |
 
 * Stories
@@ -118,7 +119,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:AC70CC11-7819-419A-A317-E543DE837160][Carry a market-wide arrival regime]] | DONE |  | 2026-11-08 | Let the whole market speed up together: an exogenous calm/active state and a shared endogenous intensity, driven by one clock per run, so a panic is representable and cross-series counts correlate. |
 | [[id:A600B721-6BE3-4750-AF03-2438C3A06F94][Carry one hundred thousand feeds on the data path]] | DONE | 2026-10-26 | 2026-11-08 | Rebuild the data path so the system carries 100,000 feeds on one machine shared by ten environments: pooled long-lived connections, a transaction API, bounded concurrency, ticks stored once and written in bulk, a bounded tick store, work pushed to the grid, and built-in measurement. |
 | [[id:170E2C8C-5DF7-4608-8C52-6951F3938F0F][Decide whether codegen replaces sqlgen and reflect-cpp with generated raw code]] | DONE | 2026-10-26 | 2026-11-03 | Analyse whether the generator should emit raw SQL, MessagePack and JSON code for every entity in place of sqlgen and reflect-cpp. |
-| [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] | STARTED |  |  | Generated statements on a thin libpq layer replace sqlgen, and generated JSON and MessagePack codecs replace reflect-cpp, in every component, until neither dependency is left. |
+| [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] | ABANDONED |  | 2026-11-08 | Generated statements on a thin libpq layer replace sqlgen, and generated JSON and MessagePack codecs replace reflect-cpp, in every component, until neither dependency is left. |
 | [[id:CE5E2BC9-1F99-4707-A2F7-D830D5ED498B][Sprint health review — System 2 analysis]] | DONE | 2026-11-08 | 2026-11-08 | Recurring System 2 health reviews of sprint 29, covering goal alignment, load, PR velocity, story and task balance, focus signal, and bookkeeping hygiene. |
 | [[id:8550935B-A0F4-4BAD-95F3-D3E03B45E044][Carry a large body without holding it]] | DONE |  |  | An accepted body is still read whole into a string and held for the life of the request, so a 256 MiB upload costs 256 MiB resident. Stream the accepted body to where it is going under the same per-route limit, with a stall deadline, and stream the storage routes' upload and download from the file on disk. |
 | [[id:96314BCD-3629-43ED-A4C6-F794E7E8A6EB][Book a trade as a draft]] | DONE |  |  | A draft is a trade the desk has captured and not concluded, and the completion executes drafts. No screen can book one: the booking screen always books live, so the draft path cannot be reached and a tester cannot create the leg a completion takes live. |
@@ -186,8 +187,8 @@ of the application join as their own stories under this heading.
 | [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] | DONE | 2026-11-03 | 2026-11-08 | Add volatility surfaces to the system: their structure, quotes, construction and storage, and how they flow to pricing. A long arc that starts from a documented architecture. |
 | [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]] | ABANDONED |  | 2026-11-08 | Every environment holds years of daily public fixings from a static DQ snapshot, and the adapter fetches only the gap to today. |
 | [[id:839D0CD2-7684-4580-8C60-AE68C9DAD478][Stamp the time a build starts and finishes]] | DONE | 2026-11-03 | 2026-11-03 | compass build prints and logs the wall-clock start and finish of a build, so a reader can tell when a build ran. |
-| [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] | BACKLOG | | | The local check gate runs every heavy check for any C++ change, so a test-only header change pays for the database rebuild, the tick smoke and all 98 suites. |
-| [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] | STARTED | | | Build standalone agent/MCP stages for issue #4295 with NATS-only tools and separate CUDA inference. |
+| [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] | DONE | | 2026-11-08 | The local check gate runs every heavy check for any C++ change, so a test-only header change pays for the database rebuild, the tick smoke and all 98 suites. |
+| [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] | DONE | | 2026-11-08 | Build standalone agent/MCP stages for issue #4295 with NATS-only tools and separate CUDA inference. |
 | [[id:A5920AD8-3AF8-4D7D-B98E-976D3F3EF4DE][Support native Windows pricing and local services]] | DONE | | | Native ORE package, local services, build portability and account-preservation evidence. |
 | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve one screen from the new server]] | DONE |  | 2026-11-08 | Sign in, one list and the change stream all work on the C++ server, and no screen calls them: the browser still reaches the BFF for everything. Put one screen on the C++ server behind a flag, with the BFF serving every other screen, so the shape is proven against a real person before the rest is ported. |
 | [[id:694694B1-82AE-464F-ABB0-B0786BFEAE0A][Hotfix: clear the six failing checks on main]] | DONE |  |  | The local gate on main fails six checks that no branch owns: component-drift names eight generated files that no longer match their models, unity-collisions finds five file-local names shared by two ores.synthetic test units, er-diagram is stale, money-decimal-columns types seven continuous trading columns as exact decimals, bff-list-requests is missing instrument_underlyings, and ticks-smoke books a bond whose call date the run already stored. |
@@ -195,9 +196,14 @@ of the application join as their own stories under this heading.
 
 * Achievements
 
-Milestones worth capturing as they happen, so the release notes at
-sprint close have the evidence to hand. Add a dated =** subheading=
-per milestone, with any screenshot via =[[proj:assets/images/<file>.png]]=.
+Sprint 29 closed with 69 stories DONE and 61 ABANDONED, nearly all of the latter carried to the product backlog.
+
+- The browser hears changes as they happen. The server streams them and coalesces them per window, and responses stream while they are made.
+- The session is held at the door, and request bodies have a bounded memory cost.
+- =ores.ore= is the only owner of ORE formats, and every ORE output is modelled.
+- Public fixings are published through an adapter, and volatility surfaces are supported.
+- Most of the move from sqlgen and reflect-cpp to generated code landed. The rest is carried.
+- The local check gate runs only the checks a change needs, and CI failures on Windows, Linux and macOS were addressed in PR #4500.
 
 * Captures
 
@@ -258,4 +264,27 @@ Steady upward slope is healthy; plateauing signals a stall.
 
 * Retrospective
 
-(Filled at sprint close.)
+Health review 1 graded the sprint RED on day 16 of a planned 7.
+
+** What went well
+
+- Output and flow were high. 786 PRs merged by review day, with a median merge cycle of 0.06 hours.
+- The streaming, session and ORE ownership stories each finished as whole outcomes.
+
+** What hurt
+
+- The mission was to finish the carried work. The sprint closed about 5% of it and drew in 68 new stories.
+- The sprint ran eight days past its planned end, with 38 stories in flight on review day.
+- The sprint 28 review gave the same finding, and the count still rose. A written recommendation did not change behaviour.
+- Bookkeeping drifted: 105 audit findings on review day, and =compass sprint status= disagreed with the sprint table at close.
+- The local gate takes hours, so PR #4500 merged before it finished and before CI reported.
+
+** What changes
+
+- Enforce a limit on STARTED stories in =compass=, at the point a story starts.
+- Make =compass sprint status= read the same state as the sprint table.
+- Shorten the local gate so that it is run to the end.
+
+* Release Notes
+
+See [[file:release_notes.org][release_notes.org]] for the full narrative.

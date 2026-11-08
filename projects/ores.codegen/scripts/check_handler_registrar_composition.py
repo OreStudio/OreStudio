@@ -42,7 +42,8 @@ DECLARATION = re.compile(r"register_(\w+)_handlers\s*\(")
 SUBJECT = re.compile(r"(\w+_request)::nats_subject")
 
 CHECKED_COMPONENTS = ("ores.assets", "ores.compute", "ores.dq", "ores.marketdata",
-                      "ores.scheduler", "ores.synthetic", "ores.variability")
+                      "ores.scheduler", "ores.synthetic", "ores.trading",
+                      "ores.variability")
 
 
 def registrar_entities(component: Path) -> dict[str, Path]:

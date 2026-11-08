@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 372A50CB-CC82-434D-B0B8-015E851CFAB6
+:END:
+#+title: Conventions spell calendars in a vocabulary ORE refuses
+#+description: The convention seed holds refdata.calendars codes such as UnitedStates.Settlement, which ORE's parseCalendar refuses; ORE reads its own calendar names, such as US or US-SOFR, and the tree has no translation between the two vocabularies.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:ore:conventions:calendar:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A convention row holds a calendar, and two vocabularies spell one: refdata.calendars
+holds codes such as =UnitedStates.Settlement=, =UnitedStates.SOFR= and
+=UnitedKingdom.Settlement=, while ORE reads its own calendar names, =US=,
+=US-SOFR=, =TARGET=, and refuses everything else. The convention populate
+scripts use the first vocabulary. ORE's =parseCalendar= refuses all three of
+those dotted spellings, so a convention exported as it stands names a calendar
+the engine cannot build.
+
+* Why
+
+The index conventions were mined from the engine and now carry ORE's calendar
+names, which is what =ores_refdata_validate_calendar_fn= reads and the parser
+accepts. The currency pair conventions were not:
+=refdata_currency_pair_convention_calendars_populate.sql= and its seed twin
+still hold =UnitedStates.Settlement= and =UnitedKingdom.Settlement=.
+
+Nothing translates between the two vocabularies today. Either the seed moves
+onto ORE's names, as the index conventions did, or the export translates, and
+that choice is what this capture is for. The oracle is cheap: the
+=code_catalogue= harness tool reads a code and prints the name ORE reports for
+it, so the inverse table can be derived rather than written by hand.
+
+* References
+
+- =projects/ores.sql/populate/refdata/refdata_currency_pair_convention_calendars_populate.sql=
+- =projects/ores.sql/populate/refdata/refdata_currency_pair_convention_calendars_seed_populate.sql=
+- =projects/ores.sql/populate/refdata/refdata_calendar_names_validate_fn_create.sql=
+- =external/ore/tools/datum_catalogue/code_catalogue.cpp=
+- [[id:014A3FB0-36D9-44A5-8236-E60EFF7C1CA8][Seed ORE's built-in index conventions]] — where the same fault was found and fixed for the index conventions.
+
+* See also
+
+- [[id:014A3FB0-36D9-44A5-8236-E60EFF7C1CA8][Seed ORE's built-in index conventions]]

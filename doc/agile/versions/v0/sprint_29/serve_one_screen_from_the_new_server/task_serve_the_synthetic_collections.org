@@ -97,6 +97,10 @@ task and name that file in the Command column.
 | Simulation area, BFF routes | 28 | counted from the inventory's table | this branch |
 | Simulation area, new server's routes | 10 | counted from the inventory's table | this branch |
 | Components the drift check knows | 24, of which this branch changes 2 | =check_component_drift.py --changed --base origin/main= | this branch |
+| The gate's failing suite | =ores.marketdata.service.tests=, 2 of 206 cases | =ctest --preset linux-clang-release-ninja -j 4= | this branch |
+| The same suite alone | 206 cases, 1848 assertions, 29.8 s, passing | =ctest -R ores.marketdata.service.tests= | this branch |
+| The same suite beside its whole family | passing, 27.0 s | =ctest -R ores.marketdata -j 4= | this branch |
+| Machine load when the gate's ctest ran | 7.1 on 8 cores, from the other worktrees | =uptime= | this branch |
 
 * Notes
 
@@ -160,7 +164,9 @@ own token, so the synthetic service still decides.
 The part is proven mechanically rather than live: the fleet's database does not
 match this checkout, so no browser run is possible. The evidence is the compiled
 unit's two cases and 41 assertions, the inventory's ten rows for the area, the
-link check seeing the new aggregate, and the gate.
+link check seeing the new aggregate, and the gate, whose every check passes but
+whose ctest phase fails on a marketdata deadline this branch does not touch
+(below).
 
 The area is now one of the six the new server serves, at 10 routes against the
 BFF's 28. The remaining nineteen synthetic models are the same five mechanical
@@ -168,3 +174,23 @@ steps and are the next increment.
 
 =doc/recipes/http/how_do_i_add_an_adapter_part.org= states the order, so the
 next part is copied rather than rediscovered.
+
+* The gate's one red check, and why it is not this branch's
+
+=ctest= fails in =ores.marketdata.service.tests=: two cases of 206, both
+=wait_until= calls with a sixty-second budget in
+=app_feed_ingest_loop_tests.cpp= (:1123 and :1310). The branch changes no
+marketdata file, so the failure is a property of the machine, not of the code.
+Measured, three ways:
+
+- the suite alone passes, 206 cases and 1848 assertions, in 29.8 s;
+- the suite beside every marketdata suite at =-j 4= passes, in 27.0 s;
+- the suite inside the gate's full =ctest -j 4= fails, and in that run it
+  started beside three other database-heavy suites (=ores.refdata.core.tests=
+  240 s, =ores.web.tests= 124 s, =ores.reporting.core.tests= 98 s).
+
+The machine was at load 7.1 on 8 cores while the gate ran, because the fleet's
+other worktrees were building. Four database-heavy suites contending for the
+same cores is what the sixty-second wait cannot survive. It is a real defect in
+that test's deadline, not in the route work, and it wants its own fix rather
+than a quiet retry loop.

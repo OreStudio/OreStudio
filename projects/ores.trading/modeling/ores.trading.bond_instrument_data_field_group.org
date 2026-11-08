@@ -44,6 +44,7 @@ column beyond the type and the strike, so the option block is held whole.
 #include "ores.trading.api/domain/bond_forward_settlement.hpp"
 #include "ores.trading.api/domain/bond_future.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
@@ -72,6 +73,14 @@ The instrument header row: identity, issue_id and audit.
 :END:
 
 The issue row holding the bond terms of this trade's security.
+
+** instrument_underlyings
+:PROPERTIES:
+:cpp_type: std::vector<instrument_underlying>
+:END:
+
+The underlying block: every underlying a bond or a convertible names, in the
+order the document states them.
 
 ** call_dates
 :PROPERTIES:

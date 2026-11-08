@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { markdownTable } from './markdown.js';
 import { z } from 'zod';
 import { readPages } from './read-pages.js';
 import { AppError, type Backend, type Operation } from './backend.js';
@@ -161,5 +162,5 @@ export function formatDiscovery(raw: unknown): string | undefined {
         const economics = r.economicsStatus === 'available' ? `Bought: ${e.bought_amount} ${e.bought_currency}\nSold: ${e.sold_amount} ${e.sold_currency}\nValue date: ${e.value_date}\nSettlement: ${e.settlement}` : r.economicsStatus === 'issue_reference_only' ? `Bond issue reference: ${e.issue_id}\nNotional: ${e.notional ?? 'not supplied'}\nFull bond issue economics are not loaded.` : `Economics: ${r.economicsStatus}; no terms have been inferred.`;
         return `Trade ${r.trade.id} — ${r.trade.trade_type}\nBook: ${r.book?.name ?? 'no booking found'}\nCounterparty: ${r.counterparty ? `${r.counterparty.full_name} (${r.counterparty.short_code})` : 'not available'}\nTrade date: ${r.booking?.trade_date ?? 'not supplied'}\nBooking portfolio hierarchy: ${r.bookingPortfolioHierarchy.map((p: any) => p.name).join(' → ') || 'none'}\nDirect portfolio assignments: ${r.directPortfolios.map((p: any) => p.name).join(', ') || 'none'}\n${economics}\nVersion: ${r.trade.version}. Source: OreStudio, retrieved ${r.retrievedAt}.\nNo valuation or booking action performed.`;
     }
-    return `${r.totalMatches} matching records (${r.catalogueScope}); showing ${r.rows.length} from offset ${r.offset}.\n${r.rows.map((row: any) => `${row.name ?? (row.full_name ? `${row.full_name} (${row.short_code})` : row.trade_type ?? row.origin_reference ?? '')} [${row.id}]`).join('\n')}${r.status === 'partial' ? `\nPartial catalogue search; no global absence or uniqueness is claimed. Next catalogue offset: ${r.nextOffset ?? 'none (earlier pages not included)'}.` : ''}`;
+    return `${r.totalMatches} matching records (${r.catalogueScope}); showing ${r.rows.length} from offset ${r.offset}.\n\n${markdownTable(['Name / type', 'ID'], r.rows.map((row: any) => [row.name ?? (row.full_name ? `${row.full_name} (${row.short_code})` : row.trade_type ?? row.origin_reference ?? ''), row.id]))}\n${r.status === 'partial' ? `\nPartial catalogue search; no global absence or uniqueness is claimed. Next catalogue offset: ${r.nextOffset ?? 'none (earlier pages not included)'}.` : ''}`;
 }

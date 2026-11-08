@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { markdownTable } from './markdown.js';
 import { createHash } from 'node:crypto';
 import { AppError } from './backend.js';
 import { decimalSum, decimalParts, decimalText } from './decimal.js';
@@ -75,11 +76,11 @@ export function summarizeSensitivities(metrics: SensitivityMetric[], expected: S
 }
 
 export function formatSensitivities(r: any): string {
-    return `${r.warning ? r.warning + '\n' : ''}${r.scope.type} ${r.scope.name} [${r.scope.id}]\nRun: ${r.run.id}; health: ${r.health}; actual pricing date: ${r.run.priced_at}\nMembership: bookings at ${r.membershipAt}.\n${r.reason}\n` + r.buckets.map((b: any) =>
+    return `${r.warning ? r.warning + '\n' : ''}## Stored sensitivities\n\n${r.scope.type} ${r.scope.name} [${r.scope.id}]\nRun: ${r.run.id}; health: ${r.health}; actual pricing date: ${r.run.priced_at}\nMembership: bookings at ${r.membershipAt}.\n${r.reason}\n` + r.buckets.map((b: any) =>
         `${b.measure}: ${b.factor} (target shift ${b.shift})${b.factor2 ? ` × ${b.factor2} (target shift ${b.shift2})` : ''}; ${b.currency}; scenario ${b.scenario || 'base'}; raw (IsPar=false).\n` +
         `${b.total ? 'Full-scope cash finite difference: ' + b.total.figure + ' ' + b.total.currency : 'No full-scope total. ' + b.reason}\n` +
         `Coverage: ${b.coverage.valuedTradeCount}/${b.coverage.expectedTradeCount}; missing ${b.coverage.missingTradeCount}; duplicates ${b.coverage.duplicateTradeCount}. Source: ${b.source}.\n` +
-        b.contributors.map((c: any) => `${c.tradeId}: ${c.figure} ${c.currency}`).join('\n') +
+        '\n' + markdownTable(['Trade ID', 'Value', 'Currency'], b.contributors.map((c: any) => [c.tradeId, c.figure, c.currency])) + '\n' +
         (b.nextOffset !== null ? `\nNext contributor offset: ${b.nextOffset}` : '')).join('\n\n') +
         (r.nextBucketOffset !== null ? `\nNext bucket offset: ${r.nextBucketOffset}` : '') + '\nStored raw sensitivities only; no repricing, FX conversion, zero fill or cross-bucket total.';
 }

@@ -4,8 +4,9 @@ Open the combined application's `/` page, sign in using your OreStudio account,
 and select a party when required. The browser holds only an ephemeral agent
 access token in memory. Refreshing the page requires signing in again. It does
 not receive the backend token, NATS certificate or inference API key. Sign out
-revokes the session; Cancel aborts the request and inference fetch. Answers are
-rendered as text, never as model-provided HTML, with separate tool evidence.
+revokes the session; Cancel aborts the request and inference fetch. Replies use Markdown for headings, tables, lists and code blocks. Raw HTML
+and images are disabled. Tool evidence stays in a separate plain-text panel.
+The chat API returns the source in `answer` and safe HTML in `answerHtml`.
 
 Try: “List the first three configured currencies. Use limit 3 and offset 0.”
 Discover a series with `list_market_series`, then ask for observations using

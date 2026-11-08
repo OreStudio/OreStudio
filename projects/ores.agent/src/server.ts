@@ -9,6 +9,7 @@ import { createMcp } from './mcp.js';
 import { Agent } from './agent.js';
 import { HttpInference } from './inference.js';
 import { serveUi } from './ui.js';
+import { renderMarkdown } from './markdown.js';
 import { version } from './version.js';
 import { tracedBackend } from './telemetry.js';
 
@@ -50,7 +51,8 @@ export function createApp(config: Config, backend?: Backend) {
         if (req.method === 'POST' && req.url === '/chat' && agent) {
             const abort = new AbortController();
             res.on('close', () => { if (!res.writableFinished) abort.abort(); });
-            return json(res, 200, await agent.chat(await body(req), session, abort.signal, requestId));
+            const result = await agent.chat(await body(req), session, abort.signal, requestId);
+            return json(res, 200, { ...result, answerHtml: renderMarkdown(result.answer) });
         }
         if (req.method === 'GET' && req.url === '/tools') return json(res, 200, Object.entries(tools).map(([name, t]) => ({ name, description: t.description, inputSchema: z.toJSONSchema(t.schema, { io: 'input' }) })));
         if (req.method === 'POST' && req.url?.startsWith('/tools/')) {

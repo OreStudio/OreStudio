@@ -206,3 +206,9 @@ via its "Verifies task" field.
 - Frozen corpus/grader and legacy fixture bytes are unchanged. New review-2.0.0 has 11 immutable-fixture cases with explicit measure/value/currency/basis assertions. Actual fixture version/hash is recorded and compared. Two-repetition handling is 42/42 original model, 34/36 live and 22/22 review-model; paraphrases 8/8 each. The former continuation regression now passes 2/2. Existing live base-NPV unit and IR/vega/command gaps remain explicit, with no data/server repair.
 - Seven installed chat/timing checks pass, including typed run continuation, provider wording and factor punctuation. Main/agent health/readiness return HTTP 200. All 19 native/broker/inference PIDs and private config hash are unchanged; prior 0.1.7 remains for rollback. The removed reporting addition stays reverted and no backend/broker/schema/business records change.
 - Evidence: =projects/ores.agent/docs/review-validation.md=, =request-plan.md= and reviewed =evals/baselines/review-2026-11-08.json=. Broader feature gates remain STARTED; future architecture/server work is separately scoped with the project lead.
+
+* Chat Markdown update
+
+- Added headings, tables, lists and code blocks. Record lists and result contributors use tables. Raw HTML and images are disabled. Evidence stays plain text.
+- Windows: 112 tests and all replay gates pass. Edge checks pass at desktop and phone sizes, including cancel and sign-out.
+- Agent-only change. No main server, reporting service or NATS changes.

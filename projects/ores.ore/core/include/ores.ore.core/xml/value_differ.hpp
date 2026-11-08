@@ -65,9 +65,9 @@ struct value_difference {
  * @param actual The fingerprint of the document under test, such as the one it
  * wrote.
  */
-ORES_ORE_CORE_EXPORT auto diff_values(const std::vector<value_entry>& expected,
-                                      const std::vector<value_entry>& actual)
-    -> std::vector<value_difference>;
+ORES_ORE_CORE_EXPORT auto
+diff_values(const std::vector<value_entry>& expected,
+            const std::vector<value_entry>& actual) -> std::vector<value_difference>;
 
 /**
  * @brief One difference as a line a person reads.

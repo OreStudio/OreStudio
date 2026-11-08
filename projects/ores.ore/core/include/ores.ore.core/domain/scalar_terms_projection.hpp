@@ -65,8 +65,8 @@ struct term {
 };
 
 /// The element's value as written, whichever kind the record declares.
-inline auto read_text(const record_reader& product, std::string_view element)
-    -> std::optional<std::string> {
+inline auto read_text(const record_reader& product,
+                      std::string_view element) -> std::optional<std::string> {
     const auto* f = xml::find_field(product.type(), element, false);
     if (f == nullptr)
         return std::nullopt;

@@ -78,8 +78,8 @@ void stamp_row(Row& row) {
     row.change_commentary = std::string(block_change_commentary);
 }
 
-inline auto accepts_spelling(const record_writer& w, std::string_view name, std::string_view value)
-    -> bool {
+inline auto
+accepts_spelling(const record_writer& w, std::string_view name, std::string_view value) -> bool {
     const auto* f = xml::find_field(w.type(), name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;
@@ -119,8 +119,8 @@ inline auto to_ore_date(const std::optional<std::chrono::year_month_day>& d) -> 
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-inline auto to_optional_domain_date(const std::string& text)
-    -> std::optional<std::chrono::year_month_day> {
+inline auto
+to_optional_domain_date(const std::string& text) -> std::optional<std::chrono::year_month_day> {
     if (text.empty())
         return std::nullopt;
     return ores::platform::time::datetime::from_iso8601_date(text);
@@ -171,8 +171,8 @@ inline auto split_numbers(const std::string& text) -> std::vector<std::string> {
     return out;
 }
 
-inline auto optional_decimal_of(const record_reader& r, std::string_view name)
-    -> std::optional<decimal> {
+inline auto optional_decimal_of(const record_reader& r,
+                                std::string_view name) -> std::optional<decimal> {
     const auto value = decimal_as_double(r, name);
     if (!value)
         return std::nullopt;
@@ -198,8 +198,8 @@ inline auto decimal_from_text(const std::string& text) -> std::optional<decimal>
     return std::nullopt;
 }
 
-inline auto exercise_date_list(const std::optional<record_reader>& group)
-    -> std::vector<std::string> {
+inline auto
+exercise_date_list(const std::optional<record_reader>& group) -> std::vector<std::string> {
     if (!group)
         return {};
     return group->values("ExerciseDate");

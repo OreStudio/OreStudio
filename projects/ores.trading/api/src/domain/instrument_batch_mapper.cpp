@@ -37,28 +37,27 @@ swap_instrument_data as_swap(const instrument_batch& batch,
                              const rate_instrument& header,
                              const Leaf& leaf,
                              boost::uuids::uuid trade_id) {
-    return swap_instrument_data{
-        header,
-        leaf,
-        find_all(batch.swap_legs, trade_id),
-        find_all(batch.swap_leg_amounts, trade_id),
-        find_all(batch.swap_leg_rates, trade_id),
-        find_all(batch.callable_swap_call_dates, trade_id),
-        find_all(batch.instrument_strikes, trade_id),
-        find_all(batch.instrument_schedules, trade_id),
-        find_all(batch.instrument_schedule_dates, trade_id),
-        find_all(batch.instrument_options, trade_id),
-        find_all(batch.instrument_option_premiums, trade_id),
-        find_all(batch.instrument_option_exercise_fees, trade_id),
-        find_all(batch.instrument_option_payment_dates, trade_id),
-        find_all(batch.instrument_option_exercise_prices, trade_id),
-        find_all(batch.flexi_swap_lower_notionals, trade_id),
-        find_all(batch.balance_guaranteed_swap_tranches, trade_id),
-        find_all(batch.balance_guaranteed_swap_tranche_notionals, trade_id),
-        find_all(batch.swap_leg_amortizations, trade_id),
-        find_all(batch.swap_leg_indexings, trade_id),
-        find_all(batch.instrument_barriers, trade_id),
-        find_all(batch.instrument_barrier_levels, trade_id)};
+    return swap_instrument_data{header,
+                                leaf,
+                                find_all(batch.swap_legs, trade_id),
+                                find_all(batch.swap_leg_amounts, trade_id),
+                                find_all(batch.swap_leg_rates, trade_id),
+                                find_all(batch.callable_swap_call_dates, trade_id),
+                                find_all(batch.instrument_strikes, trade_id),
+                                find_all(batch.instrument_schedules, trade_id),
+                                find_all(batch.instrument_schedule_dates, trade_id),
+                                find_all(batch.instrument_options, trade_id),
+                                find_all(batch.instrument_option_premiums, trade_id),
+                                find_all(batch.instrument_option_exercise_fees, trade_id),
+                                find_all(batch.instrument_option_payment_dates, trade_id),
+                                find_all(batch.instrument_option_exercise_prices, trade_id),
+                                find_all(batch.flexi_swap_lower_notionals, trade_id),
+                                find_all(batch.balance_guaranteed_swap_tranches, trade_id),
+                                find_all(batch.balance_guaranteed_swap_tranche_notionals, trade_id),
+                                find_all(batch.swap_leg_amortizations, trade_id),
+                                find_all(batch.swap_leg_indexings, trade_id),
+                                find_all(batch.instrument_barriers, trade_id),
+                                find_all(batch.instrument_barrier_levels, trade_id)};
 }
 
 /**
@@ -147,10 +146,10 @@ as_equity(const instrument_batch& batch, const Leaf& leaf, boost::uuids::uuid tr
                                   find_all(batch.swap_leg_amounts, trade_id),
                                   find_all(batch.swap_leg_rates, trade_id),
                                   find_all(batch.swap_leg_amortizations, trade_id),
-        find_all(batch.swap_leg_indexings, trade_id),
-        find_all(batch.instrument_barriers, trade_id),
-        find_all(batch.instrument_barrier_levels, trade_id),
-        find_all(batch.instrument_underlyings, trade_id)};
+                                  find_all(batch.swap_leg_indexings, trade_id),
+                                  find_all(batch.instrument_barriers, trade_id),
+                                  find_all(batch.instrument_barrier_levels, trade_id),
+                                  find_all(batch.instrument_underlyings, trade_id)};
 }
 
 /**
@@ -238,9 +237,8 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 batch.swap_leg_amortizations.insert(batch.swap_leg_amortizations.end(),
                                                     v.leg_amortizations.begin(),
                                                     v.leg_amortizations.end());
-                batch.swap_leg_indexings.insert(batch.swap_leg_indexings.end(),
-                                                v.leg_indexings.begin(),
-                                                v.leg_indexings.end());
+                batch.swap_leg_indexings.insert(
+                    batch.swap_leg_indexings.end(), v.leg_indexings.begin(), v.leg_indexings.end());
                 batch.instrument_barriers.insert(
                     batch.instrument_barriers.end(), v.barriers.begin(), v.barriers.end());
                 batch.instrument_barrier_levels.insert(batch.instrument_barrier_levels.end(),
@@ -500,24 +498,25 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
             return as_credit(batch, *header, *v, trade_id);
     }
     if (const auto* v = find(batch.commodity_instruments, trade_id))
-        return commodity_instrument_data{*v,
-                                         find_all(batch.commodity_basket_constituents, trade_id),
-                                         find_all(batch.swap_legs, trade_id),
-                                         find_all(batch.swap_leg_amounts, trade_id),
-                                         find_all(batch.swap_leg_rates, trade_id),
-                                         find_all(batch.swap_leg_amortizations, trade_id),
-                                         find_all(batch.swap_leg_indexings, trade_id),
-                                         find_all(batch.instrument_schedules, trade_id),
-                                         find_all(batch.instrument_schedule_dates, trade_id),
-                                         find_all(batch.instrument_options, trade_id),
-                                         find_all(batch.instrument_option_premiums, trade_id),
-                                         find_all(batch.instrument_option_exercise_fees, trade_id),
-                                         find_all(batch.instrument_option_payment_dates, trade_id),
-                                         find_all(batch.instrument_option_exercise_prices, trade_id),
-                                         find_all(batch.instrument_barriers, trade_id),
-                                         find_all(batch.instrument_barrier_levels, trade_id),
-                                         find_all(batch.instrument_underlyings, trade_id),
-                                         find_all(batch.instrument_strikes, trade_id)};
+        return commodity_instrument_data{
+            *v,
+            find_all(batch.commodity_basket_constituents, trade_id),
+            find_all(batch.swap_legs, trade_id),
+            find_all(batch.swap_leg_amounts, trade_id),
+            find_all(batch.swap_leg_rates, trade_id),
+            find_all(batch.swap_leg_amortizations, trade_id),
+            find_all(batch.swap_leg_indexings, trade_id),
+            find_all(batch.instrument_schedules, trade_id),
+            find_all(batch.instrument_schedule_dates, trade_id),
+            find_all(batch.instrument_options, trade_id),
+            find_all(batch.instrument_option_premiums, trade_id),
+            find_all(batch.instrument_option_exercise_fees, trade_id),
+            find_all(batch.instrument_option_payment_dates, trade_id),
+            find_all(batch.instrument_option_exercise_prices, trade_id),
+            find_all(batch.instrument_barriers, trade_id),
+            find_all(batch.instrument_barrier_levels, trade_id),
+            find_all(batch.instrument_underlyings, trade_id),
+            find_all(batch.instrument_strikes, trade_id)};
     if (const auto* v = find(batch.composite_instruments, trade_id))
         return composite_instrument_data{*v,
                                          find_all(batch.swap_legs, trade_id),

@@ -43,7 +43,8 @@ bool names_a_fixing(std::string_view uri) {
 
 market_reference::market_reference(std::variant<market_index, market_datum> address,
                                    std::string uri)
-    : address_(std::move(address)), uri_(std::move(uri)) {}
+    : address_(std::move(address))
+    , uri_(std::move(uri)) {}
 
 std::expected<market_reference, std::string> market_reference::parse(std::string_view uri) {
     if (names_a_fixing(uri)) {

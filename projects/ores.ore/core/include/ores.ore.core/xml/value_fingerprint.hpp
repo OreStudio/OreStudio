@@ -87,8 +87,9 @@ struct keyed_fingerprint {
  * @return One fingerprint per occurrence, in the order the document states them.
  */
 ORES_ORE_CORE_EXPORT auto
-value_fingerprints_of(const document& doc, std::string_view element, std::string_view key_attribute)
-    -> std::vector<keyed_fingerprint>;
+value_fingerprints_of(const document& doc,
+                      std::string_view element,
+                      std::string_view key_attribute) -> std::vector<keyed_fingerprint>;
 
 }
 

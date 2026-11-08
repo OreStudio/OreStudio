@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
-#include "ores.marketdata.api/domain/series_classification_rule.hpp"
-#include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.marketdata.api/datum/ore_index_codec.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
+#include "ores.marketdata.api/domain/series_classification_rule.hpp"
+#include "ores.marketdata.core/classification/series_classifier.hpp"
 #include "ores.ore.core/market/market_data_parser.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"

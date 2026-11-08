@@ -28,7 +28,7 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 ## Hotfixes
 
 -   **Fix the nightly platform failures**: Every nightly builds, tests and submits its results to CDash, and the codegen drift check on main passes.
--   **Hotfix: Keep the build warning-free on every toolchain**: (Describe the user-visible outcome this story delivers.)
+-   **Hotfix: Keep the build warning-free on every toolchain**: ores.nats compiles clean under gcc and clang with warnings as errors, and the web build follows the source-to-feed rename.
 -   **Hotfix: The fleet runs the machine out of memory**: The machine runs the fleet again without running out of memory.
 -   **Hotfix: Make CI green on every platform**: Main's CI is green on Linux, macOS and Windows, and on every check workflow.
 -   **Hotfix: clear the six failing checks on main**: Every check the local gate runs passes on main: drift, collisions, the ER diagram, the column types, the list-request table and the ticks smoke.
@@ -58,13 +58,13 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 -   **Split the types that carry too many columns**: A persisted type holds one component's fields.
 -   **Trade Blotter — the remaining work**: Build the Trade Blotter: the primary front-office screen from which traders, sales, and middle office view, manage, and act on the live book of trades &#x2013; booking new deals, amending existing ones, and routing trades through their lifecycle (expiry, fixing, delivery, exercise, settlement).
 -   **Describe every product type on one page**: One page a person can read to find out what a product type is before they book it: every type the tenant may book, what each one means, where its documentation lives, and which books and permissions allow it.
--   **Book a trade as a draft**: (Describe the user-visible outcome this story delivers.)
+-   **Book a trade as a draft**: A booking states whether the deal is a draft and why it waits. With no reason, the trade goes live at once.
 
 ![ore_studio-v0.0.29-book-a-trade.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-book-a-trade.png)
 
 *Booking a trade: a draft reason captures the deal as a draft, and no reason books it live.*
 
--   **Let the model state how the store keeps a column**: (Describe the user-visible outcome this story delivers.)
+-   **Let the model state how the store keeps a column**: A model states the conversion between a domain value and the code the store keeps, and the generated mapper applies it. A regeneration no longer erases the conversion.
 -   **Draw every ORE leaf the same way, starting with conventions**: One standard says how every screen draws a leaf of an ORE document and the element type it belongs to, with the exact words, and an Allium specification carries its state rules so tests can follow them.
 
 ![ore_studio-v0.0.29-conventions.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-conventions.png)
@@ -169,7 +169,7 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 
 -   **Bring the existing screens to the entity screen specification**: Every existing screen follows the entity screen specification: paging on the server, people as links, history as a timeline, edit in a dialog, flags, states and words.
 -   **Make every configuration screen follow one standard**: One screen standard covers every configuration that comes off an ORE XML document: the same list, the same record page, the same sections, the same documentation, the same reach, the same history, the same import and the same lifecycle.
--   **Complete a structure from a screen**: (Describe the user-visible outcome this story delivers.)
+-   **Complete a structure from a screen**: Grouping trades makes one structure in one operation, with every leg live and waiting on Operations, so a half-grouped deal cannot stand.
 
 ![ore_studio-v0.0.29-structure-bond.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-structure-bond.png)
 
@@ -193,7 +193,7 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 
 *A currency record.*
 
--   **Switch the interface between light and dark, and choose the language from the header**: (Describe the user-visible outcome this story delivers.)
+-   **Switch the interface between light and dark, and choose the language from the header**: The header carries a palette switch and a language menu. The palette survives a reload and applies before the first paint.
 
 ![ore_studio-v0.0.29-light-theme.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.29-light-theme.png)
 
@@ -232,13 +232,13 @@ Sprint 29 merged 781 pull requests across the whole product. The C++ server took
 
 ## Agile & Documentation
 
--   **Open sprint 29**: (Describe the user-visible outcome this story delivers.)
+-   **Open sprint 29**: Sprint 29 opened on version 0.0.29 with the latest vcpkg, and took in the 57 stories carried from sprint 28.
 -   **Sprint health review — System 2 analysis**: A System 2 review of sprint 29.
 
 
 ## Other
 
--   **Classify every HTTP route against the resource rule**: (Describe the user-visible outcome this story delivers.)
+-   **Classify every HTTP route against the resource rule**: Every route both servers answer is inventoried and classified, 402 in all, and a gate refuses a row with no classification.
 -   **Stop the workflow from losing steps to a transient storm**: A workflow step must survive a transient failure of the service that serves it.
 -   **Let the area come from the model**: An entity's HTTP area is a declaration on its model, resolved in one place, so a URL can outlive a component rename.
 -   **Stream the changes as they happen**: A client can follow the changes over one long response, and a quiet market does not look like a dead connection.

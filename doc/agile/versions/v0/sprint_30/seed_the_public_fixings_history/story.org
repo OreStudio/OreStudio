@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 1226D830-9285-4C45-9F5C-72F72AFC7352
+:END:
+#+title: Story: Seed the public fixings history from a DQ snapshot
+#+description: Every environment holds years of daily public fixings from a static DQ snapshot refreshed by hand, and the public sources adapter fetches only the gap to today, so history-hungry calibrations have depth and the publishers' API carries little load.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:public_sources:dq:calibration:sprint_30:v0:
+#+created: 2026-11-03
+#+updated: 2026-11-08
+#+environment: prime_origin
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every environment holds years of daily public fixings without fetching them from the publishers' API. A static DQ snapshot carries the history and the adapter fills only the gap from the latest stored fixing to today. The calibrations that need depth, the GARCH fit of FX spot and the derived FX volatility quotes of [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]], read it; without it they work from the adapter's shorter window, with their priors dominating and weak butterflies.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                                |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Seed five years of public fixings.     |
+| Last touched  | 2026-11-08 |
+
+* Acceptance
+
+- Every environment loads years of daily fixings for each catalogued provider and pair from a static DQ snapshot.
+- The public sources adapter fetches only the days from the latest stored fixing to today.
+- Each provider in the snapshot allows redistribution; any other stays adapter-only.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]] | BACKLOG | | | A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today. |
+
+* Decisions
+
+* Out of scope
+
+- Using the history. The calibrations that read it belong to [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]].
+
+-

@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 4BBDF56E-612C-4E0B-AAC0-A0EECF93F669
+:END:
+#+title: Story: Eight columns in the trading models hold JSON blobs where th…
+#+description: Eight columns in the trading models hold JSON blobs where the domain should hold rows, and each is a place where the store cannot answer a question about the trade without parsing text.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-10-26
+#+updated: 2026-11-08
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Eight columns in the trading models hold JSON blobs where the domain should hold rows, and each is a place where the store cannot answer a question about the trade without parsing text.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-08 |
+
+* Acceptance
+
+
+- Each of the eight columns is named, with its decision: rows, or kept with a reason.
+- A column that becomes rows has no JSON left in the model, the store or the wire.
+- The store answers a question about a trade from those rows, without parsing text.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:67FD016B-EFFD-4DCC-AEDD-0061435AA735][Model the basket constituents]] | DONE | 2026-10-26 | 2026-10-27 | Four trading entities hold their baskets, prices, barriers and levels as JSON blobs. This replaces the basket blob with constituent rows that say what kind each constituent is and which vocabulary it belongs to, so a mixed basket is representable and a constituent can be checked against the catalogue it names. |
+| [[id:8A153B75-1431-40EC-BC35-FB360D5F394C][State the kind of a basket constituent]] | DONE | 2026-10-27 | 2026-10-27 | A constituent names a code but not the vocabulary that code belongs to, so a worst-of basket whose constituents are FX pairs cannot be told apart from one whose constituents are equities. This adds the kind and refuses a constituent whose code the kind's catalogue does not hold. |
+
+* Decisions
+
+
+- Reviewed on 2026-11-08 at sprint 30 start. Acceptance written, because it was empty. The audit lists the story as ready to close, but only the basket column is done. It needs a task for each remaining column.
+
+* Out of scope
+
+-

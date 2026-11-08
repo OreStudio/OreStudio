@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 0D476AB9-3EC2-4567-A8F6-D67629179DEE
+:END:
+#+title: Story: Build the Connectivity screens — the remaining work
+#+description: The delivery tree, the supplier dashboard, the adapter catalogue and the session and feed records, with the two setup flows and the writes behind them.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:implementation:sprint_30:v0:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The signed-off Connectivity prototype becomes the screen: the delivery tree, the supplier dashboard, the adapter catalogue, the session and feed records, and the two setup flows, backed by reads and writes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started. Split from [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08 |
+
+* Acceptance
+
+- The tree shows supplier, session and feed, and the pane shows the list or the details.
+- The supplier dashboard shows counts, attention, coverage, contract and feeds.
+- New session and new feed write rows the adapter reads.
+- Permissions gate the writes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A2A85020-A346-4DA4-971A-2B69F4E8799B][Draw the adapter catalogue and publisher]] | BACKLOG | 2026-10-30 | 2026-10-31 | The read-only adapter catalogue and the publisher record with its feeds. |
+| [[id:1994DF76-4830-4510-96BD-3B524E782ED2][Prove the Connectivity screens]] | BACKLOG | | | The new session and new feed flows create rows the adapter reads. |
+| [[id:04C544E6-DFAA-4612-B521-EF1D412EC1B5][Serve the Connectivity writes]] | BACKLOG | | | Write endpoints and permissions for sessions, feeds, scopes, schedules and routes. |
+
+* Decisions
+
+
+- Split from [[id:4D2D0EF9-986A-49F3-91CD-29DF44548590][Build the Connectivity screens]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+- Reviewed on 2026-11-08 at sprint 30 start. PRs #4276 and #4156 did not deliver the two tasks that name them, so those stay open.
+
+* Out of scope
+
+-
+

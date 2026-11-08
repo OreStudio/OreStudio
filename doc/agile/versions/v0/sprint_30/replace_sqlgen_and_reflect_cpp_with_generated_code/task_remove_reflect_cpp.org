@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC
+:END:
+#+title: Task: Remove reflect-cpp
+#+description: Move the dynamic JSON, enum tables and schemas, clear the reflectors from the infrastructure components, and drop the dependency.
+#+type: task
+#+level: s1
+#+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-11-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Step 7 of 7. reflect-cpp is gone from the build. Starts after every component has moved its codecs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- The 106 uses of rfl::Generic and rfl::Object use yyjson.
+- Enum tables and JSON schemas come from the generator.
+- Nothing in ores.database, ores.diff, ores.eventing, ores.logging, ores.nats, ores.orgmode, ores.platform, ores.service, ores.storage or ores.utility includes reflect-cpp.
+- vcpkg.json and every CMakeLists.txt no longer name reflect-cpp.
+- A codec precompiled header holding =ores.utility/codec/struct_codec.hpp=
+  takes the place of =ores.rfl.pch= in every library that encodes, so the
+  codec headers' leaf includes are parsed once per library, not once per unit.
+- No doc outside the agile history and the plans names reflect-cpp or rfl:
+  the knowledge docs, the component overviews and the codegen template docs
+  describe the generated codecs. Most of the 53 docs that name it today are
+  codegen template docs, whose source tangles into the templates, so each
+  codec task updates the template docs it changes.
+- The whole tree builds and every suite passes.
+
+* Plan
+
+A survey at fc4f559dfb found 193 files that name rfl, 6 of them generated.
+Each step below is one PR that ends in a green build.
+
+1. Shapes first. Moved to [[id:B95A38D7-5ADA-46A2-934A-176B6D84CB7F][Give every encoded type a stated shape]], PR 4470. Turn the generated wire codec on for the seven operation
+   models in the notes, and state a shape for every other type a hand-written
+   call encodes, so no type falls back to the reflect-cpp primary of
+   =wire_traits=.
+2. Calls. Move the 293 direct =rfl::json= and =rfl::msgpack= calls in 104
+   files onto the codec carriers of =ores.utility/codec=, component by
+   component.
+3. Dynamic JSON. Move the 113 uses of =rfl::Generic= and =rfl::Object= in ten
+   files onto yyjson.
+4. Schemas, Skip and Rename. Generate the three JSON schemas; state the
+   skipped and renamed members in their models.
+5. Removal. Delete the custom reflectors, =reflectors.hpp=, the reflect-cpp
+   primary of =wire_traits= and =ores.rfl.pch=; put the codec precompiled
+   header in its place; drop reflect-cpp from vcpkg.json and every
+   CMakeLists.txt.
+6. Docs. Rewrite the docs that still describe reflect-cpp.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Seven operation models still have no generated wire codec, so their messages
+go through reflect-cpp. Each needs =:ores.cpp.wire-codec.enabled: true= and a
+regeneration before the dependency can go. Found by "State a type's wire shape
+by its type" on 2026-11-04:
+
+- =ores.history.history_messages=
+- =ores.refdata.publish_operations=
+- =ores.refdata.calendar_adjustment_messages=
+- =ores.refdata.bundle_import_operations=
+- =ores.refdata.counterparty_proposal_operations=
+- =ores.refdata.calendar_materialisation_messages=
+- =ores.refdata.book_proposal_operations=
+
+**The conventions path moved in step 2.** =conventions_family_pack.hpp=,
+=conventions_diff.cpp= and =conventions_family_cross_currency_fix_float.cpp=
+encoded convention rows with reflect-cpp after the ores.ore codec task, and step
+2 moved all three onto the codec: the packer writes and reads each row through
+=ores::utility::codec::json=. What stays is
+=run_configuration_operations.cpp='s =rfl::Generic= row, which step 3 moves to
+yyjson. The document aggregate that
+[[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Import and export conventions without a document aggregate]]
+replaces is a design change of its own now, and it no longer blocks this task.
+
+
+**The byte tests lose their reference.** =message_codec_tests.cpp= and the
+codec enum tests compare the generated codec with the reflector's output. When
+reflect-cpp goes, they have nothing to compare with. Before the dependency is
+dropped, replace them with a read-after-write round trip over every generated
+codec, generated from the same facet, so each shape is tested without the
+reflector. The PR #4278 review asked for this (finding 6).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

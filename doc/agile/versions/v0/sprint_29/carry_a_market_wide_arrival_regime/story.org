@@ -125,7 +125,7 @@ The story closes on the tasks it finished:
 - /Why this story and not the data path:/ this story already asks for one clock
   per run, no clock in the feeds, and refusal of an unstable set. The data path
   story builds the store side and reads the scheduler's numbers.
-- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:4AD0218F-5885-4D9C-B131-BC0FBF3E2D59][Carry a market-wide arrival regime — the remaining work]].
+- Closed on 2026-11-08 at sprint 29 close with its done tasks. The open tasks and the original acceptance moved to [[id:DD8CBFD8-F241-43A3-92B7-226FC9D3328E][Let a busy market move prices, not only the clock]].
 
 * Out of scope
 

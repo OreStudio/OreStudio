@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA
+:END:
+#+title: Task: Generate every trade type through its builder
+#+description: Each generated trade type is built by its trade builder, family by family and credit first; each family moves its planner onto the builders, deletes its old constructors and clears its entries from the recorded trades' known lists.
+#+type: task
+#+level: s1
+#+filetags: :trading:synthetic:builder:prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-06
+#+updated: 2026-11-08
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Prove generated trades value against the ORE samples — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every trade type the generator books is built by its trade builder, and the reports of a provisioned Acme record no Trade errors.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Prove generated trades value against the ORE samples — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-06                               |
+
+* Acceptance
+
+- =convention_lookup= answers what each family's builder asks: the CDS convention for credit, the equity and commodity underlyings for theirs. Moved here from [[id:4435202D-6074-47F6-8BEB-85E25CF70BEF][Look up an oresmd identifier's conventions and project it for ORE]].
+- Each family's planner draws its values and calls the builders; its =construct_*= functions and =*_terms= structs are deleted.
+- Each family's entries leave the recorded trades' known lists, its recorded files change in the same commit, and the lists end empty or with a stated reason per entry.
+- A tagged test runs the ORE engine on each recorded portfolio, with ORE's example configuration, and fails on an error ORE raises reading or building a trade, unless a known list asserted exactly names it; a Trade error caused by missing market data is counted apart. Moved here from [[id:63FF92C8-3E18-49BB-93FA-B0862B5FD4B2][Test that every generated trade builds in ORE]].
+- A run of the Acme reports after provisioning records no Trade errors, only market data errors.
+
+* Plan
+
+The design is in [[id:63FF92C8-3E18-49BB-93FA-B0862B5FD4B2][Test that every generated trade builds in ORE]], section Design: oresmd references, resolvers and trade builders.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** From the review of PR #4474
+
+Points the review raised on the recorded-trades test and the writer, left
+for this task because it edits both:
+
+- =state_reason= in the writer skips a row with none of the three audit
+  shapes without a word; end it with a =static_assert= so a new row type
+  that fits none fails to compile.
+- =known_refusals()= mixes writer refusals with the three bond types the
+  in-memory path cannot join; split the test-only ones into a list of their
+  own, so the case's name says what it asserts.
+- =sample_requirements()= should =REQUIRE= the corpus directory, for a
+  clear failure when =external/ore= is missing.
+- The recorded files compare as exact text; check line endings
+  (=.gitattributes= for =tests/data=) and number formatting on the Windows
+  build.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

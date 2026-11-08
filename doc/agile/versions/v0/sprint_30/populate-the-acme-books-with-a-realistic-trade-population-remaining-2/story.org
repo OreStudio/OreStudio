@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 991A62E6-A8D5-4E2E-9B42-AF0519AEE961
+:END:
+#+title: Story: Populate the ACME books with a realistic trade population — the remaining work
+#+description: ACME's books hold no trades, so a report package is structurally valid and substantively empty. Populate them from a synthetic generator in present time, referencing ACME's own books, counterparties and staff, starting with bonds and extending to every instrument.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ACME's books hold a realistic trade population: every asset class the
+platform can price, in the proportions a dealing institution holds, dated
+relative to the day the tenant is provisioned, and referencing the
+parties, books, counterparties and staff the tenant already holds.
+
+The synthetic trade generation machinery produces it. That machinery is
+scoped by tenant and by party and is driven by a trade generation
+config, so ACME is the first tenant it serves and Northwind is the next.
+No task in this story may name a tenant, a party, a book or a
+counterparty. Those arrive from the config row. The only place that
+names ACME is the ACME seed data.
+
+The investigation this story commissioned is
+[[id:6E648B05-2ADB-4E03-89CB-D4670CB72FC3][Investigation: Populating ACME with a trade population]]. It is the record of what was measured and which mechanism was chosen. It is a snapshot, not a description of the system.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started. Split from [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08 |
+
+* Acceptance
+
+- One asset class at a time. A planner exists for every asset class in
+  the refdata catalogue, and the planner for a class books the trade
+  types the catalogue routes to that class.
+- The population is a function of (seed, as-of). A review is a rebuild
+  and a diff, and a second run books nothing.
+- The product mix matches Trade Population Weights within a stated
+  tolerance, and every routed product appears at least once.
+- Every trade names a party, a book, a netting set and a counterparty
+  the tenant holds.
+- The population exports as the ORE portfolio the engine reads, and
+  reverse-maps without loss.
+- A second tenant runs the same machinery from its own config rows with
+  no code change.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:20CC752D-14DC-4D4B-B6A1-8BDD67F7B6A2][Let the wizard state the population as shares]] | BACKLOG | | | Task for: Populate the ACME books with a realistic trade population — the remaining work |
+
+* Decisions
+
+- Split from [[id:B5E29A14-66E4-44A4-BCFB-D1F3C9ADBD3D][Populate the ACME books with a realistic trade population — the remaining work]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+- Intraday reports. They belong to the report inputs story.
+- Draft reasons, structure holds and structure completion. They belong to
+  the Trade Blotter.
+

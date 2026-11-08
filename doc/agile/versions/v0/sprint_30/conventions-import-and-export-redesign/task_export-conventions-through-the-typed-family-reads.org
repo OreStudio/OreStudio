@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: B144F3E9-99F6-4BC0-BF84-D83A57A0F35B
+:END:
+#+title: Task: Export conventions through the typed family reads
+#+description: Read each convention family through its generated list request at one instant and for the run's party, in place of the untyped rfl::Generic reads in ores.ore.
+#+type: task
+#+level: s1
+#+filetags: :conventions-import-and-export-redesign:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-02
+#+updated: 2026-11-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Import and export conventions without a document aggregate]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The conventions export reads each family through its own generated list request, with the party and one as_of on every page. ores.ore no longer builds requests by hand, picks the first array of an untyped reply, or filters the party itself.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Import and export conventions without a document aggregate]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-02                               |
+
+* Acceptance
+
+- run_configuration_operations.cpp holds no rfl::Generic and builds no request by hand.
+- Every page of every family carries the same as_of, so an import that commits between pages does not appear in the export.
+- The party filter runs in refdata, not in ores.ore.
+- A conventions file imported and exported unchanged produces the file it started from.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

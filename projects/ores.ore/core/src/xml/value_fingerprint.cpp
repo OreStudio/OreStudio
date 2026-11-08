@@ -84,8 +84,8 @@ public:
      * @param label The name the path gives a begin token, when it is not the
      * element's own name: a repeated element is labelled with its position.
      */
-    auto feed(const token& t, std::vector<value_entry>& values, std::string_view label = {})
-        -> void {
+    auto
+    feed(const token& t, std::vector<value_entry>& values, std::string_view label = {}) -> void {
         switch (t.kind) {
             case token_kind::begin_element:
                 path_.emplace_back(label.empty() ? doc_.name(t) : label);
@@ -148,8 +148,9 @@ private:
  * the repeats keeps them apart, so a value one leg lost is not read as a value
  * the other changed.
  */
-auto sibling_labels(const document& doc, std::size_t from, std::size_t to)
-    -> std::map<std::size_t, std::string> {
+auto sibling_labels(const document& doc,
+                    std::size_t from,
+                    std::size_t to) -> std::map<std::size_t, std::string> {
     const auto& tokens = doc.tokens();
     // The parent of each begin token, by the parent's position; the run's
     // first element has none.

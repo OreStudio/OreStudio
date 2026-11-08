@@ -238,8 +238,8 @@ concept monitored = requires(Row& row) {
 };
 
 /// A text or enumerated scalar the product declares, as written.
-inline auto declared_scalar(const record_reader& product, std::string_view name)
-    -> std::optional<std::string> {
+inline auto declared_scalar(const record_reader& product,
+                            std::string_view name) -> std::optional<std::string> {
     const auto* f = xml::find_field(product.type(), name, false);
     if (f == nullptr || !product.has(name))
         return std::nullopt;

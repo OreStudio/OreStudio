@@ -18,8 +18,8 @@
  *
  */
 #include "ores.marketdata.core/classification/series_classifier.hpp"
-#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/domain/asset_class_authorities.hpp"
 #include <algorithm>
 #include <stdexcept>
 #include <string_view>

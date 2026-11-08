@@ -137,8 +137,8 @@ auto to_ore_date(const std::chrono::year_month_day& d) -> std::string {
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto bond_instrument_projection_text_of(const record_reader& r, std::string_view name)
-    -> std::string {
+auto bond_instrument_projection_text_of(const record_reader& r,
+                                        std::string_view name) -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
@@ -166,8 +166,8 @@ auto decimal_text(const record_reader& r) -> decimal {
     return r.own_decimal().value_or(decimal{});
 }
 
-auto bond_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
-    -> decimal {
+auto bond_instrument_projection_decimal_of(const record_reader& r,
+                                           std::string_view name) -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -964,8 +964,9 @@ auto read_ascot(const record_reader& trade) -> bond_instrument_data {
 // Writing: the spellings a table refuses
 // ---------------------------------------------------------------------------
 
-auto accepts_spelling(const record_writer& w, std::string_view name, std::string_view value)
-    -> bool {
+auto accepts_spelling(const record_writer& w,
+                      std::string_view name,
+                      std::string_view value) -> bool {
     const auto* f = xml::find_field(w.type(), name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;

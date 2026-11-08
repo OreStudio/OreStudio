@@ -53,7 +53,9 @@ public:
     [[nodiscard]] static std::expected<market_reference, std::string> of(market_datum datum);
 
     /// The address, as the codec writes it.
-    [[nodiscard]] const std::string& uri() const noexcept { return uri_; }
+    [[nodiscard]] const std::string& uri() const noexcept {
+        return uri_;
+    }
 
     /// The index the reference addresses, or nullptr when it addresses a datum.
     [[nodiscard]] const market_index* index() const noexcept {

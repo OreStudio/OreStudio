@@ -38,7 +38,6 @@
 #include "ores.storage.core/net/storage_transfer.hpp"
 #include "ores.trading.api/domain/bond_document_ops.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
-#include "ores.trading.api/messaging/instrument_underlying_protocol.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/balance_guaranteed_swap_tranche_notional_protocol.hpp"
@@ -103,16 +102,17 @@
 #include "ores.trading.api/messaging/instrument_schedule_date_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_underlying_protocol.hpp"
 #include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/range_bound_protocol.hpp"
 #include "ores.trading.api/messaging/rate_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/risk_participation_agreement_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/structure_member_protocol.hpp"
+#include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_amount_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_protocol.hpp"
 #include "ores.trading.api/messaging/swap_leg_rate_protocol.hpp"
-#include "ores.trading.api/messaging/structure_member_protocol.hpp"
-#include "ores.trading.api/messaging/structure_protocol.hpp"
 #include "ores.trading.api/messaging/swaption_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/synthetic_cdo_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/trade_additional_field_protocol.hpp"
@@ -634,10 +634,10 @@ boost::uuids::uuid composite_structure_id(const boost::uuids::uuid& composite_id
  * the document, which is what the export nests them back by.
  */
 template <typename Nats>
-std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
-    Nats& nats,
-    const std::vector<ores::ore::xml::trade_import_item>& trades,
-    const std::unordered_map<std::string, std::optional<boost::uuids::uuid>>& booked) {
+std::vector<ores::ore::messaging::ore_import_item_error>
+join_composites(Nats& nats,
+                const std::vector<ores::ore::xml::trade_import_item>& trades,
+                const std::unordered_map<std::string, std::optional<boost::uuids::uuid>>& booked) {
     using ores::utility::domain::outcome;
     std::vector<ores::ore::messaging::ore_import_item_error> errors;
     std::unordered_map<std::string, const ores::ore::xml::trade_import_item*> composite_of;
@@ -698,18 +698,23 @@ std::vector<ores::ore::messaging::ore_import_item_error> join_composites(
         if (made.insert(composite_tid).second) {
             ores::trading::messaging::put_structure_request req;
             req.change.write.id = structure_id;
-            req.change.write.counterparty_id = counterparty->second.value_or(boost::uuids::nil_uuid());
+            req.change.write.counterparty_id =
+                counterparty->second.value_or(boost::uuids::nil_uuid());
             req.change.write.kind = "Typed";
             req.change.write.template_code = std::string(joined->template_code);
             req.intent = intent;
             std::string error;
             auto resp = nats_call(nats, req, error);
             if (!resp || resp->result.outcome != outcome::ok) {
-                failed(error.empty() ? resp ? resp->result.message : "put_structure failed" : error);
+                failed(error.empty() ? resp ? resp->result.message : "put_structure failed" :
+                                       error);
                 continue;
             }
-            if (auto error =
-                    join(composite.anchor.id, structure_id, std::string(joined->parent_role), 1, std::nullopt);
+            if (auto error = join(composite.anchor.id,
+                                  structure_id,
+                                  std::string(joined->parent_role),
+                                  1,
+                                  std::nullopt);
                 !error.empty()) {
                 failed(error);
                 continue;
@@ -2442,8 +2447,9 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
 
         if (!item.membership) {
             if (const auto members = members_of.find(ext_id); members != members_of.end()) {
-                const auto unbooked = std::ranges::count_if(
-                    members->second, [&](const auto& id) { return !booked_counterparty.contains(id); });
+                const auto unbooked = std::ranges::count_if(members->second, [&](const auto& id) {
+                    return !booked_counterparty.contains(id);
+                });
                 if (unbooked > 0) {
                     const auto failure = std::format(
                         "{} of the trades stated inside this one were not booked, so it is not "
@@ -2572,8 +2578,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // -------------------------------------------------------------------------
     // Step 7b: join each composite trade to its components in a structure
     // -------------------------------------------------------------------------
-    const auto structure_errors =
-        join_composites(delegated_nats, plan.trades, booked_counterparty);
+    const auto structure_errors = join_composites(delegated_nats, plan.trades, booked_counterparty);
     for (const auto& error : structure_errors) {
         BOOST_LOG_SEV(lg(), warn) << "ore.import.execute structure failed | corr="
                                   << req.correlation_id << " error=" << error.message;

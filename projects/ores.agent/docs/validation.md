@@ -1,6 +1,18 @@
 # Implementation validation
 
-## Current release: 0.1.7 reproducible evaluation and private timing
+## Current release: 0.1.8 reviewed request/clarification cleanup
+
+Code `055af005e05aa5bdc59c3993609a4937baa3bf85`; installed independent release
+`0.1.8-c1371bb8918e`. All **107 tests pass on Windows/Linux**, with identical
+manifests and three replay suites. Handling: 42/42 original model/fixtures,
+34/36 live, 22/22 on the stronger versioned review/model corpus, and 8/8 in
+each paraphrase profile. Frozen data/grader/legacy fixtures remain unchanged;
+new immutable fixtures have a separate version and stronger oracle. All four
+review defects have targeted coverage. No native/broker/data changes or oracle
+weakening was used. See [design](request-plan.md) and
+[full evidence and remaining gaps](review-validation.md).
+
+## Historical release: 0.1.7 reproducible evaluation and private timing
 
 Code `5004b5e7c8e36f7c26e70788227ca92fdfa1675f`; installed separate release
 `0.1.7-0a1d2f580ce4`, identical Windows/Linux manifests. All **101 tests pass**

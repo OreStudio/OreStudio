@@ -28,7 +28,7 @@ Deliver independently runnable, tested and pushed agent checkpoints. Declare nec
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A8A686A6-DD71-4AF4-A0FC-F679E24A7D30][Run an independent local AI assistant]] |
-| Now          | Stage 6 local evaluation/release process delivered; independent agent 0.1.7 running.                       |
+| Now          | Review-driven cleanup validated; standalone agent 0.1.8 running; frozen baseline retained.                       |
 | Waiting on   | No backend change required for baseline; capability/data/profile gaps stay explicit.                               |
 | Next         | Review retained agent/data/architecture findings; future backend PRs remain separate.                  |
 | Last touched | 2026-11-07                               |
@@ -198,3 +198,11 @@ via its "Verifies task" field.
 - Agent/MCP/evaluation runtime does not call that operation. Existing stored NPV/Greek data and installed agent 0.1.7/native/NATS/inference services remain untouched. Fixture profiles need no live data; reproducing the historical live dataset on a new environment requires separately agreed preparation, not the removed API.
 - Keep the negative evaluation mutation-blocking test. Historical setup evidence remains labelled historical, and future backend work stays outside the current agent-only scope.
 - Validation: =npm run verify= passes all 101 tests and both offline replay handling gates; all 40 component documentation checks pass. The complete net branch diff is limited to agent files, its dedicated workflow and agile documentation. Reporting source is byte-for-byte identical to the branch base. No native rebuild or application redeployment is required.
+
+* Review-driven agent cleanup
+
+- Final code =055af005e05aa5bdc59c3993609a4937baa3bf85=; structural checkpoint =80b04ac08b=; installed =0.1.8-c1371bb8918e=. All 107 tests and three replay handling gates pass on Windows/Linux with identical source fingerprints/manifests. Native Linux NVIDIA/remote CI remain open.
+- Fixed explicit trade/run substitution, negated/absent partial consent, provider phrase corruption and false native/base evaluation passes. Added a typed RequestPlan, one identity-bound pending-choice store, deterministic scope continuation, single presentation dispatch, cached catalogues and shared bounded pagination. Existing financial/identity/coverage checks remain in adapters; evaluation options/reporting are separated and readable.
+- Frozen corpus/grader and legacy fixture bytes are unchanged. New review-2.0.0 has 11 immutable-fixture cases with explicit measure/value/currency/basis assertions. Actual fixture version/hash is recorded and compared. Two-repetition handling is 42/42 original model, 34/36 live and 22/22 review-model; paraphrases 8/8 each. The former continuation regression now passes 2/2. Existing live base-NPV unit and IR/vega/command gaps remain explicit, with no data/server repair.
+- Seven installed chat/timing checks pass, including typed run continuation, provider wording and factor punctuation. Main/agent health/readiness return HTTP 200. All 19 native/broker/inference PIDs and private config hash are unchanged; prior 0.1.7 remains for rollback. The removed reporting addition stays reverted and no backend/broker/schema/business records change.
+- Evidence: =projects/ores.agent/docs/review-validation.md=, =request-plan.md= and reviewed =evals/baselines/review-2026-11-08.json=. Broader feature gates remain STARTED; future architecture/server work is separately scoped with the project lead.

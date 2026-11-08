@@ -7,8 +7,10 @@ instruction to keep current work in the agent and agent evaluations. Stages
 [measured improvements](stage5-validation.md), and Stage 6 delivered
 [reproducible evaluation/release evidence](stage6-validation.md). Backend architecture proposals are a separate, unapproved
 [future-PR backlog for project-lead discussion](architecture-future-prs.md).
-Current runtime: agent 0.1.7, implementation
-`5004b5e7c8e36f7c26e70788227ca92fdfa1675f`; see the Stage 6 validation above.
+Current runtime: agent 0.1.8, implementation
+`055af005e05aa5bdc59c3993609a4937baa3bf85`; the subsequent
+[review cleanup](review-validation.md) fixes request binding/partial consent/provider
+handling, preserves typed continuation and adds stronger versioned evaluations.
 This extends the original infrastructure context in [plan.md](plan.md).
 
 ## Current scope boundary
@@ -328,8 +330,9 @@ Do not open a PR without an explicit request in that turn.
 
 The active **local agent/evaluation Stages 0–6 are delivered** with recorded
 failures and data/capability limits. Review the continuation measure-selection
-finding for a further agent-only iteration and take the architecture/data/unit
-gaps to the project lead. Backend work remains a separate future PR decision;
+finding and review follow-up: typed continuation now passes both live repetitions,
+and the four review defects have targeted coverage in 0.1.8. Take the remaining
+architecture/data/unit gaps to the project lead. Backend work remains a separate future PR decision;
 no reporting/server/ORE changes, data provisioning or hosted rollout is approved
 by completion of this local process.
 

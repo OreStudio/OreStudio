@@ -6,7 +6,8 @@ Use `--corpus evals/holdout-stage5.json` for the separate paraphrase/clarificati
 corpus; the default Stage 4 corpus and grader remain unchanged.
 
 Stage 6 adds [verification, preflight, comparison, metrics and release commands](reproducible-evaluation.md);
-see [validated results and retained regression](stage6-validation.md).
+see [Stage 6 results](stage6-validation.md) and the subsequent
+[0.1.8 review fixes and versioned regression corpus](review-validation.md).
 
 The evaluator runs the actual `Agent` and shared `ToolExecutor` from this
 checkout. It is checkout tooling, not a new server or a change to the installed

@@ -12,6 +12,8 @@ Stage 4 delivered the evaluation runner and [honest baseline](evaluation-baselin
 Stage 5 delivered [bounded workflows](stage5-validation.md); Stage 6 delivered
 [reproducible evaluation/comparison and independent release 0.1.7](stage6-validation.md).
 The active local sequence is complete with documented failures and gaps.
+Subsequent [review-driven cleanup](review-validation.md) is deployed as 0.1.8,
+with typed requests/state, fixed selectors/consent and versioned regression cases.
 Backend/model deployments remain unchanged; future changes need separate scope.
 Most quality evaluations may fail initially; reporting those failures and data/
 capability gaps is a successful baseline, not a reason to change the server.

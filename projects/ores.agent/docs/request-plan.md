@@ -1,5 +1,7 @@
 # Typed requests and review-driven cleanup
 
+Delivered evidence: [0.1.8 review validation](review-validation.md).
+
 Release 0.1.8 keeps the same standalone application, shared MCP/tool executor,
 NATS transport, read-only operations and local model. No reporting/main-server,
 ORE, database/business-data or broker change is part of this cleanup.

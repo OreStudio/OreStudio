@@ -24,7 +24,7 @@
 #+HTML: </div>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/ore_studio-v0.0.28.png" alt="Operations Dashboard">
+#+HTML: <img src="./assets/images/ore_studio-v0.0.29.png" alt="Market Data Feeds">
 #+HTML: <figcaption class="carousel-caption"><strong>Operations Dashboard</strong><span>See tenants, services, the compute grid and the message queue at a glance, with a status for each.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">

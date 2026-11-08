@@ -38,7 +38,7 @@
  * A maker and checker pair puts a second person in front of what a person
  * proposed. Where no person is the maker there is no judgement to check, and the
  * request closes approved in the same act, as the system rather than as the
- * asker. Two things may say so: the deployment, through =inbox.approvals.mode=,
+ * asker. Two things may say so: the deployment, through =system.approvals.mode=,
  * and the kind, through =auto_approval_code=. Whichever closed the request is
  * written on it and named in its decision, so an auto-approved act never reads as
  * one a person signed.
@@ -160,7 +160,7 @@ public:
             ores::database::repository::execute_parameterized_command(
                 ctx_,
                 "delete from ores_variability_system_settings_tbl"
-                " where name = 'inbox.approvals.mode' and tenant_id = $1::uuid",
+                " where name = 'system.approvals.mode' and tenant_id = $1::uuid",
                 {ctx_.tenant_id().to_string()},
                 test_lg(),
                 "Removing the approvals mode the test wrote");
@@ -175,6 +175,16 @@ public:
 
 private:
     void write(std::string value) {
+        // A tenant provisioned by the harness already holds the installation's
+        // copy of the setting, so the test states its own over it rather than
+        // writing a second row.
+        ores::database::repository::execute_parameterized_command(
+            ctx_,
+            "delete from ores_variability_system_settings_tbl"
+            " where name = 'system.approvals.mode' and tenant_id = $1::uuid",
+            {ctx_.tenant_id().to_string()},
+            test_lg(),
+            "Clearing the approvals mode for a test");
         ores::database::repository::execute_parameterized_command(
             ctx_,
             "insert into ores_variability_system_settings_tbl ("
@@ -185,7 +195,7 @@ private:
             "   (select id from ores_refdata_parties_tbl"
             "     where tenant_id = $1::uuid and party_category = 'System'"
             "       and valid_to = ores_utility_infinity_timestamp_fn()),"
-            "   'inbox.approvals.mode', $2, 'string', 'Written by the auto-approval tests',"
+            "   'system.approvals.mode', $2, 'string', 'Written by the auto-approval tests',"
             "   $3, $3, 'system.test', 'Written by the auto-approval tests',"
             "   current_timestamp, ores_utility_infinity_timestamp_fn())",
             {ctx_.tenant_id().to_string(), std::move(value), ctx_.service_account()},

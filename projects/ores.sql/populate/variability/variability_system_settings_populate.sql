@@ -187,7 +187,7 @@ BEGIN
     -- raised, with the system as its decider, and that is visible on the screen
     -- that reads the approvals and in the shell.
     PERFORM ores_variability_system_settings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'inbox.approvals.mode',
+        'system.approvals.mode',
         'enforced',
         'string',
         'Whether this installation enforces approvals: enforced or auto_approved. Default is enforced.'

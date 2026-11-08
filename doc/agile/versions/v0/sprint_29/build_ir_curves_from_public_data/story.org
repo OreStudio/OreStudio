@@ -50,6 +50,7 @@ Every currency the synthetic IR feeds support has a published overnight-index cu
 | [[id:37E35846-59E3-41E8-A9AF-6B9F1E167EB3][Keep the curve publishes of the integration tests out of the development database]] | BACKLOG | | | The integration tests leave curve publishes, withdrawals and supersessions in the development database under random users and a test as-of, so a provisioned tenant appears to hold published curves it never published. |
 | [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]] | BACKLOG | | | A screen shows, for each supported currency, its public source, its calibration policy, its bootstrap config and its latest published curve, as the calibration screen shows the FX coverage. |
 | [[id:E9F41943-12D6-47AB-BA60-6FC0931F1A99][Check that IR calibration is set up for every supported currency]] | ABANDONED | | | Check, currency by currency, that each synthetic IR curve feed has a public calibration source, a calibration policy and a stored history, and set up or record what is missing. |
+| [[id:A2CD8417-F3A3-4D4C-888B-5E6459FA7EFE][Show what the deployment enforces]] | BACKLOG | | | The deployment states whether it enforces approvals, and the interface says so wherever somebody reads the record, so a person never mistakes an auto-approved act for one that was signed. |
 
 * Decisions
 

@@ -210,6 +210,8 @@ bool approval_lifecycle::enforces_approvals() const {
 
     auto mode = read_mode(ctx_);
     if (mode.empty()) {
+        // No person is signed in to the installation from here, so the read
+        // names the service, which is who asks.
         const auto installation =
             ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account());
         mode = read_mode(installation);

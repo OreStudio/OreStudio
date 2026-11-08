@@ -130,7 +130,7 @@ struct expiring_request {
  * @c auto_approved approves every request as it is raised, so a test bed or a
  * demonstration never waits on a click it will always be given.
  */
-inline constexpr std::string_view approvals_mode_setting_name = "inbox.approvals.mode";
+inline constexpr std::string_view approvals_mode_setting_name = "system.approvals.mode";
 
 /// The value of @ref approvals_mode_setting_name that closes every raise.
 inline constexpr std::string_view auto_approved_mode = "auto_approved";

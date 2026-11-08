@@ -158,8 +158,8 @@ struct approval_kind final {
      *
      * The policy is the kind's, so it is a versioned data change with who turned it on and why
      * beside it, and the request and its decision state it in words. A deployment states whether it
-     * enforces approvals at all through inbox.approvals.mode, which closes every kind's requests at
-     * once when it is auto_approved.
+     * enforces approvals at all through system.approvals.mode, which closes every kind's requests
+     * at once when it is auto_approved.
      */
     std::string auto_approval_code;
 

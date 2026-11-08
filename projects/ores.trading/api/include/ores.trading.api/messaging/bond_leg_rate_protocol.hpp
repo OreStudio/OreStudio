@@ -45,7 +45,7 @@ namespace ores::trading::messaging {
 struct bond_leg_rate_key {
     boost::uuids::uuid trade_id;
     std::string leg_role;
-    int leg_number;
+    int leg_number{};
 
     friend bool operator==(const bond_leg_rate_key&, const bond_leg_rate_key&) = default;
 };
@@ -53,7 +53,7 @@ struct bond_leg_rate_key {
 struct bond_leg_rate_write {
     boost::uuids::uuid trade_id;
     std::string leg_role;
-    int leg_number;
+    int leg_number{};
     boost::uuids::uuid trade_activity_id;
     std::string rate_kind;
     std::optional<std::string> index;
@@ -116,7 +116,7 @@ struct bond_leg_rate_event {
     boost::uuids::uuid event_id;
     bond_leg_rate_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -125,7 +125,7 @@ struct bond_leg_rate_event {
 
 struct bond_leg_rate_version_key {
     bond_leg_rate_key bond_leg_rate;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bond_leg_rate_version_key&,
                            const bond_leg_rate_version_key&) = default;
@@ -163,7 +163,7 @@ struct list_bond_leg_rates_request {
 struct list_bond_leg_rates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_leg_rate> bond_leg_rates;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_leg_rates_response&,
                            const list_bond_leg_rates_response&) = default;
@@ -339,7 +339,7 @@ struct list_by_trade_id_bond_leg_rates_request {
 struct list_by_trade_id_bond_leg_rates_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_leg_rate> bond_leg_rates;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_trade_id_bond_leg_rates_response&,
                            const list_by_trade_id_bond_leg_rates_response&) = default;
@@ -368,7 +368,7 @@ struct list_bond_leg_rate_versions_request {
 struct list_bond_leg_rate_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_leg_rate> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_leg_rate_versions_response&,
                            const list_bond_leg_rate_versions_response&) = default;

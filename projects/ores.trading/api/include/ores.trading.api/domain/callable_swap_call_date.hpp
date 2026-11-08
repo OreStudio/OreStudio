@@ -75,7 +75,7 @@ struct callable_swap_call_date final {
      * The schema declares the list unbounded and a document's order is the order it stated, so the
      * ordinal is what identifies a row and preserves that order.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

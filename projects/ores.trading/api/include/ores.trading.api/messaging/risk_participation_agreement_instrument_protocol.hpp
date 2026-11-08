@@ -55,7 +55,7 @@ struct risk_participation_agreement_instrument_write {
     std::string credit_curve_id;
     std::optional<std::string> issuer_id;
     std::optional<double> recovery_rate;
-    double participation_rate;
+    double participation_rate{};
     std::optional<bool> settles_accrual;
     std::optional<bool> naked_option;
 
@@ -99,7 +99,7 @@ struct risk_participation_agreement_instrument_event {
     boost::uuids::uuid event_id;
     risk_participation_agreement_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +109,7 @@ struct risk_participation_agreement_instrument_event {
 
 struct risk_participation_agreement_instrument_version_key {
     risk_participation_agreement_instrument_key risk_participation_agreement_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const risk_participation_agreement_instrument_version_key&,
                            const risk_participation_agreement_instrument_version_key&) = default;
@@ -150,7 +150,7 @@ struct list_risk_participation_agreement_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::risk_participation_agreement_instrument>
         risk_participation_agreement_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_risk_participation_agreement_instruments_response&,
                            const list_risk_participation_agreement_instruments_response&) = default;
@@ -343,7 +343,7 @@ struct list_risk_participation_agreement_instrument_versions_request {
 struct list_risk_participation_agreement_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::risk_participation_agreement_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_risk_participation_agreement_instrument_versions_response&,

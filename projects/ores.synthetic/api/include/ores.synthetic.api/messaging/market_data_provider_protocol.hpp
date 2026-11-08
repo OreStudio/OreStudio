@@ -54,7 +54,7 @@ struct market_data_provider_write {
     std::string name;
     std::string kind;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const market_data_provider_write&,
                            const market_data_provider_write&) = default;
@@ -95,7 +95,7 @@ struct market_data_provider_event {
     boost::uuids::uuid event_id;
     market_data_provider_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct market_data_provider_event {
 
 struct market_data_provider_version_key {
     market_data_provider_key market_data_provider;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const market_data_provider_version_key&,
                            const market_data_provider_version_key&) = default;
@@ -143,7 +143,7 @@ struct list_market_data_providers_request {
 struct list_market_data_providers_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::market_data_provider> providers;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_market_data_providers_response&,
                            const list_market_data_providers_response&) = default;
@@ -320,7 +320,7 @@ struct list_market_data_provider_versions_request {
 struct list_market_data_provider_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::synthetic::domain::market_data_provider> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_market_data_provider_versions_response&,
                            const list_market_data_provider_versions_response&) = default;

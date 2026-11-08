@@ -107,7 +107,7 @@ struct swaption_volatility_config_event {
     boost::uuids::uuid event_id;
     swaption_volatility_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -117,7 +117,7 @@ struct swaption_volatility_config_event {
 
 struct swaption_volatility_config_version_key {
     swaption_volatility_config_key swaption_volatility_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const swaption_volatility_config_version_key&,
                            const swaption_volatility_config_version_key&) = default;
@@ -155,7 +155,7 @@ struct list_swaption_volatility_configs_request {
 struct list_swaption_volatility_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swaption_volatility_config> swaption_volatility_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_swaption_volatility_configs_response&,
                            const list_swaption_volatility_configs_response&) = default;
@@ -335,7 +335,7 @@ struct list_swaption_volatility_config_versions_request {
 struct list_swaption_volatility_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::swaption_volatility_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_swaption_volatility_config_versions_response&,
                            const list_swaption_volatility_config_versions_response&) = default;

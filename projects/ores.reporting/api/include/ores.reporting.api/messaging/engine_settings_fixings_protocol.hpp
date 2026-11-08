@@ -100,7 +100,7 @@ struct engine_settings_fixings_event {
     boost::uuids::uuid event_id;
     engine_settings_fixings_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -110,7 +110,7 @@ struct engine_settings_fixings_event {
 
 struct engine_settings_fixings_version_key {
     engine_settings_fixings_key engine_settings_fixings;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const engine_settings_fixings_version_key&,
                            const engine_settings_fixings_version_key&) = default;
@@ -148,7 +148,7 @@ struct list_engine_settings_fixings_request {
 struct list_engine_settings_fixings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings_fixings> engine_settings_fixings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_engine_settings_fixings_response&,
                            const list_engine_settings_fixings_response&) = default;
@@ -329,7 +329,7 @@ struct list_by_engine_settings_id_engine_settings_fixings_request {
 struct list_by_engine_settings_id_engine_settings_fixings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings_fixings> engine_settings_fixings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_engine_settings_id_engine_settings_fixings_response&,
@@ -360,7 +360,7 @@ struct list_engine_settings_fixings_versions_request {
 struct list_engine_settings_fixings_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::engine_settings_fixings> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_engine_settings_fixings_versions_response&,
                            const list_engine_settings_fixings_versions_response&) = default;

@@ -88,7 +88,7 @@ struct badge_mapping_event {
     boost::uuids::uuid event_id;
     badge_mapping_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -117,7 +117,7 @@ struct list_badge_mappings_request {
 struct list_badge_mappings_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_mapping> badge_mappings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_badge_mappings_response&,
                            const list_badge_mappings_response&) = default;
@@ -294,7 +294,7 @@ struct list_by_code_domain_code_badge_mappings_request {
 struct list_by_code_domain_code_badge_mappings_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_mapping> badge_mappings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_code_domain_code_badge_mappings_response&,
                            const list_by_code_domain_code_badge_mappings_response&) = default;

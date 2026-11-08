@@ -52,7 +52,7 @@ struct equity_swap_period_entity {
 
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
-    int sequence_number;
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     std::optional<std::chrono::year_month_day> period_date;

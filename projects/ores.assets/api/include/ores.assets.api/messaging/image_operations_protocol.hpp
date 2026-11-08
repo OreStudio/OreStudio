@@ -115,15 +115,15 @@ struct get_image_upload_policy_response {
     /**
      * @brief The largest image an upload accepts, in bytes.
      */
-    int max_size_bytes;
+    int max_size_bytes{};
     /**
      * @brief The smallest width an upload accepts, in pixels.
      */
-    int min_width;
+    int min_width{};
     /**
      * @brief The smallest height an upload accepts, in pixels.
      */
-    int min_height;
+    int min_height{};
 
     friend bool operator==(const get_image_upload_policy_response&,
                            const get_image_upload_policy_response&) = default;

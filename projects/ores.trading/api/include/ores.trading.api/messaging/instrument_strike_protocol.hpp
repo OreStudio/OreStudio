@@ -45,7 +45,7 @@ namespace ores::trading::messaging {
 struct instrument_strike_key {
     boost::uuids::uuid trade_id;
     std::string strike_role;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const instrument_strike_key&, const instrument_strike_key&) = default;
 };
@@ -53,7 +53,7 @@ struct instrument_strike_key {
 struct instrument_strike_write {
     boost::uuids::uuid trade_id;
     std::string strike_role;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     std::optional<ores::utility::decimal::decimal> price_value;
     std::optional<std::string> price_currency;
@@ -95,7 +95,7 @@ struct instrument_strike_event {
     boost::uuids::uuid event_id;
     instrument_strike_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct instrument_strike_event {
 
 struct instrument_strike_version_key {
     instrument_strike_key instrument_strike;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const instrument_strike_version_key&,
                            const instrument_strike_version_key&) = default;
@@ -142,7 +142,7 @@ struct list_instrument_strikes_request {
 struct list_instrument_strikes_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_strike> instrument_strikes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_strikes_response&,
                            const list_instrument_strikes_response&) = default;
@@ -317,7 +317,7 @@ struct list_instrument_strike_versions_request {
 struct list_instrument_strike_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_strike> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_strike_versions_response&,
                            const list_instrument_strike_versions_response&) = default;

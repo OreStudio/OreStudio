@@ -112,7 +112,7 @@ struct list_notification_arguments_request {
 struct list_notification_arguments_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_argument> notification_arguments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_notification_arguments_response&,
                            const list_notification_arguments_response&) = default;
@@ -289,7 +289,7 @@ struct list_by_notification_id_notification_arguments_request {
 struct list_by_notification_id_notification_arguments_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::notification_argument> notification_arguments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_notification_id_notification_arguments_response&,

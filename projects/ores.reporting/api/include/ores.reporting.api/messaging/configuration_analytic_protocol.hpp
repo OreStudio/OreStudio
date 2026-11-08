@@ -53,7 +53,7 @@ struct configuration_analytic_write {
     boost::uuids::uuid id;
     boost::uuids::uuid configuration_id;
     std::string analytic_type_code;
-    int display_order;
+    int display_order{};
     std::string active;
 
     friend bool operator==(const configuration_analytic_write&,
@@ -99,7 +99,7 @@ struct configuration_analytic_event {
     boost::uuids::uuid event_id;
     configuration_analytic_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +109,7 @@ struct configuration_analytic_event {
 
 struct configuration_analytic_version_key {
     configuration_analytic_key configuration_analytic;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const configuration_analytic_version_key&,
                            const configuration_analytic_version_key&) = default;
@@ -147,7 +147,7 @@ struct list_configuration_analytics_request {
 struct list_configuration_analytics_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic> analytics;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_configuration_analytics_response&,
                            const list_configuration_analytics_response&) = default;
@@ -328,7 +328,7 @@ struct list_by_configuration_id_configuration_analytics_request {
 struct list_by_configuration_id_configuration_analytics_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic> analytics;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_configuration_id_configuration_analytics_response&,
@@ -361,7 +361,7 @@ struct list_by_analytic_type_code_configuration_analytics_request {
 struct list_by_analytic_type_code_configuration_analytics_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic> analytics;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_analytic_type_code_configuration_analytics_response&,
@@ -392,7 +392,7 @@ struct list_configuration_analytic_versions_request {
 struct list_configuration_analytic_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_analytic> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_configuration_analytic_versions_response&,
                            const list_configuration_analytic_versions_response&) = default;

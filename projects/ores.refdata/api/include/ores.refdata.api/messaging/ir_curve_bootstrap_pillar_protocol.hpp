@@ -53,7 +53,7 @@ struct ir_curve_bootstrap_pillar_write {
     boost::uuids::uuid id;
     boost::uuids::uuid party_id;
     boost::uuids::uuid bootstrap_config_id;
-    int sequence_index;
+    int sequence_index{};
     std::string start_tenor_code;
     std::string end_tenor_code;
     std::string curve_role_code;
@@ -100,7 +100,7 @@ struct ir_curve_bootstrap_pillar_event {
     boost::uuids::uuid event_id;
     ir_curve_bootstrap_pillar_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -110,7 +110,7 @@ struct ir_curve_bootstrap_pillar_event {
 
 struct ir_curve_bootstrap_pillar_version_key {
     ir_curve_bootstrap_pillar_key ir_curve_bootstrap_pillar;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const ir_curve_bootstrap_pillar_version_key&,
                            const ir_curve_bootstrap_pillar_version_key&) = default;
@@ -148,7 +148,7 @@ struct list_ir_curve_bootstrap_pillars_request {
 struct list_ir_curve_bootstrap_pillars_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> pillars;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ir_curve_bootstrap_pillars_response&,
                            const list_ir_curve_bootstrap_pillars_response&) = default;
@@ -327,7 +327,7 @@ struct list_ir_curve_bootstrap_pillar_versions_request {
 struct list_ir_curve_bootstrap_pillar_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::ir_curve_bootstrap_pillar> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ir_curve_bootstrap_pillar_versions_response&,
                            const list_ir_curve_bootstrap_pillar_versions_response&) = default;

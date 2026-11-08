@@ -78,7 +78,7 @@ struct swap_leg_rate final {
     /**
      * @brief 1-based ordinal of the leg within the trade, matching the leg row's own.
      */
-    int leg_number;
+    int leg_number{};
 
     /**
      * @brief Which arm of the leg stated this row: fixed for a fixed leg's rate, spread for a
@@ -91,7 +91,7 @@ struct swap_leg_rate final {
     /**
      * @brief 1-based ordinal of this rate within the leg, in the order the document states it.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

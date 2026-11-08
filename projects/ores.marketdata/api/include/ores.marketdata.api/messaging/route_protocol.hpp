@@ -97,7 +97,7 @@ struct route_event {
     boost::uuids::uuid event_id;
     route_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct route_event {
 
 struct route_version_key {
     route_key route;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const route_version_key&, const route_version_key&) = default;
 };
@@ -141,7 +141,7 @@ struct list_routes_request {
 struct list_routes_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::route> routes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_routes_response&, const list_routes_response&) = default;
 };
@@ -309,7 +309,7 @@ struct list_route_versions_request {
 struct list_route_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::route> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_route_versions_response&,
                            const list_route_versions_response&) = default;

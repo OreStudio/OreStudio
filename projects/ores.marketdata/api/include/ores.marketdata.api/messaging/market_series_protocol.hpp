@@ -56,7 +56,7 @@ struct market_series_write {
     std::string series_subclass;
     std::string derivation_kind;
     boost::uuids::uuid derivation_config_id;
-    int derivation_config_version;
+    int derivation_config_version{};
 
     friend bool operator==(const market_series_write&, const market_series_write&) = default;
 };
@@ -94,7 +94,7 @@ struct market_series_event {
     boost::uuids::uuid event_id;
     market_series_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +103,7 @@ struct market_series_event {
 
 struct market_series_version_key {
     market_series_key market_series;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const market_series_version_key&,
                            const market_series_version_key&) = default;
@@ -141,7 +141,7 @@ struct list_market_series_request {
 struct list_market_series_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_series> market_series;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_market_series_response&,
                            const list_market_series_response&) = default;
@@ -316,7 +316,7 @@ struct list_market_series_versions_request {
 struct list_market_series_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_series> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_market_series_versions_response&,
                            const list_market_series_versions_response&) = default;

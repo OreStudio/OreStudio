@@ -84,7 +84,7 @@ struct list_calendar_dates_request {
 struct list_calendar_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_date> calendar_dates;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_calendar_dates_response&,
                            const list_calendar_dates_response&) = default;
@@ -163,7 +163,7 @@ struct list_by_calendar_code_calendar_dates_request {
 struct list_by_calendar_code_calendar_dates_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::calendar_date> calendar_dates;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_calendar_code_calendar_dates_response&,
                            const list_by_calendar_code_calendar_dates_response&) = default;

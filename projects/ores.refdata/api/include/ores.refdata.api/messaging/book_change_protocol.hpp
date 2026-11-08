@@ -67,7 +67,7 @@ struct book_change_event {
     boost::uuids::uuid event_id;
     book_change_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -76,7 +76,7 @@ struct book_change_event {
 
 struct book_change_version_key {
     book_change_key book_change;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const book_change_version_key&,
                            const book_change_version_key&) = default;
@@ -114,7 +114,7 @@ struct list_book_changes_request {
 struct list_book_changes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book_change> book_changes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_book_changes_response&,
                            const list_book_changes_response&) = default;
@@ -192,7 +192,7 @@ struct list_by_request_id_book_changes_request {
 struct list_by_request_id_book_changes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book_change> book_changes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_request_id_book_changes_response&,
                            const list_by_request_id_book_changes_response&) = default;
@@ -221,7 +221,7 @@ struct list_book_change_versions_request {
 struct list_book_change_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::book_change> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_book_change_versions_response&,
                            const list_book_change_versions_response&) = default;

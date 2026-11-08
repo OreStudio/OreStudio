@@ -53,8 +53,8 @@ struct instrument_barrier_level_entity {
 
     boost::uuids::uuid trade_id;
     std::string barrier_role;
-    int barrier_sequence_number;
-    int sequence_number;
+    int barrier_sequence_number{};
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid trade_activity_id;

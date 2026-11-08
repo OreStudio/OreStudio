@@ -52,7 +52,7 @@ struct badge_severity_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const badge_severity_write&, const badge_severity_write&) = default;
 };
@@ -89,7 +89,7 @@ struct badge_severity_event {
     boost::uuids::uuid event_id;
     badge_severity_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -98,7 +98,7 @@ struct badge_severity_event {
 
 struct badge_severity_version_key {
     badge_severity_key badge_severity;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const badge_severity_version_key&,
                            const badge_severity_version_key&) = default;
@@ -136,7 +136,7 @@ struct list_badge_severities_request {
 struct list_badge_severities_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_severity> severities;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_badge_severities_response&,
                            const list_badge_severities_response&) = default;
@@ -311,7 +311,7 @@ struct list_badge_severity_versions_request {
 struct list_badge_severity_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::badge_severity> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_badge_severity_versions_response&,
                            const list_badge_severity_versions_response&) = default;

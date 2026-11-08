@@ -52,7 +52,7 @@ struct curve_segment_write {
     boost::uuids::uuid id;
     boost::uuids::uuid curve_definition_id;
     std::string segment_type;
-    int position;
+    int position{};
 
     friend bool operator==(const curve_segment_write&, const curve_segment_write&) = default;
 };
@@ -88,7 +88,7 @@ struct curve_segment_event {
     boost::uuids::uuid event_id;
     curve_segment_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +97,7 @@ struct curve_segment_event {
 
 struct curve_segment_version_key {
     curve_segment_key curve_segment;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_segment_version_key&,
                            const curve_segment_version_key&) = default;
@@ -135,7 +135,7 @@ struct list_curve_segments_request {
 struct list_curve_segments_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment> segments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_segments_response&,
                            const list_curve_segments_response&) = default;
@@ -310,7 +310,7 @@ struct list_curve_segment_versions_request {
 struct list_curve_segment_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_segment> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_segment_versions_response&,
                            const list_curve_segment_versions_response&) = default;

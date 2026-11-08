@@ -54,7 +54,7 @@ struct configuration_market_binding_write {
     boost::uuids::uuid configuration_id;
     std::string role;
     std::string market_configuration_name;
-    int position;
+    int position{};
 
     friend bool operator==(const configuration_market_binding_write&,
                            const configuration_market_binding_write&) = default;
@@ -98,7 +98,7 @@ struct configuration_market_binding_event {
     boost::uuids::uuid event_id;
     configuration_market_binding_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +108,7 @@ struct configuration_market_binding_event {
 
 struct configuration_market_binding_version_key {
     configuration_market_binding_key configuration_market_binding;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const configuration_market_binding_version_key&,
                            const configuration_market_binding_version_key&) = default;
@@ -147,7 +147,7 @@ struct list_configuration_market_bindings_request {
 struct list_configuration_market_bindings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_market_binding> bindings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_configuration_market_bindings_response&,
                            const list_configuration_market_bindings_response&) = default;
@@ -333,7 +333,7 @@ struct list_by_configuration_id_configuration_market_bindings_request {
 struct list_by_configuration_id_configuration_market_bindings_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_market_binding> bindings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_configuration_id_configuration_market_bindings_response&,
@@ -364,7 +364,7 @@ struct list_configuration_market_binding_versions_request {
 struct list_configuration_market_binding_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration_market_binding> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_configuration_market_binding_versions_response&,
                            const list_configuration_market_binding_versions_response&) = default;

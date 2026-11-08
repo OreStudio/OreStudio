@@ -78,7 +78,7 @@ struct {{entity_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{{cpp_type}}} {{column}};
+    {{{cpp_type}}} {{column}}{{{cpp_value_init}}};
 
 {{/primary_key.columns}}
 {{#natural_keys}}
@@ -89,7 +89,7 @@ struct {{entity_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{{cpp_type}}} {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{{cpp_type}}} {{column}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
 
 {{/natural_keys}}
 {{/has_identity_group}}
@@ -103,7 +103,7 @@ struct {{entity_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
 
 {{/sql_only}}
 {{/is_identity_group_column}}
@@ -259,7 +259,7 @@ struct {{name_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
 
 {{/columns}}
     /**

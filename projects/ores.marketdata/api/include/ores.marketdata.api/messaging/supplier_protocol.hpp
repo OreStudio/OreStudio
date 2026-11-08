@@ -65,7 +65,7 @@ struct supplier_event {
     boost::uuids::uuid event_id;
     supplier_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -74,7 +74,7 @@ struct supplier_event {
 
 struct supplier_version_key {
     supplier_key supplier;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const supplier_version_key&, const supplier_version_key&) = default;
 };
@@ -110,7 +110,7 @@ struct list_suppliers_request {
 struct list_suppliers_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::supplier> suppliers;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_suppliers_response&,
                            const list_suppliers_response&) = default;
@@ -185,7 +185,7 @@ struct list_supplier_versions_request {
 struct list_supplier_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::supplier> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_supplier_versions_response&,
                            const list_supplier_versions_response&) = default;

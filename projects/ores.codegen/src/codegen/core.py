@@ -434,6 +434,43 @@ def _insert_org_marker(rendered, template_name):
 _RENDERER = pystache.Renderer(escape=lambda s: s)
 
 
+# A member of one of these types is indeterminate unless its struct sets it.
+_VALUE_INIT_CPP_TYPES = frozenset({
+    "bool", "int", "long", "long long", "short", "unsigned", "double", "float",
+    "std::int8_t", "std::int16_t", "std::int32_t", "std::int64_t",
+    "std::uint8_t", "std::uint16_t", "std::uint32_t", "std::uint64_t",
+    "std::size_t",
+})
+
+# The templates that declare C++ members from a field's cpp_type.
+_VALUE_INIT_TEMPLATES = frozenset({
+    "cpp_protocol.hpp.mustache",
+    "cpp_field_group.hpp.mustache",
+    "cpp_domain_type_class.hpp.mustache",
+    "cpp_domain_type_entity.hpp.mustache",
+})
+
+
+def _mark_value_init(node, seen):
+    """Set cpp_value_init on every field dict reachable from node.
+
+    A non-scalar field gets the empty string rather than no key, because
+    mustache resolves a missing name by walking up the context stack.
+    """
+    if not isinstance(node, (dict, list)) or id(node) in seen:
+        return
+    seen.add(id(node))
+    if isinstance(node, list):
+        for item in node:
+            _mark_value_init(item, seen)
+        return
+    if 'cpp_type' in node:
+        node['cpp_value_init'] = (
+            '{}' if node['cpp_type'] in _VALUE_INIT_CPP_TYPES else '')
+    for value in node.values():
+        _mark_value_init(value, seen)
+
+
 def render_template(template_path, data):
     """
     Render a mustache template with the provided data.
@@ -462,6 +499,9 @@ def render_template(template_path, data):
                 f"{extended_data[licence_key]}\n"
                 f"{generated_marker(template_name, cmake=cmake)}"
             )
+
+    if template_name in _VALUE_INIT_TEMPLATES:
+        _mark_value_init(extended_data, set())
 
     rendered = _RENDERER.render(template_content, extended_data)
     if _emits_org(template_name):

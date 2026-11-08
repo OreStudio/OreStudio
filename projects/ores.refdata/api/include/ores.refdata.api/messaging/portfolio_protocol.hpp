@@ -57,7 +57,7 @@ struct portfolio_write {
     std::optional<boost::uuids::uuid> owner_unit_id;
     std::string purpose_type;
     std::string aggregation_ccy;
-    bool is_virtual;
+    bool is_virtual{};
     std::optional<boost::uuids::uuid> sandbox_id;
     std::string status;
 
@@ -97,7 +97,7 @@ struct portfolio_event {
     boost::uuids::uuid event_id;
     portfolio_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct portfolio_event {
 
 struct portfolio_version_key {
     portfolio_key portfolio;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const portfolio_version_key&, const portfolio_version_key&) = default;
 };
@@ -143,7 +143,7 @@ struct list_portfolios_request {
 struct list_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::portfolio> portfolios;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_portfolios_response&,
                            const list_portfolios_response&) = default;
@@ -315,7 +315,7 @@ struct list_by_sandbox_id_portfolios_request {
 struct list_by_sandbox_id_portfolios_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::portfolio> portfolios;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_sandbox_id_portfolios_response&,
                            const list_by_sandbox_id_portfolios_response&) = default;
@@ -344,7 +344,7 @@ struct list_portfolio_versions_request {
 struct list_portfolio_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::portfolio> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_portfolio_versions_response&,
                            const list_portfolio_versions_response&) = default;

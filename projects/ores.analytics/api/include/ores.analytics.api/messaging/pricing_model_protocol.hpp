@@ -88,7 +88,7 @@ struct pricing_model_event {
     boost::uuids::uuid event_id;
     pricing_model_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -97,7 +97,7 @@ struct pricing_model_event {
 
 struct pricing_model_version_key {
     pricing_model_key pricing_model;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const pricing_model_version_key&,
                            const pricing_model_version_key&) = default;
@@ -135,7 +135,7 @@ struct list_pricing_models_request {
 struct list_pricing_models_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model> models;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_pricing_models_response&,
                            const list_pricing_models_response&) = default;
@@ -310,7 +310,7 @@ struct list_pricing_model_versions_request {
 struct list_pricing_model_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::pricing_model> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_pricing_model_versions_response&,
                            const list_pricing_model_versions_response&) = default;

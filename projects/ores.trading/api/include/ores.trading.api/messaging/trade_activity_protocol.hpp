@@ -54,7 +54,7 @@ struct trade_activity_write {
     std::string actor;
     std::chrono::system_clock::time_point occurred_at;
     std::string comment;
-    bool is_operational_error;
+    bool is_operational_error{};
 
     friend bool operator==(const trade_activity_write&, const trade_activity_write&) = default;
 };
@@ -91,7 +91,7 @@ struct trade_activity_event {
     boost::uuids::uuid event_id;
     trade_activity_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +100,7 @@ struct trade_activity_event {
 
 struct trade_activity_version_key {
     trade_activity_key trade_activity;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const trade_activity_version_key&,
                            const trade_activity_version_key&) = default;
@@ -138,7 +138,7 @@ struct list_trade_activities_request {
 struct list_trade_activities_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_activity> activities;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_activities_response&,
                            const list_trade_activities_response&) = default;
@@ -313,7 +313,7 @@ struct list_trade_activity_versions_request {
 struct list_trade_activity_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_activity> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_activity_versions_response&,
                            const list_trade_activity_versions_response&) = default;

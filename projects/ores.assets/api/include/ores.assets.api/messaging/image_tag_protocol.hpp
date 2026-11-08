@@ -107,7 +107,7 @@ struct list_image_tags_request {
 struct list_image_tags_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::image_tag> image_tags;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_image_tags_response&,
                            const list_image_tags_response&) = default;
@@ -279,7 +279,7 @@ struct list_by_image_id_image_tags_request {
 struct list_by_image_id_image_tags_response {
     ores::utility::domain::result result;
     std::vector<ores::assets::domain::image_tag> image_tags;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_image_id_image_tags_response&,
                            const list_by_image_id_image_tags_response&) = default;

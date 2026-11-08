@@ -53,8 +53,8 @@ struct approval_request_state_write {
     std::string code;
     std::string name;
     std::string description;
-    bool is_final;
-    int display_order;
+    bool is_final{};
+    int display_order{};
 
     friend bool operator==(const approval_request_state_write&,
                            const approval_request_state_write&) = default;
@@ -95,7 +95,7 @@ struct approval_request_state_event {
     boost::uuids::uuid event_id;
     approval_request_state_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct approval_request_state_event {
 
 struct approval_request_state_version_key {
     approval_request_state_key approval_request_state;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const approval_request_state_version_key&,
                            const approval_request_state_version_key&) = default;
@@ -143,7 +143,7 @@ struct list_approval_request_states_request {
 struct list_approval_request_states_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request_state> states;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_request_states_response&,
                            const list_approval_request_states_response&) = default;
@@ -319,7 +319,7 @@ struct list_approval_request_state_versions_request {
 struct list_approval_request_state_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_request_state> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_request_state_versions_response&,
                            const list_approval_request_state_versions_response&) = default;

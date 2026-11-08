@@ -109,7 +109,7 @@ struct equity_digital_option_instrument_event {
     boost::uuids::uuid event_id;
     equity_digital_option_instrument_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -119,7 +119,7 @@ struct equity_digital_option_instrument_event {
 
 struct equity_digital_option_instrument_version_key {
     equity_digital_option_instrument_key equity_digital_option_instrument;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_digital_option_instrument_version_key&,
                            const equity_digital_option_instrument_version_key&) = default;
@@ -159,7 +159,7 @@ struct list_equity_digital_option_instruments_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_digital_option_instrument>
         equity_digital_option_instruments;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_digital_option_instruments_response&,
                            const list_equity_digital_option_instruments_response&) = default;
@@ -344,7 +344,7 @@ struct list_equity_digital_option_instrument_versions_request {
 struct list_equity_digital_option_instrument_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_digital_option_instrument> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_equity_digital_option_instrument_versions_response&,

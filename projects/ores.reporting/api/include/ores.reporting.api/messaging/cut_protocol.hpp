@@ -71,7 +71,7 @@ struct cut_event {
     boost::uuids::uuid event_id;
     cut_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -80,7 +80,7 @@ struct cut_event {
 
 struct cut_version_key {
     cut_key cut;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const cut_version_key&, const cut_version_key&) = default;
 };
@@ -115,7 +115,7 @@ struct list_cuts_request {
 struct list_cuts_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut> cuts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cuts_response&, const list_cuts_response&) = default;
 };
@@ -188,7 +188,7 @@ struct list_by_kind_code_cuts_request {
 struct list_by_kind_code_cuts_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut> cuts;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_kind_code_cuts_response&,
                            const list_by_kind_code_cuts_response&) = default;
@@ -217,7 +217,7 @@ struct list_cut_versions_request {
 struct list_cut_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::cut> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cut_versions_response&,
                            const list_cut_versions_response&) = default;

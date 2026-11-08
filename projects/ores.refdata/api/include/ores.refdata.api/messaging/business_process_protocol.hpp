@@ -86,7 +86,7 @@ struct business_process_event {
     boost::uuids::uuid event_id;
     business_process_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -95,7 +95,7 @@ struct business_process_event {
 
 struct business_process_version_key {
     business_process_key business_process;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const business_process_version_key&,
                            const business_process_version_key&) = default;
@@ -132,7 +132,7 @@ struct list_business_processes_request {
 struct list_business_processes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_process> processes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_business_processes_response&,
                            const list_business_processes_response&) = default;
@@ -307,7 +307,7 @@ struct list_business_process_versions_request {
 struct list_business_process_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::business_process> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_business_process_versions_response&,
                            const list_business_process_versions_response&) = default;

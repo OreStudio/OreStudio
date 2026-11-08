@@ -95,7 +95,7 @@ struct default_curve_transition_matrix_event {
     boost::uuids::uuid event_id;
     default_curve_transition_matrix_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct default_curve_transition_matrix_event {
 
 struct default_curve_transition_matrix_version_key {
     default_curve_transition_matrix_key default_curve_transition_matrix;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const default_curve_transition_matrix_version_key&,
                            const default_curve_transition_matrix_version_key&) = default;
@@ -144,7 +144,7 @@ struct list_default_curve_transition_matrices_request {
 struct list_default_curve_transition_matrices_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::default_curve_transition_matrix> transition_matrices;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_default_curve_transition_matrices_response&,
                            const list_default_curve_transition_matrices_response&) = default;
@@ -328,7 +328,7 @@ struct list_default_curve_transition_matrix_versions_request {
 struct list_default_curve_transition_matrix_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::default_curve_transition_matrix> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_default_curve_transition_matrix_versions_response&,
                            const list_default_curve_transition_matrix_versions_response&) = default;

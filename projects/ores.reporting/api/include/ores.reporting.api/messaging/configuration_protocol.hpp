@@ -90,7 +90,7 @@ struct configuration_event {
     boost::uuids::uuid event_id;
     configuration_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -99,7 +99,7 @@ struct configuration_event {
 
 struct configuration_version_key {
     configuration_key configuration;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const configuration_version_key&,
                            const configuration_version_key&) = default;
@@ -137,7 +137,7 @@ struct list_configurations_request {
 struct list_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration> configurations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_configurations_response&,
                            const list_configurations_response&) = default;
@@ -314,7 +314,7 @@ struct list_by_configuration_type_code_configurations_request {
 struct list_by_configuration_type_code_configurations_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration> configurations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_configuration_type_code_configurations_response&,
@@ -344,7 +344,7 @@ struct list_configuration_versions_request {
 struct list_configuration_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::configuration> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_configuration_versions_response&,
                            const list_configuration_versions_response&) = default;

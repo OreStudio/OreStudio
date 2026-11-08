@@ -95,7 +95,7 @@ struct curve_volatility_curve_event {
     boost::uuids::uuid event_id;
     curve_volatility_curve_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct curve_volatility_curve_event {
 
 struct curve_volatility_curve_version_key {
     curve_volatility_curve_key curve_volatility_curve;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_volatility_curve_version_key&,
                            const curve_volatility_curve_version_key&) = default;
@@ -143,7 +143,7 @@ struct list_curve_volatility_curves_request {
 struct list_curve_volatility_curves_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_volatility_curve> curve_volatility_curves;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_volatility_curves_response&,
                            const list_curve_volatility_curves_response&) = default;
@@ -320,7 +320,7 @@ struct list_curve_volatility_curve_versions_request {
 struct list_curve_volatility_curve_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_volatility_curve> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_volatility_curve_versions_response&,
                            const list_curve_volatility_curve_versions_response&) = default;

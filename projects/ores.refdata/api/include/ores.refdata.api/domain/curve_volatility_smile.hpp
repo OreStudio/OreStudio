@@ -81,12 +81,12 @@ struct curve_volatility_smile final {
     /**
      * @brief The error below which the fit stops early.
      */
-    double exit_early_error_threshold;
+    double exit_early_error_threshold{};
 
     /**
      * @brief The error above which the fit is refused.
      */
-    double max_acceptable_error;
+    double max_acceptable_error{};
 
     /**
      * @brief The dimension the fit's residual is corrected in, when the document states one:

@@ -54,14 +54,14 @@ struct approval_kind_write {
     std::string description;
     std::string decide_permission_code;
     std::optional<std::string> raise_permission_code;
-    bool allows_hold;
-    bool comment_on_approve;
+    bool allows_hold{};
+    bool comment_on_approve{};
     std::optional<int> expires_after_days;
     std::optional<std::string> apply_workflow_type;
     std::optional<int> apply_window_hours;
-    int approvals_required;
+    int approvals_required{};
     std::string auto_approval_code;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const approval_kind_write&, const approval_kind_write&) = default;
 };
@@ -97,7 +97,7 @@ struct approval_kind_event {
     boost::uuids::uuid event_id;
     approval_kind_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct approval_kind_event {
 
 struct approval_kind_version_key {
     approval_kind_key approval_kind;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const approval_kind_version_key&,
                            const approval_kind_version_key&) = default;
@@ -144,7 +144,7 @@ struct list_approval_kinds_request {
 struct list_approval_kinds_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_kind> kinds;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_kinds_response&,
                            const list_approval_kinds_response&) = default;
@@ -319,7 +319,7 @@ struct list_approval_kind_versions_request {
 struct list_approval_kind_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::inbox::domain::approval_kind> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_approval_kind_versions_response&,
                            const list_approval_kind_versions_response&) = default;

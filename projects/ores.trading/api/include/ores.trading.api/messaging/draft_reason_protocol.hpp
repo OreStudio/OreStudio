@@ -87,7 +87,7 @@ struct draft_reason_event {
     boost::uuids::uuid event_id;
     draft_reason_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -96,7 +96,7 @@ struct draft_reason_event {
 
 struct draft_reason_version_key {
     draft_reason_key draft_reason;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const draft_reason_version_key&,
                            const draft_reason_version_key&) = default;
@@ -134,7 +134,7 @@ struct list_draft_reasons_request {
 struct list_draft_reasons_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::draft_reason> draft_reasons;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_draft_reasons_response&,
                            const list_draft_reasons_response&) = default;
@@ -309,7 +309,7 @@ struct list_draft_reason_versions_request {
 struct list_draft_reason_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::draft_reason> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_draft_reason_versions_response&,
                            const list_draft_reason_versions_response&) = default;

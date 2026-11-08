@@ -54,7 +54,7 @@ struct commodity_write {
     std::string description;
     std::string unit_code;
     std::string quotation_currency_code;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const commodity_write&, const commodity_write&) = default;
 };
@@ -90,7 +90,7 @@ struct commodity_event {
     boost::uuids::uuid event_id;
     commodity_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -99,7 +99,7 @@ struct commodity_event {
 
 struct commodity_version_key {
     commodity_key commodity;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const commodity_version_key&, const commodity_version_key&) = default;
 };
@@ -136,7 +136,7 @@ struct list_commodities_request {
 struct list_commodities_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity> commodities;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodities_response&,
                            const list_commodities_response&) = default;
@@ -307,7 +307,7 @@ struct list_commodity_versions_request {
 struct list_commodity_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::commodity> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_commodity_versions_response&,
                            const list_commodity_versions_response&) = default;

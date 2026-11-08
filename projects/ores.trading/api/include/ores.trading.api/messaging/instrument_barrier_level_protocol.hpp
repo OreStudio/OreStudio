@@ -45,8 +45,8 @@ namespace ores::trading::messaging {
 struct instrument_barrier_level_key {
     boost::uuids::uuid trade_id;
     std::string barrier_role;
-    int barrier_sequence_number;
-    int sequence_number;
+    int barrier_sequence_number{};
+    int sequence_number{};
 
     friend bool operator==(const instrument_barrier_level_key&,
                            const instrument_barrier_level_key&) = default;
@@ -55,8 +55,8 @@ struct instrument_barrier_level_key {
 struct instrument_barrier_level_write {
     boost::uuids::uuid trade_id;
     std::string barrier_role;
-    int barrier_sequence_number;
-    int sequence_number;
+    int barrier_sequence_number{};
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     ores::utility::decimal::decimal level;
 
@@ -100,7 +100,7 @@ struct instrument_barrier_level_event {
     boost::uuids::uuid event_id;
     instrument_barrier_level_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -110,7 +110,7 @@ struct instrument_barrier_level_event {
 
 struct instrument_barrier_level_version_key {
     instrument_barrier_level_key instrument_barrier_level;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const instrument_barrier_level_version_key&,
                            const instrument_barrier_level_version_key&) = default;
@@ -148,7 +148,7 @@ struct list_instrument_barrier_levels_request {
 struct list_instrument_barrier_levels_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_barrier_level> instrument_barrier_levels;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_barrier_levels_response&,
                            const list_instrument_barrier_levels_response&) = default;
@@ -328,7 +328,7 @@ struct list_by_trade_id_instrument_barrier_levels_request {
 struct list_by_trade_id_instrument_barrier_levels_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_barrier_level> instrument_barrier_levels;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_trade_id_instrument_barrier_levels_response&,
                            const list_by_trade_id_instrument_barrier_levels_response&) = default;
@@ -358,7 +358,7 @@ struct list_instrument_barrier_level_versions_request {
 struct list_instrument_barrier_level_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_barrier_level> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_barrier_level_versions_response&,
                            const list_instrument_barrier_level_versions_response&) = default;

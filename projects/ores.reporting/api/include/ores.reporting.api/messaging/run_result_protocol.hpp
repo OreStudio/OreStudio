@@ -81,7 +81,7 @@ struct run_result_event {
     boost::uuids::uuid event_id;
     run_result_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -110,7 +110,7 @@ struct list_run_results_request {
 struct list_run_results_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::run_result> results;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_run_results_response&,
                            const list_run_results_response&) = default;

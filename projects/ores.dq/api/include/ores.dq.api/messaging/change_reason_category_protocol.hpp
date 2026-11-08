@@ -92,7 +92,7 @@ struct change_reason_category_event {
     boost::uuids::uuid event_id;
     change_reason_category_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +102,7 @@ struct change_reason_category_event {
 
 struct change_reason_category_version_key {
     change_reason_category_key change_reason_category;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const change_reason_category_version_key&,
                            const change_reason_category_version_key&) = default;
@@ -140,7 +140,7 @@ struct list_change_reason_categories_request {
 struct list_change_reason_categories_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::change_reason_category> categories;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_change_reason_categories_response&,
                            const list_change_reason_categories_response&) = default;
@@ -315,7 +315,7 @@ struct list_change_reason_category_versions_request {
 struct list_change_reason_category_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::change_reason_category> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_change_reason_category_versions_response&,
                            const list_change_reason_category_versions_response&) = default;

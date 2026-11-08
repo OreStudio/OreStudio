@@ -45,7 +45,7 @@ namespace ores::trading::messaging {
 struct equity_swap_period_key {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const equity_swap_period_key&, const equity_swap_period_key&) = default;
 };
@@ -53,7 +53,7 @@ struct equity_swap_period_key {
 struct equity_swap_period_write {
     boost::uuids::uuid trade_id;
     boost::uuids::uuid trade_activity_id;
-    int sequence_number;
+    int sequence_number{};
     std::optional<std::chrono::year_month_day> period_date;
     std::optional<double> knock_out_level;
     std::optional<double> fixed_trigger_level;
@@ -90,7 +90,7 @@ struct equity_swap_period_event {
     boost::uuids::uuid event_id;
     equity_swap_period_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +100,7 @@ struct equity_swap_period_event {
 
 struct equity_swap_period_version_key {
     equity_swap_period_key equity_swap_period;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_swap_period_version_key&,
                            const equity_swap_period_version_key&) = default;
@@ -137,7 +137,7 @@ struct list_equity_swap_periods_request {
 struct list_equity_swap_periods_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_swap_period> equity_swap_periods;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_swap_periods_response&,
                            const list_equity_swap_periods_response&) = default;
@@ -312,7 +312,7 @@ struct list_equity_swap_period_versions_request {
 struct list_equity_swap_period_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::equity_swap_period> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_swap_period_versions_response&,
                            const list_equity_swap_period_versions_response&) = default;

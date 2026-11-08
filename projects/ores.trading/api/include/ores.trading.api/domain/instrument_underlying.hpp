@@ -77,7 +77,7 @@ struct instrument_underlying final {
      * @brief 1-based ordinal of this underlying within its list, in the order the document states
      * it.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

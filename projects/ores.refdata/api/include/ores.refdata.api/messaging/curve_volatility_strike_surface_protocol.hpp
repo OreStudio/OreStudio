@@ -56,7 +56,7 @@ struct curve_volatility_strike_surface_write {
     std::string expiries;
     std::string time_interpolation;
     std::string strike_interpolation;
-    bool extrapolation;
+    bool extrapolation{};
     std::string time_extrapolation;
     std::optional<bool> time_extrapolation_variance;
     std::string strike_extrapolation;
@@ -101,7 +101,7 @@ struct curve_volatility_strike_surface_event {
     boost::uuids::uuid event_id;
     curve_volatility_strike_surface_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -111,7 +111,7 @@ struct curve_volatility_strike_surface_event {
 
 struct curve_volatility_strike_surface_version_key {
     curve_volatility_strike_surface_key curve_volatility_strike_surface;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_volatility_strike_surface_version_key&,
                            const curve_volatility_strike_surface_version_key&) = default;
@@ -151,7 +151,7 @@ struct list_curve_volatility_strike_surfaces_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_volatility_strike_surface>
         curve_volatility_strike_surfaces;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_volatility_strike_surfaces_response&,
                            const list_curve_volatility_strike_surfaces_response&) = default;
@@ -336,7 +336,7 @@ struct list_curve_volatility_strike_surface_versions_request {
 struct list_curve_volatility_strike_surface_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_volatility_strike_surface> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_volatility_strike_surface_versions_response&,
                            const list_curve_volatility_strike_surface_versions_response&) = default;

@@ -92,7 +92,7 @@ struct currency_calendar_event {
     boost::uuids::uuid event_id;
     currency_calendar_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -122,7 +122,7 @@ struct list_currency_calendars_request {
 struct list_currency_calendars_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_calendar> currency_calendars;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_currency_calendars_response&,
                            const list_currency_calendars_response&) = default;
@@ -299,7 +299,7 @@ struct list_by_currency_iso_code_currency_calendars_request {
 struct list_by_currency_iso_code_currency_calendars_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_calendar> currency_calendars;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_currency_iso_code_currency_calendars_response&,
                            const list_by_currency_iso_code_currency_calendars_response&) = default;

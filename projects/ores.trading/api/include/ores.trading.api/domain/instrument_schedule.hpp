@@ -115,7 +115,7 @@ struct instrument_schedule final {
      * order the document held them. An owner that is not a list member holds one row and takes the
      * number one.
      */
-    int owner_number;
+    int owner_number{};
 
     /**
      * @brief Which of the owner's schedules this row is.
@@ -133,7 +133,7 @@ struct instrument_schedule final {
      * interleaves the two arms. One owner can therefore state several entries under one role, and
      * the role alone does not identify a row. The ordinal preserves the order the document stated.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

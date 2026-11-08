@@ -69,7 +69,7 @@ struct market_input_value_entity {
     boost::uuids::uuid report_definition_id;
     std::string family;
     std::string datum_id;
-    double value;
+    double value{};
     std::optional<db_timestamp> payment_date;
     db_timestamp valid_from = db_timestamp::max();
     db_timestamp valid_to = db_timestamp::max();

@@ -91,7 +91,7 @@ struct coding_scheme_event {
     boost::uuids::uuid event_id;
     coding_scheme_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -100,7 +100,7 @@ struct coding_scheme_event {
 
 struct coding_scheme_version_key {
     coding_scheme_key coding_scheme;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const coding_scheme_version_key&,
                            const coding_scheme_version_key&) = default;
@@ -138,7 +138,7 @@ struct list_coding_schemes_request {
 struct list_coding_schemes_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::coding_scheme> schemes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_coding_schemes_response&,
                            const list_coding_schemes_response&) = default;
@@ -313,7 +313,7 @@ struct list_coding_scheme_versions_request {
 struct list_coding_scheme_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::coding_scheme> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_coding_scheme_versions_response&,
                            const list_coding_scheme_versions_response&) = default;

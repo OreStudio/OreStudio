@@ -52,7 +52,7 @@ struct report_error_scope_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const report_error_scope_write&,
                            const report_error_scope_write&) = default;
@@ -93,7 +93,7 @@ struct report_error_scope_event {
     boost::uuids::uuid event_id;
     report_error_scope_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +103,7 @@ struct report_error_scope_event {
 
 struct report_error_scope_version_key {
     report_error_scope_key report_error_scope;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const report_error_scope_version_key&,
                            const report_error_scope_version_key&) = default;
@@ -141,7 +141,7 @@ struct list_report_error_scopes_request {
 struct list_report_error_scopes_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_error_scope> scopes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_error_scopes_response&,
                            const list_report_error_scopes_response&) = default;
@@ -317,7 +317,7 @@ struct list_report_error_scope_versions_request {
 struct list_report_error_scope_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_error_scope> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_error_scope_versions_response&,
                            const list_report_error_scope_versions_response&) = default;

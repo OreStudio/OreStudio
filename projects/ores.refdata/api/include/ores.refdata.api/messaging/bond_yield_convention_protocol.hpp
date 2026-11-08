@@ -98,7 +98,7 @@ struct bond_yield_convention_event {
     boost::uuids::uuid event_id;
     bond_yield_convention_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +108,7 @@ struct bond_yield_convention_event {
 
 struct bond_yield_convention_version_key {
     bond_yield_convention_key bond_yield_convention;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bond_yield_convention_version_key&,
                            const bond_yield_convention_version_key&) = default;
@@ -146,7 +146,7 @@ struct list_bond_yield_conventions_request {
 struct list_bond_yield_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bond_yield_convention> bond_yield_conventions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_yield_conventions_response&,
                            const list_bond_yield_conventions_response&) = default;
@@ -323,7 +323,7 @@ struct list_bond_yield_convention_versions_request {
 struct list_bond_yield_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::bond_yield_convention> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_yield_convention_versions_response&,
                            const list_bond_yield_convention_versions_response&) = default;

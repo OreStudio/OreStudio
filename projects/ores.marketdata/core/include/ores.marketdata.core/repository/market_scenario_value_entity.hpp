@@ -72,7 +72,7 @@ struct market_scenario_value_entity {
     boost::uuids::uuid report_definition_id;
     std::string family;
     std::string scenario;
-    double value;
+    double value{};
     db_timestamp valid_from = db_timestamp::max();
     db_timestamp valid_to = db_timestamp::max();
 

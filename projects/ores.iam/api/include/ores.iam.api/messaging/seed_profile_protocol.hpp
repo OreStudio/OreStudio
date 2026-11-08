@@ -61,9 +61,9 @@ struct seed_profile_write {
     std::string tenant_hostname;
     std::string admin_username;
     std::string admin_email;
-    bool inherits_admin_password;
-    bool force_password_change;
-    int display_order;
+    bool inherits_admin_password{};
+    bool force_password_change{};
+    int display_order{};
 
     friend bool operator==(const seed_profile_write&, const seed_profile_write&) = default;
 };
@@ -99,7 +99,7 @@ struct seed_profile_event {
     boost::uuids::uuid event_id;
     seed_profile_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +108,7 @@ struct seed_profile_event {
 
 struct seed_profile_version_key {
     seed_profile_key seed_profile;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const seed_profile_version_key&,
                            const seed_profile_version_key&) = default;
@@ -146,7 +146,7 @@ struct list_seed_profiles_request {
 struct list_seed_profiles_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile> seed_profiles;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_seed_profiles_response&,
                            const list_seed_profiles_response&) = default;
@@ -321,7 +321,7 @@ struct list_seed_profile_versions_request {
 struct list_seed_profile_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::seed_profile> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_seed_profile_versions_response&,
                            const list_seed_profile_versions_response&) = default;

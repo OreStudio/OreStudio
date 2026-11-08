@@ -95,7 +95,7 @@ struct inflation_cap_floor_volatility_strikes_event {
     boost::uuids::uuid event_id;
     inflation_cap_floor_volatility_strikes_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct inflation_cap_floor_volatility_strikes_event {
 
 struct inflation_cap_floor_volatility_strikes_version_key {
     inflation_cap_floor_volatility_strikes_key inflation_cap_floor_volatility_strikes;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const inflation_cap_floor_volatility_strikes_version_key&,
                            const inflation_cap_floor_volatility_strikes_version_key&) = default;
@@ -144,7 +144,7 @@ struct list_inflation_cap_floor_volatility_strikes_request {
 struct list_inflation_cap_floor_volatility_strikes_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_cap_floor_volatility_strikes> inflation_strikes;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_inflation_cap_floor_volatility_strikes_response&,
                            const list_inflation_cap_floor_volatility_strikes_response&) = default;
@@ -335,7 +335,7 @@ struct list_inflation_cap_floor_volatility_strikes_versions_request {
 struct list_inflation_cap_floor_volatility_strikes_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::inflation_cap_floor_volatility_strikes> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_inflation_cap_floor_volatility_strikes_versions_response&,

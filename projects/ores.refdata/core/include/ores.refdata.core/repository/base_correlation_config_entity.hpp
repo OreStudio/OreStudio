@@ -57,7 +57,7 @@ struct base_correlation_config_entity {
     boost::uuids::uuid curve_definition_id;
     std::string terms;
     std::string detachment_points;
-    double settlement_days;
+    double settlement_days{};
     std::string calendar;
     std::string business_day_convention;
     std::string day_counter;

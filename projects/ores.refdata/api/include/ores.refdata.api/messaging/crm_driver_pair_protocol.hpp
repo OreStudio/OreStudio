@@ -54,7 +54,7 @@ struct crm_driver_pair_write {
     boost::uuids::uuid config_id;
     std::string base_currency_code;
     std::string quote_currency_code;
-    bool enabled;
+    bool enabled{};
 
     friend bool operator==(const crm_driver_pair_write&, const crm_driver_pair_write&) = default;
 };
@@ -92,7 +92,7 @@ struct crm_driver_pair_event {
     boost::uuids::uuid event_id;
     crm_driver_pair_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +101,7 @@ struct crm_driver_pair_event {
 
 struct crm_driver_pair_version_key {
     crm_driver_pair_key crm_driver_pair;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const crm_driver_pair_version_key&,
                            const crm_driver_pair_version_key&) = default;
@@ -139,7 +139,7 @@ struct list_crm_driver_pairs_request {
 struct list_crm_driver_pairs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::crm_driver_pair> crm_driver_pairs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_crm_driver_pairs_response&,
                            const list_crm_driver_pairs_response&) = default;
@@ -314,7 +314,7 @@ struct list_crm_driver_pair_versions_request {
 struct list_crm_driver_pair_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::crm_driver_pair> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_crm_driver_pair_versions_response&,
                            const list_crm_driver_pair_versions_response&) = default;

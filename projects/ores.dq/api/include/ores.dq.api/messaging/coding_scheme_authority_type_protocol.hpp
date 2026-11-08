@@ -93,7 +93,7 @@ struct coding_scheme_authority_type_event {
     boost::uuids::uuid event_id;
     coding_scheme_authority_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -103,7 +103,7 @@ struct coding_scheme_authority_type_event {
 
 struct coding_scheme_authority_type_version_key {
     coding_scheme_authority_type_key coding_scheme_authority_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const coding_scheme_authority_type_version_key&,
                            const coding_scheme_authority_type_version_key&) = default;
@@ -141,7 +141,7 @@ struct list_coding_scheme_authority_types_request {
 struct list_coding_scheme_authority_types_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::coding_scheme_authority_type> authority_types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_coding_scheme_authority_types_response&,
                            const list_coding_scheme_authority_types_response&) = default;
@@ -318,7 +318,7 @@ struct list_coding_scheme_authority_type_versions_request {
 struct list_coding_scheme_authority_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::dq::domain::coding_scheme_authority_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_coding_scheme_authority_type_versions_response&,
                            const list_coding_scheme_authority_type_versions_response&) = default;

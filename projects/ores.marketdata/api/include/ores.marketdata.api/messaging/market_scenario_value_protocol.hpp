@@ -55,13 +55,13 @@ struct market_scenario_value_write {
     boost::uuids::uuid report_instance_id;
     boost::uuids::uuid result_id;
     std::string source;
-    int line;
+    int line{};
     std::chrono::system_clock::time_point as_of;
     std::string factor;
     boost::uuids::uuid report_definition_id;
     std::string family;
     std::string scenario;
-    double value;
+    double value{};
 
     friend bool operator==(const market_scenario_value_write&,
                            const market_scenario_value_write&) = default;
@@ -110,7 +110,7 @@ struct market_scenario_value_event {
     boost::uuids::uuid event_id;
     market_scenario_value_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -141,7 +141,7 @@ struct list_market_scenario_values_request {
 struct list_market_scenario_values_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::market_scenario_value> values;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_market_scenario_values_response&,
                            const list_market_scenario_values_response&) = default;

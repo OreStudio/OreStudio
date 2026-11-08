@@ -57,10 +57,10 @@ struct product_type_write {
     std::string deal_class;
     std::string product_family_code;
     std::string construction;
-    bool has_options;
-    bool has_extension;
+    bool has_options{};
+    bool has_extension{};
     std::string instrument_table;
-    int display_order;
+    int display_order{};
     std::string knowledge_note;
 
     friend bool operator==(const product_type_write&, const product_type_write&) = default;
@@ -97,7 +97,7 @@ struct product_type_event {
     boost::uuids::uuid event_id;
     product_type_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct product_type_event {
 
 struct product_type_version_key {
     product_type_key product_type;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const product_type_version_key&,
                            const product_type_version_key&) = default;
@@ -144,7 +144,7 @@ struct list_product_types_request {
 struct list_product_types_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::product_type> types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_product_types_response&,
                            const list_product_types_response&) = default;
@@ -319,7 +319,7 @@ struct list_product_type_versions_request {
 struct list_product_type_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::product_type> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_product_type_versions_response&,
                            const list_product_type_versions_response&) = default;

@@ -87,7 +87,7 @@ struct trade_state_event {
     boost::uuids::uuid event_id;
     trade_state_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -96,7 +96,7 @@ struct trade_state_event {
 
 struct trade_state_version_key {
     trade_state_key trade_state;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const trade_state_version_key&,
                            const trade_state_version_key&) = default;
@@ -134,7 +134,7 @@ struct list_trade_states_request {
 struct list_trade_states_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_state> trade_states;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_states_response&,
                            const list_trade_states_response&) = default;
@@ -309,7 +309,7 @@ struct list_trade_state_versions_request {
 struct list_trade_state_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::trade_state> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_trade_state_versions_response&,
                            const list_trade_state_versions_response&) = default;

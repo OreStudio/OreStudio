@@ -98,7 +98,7 @@ struct netting_set_event {
     boost::uuids::uuid event_id;
     netting_set_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +107,7 @@ struct netting_set_event {
 
 struct netting_set_version_key {
     netting_set_key netting_set;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const netting_set_version_key&,
                            const netting_set_version_key&) = default;
@@ -145,7 +145,7 @@ struct list_netting_sets_request {
 struct list_netting_sets_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_set> netting_sets;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_netting_sets_response&,
                            const list_netting_sets_response&) = default;
@@ -322,7 +322,7 @@ struct list_by_netting_agreement_id_netting_sets_request {
 struct list_by_netting_agreement_id_netting_sets_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_set> netting_sets;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_netting_agreement_id_netting_sets_response&,
                            const list_by_netting_agreement_id_netting_sets_response&) = default;
@@ -353,7 +353,7 @@ struct list_by_credit_limit_id_netting_sets_request {
 struct list_by_credit_limit_id_netting_sets_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_set> netting_sets;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_credit_limit_id_netting_sets_response&,
                            const list_by_credit_limit_id_netting_sets_response&) = default;
@@ -382,7 +382,7 @@ struct list_netting_set_versions_request {
 struct list_netting_set_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_set> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_netting_set_versions_response&,
                            const list_netting_set_versions_response&) = default;

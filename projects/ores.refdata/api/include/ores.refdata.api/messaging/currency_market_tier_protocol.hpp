@@ -53,7 +53,7 @@ struct currency_market_tier_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const currency_market_tier_write&,
                            const currency_market_tier_write&) = default;
@@ -94,7 +94,7 @@ struct currency_market_tier_event {
     boost::uuids::uuid event_id;
     currency_market_tier_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct currency_market_tier_event {
 
 struct currency_market_tier_version_key {
     currency_market_tier_key currency_market_tier;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const currency_market_tier_version_key&,
                            const currency_market_tier_version_key&) = default;
@@ -142,7 +142,7 @@ struct list_currency_market_tiers_request {
 struct list_currency_market_tiers_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_market_tier> types;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_currency_market_tiers_response&,
                            const list_currency_market_tiers_response&) = default;
@@ -318,7 +318,7 @@ struct list_currency_market_tier_versions_request {
 struct list_currency_market_tier_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_market_tier> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_currency_market_tier_versions_response&,
                            const list_currency_market_tier_versions_response&) = default;

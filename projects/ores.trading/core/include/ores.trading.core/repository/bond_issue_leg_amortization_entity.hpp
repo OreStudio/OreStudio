@@ -52,8 +52,8 @@ struct bond_issue_leg_amortization_entity {
     constexpr static const char* tablename = "ores_trading_bond_issue_leg_amortizations_tbl";
 
     boost::uuids::uuid issue_id;
-    int leg_number;
-    int sequence_number;
+    int leg_number{};
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     std::string amortization_type;

@@ -55,7 +55,7 @@ struct equity_underlying_write {
     std::string instrument_type;
     std::string resolves_to;
     std::string currency_code;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const equity_underlying_write&,
                            const equity_underlying_write&) = default;
@@ -96,7 +96,7 @@ struct equity_underlying_event {
     boost::uuids::uuid event_id;
     equity_underlying_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct equity_underlying_event {
 
 struct equity_underlying_version_key {
     equity_underlying_key equity_underlying;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const equity_underlying_version_key&,
                            const equity_underlying_version_key&) = default;
@@ -144,7 +144,7 @@ struct list_equity_underlyings_request {
 struct list_equity_underlyings_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::equity_underlying> equity_underlyings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_underlyings_response&,
                            const list_equity_underlyings_response&) = default;
@@ -319,7 +319,7 @@ struct list_equity_underlying_versions_request {
 struct list_equity_underlying_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::equity_underlying> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_equity_underlying_versions_response&,
                            const list_equity_underlying_versions_response&) = default;

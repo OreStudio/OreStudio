@@ -89,7 +89,7 @@ struct structure_event {
     boost::uuids::uuid event_id;
     structure_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -98,7 +98,7 @@ struct structure_event {
 
 struct structure_version_key {
     structure_key structure;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const structure_version_key&, const structure_version_key&) = default;
 };
@@ -135,7 +135,7 @@ struct list_structures_request {
 struct list_structures_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure> structures;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_structures_response&,
                            const list_structures_response&) = default;
@@ -306,7 +306,7 @@ struct list_structure_versions_request {
 struct list_structure_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::structure> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_structure_versions_response&,
                            const list_structure_versions_response&) = default;

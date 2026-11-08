@@ -52,8 +52,8 @@ struct currency_pair_convention_entity {
     std::string pair_code;
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
-    double pip_factor;
-    double tick_size;
+    double pip_factor{};
+    double tick_size{};
     int decimal_places = 0;
     std::optional<std::string> business_day_convention;
     std::optional<bool> spot_relative;

@@ -92,7 +92,7 @@ struct series_classification_rule_event {
     boost::uuids::uuid event_id;
     series_classification_rule_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +102,7 @@ struct series_classification_rule_event {
 
 struct series_classification_rule_version_key {
     series_classification_rule_key series_classification_rule;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const series_classification_rule_version_key&,
                            const series_classification_rule_version_key&) = default;
@@ -140,7 +140,7 @@ struct list_series_classification_rules_request {
 struct list_series_classification_rules_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::series_classification_rule> rules;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_series_classification_rules_response&,
                            const list_series_classification_rules_response&) = default;
@@ -322,7 +322,7 @@ struct list_series_classification_rule_versions_request {
 struct list_series_classification_rule_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::marketdata::domain::series_classification_rule> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_series_classification_rule_versions_response&,
                            const list_series_classification_rule_versions_response&) = default;

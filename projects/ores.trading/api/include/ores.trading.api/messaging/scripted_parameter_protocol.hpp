@@ -44,14 +44,14 @@ namespace ores::trading::messaging {
 
 struct scripted_parameter_key {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const scripted_parameter_key&, const scripted_parameter_key&) = default;
 };
 
 struct scripted_parameter_write {
     boost::uuids::uuid trade_id;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     std::string name;
     std::string declared_type;
@@ -107,7 +107,7 @@ struct scripted_parameter_event {
     boost::uuids::uuid event_id;
     scripted_parameter_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -117,7 +117,7 @@ struct scripted_parameter_event {
 
 struct scripted_parameter_version_key {
     scripted_parameter_key scripted_parameter;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const scripted_parameter_version_key&,
                            const scripted_parameter_version_key&) = default;
@@ -155,7 +155,7 @@ struct list_scripted_parameters_request {
 struct list_scripted_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::scripted_parameter> scripted_parameters;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_scripted_parameters_response&,
                            const list_scripted_parameters_response&) = default;
@@ -332,7 +332,7 @@ struct list_by_trade_id_scripted_parameters_request {
 struct list_by_trade_id_scripted_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::scripted_parameter> scripted_parameters;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_trade_id_scripted_parameters_response&,
                            const list_by_trade_id_scripted_parameters_response&) = default;
@@ -361,7 +361,7 @@ struct list_scripted_parameter_versions_request {
 struct list_scripted_parameter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::scripted_parameter> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_scripted_parameter_versions_response&,
                            const list_scripted_parameter_versions_response&) = default;

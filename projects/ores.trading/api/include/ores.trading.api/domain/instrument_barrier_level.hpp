@@ -68,12 +68,12 @@ struct instrument_barrier_level final {
     /**
      * @brief The ordinal of the barrier this level belongs to, matching the barrier row's own.
      */
-    int barrier_sequence_number;
+    int barrier_sequence_number{};
 
     /**
      * @brief 1-based ordinal of this level within the barrier, in the order the document states it.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

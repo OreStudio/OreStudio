@@ -108,7 +108,7 @@ struct ir_curve_bootstrap_config_event {
     boost::uuids::uuid event_id;
     ir_curve_bootstrap_config_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -118,7 +118,7 @@ struct ir_curve_bootstrap_config_event {
 
 struct ir_curve_bootstrap_config_version_key {
     ir_curve_bootstrap_config_key ir_curve_bootstrap_config;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const ir_curve_bootstrap_config_version_key&,
                            const ir_curve_bootstrap_config_version_key&) = default;
@@ -156,7 +156,7 @@ struct list_ir_curve_bootstrap_configs_request {
 struct list_ir_curve_bootstrap_configs_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::ir_curve_bootstrap_config> bootstrap_configs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ir_curve_bootstrap_configs_response&,
                            const list_ir_curve_bootstrap_configs_response&) = default;
@@ -335,7 +335,7 @@ struct list_ir_curve_bootstrap_config_versions_request {
 struct list_ir_curve_bootstrap_config_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::ir_curve_bootstrap_config> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ir_curve_bootstrap_config_versions_response&,
                            const list_ir_curve_bootstrap_config_versions_response&) = default;

@@ -57,8 +57,8 @@ struct curve_segment_weighted_average_entity {
     boost::uuids::uuid curve_segment_id;
     std::string reference_curve_1;
     std::string reference_curve_2;
-    double weight_1;
-    double weight_2;
+    double weight_1{};
+    double weight_2{};
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

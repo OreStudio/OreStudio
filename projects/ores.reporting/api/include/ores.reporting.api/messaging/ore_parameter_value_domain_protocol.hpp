@@ -94,7 +94,7 @@ struct ore_parameter_value_domain_event {
     boost::uuids::uuid event_id;
     ore_parameter_value_domain_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -104,7 +104,7 @@ struct ore_parameter_value_domain_event {
 
 struct ore_parameter_value_domain_version_key {
     ore_parameter_value_domain_key ore_parameter_value_domain;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const ore_parameter_value_domain_version_key&,
                            const ore_parameter_value_domain_version_key&) = default;
@@ -143,7 +143,7 @@ struct list_ore_parameter_value_domains_request {
 struct list_ore_parameter_value_domains_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_domain> domains;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ore_parameter_value_domains_response&,
                            const list_ore_parameter_value_domains_response&) = default;
@@ -323,7 +323,7 @@ struct list_ore_parameter_value_domain_versions_request {
 struct list_ore_parameter_value_domain_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_parameter_value_domain> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ore_parameter_value_domain_versions_response&,
                            const list_ore_parameter_value_domain_versions_response&) = default;

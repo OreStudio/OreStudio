@@ -98,7 +98,7 @@ struct netting_agreement_event {
     boost::uuids::uuid event_id;
     netting_agreement_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -108,7 +108,7 @@ struct netting_agreement_event {
 
 struct netting_agreement_version_key {
     netting_agreement_key netting_agreement;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const netting_agreement_version_key&,
                            const netting_agreement_version_key&) = default;
@@ -146,7 +146,7 @@ struct list_netting_agreements_request {
 struct list_netting_agreements_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_agreement> netting_agreements;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_netting_agreements_response&,
                            const list_netting_agreements_response&) = default;
@@ -323,7 +323,7 @@ struct list_by_counterparty_id_netting_agreements_request {
 struct list_by_counterparty_id_netting_agreements_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_agreement> netting_agreements;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_counterparty_id_netting_agreements_response&,
                            const list_by_counterparty_id_netting_agreements_response&) = default;
@@ -352,7 +352,7 @@ struct list_netting_agreement_versions_request {
 struct list_netting_agreement_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_agreement> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_netting_agreement_versions_response&,
                            const list_netting_agreement_versions_response&) = default;

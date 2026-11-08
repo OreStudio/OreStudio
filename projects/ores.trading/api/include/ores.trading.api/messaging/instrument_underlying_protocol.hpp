@@ -45,7 +45,7 @@ namespace ores::trading::messaging {
 struct instrument_underlying_key {
     boost::uuids::uuid trade_id;
     std::string underlying_role;
-    int sequence_number;
+    int sequence_number{};
 
     friend bool operator==(const instrument_underlying_key&,
                            const instrument_underlying_key&) = default;
@@ -54,7 +54,7 @@ struct instrument_underlying_key {
 struct instrument_underlying_write {
     boost::uuids::uuid trade_id;
     std::string underlying_role;
-    int sequence_number;
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     std::string underlying_type;
     std::string name;
@@ -111,7 +111,7 @@ struct instrument_underlying_event {
     boost::uuids::uuid event_id;
     instrument_underlying_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -121,7 +121,7 @@ struct instrument_underlying_event {
 
 struct instrument_underlying_version_key {
     instrument_underlying_key instrument_underlying;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const instrument_underlying_version_key&,
                            const instrument_underlying_version_key&) = default;
@@ -159,7 +159,7 @@ struct list_instrument_underlyings_request {
 struct list_instrument_underlyings_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_underlying> instrument_underlyings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_underlyings_response&,
                            const list_instrument_underlyings_response&) = default;
@@ -337,7 +337,7 @@ struct list_by_trade_id_instrument_underlyings_request {
 struct list_by_trade_id_instrument_underlyings_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_underlying> instrument_underlyings;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_trade_id_instrument_underlyings_response&,
                            const list_by_trade_id_instrument_underlyings_response&) = default;
@@ -367,7 +367,7 @@ struct list_instrument_underlying_versions_request {
 struct list_instrument_underlying_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::instrument_underlying> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_instrument_underlying_versions_response&,
                            const list_instrument_underlying_versions_response&) = default;

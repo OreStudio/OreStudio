@@ -79,12 +79,12 @@ struct curve_parametric_smile final {
     /**
      * @brief The calibration error below which calibration stops.
      */
-    double exit_early_error_threshold;
+    double exit_early_error_threshold{};
 
     /**
      * @brief The largest calibration error that is accepted.
      */
-    double max_acceptable_error;
+    double max_acceptable_error{};
 
     /**
      * @brief The dimension of the residual correction, when the document gives one.

@@ -106,7 +106,7 @@ struct workflow_plan_step final {
      * rather than read from the definition, so a definition that shortened a deadline cannot expire
      * a run that was started under a longer one.
      */
-    std::int32_t timeout_seconds;
+    std::int32_t timeout_seconds{};
 
     /**
      * @brief Username of the person who last modified this workflow plan step.

@@ -55,7 +55,7 @@ struct curve_parametric_smile_parameter_write {
     std::string name;
     std::optional<std::string> initial_value;
     std::string calibration;
-    int position;
+    int position{};
 
     friend bool operator==(const curve_parametric_smile_parameter_write&,
                            const curve_parametric_smile_parameter_write&) = default;
@@ -97,7 +97,7 @@ struct curve_parametric_smile_parameter_event {
     boost::uuids::uuid event_id;
     curve_parametric_smile_parameter_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +107,7 @@ struct curve_parametric_smile_parameter_event {
 
 struct curve_parametric_smile_parameter_version_key {
     curve_parametric_smile_parameter_key curve_parametric_smile_parameter;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const curve_parametric_smile_parameter_version_key&,
                            const curve_parametric_smile_parameter_version_key&) = default;
@@ -146,7 +146,7 @@ struct list_curve_parametric_smile_parameters_request {
 struct list_curve_parametric_smile_parameters_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_parametric_smile_parameter> smile_parameters;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_curve_parametric_smile_parameters_response&,
                            const list_curve_parametric_smile_parameters_response&) = default;
@@ -330,7 +330,7 @@ struct list_curve_parametric_smile_parameter_versions_request {
 struct list_curve_parametric_smile_parameter_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::curve_parametric_smile_parameter> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_curve_parametric_smile_parameter_versions_response&,

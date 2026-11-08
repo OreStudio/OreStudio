@@ -74,12 +74,12 @@ struct swap_leg_amortization final {
     /**
      * @brief 1-based ordinal of the leg within the trade, matching the leg row's own.
      */
-    int leg_number;
+    int leg_number{};
 
     /**
      * @brief 1-based ordinal of this step within the leg, in the order the document states it.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

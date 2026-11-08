@@ -52,7 +52,7 @@ struct cross_currency_basis_swap_terms_key {
 struct cross_currency_basis_swap_terms_write {
     boost::uuids::uuid id;
     boost::uuids::uuid convention_id;
-    int settlement_days;
+    int settlement_days{};
     std::optional<std::string> settlement_calendar;
     std::string roll_convention;
     std::optional<bool> eom;
@@ -100,7 +100,7 @@ struct cross_currency_basis_swap_terms_event {
     boost::uuids::uuid event_id;
     cross_currency_basis_swap_terms_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -110,7 +110,7 @@ struct cross_currency_basis_swap_terms_event {
 
 struct cross_currency_basis_swap_terms_version_key {
     cross_currency_basis_swap_terms_key cross_currency_basis_swap_terms;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const cross_currency_basis_swap_terms_version_key&,
                            const cross_currency_basis_swap_terms_version_key&) = default;
@@ -150,7 +150,7 @@ struct list_cross_currency_basis_swap_terms_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cross_currency_basis_swap_terms>
         cross_currency_basis_swap_terms;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cross_currency_basis_swap_terms_response&,
                            const list_cross_currency_basis_swap_terms_response&) = default;
@@ -338,7 +338,7 @@ struct list_by_convention_id_cross_currency_basis_swap_terms_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cross_currency_basis_swap_terms>
         cross_currency_basis_swap_terms;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_convention_id_cross_currency_basis_swap_terms_response&,
@@ -369,7 +369,7 @@ struct list_cross_currency_basis_swap_terms_versions_request {
 struct list_cross_currency_basis_swap_terms_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cross_currency_basis_swap_terms> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cross_currency_basis_swap_terms_versions_response&,
                            const list_cross_currency_basis_swap_terms_versions_response&) = default;

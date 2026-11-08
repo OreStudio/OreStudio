@@ -97,7 +97,7 @@ struct default_curve_benchmark_event {
     boost::uuids::uuid event_id;
     default_curve_benchmark_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +107,7 @@ struct default_curve_benchmark_event {
 
 struct default_curve_benchmark_version_key {
     default_curve_benchmark_key default_curve_benchmark;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const default_curve_benchmark_version_key&,
                            const default_curve_benchmark_version_key&) = default;
@@ -145,7 +145,7 @@ struct list_default_curve_benchmarks_request {
 struct list_default_curve_benchmarks_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::default_curve_benchmark> benchmarks;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_default_curve_benchmarks_response&,
                            const list_default_curve_benchmarks_response&) = default;
@@ -322,7 +322,7 @@ struct list_default_curve_benchmark_versions_request {
 struct list_default_curve_benchmark_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::default_curve_benchmark> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_default_curve_benchmark_versions_response&,
                            const list_default_curve_benchmark_versions_response&) = default;

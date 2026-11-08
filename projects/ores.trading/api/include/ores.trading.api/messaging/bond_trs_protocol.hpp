@@ -93,7 +93,7 @@ struct bond_trs_event {
     boost::uuids::uuid event_id;
     bond_trs_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -102,7 +102,7 @@ struct bond_trs_event {
 
 struct bond_trs_version_key {
     bond_trs_key bond_trs;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const bond_trs_version_key&, const bond_trs_version_key&) = default;
 };
@@ -138,7 +138,7 @@ struct list_bond_trs_request {
 struct list_bond_trs_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_trs> trs;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_trs_response&, const list_bond_trs_response&) = default;
 };
@@ -308,7 +308,7 @@ struct list_bond_trs_versions_request {
 struct list_bond_trs_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::bond_trs> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_bond_trs_versions_response&,
                            const list_bond_trs_versions_response&) = default;

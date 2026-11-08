@@ -54,7 +54,7 @@ struct calendar_date_entity {
 
     int version = 0;
 
-    bool is_business_day;
+    bool is_business_day{};
 
 
     std::string source;

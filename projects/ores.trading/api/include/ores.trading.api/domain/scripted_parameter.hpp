@@ -74,7 +74,7 @@ struct scripted_parameter final {
     /**
      * @brief 1-based ordinal of this parameter in the order the document states it.
      */
-    int sequence_number;
+    int sequence_number{};
 
     /**
      * @brief The activity that wrote this version.

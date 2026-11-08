@@ -54,7 +54,7 @@ struct cms_spread_option_convention_write {
     std::string forward_start;
     std::string spot_days;
     std::string swap_tenor;
-    int fixing_days;
+    int fixing_days{};
     std::string calendar;
     std::string day_count_fraction;
     std::string roll_convention;
@@ -99,7 +99,7 @@ struct cms_spread_option_convention_event {
     boost::uuids::uuid event_id;
     cms_spread_option_convention_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +109,7 @@ struct cms_spread_option_convention_event {
 
 struct cms_spread_option_convention_version_key {
     cms_spread_option_convention_key cms_spread_option_convention;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const cms_spread_option_convention_version_key&,
                            const cms_spread_option_convention_version_key&) = default;
@@ -148,7 +148,7 @@ struct list_cms_spread_option_conventions_request {
 struct list_cms_spread_option_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cms_spread_option_convention> cms_spread_option_conventions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cms_spread_option_conventions_response&,
                            const list_cms_spread_option_conventions_response&) = default;
@@ -328,7 +328,7 @@ struct list_cms_spread_option_convention_versions_request {
 struct list_cms_spread_option_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::cms_spread_option_convention> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_cms_spread_option_convention_versions_response&,
                            const list_cms_spread_option_convention_versions_response&) = default;

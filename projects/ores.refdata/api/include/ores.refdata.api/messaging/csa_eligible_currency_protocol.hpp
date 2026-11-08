@@ -53,7 +53,7 @@ struct csa_eligible_currency_write {
     boost::uuids::uuid id;
     boost::uuids::uuid csa_id;
     std::string currency_code;
-    int position;
+    int position{};
 
     friend bool operator==(const csa_eligible_currency_write&,
                            const csa_eligible_currency_write&) = default;
@@ -96,7 +96,7 @@ struct csa_eligible_currency_event {
     boost::uuids::uuid event_id;
     csa_eligible_currency_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct csa_eligible_currency_event {
 
 struct csa_eligible_currency_version_key {
     csa_eligible_currency_key csa_eligible_currency;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const csa_eligible_currency_version_key&,
                            const csa_eligible_currency_version_key&) = default;
@@ -144,7 +144,7 @@ struct list_csa_eligible_currencies_request {
 struct list_csa_eligible_currencies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::csa_eligible_currency> csa_eligible_currencies;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_csa_eligible_currencies_response&,
                            const list_csa_eligible_currencies_response&) = default;
@@ -322,7 +322,7 @@ struct list_by_csa_id_csa_eligible_currencies_request {
 struct list_by_csa_id_csa_eligible_currencies_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::csa_eligible_currency> csa_eligible_currencies;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_csa_id_csa_eligible_currencies_response&,
                            const list_by_csa_id_csa_eligible_currencies_response&) = default;
@@ -352,7 +352,7 @@ struct list_csa_eligible_currency_versions_request {
 struct list_csa_eligible_currency_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::csa_eligible_currency> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_csa_eligible_currency_versions_response&,
                            const list_csa_eligible_currency_versions_response&) = default;

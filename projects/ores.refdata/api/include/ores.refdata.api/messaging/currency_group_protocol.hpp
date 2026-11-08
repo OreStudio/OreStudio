@@ -52,7 +52,7 @@ struct currency_group_write {
     std::string code;
     std::string name;
     std::string description;
-    int display_order;
+    int display_order{};
 
     friend bool operator==(const currency_group_write&, const currency_group_write&) = default;
 };
@@ -89,7 +89,7 @@ struct currency_group_event {
     boost::uuids::uuid event_id;
     currency_group_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -98,7 +98,7 @@ struct currency_group_event {
 
 struct currency_group_version_key {
     currency_group_key currency_group;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const currency_group_version_key&,
                            const currency_group_version_key&) = default;
@@ -136,7 +136,7 @@ struct list_currency_groups_request {
 struct list_currency_groups_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_group> groups;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_currency_groups_response&,
                            const list_currency_groups_response&) = default;
@@ -311,7 +311,7 @@ struct list_currency_group_versions_request {
 struct list_currency_group_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::currency_group> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_currency_group_versions_response&,
                            const list_currency_group_versions_response&) = default;

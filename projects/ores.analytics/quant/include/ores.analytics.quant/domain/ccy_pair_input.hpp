@@ -35,7 +35,7 @@ namespace ores::analytics::quant::domain {
 struct ccy_pair_input {
     std::string base_code;
     std::string quote_code;
-    bool is_driver;
+    bool is_driver{};
 };
 
 } // namespace ores::analytics::quant::domain

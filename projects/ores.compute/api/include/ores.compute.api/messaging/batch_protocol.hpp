@@ -92,7 +92,7 @@ struct batch_event {
     boost::uuids::uuid event_id;
     batch_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -101,7 +101,7 @@ struct batch_event {
 
 struct batch_version_key {
     batch_key batch;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const batch_version_key&, const batch_version_key&) = default;
 };
@@ -136,7 +136,7 @@ struct list_batches_request {
 struct list_batches_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::batch> batches;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_batches_response&, const list_batches_response&) = default;
 };
@@ -304,7 +304,7 @@ struct list_batch_versions_request {
 struct list_batch_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::compute::domain::batch> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_batch_versions_response&,
                            const list_batch_versions_response&) = default;

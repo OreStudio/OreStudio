@@ -95,7 +95,7 @@ struct intraday_power_load_convention_event {
     boost::uuids::uuid event_id;
     intraday_power_load_convention_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -105,7 +105,7 @@ struct intraday_power_load_convention_event {
 
 struct intraday_power_load_convention_version_key {
     intraday_power_load_convention_key intraday_power_load_convention;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const intraday_power_load_convention_version_key&,
                            const intraday_power_load_convention_version_key&) = default;
@@ -145,7 +145,7 @@ struct list_intraday_power_load_conventions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::intraday_power_load_convention>
         intraday_power_load_conventions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_intraday_power_load_conventions_response&,
                            const list_intraday_power_load_conventions_response&) = default;
@@ -330,7 +330,7 @@ struct list_intraday_power_load_convention_versions_request {
 struct list_intraday_power_load_convention_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::intraday_power_load_convention> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_intraday_power_load_convention_versions_response&,
                            const list_intraday_power_load_convention_versions_response&) = default;

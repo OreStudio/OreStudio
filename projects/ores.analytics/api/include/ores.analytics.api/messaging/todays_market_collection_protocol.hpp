@@ -54,7 +54,7 @@ struct todays_market_collection_write {
     boost::uuids::uuid todays_market_config_id;
     std::string collection;
     std::optional<std::string> collection_id;
-    int position;
+    int position{};
 
     friend bool operator==(const todays_market_collection_write&,
                            const todays_market_collection_write&) = default;
@@ -97,7 +97,7 @@ struct todays_market_collection_event {
     boost::uuids::uuid event_id;
     todays_market_collection_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +107,7 @@ struct todays_market_collection_event {
 
 struct todays_market_collection_version_key {
     todays_market_collection_key todays_market_collection;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const todays_market_collection_version_key&,
                            const todays_market_collection_version_key&) = default;
@@ -145,7 +145,7 @@ struct list_todays_market_collections_request {
 struct list_todays_market_collections_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_collection> collections;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_todays_market_collections_response&,
                            const list_todays_market_collections_response&) = default;
@@ -327,7 +327,7 @@ struct list_by_todays_market_config_id_todays_market_collections_request {
 struct list_by_todays_market_config_id_todays_market_collections_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_collection> collections;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool
     operator==(const list_by_todays_market_config_id_todays_market_collections_response&,
@@ -358,7 +358,7 @@ struct list_todays_market_collection_versions_request {
 struct list_todays_market_collection_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::analytics::domain::todays_market_collection> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_todays_market_collection_versions_response&,
                            const list_todays_market_collection_versions_response&) = default;

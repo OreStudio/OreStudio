@@ -44,8 +44,8 @@ namespace ores::trading::messaging {
 
 struct swap_leg_amortization_key {
     boost::uuids::uuid trade_id;
-    int leg_number;
-    int sequence_number;
+    int leg_number{};
+    int sequence_number{};
 
     friend bool operator==(const swap_leg_amortization_key&,
                            const swap_leg_amortization_key&) = default;
@@ -53,8 +53,8 @@ struct swap_leg_amortization_key {
 
 struct swap_leg_amortization_write {
     boost::uuids::uuid trade_id;
-    int leg_number;
-    int sequence_number;
+    int leg_number{};
+    int sequence_number{};
     boost::uuids::uuid trade_activity_id;
     std::string amortization_type;
     std::optional<ores::utility::decimal::decimal> value;
@@ -103,7 +103,7 @@ struct swap_leg_amortization_event {
     boost::uuids::uuid event_id;
     swap_leg_amortization_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -113,7 +113,7 @@ struct swap_leg_amortization_event {
 
 struct swap_leg_amortization_version_key {
     swap_leg_amortization_key swap_leg_amortization;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const swap_leg_amortization_version_key&,
                            const swap_leg_amortization_version_key&) = default;
@@ -151,7 +151,7 @@ struct list_swap_leg_amortizations_request {
 struct list_swap_leg_amortizations_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg_amortization> swap_leg_amortizations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_swap_leg_amortizations_response&,
                            const list_swap_leg_amortizations_response&) = default;
@@ -329,7 +329,7 @@ struct list_by_trade_id_swap_leg_amortizations_request {
 struct list_by_trade_id_swap_leg_amortizations_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg_amortization> swap_leg_amortizations;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_trade_id_swap_leg_amortizations_response&,
                            const list_by_trade_id_swap_leg_amortizations_response&) = default;
@@ -359,7 +359,7 @@ struct list_swap_leg_amortization_versions_request {
 struct list_swap_leg_amortization_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::trading::domain::swap_leg_amortization> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_swap_leg_amortization_versions_response&,
                            const list_swap_leg_amortization_versions_response&) = default;

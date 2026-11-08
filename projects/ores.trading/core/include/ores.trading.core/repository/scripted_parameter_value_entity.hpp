@@ -51,8 +51,8 @@ struct scripted_parameter_value_entity {
     constexpr static const char* tablename = "ores_trading_scripted_parameter_values_tbl";
 
     boost::uuids::uuid trade_id;
-    int parameter_sequence_number;
-    int sequence_number;
+    int parameter_sequence_number{};
+    int sequence_number{};
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     boost::uuids::uuid trade_activity_id;

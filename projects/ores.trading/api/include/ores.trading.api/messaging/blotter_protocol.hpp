@@ -60,7 +60,7 @@ struct blotter_rail_node {
      * counts every row below it, because that is what a person reading the tree
      * takes it to mean.
      */
-    std::uint64_t count;
+    std::uint64_t count{};
 
     friend bool operator==(const blotter_rail_node&, const blotter_rail_node&) = default;
 };
@@ -138,7 +138,7 @@ struct get_blotter_page_request {
      * @brief How many rows the caller will accept. The service states its own
      * ceiling, because a page is a page and not the book.
      */
-    std::uint32_t limit;
+    std::uint32_t limit{};
     /**
      * @brief The key to start after, as the previous answer stated it. Empty
      * starts at the first row. It is the row's sort value and id together, and the

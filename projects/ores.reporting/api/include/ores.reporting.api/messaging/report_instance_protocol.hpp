@@ -110,7 +110,7 @@ struct report_instance_event {
     boost::uuids::uuid event_id;
     report_instance_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -119,7 +119,7 @@ struct report_instance_event {
 
 struct report_instance_version_key {
     report_instance_key report_instance;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const report_instance_version_key&,
                            const report_instance_version_key&) = default;
@@ -157,7 +157,7 @@ struct list_report_instances_request {
 struct list_report_instances_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_instance> instances;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_instances_response&,
                            const list_report_instances_response&) = default;
@@ -332,7 +332,7 @@ struct list_report_instance_versions_request {
 struct list_report_instance_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::report_instance> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_report_instance_versions_response&,
                            const list_report_instance_versions_response&) = default;
@@ -466,7 +466,7 @@ struct report_health_count {
      */
     std::string health;
     /** @brief How many of the counted definitions have this word. */
-    std::int64_t count;
+    std::int64_t count{};
 
     friend bool operator==(const report_health_count&, const report_health_count&) = default;
 };
@@ -508,7 +508,7 @@ struct count_report_definitions_by_health_response {
      */
     std::vector<report_health_count> counts;
     /** @brief How many definitions were counted, which is the sum of the counts. */
-    std::int64_t total;
+    std::int64_t total{};
 
     friend bool operator==(const count_report_definitions_by_health_response&,
                            const count_report_definitions_by_health_response&) = default;

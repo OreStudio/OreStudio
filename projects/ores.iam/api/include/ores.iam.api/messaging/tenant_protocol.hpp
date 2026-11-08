@@ -56,7 +56,7 @@ struct tenant_write {
     std::string description;
     std::string hostname;
     std::string status;
-    bool is_registration_default;
+    bool is_registration_default{};
 
     friend bool operator==(const tenant_write&, const tenant_write&) = default;
 };
@@ -97,7 +97,7 @@ struct tenant_event {
     boost::uuids::uuid event_id;
     tenant_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -106,7 +106,7 @@ struct tenant_event {
 
 struct tenant_version_key {
     tenant_key tenant;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const tenant_version_key&, const tenant_version_key&) = default;
 };
@@ -141,7 +141,7 @@ struct list_tenants_request {
 struct list_tenants_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::tenant> tenants;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenants_response&, const list_tenants_response&) = default;
 };
@@ -309,7 +309,7 @@ struct list_tenant_versions_request {
 struct list_tenant_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::iam::domain::tenant> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_tenant_versions_response&,
                            const list_tenant_versions_response&) = default;

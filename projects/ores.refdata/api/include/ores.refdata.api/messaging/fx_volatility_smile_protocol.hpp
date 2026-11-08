@@ -99,7 +99,7 @@ struct fx_volatility_smile_event {
     boost::uuids::uuid event_id;
     fx_volatility_smile_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -109,7 +109,7 @@ struct fx_volatility_smile_event {
 
 struct fx_volatility_smile_version_key {
     fx_volatility_smile_key fx_volatility_smile;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const fx_volatility_smile_version_key&,
                            const fx_volatility_smile_version_key&) = default;
@@ -147,7 +147,7 @@ struct list_fx_volatility_smiles_request {
 struct list_fx_volatility_smiles_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::fx_volatility_smile> fx_volatility_smiles;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_volatility_smiles_response&,
                            const list_fx_volatility_smiles_response&) = default;
@@ -323,7 +323,7 @@ struct list_fx_volatility_smile_versions_request {
 struct list_fx_volatility_smile_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::fx_volatility_smile> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_fx_volatility_smile_versions_response&,
                            const list_fx_volatility_smile_versions_response&) = default;

@@ -54,7 +54,7 @@ struct ore_file_version_write {
     std::string engine_version;
     std::string content;
     std::string sha256;
-    int bytes;
+    int bytes{};
 
     friend bool operator==(const ore_file_version_write&, const ore_file_version_write&) = default;
 };
@@ -98,7 +98,7 @@ struct ore_file_version_event {
     boost::uuids::uuid event_id;
     ore_file_version_key key;
     std::string action;
-    std::uint32_t version;
+    std::uint32_t version{};
     std::chrono::system_clock::time_point occurred_at;
     std::optional<std::string> correlation_id;
 
@@ -107,7 +107,7 @@ struct ore_file_version_event {
 
 struct ore_file_version_version_key {
     ore_file_version_key ore_file_version;
-    std::uint32_t version;
+    std::uint32_t version{};
 
     friend bool operator==(const ore_file_version_version_key&,
                            const ore_file_version_version_key&) = default;
@@ -145,7 +145,7 @@ struct list_ore_file_versions_request {
 struct list_ore_file_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_file_version> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ore_file_versions_response&,
                            const list_ore_file_versions_response&) = default;
@@ -322,7 +322,7 @@ struct list_by_ore_file_code_ore_file_versions_request {
 struct list_by_ore_file_code_ore_file_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_file_version> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_by_ore_file_code_ore_file_versions_response&,
                            const list_by_ore_file_code_ore_file_versions_response&) = default;
@@ -351,7 +351,7 @@ struct list_ore_file_version_versions_request {
 struct list_ore_file_version_versions_response {
     ores::utility::domain::result result;
     std::vector<ores::reporting::domain::ore_file_version> versions;
-    std::uint64_t total;
+    std::uint64_t total{};
 
     friend bool operator==(const list_ore_file_version_versions_response&,
                            const list_ore_file_version_versions_response&) = default;

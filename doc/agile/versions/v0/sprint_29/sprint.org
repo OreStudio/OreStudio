@@ -182,6 +182,7 @@ of the application join as their own stories under this heading.
 | [[id:A5920AD8-3AF8-4D7D-B98E-976D3F3EF4DE][Support native Windows pricing and local services]] | DONE | | | Native ORE package, local services, build portability and account-preservation evidence. |
 | [[id:35649881-C6FE-4FC6-97D7-DA18A05A0355][Serve one screen from the new server]] | STARTED | | | Sign in, one list and the change stream all work on the C++ server, and no screen calls them: the browser still reaches the BFF for everything. Put one screen on the C++ server behind a flag, with the BFF serving every other screen, so the shape is proven against a real person before the rest is ported. |
 | [[id:694694B1-82AE-464F-ABB0-B0786BFEAE0A][Hotfix: clear the six failing checks on main]] | BACKLOG | | | The local gate on main fails six checks that no branch owns: component-drift names eight generated files that no longer match their models, unity-collisions finds five file-local names shared by two ores.synthetic test units, er-diagram is stale, money-decimal-columns types seven continuous trading columns as exact decimals, bff-list-requests is missing instrument_underlyings, and ticks-smoke books a bond whose call date the run already stored. |
+| [[id:742E3C86-9768-4CF5-8ED1-F4973F168208][Hotfix: read the marketdata log the launcher writes]] | DONE | 2026-11-08 | 2026-11-08 | The ticks smoke check reads a log name the launcher does not write, so it fails on a healthy system. |
 
 * Achievements
 

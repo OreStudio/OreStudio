@@ -155,9 +155,11 @@ def _tick_counts(root: Path, tenant: str) -> tuple[int, str, str, int]:
     return int(parts[0] or 0), parts[1], parts[2], int(parts[3] or 0)
 
 
-def _log_path(root: Path, env: dict) -> Path:
+def _log_files(root: Path, env: dict) -> list[Path]:
+    """The marketdata log of each replica, named as the launcher names them."""
     preset = env.get("ORES_PRESET", "")
-    return root / "build" / "output" / preset / "publish" / "log" / "ores.marketdata.service.log"
+    log_dir = root / "build" / "output" / preset / "publish" / "log"
+    return sorted(log_dir.glob("ores.marketdata.service.*.log"))
 
 
 def _service_unit(env: dict) -> str:
@@ -170,7 +172,7 @@ def _service_unit(env: dict) -> str:
     return f"ores.marketdata.service-{label}.service"
 
 
-def _service_text(root: Path, env: dict, start_epoch: float, log_path: Path) -> str:
+def _service_text(root: Path, env: dict, start_epoch: float) -> str:
     """The marketdata log since @p start_epoch, from its file or from the journal.
 
     Services write a file only when the launcher asks them to; under systemd
@@ -181,9 +183,7 @@ def _service_text(root: Path, env: dict, start_epoch: float, log_path: Path) -> 
     # a unit started under systemd writes the demand replies to the journal,
     # and the file may hold only part of the run. Read both and let the parser
     # find the lines.
-    parts = []
-    if log_path.is_file():
-        parts.append(log_path.read_text(errors="replace"))
+    parts = [path.read_text(errors="replace") for path in _log_files(root, env)]
     since = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(start_epoch))
     result = _run(["journalctl", "--user", "-u", _service_unit(env),
                    "--since", since, "--no-pager", "-o", "cat"], root, timeout=120)
@@ -240,7 +240,7 @@ def _provision(root: Path, tenant: str, tenant_name: str, profile: str,
 
 
 def _wait_evidence(root: Path, tenant: str, env: dict, start_epoch: float,
-                   log_path: Path, timeout: int):
+                   timeout: int):
     """Poll for a tick and for a demand set that carries ids.
 
     A tick can land before the supervisor's next demand refresh, and a demand
@@ -253,7 +253,7 @@ def _wait_evidence(root: Path, tenant: str, env: dict, start_epoch: float,
     while True:
         waited = int(timeout - max(deadline - time.monotonic(), 0))
         count, first, last, future = _tick_counts(root, tenant)
-        text = _service_text(root, env, start_epoch, log_path)
+        text = _service_text(root, env, start_epoch)
         lines = latest_demand(parse_demand(text))
         has_demand = any(line.demanded > 0 for line in lines)
         if count and has_demand:
@@ -270,7 +270,6 @@ def ticks(args, root: Path, env_file: Path | None = None) -> int:
 
     env = compass_db.load_env(root, env_file)
     tenant = args.tenant_code
-    log_path = _log_path(root, env)
     start_epoch = time.time()
 
     if args.fresh:
@@ -321,7 +320,7 @@ def ticks(args, root: Path, env_file: Path | None = None) -> int:
 
     subs, routes = _tenant_geometry(root, tenant)
     count, first, last, future, lines, waited = _wait_evidence(
-        root, tenant, env, start_epoch, log_path, args.timeout)
+        root, tenant, env, start_epoch, args.timeout)
     ev = evidence(
         tenant=tenant,
         routes=routes,
@@ -332,7 +331,7 @@ def ticks(args, root: Path, env_file: Path | None = None) -> int:
         future_ticks=future,
         demand=lines,
         waited_seconds=waited,
-        log_file=str(log_path),
+        log_file=", ".join(str(path) for path in _log_files(root, env)),
     )
     print(f"tenant        : {ev.tenant}")
     print(f"subscriptions : {ev.subscriptions}")

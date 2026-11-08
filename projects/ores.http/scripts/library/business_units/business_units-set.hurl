@@ -1,0 +1,9 @@
+# =PUT /api/v1/reference-data/business_units=
+#
+# GENERATED from doc/recipes/http/business_units/business_unit.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_http_recipes
+#
+PUT {{base_url}}/api/v1/reference-data/business_units
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200

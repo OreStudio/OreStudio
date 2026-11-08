@@ -1,0 +1,9 @@
+# =POST /api/v1/reference-data/ir_curve_bootstrap_pillars/delete-many=
+#
+# GENERATED from doc/recipes/http/ir_curve_bootstrap_pillars/ir_curve_bootstrap_pillar.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_http_recipes
+#
+POST {{base_url}}/api/v1/reference-data/ir_curve_bootstrap_pillars/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200

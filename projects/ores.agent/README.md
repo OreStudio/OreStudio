@@ -1,23 +1,17 @@
 # OreStudio Agent
 
-Current code: **0.1.9**. This is a local, read-only assistant. Chat and MCP share
-one process. Business calls use NATS. A separate llama.cpp process runs the model.
-The agent has its own build and deployment. It does not use the main CMake build.
+Version **0.1.9**. A local, read-only assistant with chat and MCP in one process.
+Business calls use NATS. A separate llama.cpp process runs the model.
 
-## Start here
+## Guides
 
-| Need | Guide |
+| Need | Document |
 | --- | --- |
-| Use chat and see examples | [Agent](docs/agent.md) |
-| Install, start, stop or roll back | [Deployment](docs/deployment.md) |
-| Configure CUDA and the model | [Inference](docs/inference.md) |
-| Connect an external MCP client | [MCP](docs/mcp.md) |
-| Understand identity and NATS access | [Backend contract](docs/backend-contract.md) |
-| Run evaluations | [Evaluation](docs/evaluation.md) |
-| Compare results and inspect timing | [Repeatable evaluation](docs/reproducible-evaluation.md) |
-| Review current scope and remaining work | [Business plan](docs/business-use-cases-plan.md) |
-| Discuss future server changes | [Architecture proposals](docs/architecture-future-prs.md) |
-| Check release evidence and known gaps | [Validation](docs/validation.md) |
+| Chat, MCP, business tools and limits | [Usage](docs/agent.md) |
+| Build, install, CUDA, access and rollback | [Deployment](docs/deployment.md) |
+| Datasets, evaluation, comparison and timing | [Evaluation](docs/evaluation.md) |
+| Discuss component ownership and future changes | [Architecture proposals](docs/architecture-future-prs.md) |
+| Check tested releases, known gaps and historical evidence | [Validation](docs/validation.md) |
 
 Use Node 22.11 or later. From this directory:
 
@@ -27,15 +21,24 @@ npm run verify
 npm run package
 ```
 
-These commands test and package the agent. They do not deploy it, start services
-or download a model. Keep private configuration, keys, reports and model files
-outside Git.
+These commands test and package the agent. They do not deploy it, run CMake,
+start services or download models. Keep private config, keys and reports out of Git.
 
-Business guides: [market data](docs/market-lookups.md),
-[discovery](docs/discovery.md), [trade values](docs/reporting.md),
-[scope totals](docs/scope-reporting.md) and [Greeks](docs/greeks.md).
-Design: [runtime layout](docs/plan.md), [intent](docs/intent-workflows.md) and
-[typed requests](docs/request-plan.md).
+## Design and current scope
 
-Dated baseline and validation pages are historical evidence. They are not current
-setup instructions. Their links are in [validation](docs/validation.md).
+Chat and MCP call one internal tool executor. The model proposes calls; code
+checks arguments and identity. The executor uses an independent NATS adapter,
+not the moving main web/BFF package. No extra MCP gateway is needed.
+
+Keep agent and inference releases outside the checkout. Reuse the existing fork
+branch `feature/local-ai-assistant` and native build tree. Agent work does not
+require a new main-server build.
+
+Local agent/evaluation Stages 0–6 are delivered, with recorded gaps. Later releases
+added typed requests and Markdown replies. Current work remains in the agent,
+its UI, tests and evaluations. Do not change backend code, broker settings,
+schemas, business records or the main UI to improve a score.
+
+Next: use evaluation traces to select one agent improvement and compare it with
+a fixed baseline. Preserve failures and checks. Server aggregation is optional;
+future business actions need separate agreement. Open a PR only when requested.

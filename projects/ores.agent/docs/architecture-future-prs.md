@@ -7,7 +7,7 @@ already exist. The agent is implemented in this fork. Reuse existing APIs first.
 Server additions below are conditional proposals, not prerequisites for agent work.
 
 Server changes need lead approval and separate PRs. Current work remains
-[agent and evaluations only](business-use-cases-plan.md).
+[agent and evaluations only](../README.md#design-and-current-scope).
 
 ## Where logic belongs, and why
 
@@ -134,7 +134,7 @@ The agent has no execution tool.
 
 **Proposal — agent integration first:** Reuse the trigger. Server execution
 must survive agent failure. Add only missing user-context or outcome guarantees.
-Recheck the recorded [export/run-state defects](greek-validation.md) before fixing them.
+Recheck the recorded [export/run-state defects](https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/greek-validation.md) before fixing them.
 
 **Check:** Confirm scope, date and resource use. Resolve timeouts before retries.
 Closing chat does not cancel a report.
@@ -224,7 +224,7 @@ analysis. Model output cannot grant permission or replace user confirmation.
 The reporting addition in `cc917e0d36` and its scope-copy helper were reverted.
 No current tool or evaluation calls `reporting.v1.ops.copy_run_scope`.
 Earlier preparation used it once; those records remain. Fresh test data needs
-separate agreement. The [historical notes](valuation-validation.md) are not setup instructions.
+separate agreement. The [historical notes](https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/valuation-validation.md) are not setup instructions.
 
 ## Decisions for the lead
 
@@ -235,4 +235,4 @@ separate agreement. The [historical notes](valuation-validation.md) are not setu
 Source checks: [report operations](../../ores.reporting/modeling/ores.reporting.operations.org),
 [booking operations](../../ores.trading/modeling/ores.trading.trade_operations.org),
 [web booking](../../ores.web/packages/bff/src/booking.ts),
-[agent reads](../src/backend.ts) and [live baseline](business-baseline.md).
+[agent reads](../src/backend.ts) and [live baseline](https://github.com/alexhock/OreStudio/blob/f2dd9f89c88c45f270cf42cea43e99cc09cf5bc1/projects/ores.agent/docs/business-baseline.md).

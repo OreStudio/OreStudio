@@ -27,7 +27,9 @@ The default builds the agent and runs offline replay. It needs no model or NATS.
 
 Fixtures are labelled test data. Replay checks program behavior, not model quality. Model/live scores include
 deterministic agent paths. Small corpora do not establish general accuracy.
-Legacy fixtures have a native/base blind spot; see [request design](request-plan.md).
+The original and paraphrase corpora use unchanged `fixtures-v1.mjs`, which can
+conceal native/base mistakes. The review corpus uses distinct immutable rows:
+native EUR 10/USD 20; base GBP 0.1/GBP 0.2. It has a separate version and hash.
 
 ```text
 npm run eval -- --profile model --config <PRIVATE_CONFIG> --inference-root <INFERENCE_ROOT>
@@ -93,7 +95,54 @@ prompt/tool schemas, model settings, backend contract, platform and live IDs.
 It does not prove which bytes the running inference process loaded.
 
 An oracle is a rule that checks an expected answer. Lexical checks can miss
-correct wording or semantic errors. Keep the
-[historical baseline](evaluation-baseline.md), failures and known oracle limits.
-See [comparison and timing](reproducible-evaluation.md) for controlled comparisons.
-A poor score does not approve a server or data change.
+correct wording or semantic errors. Keep failures and known oracle limits.
+[Validation](validation.md) links the frozen records. A poor score does not
+approve a server or data change.
+
+## Verify and check prerequisites
+
+```text
+npm run verify
+npm run eval:doctor -- --profile model --config <PRIVATE_CONFIG>
+npm run eval:doctor -- --profile live --config <PRIVATE_CONFIG> --credentials <PRIVATE_CREDENTIALS> --party <PARTY_UUID>
+```
+
+`verify` runs tests and all three replay corpora. Every handling check must pass
+without execution errors; blocked business outcomes remain blocked. Reports use
+new `build/output/agent-checks/` paths. After tests, use
+`node evals/check.mjs --out <NEW_DIRECTORY>` to select a report directory.
+
+Doctor checks inputs, model-list endpoint and NATS TLS. It does no login,
+generation or business read. Exit 0 means those prerequisites passed; 1 means
+unavailable/invalid. It does not prove GPU use, access or data coverage.
+
+## Compare and measure
+
+```text
+npm run eval:compare -- <BEFORE/results.json> <AFTER/results.json> --out <NEW_DIRECTORY>
+npm run eval:compare -- <BEFORE/results.json> <AFTER/results.json> --out <NEW_DIRECTORY> --strict
+```
+
+Use the same profile and case IDs. Default comparison also matches corpus,
+grader, fixtures, tool schemas, backend contract, deadline and model files/settings.
+Live party selection must match. Source/prompt changes can be the experiment.
+Different repeats are labelled; no cases are dropped.
+
+`--allow-incompatible` permits a labelled descriptive comparison of other differing
+identifiers. It cannot mix profiles or case sets. Strict comparison returns 2
+for per-case rate regression or incompatibility. Valid normal comparisons return
+0; invalid input/write/overwrite errors return 1. Use full private reports, not
+committed aggregates. Live data can change; inspect traces before assigning cause.
+
+Metrics distinguish proposed tools/arguments from validated execution. Numeric
+attribution checks figures; evidence attribution includes sources. Clarification
+and refusal have separate denominators. Missing records are unmeasured.
+
+Chat spans: `agent`, `selection`, `inference`, `tool`, `adapter`, `render`.
+`x-request-id` links them. Spans overlap; do not sum them. Render timing measures
+formatting, not browser paint. Missing old samples do not mean zero latency.
+Nearest-rank p50/p95 require 20+ samples. Mixed questions are not latency benchmarks.
+
+Timing events exclude prompts, identities, arguments, data and exception text.
+General tool audits can identify tenant/party. Protect logs and private reports.
+Runtime changes need a new [deployment](deployment.md); evaluation-only runs do not.

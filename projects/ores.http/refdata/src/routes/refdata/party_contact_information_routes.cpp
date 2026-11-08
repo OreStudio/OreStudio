@@ -386,7 +386,6 @@ void party_contact_information_routes::register_routes(
             .description("Forwards to the refdata.v1.party_contact_informations.get operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .response<messaging::get_party_contact_information_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
     const auto get_built = get_route.build();
@@ -400,7 +399,6 @@ void party_contact_information_routes::register_routes(
                 "Forwards to the refdata.v1.party_contact_informations.get_many operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .body<messaging::get_many_party_contact_informations_request>()
             .response<messaging::get_many_party_contact_informations_response>()
             .handler([&session](const http_request& req) { return handle_get_many(req, session); });
@@ -414,7 +412,6 @@ void party_contact_information_routes::register_routes(
             .description("Forwards to the refdata.v1.party_contact_informations.put operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .body<messaging::put_party_contact_information_request>()
             .response<messaging::put_party_contact_information_response>()
             .handler([&session](const http_request& req) { return handle_add(req, session); });
@@ -428,7 +425,6 @@ void party_contact_information_routes::register_routes(
             .description("Forwards to the refdata.v1.party_contact_informations.put operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_party_contact_information_request>()
             .response<messaging::put_party_contact_information_response>()
@@ -444,7 +440,6 @@ void party_contact_information_routes::register_routes(
                 "Forwards to the refdata.v1.party_contact_informations.put_many operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .body<messaging::put_many_party_contact_informations_request>()
             .response<messaging::put_many_party_contact_informations_response>()
             .handler([&session](const http_request& req) { return handle_put_many(req, session); });
@@ -458,7 +453,6 @@ void party_contact_information_routes::register_routes(
             .description("Forwards to the refdata.v1.party_contact_informations.delete operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
             .query_param("version", "integer", "", false, "Version")
@@ -475,7 +469,6 @@ void party_contact_information_routes::register_routes(
                 "Forwards to the refdata.v1.party_contact_informations.delete_many operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .body<messaging::delete_many_party_contact_informations_request>()
             .response<messaging::delete_many_party_contact_informations_response>()
             .handler(
@@ -495,7 +488,6 @@ void party_contact_information_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .query_param("scope", "string", "", false, "direct or subtree")
             .response<messaging::list_by_party_id_party_contact_informations_response>()
             .handler(
@@ -515,7 +507,6 @@ void party_contact_information_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .response<messaging::list_party_contact_information_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
     const auto versions_built = versions_route.build();
@@ -531,7 +522,6 @@ void party_contact_information_routes::register_routes(
                 "Forwards to the refdata.v1.party_contact_informations_versions.get operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .response<messaging::get_party_contact_information_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });
     const auto version_built = version_route.build();

@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 449D18D1-633D-52B3-85A3-4E2240CA46F0
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the seed_profiles endpoints over HTTP?
+#+description: Every endpoint the seed_profiles resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:seed_profiles:
+
+This file documents the seed_profiles resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/tenancy/seed_profiles=
+:PROPERTIES:
+:ID: A344807E-E4BC-502D-B7D3-C54657ECADFD
+:END:
+
+List seed profiles. It needs a session.
+
+It forwards to =iam.v1.seed_profiles.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/seed_profiles
+#+end_example
+
+#+name: seed_profiles-list
+#+begin_src hurl :tangle seed_profiles-list.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/seed_profiles
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: D0922DE5-13EA-5BCF-AC0F-5E38EA6254DE
+:END:
+
+Get one seed profile. It needs a session.
+
+It forwards to =iam.v1.seed_profiles.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: seed_profiles-get
+#+begin_src hurl :tangle seed_profiles-get.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/seed_profiles/get-many=
+:PROPERTIES:
+:ID: 02B333D9-FE38-51E8-8850-CDD4E88B9C67
+:END:
+
+Get many seed profiles. It needs a session.
+
+It forwards to =iam.v1.seed_profiles.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/seed_profiles/get-many
+#+end_example
+
+#+name: seed_profiles-get-many
+#+begin_src hurl :tangle seed_profiles-get-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/seed_profiles/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/seed_profiles=
+:PROPERTIES:
+:ID: FE1E9CFC-09A1-52FE-A02E-D79CE0C16997
+:END:
+
+Create one seed profile. It needs a session.
+
+It forwards to =iam.v1.seed_profiles.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/seed_profiles
+#+end_example
+
+#+name: seed_profiles-add
+#+begin_src hurl :tangle seed_profiles-add.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/seed_profiles
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/tenancy/seed_profiles=
+:PROPERTIES:
+:ID: 34988B42-C3EA-5143-BB44-3DEEDEBA68EF
+:END:
+
+Replace one seed profile. It needs a session.
+
+It forwards to =iam.v1.seed_profiles.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/tenancy/seed_profiles
+#+end_example
+
+#+name: seed_profiles-set
+#+begin_src hurl :tangle seed_profiles-set.hurl :exports none
+PUT {{base_url}}/api/v1/tenancy/seed_profiles
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/seed_profiles/put-many=
+:PROPERTIES:
+:ID: 8B07B9A0-CA82-5EEC-A4D8-513C06FBDFD4
+:END:
+
+Write many seed profiles. It needs a session.
+
+It forwards to =iam.v1.seed_profiles.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/seed_profiles/put-many
+#+end_example
+
+#+name: seed_profiles-put-many
+#+begin_src hurl :tangle seed_profiles-put-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/seed_profiles/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: B590A6B0-BDD3-59BA-AFF7-BA5ADBC010AE
+:END:
+
+Delete one seed profile. It needs a session.
+
+It forwards to =iam.v1.seed_profiles.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: seed_profiles-delete
+#+begin_src hurl :tangle seed_profiles-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/seed_profiles/delete-many=
+:PROPERTIES:
+:ID: 8CFD960C-19E1-500F-BDF2-264250D4E683
+:END:
+
+Delete many seed profiles. It needs a session.
+
+It forwards to =iam.v1.seed_profiles.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/seed_profiles/delete-many
+#+end_example
+
+#+name: seed_profiles-delete-many
+#+begin_src hurl :tangle seed_profiles-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/seed_profiles/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000/versions=
+:PROPERTIES:
+:ID: 755E9F7B-7263-5A8F-A8D3-B6B0286BEF46
+:END:
+
+List the recorded versions of one seed profile. It needs a session.
+
+It forwards to =iam.v1.seed_profiles_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000/versions
+#+end_example
+
+#+name: seed_profiles-versions
+#+begin_src hurl :tangle seed_profiles-versions.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000/versions/0=
+:PROPERTIES:
+:ID: B8E20581-DDFB-5CC2-A72F-D4C7A279B70C
+:END:
+
+Get one recorded version of one seed profile. It needs a session.
+
+It forwards to =iam.v1.seed_profiles_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000/versions/0
+#+end_example
+
+#+name: seed_profiles-version
+#+begin_src hurl :tangle seed_profiles-version.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/seed_profiles/00000000-0000-0000-0000-000000000000/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

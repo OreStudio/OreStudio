@@ -1,0 +1,290 @@
+:PROPERTIES:
+:ID: B555FCF8-E7F1-5E19-9680-6585BD1DD2A6
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the calendar_events endpoints over HTTP?
+#+description: Every endpoint the calendar_events resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:calendar_events:
+
+This file documents the calendar_events resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/calendar_events=
+:PROPERTIES:
+:ID: B2DC9F10-E0F2-5254-B7BE-AF820DDE77BD
+:END:
+
+List calendar events. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_events
+#+end_example
+
+#+name: calendar_events-list
+#+begin_src hurl :tangle calendar_events-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_events
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 569181DF-32DF-51FB-9947-9A38CB2EBF44
+:END:
+
+Get one calendar event. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: calendar_events-get
+#+begin_src hurl :tangle calendar_events-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_events/get-many=
+:PROPERTIES:
+:ID: 228FF204-9834-59C1-9FCE-7BBC25C845FC
+:END:
+
+Get many calendar events. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_events/get-many
+#+end_example
+
+#+name: calendar_events-get-many
+#+begin_src hurl :tangle calendar_events-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_events/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_events=
+:PROPERTIES:
+:ID: B81D7383-5807-5096-AFA7-E08569DD566B
+:END:
+
+Create one calendar event. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_events
+#+end_example
+
+#+name: calendar_events-add
+#+begin_src hurl :tangle calendar_events-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_events
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/calendar_events=
+:PROPERTIES:
+:ID: 67EF5B9E-FED5-5A06-B1D7-198C403192A3
+:END:
+
+Replace one calendar event. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/calendar_events
+#+end_example
+
+#+name: calendar_events-set
+#+begin_src hurl :tangle calendar_events-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/calendar_events
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_events/put-many=
+:PROPERTIES:
+:ID: F89B5DF8-C0E8-5F68-9C65-B2578F0105E5
+:END:
+
+Write many calendar events. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_events/put-many
+#+end_example
+
+#+name: calendar_events-put-many
+#+begin_src hurl :tangle calendar_events-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_events/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: EA45EB1C-D906-5117-B3D2-1F824E419415
+:END:
+
+Delete one calendar event. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: calendar_events-delete
+#+begin_src hurl :tangle calendar_events-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_events/delete-many=
+:PROPERTIES:
+:ID: 73011293-BD2F-5E5C-B071-54332353DC93
+:END:
+
+Delete many calendar events. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_events/delete-many
+#+end_example
+
+#+name: calendar_events-delete-many
+#+begin_src hurl :tangle calendar_events-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_events/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_events/by-calendar-code/__none__=
+:PROPERTIES:
+:ID: 19B35CBC-8766-5041-A8AF-A814707E50AF
+:END:
+
+List the calendar events that reference one calendar code. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.list_by_calendar_code=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_events/by-calendar-code/__none__
+#+end_example
+
+#+name: calendar_events-by-calendar-code
+#+begin_src hurl :tangle calendar_events-by-calendar-code.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_events/by-calendar-code/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_events/by-diary-entry-type/__none__=
+:PROPERTIES:
+:ID: 9EEA0DD3-D1C8-5966-8583-BC8F703615A8
+:END:
+
+List the calendar events that reference one diary entry type. It needs a session.
+
+It forwards to =refdata.v1.calendar_events.list_by_diary_entry_type=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_events/by-diary-entry-type/__none__
+#+end_example
+
+#+name: calendar_events-by-diary-entry-type
+#+begin_src hurl :tangle calendar_events-by-diary-entry-type.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_events/by-diary-entry-type/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000/versions=
+:PROPERTIES:
+:ID: AF1226C8-D377-5CE2-B3F9-136E5FA68EE9
+:END:
+
+List the recorded versions of one calendar event. It needs a session.
+
+It forwards to =refdata.v1.calendar_events_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000/versions
+#+end_example
+
+#+name: calendar_events-versions
+#+begin_src hurl :tangle calendar_events-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000/versions/0=
+:PROPERTIES:
+:ID: 89046C10-AFAD-5CF2-AE17-847DBB9DBA27
+:END:
+
+Get one recorded version of one calendar event. It needs a session.
+
+It forwards to =refdata.v1.calendar_events_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000/versions/0
+#+end_example
+
+#+name: calendar_events-version
+#+begin_src hurl :tangle calendar_events-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_events/00000000-0000-0000-0000-000000000000/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

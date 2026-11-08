@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 68AB74F4-E6B4-50CF-A721-3A738BAB70C4
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the countries endpoints over HTTP?
+#+description: Every endpoint the countries resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:countries:
+
+This file documents the countries resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/countries=
+:PROPERTIES:
+:ID: 9F238BC5-1BEF-5960-8FDA-E316A78E323A
+:END:
+
+List countries. It needs a session.
+
+It forwards to =refdata.v1.countries.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/countries
+#+end_example
+
+#+name: countries-list
+#+begin_src hurl :tangle countries-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/countries
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/countries/__none__=
+:PROPERTIES:
+:ID: EFBAE9D1-17D5-528D-99BD-983BE5222DB5
+:END:
+
+Get one country. It needs a session.
+
+It forwards to =refdata.v1.countries.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/countries/__none__
+#+end_example
+
+#+name: countries-get
+#+begin_src hurl :tangle countries-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/countries/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/countries/get-many=
+:PROPERTIES:
+:ID: 2B16B557-3A8D-50D7-B3E5-F10828D30061
+:END:
+
+Get many countries. It needs a session.
+
+It forwards to =refdata.v1.countries.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/countries/get-many
+#+end_example
+
+#+name: countries-get-many
+#+begin_src hurl :tangle countries-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/countries/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/countries=
+:PROPERTIES:
+:ID: 811DEEF7-4487-5E2E-A30E-F2931E7F5A13
+:END:
+
+Create one country. It needs a session.
+
+It forwards to =refdata.v1.countries.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/countries
+#+end_example
+
+#+name: countries-add
+#+begin_src hurl :tangle countries-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/countries
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/countries=
+:PROPERTIES:
+:ID: 8F0FFCCC-38E4-5F2D-BADF-D2E9886413F0
+:END:
+
+Replace one country. It needs a session.
+
+It forwards to =refdata.v1.countries.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/countries
+#+end_example
+
+#+name: countries-set
+#+begin_src hurl :tangle countries-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/countries
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/countries/put-many=
+:PROPERTIES:
+:ID: 7D748E40-50F4-5E24-BB82-D37AB3628339
+:END:
+
+Write many countries. It needs a session.
+
+It forwards to =refdata.v1.countries.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/countries/put-many
+#+end_example
+
+#+name: countries-put-many
+#+begin_src hurl :tangle countries-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/countries/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/countries/__none__=
+:PROPERTIES:
+:ID: C9E98576-83EB-5961-8EF0-3DF2410AF84A
+:END:
+
+Delete one country. It needs a session.
+
+It forwards to =refdata.v1.countries.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/countries/__none__
+#+end_example
+
+#+name: countries-delete
+#+begin_src hurl :tangle countries-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/countries/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/countries/delete-many=
+:PROPERTIES:
+:ID: EAF26EF4-4274-539D-B090-7D62614C3298
+:END:
+
+Delete many countries. It needs a session.
+
+It forwards to =refdata.v1.countries.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/countries/delete-many
+#+end_example
+
+#+name: countries-delete-many
+#+begin_src hurl :tangle countries-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/countries/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/countries/__none__/versions=
+:PROPERTIES:
+:ID: 9E1C0F00-F125-5363-85FC-100BC2055B84
+:END:
+
+List the recorded versions of one country. It needs a session.
+
+It forwards to =refdata.v1.countries_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/countries/__none__/versions
+#+end_example
+
+#+name: countries-versions
+#+begin_src hurl :tangle countries-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/countries/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/countries/__none__/versions/0=
+:PROPERTIES:
+:ID: 9CC1FA2F-D347-5BDF-9115-DBDD404E42B6
+:END:
+
+Get one recorded version of one country. It needs a session.
+
+It forwards to =refdata.v1.countries_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/countries/__none__/versions/0
+#+end_example
+
+#+name: countries-version
+#+begin_src hurl :tangle countries-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/countries/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

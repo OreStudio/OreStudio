@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: C06682A7-2F57-5CA1-91C7-D1A797405DFB
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the currency_pair_conventions endpoints over HTTP?
+#+description: Every endpoint the currency_pair_conventions resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:currency_pair_conventions:
+
+This file documents the currency_pair_conventions resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/currency_pair_conventions=
+:PROPERTIES:
+:ID: 01294AA6-2606-57D9-BAB7-81CA28B870C1
+:END:
+
+List currency pair conventions. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_pair_conventions
+#+end_example
+
+#+name: currency_pair_conventions-list
+#+begin_src hurl :tangle currency_pair_conventions-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_pair_conventions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_pair_conventions/__none__=
+:PROPERTIES:
+:ID: 4982F529-B485-5C01-8D19-D81B5F57CBC2
+:END:
+
+Get one currency pair convention. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_pair_conventions/__none__
+#+end_example
+
+#+name: currency_pair_conventions-get
+#+begin_src hurl :tangle currency_pair_conventions-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_pair_conventions/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_pair_conventions/get-many=
+:PROPERTIES:
+:ID: 1B898FF6-B63A-5AF4-81BE-004E836DCBD5
+:END:
+
+Get many currency pair conventions. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_pair_conventions/get-many
+#+end_example
+
+#+name: currency_pair_conventions-get-many
+#+begin_src hurl :tangle currency_pair_conventions-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_pair_conventions/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_pair_conventions=
+:PROPERTIES:
+:ID: 0298D9CC-374F-5304-B5DA-E52E8726FB03
+:END:
+
+Create one currency pair convention. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_pair_conventions
+#+end_example
+
+#+name: currency_pair_conventions-add
+#+begin_src hurl :tangle currency_pair_conventions-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_pair_conventions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/currency_pair_conventions=
+:PROPERTIES:
+:ID: 8BE57691-646A-5069-B03E-6C11904DD965
+:END:
+
+Replace one currency pair convention. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/currency_pair_conventions
+#+end_example
+
+#+name: currency_pair_conventions-set
+#+begin_src hurl :tangle currency_pair_conventions-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/currency_pair_conventions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_pair_conventions/put-many=
+:PROPERTIES:
+:ID: 94B6A36C-A40E-5190-AB92-B6A8DFA3AB98
+:END:
+
+Write many currency pair conventions. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_pair_conventions/put-many
+#+end_example
+
+#+name: currency_pair_conventions-put-many
+#+begin_src hurl :tangle currency_pair_conventions-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_pair_conventions/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/currency_pair_conventions/__none__=
+:PROPERTIES:
+:ID: 535F3EC7-1C8A-5D8C-B723-7EBACE23CA8E
+:END:
+
+Delete one currency pair convention. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/currency_pair_conventions/__none__
+#+end_example
+
+#+name: currency_pair_conventions-delete
+#+begin_src hurl :tangle currency_pair_conventions-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/currency_pair_conventions/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_pair_conventions/delete-many=
+:PROPERTIES:
+:ID: 68F1DBB7-8F6F-55BA-BA76-74D5BE6A7619
+:END:
+
+Delete many currency pair conventions. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_pair_conventions/delete-many
+#+end_example
+
+#+name: currency_pair_conventions-delete-many
+#+begin_src hurl :tangle currency_pair_conventions-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_pair_conventions/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_pair_conventions/__none__/versions=
+:PROPERTIES:
+:ID: D1B742CE-2318-5128-A7E9-7BD0A66D06C2
+:END:
+
+List the recorded versions of one currency pair convention. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_pair_conventions/__none__/versions
+#+end_example
+
+#+name: currency_pair_conventions-versions
+#+begin_src hurl :tangle currency_pair_conventions-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_pair_conventions/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_pair_conventions/__none__/versions/0=
+:PROPERTIES:
+:ID: 8504CEC6-FDA1-5882-8934-5E182225202A
+:END:
+
+Get one recorded version of one currency pair convention. It needs a session.
+
+It forwards to =refdata.v1.currency_pair_conventions_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_pair_conventions/__none__/versions/0
+#+end_example
+
+#+name: currency_pair_conventions-version
+#+begin_src hurl :tangle currency_pair_conventions-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_pair_conventions/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -381,7 +381,6 @@ void business_unit_routes::register_routes(
             .description("Forwards to the refdata.v1.business_units.get operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .response<messaging::get_business_unit_response>()
             .handler([&session](const http_request& req) { return handle_get(req, session); });
     const auto get_built = get_route.build();
@@ -394,7 +393,6 @@ void business_unit_routes::register_routes(
             .description("Forwards to the refdata.v1.business_units.get_many operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .body<messaging::get_many_business_units_request>()
             .response<messaging::get_many_business_units_response>()
             .handler([&session](const http_request& req) { return handle_get_many(req, session); });
@@ -408,7 +406,6 @@ void business_unit_routes::register_routes(
             .description("Forwards to the refdata.v1.business_units.put operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .body<messaging::put_business_unit_request>()
             .response<messaging::put_business_unit_response>()
             .handler([&session](const http_request& req) { return handle_add(req, session); });
@@ -422,7 +419,6 @@ void business_unit_routes::register_routes(
             .description("Forwards to the refdata.v1.business_units.put operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .query_param("version", "integer", "", false, "Version")
             .body<messaging::put_business_unit_request>()
             .response<messaging::put_business_unit_response>()
@@ -437,7 +433,6 @@ void business_unit_routes::register_routes(
             .description("Forwards to the refdata.v1.business_units.put_many operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .body<messaging::put_many_business_units_request>()
             .response<messaging::put_many_business_units_response>()
             .handler([&session](const http_request& req) { return handle_put_many(req, session); });
@@ -451,7 +446,6 @@ void business_unit_routes::register_routes(
             .description("Forwards to the refdata.v1.business_units.delete operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .query_param("reason", "string", "", true, "Change reason code")
             .query_param("commentary", "string", "", true, "Commentary")
             .query_param("version", "integer", "", false, "Version")
@@ -467,7 +461,6 @@ void business_unit_routes::register_routes(
             .description("Forwards to the refdata.v1.business_units.delete_many operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .body<messaging::delete_many_business_units_request>()
             .response<messaging::delete_many_business_units_response>()
             .handler(
@@ -486,7 +479,6 @@ void business_unit_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .query_param("scope", "string", "", false, "direct or subtree")
             .response<messaging::list_by_party_id_business_units_response>()
             .handler(
@@ -505,7 +497,6 @@ void business_unit_routes::register_routes(
             .query_param("limit", "integer", "", false, "Rows to return")
             .query_param("order", "string", "", false, "Column to order")
             .query_param("desc", "boolean", "", false, "Descending")
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .response<messaging::list_business_unit_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
     const auto versions_built = versions_route.build();
@@ -518,7 +509,6 @@ void business_unit_routes::register_routes(
             .description("Forwards to the refdata.v1.business_units_versions.get operation.")
             .tags({"refdata"})
             .auth_required()
-            .query_param("f.party_id", "string", "", false, "Rows whose party_id is this value")
             .response<messaging::get_business_unit_version_response>()
             .handler([&session](const http_request& req) { return handle_version(req, session); });
     const auto version_built = version_route.build();

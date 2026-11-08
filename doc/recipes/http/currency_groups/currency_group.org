@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 2E8066E7-9FE6-51ED-9CD4-809B67241282
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the currency_groups endpoints over HTTP?
+#+description: Every endpoint the currency_groups resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:currency_groups:
+
+This file documents the currency_groups resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/currency_groups=
+:PROPERTIES:
+:ID: 287C9F3D-AC4E-5B6C-863E-0FE3E3684A59
+:END:
+
+List currency groups. It needs a session.
+
+It forwards to =refdata.v1.currency_groups.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_groups
+#+end_example
+
+#+name: currency_groups-list
+#+begin_src hurl :tangle currency_groups-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_groups
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_groups/__none__=
+:PROPERTIES:
+:ID: D121C18C-1929-5245-A5A5-071DA690937C
+:END:
+
+Get one currency group. It needs a session.
+
+It forwards to =refdata.v1.currency_groups.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_groups/__none__
+#+end_example
+
+#+name: currency_groups-get
+#+begin_src hurl :tangle currency_groups-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_groups/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_groups/get-many=
+:PROPERTIES:
+:ID: 15719B2C-59FA-5DF8-859A-B024C316B900
+:END:
+
+Get many currency groups. It needs a session.
+
+It forwards to =refdata.v1.currency_groups.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_groups/get-many
+#+end_example
+
+#+name: currency_groups-get-many
+#+begin_src hurl :tangle currency_groups-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_groups/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_groups=
+:PROPERTIES:
+:ID: 6D7A20EE-4EF7-50C4-AA58-E73169FA0423
+:END:
+
+Create one currency group. It needs a session.
+
+It forwards to =refdata.v1.currency_groups.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_groups
+#+end_example
+
+#+name: currency_groups-add
+#+begin_src hurl :tangle currency_groups-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_groups
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/currency_groups=
+:PROPERTIES:
+:ID: 11948F49-5A46-558A-8EA8-901534710187
+:END:
+
+Replace one currency group. It needs a session.
+
+It forwards to =refdata.v1.currency_groups.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/currency_groups
+#+end_example
+
+#+name: currency_groups-set
+#+begin_src hurl :tangle currency_groups-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/currency_groups
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_groups/put-many=
+:PROPERTIES:
+:ID: 908BFE8B-4383-5DD0-99B7-0315BF5B9B7E
+:END:
+
+Write many currency groups. It needs a session.
+
+It forwards to =refdata.v1.currency_groups.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_groups/put-many
+#+end_example
+
+#+name: currency_groups-put-many
+#+begin_src hurl :tangle currency_groups-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_groups/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/currency_groups/__none__=
+:PROPERTIES:
+:ID: 1A7E47A2-092E-5102-BEB3-44043B46E085
+:END:
+
+Delete one currency group. It needs a session.
+
+It forwards to =refdata.v1.currency_groups.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/currency_groups/__none__
+#+end_example
+
+#+name: currency_groups-delete
+#+begin_src hurl :tangle currency_groups-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/currency_groups/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/currency_groups/delete-many=
+:PROPERTIES:
+:ID: 75C5EC60-5D7D-5A94-A33C-E7CFC68EAB03
+:END:
+
+Delete many currency groups. It needs a session.
+
+It forwards to =refdata.v1.currency_groups.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/currency_groups/delete-many
+#+end_example
+
+#+name: currency_groups-delete-many
+#+begin_src hurl :tangle currency_groups-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/currency_groups/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_groups/__none__/versions=
+:PROPERTIES:
+:ID: 14A17B6B-48CF-5A80-AB85-C0F02ADF1946
+:END:
+
+List the recorded versions of one currency group. It needs a session.
+
+It forwards to =refdata.v1.currency_groups_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_groups/__none__/versions
+#+end_example
+
+#+name: currency_groups-versions
+#+begin_src hurl :tangle currency_groups-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_groups/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/currency_groups/__none__/versions/0=
+:PROPERTIES:
+:ID: 9E635896-F986-5FCD-AB57-EA3857262A38
+:END:
+
+Get one recorded version of one currency group. It needs a session.
+
+It forwards to =refdata.v1.currency_groups_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/currency_groups/__none__/versions/0
+#+end_example
+
+#+name: currency_groups-version
+#+begin_src hurl :tangle currency_groups-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/currency_groups/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

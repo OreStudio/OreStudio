@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: C22B769D-A74A-552A-9519-5DCF1D14A469
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the tenants endpoints over HTTP?
+#+description: Every endpoint the tenants resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:tenants:
+
+This file documents the tenants resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/tenancy/tenants=
+:PROPERTIES:
+:ID: 88423337-07AB-5C82-8DCD-B0CB616EA00E
+:END:
+
+List tenants. It needs a session.
+
+It forwards to =iam.v1.tenants.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenants
+#+end_example
+
+#+name: tenants-list
+#+begin_src hurl :tangle tenants-list.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenants
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/tenants/__none__=
+:PROPERTIES:
+:ID: 55E62677-D980-518C-89D5-CB16811CE3F8
+:END:
+
+Get one tenant. It needs a session.
+
+It forwards to =iam.v1.tenants.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenants/__none__
+#+end_example
+
+#+name: tenants-get
+#+begin_src hurl :tangle tenants-get.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenants/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenants/get-many=
+:PROPERTIES:
+:ID: 45B5A187-134F-5EA3-AD29-8CF2276EB50A
+:END:
+
+Get many tenants. It needs a session.
+
+It forwards to =iam.v1.tenants.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenants/get-many
+#+end_example
+
+#+name: tenants-get-many
+#+begin_src hurl :tangle tenants-get-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenants/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenants=
+:PROPERTIES:
+:ID: 696A96E8-D9E4-59EF-B5C5-C87ACF36A3DD
+:END:
+
+Create one tenant. It needs a session.
+
+It forwards to =iam.v1.tenants.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenants
+#+end_example
+
+#+name: tenants-add
+#+begin_src hurl :tangle tenants-add.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenants
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/tenancy/tenants=
+:PROPERTIES:
+:ID: 45AE56DD-7E29-5115-A52C-E6B2BE6863E7
+:END:
+
+Replace one tenant. It needs a session.
+
+It forwards to =iam.v1.tenants.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/tenancy/tenants
+#+end_example
+
+#+name: tenants-set
+#+begin_src hurl :tangle tenants-set.hurl :exports none
+PUT {{base_url}}/api/v1/tenancy/tenants
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenants/put-many=
+:PROPERTIES:
+:ID: BF7E4E34-0A6C-524F-9841-2192BDF2C983
+:END:
+
+Write many tenants. It needs a session.
+
+It forwards to =iam.v1.tenants.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenants/put-many
+#+end_example
+
+#+name: tenants-put-many
+#+begin_src hurl :tangle tenants-put-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenants/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/tenancy/tenants/__none__=
+:PROPERTIES:
+:ID: 8D420C34-CEA0-543B-9A76-F6F265133844
+:END:
+
+Delete one tenant. It needs a session.
+
+It forwards to =iam.v1.tenants.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/tenancy/tenants/__none__
+#+end_example
+
+#+name: tenants-delete
+#+begin_src hurl :tangle tenants-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/tenancy/tenants/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/tenancy/tenants/delete-many=
+:PROPERTIES:
+:ID: E6F0F905-03DC-50CE-9E16-67020F0FEC2E
+:END:
+
+Delete many tenants. It needs a session.
+
+It forwards to =iam.v1.tenants.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/tenancy/tenants/delete-many
+#+end_example
+
+#+name: tenants-delete-many
+#+begin_src hurl :tangle tenants-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/tenancy/tenants/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/tenants/__none__/versions=
+:PROPERTIES:
+:ID: B483CF1C-4BD0-56CB-A748-8406E475C950
+:END:
+
+List the recorded versions of one tenant. It needs a session.
+
+It forwards to =iam.v1.tenants_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenants/__none__/versions
+#+end_example
+
+#+name: tenants-versions
+#+begin_src hurl :tangle tenants-versions.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenants/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/tenancy/tenants/__none__/versions/0=
+:PROPERTIES:
+:ID: 4CBA416D-B1C6-5FF8-9741-5E2F229E4C66
+:END:
+
+Get one recorded version of one tenant. It needs a session.
+
+It forwards to =iam.v1.tenants_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/tenancy/tenants/__none__/versions/0
+#+end_example
+
+#+name: tenants-version
+#+begin_src hurl :tangle tenants-version.hurl :exports none
+GET {{base_url}}/api/v1/tenancy/tenants/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

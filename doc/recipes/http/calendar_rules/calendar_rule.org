@@ -1,0 +1,267 @@
+:PROPERTIES:
+:ID: 17563C50-1133-5AEE-8288-18CF02D4DF7B
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the calendar_rules endpoints over HTTP?
+#+description: Every endpoint the calendar_rules resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:calendar_rules:
+
+This file documents the calendar_rules resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/reference-data/calendar_rules=
+:PROPERTIES:
+:ID: 10012B00-0F1E-5524-8250-3C57AEF9B58E
+:END:
+
+List calendar rules. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_rules
+#+end_example
+
+#+name: calendar_rules-list
+#+begin_src hurl :tangle calendar_rules-list.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_rules
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: D4DB0EF8-14E7-5888-96BA-7D3D970C0A85
+:END:
+
+Get one calendar rule. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: calendar_rules-get
+#+begin_src hurl :tangle calendar_rules-get.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_rules/get-many=
+:PROPERTIES:
+:ID: D8277833-79A4-56F8-A1CF-3A19CE4D1B5E
+:END:
+
+Get many calendar rules. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_rules/get-many
+#+end_example
+
+#+name: calendar_rules-get-many
+#+begin_src hurl :tangle calendar_rules-get-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_rules/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_rules=
+:PROPERTIES:
+:ID: D88BD5E3-B875-5AC5-89B3-AD69B27514A9
+:END:
+
+Create one calendar rule. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_rules
+#+end_example
+
+#+name: calendar_rules-add
+#+begin_src hurl :tangle calendar_rules-add.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_rules
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/reference-data/calendar_rules=
+:PROPERTIES:
+:ID: 7D7A5648-12C4-57C1-862B-9344C6A52AB2
+:END:
+
+Replace one calendar rule. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/reference-data/calendar_rules
+#+end_example
+
+#+name: calendar_rules-set
+#+begin_src hurl :tangle calendar_rules-set.hurl :exports none
+PUT {{base_url}}/api/v1/reference-data/calendar_rules
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_rules/put-many=
+:PROPERTIES:
+:ID: 5AC116B2-80EA-5ADE-AA6F-09BC47FFDB8C
+:END:
+
+Write many calendar rules. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_rules/put-many
+#+end_example
+
+#+name: calendar_rules-put-many
+#+begin_src hurl :tangle calendar_rules-put-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_rules/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000=
+:PROPERTIES:
+:ID: 88D016A3-206E-5C00-BE9D-8103085E927C
+:END:
+
+Delete one calendar rule. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000
+#+end_example
+
+#+name: calendar_rules-delete
+#+begin_src hurl :tangle calendar_rules-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/reference-data/calendar_rules/delete-many=
+:PROPERTIES:
+:ID: 6A61A3A5-777F-56F6-ABF9-7FC0DB3940B3
+:END:
+
+Delete many calendar rules. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/reference-data/calendar_rules/delete-many
+#+end_example
+
+#+name: calendar_rules-delete-many
+#+begin_src hurl :tangle calendar_rules-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/reference-data/calendar_rules/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_rules/by-calendar-code/__none__=
+:PROPERTIES:
+:ID: EBE41591-7C08-54B3-856E-9E3378FB8A79
+:END:
+
+List the calendar rules that reference one calendar code. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules.list_by_calendar_code=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_rules/by-calendar-code/__none__
+#+end_example
+
+#+name: calendar_rules-by-calendar-code
+#+begin_src hurl :tangle calendar_rules-by-calendar-code.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_rules/by-calendar-code/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000/versions=
+:PROPERTIES:
+:ID: 90785695-5CC1-5478-BC69-0D44C58DC005
+:END:
+
+List the recorded versions of one calendar rule. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000/versions
+#+end_example
+
+#+name: calendar_rules-versions
+#+begin_src hurl :tangle calendar_rules-versions.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000/versions/0=
+:PROPERTIES:
+:ID: 6367B1A0-700B-578C-9760-CFFEF4BC0DF2
+:END:
+
+Get one recorded version of one calendar rule. It needs a session.
+
+It forwards to =refdata.v1.calendar_rules_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000/versions/0
+#+end_example
+
+#+name: calendar_rules-version
+#+begin_src hurl :tangle calendar_rules-version.hurl :exports none
+GET {{base_url}}/api/v1/reference-data/calendar_rules/00000000-0000-0000-0000-000000000000/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

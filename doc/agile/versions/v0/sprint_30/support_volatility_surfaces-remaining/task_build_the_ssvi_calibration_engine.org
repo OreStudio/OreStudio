@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/build-the-ssvi-calibration-engine
-#+pr:
+#+pr: 4512
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4512][#4512]] | [analytics] Fit SSVI to weighted volatility quotes |
 
 * Review
 

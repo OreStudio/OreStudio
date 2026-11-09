@@ -36,7 +36,7 @@ A report run over the generated trades shows they value correctly according to O
 * Acceptance
 
 - A report over a provisioned Acme, covering every generated trade type, completes through the grid, with every trade in =npv.csv=, a finite value and no Trade errors.
-- *Correct is measured against ORE:* for each type, a trade the builder makes with the terms of ORE's sample of that type, on the sample's market, gives the NPV ORE gives for the sample, within a stated tolerance.
+- *Correct is measured against ORE:* for each type, a trade the builder makes with the terms of ORE's sample of that type, on the sample's market, gives the NPV ORE gives for the sample, within 0.01% of the reference NPV, or 0.0001% of notional if that is larger, so a value near zero is not judged on noise. A type that needs a wider tolerance states why.
 - The reference is ORE's =ExpectedOutput/npv.csv= where one exists (25 of the 85 types on 2026-11-09), and otherwise a run of ORE on its own sample of the type.
 - A type with no ORE sample is listed with its reason, and is held to a stated plausibility bound, an absolute NPV against its notional.
 - A tagged test repeats the comparison, so a change to the generator that moves a value fails.

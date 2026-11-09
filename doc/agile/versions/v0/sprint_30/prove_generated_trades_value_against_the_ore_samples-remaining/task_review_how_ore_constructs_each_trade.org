@@ -37,6 +37,7 @@ Each builder and each pricing setup starts from what ORE actually requires, reco
 
 - A table holds one row for each of the 85 generated trade types: its ORE data class, the terms its =fromXML= reads as mandatory, the terms its conventions supply, and its engine builder with the market data that engine asks for.
 - It says which types =TradeGenerator= builds (11 products) and what it defaults for each, and which types have no ORE builder to follow.
+- It states how the approach of =TradeGenerator=, economic terms in and the rest from conventions, extends to each trade family it does not cover, including the shared pieces such as legs, option blocks and barriers.
 - Each mandatory term maps to a term of our trade model. A term with no home is listed, with the task that adds it.
 - The table is checked in where the builder task reads it, and states the ORE commit it was read at.
 

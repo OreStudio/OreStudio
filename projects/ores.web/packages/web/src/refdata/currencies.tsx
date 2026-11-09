@@ -460,6 +460,7 @@ function CurrencyBody({ row }: { readonly row: RecordRow }): ReactNode {
                 <RecordTimeline
                     entityType={ENTITY}
                     entityId={code}
+                    gaps={['record_links_unversioned']}
                     {...(may.write ? { onRevert: setReverting } : {})}
                 />
             )}

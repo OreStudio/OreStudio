@@ -64,6 +64,7 @@ export function RecordTimeline({
     entityId,
     parts = [],
     hideUnchanged = false,
+    gaps = [],
     onRevert,
 }: {
     readonly entityType: string;
@@ -76,6 +77,8 @@ export function RecordTimeline({
      * stream with entries that say nothing happened.
      */
     readonly hideUnchanged?: boolean;
+    /** What this history cannot show by design, as the timeline's known gaps name it, such as unversioned links. */
+    readonly gaps?: readonly string[];
     readonly onRevert?: (version: HistoryVersion) => void;
 }): ReactNode {
     const { t } = useTranslation();
@@ -128,6 +131,7 @@ export function RecordTimeline({
                 id: entityId,
                 events: orderTimeline(events),
                 gaps: [
+                    ...gaps.map((entity) => ({ entity, reason: '' })),
                     ...(parts.length === 0 ? [] : [{ entity: 'record_parts_removed', reason: '' }]),
                     ...unread.map((read) => ({
                         entity: read.name ?? read.entityType,

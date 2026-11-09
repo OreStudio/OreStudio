@@ -6,3 +6,4 @@
 ^./projects/ores.compass/venv
 ^./projects/ores.codegen/venv
 ^./projects/ores.web/node_modules
+/i18n/locales/

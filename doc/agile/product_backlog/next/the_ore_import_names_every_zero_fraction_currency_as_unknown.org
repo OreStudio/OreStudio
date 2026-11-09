@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: 4E2C5605-26AB-4D54-83F0-D47DDF3FB23C
+:END:
+#+title: The ORE import names every zero fraction currency as a value with no row
+#+description: The importer refuses a fractions per unit of zero, which the yen and twelve other seeded currencies carry.
+#+type: capture
+#+level: cross
+#+filetags: :ore:refdata:capture:next:
+#+created: 2026-10-26
+#+updated: 2026-10-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The ORE import names every zero fraction currency as a value with no row. The importer's validate_currency refuses a fractions per unit of zero, which the yen, the won and eleven other seeded currencies carry, so every preview of a currency configuration lists thirteen currencies under values with no row with Fractions per unit must be positive, though the import then writes them as they are. Seen on 2026-10-26 by the currencies scenario. Either a zero is valid for a currency with no minor unit and the check goes, or the seed should carry one as ORE's own files do.
+
+* Why
+
+Every preview of a currency configuration lists thirteen currencies under values with no row with Fractions per unit must be positive, though the import then writes them as they are, so the notice is noise on every import. Either a zero is valid for a currency with no minor unit and the check goes, or the seed should carry one as ORE's own files do.
+
+* References
+
+- =projects/ores.ore/core= — =validate_currency= in the importer.
+- =projects/ores.sql/populate= — the currency seed.
+
+* See also
+
+-

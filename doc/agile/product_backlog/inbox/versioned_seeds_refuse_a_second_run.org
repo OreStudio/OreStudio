@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: A8555C4F-BD6D-4590-B44D-B3320219FE48
+:END:
+#+title: A versioned seed that says it is idempotent fails on a second run
+#+description: A populate script that inserts version 0 with on conflict do update fails with already_exists when its row exists, because the insert trigger refuses a create that collides with a current row.
+#+type: capture
+#+level: cross
+#+filetags: :sql:seed:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A populate script that inserts version 0 rows with =on conflict do update= fails on a second run with =already_exists=. The insert trigger refuses a version 0 write when a current row exists, unless a version replace is allowed. Many of these scripts still state in their header that they are idempotent.
+
+* Why
+
+A fresh =compass db recreate= starts with empty tables, so it does not reach this path. A re-run of a populate script against a live database does, and the header comment says that re-run is safe.
+
+Two scripts are proved to fail: =refdata_currency_market_tiers_populate.sql= and =refdata_currency_pair_classifications_populate.sql=. The check ran each one in a transaction that rolled back. A text search finds about 102 populate scripts that have both =on conflict= and a version 0 row. Only those two were run, so the real number is not known.
+
+Decide one rule: either the scripts allow a version replace and are idempotent, or they run once and their headers say so.
+
+* References
+
+- Found on PR #4507, and raised by its review.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]]

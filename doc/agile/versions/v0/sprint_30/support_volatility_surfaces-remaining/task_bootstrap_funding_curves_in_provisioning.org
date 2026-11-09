@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/bootstrap-funding-curves-in-provisioning
-#+pr:
+#+pr: 4539
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4539][#4539]] | [iam] Bootstrap and publish each party's funding curves in provisioning |
 
 * Review
 

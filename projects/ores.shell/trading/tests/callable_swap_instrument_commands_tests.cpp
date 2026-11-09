@@ -72,16 +72,16 @@ TEST_CASE("callable_swap_instrument_commands_registers_every_derived_verb", "[co
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("callable_swap_instruments ");
     for (const auto& verb : {
-             std::string{"callable_swap_instruments list"},
-             std::string{"callable_swap_instruments get"},
-             std::string{"callable_swap_instruments get-many"},
-             std::string{"callable_swap_instruments add"},
-             std::string{"callable_swap_instruments set"},
-             std::string{"callable_swap_instruments put-many"},
-             std::string{"callable_swap_instruments delete"},
-             std::string{"callable_swap_instruments delete-many"},
-             std::string{"callable_swap_instruments versions"},
-             std::string{"callable_swap_instruments version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

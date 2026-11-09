@@ -72,16 +72,16 @@ TEST_CASE("intraday_power_load_convention_commands_registers_every_derived_verb"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("intraday_power_load_conventions ");
     for (const auto& verb : {
-             std::string{"intraday_power_load_conventions list"},
-             std::string{"intraday_power_load_conventions get"},
-             std::string{"intraday_power_load_conventions get-many"},
-             std::string{"intraday_power_load_conventions add"},
-             std::string{"intraday_power_load_conventions set"},
-             std::string{"intraday_power_load_conventions put-many"},
-             std::string{"intraday_power_load_conventions delete"},
-             std::string{"intraday_power_load_conventions delete-many"},
-             std::string{"intraday_power_load_conventions versions"},
-             std::string{"intraday_power_load_conventions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

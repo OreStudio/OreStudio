@@ -72,16 +72,16 @@ TEST_CASE("curve_volatility_constant_commands_registers_every_derived_verb", "[c
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("curve_volatility_constants ");
     for (const auto& verb : {
-             std::string{"curve_volatility_constants list"},
-             std::string{"curve_volatility_constants get"},
-             std::string{"curve_volatility_constants get-many"},
-             std::string{"curve_volatility_constants add"},
-             std::string{"curve_volatility_constants set"},
-             std::string{"curve_volatility_constants put-many"},
-             std::string{"curve_volatility_constants delete"},
-             std::string{"curve_volatility_constants delete-many"},
-             std::string{"curve_volatility_constants versions"},
-             std::string{"curve_volatility_constants version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

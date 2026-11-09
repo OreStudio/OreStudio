@@ -72,16 +72,16 @@ TEST_CASE("tenor_unit_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("tenor_units ");
     for (const auto& verb : {
-             std::string{"tenor_units list"},
-             std::string{"tenor_units get"},
-             std::string{"tenor_units get-many"},
-             std::string{"tenor_units add"},
-             std::string{"tenor_units set"},
-             std::string{"tenor_units put-many"},
-             std::string{"tenor_units delete"},
-             std::string{"tenor_units delete-many"},
-             std::string{"tenor_units versions"},
-             std::string{"tenor_units version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

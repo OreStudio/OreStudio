@@ -72,17 +72,17 @@ TEST_CASE("commodity_future_off_peak_index_commands_registers_every_derived_verb
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("commodity_future_off_peak_indexes ");
     for (const auto& verb : {
-             std::string{"commodity_future_off_peak_indexes list"},
-             std::string{"commodity_future_off_peak_indexes get"},
-             std::string{"commodity_future_off_peak_indexes get-many"},
-             std::string{"commodity_future_off_peak_indexes add"},
-             std::string{"commodity_future_off_peak_indexes set"},
-             std::string{"commodity_future_off_peak_indexes put-many"},
-             std::string{"commodity_future_off_peak_indexes delete"},
-             std::string{"commodity_future_off_peak_indexes delete-many"},
-             std::string{"commodity_future_off_peak_indexes by-convention-id"},
-             std::string{"commodity_future_off_peak_indexes versions"},
-             std::string{"commodity_future_off_peak_indexes version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-convention-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,16 +72,16 @@ TEST_CASE("fsm_transition_commands_registers_every_derived_verb", "[commands]") 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("fsm_transitions ");
     for (const auto& verb : {
-             std::string{"fsm_transitions list"},
-             std::string{"fsm_transitions get"},
-             std::string{"fsm_transitions get-many"},
-             std::string{"fsm_transitions add"},
-             std::string{"fsm_transitions set"},
-             std::string{"fsm_transitions put-many"},
-             std::string{"fsm_transitions delete"},
-             std::string{"fsm_transitions delete-many"},
-             std::string{"fsm_transitions versions"},
-             std::string{"fsm_transitions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

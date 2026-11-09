@@ -72,16 +72,16 @@ TEST_CASE("fx_accumulator_instrument_commands_registers_every_derived_verb", "[c
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("fx_accumulator_instruments ");
     for (const auto& verb : {
-             std::string{"fx_accumulator_instruments list"},
-             std::string{"fx_accumulator_instruments get"},
-             std::string{"fx_accumulator_instruments get-many"},
-             std::string{"fx_accumulator_instruments add"},
-             std::string{"fx_accumulator_instruments set"},
-             std::string{"fx_accumulator_instruments put-many"},
-             std::string{"fx_accumulator_instruments delete"},
-             std::string{"fx_accumulator_instruments delete-many"},
-             std::string{"fx_accumulator_instruments versions"},
-             std::string{"fx_accumulator_instruments version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

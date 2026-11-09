@@ -72,16 +72,16 @@ TEST_CASE("commodity_curve_interpolation_commands_registers_every_derived_verb",
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("commodity_curve_interpolations ");
     for (const auto& verb : {
-             std::string{"commodity_curve_interpolations list"},
-             std::string{"commodity_curve_interpolations get"},
-             std::string{"commodity_curve_interpolations get-many"},
-             std::string{"commodity_curve_interpolations add"},
-             std::string{"commodity_curve_interpolations set"},
-             std::string{"commodity_curve_interpolations put-many"},
-             std::string{"commodity_curve_interpolations delete"},
-             std::string{"commodity_curve_interpolations delete-many"},
-             std::string{"commodity_curve_interpolations versions"},
-             std::string{"commodity_curve_interpolations version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

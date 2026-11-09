@@ -72,16 +72,16 @@ TEST_CASE("asset_class_code_commands_registers_every_derived_verb", "[commands]"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("asset_class_codes ");
     for (const auto& verb : {
-             std::string{"asset_class_codes list"},
-             std::string{"asset_class_codes get"},
-             std::string{"asset_class_codes get-many"},
-             std::string{"asset_class_codes add"},
-             std::string{"asset_class_codes set"},
-             std::string{"asset_class_codes put-many"},
-             std::string{"asset_class_codes delete"},
-             std::string{"asset_class_codes delete-many"},
-             std::string{"asset_class_codes versions"},
-             std::string{"asset_class_codes version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

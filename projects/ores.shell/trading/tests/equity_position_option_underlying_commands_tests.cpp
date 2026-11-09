@@ -72,17 +72,17 @@ TEST_CASE("equity_position_option_underlying_commands_registers_every_derived_ve
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("equity_position_option_underlyings ");
     for (const auto& verb : {
-             std::string{"equity_position_option_underlyings list"},
-             std::string{"equity_position_option_underlyings get"},
-             std::string{"equity_position_option_underlyings get-many"},
-             std::string{"equity_position_option_underlyings add"},
-             std::string{"equity_position_option_underlyings set"},
-             std::string{"equity_position_option_underlyings put-many"},
-             std::string{"equity_position_option_underlyings delete"},
-             std::string{"equity_position_option_underlyings delete-many"},
-             std::string{"equity_position_option_underlyings by-trade-id"},
-             std::string{"equity_position_option_underlyings versions"},
-             std::string{"equity_position_option_underlyings version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-trade-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -59,17 +59,17 @@ TEST_CASE("approval_operations_operations_registers_every_declared_command", "[c
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("approval_operations ");
     for (const auto& verb : {
-             std::string{"approval_operations raise-approval"},
-             std::string{"approval_operations withdraw-approval"},
-             std::string{"approval_operations decide-approval"},
-             std::string{"approval_operations list-approval-queue"},
-             std::string{"approval_operations list-my-approval-requests"},
-             std::string{"approval_operations get-approval"},
-             std::string{"approval_operations expire-overdue-approvals"},
-             std::string{"approval_operations remind-expiring-approvals"},
-             std::string{"approval_operations retry-stalled-applies"},
-             std::string{"approval_operations get-approval-history"},
-             std::string{"approval_operations get-approval-parts"},
+             std::string{"raise-approval"},
+             std::string{"withdraw-approval"},
+             std::string{"decide-approval"},
+             std::string{"list-approval-queue"},
+             std::string{"list-my-approval-requests"},
+             std::string{"get-approval"},
+             std::string{"expire-overdue-approvals"},
+             std::string{"remind-expiring-approvals"},
+             std::string{"retry-stalled-applies"},
+             std::string{"get-approval-history"},
+             std::string{"get-approval-parts"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

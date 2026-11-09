@@ -72,16 +72,16 @@ TEST_CASE("currency_pair_classification_commands_registers_every_derived_verb", 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("currency_pair_classifications ");
     for (const auto& verb : {
-             std::string{"currency_pair_classifications list"},
-             std::string{"currency_pair_classifications get"},
-             std::string{"currency_pair_classifications get-many"},
-             std::string{"currency_pair_classifications add"},
-             std::string{"currency_pair_classifications set"},
-             std::string{"currency_pair_classifications put-many"},
-             std::string{"currency_pair_classifications delete"},
-             std::string{"currency_pair_classifications delete-many"},
-             std::string{"currency_pair_classifications versions"},
-             std::string{"currency_pair_classifications version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

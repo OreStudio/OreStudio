@@ -59,7 +59,7 @@ TEST_CASE("signup_operations_registers_every_declared_command", "[commands]") {
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("signup ");
     for (const auto& verb : {
-             std::string{"signup signup"},
+             std::string{"signup"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

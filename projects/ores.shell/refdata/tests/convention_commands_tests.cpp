@@ -72,16 +72,16 @@ TEST_CASE("convention_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("conventions ");
     for (const auto& verb : {
-             std::string{"conventions list"},
-             std::string{"conventions get"},
-             std::string{"conventions get-many"},
-             std::string{"conventions add"},
-             std::string{"conventions set"},
-             std::string{"conventions put-many"},
-             std::string{"conventions delete"},
-             std::string{"conventions delete-many"},
-             std::string{"conventions versions"},
-             std::string{"conventions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

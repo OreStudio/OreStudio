@@ -72,13 +72,13 @@ TEST_CASE("cut_approval_detail_commands_registers_every_derived_verb", "[command
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("cut_approval_details ");
     for (const auto& verb : {
-             std::string{"cut_approval_details list"},
-             std::string{"cut_approval_details get"},
-             std::string{"cut_approval_details get-many"},
-             std::string{"cut_approval_details by-request-id"},
-             std::string{"cut_approval_details by-cut-id"},
-             std::string{"cut_approval_details versions"},
-             std::string{"cut_approval_details version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"by-request-id"},
+             std::string{"by-cut-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

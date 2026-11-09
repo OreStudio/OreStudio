@@ -72,17 +72,17 @@ TEST_CASE("cut_gap_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("cut_gaps ");
     for (const auto& verb : {
-             std::string{"cut_gaps list"},
-             std::string{"cut_gaps get"},
-             std::string{"cut_gaps get-many"},
-             std::string{"cut_gaps add"},
-             std::string{"cut_gaps set"},
-             std::string{"cut_gaps put-many"},
-             std::string{"cut_gaps delete"},
-             std::string{"cut_gaps delete-many"},
-             std::string{"cut_gaps by-cut-id"},
-             std::string{"cut_gaps versions"},
-             std::string{"cut_gaps version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-cut-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,16 +72,16 @@ TEST_CASE("ir_curve_template_entry_commands_registers_every_derived_verb", "[com
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("ir_curve_template_entries ");
     for (const auto& verb : {
-             std::string{"ir_curve_template_entries list"},
-             std::string{"ir_curve_template_entries get"},
-             std::string{"ir_curve_template_entries get-many"},
-             std::string{"ir_curve_template_entries add"},
-             std::string{"ir_curve_template_entries set"},
-             std::string{"ir_curve_template_entries put-many"},
-             std::string{"ir_curve_template_entries delete"},
-             std::string{"ir_curve_template_entries delete-many"},
-             std::string{"ir_curve_template_entries versions"},
-             std::string{"ir_curve_template_entries version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,16 +72,16 @@ TEST_CASE("curve_segment_tenor_basis_curves_commands_registers_every_derived_ver
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("curve_segment_tenor_basis_curves ");
     for (const auto& verb : {
-             std::string{"curve_segment_tenor_basis_curves list"},
-             std::string{"curve_segment_tenor_basis_curves get"},
-             std::string{"curve_segment_tenor_basis_curves get-many"},
-             std::string{"curve_segment_tenor_basis_curves add"},
-             std::string{"curve_segment_tenor_basis_curves set"},
-             std::string{"curve_segment_tenor_basis_curves put-many"},
-             std::string{"curve_segment_tenor_basis_curves delete"},
-             std::string{"curve_segment_tenor_basis_curves delete-many"},
-             std::string{"curve_segment_tenor_basis_curves versions"},
-             std::string{"curve_segment_tenor_basis_curves version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

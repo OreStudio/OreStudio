@@ -72,16 +72,16 @@ TEST_CASE("curve_volatility_kind_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("curve_volatility_kinds ");
     for (const auto& verb : {
-             std::string{"curve_volatility_kinds list"},
-             std::string{"curve_volatility_kinds get"},
-             std::string{"curve_volatility_kinds get-many"},
-             std::string{"curve_volatility_kinds add"},
-             std::string{"curve_volatility_kinds set"},
-             std::string{"curve_volatility_kinds put-many"},
-             std::string{"curve_volatility_kinds delete"},
-             std::string{"curve_volatility_kinds delete-many"},
-             std::string{"curve_volatility_kinds versions"},
-             std::string{"curve_volatility_kinds version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

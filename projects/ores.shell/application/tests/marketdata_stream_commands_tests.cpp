@@ -95,7 +95,7 @@ TEST_CASE("marketdata_commands registers the stream verb", "[commands][marketdat
     marketdata_commands::register_commands(root_menu, session);
 
     const auto completions = root_menu.GetCompletions("marketdata ");
-    CHECK(std::find(completions.begin(), completions.end(), std::string{"marketdata stream"}) !=
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"stream"}) !=
           completions.end());
 }
 

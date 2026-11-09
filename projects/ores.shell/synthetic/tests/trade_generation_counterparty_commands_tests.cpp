@@ -72,16 +72,16 @@ TEST_CASE("trade_generation_counterparty_commands_registers_every_derived_verb",
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("trade_generation_counterparties ");
     for (const auto& verb : {
-             std::string{"trade_generation_counterparties list"},
-             std::string{"trade_generation_counterparties get"},
-             std::string{"trade_generation_counterparties get-many"},
-             std::string{"trade_generation_counterparties add"},
-             std::string{"trade_generation_counterparties set"},
-             std::string{"trade_generation_counterparties put-many"},
-             std::string{"trade_generation_counterparties delete"},
-             std::string{"trade_generation_counterparties delete-many"},
-             std::string{"trade_generation_counterparties versions"},
-             std::string{"trade_generation_counterparties version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

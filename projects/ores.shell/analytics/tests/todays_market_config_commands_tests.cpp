@@ -72,17 +72,17 @@ TEST_CASE("todays_market_config_commands_registers_every_derived_verb", "[comman
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("todays_market_configs ");
     for (const auto& verb : {
-             std::string{"todays_market_configs list"},
-             std::string{"todays_market_configs get"},
-             std::string{"todays_market_configs get-many"},
-             std::string{"todays_market_configs add"},
-             std::string{"todays_market_configs set"},
-             std::string{"todays_market_configs put-many"},
-             std::string{"todays_market_configs delete"},
-             std::string{"todays_market_configs delete-many"},
-             std::string{"todays_market_configs by-configuration-id"},
-             std::string{"todays_market_configs versions"},
-             std::string{"todays_market_configs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-configuration-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,9 +72,9 @@ TEST_CASE("lei_relationship_commands_registers_every_derived_verb", "[commands]"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("lei_relationships ");
     for (const auto& verb : {
-             std::string{"lei_relationships list"},
-             std::string{"lei_relationships get"},
-             std::string{"lei_relationships get-many"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

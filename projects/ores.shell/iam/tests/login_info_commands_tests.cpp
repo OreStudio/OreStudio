@@ -72,9 +72,9 @@ TEST_CASE("login_info_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("login_info ");
     for (const auto& verb : {
-             std::string{"login_info list"},
-             std::string{"login_info get"},
-             std::string{"login_info get-many"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

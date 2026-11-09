@@ -72,16 +72,16 @@ TEST_CASE("regulatory_corporate_sector_commands_registers_every_derived_verb", "
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("regulatory_corporate_sectors ");
     for (const auto& verb : {
-             std::string{"regulatory_corporate_sectors list"},
-             std::string{"regulatory_corporate_sectors get"},
-             std::string{"regulatory_corporate_sectors get-many"},
-             std::string{"regulatory_corporate_sectors add"},
-             std::string{"regulatory_corporate_sectors set"},
-             std::string{"regulatory_corporate_sectors put-many"},
-             std::string{"regulatory_corporate_sectors delete"},
-             std::string{"regulatory_corporate_sectors delete-many"},
-             std::string{"regulatory_corporate_sectors versions"},
-             std::string{"regulatory_corporate_sectors version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

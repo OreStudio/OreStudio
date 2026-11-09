@@ -72,18 +72,18 @@ TEST_CASE("sandbox_member_commands_registers_every_derived_verb", "[commands]") 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("sandbox_members ");
     for (const auto& verb : {
-             std::string{"sandbox_members list"},
-             std::string{"sandbox_members get"},
-             std::string{"sandbox_members get-many"},
-             std::string{"sandbox_members add"},
-             std::string{"sandbox_members set"},
-             std::string{"sandbox_members put-many"},
-             std::string{"sandbox_members delete"},
-             std::string{"sandbox_members delete-many"},
-             std::string{"sandbox_members by-sandbox-id"},
-             std::string{"sandbox_members by-account-id"},
-             std::string{"sandbox_members versions"},
-             std::string{"sandbox_members version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-sandbox-id"},
+             std::string{"by-account-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

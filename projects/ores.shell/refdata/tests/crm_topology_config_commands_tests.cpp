@@ -72,16 +72,16 @@ TEST_CASE("crm_topology_config_commands_registers_every_derived_verb", "[command
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("crm_topology_configs ");
     for (const auto& verb : {
-             std::string{"crm_topology_configs list"},
-             std::string{"crm_topology_configs get"},
-             std::string{"crm_topology_configs get-many"},
-             std::string{"crm_topology_configs add"},
-             std::string{"crm_topology_configs set"},
-             std::string{"crm_topology_configs put-many"},
-             std::string{"crm_topology_configs delete"},
-             std::string{"crm_topology_configs delete-many"},
-             std::string{"crm_topology_configs versions"},
-             std::string{"crm_topology_configs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

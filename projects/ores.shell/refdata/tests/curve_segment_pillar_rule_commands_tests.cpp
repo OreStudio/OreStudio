@@ -72,16 +72,16 @@ TEST_CASE("curve_segment_pillar_rule_commands_registers_every_derived_verb", "[c
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("curve_segment_pillar_rules ");
     for (const auto& verb : {
-             std::string{"curve_segment_pillar_rules list"},
-             std::string{"curve_segment_pillar_rules get"},
-             std::string{"curve_segment_pillar_rules get-many"},
-             std::string{"curve_segment_pillar_rules add"},
-             std::string{"curve_segment_pillar_rules set"},
-             std::string{"curve_segment_pillar_rules put-many"},
-             std::string{"curve_segment_pillar_rules delete"},
-             std::string{"curve_segment_pillar_rules delete-many"},
-             std::string{"curve_segment_pillar_rules versions"},
-             std::string{"curve_segment_pillar_rules version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

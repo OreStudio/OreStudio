@@ -72,16 +72,16 @@ TEST_CASE("ore_parameter_value_set_catalogue_commands_registers_every_derived_ve
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("ore_parameter_value_set_catalogues ");
     for (const auto& verb : {
-             std::string{"ore_parameter_value_set_catalogues list"},
-             std::string{"ore_parameter_value_set_catalogues get"},
-             std::string{"ore_parameter_value_set_catalogues get-many"},
-             std::string{"ore_parameter_value_set_catalogues add"},
-             std::string{"ore_parameter_value_set_catalogues set"},
-             std::string{"ore_parameter_value_set_catalogues put-many"},
-             std::string{"ore_parameter_value_set_catalogues delete"},
-             std::string{"ore_parameter_value_set_catalogues delete-many"},
-             std::string{"ore_parameter_value_set_catalogues versions"},
-             std::string{"ore_parameter_value_set_catalogues version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

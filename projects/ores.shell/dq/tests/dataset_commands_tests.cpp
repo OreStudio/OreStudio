@@ -72,16 +72,16 @@ TEST_CASE("dataset_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("datasets ");
     for (const auto& verb : {
-             std::string{"datasets list"},
-             std::string{"datasets get"},
-             std::string{"datasets get-many"},
-             std::string{"datasets add"},
-             std::string{"datasets set"},
-             std::string{"datasets put-many"},
-             std::string{"datasets delete"},
-             std::string{"datasets delete-many"},
-             std::string{"datasets versions"},
-             std::string{"datasets version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

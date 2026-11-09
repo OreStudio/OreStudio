@@ -72,16 +72,16 @@ TEST_CASE("inflation_seasonality_factor_commands_registers_every_derived_verb", 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("inflation_seasonality_factors ");
     for (const auto& verb : {
-             std::string{"inflation_seasonality_factors list"},
-             std::string{"inflation_seasonality_factors get"},
-             std::string{"inflation_seasonality_factors get-many"},
-             std::string{"inflation_seasonality_factors add"},
-             std::string{"inflation_seasonality_factors set"},
-             std::string{"inflation_seasonality_factors put-many"},
-             std::string{"inflation_seasonality_factors delete"},
-             std::string{"inflation_seasonality_factors delete-many"},
-             std::string{"inflation_seasonality_factors versions"},
-             std::string{"inflation_seasonality_factors version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

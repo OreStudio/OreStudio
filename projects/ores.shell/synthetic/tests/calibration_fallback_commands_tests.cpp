@@ -72,16 +72,16 @@ TEST_CASE("calibration_fallback_commands_registers_every_derived_verb", "[comman
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("calibration_fallbacks ");
     for (const auto& verb : {
-             std::string{"calibration_fallbacks list"},
-             std::string{"calibration_fallbacks get"},
-             std::string{"calibration_fallbacks get-many"},
-             std::string{"calibration_fallbacks add"},
-             std::string{"calibration_fallbacks set"},
-             std::string{"calibration_fallbacks put-many"},
-             std::string{"calibration_fallbacks delete"},
-             std::string{"calibration_fallbacks delete-many"},
-             std::string{"calibration_fallbacks versions"},
-             std::string{"calibration_fallbacks version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

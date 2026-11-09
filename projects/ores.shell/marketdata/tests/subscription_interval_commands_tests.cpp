@@ -72,16 +72,16 @@ TEST_CASE("subscription_interval_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("subscription_intervals ");
     for (const auto& verb : {
-             std::string{"subscription_intervals list"},
-             std::string{"subscription_intervals get"},
-             std::string{"subscription_intervals get-many"},
-             std::string{"subscription_intervals add"},
-             std::string{"subscription_intervals set"},
-             std::string{"subscription_intervals put-many"},
-             std::string{"subscription_intervals delete"},
-             std::string{"subscription_intervals delete-many"},
-             std::string{"subscription_intervals versions"},
-             std::string{"subscription_intervals version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

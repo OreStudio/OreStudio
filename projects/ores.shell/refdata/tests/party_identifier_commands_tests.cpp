@@ -72,17 +72,17 @@ TEST_CASE("party_identifier_commands_registers_every_derived_verb", "[commands]"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("party_identifiers ");
     for (const auto& verb : {
-             std::string{"party_identifiers list"},
-             std::string{"party_identifiers get"},
-             std::string{"party_identifiers get-many"},
-             std::string{"party_identifiers add"},
-             std::string{"party_identifiers set"},
-             std::string{"party_identifiers put-many"},
-             std::string{"party_identifiers delete"},
-             std::string{"party_identifiers delete-many"},
-             std::string{"party_identifiers by-party-id"},
-             std::string{"party_identifiers versions"},
-             std::string{"party_identifiers version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-party-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

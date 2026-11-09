@@ -72,16 +72,16 @@ TEST_CASE("sensitivity_method_commands_registers_every_derived_verb", "[commands
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("sensitivity_methods ");
     for (const auto& verb : {
-             std::string{"sensitivity_methods list"},
-             std::string{"sensitivity_methods get"},
-             std::string{"sensitivity_methods get-many"},
-             std::string{"sensitivity_methods add"},
-             std::string{"sensitivity_methods set"},
-             std::string{"sensitivity_methods put-many"},
-             std::string{"sensitivity_methods delete"},
-             std::string{"sensitivity_methods delete-many"},
-             std::string{"sensitivity_methods versions"},
-             std::string{"sensitivity_methods version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

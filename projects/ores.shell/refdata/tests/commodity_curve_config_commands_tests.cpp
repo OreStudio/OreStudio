@@ -72,16 +72,16 @@ TEST_CASE("commodity_curve_config_commands_registers_every_derived_verb", "[comm
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("commodity_curve_configs ");
     for (const auto& verb : {
-             std::string{"commodity_curve_configs list"},
-             std::string{"commodity_curve_configs get"},
-             std::string{"commodity_curve_configs get-many"},
-             std::string{"commodity_curve_configs add"},
-             std::string{"commodity_curve_configs set"},
-             std::string{"commodity_curve_configs put-many"},
-             std::string{"commodity_curve_configs delete"},
-             std::string{"commodity_curve_configs delete-many"},
-             std::string{"commodity_curve_configs versions"},
-             std::string{"commodity_curve_configs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

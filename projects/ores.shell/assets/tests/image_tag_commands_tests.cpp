@@ -72,15 +72,15 @@ TEST_CASE("image_tag_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("image_tags ");
     for (const auto& verb : {
-             std::string{"image_tags list"},
-             std::string{"image_tags get"},
-             std::string{"image_tags get-many"},
-             std::string{"image_tags add"},
-             std::string{"image_tags set"},
-             std::string{"image_tags put-many"},
-             std::string{"image_tags delete"},
-             std::string{"image_tags delete-many"},
-             std::string{"image_tags by-image-id"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-image-id"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

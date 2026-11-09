@@ -59,7 +59,7 @@ TEST_CASE("geo_operations_operations_registers_every_declared_command", "[comman
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("geo_operations ");
     for (const auto& verb : {
-             std::string{"geo_operations lookup-country"},
+             std::string{"lookup-country"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

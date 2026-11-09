@@ -72,17 +72,17 @@ TEST_CASE("portfolio_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("portfolios ");
     for (const auto& verb : {
-             std::string{"portfolios list"},
-             std::string{"portfolios get"},
-             std::string{"portfolios get-many"},
-             std::string{"portfolios add"},
-             std::string{"portfolios set"},
-             std::string{"portfolios put-many"},
-             std::string{"portfolios delete"},
-             std::string{"portfolios delete-many"},
-             std::string{"portfolios by-sandbox-id"},
-             std::string{"portfolios versions"},
-             std::string{"portfolios version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-sandbox-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

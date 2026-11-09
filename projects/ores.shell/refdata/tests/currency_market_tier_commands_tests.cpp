@@ -72,16 +72,16 @@ TEST_CASE("currency_market_tier_commands_registers_every_derived_verb", "[comman
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("currency_market_tiers ");
     for (const auto& verb : {
-             std::string{"currency_market_tiers list"},
-             std::string{"currency_market_tiers get"},
-             std::string{"currency_market_tiers get-many"},
-             std::string{"currency_market_tiers add"},
-             std::string{"currency_market_tiers set"},
-             std::string{"currency_market_tiers put-many"},
-             std::string{"currency_market_tiers delete"},
-             std::string{"currency_market_tiers delete-many"},
-             std::string{"currency_market_tiers versions"},
-             std::string{"currency_market_tiers version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

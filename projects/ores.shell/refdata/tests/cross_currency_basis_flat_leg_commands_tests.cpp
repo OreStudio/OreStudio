@@ -72,17 +72,17 @@ TEST_CASE("cross_currency_basis_flat_leg_commands_registers_every_derived_verb",
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("cross_currency_basis_flat_legs ");
     for (const auto& verb : {
-             std::string{"cross_currency_basis_flat_legs list"},
-             std::string{"cross_currency_basis_flat_legs get"},
-             std::string{"cross_currency_basis_flat_legs get-many"},
-             std::string{"cross_currency_basis_flat_legs add"},
-             std::string{"cross_currency_basis_flat_legs set"},
-             std::string{"cross_currency_basis_flat_legs put-many"},
-             std::string{"cross_currency_basis_flat_legs delete"},
-             std::string{"cross_currency_basis_flat_legs delete-many"},
-             std::string{"cross_currency_basis_flat_legs by-convention-id"},
-             std::string{"cross_currency_basis_flat_legs versions"},
-             std::string{"cross_currency_basis_flat_legs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-convention-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

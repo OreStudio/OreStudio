@@ -72,17 +72,17 @@ TEST_CASE("credit_basket_constituent_commands_registers_every_derived_verb", "[c
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("credit_basket_constituents ");
     for (const auto& verb : {
-             std::string{"credit_basket_constituents list"},
-             std::string{"credit_basket_constituents get"},
-             std::string{"credit_basket_constituents get-many"},
-             std::string{"credit_basket_constituents add"},
-             std::string{"credit_basket_constituents set"},
-             std::string{"credit_basket_constituents put-many"},
-             std::string{"credit_basket_constituents delete"},
-             std::string{"credit_basket_constituents delete-many"},
-             std::string{"credit_basket_constituents by-trade-id"},
-             std::string{"credit_basket_constituents versions"},
-             std::string{"credit_basket_constituents version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-trade-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

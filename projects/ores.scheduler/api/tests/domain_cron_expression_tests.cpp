@@ -165,7 +165,7 @@ TEST_CASE("cron_expression equality operator", "[domain][cron_expression]") {
     CHECK_FALSE(*a == *c);
 }
 
-TEST_CASE("cron_expression round-trips through rfl as its string", "[domain][cron_expression]") {
+TEST_CASE("cron_expression round-trips through the codec as its string", "[domain][cron_expression]") {
     const auto parsed = cron_expression::from_string("*/5 * * * *");
     REQUIRE(parsed.has_value());
 
@@ -177,7 +177,7 @@ TEST_CASE("cron_expression round-trips through rfl as its string", "[domain][cro
     CHECK(*read == *parsed);
 }
 
-TEST_CASE("rfl read refuses a string that is not a cron expression", "[domain][cron_expression]") {
+TEST_CASE("a read refuses a string that is not a cron expression", "[domain][cron_expression]") {
     const auto read = ores::utility::codec::json::read_expected<cron_expression>(R"("not a cron")");
     CHECK_FALSE(read.has_value());
 }

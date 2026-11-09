@@ -39,7 +39,7 @@ stamps from =version.hpp.in=. The component's own =version.hpp= is
 generated; the facet holds only the template.
 
 Consumption is very uneven, and the load-bearing facets are few.
-=generation/= reaches 460, =uuid/= 432, =domain/= 251, =streaming/= 80 and
+Within the component, =generation/= reaches 460 files, =uuid/= 432, =domain/= 251, =streaming/= 80 and
 =version/= 41. Of the rest, =faker/= reaches 10, =program_options/= 6,
 =convert/= 4, =crypto/= 3, =compression/= 2, and =serialization/= and
 =string/= one each. Five of them reach fewer than five. The thin end is

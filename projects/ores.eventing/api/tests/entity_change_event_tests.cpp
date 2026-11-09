@@ -77,7 +77,7 @@ TEST_CASE("entity_change_event_db_payload_roundtrip", "[domain]") {
 }
 
 // The broken format (space separator, no UTC designator) must NOT parse cleanly.
-// This is a regression guard: if rfl ever accepts it silently we need to know.
+// This is a regression guard: if the codec ever accepts it silently we need to know.
 TEST_CASE("entity_change_event_broken_timestamp_rejected", "[domain]") {
     const std::string payload =
         R"({"entity":"ores.refdata.currency","timestamp":"2026-05-27 12:34:56",)"

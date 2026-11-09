@@ -80,7 +80,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Unattributed claim in SQL comments | SQL create scripts | Decline | The next sentence states the claim was re-verified, so the history stands. |
+| 2 | Leftover names in C++ comments | =router.hpp=, =version_builder.hpp= | Accept | Reworded, with two test names and a test comment. |
+| 3 | Lost subject in a sentence | =ores.utility= overview | Accept | Fixed. The scheduler wording stays. |
+| 4 | SVGs keep old text | rendered schemas | Decline | Rendered output. A later render refreshes them. |
 
 * Result
 

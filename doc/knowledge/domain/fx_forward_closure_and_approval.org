@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 75B40B64-FF31-5381-922B-0EB1F521BC38
+:END:
+#+title: An end-of-day FX rate set must be complete and independently verified
+#+description: End-of-day rates form one consistent set, and rates sourced from the desk need independent price verification.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+An end-of-day market data process aims for one complete and consistent price set that represents the market on that day. It usually runs before P&L computation. A rate that comes from the trading desk needs independent price verification.
+
+* Detail
+
+Valuation control performs this check independently of the end users, in line with prudent valuation guidance.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — completes: the spot side of this control.
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio computes FX forwards from published curves and stores none]] — contradicts: a computed forward has no end-of-day record of its own yet.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — completes: a mechanism that could carry a sign-off.
+
+* Sources
+
+- [[https://www.oreilly.com/library/view/effective-product-control/9781118939819/c15.xhtml][Independent Price Verification, Effective Financial Product Control]]
+- [[https://risknet.de/themen/risknews/prudent-valuation-of-financial-instruments][Prudent valuation of financial instruments, RiskNET]]

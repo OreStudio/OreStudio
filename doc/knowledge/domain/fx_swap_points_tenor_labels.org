@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 2BF0E688-D053-5FC4-B4A3-10A5B685789D
+:END:
+#+title: Short-date swap points run between their own two value dates
+#+description: Overnight, tom-next and spot-next are one-day swaps, so their points differ from forward points measured from spot.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+A swap's points are the difference between its far and near outrights. A spot-start swap therefore has the forward points of its tenor, and the two terms are often used for each other. The short dates differ, because each one is a swap between its own two value dates.
+
+* Detail
+
+| Tenor | Near date | Far date |
+|-------+-----------+----------|
+| Overnight (O/N) | Today | Tomorrow |
+| Tom-next (T/N) | Tomorrow | Spot, for a T+2 pair |
+| Spot-next (S/N) | Spot | One business day after spot |
+
+For outright deals the same dates are named /value today/, /value tomorrow/ and /value spot-next/. Later tenors run from spot, so 1M is one month after spot.
+
+Because each short date is a one-day swap, their points chain back from spot. [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] applies this to outrights before spot. A consumer that shows both columns must state which pair of dates a row uses.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][Forward points are the difference between the outright and spot]] — completes: the spot-start case.
+- [[id:E9A214DE-AD39-4128-9EDB-106C4A606B90][FX Swap]] — completes: the instrument.
+- [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — completes: the labels.
+- [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] — completes: the formulas that use these swaps.
+
+* Sources
+
+- [[https://www.oreilly.com/library/view/key-financial-market/9780273750123/html/chapter-038.html][Short Dates, Key Financial Market Concepts]]
+- [[https://en.wikipedia.org/wiki/Foreign_exchange_swap][Foreign exchange swap, Wikipedia]]
+- [[https://www.ig.com/en/glossary-trading-terms/tom-next-definition][Tom next definition, IG]]
+- [[https://www.chinamoney.com.cn/english/bmkycvfsc/][FX swap curve, China Money]]
+- [[https://en.wikipedia.org/wiki/Foreign_exchange_date_conventions][Foreign exchange date conventions, Wikipedia]]

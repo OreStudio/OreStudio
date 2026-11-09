@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 9CDD445B-964A-5C7E-8E65-DB9967E99F55
+:END:
+#+title: FX forward calculations run on discount factors and not quoted rates
+#+description: Why a forward computed from discount factor ratios does not depend on day count.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+Pricing libraries compute an FX forward from a ratio of discount factors. The ratio needs dates and curves, and no day count or compounding convention.
+
+* Detail
+
+Rate quotes carry a compounding and day-count convention. A discount factor does not, because it is the present value of one unit. Two curves on different conventions, such as ACT/360 and ACT/365, therefore combine directly.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — completes: how the curves hold discount factors.
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio computes FX forwards from published curves and stores none]] — exemplifies: forwards built this way.
+- [[id:73A422C1-C74E-52CF-9A0C-78EE1AE23430][Forward points follow from two money market rates]] — contradicts: the money market form does need each day-count basis.
+
+* Sources
+
+- =DiscountingFxForwardEngine= and =FxSwapRateHelper= in [[https://github.com/lballabio/QuantLib][QuantLib]]
+- =DiscountingFxForwardEngine= and the =SEK-IN-USD= example in [[https://github.com/OpenSourceRisk/Engine][ORE]]

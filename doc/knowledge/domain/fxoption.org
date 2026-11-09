@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:finance:fxoption:
 #+created: 2026-09-06
-#+updated: 2026-09-06
+#+updated: 2026-11-09
 A European or American FX option is the vanilla option of the FX
 family. It is the underlying of the FX barrier and exotic products.
 ORE models it with the trade type =FxOption=. This note records the

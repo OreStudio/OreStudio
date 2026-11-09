@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 31EA5379-3BAE-4305-ACA8-4955B7FAE54C
+:END:
+#+title: Task: Complete a package as a composite trade
+#+description: The completion writes a structure with no book, date or state, so a package cannot be a blotter row. Write the package as a composite trade with its own booking and state, and name its legs as component trades.
+#+type: task
+#+level: s1
+#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: FEDD0DC4-BC71-4348-9032-6A61088B220D
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D9BE397A-86AF-4A17-9D15-135CD9815C9D][Let the blotter read a page, not the book — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=complete_structure= writes a =structures= row and one =structure_members= row for each leg, and takes the legs live. The structure has no book, no trade date and no state of its own, so it is not a trade and cannot be a row. The composite trade it should be is never written: the demonstration holds five composite trade ids whose rows are all closed, and none of them has a booking or a state.
+
+This task makes the completion write the package as a composite trade: one trade row whose instrument is the composite, one booking that states its book and date, one state, and one leg row for each component trade. The unit already holds the leg checks and the take-live step, so it holds these too. It writes no structure row.
+
+The composite book and date are the deal own, taken once at completion from the legs: the book they share and the earliest trade date among them. A completion whose legs sit in different books is refused, because a package is booked in one book. The composite state is live, because completion is what takes a deal live. The structure counterparty is the composite counterparty.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D9BE397A-86AF-4A17-9D15-135CD9815C9D][Let the blotter read a page, not the book — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:FEDD0DC4-BC71-4348-9032-6A61088B220D][Hold a composite's legs as trades]]: the leg must name a trade before the completion can write one. |
+| Next         | Read =complete_structure= and its unit, then add the composite writes to it. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- One completion writes one composite trade, its booking, its state and one leg for each component, in one transaction.
+- A completion of legs in different books writes nothing and says why.
+- A completion writes no =structures= row and no =structure_members= row.
+- The composite reads back through =trades=, =trade_bookings= and =trade_states= with its book, date and state, and its legs name the component trades.
+- A second completion of the same package is refused as already made.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Composite trades that have a booking | 0 | =select count(*) from ores_trading_composite_instruments_tbl ci join ores_trading_trade_bookings_tbl b on b.trade_id = ci.trade_id= | 23f46a8a0a |
+| Composite trades that have a state | 0 | =select count(*) from ores_trading_composite_instruments_tbl ci join ores_trading_trade_states_tbl s on s.trade_id = ci.trade_id= | 23f46a8a0a |
+| Current composite rows | 0 of 10, so no composite trade stands | =select count(*) filter (where valid_to = ores_utility_infinity_timestamp_fn()) from ores_trading_composite_instruments_tbl= | 23f46a8a0a |
+| Structures the completion writes | 1 structure and one member for each leg | =trade_operations_service::complete_structure=, =projects/ores.trading/core/src/service/trade_operations_service.cpp= | 23f46a8a0a |
+
+* Notes
+
+- The question the plan asks first is answered by these counts: today a
+  composite trade is not booked and carries no state, so it cannot be a blotter
+  row. The completion writes the structure instead, which has no booking either.
+- The structure's id is the natural id for the composite trade: the request
+  already carries it, the screen already names it, and the row it becomes keeps
+  that name.
+- Two write paths exist until the grouping screen moves. The screen route calls
+  =put_structure= then a member write
+  ([[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the
+  completion]]), so this task changes the completion only. That story owns the
+  screen, and the retirement task waits for it.
+- The package's leg roles come from the request, and T1 gives them a column.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

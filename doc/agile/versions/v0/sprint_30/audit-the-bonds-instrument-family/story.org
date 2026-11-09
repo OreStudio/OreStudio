@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 55EEBE1E-4929-4BC4-9C3D-3553EE374546
+:END:
+#+title: Story: Fix the defects the bond family review found
+#+description: The review of the bond family is done and found defects in its money columns and schedules. Fix each one.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-10-16
+#+updated: 2026-11-08
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+
+The defects that the bond family data model review recorded are fixed: the money columns read through a binary float on import, the money column typed text, the option money columns at too small a scale, and the schedule parent whose role check is wrong.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-08 |
+
+* Acceptance
+
+- Every Regime 2 decision check is walked over the family's 27 entity models, with the evidence for each result.
+- The invariant checks are spot-checked once, with what was read stated.
+- Each finding is mapped to a criterion and carries file-and-line evidence.
+- The review states what it did not check.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:058554DC-63EA-4DB1-9205-CE3C42F40682][Fix the defects the bond family review found]] | BACKLOG | | | The review found six money columns read through a binary float on import, one money column typed text, two option money columns at a scale the corpus exceeds, a schedule parent whose role check disagrees with its child, two nullable index columns that generate non-optional types, and a money-column check that cannot see any of it. Fix them, and replace a knowledge-page citation that points at a file that does not exist. |
+
+* Decisions
+
+
+- Renamed on 2026-11-08 at sprint 30 start. The audit this story was named for is done and recorded in the investigation beside this file. The open work is the fixes.
+
+* Out of scope
+
+-

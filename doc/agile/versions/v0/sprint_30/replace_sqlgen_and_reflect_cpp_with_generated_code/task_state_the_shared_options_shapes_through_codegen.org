@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 6F2E7BDC-CE4B-4C4F-B2CB-B2F0737054D9
+:END:
+#+title: Task: State the shared options shapes through codegen
+#+description: The logging, nats, database, telemetry and http_server options types state their wire shapes through codegen, so no hand-written wire_fields remains for an options type.
+#+type: task
+#+level: s1
+#+filetags: :codegen:serialisation:replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_30:v0:
+#+owner: marco
+#+branch: feature/state-the-shared-options-shapes-through-codegen
+#+pr: 4465
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-05
+#+updated: 2026-11-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every options type a service is built from states its wire shape through codegen, as the service options now do.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-05                               |
+
+* Acceptance
+
+- The shared options types (logging, nats, database, telemetry, http_server) state their shapes through codegen.
+- No hand-written wire_fields remains for an options type.
+
+* Plan
+
+One archetype in the field-group facet, =options_header=, writes an options
+struct where its library keeps it, from a field group model that names its
+header. A converter read each hand-written header into its model, and a
+comparison requires the generated header to hold the same code as main's.
+Components outside the drift registry join it with their component model
+excluded, so only the options models regenerate.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Options headers generated | 10 | =compare_headers.py origin/main= | 63f13cd30b |
+| Headers whose code differs from main | 0, beyond two include guards | =compare_headers.py origin/main= | 63f13cd30b |
+| Codegen suite | 1714 passed | =pytest projects/ores.codegen/tests= | 63f13cd30b |
+
+* Notes
+
+=context_factory::configuration= in ores.database keeps its hand-written
+shape. It is a struct nested in a class, the configuration a context is made
+from, and no options type: moving it out of the class would change every
+caller for no gain in what the wire carries.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4465][#4465]] | [codegen] State every options type through codegen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A '= value' default does not compile for std::chrono::seconds | options templates | accept | brace-initialised in both templates; a test renders a chrono default; the comparison no longer reads {x} and = x as one |
+| 2 | Blank lines between members and after the printer | options header template | accept in part | a blank line after the printer; members stay packed |
+| 3 | The copyright year moves to 2026 | generated headers | decline | every generated file carries the year it was generated |
+| 4 | The include root is derived in two places | core.py, org_loader.py | decline | two lines, each next to the code that uses it |
+| 5 | The paste helper reads the first model key | core.py | accept | a comment says one model renders at a time |
+| 6 | No test for a chrono default | tests | accept | added |
+
+* Result
+
+All ten options types state their shapes through codegen: logging, nats,
+database, telemetry and the HTTP server's, and the options of the compute
+wrapper, the HTTP server, the official market data adapter and the shell's
+two. The new =options_header= archetype writes each from a field group model,
+with =:secret:= keeping a value out of the shape, an optional printer and a
+paste point for declarations such as =to_connection_options=. logging, nats
+and database joined the drift registry with their component models excluded.
+The generated headers hold the same code as main's.

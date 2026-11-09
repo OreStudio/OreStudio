@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 35C7C76B-55EC-4C67-A082-432DD0812586
+:END:
+#+title: Task: Delete the structure tables
+#+description: The structure tables, their code and their tests go once nothing reads or writes them, so the tree holds one way to state a package.
+#+type: task
+#+level: s1
+#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: A0AE98E4-DF2E-4D75-9099-FF3E2555B5B1, F3770BA9-94EF-4A43-8415-262FBC946837
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D9BE397A-86AF-4A17-9D15-135CD9815C9D][Let the blotter read a page, not the book — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The structure tables and the code generated around them are the deviation the plan names: a second way to state a package, with no book, date or state. After the completion writes a composite and the blotter reads one, nothing needs them.
+
+This task deletes them: the models and their tables for structures, structure members, structure identifiers, structure templates and structure kinds; the repositories, services, handlers, protocols, generators, shell commands and tests; and the web structure pages and grouping journey, the last only once the sibling story that points the grouping screen at the completion has landed, because that screen calls the structure writes today.
+
+Deletion is the test: the build names no structure subject, table or model, and the blotter, the trade page and the grouping journey still pass.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D9BE397A-86AF-4A17-9D15-135CD9815C9D][Let the blotter read a page, not the book — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:A0AE98E4-DF2E-4D75-9099-FF3E2555B5B1][List a package as the trade it is]] leaves the blotter free of structures, and [[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the completion]] leaves the screen free of them. |
+| Next         | Delete the web callers first, then the C++, then the models and the tables. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- No model, table, repository, service, handler, protocol, generator or test names a structure.
+- The structure tables are gone from the schema, and no view or function reads one.
+- The blotter lists a package from its composite trade, and the trade page reads a component parent from the composite legs.
+- The grouping journey completes a package with a book, a date and a state, and the build and the suites pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Models to delete | 6: structure, structure_member, structure_identifier, structure_kind, structure_template, structure_template_role | =ls projects/ores.trading/modeling/ores.trading.structure*.org= | 23f46a8a0a |
+| Files named after a structure in the trading components | 205 | =find projects/ores.trading -name '*structure*' -type f= | 23f46a8a0a |
+| SQL create files | 13: six tables, six notify triggers and one function file | =ls projects/ores.sql/create/trading/= then read the structure files | 23f46a8a0a |
+| Web files named after a structure | 5 | =find projects/ores.web/packages/web/src -name '*tructure*' -type f= | 23f46a8a0a |
+
+* Notes
+
+- Deletion order matters: the web callers first, then the C++ subjects and their
+  handlers, then the models and the tables. A table dropped while a handler
+  still registers its subject leaves a service that fails its first message.
+- The models are the source: the table, the repository, the mapper, the codec,
+  the generator and the tests are generated from the six =.org= files. Deleting
+  the models and regenerating removes most of the 205 files.
+- The web's five files go with the sibling story, not this one: it owns the
+  grouping journey and the structure pages. This task deletes them only once
+  that story has landed, which is why it is blocked on it.
+- =structure_kind= and =structure_template= are reference data with seeded rows.
+  Check what seeds them before the tables go, and retire the seed data with them.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

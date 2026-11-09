@@ -1,0 +1,250 @@
+:PROPERTIES:
+:ID: 0DB04FD3-D026-4729-8BD0-78301E573087
+:END:
+#+title: Task: Move the reflect-cpp calls onto the codec
+#+description: Step 2 of Remove reflect-cpp: the direct rfl::json and rfl::msgpack calls in hand-written code use the generated codec carriers.
+#+type: task
+#+level: s1
+#+filetags: :codegen:serialisation:replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_30:v0:
+#+owner: marco
+#+branch: feature/move-the-reflect-cpp-calls-onto-the-codec
+#+pr: 4481
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-06
+#+updated: 2026-11-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Step 2 of 7 of the removal, and the second of its three codec steps. Every
+hand-written read and write of a type with a stated shape goes through
+=ores::utility::codec=, so no hand-written call encodes or decodes such a type
+through reflect-cpp. The dynamic JSON, the JSON schemas and the =wire_traits=
+fallback stay for steps 3, 4 and 5, and Notes names each one with the file
+that owns it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-07                               |
+
+* Acceptance
+
+- Every =rfl::json= or =rfl::msgpack= call in hand-written production code that
+  encodes or decodes a type with a stated shape goes through
+  =ores::utility::codec=. A test keeps reflect-cpp as the reference the codec
+  has to agree with, until step 5 deletes it.
+- A read that reported reflect-cpp's error reports the codec's, or hands the
+  caller the reason where the caller reports one.
+- The calls the removal's plan keeps for steps 3 to 5 are named in Notes, each
+  with the file and the step that owns it.
+- The tree builds and every suite passes.
+
+* Plan
+
+The templates move first, because every generated file follows them: the
+domain JSON, shell command and operation, HTTP route and convention family
+templates write and read through =ores::utility::codec=, and a route reads its
+body and writes its response through =wire_traits= whatever its model states.
+
+Then each hand-written call moves, component by component. A read becomes
+=codec::json::read= where the caller wants the value or an exception, and
+=read_expected= where the caller reports the reason it could not decode. A
+document a person writes by hand keeps the defaults of the members it leaves
+out through =read_lenient=.
+
+A template cannot see the shape of every type it encodes, so a unit that
+encodes one includes its =*_codec.hpp=: that header is what states the shape.
+A struct hand-written code encodes states its own =wire_fields=, with a static
+assert that fails when a member gains no name.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Direct =rfl::json= and =rfl::msgpack= calls in hand-written production code, before the branch | 83 in 32 files | =git grep -n -E 'rfl::(json\vert{}msgpack)::(read\vert{}write)\vert{}rfl::json::to_schema' <commit> -- 'projects/*.hpp' 'projects/*.cpp'=, then drop =/tests/=, then =wc -l= | =2c50d83f1f= |
+| The same at the branch's tip | 14 calls in 6 files | the same command at the tip | =166c2171da= |
+| Comment mentions that remain | 7 lines in 5 files, 4 of which hold no call | the same command, counting only a line whose text starts with =*= or =//= | =166c2171da= |
+| Files the branch changes | 111 | =git diff --name-only 2c50d83f1f 166c2171da \vert{} wc -l= | =166c2171da= |
+| Generated protocol codec units the branch adds | 5 | =git diff --name-only --diff-filter=A 2c50d83f1f 166c2171da \vert{} grep -c '_protocol_codec.cpp$'= | =166c2171da= |
+
+Each row names the commit its numbers were measured at, which is the code
+commit this page's own commit follows: a page cannot name the commit that
+carries it.
+
+* Notes
+
+**The calls that stay, and the step that owns each.** The plan of
+[[id:7A1D09B8-B3F2-4E02-9669-3C2F6CC2C6EC][Remove reflect-cpp]] divides the work: step 2 is this task, step 3 moves the
+dynamic JSON onto yyjson, step 4 generates the schemas, step 5 deletes the
+reflect-cpp primary of =wire_traits=.
+
+| File | Calls | Step |
+|------+-------+------|
+| =ores.utility/codec/wire_traits.hpp= | 4 | 5 |
+| =ores.http/openapi/endpoint_registry.cpp= | 5 | 3 |
+| =ores.http/net/router.hpp= | 2 | 4 |
+| =ores.iam/messaging/provision_step_arguments.hpp= | 1 | 3 |
+| =ores.iam/messaging/tenant_provisioning_handler.hpp= | 1 | 3 |
+| =ores.ore/service/messaging/run_configuration_operations.cpp= | 1 | 3 |
+
+The router's two calls generate a route's JSON schema; the examples the same
+routes state are written by =wire_traits= now, so the schema is all that is
+left there.
+
+**The goal was written before the plan divided the work.** This task was
+scaffolded with one line, "No hand-written code calls rfl::json or
+rfl::msgpack", and the plan then gave the dynamic JSON to step 3, the schemas
+to step 4 and the fallback to step 5. The goal above states the boundary the
+plan draws instead of a line the plan makes unreachable here, and the table
+above is the whole of what crosses it.
+
+**A recipe a person writes keeps its defaults.** =trade_generation_step_arguments=
+is read from a document a profile holds, which states only the members it
+cares about. reflect-cpp read it with =rfl::DefaultIfMissing=; the codec
+refuses a missing member, because a message that omits a field is a mistake
+the wire should report. =read_lenient= is the exception: for the length of that one read, every member
+the text leaves out keeps its default at any depth, which is what a
+hand-written document's silence means.
+=messaging_provision_step_arguments_tests.cpp= keeps its case that omits
+=description=, =structures_per_book= and =trade_type_codes=, and
+=codec_json_tests.cpp= pins the strict read that still refuses them, before and
+after a lenient one.
+
+**Five models state the facet here, and not in step 1.** Step 1 gave a shape
+to every type a hand-written call encodes. This step finds five more that only
+the codec reaches: the four refdata convention families and the trading
+junction, whose rows the family packer now writes and reads through
+=json::write= and =json::try_read=. The packer has no shape to write without
+the facet, so the facets are turned on here and their protocols, codecs and
+roundtrip tests follow. That is most of the two thousand generated lines this
+diff adds that are not a mechanical replacement.
+
+**The unit budget entry for =conventions_diff.cpp= goes.** The entry existed
+because that unit reflected the convention families. It writes and reads their
+rows through the codec now, so =check_translation_unit_budget.py= no longer
+needs the allowance, and the guard is smaller by one entry.
+
+**One vector printer, two ways to write an element.** =std::vector='s
+=operator<<= exists so a test framework can print an expected value it does
+not match. It writes a JSON array through the codec when the element has a
+stated shape, and otherwise writes each element through its own
+=operator<<=. The second branch is load-bearing: a framework that prints its
+own range gives a better message than a compile error, and the constraint
+keeps that fallback for an element that neither the codec writes nor prints
+itself.
+
+**The reference stays until the dependency goes.** The codec tests compare the
+generated bytes with =rfl= in both formats, which is what the story's "the wire
+format does not change" criterion rests on. They keep reflect-cpp until step 5,
+together with the =wire_traits= primary, so the comparison has a reference.
+
+**Three tests the rebase put back.** The vector printer's constraints were
+written when the marketdata datum codecs lived in =ores.marketdata.core=, so the
+replayed commit restored that include path in three tests after main had moved
+the codecs to =ores.marketdata.api=. The three files are main's again, and the
+branch changes nothing in =ores.marketdata= except the corpus import test.
+
+**Drift this task does not own.** =component-drift --changed= renders every
+component the branch changes, so it reports the files main has already let
+drift in those components as well. Seven files drift at =2c50d83f1f=, and eight at =f9efe3b6e2=. Each
+is byte-identical to main, which is the evidence that this branch does not
+change it:
+
+| File | Last changed by |
+|------+-----------------|
+| =ores.http/client/tests/main.cpp= | =[tests] Make the three macOS failures pass or say why= |
+| =ores.marketdata/api/src/CMakeLists.txt= | =[marketdata] Move the oresmd codecs into the API= |
+| =ores.marketdata/core/src/CMakeLists.txt= | the same commit |
+| =ores.synthetic/core/tests/CMakeLists.txt= | =[synthetic] Record the trades the generator books= |
+| =ores.trading/api/.../bond_instrument_data.hpp= | a merge of =feature/validate-the-trade-representation= |
+| =ores.trading/api/tests/.../bond_instrument_data_codec_roundtrip_tests.cpp= | =[ore,trading,sql] Keep a bond position on a basket= |
+| =ores.trading/core/src/repository/trade_summary_repository.cpp= | =[trading] Move the trade summary filter rather than copy it= |
+| =ores.http/server/include/ores.http.server/config/options.hpp= | =[http] Scope the session cookie to the prefix the server is served under= |
+
+**What is not tested.** No test reads the codec's refusal text for a malformed
+message in a component that reports it to a person; the tests check that a
+refusal happened, and =codec_json_tests.cpp= pins the text of a missing member
+once. A type whose suite compares the codec's bytes with =rfl='s keeps that
+comparison; a type whose suite does not has a roundtrip test only.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4481][#4481]] | [codegen,utility] Move the hand-written calls onto the codec |
+
+* Review
+
+Two axes, run over =origin/main...HEAD=: one for the repository's documented
+standards, one for the task and the plan it belongs to.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The shell command template repeats the same =wire_traits<...>::write_json= statement in every handler | =cpp_shell_command_impl.cpp.mustache= | Rejected | The repetition predates this branch: 502 generated shell units on main already write that statement, and this branch moves one model into that branch of the template. Extracting a helper would rewrite all 502 in a step that does not touch them. |
+| 2 | The vector printer's second branch has no test | =streaming/std_vector.hpp= | Fixed | =streaming_std_vector_tests.cpp= covers an element the codec writes, an element that prints itself, and an empty vector. |
+| 3 | The task's goal said no hand-written code calls reflect-cpp, which the tree does not meet | this page | Fixed | The goal and the first acceptance bullet now state the boundary the plan draws, and Notes lists every call that stays with its owning step. |
+| 4 | The HTTP route template keeps the =read_body= helper and the =wire_traits= include behind the flag while every call to them is unconditional | =ores.cpp.http-route.*.org= | Fixed | The include, the helper and the two standard headers it needs are unconditional, and the empty flag blocks go. The render of the 19 route models does not change. |
+| 5 | The domain JSON template writes the same body in both branches and leaves one empty | =ores.cpp.domain.json_io_impl.org= | Fixed | One body, and the JSON codec's include whatever the flag says. |
+| 6 | The convention family unit reads through the codec with no codec include when the flag is clear | =ores.cpp.convention-family.unit.org= | Fixed | =json_codec.hpp= is unconditional; the generated codec's own header stays with the flag. |
+| 7 | =read_lenient= keeps every missing member at any depth, which is not the one member a caller might mean | =json_codec.hpp= | Rejected | That is what it is for: a hand-written document states the members it means and says nothing about the rest. The header comment, the call site and Notes all say so. |
+| 8 | The family packer names 34 codec headers | =conventions_family_pack.hpp= | Rejected | It is a template over row types with no common base, so each row type it writes needs its own header. A common base is the typed-family work the parent plan gives to the import and export story. |
+| 9 | =provision_step_result= carries fourteen unrelated members and is exposed by a =public:/=private:= flip | =tenant_provisioning_handler.hpp= | Deferred | The endpoint registry names the type, so it must be reachable. Moving it out of the handler is a design change of its own, and the parent plan's step 3 rewrites the path that carries it. |
+| 10 | Five models gained the wire-codec facet, which step 1 owned | the five models | Accepted | Step 2 cannot pack or send those rows without the shapes. Notes names them and says why. |
+| 11 | The unit budget entry for =conventions_diff.cpp= is dropped unrecorded | =check_translation_unit_budget.py= | Fixed | Notes names the entry and why it goes. |
+| 12 | The parent plan still says the conventions path waits on another story | =task_remove_reflect_cpp.org= | Fixed | The three files it named are on the codec now, and the note records what is left and who owns it. |
+
+* Result
+
+The hand-written reflect-cpp calls are on the codec. 83 call sites in 32
+production files become 14 in 6, and each of the 14 is the site a later step
+owns, listed above. The five protocol codecs and the two domain codecs the move
+needs are generated from their models with their roundtrip tests.
+
+The gate ran at the tip the review was answered on: the build succeeded, 97 of
+98 suites passed, and =ores.marketdata.service.tests= was the one failure — it
+passes when run alone, so it is a timing fault in the suite. Five checks failed,
+and every file they name is byte-identical to main: =component-drift= (7
+files), =unity-collisions= (=ores.synthetic= tests), =er-diagram=,
+=money-decimal-columns= and =bff-list-requests= (=instrument_underlying='s list
+requests). The gate's =ticks-smoke= step also failed, and deterministically: it
+books a bond whose =bond_issue_call_date= the run already stored, because the
+planner in =ores.synthetic= books two rows for one issue, and this branch
+changes no file in that component.
+
+The branch then rebased onto =f9efe3b6e2=, where main had moved the HTTP layer
+and two of the templates this task touches. The build succeeds there, all 97
+suites that finished passed, and =ores.marketdata.service.tests= — the one
+still running when the run was stopped — passes when run alone. Every suite is
+green on the rebased tree, and =tangle-templates=, =cmake-sources=, =format= and
+=component-drift= were re-run there: the first three pass, and the fourth names
+only files that are byte-identical to main.

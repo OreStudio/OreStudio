@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_30:sprint_30:
 #+created: 2026-11-08
 #+updated: 2026-11-08
-#+environment: jolly_knuth
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,10 +21,10 @@ Sprint 30 is open: it is the current sprint in the version manifest and the agil
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | DONE |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Nothing. |
-| Waiting on    | Nothing.                               |
+| Waiting on    | Nothing. |
 | Next          | Nothing. |
 | Last touched  | 2026-11-08                               |
 
@@ -39,6 +39,7 @@ Sprint 30 is open: it is the current sprint in the version manifest and the agil
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:50FCF664-4555-4052-AEBC-36839CE5966D][Task: Open sprint 30]] | DONE | 2026-11-08 | 2026-11-08 | Scaffold and wire sprint 30, bump the version and update vcpkg. |
+| [[id:E572C790-2956-48A9-92A2-0D18D70C40C8][Carry the sprint 29 work and review it]] | DONE | 2026-11-08 | 2026-11-08 | Move the work left from sprint 29 into sprint 30, then check each story against the code. |
 
 * Decisions
 

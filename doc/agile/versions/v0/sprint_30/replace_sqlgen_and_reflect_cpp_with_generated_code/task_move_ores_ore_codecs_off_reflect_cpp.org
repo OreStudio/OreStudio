@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: AC8C970E-DBA5-4AB1-9FF6-FB2D96F7E4D0
+:END:
+#+title: Task: Move ores.ore codecs off reflect-cpp
+#+description: Regenerate ores.ore's codecs and move its hand-written reflect-cpp use to the generated functions or to yyjson.
+#+type: task
+#+level: s1
+#+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_30:v0:
+#+owner: marco
+#+branch: feature/move-ores-ore-codecs-off-reflect-cpp
+#+pr: 4360
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-27
+#+updated: 2026-11-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Step 6 of 7, one component. ores.ore encodes and decodes without reflect-cpp. Starts after the codec templates move with ores.dq.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-27                               |
+
+* Acceptance
+
+- ores.ore's generated types use the generated codecs.
+- ores.ore's hand-written JSON uses the generated codecs or yyjson.
+- Nothing in ores.ore includes reflect-cpp.
+- ores.ore's suites pass, and its wire bytes match the bytes before the move.
+
+* Plan
+
+- Opt the five ore message models into the wire codec and regenerate.
+- Build =ores.ore.api= as a library, since it now carries compiled codecs.
+- Move the import and run configuration workflows and handlers onto the codec.
+- Read the trade export through trading's generated codec.
+- Give the planner's =import_choices= wire fields and enum text forms, because
+  the execute handler parses them from the request.
+- Leave the conventions path alone: questioning it showed it carries untyped
+  data, and the conventions redesign story now owns making it typed.
+- Prove every message's and the choices' bytes against reflect-cpp.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Ore suites | core 468 cases and service 6 cases pass; api has no cases | the three =ores.ore.*.tests= binaries, run directly | e1fb9922e0 plus this branch |
+| Wider suites | 97 of 98 pass; ores.refdata.core.tests fails because the environment's database lacks a table added at 4358fa8164, and this branch changes no refdata or SQL file | =compass test run --preset linux-clang-release-ninja -- -R ore=, which matches every =core= suite | 30202911ed plus this branch |
+| Ore byte tests against reflect-cpp | 6 cases, 276 assertions pass | =ores.ore.core.tests "[codec]"= | 30202911ed plus this branch |
+| Component drift (ore), format, CMake lists, unity collisions, unique type names | all clean | =check_component_drift.py --component ore=, and the check scripts | 30202911ed plus this branch |
+| reflect-cpp left in ore sources, outside tests | 6 files | =grep -rn -E "rfl::\|<rfl\|reflectors" projects/ores.ore= | 30202911ed plus this branch |
+
+* Notes
+
+** The conventions path carries untyped data
+
+Questioning =run_configuration_operations.cpp= before replacing its
+=rfl::Generic= use showed that the conventions code drifted from its design.
+The stage message carries each row as a JSON string, the export reads each
+family untyped with a hand-built request and a party filter in ores.ore, and
+the package inside ores.ore holds rows as JSON strings. The bundle docs say a
+bundle's rows never sit in a message field. Four tasks on
+[[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Import and export conventions without a document aggregate]]
+make each part typed, so this task leaves =run_configuration_operations.cpp=,
+=conventions_family_pack.hpp=, =conventions_diff.cpp= and
+=conventions_family_cross_currency_fix_float.cpp= on reflect-cpp.
+
+** What else keeps reflect-cpp
+
+- =report_package_handler.cpp= reads =prepare_ore_package_request= and writes
+  =prepare_ore_package_result=, which belong to reporting and have no codec
+  until reporting's own task.
+- =nats_call.hpp= keeps the reflectors, because it calls analytics and
+  reporting, whose types still fall back to reflect-cpp.
+
+** The import choices travel as a JSON string
+
+=ore_import_request= and =ore_import_execute_request= carry the choices as
+=import_choices_json=. The capture
+=carry-the-ore-import-choices-as-a-typed-member= owns making the member typed.
+The choices now have a codec, so that change needs no new one.
+
+** The api part was header-only
+
+=ores.ore.api= was an INTERFACE library, so the generated protocol codecs were
+never compiled and the first build failed to link. Its model no longer
+declares it header-only.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4360][#4360]] | [ore] Encode and decode the ore messages without reflect-cpp |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Use try_read for the import choices | =ore_import_execute_handler.cpp= | Declined | try_read drops the reason the step failure reports. |
+| 2 | rfl include left in the package handler | =report_package_handler.cpp= | No change | The reporting package messages still use it until reporting moves. |
+| 3 | Duplicate and unused CMake links | =ores.ore.api/src/CMakeLists.txt= | Declined | Generated from the api template; harmless. |
+| 4 | Enum text forms miss a third enumerator | =import_choices.hpp= | Accepted | Exhaustive switches, so -Wswitch fails the build. |
+| 5 | Strictness and silent empty rollbacks | both workflows | Answered; captured | The struct codec has reflect-cpp's tolerance. The empty rollback predates the PR: capture =a-compensation-that-cannot-read-its-step-rolls-back-nothing=. |
+| 6 | Docs consistent | agile files | No change | |
+
+* Result
+
+ores.ore's messages encode and decode without reflect-cpp. Its five models use
+the generated codec, its workflows and handlers read and write through it, and
+the import choices have their own codec. The bytes match reflect-cpp's. The
+acceptance that nothing in ores.ore includes reflect-cpp is met only in part:
+the conventions path waits on the conventions redesign, the reporting package
+messages on reporting's task, and =nats_call.hpp= on the components it calls.

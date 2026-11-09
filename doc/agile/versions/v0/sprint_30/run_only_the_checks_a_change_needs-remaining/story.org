@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 3C11CA27-D35F-49AD-8A23-9017F6F7C3DB
+:END:
+#+title: Story: Run only the checks a change needs — the remaining work
+#+description: The local check gate runs every heavy check for any C++ change, so a test-only header change pays for the database rebuild, the tick smoke and all 98 suites.
+#+type: story
+#+level: s2
+#+filetags: :tooling:ci:local_checks:tests:sprint_30:v0:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A gate run that costs what the change reaches: the heavy checks run only when production code changed, ctest runs only the suites whose binaries compile a changed file, and the suites run in parallel. When the gate cannot decide what a change reaches, it runs everything.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started. Split from [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08 |
+
+* Acceptance
+
+- A change whose compiled files reach only test binaries skips the db, ticks-smoke and step-consumers checks
+- ctest runs only the suites whose binaries compile a changed file, and runs every suite when the dependency lookup cannot decide
+- The gate runs ctest in parallel
+- The gate time for a test-only change is measured before and after
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3237C98A-F3CC-478F-BD74-477B5D8CCA03][Run only the suites a change reaches]] | BACKLOG | | | Use the build's dependency log to find the test binaries that compile a changed file, and run ctest on those suites only. |
+
+* Decisions
+
+
+- Split from [[id:1D509278-B686-4D2A-B345-63133283566A][Run only the checks a change needs]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+- Reviewed on 2026-11-08 at sprint 30 start. The gate already reads the ninja dependency log and runs ctest in parallel. Check whether the suite selection is the only part left.
+
+* Out of scope
+
+-
+

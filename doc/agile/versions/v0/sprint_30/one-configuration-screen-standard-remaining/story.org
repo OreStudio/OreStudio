@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 7F99EFB4-B55A-4729-8D4A-7C54E9291877
+:END:
+#+title: Story: Make every configuration screen follow one standard — the remaining work
+#+description: The engine settings work set the pattern for every configuration that comes off ORE XML. Generalise it into one UX standard, apply it to the pricing engine configuration, and make the two similarly named configurations impossible to confuse.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:reporting:configuration:sprint_30:v0:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One screen standard covers every configuration that comes off an ORE XML
+document: the same list, the same record page, the same sections, the same
+documentation, the same reach, the same history, the same import and the same
+lifecycle. A person who learns one configuration screen knows them all.
+
+Two configurations carry the word "engine" and a person confuses them today.
+The standard gives each one a name that says what it decides, and every page
+says what the configuration is and which other configurations the same report
+binds.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started. Split from [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]], which closed in sprint 29 with its done tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Triage into a sprint. |
+| Last touched  | 2026-11-08 |
+
+* Acceptance
+
+- One knowledge page states the standard for every configuration screen, and
+  the UX hub and the screen review checklist point to it.
+- The screen words are fixed for every configuration kind, and no two kinds
+  share a head noun.
+- Every configuration page says what it decides and lists the other
+  configurations the same report binds.
+- The engine run settings keep the pattern they set, and the pricing engine
+  configuration follows it.
+- A change that alters the numbers a run computes goes through a proposal and a
+  sign-off, whichever kind it is.
+- The two configuration prototypes follow the standard and the owner signs them
+  off before any code change.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5CABD1D6-F2B1-4582-92CA-2FF1003D8182][Carry provenance on every parameter]] | BACKLOG | | | Add source, source reference, curation note and review fields to the ore parameter contract, and make the generator fail on a row without them or without a text. |
+| [[id:590D48CD-DD7B-490A-A5A4-3E966A948DF9][Carry the methodology and coverage on the DQ dataset]] | BACKLOG | | | Record on the pricing DQ dataset: the ORE source commit, the curation file version, the methodology link, and the coverage counts (types mapped, exempt, settings and globals documented, rows authored). The generator writes them and the publication carries them, so a consumer reads coverage without running the generator. |
+| [[id:A96DC169-8D55-4E53-BCA0-565EA5A0E9C3][Drive the screen labels, controls and tabs from data]] | BACKLOG | | | Read asset class names from refdata, map a value domain to a control through a registry, and carry the section and tab metadata instead of hard-coding them in the page. |
+| [[id:2A4A02B8-E8C8-4EDF-B688-782AA893D75E][Map every product type to its instrument]] | BACKLOG | | | Fill instrument_type_code from the guide's used_by for the added types, decide whether a cross-currency product maps to SWPTN or XCCY, and record the decision. |
+| [[id:0AA7CBB9-1B24-4A68-8592-9F6E04E5E732][Reclassify the leg, coupon and pricer entries]] | BACKLOG | | | Decide whether the leg, coupon, cashflow and pricer subsections belong in the pricing engine types or in a separate catalogue, and move them. |
+
+* Decisions
+
+- Split from [[id:AB74EE5D-4E3B-499A-A964-BDCFF7853663][Make every configuration screen follow one standard]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+
+* Out of scope
+
+- Renaming a table, a configuration type code or an API route. The screen words
+  change; the model does not.
+- Changing the pricing engine model. The analysis found six live =Setup=
+  choices that the model does not hold; whether to add them is an open question
+  in the investigation.
+

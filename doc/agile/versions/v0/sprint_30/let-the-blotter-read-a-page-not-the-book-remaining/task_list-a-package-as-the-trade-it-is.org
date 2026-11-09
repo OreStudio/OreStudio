@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: A0AE98E4-DF2E-4D75-9099-FF3E2555B5B1
+:END:
+#+title: Task: List a package as the trade it is
+#+description: Every blotter row must be a trade, so the summary view stops unioning structures and reads a composite as one row with its legs beneath. Convert the structures that exist, so nothing is lost when the branch goes.
+#+type: task
+#+level: s1
+#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 31EA5379-3BAE-4305-ACA8-4955B7FAE54C, F3770BA9-94EF-4A43-8415-262FBC946837
+#+blocked_since:
+#+created: 2026-11-03
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D9BE397A-86AF-4A17-9D15-135CD9815C9D][Let the blotter read a page, not the book — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The summary view =ores_trading_trade_summaries_vw= unions two shapes: a trade row with a book, a date and a state, and a structure row with none. That union is why the screen order, filter and count cannot be an index scan, and why a structure row drops out of any filter on book, status or date.
+
+This task makes the view one shape. The structure branch goes. A trade whose instrument is a composite is one row, like any other trade: its book, date and status are its own, and its instrument type is the deal kind the composite states. Its components are marked as legs of that trade, the parent trade id names the row they sit under, and the parent count is the number of components.
+
+The structures that exist are not lost when the branch goes, so this task converts them first: each structure becomes a composite trade with the booking, state and identifier its legs imply, which is the shared book and the earliest date, the state the legs share, and the structure reference as the trade identifier. Each member becomes a component leg. The conversion runs once, is idempotent, and is tested on the sixty structures the demonstration holds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D9BE397A-86AF-4A17-9D15-135CD9815C9D][Let the blotter read a page, not the book — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:31EA5379-3BAE-4305-ACA8-4955B7FAE54C][Complete a package as a composite trade]] writes the rows this task reads, and [[id:F3770BA9-94EF-4A43-8415-262FBC946837][Point the grouping screen at the completion]] stops the screen from writing structures. |
+| Next         | Convert a structure by hand first, then write the conversion as a script. |
+| Last touched | 2026-11-03                               |
+
+* Acceptance
+
+- The view has one shape: every row is a trade, and no row states a null book, date or status because of what it is.
+- A composite trade appears once, with its own book, date and status, and its components are marked as legs of it.
+- The rail counts a composite as one row and its components as rows of their own.
+- The sixty structures in the demonstration become composite trades before the branch is deleted, and no member trade loses its structure reference.
+- The page and the rail answer the same rows for the same filter.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Shapes the summary view unions | 2: a trade and a structure | =ores.trading.trade_summary.org=, the =select= in =* SQL / ** View= | 23f46a8a0a |
+| Structures to convert | 60, holding 115 member rows | =select (select count(*) from ores_trading_structures_tbl), (select count(*) from ores_trading_structure_members_tbl)= | 23f46a8a0a |
+| Nested structures | 0 | =select count(*) from ores_trading_structures_tbl where parent_structure_id is not null= | 23f46a8a0a |
+| Columns a structure states for a blotter row | none: no book, no date, no status | =select column_name from information_schema.columns where table_name = 'ores_trading_structures_tbl'= | 23f46a8a0a |
+
+* Notes
+
+- The union's second branch is why a package has no book, date or status on the
+  screen. It reads =ores_trading_structures_tbl= joined to a lateral that counts
+  members and gathers their identifiers; a filter on any column the branch leaves
+  null drops the row, which is why a desk filtering by book never sees a package.
+- The conversion must copy the structure's reference before the table goes:
+  =ores_trading_structure_identifiers_tbl= holds it, and the screen's search
+  finds a package by it. A trade identifier carries it after the conversion.
+- The member's =role= and =sequence_number= move to the composite leg, which T1
+  gives both columns.
+- The summary's =structure_id= column becomes the parent trade id. The web blotter
+  reads it through =trades.ts=; check that read before renaming, and keep the
+  rail's dimensions unchanged.
+- The conversion is idempotent: a structure already converted leaves a composite
+  trade with the same id, so a second run writes nothing.
+- The union is also what makes the page slow. An =EXPLAIN (ANALYZE, BUFFERS)= of
+  the page statement at ten thousand trades shows the structure-member lateral
+  scanning =ores_trading_structure_members_tbl= once for each of the ten thousand
+  trades, and an identifier lateral searching the index ten thousand times:
+  123,970 shared buffers for one page of a hundred rows.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

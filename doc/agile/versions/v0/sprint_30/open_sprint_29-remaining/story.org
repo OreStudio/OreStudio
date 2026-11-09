@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: F26E2C10-0CE5-4C9A-887F-FE6B27C2E6EA
+:END:
+#+title: Story: Open sprint 29 — the remaining work
+#+description: Scaffold sprint 29, wire the version manifest and the agile index, and move the postponed stories.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-08
+#+updated: 2026-11-08
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | ABANDONED |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing. |
+| Next          | Nothing. |
+| Last touched  | 2026-11-08 |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:75C7ABFA-04FC-4C9C-A72C-D8CB1D9689C2][Get v0.0.29 up and running]] | ABANDONED | 2026-10-24 | 2026-11-08 | After the sprint 29 opening, bring v0.0.29 up on a fresh environment. The ORE provider must not show in the web client, and the feeds screen must show the feeds that run. |
+
+* Decisions
+
+
+- Split from [[id:7295CBC5-402C-45D4-9888-4C795AFF883C][Open sprint 29]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+- Sprint 29 is closed, and this story has no goal of its own. (review at sprint 30 start, 2026-11-08.)
+
+* Out of scope
+
+-
+

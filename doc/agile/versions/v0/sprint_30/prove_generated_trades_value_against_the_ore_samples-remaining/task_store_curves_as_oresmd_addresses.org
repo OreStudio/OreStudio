@@ -8,7 +8,7 @@
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/store-curves-as-oresmd-addresses
-#+pr:
+#+pr: 4526
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4526][#4526]] | [ore] Name every curve of a bond and a credit trade on export |
 
 * Review
 

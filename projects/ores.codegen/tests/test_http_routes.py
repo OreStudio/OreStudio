@@ -403,8 +403,11 @@ class TestTheFilterParameters:
             {"member": "name", "column": "name", "is_equals": True,
              "cpp_type": "std::optional<std::string>",
              "read_type": "std::string", "is_nullable": True},
-            {"member": "kind", "column": "kind", "is_one_of": True,
-             "cpp_type": "std::vector<std::string>", "is_nullable": False},
+            {"member": "kind_one_of", "column": "kind", "is_one_of": True,
+             "cpp_type": "std::vector<std::string>", "read_type": "std::string",
+             "is_nullable": False},
+            {"member": "created_from", "column": "created", "is_range": True,
+             "is_from": True, "cpp_type": "std::string"},
         ]
         return entity
 
@@ -423,11 +426,38 @@ class TestTheFilterParameters:
         text = _rendered_impl(self._filtered())
         assert '.query_param("f.type", "string"' in text
 
-    def test_a_one_of_member_is_not_a_single_valued_parameter(self):
-        # One-of and range members take lists and bounds; a single query value
-        # cannot state them, so the route states nothing rather than guessing.
+    def test_a_one_of_member_reads_a_list_under_its_member_name(self):
         text = _rendered_impl(self._filtered())
-        assert 'get_query_param("f.kind")' not in text
+        assert 'get_query_param("f.kind_one_of")' in text
+        assert ('msg.filter->kind_one_of = widget_read_list<std::string>'
+                '(raw, "f.kind_one_of");') in text
+        assert '.query_param("f.kind_one_of", "string"' in text
+
+    def test_a_range_member_reads_its_bound_as_text(self):
+        text = _rendered_impl(self._filtered())
+        assert 'get_query_param("f.created_from")' in text
+        assert "msg.filter->created_from = raw;" in text
+        assert '.query_param("f.created_from", "string"' in text
+
+    def test_every_declared_member_is_allowed_and_no_other(self):
+        # The BFF refuses a filter a resource does not declare, because a filter
+        # that narrowed nothing would read as an answer.
+        text = _rendered_impl(self._filtered())
+        assert ('widget_refuse_undeclared_filters(req, { "f.type", "f.name", '
+                '"f.kind_one_of", "f.created_from", });') in text
+
+    def test_a_list_with_no_filter_record_refuses_every_filter(self):
+        text = _rendered_impl(_entity())
+        assert "widget_refuse_undeclared_filters(req, { });" in text
+
+    def test_the_order_uses_the_parameters_the_browser_sends(self):
+        text = _rendered_impl(self._filtered())
+        assert 'get_query_param("sort")' in text
+        assert 'get_query_param("descending")' in text
+        assert '.query_param("sort", "string"' in text
+        assert '.query_param("descending", "boolean"' in text
+        assert 'get_query_param("order")' not in text
+        assert 'get_query_param("desc")' not in text
 
     def test_a_list_with_no_filter_record_reads_no_filter(self):
         text = _rendered_impl(_entity())

@@ -10,6 +10,7 @@
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <exception>
 #include <memory>
@@ -18,7 +19,9 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <initializer_list>
 #include <utility>
+#include <vector>
 
 namespace ores::http::routes::{{component}} {
 
@@ -136,10 +139,49 @@ void {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}
     if (const auto raw = req.get_query_param("limit"); !raw.empty()) {
         msg.limit = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_param<std::uint32_t>(raw, "limit");
     }
-    if (const auto raw = req.get_query_param("order"); !raw.empty()) {
+    if (const auto raw = req.get_query_param("sort"); !raw.empty()) {
         msg.order.field = raw;
     }
-    msg.order.descending = req.get_query_param("desc") == "true";
+    msg.order.descending = req.get_query_param("descending") == "true";
+}
+
+/**
+ * @brief Read a comma-separated parameter as a list of the member's own type.
+ *
+ * An empty item is refused, because it would otherwise match the empty value.
+ */
+template <typename T>
+std::vector<T> {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_list(const std::string& raw, const std::string& name) {
+    std::vector<T> values;
+    std::string::size_type begin = 0;
+    while (true) {
+        const auto end = raw.find(',', begin);
+        const auto item = raw.substr(begin, end == std::string::npos ? end : end - begin);
+        if (item.empty()) {
+            throw std::runtime_error("Invalid value for " + name + ": " + raw);
+        }
+        values.push_back({{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_param<T>(item, name));
+        if (end == std::string::npos) {
+            return values;
+        }
+        begin = end + 1;
+    }
+}
+
+/**
+ * @brief Refuse a filter this route does not declare.
+ *
+ * A filter that narrowed nothing would read as an answer, so the route names it
+ * rather than ignoring it.
+ */
+[[maybe_unused]] void {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_refuse_undeclared_filters(
+    const http_request& req, std::initializer_list<std::string_view> declared) {
+    for (const auto& [name, value] : req.query_params) {
+        if (name.starts_with("f.") &&
+            std::find(declared.begin(), declared.end(), name) == declared.end()) {
+            throw std::runtime_error("This list cannot be filtered by " + name.substr(2) + ".");
+        }
+    }
 }
 {{/http_route.has_page}}
 
@@ -152,6 +194,7 @@ boost::asio::awaitable<http_response>
     using request_type = messaging::{{request}};
     try {
         request_type msg;
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_refuse_undeclared_filters(req, { {{#domain_entity.filter_members}}"f.{{member}}", {{/domain_entity.filter_members}}});
         {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_apply_page(msg, req);
 {{#has_search}}
         if (const auto raw = req.get_query_param("search"); !raw.empty()) {
@@ -167,6 +210,20 @@ boost::asio::awaitable<http_response>
             msg.filter->{{member}} = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_param<{{read_type}}>(raw, "f.{{column}}");
         }
 {{/is_equals}}
+{{#is_one_of}}
+        if (const auto raw = req.get_query_param("f.{{member}}"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = {{{domain_entity.filter_type}}}{};
+            msg.filter->{{member}} = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_read_list<{{read_type}}>(raw, "f.{{member}}");
+        }
+{{/is_one_of}}
+{{#is_range}}
+        if (const auto raw = req.get_query_param("f.{{member}}"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = {{{domain_entity.filter_type}}}{};
+            msg.filter->{{member}} = raw;
+        }
+{{/is_range}}
 {{/domain_entity.filter_members}}
         co_return co_await {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_forward(req, session, msg);
     } catch (const std::exception& e) {
@@ -336,8 +393,8 @@ void {{entity_singular}}_routes::register_routes(
 {{#has_order}}
                                     .query_param("offset", "integer", "", false, "Rows to skip")
                                     .query_param("limit", "integer", "", false, "Rows to return")
-                                    .query_param("order", "string", "", false, "Column to order")
-                                    .query_param("desc", "boolean", "", false, "Descending")
+                                    .query_param("sort", "string", "", false, "Column to order")
+                                    .query_param("descending", "boolean", "", false, "Descending")
 {{/has_order}}
 {{#has_search}}
                                     .query_param("search", "string", "", false,
@@ -349,6 +406,14 @@ void {{entity_singular}}_routes::register_routes(
                                     .query_param("f.{{column}}", "string", "", false,
                                                  "Rows whose {{column}} is this value")
 {{/is_equals}}
+{{#is_one_of}}
+                                    .query_param("f.{{member}}", "string", "", false,
+                                                 "Rows whose {{column}} is one of these comma-separated values")
+{{/is_one_of}}
+{{#is_range}}
+                                    .query_param("f.{{member}}", "string", "", false,
+                                                 "Rows whose {{column}} is within this inclusive bound")
+{{/is_range}}
 {{/domain_entity.filter_members}}
 {{/is_paged}}
 {{#has_scope}}

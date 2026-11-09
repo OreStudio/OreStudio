@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/finish-the-generated-list-route
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Verify the page and the order against the BFF's lists, and add the multi-valued 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

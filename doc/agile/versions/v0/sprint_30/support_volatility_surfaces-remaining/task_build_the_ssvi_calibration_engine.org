@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: F557CBF8-8256-4953-A44A-82CF40DE1F86
+:END:
+#+title: Task: Build the SSVI calibration engine
+#+description: A pure quant engine that fits SSVI to weighted FX volatility quotes, samples the output grid and checks the result for arbitrage, with no service or database.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The system can fit a volatility surface to its quotes. A pure engine beside the curve engine in =projects/ores.analytics/quant= takes the weighted ATM, risk reversal and butterfly quotes of each expiry, the forward to each expiry and the pair's conventions as inputs. It fits SSVI with gamma = 1/2, samples the fitted surface on an output grid, and checks the result for arbitrage. It reads no database and calls no service, so unit tests prove it. SSVI is the only smile model in this task. See [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- Quotes generated from known SSVI parameters are fitted back to those parameters within a tolerance the tests state.
+- The engine returns the ATM total variance of each expiry, the skew, the curvature, the sampled grid and the error of each pillar.
+- Each strike label resolves to a strike through the given forward and the delta and ATM conventions.
+- A butterfly quoted as a broker strangle enters the fit as the price of the strangle at its own strikes, and gives a different surface from the same number read as a smile butterfly.
+- Between expiries the engine interpolates in total variance.
+- The result reports calendar spread arbitrage and butterfly arbitrage, using the SSVI conditions on the parameters, and tests show each violation detected.
+- A pillar whose error exceeds the tolerance is reported by name.
+- An expiry without the pillars SSVI needs is refused, and the error names the expiry and the missing pillars.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Depends on nothing. This task was split out of Calibrate a volatility surface from its quotes.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -40,6 +40,7 @@ The recorded spot series of every fixing-sourced feed is continuous from its fir
 - The release is recorded with who released the class and when, and the Calibration screen shows each class's release state.
 - On a fresh installation whose profile orders no release, the Calibration screen shows each class as not released and says that its feeds wait for Start feeds.
 - The calibration workflow note and the provisioning documentation state the order: load the public rates, calibrate, approve, release.
+- The provisioning curve bootstrap still has the synthetic quotes it reads: either the IR classes are released before it runs, or it is ordered after their release.
 
 * Plan
 
@@ -62,6 +63,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Check how the curve bootstrap in the provisioning system run gets its quotes. If this gate stops the IR feeds, the curves have no quotes and surfaces have no forwards.
 
 * Test Scenarios
 

@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 2FB43D9C-862E-4996-8B4A-BA3EAB7B6400
+:END:
+#+title: Task: Build the calibrate and slices screens
+#+description: The screens of the Calibrate or refresh a surface and Inspect a surface's slices journeys, over the calibrate operation and the published surface reads.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person can calibrate a surface, see the candidate and its errors, send it to publish, and read the published surface. The screens implement the journeys Calibrate or refresh a surface and Inspect a surface's slices. The web app already has =SurfacePanel= in =market/=, a heatmap and slices of any snapshot with two axes. These screens reuse it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- A person starts a calibrate from a blueprint and an as-of, and sees each pillar's error and the arbitrage results.
+- A person raises the publish of a candidate from that screen.
+- A published surface shows as a heatmap and as slices through =SurfacePanel=.
+- A candidate is always labelled as a candidate.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Depends on Calibrate a volatility surface from its quotes, Publish a calibrated surface and Read a published surface and its slices.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

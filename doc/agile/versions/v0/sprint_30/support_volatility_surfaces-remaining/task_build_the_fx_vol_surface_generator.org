@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Synthetic FX volatility quotes move through the day with spot. A generator of kind =fx_vol_surface= holds an SSVI state. Its forward variances follow CIR processes, its skew a tanh of an OU process and its curvature a bounded logistic of an OU process, with shocks correlated with spot. Contributors publish noisy observations of that state into the series the pillars name, and the clean contributor is the truth. See [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
 
 * Status
 
@@ -35,7 +35,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Every surface the generator emits passes the SSVI no-arbitrage conditions.
+- A generator feed publishes quotes in the pair's own convention into series a blueprint's pillars can name.
+- Each contributor's quotes differ from the clean contributor's by its noise profile.
+- The correlation of surface moves with spot moves matches the configured value within a tolerance the test states.
+- A blueprint that reads contributor quotes calibrates through the same operation as one that reads derived quotes.
 
 * Plan
 
@@ -58,6 +62,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+This task can run after the rest of the surface arc, because the derived source supplies the first quotes.
 
 * Test Scenarios
 

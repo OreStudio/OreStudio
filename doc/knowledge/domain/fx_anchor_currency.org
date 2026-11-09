@@ -23,7 +23,7 @@ The dollar's position also shapes the basis. The BIS reports a persistent cross-
 
 - [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
 - [[id:5498FC33-2DDA-5E17-99E0-F524BFACA460][An FX-implied curve is backed out from a discount curve and forward points]] — completes: how another curve follows from the hub.
-- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio computes FX forwards from published curves and stores none]] — exemplifies: ORE Studio starts with USD pairs.
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] — exemplifies: ORE Studio starts with USD pairs.
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — completes: the same hub in spot derivation.
 
 * Sources

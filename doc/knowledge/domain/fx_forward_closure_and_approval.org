@@ -21,7 +21,7 @@ Valuation control performs this check independently of the end users, in line wi
 
 - [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
 - [[id:93BF1249-609F-452C-B1EC-FEB493F44273][Spot rate governance]] — completes: the spot side of this control.
-- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio computes FX forwards from published curves and stores none]] — contradicts: a computed forward has no end-of-day record of its own yet.
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] — contradicts: a computed forward has no end-of-day record of its own yet.
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — completes: a mechanism that could carry a sign-off.
 
 * Sources

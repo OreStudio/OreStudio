@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D
 :END:
-#+title: ORE Studio computes FX forwards from published curves and stores none
-#+description: The design decision: forwards are a pure function of one spot and two published funding curves, and what that costs.
+#+title: ORE Studio publishes FX forwards derived from published curves
+#+description: The design decision: a forward is derived from one spot and two published funding curves, then published with its provenance.
 #+type: knowledge
 #+level: cross
 #+filetags: :domain:finance:fx:fx_forward:architecture:
@@ -11,13 +11,13 @@
 
 * Summary
 
-ORE Studio derives each FX forward from one spot and two published funding curves. It stores no forward and accepts no keyed points. The result is a parity forward, so it holds no cross-currency basis.
+ORE Studio derives each FX forward from one spot and two published funding curves, and it accepts no keyed points. The result is a parity forward, so it holds no cross-currency basis. A forward curve is a published record, written to the database with its provenance and approved as an IR curve is. Until that work is complete, the ladder still computes on read.
 
 * Detail
 
 ** Why
 
-A forward is a pure function of its inputs, so a stored copy can only go stale. The curves are already bootstrapped per currency and pass through a publish. Computing from them keeps one source of truth.
+The calculation is a pure function of its inputs, and the curves already pass through a publish per currency. The published set records what the firm used at an as-of: the numbers, the spot, both curve publishes, the convention, the method and the approval. A later change to an input does not alter it. The set is a record of a decision, so it does not go stale. It can only be superseded.
 
 The calculation uses dates and discount factors, so different day-count conventions do not enter it. See [[id:9CDD445B-964A-5C7E-8E65-DB9967E99F55][FX forward calculations run on discount factors and not quoted rates]].
 
@@ -25,11 +25,11 @@ The calculation uses dates and discount factors, so different day-count conventi
 
 - A market forward holds the basis, and the BIS documents a persistent basis since 2007. A quoted forward and an ORE price under a cross-currency curve will differ.
 - Points are outputs. See [[id:F1F326CE-5384-559E-AF4A-88DBBC4EC557][Swap points and interest rate differentials are two views of one number]].
-- A computed forward has no end-of-day record. [[id:75B40B64-FF31-5381-922B-0EB1F521BC38][An end-of-day FX rate set must be complete and independently verified]] needs one, so that requirement will bring stored forwards.
+- A withdrawn funding curve leaves forward sets built from it, so the set must show that. [[id:75B40B64-FF31-5381-922B-0EB1F521BC38][An end-of-day FX rate set must be complete and independently verified]] needs such a record.
 
 ** Scope
 
-USD-hub pairs come first. A pair's spot days are the larger of its two currencies, as [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] states.
+A forward set belongs to a party, and so do the two funding curves it reads. The raw spot is the system's, reached through the party's subscription. USD-hub pairs come first. A pair's spot days are the larger of its two currencies, as [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] states.
 
 * See also
 

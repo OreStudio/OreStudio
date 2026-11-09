@@ -21,7 +21,7 @@ Swap points and an interest rate differential determine each other through parit
 
 - [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
 - [[id:73A422C1-C74E-52CF-9A0C-78EE1AE23430][Forward points follow from two money market rates]] — completes: the formula in each direction.
-- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio computes FX forwards from published curves and stores none]] — answers: ORE Studio takes the derived option.
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] — answers: ORE Studio takes the derived option.
 
 * Sources
 

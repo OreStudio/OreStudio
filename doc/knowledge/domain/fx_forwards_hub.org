@@ -37,7 +37,7 @@ Read the cluster from the definition outward. Covered interest parity fixes a fo
 10. [[id:5498FC33-2DDA-5E17-99E0-F524BFACA460][An FX-implied curve is backed out from a discount curve and forward points]] runs parity in reverse.
 11. [[id:9CDD445B-964A-5C7E-8E65-DB9967E99F55][FX forward calculations run on discount factors and not quoted rates]] says what the calculation uses.
 12. [[id:F1F326CE-5384-559E-AF4A-88DBBC4EC557][Swap points and interest rate differentials are two views of one number]] links points and rates.
-13. [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio computes FX forwards from published curves and stores none]] says what ORE Studio does.
+13. [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] says what ORE Studio does.
 
 ** Display
 

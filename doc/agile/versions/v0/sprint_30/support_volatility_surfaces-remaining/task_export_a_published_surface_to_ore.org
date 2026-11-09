@@ -39,6 +39,7 @@ Pricing reads the surface. A report binds to a published surface as it binds to 
 - The export writes each grid point as an ORE volatility quote and writes a matching =fx_volatility_config=.
 - ORE loads the exported surface and prices an FX option from it.
 - At the strikes of a test trade, ORE's interpolated volatility matches the calibrated surface within a tolerance the test states.
+- A report binds only to a surface of its own party.
 
 * Plan
 

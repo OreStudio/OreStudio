@@ -243,4 +243,4 @@ object the rest of the system consumes.
 
 * See also
 
-- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio computes FX forwards from published curves and stores none]] — completes: a consumer of the published set.
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] — completes: a consumer of the published set.

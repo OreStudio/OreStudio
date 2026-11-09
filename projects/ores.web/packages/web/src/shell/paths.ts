@@ -57,6 +57,7 @@ export const PATHS = {
     authorisationQueue: '/operations/authorisation-queue',
     synthetic: '/market-data/synthetic',
     publishedCurves: '/market-data/published-curves',
+    fxForwards: '/market-data/fx-forwards',
     curveBlueprints: '/market-data/curve-blueprints',
     subscriptions: '/market-data/subscriptions',
     connectivity: '/market-data/connectivity',

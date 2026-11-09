@@ -21,7 +21,7 @@ Rate quotes carry a compounding and day-count convention. A discount factor does
 
 - [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — completes: how the curves hold discount factors.
-- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio computes FX forwards from published curves and stores none]] — exemplifies: forwards built this way.
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] — exemplifies: forwards built this way.
 - [[id:73A422C1-C74E-52CF-9A0C-78EE1AE23430][Forward points follow from two money market rates]] — contradicts: the money market form does need each day-count basis.
 
 * Sources

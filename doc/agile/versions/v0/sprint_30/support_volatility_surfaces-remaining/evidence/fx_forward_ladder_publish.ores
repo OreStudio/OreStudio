@@ -1,0 +1,11 @@
+# Step 3: the trader applies both approved publishes.
+# Run with USD_REQUEST and EUR_REQUEST set to the ids step 1 printed.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+
+curve_publish_operations publish-curve bbbbbbbb-0000-4000-8000-000000000003 2026-11-09T12:00:00Z --approval_request_id ${USD_REQUEST}
+
+curve_publish_operations publish-curve bbbbbbbb-0000-4000-8000-000000000103 2026-11-09T12:00:00Z --approval_request_id ${EUR_REQUEST}
+
+logout

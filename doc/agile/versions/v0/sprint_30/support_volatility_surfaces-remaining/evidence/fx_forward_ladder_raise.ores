@@ -1,0 +1,14 @@
+# Step 1: the trader raises a publish of both seeded funding curves.
+# Run with: ./compass.sh shell -l <this file>
+# The Trading role holds marketdata::curve_bootstrap:publish.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+
+curve_publish_operations publish-curve bbbbbbbb-0000-4000-8000-000000000003 2026-11-09T12:00:00Z --reason "USD funding curve for the FX forward ladder"
+
+curve_publish_operations publish-curve bbbbbbbb-0000-4000-8000-000000000103 2026-11-09T12:00:00Z --reason "EUR funding curve for the FX forward ladder"
+
+approval_operations list-my-approval-requests
+
+logout

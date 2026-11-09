@@ -39,6 +39,7 @@ Screens and reports can read a published surface. The reads return the published
 - A slice read returns one expiry across strikes, or one strike across expiries.
 - A read for an as-of with no published set says so, and returns no candidate.
 - A read names the publish it answers from.
+- A read returns only the session party's surfaces.
 
 * Plan
 

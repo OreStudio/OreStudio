@@ -155,7 +155,7 @@ anything falling through continues into the generated standard flow.
 
 Additional =#include= directives after the standard generated
 includes in =<entity>_handler.hpp=, expecting a =body= block. Use for
-headers custom handler methods need — =rfl/msgpack.hpp=,
+headers custom handler methods need — the codec headers,
 =storage_transfer.hpp=, extra protocol headers.
 
 ** Handler custom public methods

@@ -65,7 +65,6 @@ component also ships synthetic-data generators for test and development use.
 - =ores.dq= — FSM infrastructure, ORM base classes, and data-quality checks.
 - =ores.iam.core= — identity and authorisation context.
 - =ores.refdata.core= — enumeration reference data (trade types, activity types).
-- =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table output.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.

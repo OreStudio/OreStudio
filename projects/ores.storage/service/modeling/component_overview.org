@@ -136,7 +136,7 @@ the two interfaces serve the same objects through the same store.
 The service instantiates the wire codecs its handlers carry, and
 =ores.utility= only exposes them: it instantiates none of the templates itself,
 so =--as-needed= drops =msgpack-c= from the utility's =DT_NEEDED= and the service
-fails at load with an undefined =rfl::msgpack= symbol. The carrier is linked
+fails at load with an undefined =msgpack-c= symbol. The carrier is linked
 where it is used.
 
 #+begin_src cmake :name extra_dependencies

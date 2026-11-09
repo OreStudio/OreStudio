@@ -62,7 +62,7 @@ facets are in [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Ty
 
 | Address | Covers | Key library |
 |---|---|---|
-| =--address ores.cpp.domain= | Domain class, JSON I/O, table I/O | =reflectcpp=, =libfort= |
+| =--address ores.cpp.domain= | Domain class, JSON I/O, table I/O | =libfort= |
 | =--address ores.cpp.generator= | Test data generator | =faker-cxx= |
 | =--address ores.cpp.repository= | Entity, mapper, repository | =ores.database= query builder (libpq) |
 | =--address ores.cpp.service= | Service layer | — |
@@ -75,11 +75,7 @@ facets are in [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Ty
 
 Generates the domain class (a plain =struct=), JSON I/O, and table I/O.
 
-- *JSON I/O*: uses =reflectcpp= (=<rfl/json.hpp>=, =rfl::json::write()=)
-  with custom reflectors from =ores.utility/rfl/reflectors.hpp= to
-  handle types not natively supported (=boost::uuids::uuid=,
-  =std::chrono::system_clock::time_point=, etc.). Exposes
-  =operator<<(std::ostream&, const T&)=.
+- *JSON I/O*: uses the generated wire codec.
 - *Table I/O*: uses =libfort= (=<fort.hpp>=, =fort::char_table= with
   =FT_BASIC_STYLE=) for aligned column output.  Type-formatting
   conventions: UUIDs → =boost::uuids::to_string()=; booleans → "Y"/"N";

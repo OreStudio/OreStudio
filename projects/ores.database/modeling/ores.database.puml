@@ -56,7 +56,7 @@ namespace ores #F2F2F2 {
         }
         class database_options <<struct>> {
             +user : string
-            +password : rfl::Skip<string>
+            +password : string
             +host : string
             +database : string
             +port : int

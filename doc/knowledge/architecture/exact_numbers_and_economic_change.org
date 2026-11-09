@@ -150,10 +150,8 @@ choice for the generic capability; a column on =bond_issue= carries the
 bond-identity case that prompted it.
 
 The digest does not need the code generation extended to iterate a type's
-fields. =rfl::to_view(v).apply(...)= already walks a value generically and is
-in use at =ores.database/domain/party_scope.hpp:60= and
-=ores.service/messaging/handler_helpers.hpp:197=, and the domain instrument
-types carry reflectors because their JSON codecs are built on them. So a
+fields. Compile-time reflection walked a value generically at the time this was
+written. So a
 digest can be written as one function that walks the fields, skips the ones
 named identity or audit, renders each remaining field canonically and hashes
 the result — no per-family code, and no generator change.
@@ -167,7 +165,7 @@ the digest decides nothing by a field's name.
 
 =projects/ores.trading.api/domain/economic_digest.hpp= holds
 =economic_digest(const T&)= for any reflected domain type: it walks the fields
-with =rfl::to_view=, skips the excluded ones at compile time through
+with reflection, skips the excluded ones at compile time through
 =field_type::name()=, renders each remaining field into a canonical text and
 returns =sha256::hex_digest= of it. Values are length-prefixed, so no value
 can run into the next and no two different values frame to the same text.

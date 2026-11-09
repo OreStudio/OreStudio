@@ -31,7 +31,7 @@ package "Foundation Layer" #F2F2F2 {
     component [ores.utility] as utility #F7E5FF
     note right of utility
     Foundation utilities: UUID v7, Base64/32, datetime,
-    faker, rfl reflectors, streaming operators.
+    faker, codecs, streaming operators.
     No ORE Studio dependencies.
     end note
 
@@ -87,7 +87,7 @@ package "Infrastructure Layer" #F2F2F2 {
     component [ores.nats] as nats #F7E5FF
     note right of nats
     NATS transport: request/reply, queue-group
-    subscribe, JetStream. JSON payloads via rfl.
+    subscribe, JetStream. Payloads via the generated codecs.
     Subject: {domain}.v1.{entity}.{operation}.
     Replaced ores.comms binary protocol.
     end note

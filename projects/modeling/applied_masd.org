@@ -506,7 +506,7 @@ from a proven hand-written entity.
    its model and running the generator.
 
 Commissioning =currency= produced the canonical SRPP catalogue for
-reference-data entities: the C++ domain struct with rfl-based JSON I/O, the
+reference-data entities: the C++ domain struct with codec-based JSON I/O, the
 repository entity/mapper/CRUD trilogy, the NATS service and protocol types, and
 the SQL DDL and trigger scripts.
 

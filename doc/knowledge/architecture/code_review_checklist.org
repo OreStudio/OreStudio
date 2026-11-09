@@ -80,7 +80,7 @@ contract is complete:
 | Check        | Description                                              |
 |--------------+----------------------------------------------------------|
 | Struct shape | =struct final= with public fields and Doxygen comments.  |
-| JSON I/O     | =_json_io.hpp/.cpp= using reflect-cpp.                   |
+| JSON I/O     | =_json_io.hpp/.cpp= using the generated codec.           |
 | Table I/O    | =_table_io.hpp/.cpp= using libfort.                      |
 | Generator    | =_generator.hpp/.cpp= in =generators= facet.             |
 | Repository   | If persisted: entity, mapper, repository, =sql()= method.|
@@ -95,7 +95,7 @@ a reviewer applies the checks below against it.
 | Check              | Description                                              |
 |--------------------+----------------------------------------------------------|
 | Subject convention | ={component}.v1.{resource}.{verb}=, one subject per operation. |
-| Request / response | Reflect-cpp types end =_request= / =_response=.          |
+| Request / response | Message types end =_request= / =_response=.              |
 | Versioning         | =v1= changes only for a breaking shape change.           |
 | Handler            | Each request has a handler in =ores.service=.            |
 | Authorisation      | Server-side checks for privileged operations.            |

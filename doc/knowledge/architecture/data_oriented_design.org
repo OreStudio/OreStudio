@@ -126,8 +126,7 @@ an encoded value. A heterogeneous result set travels as one typed array per
 concrete type, joined by key, so each element's type is static from the array
 it sits in. The tag belongs to the container, not to every element. See
 [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]]
-for the deprecated pattern this replaces and the RFL constraint that shapes
-the replacement.
+for the deprecated pattern this replaces.
 
 The wire shape is a codegen projection of the Regime 2 entity, not a
 second artefact: one entity yields one JSON codec and one table
@@ -197,23 +196,24 @@ data.
 
 ** Decomposition and the MSVC C1202 ceiling
 
-A struct that =rfl= reflects for JSON has a hard shape limit that
-nothing in the type system expresses, and crossing it fails the build
-on MSVC with =C1202= rather than with anything naming the field.
+The generated codecs have replaced compile-time reflection, so this
+limit no longer applies to them. It is recorded because the decomposition
+it forced is still in the models. A reflected struct had a hard shape
+limit that nothing in the type system expressed, and crossing it failed
+the build on MSVC with =C1202=.
 
-MSVC caps the recursive type-dependency graph that reflect-cpp builds.
-The count that matters is the number of field names in one =rfl=
-literal, and which literal reflect-cpp builds depends on how the type is
-written:
+MSVC capped the recursive type-dependency graph that reflection built.
+The count that mattered was the number of field names in one reflected
+literal, and that literal depended on how the type was written:
 
 - A plain struct gets a literal of its own members. A nested struct
   member adds one name, not its members' names. Generated entities with
   as many as 59 plain members compile on MSVC; on 2026-10-03, 220 of the
   287 reflected structs the models generate had more than nine members.
-- =rfl::Flatten= adds the flattened struct's names to the parent's
+- Flattening a member adds the flattened struct's names to the parent's
   literal, recursively. Flatten is a JSON-shape decision, never a
   decomposition fix.
-- Writing a =std::variant= with tags (=rfl::AddTagsToVariants=) builds
+- Writing a =std::variant= with tags builds
   one literal over every field name reachable from the alternative being
   written. This is the shape that has failed: the 502-name trade detail
   wrapper in sprint 19, and the bond export carrier

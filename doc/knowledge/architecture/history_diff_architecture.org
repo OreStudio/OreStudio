@@ -122,7 +122,7 @@ at every call site — the dispatch-table registration, the generic
 request, and any Qt code opening a =HistoryDialog= all need the exact
 same value, and a typo silently fails to dispatch rather than failing
 to compile. Codegen emits it once per entity, not as a member on the
-domain struct itself (which stays a plain rfl-serializable data type —
+domain struct itself (which stays a plain codec-serialisable data type —
 adding a static member would not affect serialisation, but keeps the
 struct's purpose narrowly "the data," not "the data plus its own
 metadata"), but as a free trait function generated alongside the
@@ -146,9 +146,8 @@ constant itself defined in exactly one generated place per entity.
 
 ** Per-entity field mapper: codegen'd, plain, not reflective
 
-Every domain type is =rfl=-reflectable, which makes a single generic
-mapper (built on =rfl::to_view= or similar, enumerating fields at
-compile time for any struct) technically possible. That approach is
+A single generic mapper (enumerating fields at compile time for any
+struct) is technically possible. That approach is
 rejected: a metaprogramming-heavy generic mapper is hard to read, hard
 to step through, and hides the one place per entity that legitimately
 needs a human decision — how a field is rendered for display (an enum
@@ -177,7 +176,7 @@ generic dialog.
 [[id:45754809-C069-41D4-A7E4-23CC686FE8E4][ores.diff]] is a dependency-light leaf component (=field_value=,
 =diff_entry=, =diff_result=, =engine::compute(previous, current)=)
 that every domain service computes with and every frontend renders
-from, std + rfl only. It is the layer that is fully generic by
+from, std only. It is the layer that is fully generic by
 construction, because its input is already two lists of rendered
 strings — it has no domain-type awareness to reflect over, and no
 entity identifier ever reaches it.

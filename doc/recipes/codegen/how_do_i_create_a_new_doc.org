@@ -315,8 +315,8 @@ story rather than to a fixed directory.
 compass add investigation \
   --slug msvc_c1202_rfl_complexity \
   --parent-dir doc/agile/versions/v0/sprint_18/rfl_complexity_resolution \
-  --title "MSVC C1202 and rfl complexity" \
-  --description "Root cause analysis of recursive template depth limits in reflect-cpp." \
+  --title "MSVC C1202 and template complexity" \
+  --description "Root cause analysis of recursive template depth limits." \
   --tags "msvc,cpp,reflect_cpp,investigation"
 #+end_src
 

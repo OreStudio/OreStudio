@@ -180,19 +180,6 @@ Linux regression checks: eleven shared tests and fifty-five systemd/service
 tests passed. GCC reflection/layout and billing checks passed, as did a
 shared-library export/consumer check. A full Linux C++ build was not run.
 
-The reflectcpp overlay carries an MSVC-only duplicate-field check that avoids
-quadratic template instantiation. Verify both accepted names and compile-time
-rejection of duplicates from Developer PowerShell:
-
-#+begin_src powershell :results verbatim
-python build/scripts/check_reflectcpp_field_names.py --compiler cl.exe --include-dir build/output/windows-msvc-release-ninja/vcpkg_installed/x64-windows/include
-#+end_src
-
-The same tool accepts =--compiler g++= on Linux. It also compares the MSVC
-tuple-position calculation with the original implementation, including
-alignment padding and an empty tuple. The tuple patch retains the original
-implementation for other compilers.
-
 Billing uses Boost.Multiprecision 128-bit integers on MSVC and keeps the
 original GCC 128-bit type on Linux. Billing tests include products exceeding
 64 bits to check that the intermediate calculations remain exact.

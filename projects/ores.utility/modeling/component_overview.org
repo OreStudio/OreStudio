@@ -4,7 +4,7 @@
 #+title: ores.utility
 #+name: utility
 #+full_name: ores.utility
-#+description: Foundation utilities: Base64, gzip and SHA-256, UUID v7 and tenant identity, reflect-cpp reflectors, the seeded generation engine, program-options mapping, short-code strings, and test data generation.
+#+description: Foundation utilities: Base64, gzip and SHA-256, UUID v7 and tenant identity, wire codecs, the seeded generation engine, program-options mapping, short-code strings, and test data generation.
 #+brief: Foundation byte codecs, identity, and generation utilities
 #+type: ores.codegen.component
 #+level: cross
@@ -22,11 +22,11 @@
 
 =ores.utility= is the foundation library every other component builds on.
 It holds the small, dependency-light pieces that more than one component
-needs: byte codecs, identity types, the reflect-cpp reflectors that bind
-those types to JSON, and the seeded engine that generates test data.
+needs: byte codecs, identity types, the codecs that bind
+those types to the wire, and the seeded engine that generates test data.
 
 It has exactly one ORE Studio dependency, =ores.platform.lib=, taken as a
-public link because =rfl= arrives through it. Nothing else in the tree is
+public link. Nothing else in the tree is
 imported here, so the component sits at the bottom of the dependency graph
 and any other component may use it without risking a cycle. The previous
 claim that it had no ORE Studio dependency was wrong: =src/CMakeLists.txt=
@@ -39,8 +39,7 @@ stamps from =version.hpp.in=. The component's own =version.hpp= is
 generated; the facet holds only the template.
 
 Consumption is very uneven, and the load-bearing facets are few.
-=ores.utility/rfl/= reaches 856 C++ files outside the component,
-=generation/= 460, =uuid/= 432, =domain/= 251, =streaming/= 80 and
+=generation/= reaches 460, =uuid/= 432, =domain/= 251, =streaming/= 80 and
 =version/= 41. Of the rest, =faker/= reaches 10, =program_options/= 6,
 =convert/= 4, =crypto/= 3, =compression/= 2, and =serialization/= and
 =string/= one each. Five of them reach fewer than five. The thin end is
@@ -73,15 +72,9 @@ only consumer was their own test, and those are gone.
   application shares, =environment_mapper_factory= for the
   =ORES_<DOMAIN>_<OPTION>= convention, and =shared_domain_registry= for
   the domains whose options are unprefixed.
-- =rfl/= — =reflectors.hpp=, the =Reflector<>= specialisations that bind
-  =boost::uuids::uuid=, =tenant_id=, =std::optional<uuid>=,
-  =std::chrono::year_month_day=, =boost::asio::ip::address= and the
-  domain =error_code= to their JSON spellings, plus
-  =time_point_parser.hpp=.
 - =serialization/= — =error_code.hpp=, the wire error enumeration, which
   is described under [[*Recorded exceptions][Recorded exceptions]].
-- =streaming/= — =std_vector.hpp= and the =tenant_id= and =uuid= parsers
-  that let reflect-cpp read and write those types in a stream.
+- =streaming/= — =std_vector.hpp=.
 - =string/= — =short_code_generator=, which strips corporate suffixes
   from a counterparty name and reduces it to a short code. It mirrors the
   =ores_utility_strip_corporate_suffix_fn= SQL function.
@@ -124,8 +117,6 @@ only consumer was their own test, and those are gone.
   =tree_builder=.
 - =include/ores.utility/program_options/= — =common_configuration=,
   =environment_mapper_factory=, =shared_domain_registry=.
-- =include/ores.utility/rfl/= — =reflectors.hpp=,
-  =time_point_parser.hpp=.
 - =include/ores.utility/serialization/= — =error_code=.
 - =include/ores.utility/streaming/= — =std_vector.hpp=,
   =tenant_id_parser.hpp=, =uuid_parser.hpp=.
@@ -152,7 +143,7 @@ model.
 * Dependencies
 
 - The C++ standard library.
-- =ores.platform.lib=, public, which also supplies =rfl=.
+- =ores.platform.lib=, public.
 - =Boost::exception=, =Boost::iostreams= and =Boost::program_options=.
 - =OpenSSL::Crypto=, private, for the SHA-256 digest.
 - =faker-cxx=, private, for the faker facet.

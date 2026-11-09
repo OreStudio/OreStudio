@@ -49,7 +49,7 @@
  * reports_to_account_id are nullable UUID soft references. The hand-written
  * domain struct represented both as a plain boost::uuids::uuid with a nil
  * sentinel, on the claim that a second
- * std::optional<boost::uuids::uuid> member corrupts reflect-cpp
+ * std::optional<boost::uuids::uuid> member corrupts
  * aggregate serialisation for multi-element vectors. Re-verified under
  * the generated estate: all three nullable UUIDs are modelled as
  * std::optional<boost::uuids::uuid>, and the api suite's multi-element

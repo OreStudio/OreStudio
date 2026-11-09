@@ -412,4 +412,20 @@ market_series_repository::read_latest_by_key(context ctx,
         "Reading latest market series by URI and provider");
 }
 
+std::vector<domain::market_series>
+market_series_repository::read_latest_by_uri(context ctx, const std::string& oresmd_uri) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<market_series_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max &&
+                                            "oresmd_uri"_c == oresmd_uri) |
+                       query_builder::order_by("id"_c);
+    return query_builder::execute_read_query<market_series_entity, domain::market_series>(
+        ctx,
+        query,
+        [](const auto& entities) { return market_series_mapper::map(entities); },
+        lg(),
+        "Reading latest market series by URI");
+}
+
 }

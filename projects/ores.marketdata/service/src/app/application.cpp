@@ -48,6 +48,7 @@
 #include "ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/feed_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/feed_scope_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/fx_forward_ladder_handler.hpp"
 #include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
@@ -318,6 +319,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                  mm::curve_republish_handler h(n, c, v);
                                                  h.compute(std::move(msg));
                                              }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::get_fx_forward_ladder_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::fx_forward_ladder_handler h(n, c, v);
+                                      h.read(std::move(msg));
+                                  }));
             subs.push_back(n.queue_subscribe(std::string(mm::publish_curve_request::nats_subject),
                                              queue,
                                              [&n, c, v](ores::nats::message msg) mutable {

@@ -25,6 +25,7 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
 #include <unordered_map>
@@ -46,6 +47,27 @@ struct ORES_MARKETDATA_SERVICE_EXPORT pillar_read final {
     std::unordered_map<std::string, double> rates_by_point_id;
     std::vector<std::string> series_ids;
 };
+
+/**
+ * @brief The reference data that resolves a curve's tenor codes under @p tenor_convention_code.
+ *
+ * @throws std::invalid_argument if the convention is not defined.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT curve_republish_refdata_context
+build_refdata_context(ores::database::context ctx,
+                      std::chrono::year_month_day horizon,
+                      const std::string& tenor_convention_code);
+
+/**
+ * @brief The stored discount curve of @p output_series_id at @p as_of, in date order.
+ *
+ * @throws std::invalid_argument if an observation is not a discount point.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::vector<ores::analytics::quant::service::bootstrapped_point>
+read_discount_curve(ores::database::context ctx,
+                    const boost::uuids::uuid& output_series_id,
+                    std::chrono::system_clock::time_point as_of,
+                    const curve_republish_refdata_context& refctx);
 
 /**
  * @brief The observation's value as a number.

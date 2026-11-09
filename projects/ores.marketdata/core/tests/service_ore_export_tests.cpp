@@ -331,7 +331,7 @@ TEST_CASE("export_with_a_date_keeps_the_history_and_writes_the_value_at_the_clos
     const auto number = ores::marketdata::repository::tick_coords_repository{}.resolve(
         owner, stream, stored.front().oresmd_uri);
     using namespace std::chrono;
-    ores::marketdata::tests::insert_tick(
+    ores::marketdata::tests::ensure_tick(
         owner, stream, number, sys_days{2016y / February / 5} + 12h, 1.2);
 
     // Each line as "date value", sorted.
@@ -404,7 +404,7 @@ TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give",
     const auto number = ores::marketdata::repository::tick_coords_repository{}.resolve(
         owner, stream, stored.front().oresmd_uri);
     using namespace std::chrono;
-    ores::marketdata::tests::insert_tick(
+    ores::marketdata::tests::ensure_tick(
         owner, stream, number, sys_days{2016y / February / 5} + 12h, 1.2);
 
     // The datums of a read, as "uri value", sorted, so the order of the rows does not matter.

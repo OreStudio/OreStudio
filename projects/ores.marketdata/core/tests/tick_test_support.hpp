@@ -114,6 +114,30 @@ inline boost::uuids::uuid stream_of(const std::string& provider_code,
     return ores::marketdata::datum::stream_id(provider_code, series_uri);
 }
 
+/// Stores one tick on @p stream unless its key already holds one. The shared store keeps its rows
+/// between runs, so a test that names a fixed series and a fixed instant finds its own earlier
+/// tick. Use it only where every writer of the key states the same value.
+inline void ensure_tick(ores::database::context ctx,
+                        const boost::uuids::uuid& stream_id,
+                        int coord,
+                        std::chrono::system_clock::time_point ts,
+                        double value) {
+    auto lg(ores::logging::make_logger("ores.marketdata.core.tests"));
+    ores::database::repository::execute_parameterized_multi_column_query(
+        ctx,
+        "WITH stored AS (INSERT INTO ores_marketdata_ticks_tbl "
+        "(stream_id, feed_id, ts, coord, value) "
+        "VALUES ($1::uuid, $2::uuid, $3::timestamptz, $4::smallint, $5::float8) "
+        "ON CONFLICT DO NOTHING RETURNING 1) SELECT 1",
+        {boost::uuids::to_string(stream_id),
+         boost::uuids::to_string(ores::marketdata::domain::catalogue_ids::ore_import_feed_id()),
+         ores::platform::time::datetime::to_iso8601_utc(ts),
+         std::to_string(coord),
+         std::format("{}", value)},
+        lg,
+        "ensuring a tick");
+}
+
 /// Appends one tick to @p stream. A statement that returns no row is refused by the read
 /// helper, so the insert states one.
 inline void insert_tick(ores::database::context ctx,

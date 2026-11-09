@@ -104,9 +104,9 @@ std::string run_tag() {
 std::string app_feed_ingest_loop_eur_usd_spot() {
     const auto tag = run_tag();
     const auto code = [&](std::size_t offset) {
-        return std::string{"AAAAA"} + tag[offset] + "A";
+        return "AA" + tag.substr(offset, 4) + "A";
     };
-    return "oresmd://fx/" + code(0) + "?type=quote&instrument=fx_spot&quote=rate&ccy=" + code(1);
+    return "oresmd://fx/" + code(0) + "?type=quote&instrument=fx_spot&quote=rate&ccy=" + code(4);
 }
 
 /**
@@ -558,7 +558,7 @@ TEST_CASE("the_ticks_of_a_datum_with_a_coordinate_are_copied_under_its_coordinat
 
     app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
-    const auto name = std::string{"AAAAA"} + run_tag()[0] + "A";
+    const auto name = "A" + run_tag().substr(0, 5) + "A";
     const auto cds_series = "oresmd://credit/" + name +
                             "?type=quote&instrument=cds&quote=credit_spread&seniority=SNRFOR&"
                             "ccy=USD&doc_clause=XR14";

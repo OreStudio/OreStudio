@@ -248,6 +248,90 @@ wire_traits<ores::inbox::messaging::list_my_approval_requests_response>::read_ms
     return object::read_msgpack<ores::inbox::messaging::list_my_approval_requests_response>(data);
 }
 
+std::string wire_traits<ores::inbox::messaging::get_approvals_mode_request>::write_json(
+    const ores::inbox::messaging::get_approvals_mode_request& v) {
+    return object::write_json(v);
+}
+
+ores::inbox::messaging::get_approvals_mode_request
+wire_traits<ores::inbox::messaging::get_approvals_mode_request>::read_json(std::string_view text) {
+    return object::read_json<ores::inbox::messaging::get_approvals_mode_request>(text);
+}
+
+std::string wire_traits<ores::inbox::messaging::get_approvals_mode_request>::write_msgpack(
+    const ores::inbox::messaging::get_approvals_mode_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::inbox::messaging::get_approvals_mode_request
+wire_traits<ores::inbox::messaging::get_approvals_mode_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::inbox::messaging::get_approvals_mode_request>(data);
+}
+
+std::string wire_traits<ores::inbox::messaging::get_approvals_mode_response>::write_json(
+    const ores::inbox::messaging::get_approvals_mode_response& v) {
+    return object::write_json(v);
+}
+
+ores::inbox::messaging::get_approvals_mode_response
+wire_traits<ores::inbox::messaging::get_approvals_mode_response>::read_json(std::string_view text) {
+    return object::read_json<ores::inbox::messaging::get_approvals_mode_response>(text);
+}
+
+std::string wire_traits<ores::inbox::messaging::get_approvals_mode_response>::write_msgpack(
+    const ores::inbox::messaging::get_approvals_mode_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::inbox::messaging::get_approvals_mode_response
+wire_traits<ores::inbox::messaging::get_approvals_mode_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::inbox::messaging::get_approvals_mode_response>(data);
+}
+
+std::string wire_traits<ores::inbox::messaging::set_approvals_mode_request>::write_json(
+    const ores::inbox::messaging::set_approvals_mode_request& v) {
+    return object::write_json(v);
+}
+
+ores::inbox::messaging::set_approvals_mode_request
+wire_traits<ores::inbox::messaging::set_approvals_mode_request>::read_json(std::string_view text) {
+    return object::read_json<ores::inbox::messaging::set_approvals_mode_request>(text);
+}
+
+std::string wire_traits<ores::inbox::messaging::set_approvals_mode_request>::write_msgpack(
+    const ores::inbox::messaging::set_approvals_mode_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::inbox::messaging::set_approvals_mode_request
+wire_traits<ores::inbox::messaging::set_approvals_mode_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::inbox::messaging::set_approvals_mode_request>(data);
+}
+
+std::string wire_traits<ores::inbox::messaging::set_approvals_mode_response>::write_json(
+    const ores::inbox::messaging::set_approvals_mode_response& v) {
+    return object::write_json(v);
+}
+
+ores::inbox::messaging::set_approvals_mode_response
+wire_traits<ores::inbox::messaging::set_approvals_mode_response>::read_json(std::string_view text) {
+    return object::read_json<ores::inbox::messaging::set_approvals_mode_response>(text);
+}
+
+std::string wire_traits<ores::inbox::messaging::set_approvals_mode_response>::write_msgpack(
+    const ores::inbox::messaging::set_approvals_mode_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::inbox::messaging::set_approvals_mode_response
+wire_traits<ores::inbox::messaging::set_approvals_mode_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::inbox::messaging::set_approvals_mode_response>(data);
+}
+
 std::string wire_traits<ores::inbox::messaging::get_approval_request>::write_json(
     const ores::inbox::messaging::get_approval_request& v) {
     return object::write_json(v);

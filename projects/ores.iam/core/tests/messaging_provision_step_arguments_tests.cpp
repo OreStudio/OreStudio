@@ -58,6 +58,8 @@ TEST_CASE("the executor classifies each kind it executes into its own action", "
           provision_step_action::import_lei_hierarchy);
     CHECK(classify_step_kind("provision_party") == provision_step_action::provision_party);
     CHECK(classify_step_kind("build_calendars") == provision_step_action::build_calendars);
+    CHECK(classify_step_kind("start_auto_approval") == provision_step_action::start_auto_approval);
+    CHECK(classify_step_kind("end_auto_approval") == provision_step_action::end_auto_approval);
     CHECK(classify_step_kind("load_staff") == provision_step_action::load_staff);
     CHECK(classify_step_kind("set_staff_passwords") == provision_step_action::set_staff_passwords);
     CHECK(classify_step_kind("attach_photos") == provision_step_action::attach_photos);

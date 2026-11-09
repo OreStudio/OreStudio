@@ -193,38 +193,68 @@ decidable_scope approval_lifecycle::decidable_by_role() {
 }
 
 bool approval_lifecycle::enforces_approvals() const {
+    return approvals_mode().enforced;
+}
+
+approvals_mode_state approval_lifecycle::approvals_mode() const {
     // The installation states it once, and a tenant may state it for itself. A
     // mode that cannot be read is the enforcing answer, because a deployment that
     // cannot say whether it enforces approvals keeps the pair it has.
-    auto read_mode = [](const ores::database::context& ctx) -> std::string {
+    using setting = ores::variability::domain::system_setting;
+    auto read_mode = [](const ores::database::context& ctx) -> std::optional<setting> {
         try {
             ores::variability::repository::system_setting_repository repo;
-            const auto found =
-                repo.read_latest_by_name(ctx, std::string(approvals_mode_setting_name));
-            return found.empty() ? std::string{} : found.front().value;
+            auto found = repo.read_latest_by_name(ctx, std::string(approvals_mode_setting_name));
+            if (found.empty())
+                return std::nullopt;
+            return std::move(found.front());
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "The approvals mode could not be read: " << e.what();
-            return {};
+            return std::nullopt;
         }
     };
 
-    auto mode = read_mode(ctx_);
-    if (mode.empty()) {
+    auto row = read_mode(ctx_.with_tenant(ctx_.tenant_id(), ctx_.actor()));
+    const bool stated_by_tenant = row && !row->value.empty() && !ctx_.tenant_id().is_system();
+    if (!row || row->value.empty()) {
         // No person is signed in to the installation from here, so the read
         // names the service, which is who asks.
-        const auto installation =
-            ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account());
-        mode = read_mode(installation);
+        row = read_mode(
+            ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account()));
     }
 
-    if (mode.empty() || mode == enforced_mode)
-        return true;
-    if (mode == auto_approved_mode)
-        return false;
+    approvals_mode_state state;
+    if (!row || row->value.empty() || row->value == enforced_mode) {
+        state.enforced = true;
+    } else if (row->value == auto_approved_mode) {
+        state.enforced = false;
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "The approvals mode is '" << row->value
+                                  << "', which this build does not know; enforcing approvals.";
+        state.enforced = true;
+    }
+    if (row) {
+        state.stated_by_tenant = stated_by_tenant;
+        state.set_by = row->modified_by;
+        state.reason = row->change_commentary;
+        state.set_at = row->recorded_at;
+        state.version = row->version;
+    }
+    return state;
+}
 
-    BOOST_LOG_SEV(lg(), warn) << "The approvals mode is '" << mode
-                              << "', which this build does not know; enforcing approvals.";
-    return true;
+void approval_lifecycle::set_approvals_mode(bool auto_approved, const std::string& reason) {
+    const auto tenant = ctx_.with_tenant(ctx_.tenant_id(), ctx_.actor());
+    ores::variability::repository::system_setting_repository repo;
+    auto found = repo.read_latest_by_name(tenant, std::string(approvals_mode_setting_name));
+    if (found.empty())
+        throw std::runtime_error("This tenant holds no approvals mode to change.");
+    auto row = std::move(found.front());
+    row.value = std::string(auto_approved ? auto_approved_mode : enforced_mode);
+    row.modified_by = ctx_.actor();
+    row.change_reason_code = "system.update";
+    row.change_commentary = reason;
+    repo.write(tenant, row);
 }
 
 std::optional<auto_approval_rule>
@@ -234,8 +264,8 @@ approval_lifecycle::auto_approval_of(const domain::approval_kind& kind, bool nam
     if (names_parts)
         return std::nullopt;
 
-    if (!enforces_approvals())
-        return auto_approval_rule::deployment;
+    if (const auto mode = approvals_mode(); !mode.enforced)
+        return mode.stated_by_tenant ? auto_approval_rule::tenant : auto_approval_rule::deployment;
 
     if (kind.auto_approval_code == "every_request")
         return auto_approval_rule::every_request;
@@ -401,6 +431,8 @@ std::string_view code_of(auto_approval_rule rule) {
     switch (rule) {
         case auto_approval_rule::deployment:
             return "deployment";
+        case auto_approval_rule::tenant:
+            return "tenant";
         case auto_approval_rule::system_tenant:
             return "system_tenant";
         case auto_approval_rule::every_request:
@@ -412,8 +444,14 @@ std::string_view code_of(auto_approval_rule rule) {
 namespace {
 
 /// What a person reads about a close nobody signed, in the decision's comment.
-std::string policy_words(auto_approval_rule rule, const std::string& kind_code) {
+std::string policy_words(auto_approval_rule rule,
+                         const std::string& kind_code,
+                         const approvals_mode_state& mode) {
     switch (rule) {
+        case auto_approval_rule::tenant:
+            return "Approved by policy: this tenant does not enforce approvals, as " + mode.set_by +
+                   " set in version " + std::to_string(mode.version) +
+                   " of the approvals mode, so nothing waits on a person.";
         case auto_approval_rule::deployment:
             return "Approved by policy: this deployment does not enforce approvals, so nothing "
                    "waits on a person.";
@@ -442,7 +480,7 @@ approval_lifecycle::close_without_approval(const domain::approval_request& reque
                           request.version,
                           "approve",
                           system_actor,
-                          policy_words(rule, kind.code));
+                          policy_words(rule, kind.code, approvals_mode()));
     if (r.outcome != "ok")
         throw std::runtime_error("A " + kind.code +
                                  " request a policy closes was not closed: " + r.message);

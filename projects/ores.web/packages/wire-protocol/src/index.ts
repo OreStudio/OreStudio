@@ -642,6 +642,7 @@ export {
     readHoldReasons,
     readKindHoldRules,
     readMyNotifications,
+    readApprovalsMode,
     readMyRequests,
     readRequest,
     readRequestParts,

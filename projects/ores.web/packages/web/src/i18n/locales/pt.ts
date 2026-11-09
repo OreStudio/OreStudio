@@ -266,6 +266,11 @@ const pt: SourceCatalogue = {
     },
     inbox: {
         autoApproval: {
+            tenant: "o inquilino não exige aprovações",
+            noticeTenant:
+                "A aprovação automática está ativa neste inquilino: os pedidos fecham sem intervenção. {by} definiu-a em {at}: {reason}",
+            noticeInstallation:
+                "A aprovação automática está ativa nesta instalação: os pedidos fecham sem intervenção. {by} definiu-a em {at}: {reason}",
             chip: 'Aprovada automaticamente',
             deployment: 'a instalação não exige aprovação',
             system_tenant: 'um acto da instalação',

@@ -29,6 +29,7 @@ import {
     readHoldReasons,
     readKindHoldRules,
     readMyNotifications,
+    readApprovalsMode,
     readMyRequests,
     readRequest,
     readRequestChanges,
@@ -575,6 +576,11 @@ export function registerInboxRoutes(
     requireSession: (request: FastifyRequest) => LiveSession,
 ): void {
     /** The signed-in person's own requests, newest first, with what was decided. */
+    server.get('/api/approvals-mode', async (request) => {
+        const session = requireSession(request);
+        return await readApprovalsMode(session.client);
+    });
+
     server.get('/api/me/requests', async (request) => {
         const session = requireSession(request);
         const page = pageOf(request.query);

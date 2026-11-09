@@ -61,6 +61,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
@@ -907,6 +908,20 @@ private:
             case provision_step_action::publish_bundle:
                 publish_bundle_step(wf, command, resolve_step_actor(command));
                 return;
+            case provision_step_action::start_auto_approval:
+                set_auto_approval_step(wf,
+                                       command,
+                                       resolve_step_actor(command),
+                                       true,
+                                       "Provisioning runs without waiting on approvals.");
+                return;
+            case provision_step_action::end_auto_approval:
+                set_auto_approval_step(wf,
+                                       command,
+                                       resolve_step_actor(command),
+                                       false,
+                                       "Provisioning is finished, so people decide from here on.");
+                return;
             case provision_step_action::build_calendars:
                 build_calendars_step(wf, command, resolve_step_actor(command));
                 return;
@@ -1175,6 +1190,26 @@ private:
             wf.complete(ores::utility::codec::json::write(result), step_log);
         else
             wf.warn(ores::utility::codec::json::write(result), step_log);
+    }
+
+    void set_auto_approval_step(const ores::service::messaging::workflow_step_context& wf,
+                                const ores::iam::workflow::provision_tenant_step_command& command,
+                                const step_actor& actor,
+                                bool auto_approved,
+                                const std::string& reason) {
+        auto client =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        ores::inbox::messaging::set_approvals_mode_request request;
+        request.auto_approved = auto_approved;
+        request.reason = reason;
+        const auto response = client.request(request);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("The approvals mode was not changed: " +
+                                     response.result.message);
+
+        provision_step_result result;
+        result.kind = command.kind;
+        wf.complete(ores::utility::codec::json::write(result));
     }
 
     /// The last year generate_calendar_exceptions writes. Later days would be

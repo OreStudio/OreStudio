@@ -175,6 +175,15 @@ grant select on ores_database_info_tbl
 -- ---------------------------------------------------------------------------
 -- iam_service: IAM domain service
 -- ---------------------------------------------------------------------------
+-- The inbox reads the approvals mode on every raise and writes it when a tenant
+-- changes it.
+select _ores_grant_dml_fn('ores_variability_system_settings_', :'inbox_service_user');
+-- These services raise approvals with the same library, in their own sessions.
+select _ores_grant_select_fn('ores_variability_system_settings_', :'refdata_service_user');
+select _ores_grant_select_fn('ores_variability_system_settings_', :'reporting_service_user');
+select _ores_grant_select_fn('ores_variability_system_settings_', :'trading_service_user');
+select _ores_grant_select_fn('ores_variability_system_settings_', :'marketdata_service_user');
+
 select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
 select _ores_grant_select_fn('ores_assets_', :'iam_service_user');
 select _ores_grant_select_fn('ores_dq_', :'iam_service_user');

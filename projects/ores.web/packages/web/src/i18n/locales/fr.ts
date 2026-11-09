@@ -264,6 +264,11 @@ const fr: SourceCatalogue = {
     },
     inbox: {
         autoApproval: {
+            tenant: "le locataire n'impose pas les approbations",
+            noticeTenant:
+                "L'approbation automatique est active pour ce locataire : les demandes sont clôturées sans intervention. {by} l'a définie à {at} : {reason}",
+            noticeInstallation:
+                "L'approbation automatique est active pour cette installation : les demandes sont clôturées sans intervention. {by} l'a définie à {at} : {reason}",
             chip: 'Approuvée automatiquement',
             deployment: "le déploiement n'exige pas d'approbation",
             system_tenant: "un acte de l'installation",

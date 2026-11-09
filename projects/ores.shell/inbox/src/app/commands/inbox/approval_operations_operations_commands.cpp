@@ -71,6 +71,21 @@ std::vector<std::string> approval_operations_split_list_token(const std::string&
     return parts;
 }
 
+/**
+ * @brief Read a boolean token, which the shell spells out as a word.
+ */
+bool parse_flag(const std::string& value, bool& out) {
+    if (value.empty() || value == "false") {
+        out = false;
+        return true;
+    }
+    if (value == "true") {
+        out = true;
+        return true;
+    }
+    return false;
+}
+
 }
 
 void approval_operations_operations_commands::register_commands(cli::Menu& root_menu,
@@ -112,6 +127,20 @@ void approval_operations_operations_commands::register_commands(cli::Menu& root_
             process_list_my_approval_requests(std::ref(out), std::ref(session), std::move(args));
         },
         "list-my-approval-requests [--offset <v>] [--limit <v>]");
+
+    menu->Insert(
+        "get-approvals-mode",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_approvals_mode(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-approvals-mode");
+
+    menu->Insert(
+        "set-approvals-mode",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_set_approvals_mode(std::ref(out), std::ref(session), std::move(args));
+        },
+        "set-approvals-mode <reason> [--auto_approved <v>]");
 
     menu->Insert(
         "get-approval",
@@ -453,6 +482,121 @@ void approval_operations_operations_commands::process_list_my_approval_requests(
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::inbox::messaging::list_my_approval_requests_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void approval_operations_operations_commands::process_get_approvals_mode(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-approvals-mode request.";
+
+    using request_type = ores::inbox::messaging::get_approvals_mode_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-approvals-mode." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 0;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    try {
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::inbox::messaging::get_approvals_mode_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::inbox::messaging::get_approvals_mode_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::inbox::messaging::get_approvals_mode_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void approval_operations_operations_commands::process_set_approvals_mode(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating set-approvals-mode request.";
+
+    using request_type = ores::inbox::messaging::set_approvals_mode_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run set-approvals-mode." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "auto_approved", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 1;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.reason = parsed->positionals[next++];
+        if (const auto& raw_auto_approved = parsed->flag("auto_approved");
+            !raw_auto_approved.empty()) {
+            if (!parse_flag(raw_auto_approved, req.auto_approved)) {
+                fail(out) << "auto_approved must be 'true' or 'false'." << std::endl;
+                return;
+            }
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::inbox::messaging::set_approvals_mode_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::inbox::messaging::set_approvals_mode_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::inbox::messaging::set_approvals_mode_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

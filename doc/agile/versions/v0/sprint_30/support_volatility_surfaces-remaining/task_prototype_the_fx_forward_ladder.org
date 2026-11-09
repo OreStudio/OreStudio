@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-fx-forward-ladder-journey
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ The forward ladder exists as a prototype a reviewer can open at an address per s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -64,6 +64,8 @@ task and name that file in the Command column.
 
 * Notes
 
+Prototype: =doc/prototypes/market_data/fx-forward-ladder/=. Written with the journey, by the owner's choice, so both are signed off together.
+
 Follows [[id:DC7504E5-A53D-4938-A774-B58CE2A37B57][Make FX forwards available from the IR curves]]. The analysis and external evidence are in its Plan.
 
 * Test Scenarios
@@ -90,3 +92,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The prototype is at =doc/prototypes/market_data/fx-forward-ladder/=, with six states and an address per view. All twelve renders had no page error and no horizontal page overflow. The owner signed off the journey and the prototype together on 2026-11-09.

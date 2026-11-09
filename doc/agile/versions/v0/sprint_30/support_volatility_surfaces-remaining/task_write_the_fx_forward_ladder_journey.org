@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/write-the-fx-forward-ladder-journey
+#+pr: 4524
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ A trader's goal of reading a pair's forward ladder is written as a user journey,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -62,6 +62,8 @@ task and name that file in the Command column.
 
 * Notes
 
+Journey: [[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][Read a pair's FX forward ladder]]. Written with the prototype, by the owner's choice, so both are signed off together.
+
 Follows [[id:DC7504E5-A53D-4938-A774-B58CE2A37B57][Make FX forwards available from the IR curves]]. The analysis and external evidence are in its Plan.
 
 * Test Scenarios
@@ -79,12 +81,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4524][#4524]] | [doc] Add the FX forward ladder journey and prototype |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The state bar cannot leave the cross or no-curve state | =fx-forward-ladder/index.html= | Fixed | Leaving those states returns to EUR/USD. |
+| 2 | =in= accepts inherited names in the address | =fx-forward-ladder/index.html= | Fixed | Uses =Object.hasOwn=. |
+| 3 | Step 9 does not list all the address holds | journey | Fixed | It names the forward-forward tenors. |
+| 4 | The curve link jumps to the top | =fx-forward-ladder/index.html= | Fixed | The link does nothing. |
+| 5 | The chart ignores a resize; focus is lost on render; Refresh does nothing; mock 5Y extrapolates | =fx-forward-ladder/index.html= | Declined | The page is a throwaway with mock data. The live screen uses its own components. |
+| 6 | The sign off is hard to find in the journey | journey | Declined | It stands alone before the placements it covers. |
 
 * Result
+
+The journey Read a pair's FX forward ladder is written, each step is judged, and the gaps are linked to their task and captures. The owner signed off the journey and the prototype together on 2026-11-09.

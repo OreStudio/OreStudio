@@ -61,6 +61,8 @@ One read-only page. Controls come first, then what the numbers rest on, then the
 
 The steps keep no state across a reply, so no workflow is needed.
 
+The owner signed off this journey and its prototype on 2026-11-09.
+
 Placements the prototype decides:
 
 - The page is under *Market data*, at =/market-data/fx-forwards=, beside *Published curves*.

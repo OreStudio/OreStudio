@@ -67,7 +67,7 @@ The ladder is one derived read, and its rows are tenors and not records. No rule
 
 ** Verdict
 
-Waiting for the owner's sign off.
+Accepted. The owner signed off this prototype and its journey on 2026-11-09. The ladder start moves only near dates, and the chart spaces tenors evenly.
 
 * See also
 

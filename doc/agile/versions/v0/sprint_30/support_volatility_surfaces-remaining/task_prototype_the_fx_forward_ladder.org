@@ -26,11 +26,11 @@ The forward ladder exists as a prototype a reviewer can open at an address per s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Waiting for the owner's sign off. |
-| Waiting on   | The owner's sign off. |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -92,3 +92,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The prototype is at =doc/prototypes/market_data/fx-forward-ladder/=, with six states and an address per view. All twelve renders had no page error and no horizontal page overflow. The owner signed off the journey and the prototype together on 2026-11-09.

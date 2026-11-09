@@ -80,6 +80,12 @@ TEST_CASE("ores::refdata::messaging::publish_calendar_events_from_dq_request",
         ores::refdata::messaging::publish_calendar_events_from_dq_request>();
 }
 
+TEST_CASE("ores::refdata::messaging::publish_calendar_exceptions_from_dq_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::refdata::messaging::publish_calendar_exceptions_from_dq_request>();
+}
+
 TEST_CASE("ores::refdata::messaging::publish_calendar_types_from_dq_request",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<

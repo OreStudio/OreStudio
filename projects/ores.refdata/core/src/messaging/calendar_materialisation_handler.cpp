@@ -79,6 +79,7 @@ void calendar_materialisation_handler::regenerate(ores::nats::message msg) {
                     std::optional<std::chrono::year>(std::chrono::year{*req->end_year}) :
                     std::nullopt;
             const auto rows = req->calendar_code ? svc.regenerate(*req->calendar_code, end_year) :
+                              req->in_use_only   ? svc.regenerate_in_use(end_year) :
                                                    svc.regenerate_all(end_year);
             BOOST_LOG_SEV(calendar_materialisation_handler_lg(), debug)
                 << "Completed " << msg.subject;

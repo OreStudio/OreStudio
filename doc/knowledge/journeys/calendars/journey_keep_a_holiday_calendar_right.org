@@ -36,8 +36,8 @@ calendar.
 
 A calendar has one of three shapes, and the screen follows the shape:
 
-- *QuantLib-sourced* (=source= =quantlib=, =is_editable= false). Its rules are
-  QuantLib's published ones. The row is read-only; the person changes the dates
+- *QuantLib-sourced* (=source= =quantlib=, =is_editable= false). Its holidays
+  are generated from QuantLib and held as dated exceptions. The row is read-only; the person changes the dates
   by deriving a calendar from it.
 - *Derived* (=source= =user= with a =base_calendar_code=). A delta on top of its
   base, carried as exceptions only.

@@ -30,6 +30,8 @@
 #include "ores.refdata.core/repository/calendar_exception_repository.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.refdata.core/repository/calendar_rule_repository.hpp"
+#include "ores.refdata.core/repository/currency_calendar_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
@@ -305,6 +307,21 @@ calendar_materialisation_service::regenerate_all(std::optional<std::chrono::year
                 << "Failed to materialise calendar " << c.code << ": " << e.what();
         }
     }
+    return total;
+}
+
+std::size_t
+calendar_materialisation_service::regenerate_in_use(std::optional<std::chrono::year> end_year) {
+    std::set<std::string> codes;
+    for (const auto& link : repository::currency_calendar_repository(ctx_).read_latest())
+        codes.insert(link.calendar_code);
+    for (const auto& link :
+         repository::currency_pair_convention_calendar_repository(ctx_).read_latest())
+        codes.insert(link.calendar_code);
+
+    std::size_t total = 0;
+    for (const auto& code : codes)
+        total += regenerate(code, end_year);
     return total;
 }
 

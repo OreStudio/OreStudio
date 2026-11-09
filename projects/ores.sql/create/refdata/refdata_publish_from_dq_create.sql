@@ -4623,6 +4623,106 @@ end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
 -- =============================================================================
+-- Calendar exceptions
+-- =============================================================================
+
+-- An exception's natural key is (calendar_code, exception_date). Its id belongs
+-- to the tenant, so the artefact's own id never reaches a tenant. The publish is
+-- set-based because one dataset holds tens of thousands of days.
+create or replace function ores_refdata_publish_calendar_exceptions_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    v_dataset_name text;
+begin
+    perform ores_utility_allow_version_replace_fn();
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    create temporary table exceptions_to_publish on commit drop as
+    select dq.calendar_code, dq.exception_date, dq.is_business_day, dq.description,
+           existing.id as existing_id
+    from ores_dq_calendar_exceptions_artefact_tbl dq
+    left join ores_refdata_calendar_exceptions_tbl existing
+      on existing.tenant_id = p_target_tenant_id
+     and existing.calendar_code = dq.calendar_code
+     and existing.exception_date = dq.exception_date
+     and existing.valid_to = ores_utility_infinity_timestamp_fn()
+    where dq.dataset_id = p_dataset_id
+      and dq.tenant_id = ores_utility_system_tenant_id_fn();
+
+    if p_mode = 'insert_only' then
+        delete from exceptions_to_publish where existing_id is not null;
+        get diagnostics v_skipped = row_count;
+    end if;
+
+    select count(*) filter (where existing_id is null),
+           count(*) filter (where existing_id is not null)
+    into v_inserted, v_updated
+    from exceptions_to_publish;
+
+    insert into ores_refdata_calendar_exceptions_tbl (
+        id, tenant_id, version, calendar_code, exception_date, is_business_day, description,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select coalesce(p.existing_id, gen_random_uuid()), p_target_tenant_id, 0,
+           p.calendar_code, p.exception_date, p.is_business_day, p.description,
+           coalesce(ores_iam_current_service_fn(), current_user), current_user,
+           'system.external_data_import', 'Imported from DQ dataset: ' || v_dataset_name
+    from exceptions_to_publish p;
+
+    if p_mode = 'replace_all' then
+        update ores_refdata_calendar_exceptions_tbl e
+        set valid_to = clock_timestamp()
+        where e.tenant_id = p_target_tenant_id
+          and e.valid_to = ores_utility_infinity_timestamp_fn()
+          and not exists (
+              select 1 from ores_dq_calendar_exceptions_artefact_tbl dq
+              where dq.dataset_id = p_dataset_id
+                and dq.tenant_id = ores_utility_system_tenant_id_fn()
+                and dq.calendar_code = e.calendar_code
+                and dq.exception_date = e.exception_date
+          );
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    drop table exceptions_to_publish;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+-- =============================================================================
 -- Tenor schedules
 -- =============================================================================
 

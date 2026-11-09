@@ -98,6 +98,7 @@ inline constexpr std::string_view start_tenant_setup_step_kind = "start_tenant_s
 inline constexpr std::string_view system_provision_step_kind = "system_provision";
 inline constexpr std::string_view publish_system_curves_step_kind = "publish_system_curves";
 inline constexpr std::string_view publish_bundle_step_kind = "publish_bundle";
+inline constexpr std::string_view build_calendars_step_kind = "build_calendars";
 inline constexpr std::string_view import_lei_hierarchy_step_kind = "import_lei_hierarchy";
 inline constexpr std::string_view provision_party_step_kind = "provision_party";
 inline constexpr std::string_view load_staff_step_kind = "load_staff";
@@ -116,6 +117,7 @@ inline constexpr std::string_view schedule_reports_step_kind = "schedule_reports
 inline constexpr std::string_view provision_step_kinds[] = {system_provision_step_kind,
                                                             publish_system_curves_step_kind,
                                                             publish_bundle_step_kind,
+                                                            build_calendars_step_kind,
                                                             import_lei_hierarchy_step_kind,
                                                             provision_party_step_kind,
                                                             load_staff_step_kind,
@@ -197,6 +199,11 @@ struct step_kind_words {
                 "Sets each staff account's password through the server's own password API, so "
                 "the demonstration tenant's people can sign in.",
                 orchestrating_step_timeout};
+    if (kind == build_calendars_step_kind)
+        return {"Build the holiday calendars",
+                "Builds the business days of every calendar a currency or a currency pair "
+                "convention names, so a value date never falls on a holiday.",
+                orchestrating_step_timeout};
     if (kind == attach_photos_step_kind)
         return {"Attach the photographs",
                 "Gives the accounts their photographs, and the tenant's party its logo.",
@@ -246,6 +253,7 @@ inline constexpr std::string_view provision_executed_step_kinds[] = {
     system_provision_step_kind,
     publish_system_curves_step_kind,
     publish_bundle_step_kind,
+    build_calendars_step_kind,
     import_lei_hierarchy_step_kind,
     provision_party_step_kind,
     load_staff_step_kind,
@@ -491,6 +499,10 @@ make_step(const provision_tenant_workflow_request& run,
     if (kind == publish_system_curves_step_kind)
         return {system_provision_step_kind};
     if (kind == import_lei_hierarchy_step_kind)
+        return {publish_bundle_step_kind};
+    // The calendars, their exceptions and the links that say which are in use
+    // all arrive with the base bundle.
+    if (kind == build_calendars_step_kind)
         return {publish_bundle_step_kind};
     if (kind == provision_party_step_kind)
         return {import_lei_hierarchy_step_kind};

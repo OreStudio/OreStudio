@@ -49,6 +49,7 @@ enum class provision_step_action {
     load_staff,
     set_staff_passwords,
     attach_photos,
+    build_calendars,
     subscribe_market_data,
     generate_trades,
     schedule_reports,
@@ -91,6 +92,8 @@ enum class provision_step_action {
         return provision_step_action::set_staff_passwords;
     if (kind == "attach_photos")
         return provision_step_action::attach_photos;
+    if (kind == "build_calendars")
+        return provision_step_action::build_calendars;
     if (kind == "subscribe_market_data")
         return provision_step_action::subscribe_market_data;
     if (kind == "generate_trades")

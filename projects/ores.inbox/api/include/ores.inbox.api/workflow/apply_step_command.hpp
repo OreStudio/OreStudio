@@ -21,7 +21,9 @@
 #define ORES_INBOX_API_WORKFLOW_APPLY_STEP_COMMAND_HPP
 
 #include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -55,5 +57,9 @@ static_assert(::ores::utility::codec::names_every_member<apply_step_command>(),
 inline constexpr std::string_view tell_apply_result_subject = "inbox.v1.steps.tell_apply_result";
 
 }
+
+template <>
+struct ores::utility::codec::wire_traits<ores::inbox::workflow::apply_step_command>
+    : ores::utility::codec::shaped_wire_traits<ores::inbox::workflow::apply_step_command> {};
 
 #endif

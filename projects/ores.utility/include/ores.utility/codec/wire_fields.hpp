@@ -50,7 +50,7 @@ struct field {
 /**
  * @brief Whether a member's value may be absent.
  *
- * The two formats disagree about such a member, and the wire is reflect-cpp's
+ * The two formats disagree about such a member, and the wire fixes the
  * bytes in both, so the disagreement is stated instead of discovered: JSON
  * omits a member whose optional is empty, while MessagePack carries it as nil.
  * The readers accept an absent member either way, because a peer that omits it

@@ -309,7 +309,7 @@ TEST_CASE("economic_digest_follows_the_declaration_and_not_the_names", "[domain]
 
 /*
  * The digest is stored with each trade, so a change to how a struct is walked
- * must not move it. These three values were measured with the reflect-cpp walk
+ * must not move it. These three values were measured with the earlier struct walk
  * at f8adc1abcc, before the generated canonical forms replaced it.
  */
 TEST_CASE("economic_digest_is_unchanged_by_the_generated_canonical_form", "[domain]") {

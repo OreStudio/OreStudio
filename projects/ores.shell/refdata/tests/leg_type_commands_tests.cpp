@@ -72,16 +72,16 @@ TEST_CASE("leg_type_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("leg_types ");
     for (const auto& verb : {
-             std::string{"leg_types list"},
-             std::string{"leg_types get"},
-             std::string{"leg_types get-many"},
-             std::string{"leg_types add"},
-             std::string{"leg_types set"},
-             std::string{"leg_types put-many"},
-             std::string{"leg_types delete"},
-             std::string{"leg_types delete-many"},
-             std::string{"leg_types versions"},
-             std::string{"leg_types version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

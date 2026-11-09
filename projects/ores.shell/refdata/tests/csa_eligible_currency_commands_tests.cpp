@@ -72,17 +72,17 @@ TEST_CASE("csa_eligible_currency_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("csa_eligible_currencies ");
     for (const auto& verb : {
-             std::string{"csa_eligible_currencies list"},
-             std::string{"csa_eligible_currencies get"},
-             std::string{"csa_eligible_currencies get-many"},
-             std::string{"csa_eligible_currencies add"},
-             std::string{"csa_eligible_currencies set"},
-             std::string{"csa_eligible_currencies put-many"},
-             std::string{"csa_eligible_currencies delete"},
-             std::string{"csa_eligible_currencies delete-many"},
-             std::string{"csa_eligible_currencies by-csa-id"},
-             std::string{"csa_eligible_currencies versions"},
-             std::string{"csa_eligible_currencies version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-csa-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -46,7 +46,6 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/running_under_valgrind.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>

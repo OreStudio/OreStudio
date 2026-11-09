@@ -22,7 +22,6 @@
 #include "ores.iam.core/repository/tenant_status_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
@@ -139,15 +140,15 @@ auto rate_instrument_projection_to_ore_date(const std::optional<std::chrono::yea
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto rate_instrument_projection_text_of(const record_reader& r,
-                                        std::string_view name) -> std::string {
+auto rate_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto rate_instrument_projection_spelling_of(const record_reader& r,
-                                            std::string_view name) -> std::string {
+auto rate_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -159,8 +160,8 @@ auto rate_instrument_projection_decimal_text(const record_reader& r) -> decimal 
 }
 
 /// A schema decimal element as the domain's exact decimal.
-auto rate_instrument_projection_decimal_of(const record_reader& r,
-                                           std::string_view name) -> decimal {
+auto rate_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -327,7 +328,7 @@ auto read_fra(const record_reader& trade) -> swap_instrument_data {
         rate_instrument_projection_text_of(*data, "EndDate"));
     fact.currency = rate_instrument_projection_spelling_of(*data, "Currency");
     fact.notional = rate_instrument_projection_decimal_of(*data, "Notional");
-    fact.rate_index = rate_instrument_projection_text_of(*data, "Index");
+    fact.rate_index = address_of(rate_instrument_projection_text_of(*data, "Index"));
     fact.strike = rate_instrument_projection_decimal_of(*data, "Strike");
     fact.long_short = rate_instrument_projection_spelling_of(*data, "LongShort");
 
@@ -674,9 +675,9 @@ void write_fra(record_writer& trade, const swap_instrument_data& v) {
     // reading the first leg would write an empty index for a trade whose legs
     // are ordered fixed first.
     if (!fact.rate_index.empty())
-        data.set_text("Index", fact.rate_index);
+        data.set_text("Index", ore_name_of(fact.rate_index));
     else if (!v.legs.empty())
-        data.set_text("Index", v.legs.front().floating_index_code);
+        data.set_text("Index", ore_name_of(v.legs.front().floating_index_code));
     for (const auto& rate : v.leg_rates)
         if (rate.rate_role == "fixed") {
             set_decimal_from_double(data, "Strike", rate.value.to_double());

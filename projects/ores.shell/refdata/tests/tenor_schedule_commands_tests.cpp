@@ -72,18 +72,18 @@ TEST_CASE("tenor_schedule_commands_registers_every_derived_verb", "[commands]") 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("tenor_schedules ");
     for (const auto& verb : {
-             std::string{"tenor_schedules list"},
-             std::string{"tenor_schedules get"},
-             std::string{"tenor_schedules get-many"},
-             std::string{"tenor_schedules add"},
-             std::string{"tenor_schedules set"},
-             std::string{"tenor_schedules put-many"},
-             std::string{"tenor_schedules delete"},
-             std::string{"tenor_schedules delete-many"},
-             std::string{"tenor_schedules by-calendar-code"},
-             std::string{"tenor_schedules by-diary-entry-type"},
-             std::string{"tenor_schedules versions"},
-             std::string{"tenor_schedules version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-calendar-code"},
+             std::string{"by-diary-entry-type"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

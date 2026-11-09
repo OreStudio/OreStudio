@@ -37,10 +37,10 @@ namespace ores::shell::app::commands {
  *
  * Thin wrapper over ores::nats::service::request_and_decode() -- the
  * primitive shared with ores::qt::ClientManager -- adapting its
- * rfl::Result return into the std::optional-plus-fail(out)-message
+ * nats::decoded return into the std::optional-plus-fail(out)-message
  * convention every shell command already expects. Replaces the
  * copy-pasted per-command-file @c do_request template that used to
- * hard-code @c rfl::json::write/read directly in ~13 files.
+ * hard-code the codec calls directly in ~13 files.
  */
 template <typename Response, typename Request>
 std::optional<Response> do_request(std::ostream& out,

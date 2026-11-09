@@ -23,7 +23,6 @@
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>

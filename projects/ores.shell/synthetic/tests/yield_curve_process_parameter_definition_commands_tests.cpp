@@ -73,16 +73,16 @@ TEST_CASE("yield_curve_process_parameter_definition_commands_registers_every_der
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("yield_curve_process_parameter_definitions ");
     for (const auto& verb : {
-             std::string{"yield_curve_process_parameter_definitions list"},
-             std::string{"yield_curve_process_parameter_definitions get"},
-             std::string{"yield_curve_process_parameter_definitions get-many"},
-             std::string{"yield_curve_process_parameter_definitions add"},
-             std::string{"yield_curve_process_parameter_definitions set"},
-             std::string{"yield_curve_process_parameter_definitions put-many"},
-             std::string{"yield_curve_process_parameter_definitions delete"},
-             std::string{"yield_curve_process_parameter_definitions delete-many"},
-             std::string{"yield_curve_process_parameter_definitions versions"},
-             std::string{"yield_curve_process_parameter_definitions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

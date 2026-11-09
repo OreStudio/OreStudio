@@ -107,7 +107,7 @@ account_operations_service::verify_service_credentials(const std::string& userna
         return std::nullopt;
     }
 
-    if (credential->service_password_hash.get().empty()) {
+    if (credential->service_password_hash.empty()) {
         BOOST_LOG_SEV(lg(), warn)
             << "Service account's credential holds no password hash, so it cannot authenticate: "
             << username;
@@ -123,7 +123,7 @@ account_operations_service::verify_service_credentials(const std::string& userna
     for (unsigned int i = 0; i < digest_len; ++i)
         computed_hash += std::format("{:02x}", digest[i]);
 
-    if (computed_hash != credential->service_password_hash.get()) {
+    if (computed_hash != credential->service_password_hash) {
         BOOST_LOG_SEV(lg(), debug) << "Password mismatch for service account: " << username;
         return std::nullopt;
     }
@@ -374,14 +374,13 @@ authenticated_login account_operations_service::login(const std::string& usernam
     }
 
     const auto credential = read_credential(account.id);
-    if (!credential || credential->password_hash.get().empty()) {
+    if (!credential || credential->password_hash.empty()) {
         BOOST_LOG_SEV(lg(), warn) << "Login refused: account holds no password credential: "
                                   << username;
         throw login_error(error_code::invalid_credentials, "Invalid username or password");
     }
 
-    bool password_valid =
-        crypto::password_hasher::verify(password, credential->password_hash.get());
+    bool password_valid = crypto::password_hasher::verify(password, credential->password_hash);
 
     login_info.last_attempt_ip = ip_address;
 
@@ -827,14 +826,14 @@ std::string account_operations_service::change_password(const boost::uuids::uuid
     }
 
     const auto credential = read_credential(account_id);
-    if (!credential || credential->password_hash.get().empty()) {
+    if (!credential || credential->password_hash.empty()) {
         BOOST_LOG_SEV(lg(), warn)
             << "Password change refused: account holds no password credential: "
             << boost::uuids::to_string(account_id);
         return "Current password is incorrect";
     }
 
-    if (!crypto::password_hasher::verify(current_password, credential->password_hash.get())) {
+    if (!crypto::password_hasher::verify(current_password, credential->password_hash)) {
         BOOST_LOG_SEV(lg(), warn)
             << "Password change refused: current password does not match for account: "
             << boost::uuids::to_string(account_id);
@@ -866,8 +865,8 @@ std::string account_operations_service::reset_password(const boost::uuids::uuid&
     const auto existing = read_credential(account_id);
 
     // Check that new password is different from current password
-    if (existing && !existing->password_hash.get().empty() &&
-        crypto::password_hasher::verify(new_password, existing->password_hash.get())) {
+    if (existing && !existing->password_hash.empty() &&
+        crypto::password_hasher::verify(new_password, existing->password_hash)) {
         BOOST_LOG_SEV(lg(), debug) << "New password matches current password";
         return std::string(password_unchanged_message);
     }

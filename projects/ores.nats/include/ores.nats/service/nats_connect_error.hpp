@@ -60,6 +60,10 @@ public:
         : std::runtime_error(msg)
         , kind_(kind) {}
 
+    // Defined in the library, so the type has one identity across shared
+    // libraries: a catch in another library misses it on macOS otherwise.
+    ~nats_connect_error() override;
+
     [[nodiscard]] nats_error_kind kind() const noexcept {
         return kind_;
     }

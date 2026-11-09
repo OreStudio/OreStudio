@@ -24,7 +24,7 @@
 
 -- Returns a timestamptz formatted as an ISO 8601 UTC string (e.g.
 -- '2026-05-27T12:34:56Z'). Use this in pg_notify payloads so JSON
--- deserializers (e.g. rfl::json → std::chrono::system_clock::time_point)
+-- deserializers (e.g. the JSON codec → std::chrono::system_clock::time_point)
 -- can parse the value.  All notify triggers must use this function.
 -- Whether the current transaction may replace the version of a row that
 -- already exists.

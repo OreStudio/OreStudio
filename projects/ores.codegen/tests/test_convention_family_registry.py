@@ -220,7 +220,6 @@ def test_the_dispatch_has_one_row_per_family_and_names_no_family_type(tmp_path):
     )
     assert rows == [(key, key, key) for key in ("convention", "ibor_index", "ois")]
     assert "static_assert(std::size(units) == domain::convention_family_count" in text
-    assert "rfl::" not in text
     assert "ores::refdata::domain::" not in text.replace(
         "domain::convention_families", "").replace("domain::convention_family_count", "")
     assert "std::logic_error" in text

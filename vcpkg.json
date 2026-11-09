@@ -7,10 +7,6 @@
         "openssl",
         "yyjson",
         "msgpack-c",
-        {
-            "name": "reflectcpp",
-            "features": [ "xml", "msgpack" ]
-        },
         "libpq",
         "pugixml",
         "magic-enum",

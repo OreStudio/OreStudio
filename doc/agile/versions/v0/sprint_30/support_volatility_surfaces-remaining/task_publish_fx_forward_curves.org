@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 40ABEA42-CA3D-4E46-A24B-4106A16F45C5
+:END:
+#+title: Task: Publish FX forward curves with their provenance
+#+description: A forward curve becomes a party's published record in the database: its points, its inputs and how it was approved, through the same maker-checker as an IR curve.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An FX forward curve is a party's published record. A publish computes one pair at one as-of for one party and writes the set to the database: every tenor's dates, forward rate, discount factors, forward points and swap points. The set records its provenance: the raw spot observation and its value, the party's two funding curve publishes, the pair convention and calendars read, and the calculation method. It passes through its own approval kind, as an IR curve does, and a published set never changes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- A maker raises the publish of a pair at an as-of for their party, a different person decides it, and only then does the set become published.
+- With the tenant's auto-approval on, the set publishes at once and reads as auto-approved.
+- Reading a published set returns the same numbers that were published, after the spot and both curves have moved on.
+- Each set names the spot observation, both funding curve publishes, the convention version, the calendars and the method, and each can be followed to its own record.
+- A publish is refused, naming the input, when the spot or either of the party's curves is missing, and writes nothing.
+- One party never reads another party's set.
+- The withdrawal of a funding curve shows on every forward set built from it.
+- A cross such as EUR/GBP publishes from its two funding curves, and its spot is derived from its two USD legs.
+- A cross set names both spot observations in its provenance.
+- A cross forward equals the forward derived from its two USD legs on the same dates, within a tolerance the tests state.
+- The spot date and value dates of a cross are checked against QuantLib, and the task cites the convention used for a USD holiday.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

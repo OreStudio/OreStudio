@@ -22,35 +22,19 @@
 #include "ores.utility/codec/msgpack_codec.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 
 namespace wire_json = ores::utility::codec::json;
 namespace wire_msgpack = ores::utility::codec::msgpack;
 
-namespace {
+namespace {}
 
-template <typename T>
-std::string rfl_msgpack_cron(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
-}
-
-TEST_CASE("a cron expression is the text reflect-cpp writes", "[codec]") {
+TEST_CASE("a cron expression is the text the wire carries", "[codec]") {
     const auto expression = *ores::scheduler::domain::cron_expression::from_string("0 0 * * *");
-
-    CHECK(wire_json::write(expression) == rfl::json::write(expression));
-    CHECK(wire_msgpack::write(expression) == rfl_msgpack_cron(expression));
     CHECK(wire_json::read<ores::scheduler::domain::cron_expression>(wire_json::write(expression)) ==
           expression);
     CHECK(wire_msgpack::read<ores::scheduler::domain::cron_expression>(
               wire_msgpack::write(expression)) == expression);
-    CHECK(wire_json::read<ores::scheduler::domain::cron_expression>(rfl::json::write(expression)) ==
-          expression);
-    CHECK(wire_msgpack::read<ores::scheduler::domain::cron_expression>(
-              rfl_msgpack_cron(expression)) == expression);
+    CHECK(wire_json::write(expression) == "\"0 0 * * *\"");
 }
 
 TEST_CASE("an expression the type refuses is refused on the wire too", "[codec]") {

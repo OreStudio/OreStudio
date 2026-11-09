@@ -118,6 +118,7 @@ import { ConventionDocumentsPage, ConventionKindsPage } from './refdata/conventi
 import { ConventionRecordPage } from './refdata/ConventionRecordPage.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
+import { FxForwardLadderPage } from './marketdata/FxForwardLadderPage.js';
 import { PublishedCurvePage } from './marketdata/PublishedCurvePage.js';
 import { PublishedCurvesPage } from './marketdata/PublishedCurvesPage.js';
 import { CurveBlueprintsPage, CurveBlueprintPage } from './marketdata/curveBlueprints.js';
@@ -830,6 +831,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <PublishedCurvesPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.fxForwards}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <FxForwardLadderPage />
                     ),
                     'workspace',
                 )}

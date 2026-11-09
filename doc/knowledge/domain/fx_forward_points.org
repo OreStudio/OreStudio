@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1
+:END:
+#+title: Forward points are the difference between the outright and spot
+#+description: The definition of forward points, premium and discount, and what the quoted points contain beyond parity.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+Forward points are the difference between the forward rate and spot, stated in pips. A forward above spot is at a /premium/ and has positive points. A forward below spot is at a /discount/ and has negative points.
+
+* Detail
+
+With $S$ and $F$ in quote currency per unit of base currency:
+
+$$F = S + \text{points} \times \text{pip factor}$$
+
+By [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]], $F > S$ when the quote currency has the higher interest rate, and $F < S$ when it has the lower one.
+
+Parity gives a theoretical value. Dealer quotes also hold the cross-currency basis, funding and liquidity conditions, the bid-ask spread and credit adjustments.
+
+Parity with positive inputs always gives a positive forward, even when a rate is negative and a discount factor exceeds one.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] — completes: the unit of the points.
+- [[id:73A422C1-C74E-52CF-9A0C-78EE1AE23430][Forward points follow from two money market rates]] — completes: how points follow from rates.
+- [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points run between their own two value dates]] — completes: the short-date case.
+
+* Sources
+
+- [[https://en.wikipedia.org/wiki/Forward_exchange_rate][Forward exchange rate, Wikipedia]]
+- [[https://ryanoconnellfinance.com/forward-exchange-rates/][Forward exchange rates: forward points, outright rates and premiums, Ryan O'Connell]]
+- [[https://analystprep.com/cfa-level-1-exam/?p=1393][Forward discount or premium, AnalystPrep]]
+- [[https://www.xe.com/blog/business/what-are-forward-points-in-fx][What are forward points in FX, Xe]]

@@ -84,12 +84,9 @@
 #include "ores.marketdata.api/messaging/provider_terms_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/publish_operation_protocol.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -97,90 +94,70 @@ namespace {
 
 const std::string codec_tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
 template <typename... T>
 void every_default_has_the_same_bytes() {
-    (same_bytes_as_reflect_cpp(T{}), ...);
+    (survives_the_wire(T{}), ...);
 }
 
 }
 
-TEST_CASE("every marketdata domain type has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every marketdata domain type has its wire form", codec_tags) {
     ores::utility::generation::generation_context ctx(20261102);
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_adapter(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_composite(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_composite_input(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_curve_publish(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_delivery_count(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_demand_interval(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_feed(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_feed_scope(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_adapter(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_composite(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_composite_input(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_curve_publish(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_delivery_count(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_demand_interval(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_feed(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_feed_scope(ctx));
+    survives_the_wire(
         ores::marketdata::generators::generate_synthetic_market_calibration_value(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_market_data_mapping(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_market_data_mapping(ctx));
+    survives_the_wire(
         ores::marketdata::generators::generate_synthetic_market_data_vendor_instrument(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_market_fixing(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_market_input_value(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_market_observation(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_market_scenario_value(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_market_series(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_market_fixing(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_market_input_value(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_market_observation(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_market_scenario_value(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_market_series(ctx));
+    survives_the_wire(
         ores::marketdata::generators::generate_synthetic_market_series_asset_class(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_market_series_identity(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_observation_lineage(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_provider(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_rate_card_component(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_route(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_series_axis(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_series_axis_value(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_market_series_identity(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_observation_lineage(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_provider(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_rate_card_component(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_route(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_series_axis(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_series_axis_value(ctx));
+    survives_the_wire(
         ores::marketdata::generators::generate_synthetic_series_classification_rule(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_session(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_subscription(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::marketdata::generators::generate_synthetic_subscription_interval(ctx));
-    same_bytes_as_reflect_cpp(ores::marketdata::generators::generate_synthetic_supplier(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_session(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_subscription(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_subscription_interval(ctx));
+    survives_the_wire(ores::marketdata::generators::generate_synthetic_supplier(ctx));
 }
 
-TEST_CASE("every marketdata operation message's default has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every marketdata operation message's default has its wire form", codec_tags) {
     every_default_has_the_same_bytes<
         ores::marketdata::messaging::vendor_id,
         ores::marketdata::messaging::rejected_id,

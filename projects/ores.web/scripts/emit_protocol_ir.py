@@ -21,7 +21,7 @@
 """Emit a language-neutral protocol IR from ORE Studio codegen entity org files.
 
 The org files under `projects/<component>/**/modeling/*.org` are the single
-source of truth codegen already renders into RFL structs, SQL schema, and Qt
+source of truth codegen already renders into C++ structs, SQL schema, and Qt
 controllers. This script reads the same `* Columns` model and writes the
 protocol-relevant subset as JSON, so any target language can consume the
 entity's message shape without re-parsing C++.

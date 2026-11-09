@@ -10,7 +10,7 @@ This document analyzes the C++ files created manually for `dataset_bundle` and `
 |---|-----------|----------|---------|
 | 1 | Domain class | `include/.../domain/{entity}.hpp` | Core data structure |
 | 2 | JSON I/O header | `include/.../domain/{entity}_json_io.hpp` | ostream operator declaration |
-| 3 | JSON I/O impl | `src/domain/{entity}_json_io.cpp` | rfl::json::write implementation |
+| 3 | JSON I/O impl | `src/domain/{entity}_json_io.cpp` | JSON codec implementation |
 | 4 | Table header | `include/.../domain/{entity}_table.hpp` | convert_to_table declaration |
 | 5 | Table impl | `src/domain/{entity}_table.cpp` | fort table implementation |
 | 6 | Table I/O header | `include/.../domain/{entity}_table_io.hpp` | vector ostream operator |

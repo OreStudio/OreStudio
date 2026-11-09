@@ -25,7 +25,7 @@
 =ores.reporting.api= is a header-only library defining the shared contract for
 the reporting domain. It provides domain types for report types, definitions,
 instances, concurrency policies, and run status values, together with JSON
-and table I/O via =rfl=, and the NATS protocol schemas consumed by
+and table I/O via generated codecs, and the NATS protocol schemas consumed by
 =ores.reporting.core= and UI clients.
 
 * Inputs
@@ -45,7 +45,6 @@ and table I/O via =rfl=, and the NATS protocol schemas consumed by
 
 * Dependencies
 
-- =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table rendering.
 
 * Build dependencies
@@ -78,7 +77,7 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         libfort::fort)
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

@@ -1,7 +1,7 @@
 """A junction side that enriches a code puts that code on the wire.
 
 A side with =:enrich_code:= carries the joined row's code in a member the table
-has no column for, and the repository fills it. reflect-cpp wrote every member,
+has no column for, and the repository fills it. The wire carries every member,
 so the codec must name that one too, after the audit members where the struct
 declares it; a side without the flag adds nothing.
 

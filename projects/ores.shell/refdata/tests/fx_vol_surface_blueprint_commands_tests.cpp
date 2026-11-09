@@ -72,16 +72,16 @@ TEST_CASE("fx_vol_surface_blueprint_commands_registers_every_derived_verb", "[co
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("fx_vol_surface_blueprints ");
     for (const auto& verb : {
-             std::string{"fx_vol_surface_blueprints list"},
-             std::string{"fx_vol_surface_blueprints get"},
-             std::string{"fx_vol_surface_blueprints get-many"},
-             std::string{"fx_vol_surface_blueprints add"},
-             std::string{"fx_vol_surface_blueprints set"},
-             std::string{"fx_vol_surface_blueprints put-many"},
-             std::string{"fx_vol_surface_blueprints delete"},
-             std::string{"fx_vol_surface_blueprints delete-many"},
-             std::string{"fx_vol_surface_blueprints versions"},
-             std::string{"fx_vol_surface_blueprints version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

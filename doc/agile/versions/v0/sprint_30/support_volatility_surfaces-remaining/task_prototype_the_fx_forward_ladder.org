@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 0532452A-1890-455C-842D-EF2EC8BF9A41
+:END:
+#+title: Task: Prototype the FX forward ladder
+#+description: A plain HTML prototype of the forward ladder under doc/prototypes/market_data, signed off by the owner before any code.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/write-the-fx-forward-ladder-journey
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The forward ladder exists as a prototype a reviewer can open at an address per state. This is step 2 of [[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][Take a topic through the screen pipeline]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- The prototype is plain HTML, CSS and JavaScript under =doc/prototypes/market_data/=, with the web app's tokens.
+- It shows one pair at one as-of as a ladder of forward rate, discount factors, forward points and swap points, and a chart of the selected measure.
+- A control starts the ladder from today, tomorrow or spot, and marks the rows it moves.
+- It shows spot and the pip factor, and labels the numbers as implied by the IR curves, with no cross-currency basis.
+- Each state has an address, the design note says what is fake, and the group page lists it.
+- The owner signs the prototype off before any code.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Prototype: =doc/prototypes/market_data/fx-forward-ladder/=. Written with the journey, by the owner's choice, so both are signed off together.
+
+Follows [[id:DC7504E5-A53D-4938-A774-B58CE2A37B57][Make FX forwards available from the IR curves]]. The analysis and external evidence are in its Plan.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The prototype is at =doc/prototypes/market_data/fx-forward-ladder/=, with six states and an address per view. All twelve renders had no page error and no horizontal page overflow. The owner signed off the journey and the prototype together on 2026-11-09.

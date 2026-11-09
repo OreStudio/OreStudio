@@ -21,12 +21,16 @@
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <map>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -896,7 +900,8 @@ TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap",
     CHECK(instrument->legs[1].payer == std::optional<bool>(false));
     CHECK(instrument->legs[1].leg_type_code == "Floating");
     CHECK(instrument->legs[1].payment_frequency_code == "Semiannual");
-    CHECK(instrument->legs[1].floating_index_code == "USD-LIBOR-3M");
+    CHECK(instrument->legs[1].floating_index_code ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
 
     REQUIRE(instrument->leg_amounts.size() == 2);
     CHECK(instrument->leg_amounts[0].leg_number == 1);
@@ -921,7 +926,8 @@ TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap",
     REQUIRE(round->legs.size() == 2);
     CHECK(round->legs[0].leg_type_code == "Fixed");
     CHECK(round->legs[1].leg_type_code == "Floating");
-    CHECK(round->legs[1].floating_index_code == "USD-LIBOR-3M");
+    CHECK(round->legs[1].floating_index_code ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
     REQUIRE(round->leg_amounts.size() == 2);
     CHECK(round->leg_amounts[0].amount.to_string() == "1000000");
     CHECK(round->leg_amounts[1].amount.to_string() == "1000000");
@@ -1080,7 +1086,7 @@ TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products",
     const auto* fra_fact = std::get_if<ores::trading::domain::fra_instrument>(&fra->facts);
     REQUIRE(fra_fact != nullptr);
     CHECK(fra_fact->currency == "USD");
-    CHECK(fra_fact->rate_index == "USD-LIBOR-6M");
+    CHECK(fra_fact->rate_index == "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M");
     CHECK(fra_fact->long_short == "Long");
     CHECK(fra_fact->notional.to_string() == "1000000");
     CHECK(fra_fact->strike.to_string() == "0.03");
@@ -1166,7 +1172,8 @@ TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products",
         std::get_if<ores::trading::domain::fra_instrument>(&fra_again->facts);
     REQUIRE(fra_fact_again != nullptr);
     CHECK(fra_fact_again->currency == "USD");
-    CHECK(fra_fact_again->rate_index == "USD-LIBOR-6M");
+    CHECK(fra_fact_again->rate_index ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M");
     CHECK(fra_fact_again->notional.to_string() == "1000000");
     CHECK(fra_fact_again->strike.to_string() == "0.03");
 
@@ -2124,7 +2131,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_gr
     CHECK(instrument->legs[1].leg_group == std::optional<std::string>("contingent"));
     CHECK(instrument->legs[1].leg_type_code == "Floating");
     CHECK(instrument->legs[1].payment_frequency_code == "Quarterly");
-    CHECK(instrument->legs[1].floating_index_code == "USD-LIBOR-3M");
+    CHECK(instrument->legs[1].floating_index_code ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
 
     REQUIRE(instrument->leg_amounts.size() == 2);
     CHECK(instrument->leg_amounts[0].leg_number == 1);
@@ -2152,7 +2160,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_gr
     REQUIRE(round->legs.size() == 2);
     CHECK(round->legs[0].leg_group == std::optional<std::string>("independent"));
     CHECK(round->legs[1].leg_group == std::optional<std::string>("contingent"));
-    CHECK(round->legs[1].floating_index_code == "USD-LIBOR-3M");
+    CHECK(round->legs[1].floating_index_code ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
     REQUIRE(round->leg_rates.size() == 2);
     CHECK(round->leg_rates[1].value.to_string() == "0.0015");
 }
@@ -3529,4 +3538,95 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
     REQUIRE(performance_row != nullptr);
     CHECK(performance_row->script_name == "PerformanceOption_01");
     CHECK(performance_row->parameters_json.find("StrikePrices") != std::string::npos);
+}
+
+TEST_CASE("a_cms_spread_leg_holds_both_indices_as_addresses_and_writes_them_back",
+          "[ore][xml][portfolio][projection]") {
+    const auto text =
+        ores::platform::filesystem::file::read_content(ores::testing::project_root::resolve(
+            "external/ore/examples/Products/Example_Trades/IR_Swap_CMS_Spread_Option.xml"));
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    REQUIRE(!items.empty());
+
+    const auto legs_of = [](const auto& item) {
+        const auto* swap =
+            std::get_if<ores::trading::domain::swap_instrument_data>(&item.instrument);
+        REQUIRE(swap != nullptr);
+        return swap->legs;
+    };
+    const auto spread_leg = [](const auto& legs) {
+        const auto found = std::ranges::find_if(
+            legs, [](const auto& leg) { return leg.floating_index_code_2.has_value(); });
+        REQUIRE(found != legs.end());
+        return *found;
+    };
+
+    const auto leg = spread_leg(legs_of(items[0]));
+    CHECK(leg.floating_index_code.starts_with("oresmd://"));
+    CHECK(leg.floating_index_code_2->starts_with("oresmd://"));
+
+    const auto again = spread_leg(legs_of(rebuild(items[0])));
+    CHECK(again.floating_index_code == leg.floating_index_code);
+    CHECK(again.floating_index_code_2 == leg.floating_index_code_2);
+}
+
+TEST_CASE("every_converted_index_column_of_ores_product_portfolio_holds_an_address",
+          "[ore][xml][portfolio][projection]") {
+    const auto text = ores::platform::filesystem::file::read_content(
+        ores::testing::project_root::resolve("external/ore/examples/Products/Input/portfolio.xml"));
+    ores::trading::domain::instrument_batch batch;
+    for (const auto& item : portfolio_projection::map(portfolio_projection::read(text)))
+        ores::trading::domain::append_instrument(batch, item.instrument);
+
+    std::map<std::string, std::pair<int, std::vector<std::string>>> columns;
+    const auto hold = [&](const std::string& column, const auto& value) {
+        std::string stored;
+        if constexpr (requires { value.has_value(); }) {
+            if (!value)
+                return;
+            stored = *value;
+        } else {
+            stored = value;
+        }
+        if (stored.empty())
+            return;
+        auto& [seen, names] = columns[column];
+        ++seen;
+        if (!stored.starts_with("oresmd://"))
+            names.push_back(stored);
+    };
+    for (const auto& row : batch.swap_legs) {
+        hold("swap_leg.fx_index", row.fx_index);
+        hold("swap_leg.fx_reset_fx_index", row.fx_reset_fx_index);
+    }
+    for (const auto& row : batch.swap_leg_indexings)
+        hold("swap_leg_indexing.index_name", row.index_name);
+    for (const auto& row : batch.fx_asian_forward_instruments)
+        hold("fx_asian_forward.fx_index", row.fx_index);
+    for (const auto& row : batch.fx_forward_instruments)
+        hold("fx_forward.settlement_fx_index", row.settlement_fx_index);
+    for (const auto& row : batch.instrument_options)
+        hold("instrument_option.settlement_fx_index", row.settlement_fx_index);
+    for (const auto& row : batch.bond_trs)
+        hold("bond_trs.funding_index", row.funding_index);
+    for (const auto& row : batch.bond_repos)
+        hold("bond_repo.repo_index", row.repo_index);
+
+    // The sample writes this FX index without its FX- prefix, so an address could not spell it.
+    const std::vector<std::string> kept_as_written = {"TR20H-EUR-USD"};
+    for (const auto& [column, result] : columns) {
+        INFO(column);
+        if (column == "fx_asian_forward.fx_index")
+            CHECK(result.second == kept_as_written);
+        else
+            CHECK(result.second.empty());
+    }
+    for (const auto* column : {"swap_leg.fx_index",
+                               "swap_leg.fx_reset_fx_index",
+                               "swap_leg_indexing.index_name",
+                               "fx_asian_forward.fx_index",
+                               "fx_forward.settlement_fx_index"}) {
+        INFO(column);
+        CHECK(columns.contains(column));
+    }
 }

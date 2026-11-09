@@ -80,7 +80,7 @@ import type { {{pascal}} } from '{{module}}';
 /**
  * The {{entity_singular_words}} wire shape.
  *
- * Field names are the C++ member names, because they are the keys rfl::json
+ * Field names are the C++ member names, because they are the keys the codec
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  *
  * See the sibling protocol module for the messages that carry this type.
@@ -148,7 +148,7 @@ import type { {{pascal}} } from '{{module}}';
 /**
  * The {{entity_pascal}} wire shape.
  *
- * Field names are the C++ member names, because they are the keys rfl::json
+ * Field names are the C++ member names, because they are the keys the codec
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  */
 export interface {{entity_pascal}} {
@@ -161,7 +161,7 @@ export interface {{entity_pascal}} {
 /**
  * The {{name_singular_words}} wire shape.
  *
- * Field names are the C++ member names, because they are the keys rfl::json
+ * Field names are the C++ member names, because they are the keys the codec
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  *
  * See the sibling protocol module for the messages that carry this type.

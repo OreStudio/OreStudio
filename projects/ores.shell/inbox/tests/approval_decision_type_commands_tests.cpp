@@ -72,16 +72,16 @@ TEST_CASE("approval_decision_type_commands_registers_every_derived_verb", "[comm
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("approval_decision_types ");
     for (const auto& verb : {
-             std::string{"approval_decision_types list"},
-             std::string{"approval_decision_types get"},
-             std::string{"approval_decision_types get-many"},
-             std::string{"approval_decision_types add"},
-             std::string{"approval_decision_types set"},
-             std::string{"approval_decision_types put-many"},
-             std::string{"approval_decision_types delete"},
-             std::string{"approval_decision_types delete-many"},
-             std::string{"approval_decision_types versions"},
-             std::string{"approval_decision_types version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,16 +72,16 @@ TEST_CASE("variance_calibration_input_commands_registers_every_derived_verb", "[
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("variance_calibration_inputs ");
     for (const auto& verb : {
-             std::string{"variance_calibration_inputs list"},
-             std::string{"variance_calibration_inputs get"},
-             std::string{"variance_calibration_inputs get-many"},
-             std::string{"variance_calibration_inputs add"},
-             std::string{"variance_calibration_inputs set"},
-             std::string{"variance_calibration_inputs put-many"},
-             std::string{"variance_calibration_inputs delete"},
-             std::string{"variance_calibration_inputs delete-many"},
-             std::string{"variance_calibration_inputs versions"},
-             std::string{"variance_calibration_inputs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,9 +72,9 @@ TEST_CASE("trade_summary_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("trade_summaries ");
     for (const auto& verb : {
-             std::string{"trade_summaries list"},
-             std::string{"trade_summaries get"},
-             std::string{"trade_summaries get-many"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

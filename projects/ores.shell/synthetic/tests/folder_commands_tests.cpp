@@ -72,16 +72,16 @@ TEST_CASE("folder_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("folders ");
     for (const auto& verb : {
-             std::string{"folders list"},
-             std::string{"folders get"},
-             std::string{"folders get-many"},
-             std::string{"folders add"},
-             std::string{"folders set"},
-             std::string{"folders put-many"},
-             std::string{"folders delete"},
-             std::string{"folders delete-many"},
-             std::string{"folders versions"},
-             std::string{"folders version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

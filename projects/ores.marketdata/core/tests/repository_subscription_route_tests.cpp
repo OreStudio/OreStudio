@@ -28,7 +28,6 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_helpers.hpp"
 #include <boost/uuid/uuid_io.hpp>

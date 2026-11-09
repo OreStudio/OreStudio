@@ -287,6 +287,44 @@ const publishedCurveSetSchema = z.object({
     points: z.array(publishedCurvePointSchema).default([]),
 });
 
+const fxForwardCurveSourceSchema = z.object({
+    currency: z.string(),
+    curve_name: z.string(),
+    output_series_id: z.string(),
+    publish_id: z.string(),
+    as_of: z.string(),
+    published_by: z.string(),
+});
+
+const fxForwardLadderRowSchema = z.object({
+    tenor: z.string(),
+    near_date: z.string(),
+    value_date: z.string(),
+    base_discount: z.number(),
+    quote_discount: z.number(),
+    forward_rate: z.number(),
+    forward_points: z.number(),
+    swap_points: z.number(),
+});
+
+const fxForwardLadderSchema = z.object({
+    pair_code: z.string(),
+    as_of: z.string(),
+    spot: z.number(),
+    spot_observed_at: z.string(),
+    spot_date: z.string(),
+    spot_days: z.number(),
+    pip_factor: z.number(),
+    decimal_places: z.number(),
+    base_curve: fxForwardCurveSourceSchema,
+    quote_curve: fxForwardCurveSourceSchema,
+    rows: z.array(fxForwardLadderRowSchema),
+});
+
+export type FxForwardCurveSource = z.infer<typeof fxForwardCurveSourceSchema>;
+export type FxForwardLadderRow = z.infer<typeof fxForwardLadderRowSchema>;
+export type FxForwardLadder = z.infer<typeof fxForwardLadderSchema>;
+
 export type PublishedCurvePoint = z.infer<typeof publishedCurvePointSchema>;
 export type PublishedCurveSet = z.infer<typeof publishedCurveSetSchema>;
 
@@ -3276,6 +3314,20 @@ export const api = {
                 }),
             );
         return { sets: answer.sets, total: answer.total };
+    },
+
+    /** One pair's forward ladder at one as-of. The server names what a refusal lacks. */
+    async fxForwardLadder(query: {
+        readonly pairCode: string;
+        readonly asOf: string;
+    }): Promise<FxForwardLadder> {
+        return fxForwardLadderSchema.parse(
+            await request('/api/curves/fx-forward-ladder', {
+                method: 'POST',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({ pair_code: query.pairCode, as_of: query.asOf }),
+            }),
+        );
     },
 
     /**

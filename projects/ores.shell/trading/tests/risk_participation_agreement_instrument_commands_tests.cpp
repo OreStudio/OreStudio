@@ -73,16 +73,16 @@ TEST_CASE("risk_participation_agreement_instrument_commands_registers_every_deri
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("risk_participation_agreement_instruments ");
     for (const auto& verb : {
-             std::string{"risk_participation_agreement_instruments list"},
-             std::string{"risk_participation_agreement_instruments get"},
-             std::string{"risk_participation_agreement_instruments get-many"},
-             std::string{"risk_participation_agreement_instruments add"},
-             std::string{"risk_participation_agreement_instruments set"},
-             std::string{"risk_participation_agreement_instruments put-many"},
-             std::string{"risk_participation_agreement_instruments delete"},
-             std::string{"risk_participation_agreement_instruments delete-many"},
-             std::string{"risk_participation_agreement_instruments versions"},
-             std::string{"risk_participation_agreement_instruments version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

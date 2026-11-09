@@ -72,16 +72,16 @@ TEST_CASE("delivery_count_commands_registers_every_derived_verb", "[commands]") 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("delivery_counts ");
     for (const auto& verb : {
-             std::string{"delivery_counts list"},
-             std::string{"delivery_counts get"},
-             std::string{"delivery_counts get-many"},
-             std::string{"delivery_counts add"},
-             std::string{"delivery_counts set"},
-             std::string{"delivery_counts put-many"},
-             std::string{"delivery_counts delete"},
-             std::string{"delivery_counts delete-many"},
-             std::string{"delivery_counts versions"},
-             std::string{"delivery_counts version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

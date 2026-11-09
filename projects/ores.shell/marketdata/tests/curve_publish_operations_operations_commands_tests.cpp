@@ -59,7 +59,7 @@ TEST_CASE("curve_publish_operations_operations_registers_every_declared_command"
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("curve_publish_operations ");
     for (const auto& verb : {
-             std::string{"curve_publish_operations publish-curve"},
+             std::string{"publish-curve"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -26,7 +26,6 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>

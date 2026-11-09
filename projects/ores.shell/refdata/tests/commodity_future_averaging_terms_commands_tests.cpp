@@ -72,17 +72,17 @@ TEST_CASE("commodity_future_averaging_terms_commands_registers_every_derived_ver
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("commodity_future_averaging_terms ");
     for (const auto& verb : {
-             std::string{"commodity_future_averaging_terms list"},
-             std::string{"commodity_future_averaging_terms get"},
-             std::string{"commodity_future_averaging_terms get-many"},
-             std::string{"commodity_future_averaging_terms add"},
-             std::string{"commodity_future_averaging_terms set"},
-             std::string{"commodity_future_averaging_terms put-many"},
-             std::string{"commodity_future_averaging_terms delete"},
-             std::string{"commodity_future_averaging_terms delete-many"},
-             std::string{"commodity_future_averaging_terms by-convention-id"},
-             std::string{"commodity_future_averaging_terms versions"},
-             std::string{"commodity_future_averaging_terms version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-convention-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

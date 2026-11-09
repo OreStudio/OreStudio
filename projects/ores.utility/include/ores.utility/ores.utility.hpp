@@ -37,15 +37,13 @@
  *   and the tree builder.
  * - @b program_options: the options every application shares and the
  *   ORES_<DOMAIN>_<OPTION> mapping.
- * - @b rfl: the reflect-cpp reflectors and the time point parser.
  * - @b serialization: the wire error enumeration.
- * - @b streaming: the std::vector stream operator and the uuid and tenant_id
- *   parsers.
+ * - @b streaming: the std::vector stream operator.
  * - @b string: the counterparty short-code generator.
  * - @b uuid: version 7 identifiers and the tenant identity type.
  * - @b version: the CMake-stamped product version.
  *
- * It depends on =ores.platform=, which also supplies reflect-cpp, and on
+ * It depends on =ores.platform=, and on
  * nothing else in the tree, so every other component may use it without
  * risking a dependency cycle.
  */

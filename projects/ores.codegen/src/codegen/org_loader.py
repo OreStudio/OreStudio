@@ -2058,7 +2058,7 @@ def validate_model(model: dict[str, Any]) -> list[str]:
     # interchangeably elsewhere in this file for SQL-side vs C++-side
     # defaults) -- a plain `{{{cpp_type}}} {{name}};` leaves a scoped enum
     # member uninitialized on default construction, which is undefined
-    # behaviour the moment anything reads it (e.g. rfl::enum_to_string() in
+    # behaviour the moment anything reads it (e.g. an enum's text form in
     # a repository mapper). A :name generator: block only feeds the
     # synthetic-data generator, not the struct itself, so it does not
     # substitute for a real default. This exact defect shipped once already
@@ -2614,20 +2614,20 @@ _TS_SCALARS = {
     # the same JavaScript number every other integer does; only the width
     # differs, and JSON carries no width.
     "std::size_t": "number",
-    # Both cross the wire as a string, per their rfl reflectors in
-    # ores.utility/rfl/reflectors.hpp.
+    # Both cross the wire as a string, per their text_form in
+    # ores.utility/codec/text_form.hpp.
     "boost::uuids::uuid": "string",
-    # tenant_id's reflector writes std::string too (reflectors.hpp), and a
+    # tenant_id's text_form writes a string too, and a
     # message-shaped model carries the type the domain struct declares.
     "utility::uuid::tenant_id": "string",
     "std::chrono::year_month_day": "string",
     # An address crosses the wire as its textual form, per the same
-    # reflectors, so a message that carries one states a string. It is listed
+    # text_form, so a message that carries one states a string. It is listed
     # here as well as in the domain-only set below because a write record can
     # carry one: a login records the address it came from.
     "boost::asio::ip::address": "string",
     # A time point crosses the wire as its ISO 8601 text, per the same
-    # reflectors. An event states when it occurred, so a protocol that could
+    # text_form. An event states when it occurred, so a protocol that could
     # not project one would have no event.
     "std::chrono::system_clock::time_point": "string",
 }
@@ -2722,7 +2722,7 @@ def _ts_type(cpp_type: str) -> str | None:
 
     A member whose type is ``ores::<component>::domain::<entity>`` takes
     the PascalCase interface ``ores.ts.domain`` emits for that entity, and
-    a timestamp takes ``string`` (the JSON shape rfl::json writes).
+    a timestamp takes ``string`` (the JSON shape the codec writes).
 
     Returns ``None`` for a type with no projection yet. Callers decide
     whether that absence is fatal; see ``load_org_operation_model`` and
@@ -2732,7 +2732,7 @@ def _ts_type(cpp_type: str) -> str | None:
     takes the interface name the template will emit for it.
     """
     if cpp_type.startswith("std::optional<") and cpp_type.endswith(">"):
-        # rfl::json writes an unset optional as null, so the field is
+        # The codec writes an unset optional as null, so the field is
         # nullable rather than absent.
         inner = _ts_type(cpp_type[len("std::optional<"):-1])
         return f"{inner} | null" if inner else None
@@ -2740,11 +2740,11 @@ def _ts_type(cpp_type: str) -> str | None:
         inner = _ts_type(cpp_type[len("std::vector<"):-1])
         return f"{inner}[]" if inner else None
     if cpp_type.startswith("std::map<") and cpp_type.endswith(">"):
-        # rfl::json writes a map as a JSON object, and a JSON object's keys
+        # The codec writes a map as a JSON object, and a JSON object's keys
         # are strings whatever the C++ key type is, so the Record is keyed
         # by string and only the value is projected. A key type with no
         # projection is therefore not a gap: the key crosses as the string
-        # its reflector writes.
+        # its text_form writes.
         arguments = _split_template_arguments(cpp_type[len("std::map<"):-1])
         if len(arguments) != 2:
             return None
@@ -2758,7 +2758,7 @@ def _ts_type(cpp_type: str) -> str | None:
     # tenant uuid -- is not a model entity: the tree emits no interface for it,
     # so a name invented from its C++ spelling would reference a type that does
     # not exist, and the entity that names it would import a module nothing
-    # writes. Each crosses the wire as the string its reflector writes, and the
+    # writes. Each crosses the wire as the string its text_form writes, and the
     # registry is the one declaration of which names these are.
     if cpp_type in _custom_type_names():
         return "string"
@@ -2767,7 +2767,7 @@ def _ts_type(cpp_type: str) -> str | None:
         return _to_pascal_case(domain.group(1))
     # An unqualified ``domain::<name>`` is an enum the model declares beside the
     # entity rather than a type another component owns, and it crosses the wire
-    # as the enumerator's own name: rfl reflects an enum class to a string, and
+    # as the enumerator's own name: the codec writes an enum class as a string, and
     # the store holds the same text (the SQL such a model writes compares the
     # column to 'system', not to a number). The TypeScript twin is therefore
     # ``string``, which is what every other enumerated column in the tree
@@ -2784,8 +2784,8 @@ def _ts_type(cpp_type: str) -> str | None:
 
 # Domain member types the protocol projection deliberately refuses -- they
 # are not operation-message types -- but the domain interface itself can
-# express. Each crosses the wire as a string, per its rfl reflector in
-# ores.utility/rfl/reflectors.hpp:
+# express. Each crosses the wire as a string, per its text_form in
+# ores.utility/codec/text_form.hpp:
 #
 #   boost::uuids::uuid          ReflType std::string
 #   std::chrono::year_month_day ReflType std::string (ISO 8601 date)
@@ -2807,7 +2807,7 @@ def _ts_domain_type(cpp_type: str) -> str | None:
     so it is the member type (``{{{cpp_type}}}`` verbatim in
     ``cpp_domain_type_class.hpp.mustache``) that decides the interface
     field: an explicit ``std::optional<T>`` becomes ``T | null`` because
-    rfl::json writes null for it, a uuid, a date and an IP address become
+    the codec writes null for it, a uuid, a date and an IP address become
     ``string``, and everything else is the protocol projection's answer.
     Returns ``None`` when no projection exists;
     ``_reject_silent_entity_domain_ts_gap`` refuses the model rather than
@@ -7497,7 +7497,7 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     # fixture -- says #+test_fixture: none, and the test main stays the bare
     # Catch2 session its CMake can actually compile.
     # A Windows DLL export table is capped at 65535 symbols, and a library that
-    # instantiates enough rfl and Boost templates exceeds it. One that no DLL
+    # instantiates enough Boost templates exceeds it. One that no DLL
     # boundary has to cross says so, and its template builds it STATIC on
     # Windows and drops the version properties that a static archive cannot
     # carry.

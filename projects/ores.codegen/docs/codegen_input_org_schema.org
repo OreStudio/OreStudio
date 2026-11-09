@@ -178,7 +178,7 @@ use it. See [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]].
 ** ores.codegen.field_group
 
 A C++ struct fragment composed into one or more parent entity structs.  Used to
-keep each =rfl::Literal= below the MSVC C1202 complexity threshold.
+keep each struct below the MSVC C1202 complexity threshold.
 
 *** Frontmatter keywords
 

@@ -72,16 +72,16 @@ TEST_CASE("cds_volatility_config_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("cds_volatility_configs ");
     for (const auto& verb : {
-             std::string{"cds_volatility_configs list"},
-             std::string{"cds_volatility_configs get"},
-             std::string{"cds_volatility_configs get-many"},
-             std::string{"cds_volatility_configs add"},
-             std::string{"cds_volatility_configs set"},
-             std::string{"cds_volatility_configs put-many"},
-             std::string{"cds_volatility_configs delete"},
-             std::string{"cds_volatility_configs delete-many"},
-             std::string{"cds_volatility_configs versions"},
-             std::string{"cds_volatility_configs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,16 +72,16 @@ TEST_CASE("average_ois_convention_commands_registers_every_derived_verb", "[comm
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("average_ois_conventions ");
     for (const auto& verb : {
-             std::string{"average_ois_conventions list"},
-             std::string{"average_ois_conventions get"},
-             std::string{"average_ois_conventions get-many"},
-             std::string{"average_ois_conventions add"},
-             std::string{"average_ois_conventions set"},
-             std::string{"average_ois_conventions put-many"},
-             std::string{"average_ois_conventions delete"},
-             std::string{"average_ois_conventions delete-many"},
-             std::string{"average_ois_conventions versions"},
-             std::string{"average_ois_conventions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

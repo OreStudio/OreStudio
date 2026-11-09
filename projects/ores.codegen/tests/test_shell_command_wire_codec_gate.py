@@ -2,8 +2,7 @@
 
 A generated command sends a request and prints the reply. A model that opted
 into the wire codec has a generated function for the reply, so its command
-prints through that function and names no reflector; a model that did not
-keeps reflect-cpp. Both templates, the entity one and the operation one, are
+prints through that function. Both templates, the entity one and the operation one, are
 rendered from a real opted-in model, then again with the switch off.
 
 Run::
@@ -61,18 +60,7 @@ def test_a_real_opted_in_model_reaches_the_template_opted_in():
         assert render_data(model, template)[section]["has_generated_wire_codec"], model
 
 
-def test_an_opted_in_command_names_no_reflector():
+def test_an_opted_in_command_uses_its_codec():
     for model, template, section in CASES:
         text = render(model, template, section, True)
-        assert "rfl::" not in text, model
-        assert "<rfl" not in text, model
-        assert "rfl/reflectors" not in text, model
         assert "::write_json(" in text, model
-
-
-def test_a_command_without_the_flag_names_no_reflector_either():
-    """Every model has a generated codec, so no branch keeps reflect-cpp."""
-    for model, template, section in CASES:
-        text = render(model, template, section, False)
-        assert "rfl::" not in text, model
-        assert "<rfl" not in text, model

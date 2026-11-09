@@ -3,7 +3,7 @@
 
 Two definitions of one qualified name with different members never meet in
 one translation unit, so the compiler does not see them. The linker does: the
-templates instantiated for the type -- reflect-cpp's codecs among them -- have
+templates instantiated for the type -- its codecs among them -- have
 one mangled name, the linker keeps one copy, and a message encoded with the
 other type's layout reads the wrong members. Two
 ores::iam::messaging::list_role_permissions_request types did this, and a

@@ -20,7 +20,7 @@ table to them.
 * Summary
 
 Seven archetypes around the entity's value type: the domain class
-(=domain= profile), reflect-cpp JSON IO, and the libfort table adapter
+(=domain= profile), codec JSON IO, and the libfort table adapter
 with its stream IO — the tabular presentation of entity collections
 (=convert_to_table=, ={{operator<<}}=). Fake-data generation for the
 value type is a sibling facet, [[id:3A04CEEE-E2E2-44DF-88F9-D44217510ED4][ores.cpp.generator]].

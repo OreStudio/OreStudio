@@ -51,8 +51,8 @@ time_utils_make_utc(int year, int mon, int mday, int hour, int min, int sec) {
  *        the local wall-clock representation without timezone suffix.
  *
  * libpq formats timestamptz in the session's local timezone, e.g.
- * "2026-03-30 12:55:00+01" for a BST session.  rfl::Timestamp strips
- * the offset (strptime stops at "+"), leaving just the wall-clock part.
+ * "2026-03-30 12:55:00+01" for a BST session.  strptime strips
+ * the offset (it stops at "+"), leaving just the wall-clock part.
  * This helper reproduces that: format the UTC tp as local time, without
  * the offset.
  */
@@ -86,13 +86,13 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string", "[time][time_ut
     // 2026-03-30 11:55:00 UTC = 12:55:00 BST / 13:55:00 CEST / 11:55:00 UTC.
     const auto expected = time_utils_make_utc(2026, 3, 30, 11, 55, 0);
 
-    // Simulate the string that rfl::Timestamp would receive: local wall-clock
+    // Simulate the string that a parser would receive: local wall-clock
     // time with the timezone suffix already stripped by strptime.
     const auto local_str = utc_to_local_string(expected);
     BOOST_LOG_SEV(lg, ores::logging::info)
         << "Local string for 2026-03-30 11:55:00 UTC: " << local_str;
 
-    // Parse via strptime the same way rfl::Timestamp does (zero-init, then
+    // Parse via strptime the same way a parser does (zero-init, then
     // strptime), and verify to_time_point_local recovers the original UTC tp.
     std::tm parsed_tm = {};
     parse_time(local_str, "%Y-%m-%d %H:%M:%S", parsed_tm);

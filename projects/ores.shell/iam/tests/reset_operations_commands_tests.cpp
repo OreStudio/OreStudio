@@ -59,8 +59,8 @@ TEST_CASE("reset_operations_registers_every_declared_command", "[commands]") {
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("reset ");
     for (const auto& verb : {
-             std::string{"reset reset-tenant"},
-             std::string{"reset reset-system"},
+             std::string{"reset-tenant"},
+             std::string{"reset-system"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

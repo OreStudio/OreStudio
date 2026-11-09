@@ -57,7 +57,6 @@ ships a synthetic-data generator for test and development use.
 - =ores.assets.api= — shared domain types and NATS protocol schemas.
 - =ores.dq= — ORM base classes and data-quality infrastructure.
 - =ores.iam.core= — identity and authorisation context.
-- =rfl= — JSON serialisation via reflection.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
 

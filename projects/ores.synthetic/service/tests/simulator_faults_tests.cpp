@@ -27,7 +27,6 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.synthetic.api/feeds/adapter_faults.hpp"
 #include "ores.testing/nats_options_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>

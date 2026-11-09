@@ -43,7 +43,7 @@ concept flat_history_version_source = requires(const T& v) {
  * @brief An entity whose audit stamps are reached through an audit
  * member rather than sitting flat on the struct.
  *
- * A domain struct wide enough to trip rfl's field-uniqueness check is
+ * A domain struct wide enough to need decomposition is
  * split across field groups, and its stamps then live on the audit
  * group. Such an entity carries the same two values and is just as
  * good a source; only the path to them differs.

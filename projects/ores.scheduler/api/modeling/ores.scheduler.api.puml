@@ -282,7 +282,7 @@ ores::scheduler::domain::job_definition <-- ores::scheduler::generators::job_def
 
 note top of cron_expression
   The component's one custom column type: it wraps a
-  validated string. It carries its own rfl reflector and
+  validated string. It carries its own text form and
   stream operator, and the model declares it
   :is_value_type: true, so the repository entity holds
   the string and the mapper converts through to_string()

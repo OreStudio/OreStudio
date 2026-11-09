@@ -72,16 +72,16 @@ TEST_CASE("day_counter_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("day_counters ");
     for (const auto& verb : {
-             std::string{"day_counters list"},
-             std::string{"day_counters get"},
-             std::string{"day_counters get-many"},
-             std::string{"day_counters add"},
-             std::string{"day_counters set"},
-             std::string{"day_counters put-many"},
-             std::string{"day_counters delete"},
-             std::string{"day_counters delete-many"},
-             std::string{"day_counters versions"},
-             std::string{"day_counters version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

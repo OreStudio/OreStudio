@@ -72,16 +72,16 @@ TEST_CASE("cut_resolution_rule_commands_registers_every_derived_verb", "[command
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("cut_resolution_rules ");
     for (const auto& verb : {
-             std::string{"cut_resolution_rules list"},
-             std::string{"cut_resolution_rules get"},
-             std::string{"cut_resolution_rules get-many"},
-             std::string{"cut_resolution_rules add"},
-             std::string{"cut_resolution_rules set"},
-             std::string{"cut_resolution_rules put-many"},
-             std::string{"cut_resolution_rules delete"},
-             std::string{"cut_resolution_rules delete-many"},
-             std::string{"cut_resolution_rules versions"},
-             std::string{"cut_resolution_rules version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

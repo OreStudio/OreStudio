@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:ore:
 #+created: 2026-07-11
-#+updated: 2026-07-25
+#+updated: 2026-11-09
 
 * Summary
 
@@ -155,6 +155,7 @@ documentation).
 
 * See also
 
+- [[id:5498FC33-2DDA-5E17-99E0-F524BFACA460][An FX-implied curve is backed out from a discount curve and forward points]] — completes: curves built from FX forwards.
 
 - [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] — the structure note that orders this cluster, and where to read this page in it.

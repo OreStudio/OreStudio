@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 4CAB1BEA-C47C-4F7E-B453-5C149047C025
+:END:
+#+title: Task: Read FX forwards for a pair
+#+description: A read operation that answers one USD-hub pair at one as-of from its spot, two published funding curves and pair conventions, and names the inputs it used.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/read-fx-forwards-for-a-pair
+#+pr: 4527
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A consumer asks for one USD-hub pair at one as-of and gets its FX forwards, read from one spot, two published funding curves and the pair conventions. The Calibrate task reads its forwards through the same reader.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- A read operation answers one pair at one as-of, and names the published set of each currency and the spot observation it used.
+- A published curve gains its reference date at a discount factor of one before the calculator reads it.
+- Spot is the latest =fx_spot= observation at or before the as-of, and the result states its age.
+- A pair's spot days are the larger of its two currencies.
+- A missing spot, published funding curve or pair convention is refused, and the refusal names what is missing.
+- A cross that is not a USD-hub pair is refused and named.
+
+* Plan
+
+Name the data shape first. =fx_forward_ladder_plan= holds the pure decisions: which set stands at an as-of, the pair's joint calendar and the ladder's dates. =fx_forward_ladder_service= reads the inputs and calls =calculate_fx_forwards=. A missing input is a =success= false reply and not an error.
+
+The dates use =calendar_arithmetic::advance= over one calendar closed when any of the pair's calendars is closed. The tenor resolution service takes one calendar, so it cannot answer a pair.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Market data service tests | 221 test cases on the rebased head, all pass; 15 cases under =[fx_forward_ladder]= | =publish/bin/ores.marketdata.service.tests= | Working tree on main |
+| Market data API tests | 945 test cases, 4396 assertions, all pass | =publish/bin/ores.marketdata.api.tests= | Working tree on main |
+
+* Notes
+
+Follows [[id:DC7504E5-A53D-4938-A774-B58CE2A37B57][Make FX forwards available from the IR curves]]. The analysis and external evidence are in its Plan.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4527][#4527]] | [marketdata] Read the FX forward ladder of a USD pair |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A bad code in reference data escapes as a transport error | =src/app/fx_forward_ladder_service.cpp= | Fixed | The read replies with the message for any exception. |
+| 2 | An as-of on a non-business day starts the ladder there | =src/fx_forward_ladder_plan.cpp= | Fixed | It counts from the next business day. A test holds it. |
+| 3 | The weekend mask is fixed | =src/fx_forward_ladder_plan.cpp= | Declined | The tenor resolution service makes the same assumption, and the calendars carry the rest. |
+| 4 | Spot days use the larger of the two currencies | =src/app/fx_forward_ladder_service.cpp= | Declined | The currency model defines the pair's spot days that way. |
+| 5 | No staleness guard | =src/fx_forward_ladder_plan.cpp= | Declined | The reply names each input's as-of, and the screen shows it. A maximum age needs a product decision. |
+| 6 | Every config is read twice | =src/app/fx_forward_ladder_service.cpp= | Declined | The table holds one row per curve, and the read is on demand. |
+| 7 | The party comparison is case sensitive | =src/app/fx_forward_ladder_service.cpp= | Declined | Clients send the server's own lower-case identifiers. |
+| 8 | The move sits beside a read of another member | =src/app/fx_forward_ladder_service.cpp= | Declined | It is safe, as the reviewer notes. |
+| 9 | Test a successful reply | =tests/fx_forward_ladder_plan_tests.cpp= | Declined | A publish row needs a real approval request. The screen task carries the live check. |
+
+* Result
+
+=marketdata.v1.ops.get_fx_forward_ladder= answers a USD pair at an as-of and names the spot and the set of each curve it used. The acceptance items are covered by unit tests, with the cross and missing-convention refusals also run through the database.
+
+Not proved: a successful reply against stored data. A =curve_publish= row needs a real approval request, so no test seeds one. The first successful reply needs a feed run and a publish of both curves, and the screen task carries that check. Calendars are read as materialised, so a date past a calendar's window is treated as open.

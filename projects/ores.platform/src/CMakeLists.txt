@@ -41,7 +41,6 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         Boost::boost
         Boost::exception
-        reflectcpp::reflectcpp
     PRIVATE
         Boost::process)
 

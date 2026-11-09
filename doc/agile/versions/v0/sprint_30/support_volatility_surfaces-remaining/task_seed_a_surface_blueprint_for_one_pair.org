@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/seed-a-surface-blueprint-for-one-pair
+#+pr: 4514
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ A fresh installation holds one FX volatility surface blueprint, for EUR/USD, so 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -80,12 +80,22 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4514][#4514]] | [sql] Seed the EUR/USD volatility surface blueprint |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A second run of the seed is refused by the insert trigger before =on conflict= applies | seeds | Fixed | Each insert is guarded by =where not exists=. Rerun twice in a transaction with no change. |
+| 2 | =on commit drop= needs a transaction | =refdata_fx_vol_surface_blueprint_populate.sql= | Declined | The populate runs in one transaction, and the derived catalogue seed uses the same pattern. |
+| 3 | Positional =column1= and =column2= in the series seed | =marketdata_market_series_fx_vol_surface_populate.sql= | Fixed | The columns are named. |
+| 4 | Assert the derivation config id exists | =marketdata_market_series_fx_vol_surface_populate.sql= | Declined | It is a soft reference to a constant in =derived_fx_vol.cpp=, with no table row. |
+| 5 | Run the full pgTAP suite | =projects/ores.sql/test= | Done | 87 of 88 suites pass. The failure is the existing =MXN-TIIE= seed, captured in the inbox. |
 
 * Result
+
+A fresh system tenant holds the EURUSD_SSVI blueprint with 40 pillars and 40 pillar sources, for the system party. Every pillar source names the one fx_option series the derived source writes, and every pillar has a derived vendor instrument. The output series is an fx_vol_surface series that starts OBSERVED and that the calibration claims on its first run.
+
+=refdata_fx_vol_surface_blueprint_seed_test.sql= proves the first four acceptance items on a recreated database.
+
+The fifth acceptance item, stored derived quotes after the feed runs, was not run live, to avoid a full build and a service run. The test shows the feed publishes each pillar's quote, and the Calibrate task reads those quotes for real, so it fails there if they are absent.

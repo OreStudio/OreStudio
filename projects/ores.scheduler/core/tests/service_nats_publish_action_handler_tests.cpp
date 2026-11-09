@@ -27,8 +27,9 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/domain/protocol_codec.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/io_context.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -59,6 +60,10 @@ constexpr std::string_view refused_in_envelope_subject =
 constexpr std::string_view refused_in_body_subject =
     "reporting.v1.ops.trigger_report_instance.body_refusal";
 
+}
+
+namespace nats_publish_replies {
+
 // A body shaped as the answering operation's own response: a result naming the
 // outcome, and the report instance it produced. Stated here because what is
 // being tested is the answering side the handler does not know the type of.
@@ -66,6 +71,18 @@ struct operation_response {
     ores::utility::domain::result result;
     std::string report_instance_id;
 };
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<operation_response>) {
+    return std::tuple{
+        ores::utility::codec::field{"result", &operation_response::result},
+        ores::utility::codec::field{"report_instance_id", &operation_response::report_instance_id}};
+}
+
+}
+
+using nats_publish_replies::operation_response;
+
+namespace {
 
 ores::scheduler::domain::job_definition
 service_nats_publish_action_handler_make_job(const std::string& payload) {
@@ -90,6 +107,10 @@ using ores::scheduler::domain::job_definition;
 using ores::scheduler::service::action_context;
 using ores::scheduler::service::nats_publish_action_handler;
 using ores::testing::scoped_database_helper;
+
+template <>
+struct ores::utility::codec::wire_traits<operation_response>
+    : ores::utility::codec::shaped_wire_traits<operation_response> {};
 
 TEST_CASE("nats_publish_action_handler claims the nats_publish action type", "[action][nats]") {
     auto lg(make_logger(test_suite));

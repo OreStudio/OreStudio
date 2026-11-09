@@ -72,16 +72,16 @@ TEST_CASE("host_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("hosts ");
     for (const auto& verb : {
-             std::string{"hosts list"},
-             std::string{"hosts get"},
-             std::string{"hosts get-many"},
-             std::string{"hosts add"},
-             std::string{"hosts set"},
-             std::string{"hosts put-many"},
-             std::string{"hosts delete"},
-             std::string{"hosts delete-many"},
-             std::string{"hosts versions"},
-             std::string{"hosts version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

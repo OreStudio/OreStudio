@@ -72,17 +72,17 @@ TEST_CASE("engine_settings_fixings_commands_registers_every_derived_verb", "[com
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("engine_settings_fixings ");
     for (const auto& verb : {
-             std::string{"engine_settings_fixings list"},
-             std::string{"engine_settings_fixings get"},
-             std::string{"engine_settings_fixings get-many"},
-             std::string{"engine_settings_fixings add"},
-             std::string{"engine_settings_fixings set"},
-             std::string{"engine_settings_fixings put-many"},
-             std::string{"engine_settings_fixings delete"},
-             std::string{"engine_settings_fixings delete-many"},
-             std::string{"engine_settings_fixings by-engine-settings-id"},
-             std::string{"engine_settings_fixings versions"},
-             std::string{"engine_settings_fixings version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-engine-settings-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

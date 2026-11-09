@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: E95199BA-2B52-49FD-BEC2-9594B012DC6D
+:END:
+#+title: Calendars hold no holiday rules, so value dates ignore holidays
+#+description: No calendar_rule rows exist in any tenant and provisioning materialises no calendar dates, so a rebuilt calendar is weekends only and FX value dates land on holidays.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+No tenant holds any =calendar_rule= or =calendar_exception= rows. A rebuild therefore marks weekends only: =UnitedStates.Settlement= has 104 closed days in 2026, and 2026-12-25 reads as a business day in =TARGET=, =UnitedStates.Settlement= and =Japan=. Provisioning also builds no =calendar_date= rows, so a new tenant has none until someone runs *Rebuild*. Load the holiday rules for every published calendar and build the dates during provisioning.
+
+* Why
+
+Business-day logic depends on these rows, and it is silently wrong without them. The FX forward ladder gave EUR/USD a spot date of 2026-11-11, which is Veterans Day. A date on a holiday moves the value date, so it moves the forward. Without a rebuild the ladder refuses the pair because the calendar has no dates.
+
+* References
+
+- =projects/ores.refdata/core/src/service/calendar_materialisation_service.cpp=
+- =projects/ores.marketdata/service/src/app/fx_forward_ladder_service.cpp=
+
+* See also
+
+- [[id:0CEB75D7-3227-4FDD-A95C-0AD426DB5D26][Build the FX forward ladder screen]]

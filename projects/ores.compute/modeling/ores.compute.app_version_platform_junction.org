@@ -154,7 +154,7 @@ package the platform published. Mutations stay own-tenant scoped.
 ** Domain custom members
 
 Non-persisted members on the junction domain class: present in the C++
-struct and in json_io output (rfl reflection covers all members), but
+struct and in json_io output (the codec covers all members), but
 with no corresponding column in the junction table.
 
 #+begin_src cpp :name members :implements B1E09FE1-51D0-49DF-BDF4-2610598C8A1C

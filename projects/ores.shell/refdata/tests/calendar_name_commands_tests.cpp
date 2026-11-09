@@ -72,16 +72,16 @@ TEST_CASE("calendar_name_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("calendar_names ");
     for (const auto& verb : {
-             std::string{"calendar_names list"},
-             std::string{"calendar_names get"},
-             std::string{"calendar_names get-many"},
-             std::string{"calendar_names add"},
-             std::string{"calendar_names set"},
-             std::string{"calendar_names put-many"},
-             std::string{"calendar_names delete"},
-             std::string{"calendar_names delete-many"},
-             std::string{"calendar_names versions"},
-             std::string{"calendar_names version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

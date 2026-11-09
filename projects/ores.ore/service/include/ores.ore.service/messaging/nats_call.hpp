@@ -23,7 +23,6 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <format>
 #include <optional>
 #include <string>

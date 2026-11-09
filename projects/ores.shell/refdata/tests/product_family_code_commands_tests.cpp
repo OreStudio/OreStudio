@@ -72,16 +72,16 @@ TEST_CASE("product_family_code_commands_registers_every_derived_verb", "[command
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("product_family_codes ");
     for (const auto& verb : {
-             std::string{"product_family_codes list"},
-             std::string{"product_family_codes get"},
-             std::string{"product_family_codes get-many"},
-             std::string{"product_family_codes add"},
-             std::string{"product_family_codes set"},
-             std::string{"product_family_codes put-many"},
-             std::string{"product_family_codes delete"},
-             std::string{"product_family_codes delete-many"},
-             std::string{"product_family_codes versions"},
-             std::string{"product_family_codes version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -27,11 +27,15 @@
 #include <boost/beast/http/read.hpp>
 #include <boost/beast/http/string_body.hpp>
 #include <boost/beast/http/write.hpp>
+#include <catch2/catch_test_case_info.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <openssl/pem.h>
 #include <openssl/x509v3.h>
@@ -176,6 +180,23 @@ private:
 };
 
 }
+
+namespace {
+
+// The suite reports a test only when it ends, so a test that hangs until the
+// CTest timeout would otherwise leave no name behind.
+class test_start_reporter final : public Catch::EventListenerBase {
+public:
+    using Catch::EventListenerBase::EventListenerBase;
+
+    void testCaseStarting(const Catch::TestCaseInfo& info) override {
+        std::cerr << "starting: " << info.name << std::endl;
+    }
+};
+
+}
+
+CATCH_REGISTER_LISTENER(test_start_reporter)
 
 TEST_CASE("a_get_over_http_returns_the_status_type_and_body", "[net][transport]") {
     local_server server({.body = R"({"rates":[]})"});

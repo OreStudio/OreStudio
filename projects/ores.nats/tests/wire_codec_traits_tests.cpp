@@ -18,21 +18,12 @@
  *
  */
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.utility/codec/struct_codec.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <string>
 
 namespace {
-
-/**
- * @brief A message with no generated codec, which is every message today.
- */
-struct plain_message {
-    std::string name;
-    int count = 0;
-};
 
 /**
  * @brief A message whose codec stands in for a generated one: it writes the
@@ -43,6 +34,12 @@ struct generated_message {
     std::string name;
     int count = 0;
 };
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<generated_message>) {
+    using ::ores::utility::codec::field;
+    return std::tuple{field{"name", &generated_message::name},
+                      field{"count", &generated_message::count}};
+}
 
 }
 
@@ -55,29 +52,19 @@ struct wire_traits<generated_message> {
     }
 
     static generated_message read_json(std::string_view text) {
-        return rfl::json::read<generated_message>(std::string(text)).value();
+        return json::read<generated_message>(text);
     }
 
     static std::string write_msgpack(const generated_message& v) {
-        const auto bytes = rfl::msgpack::write(v);
-        return std::string(bytes.begin(), bytes.end());
+        return msgpack::write(v);
     }
 
     static generated_message read_msgpack(std::span<const std::byte> data) {
-        return rfl::msgpack::read<generated_message>(data).value();
+        return msgpack::read<generated_message>(
+            std::string_view(reinterpret_cast<const char*>(data.data()), data.size()));
     }
 };
 
-}
-
-TEST_CASE("a message with no generated codec keeps reflect-cpp", "[wire_codec]") {
-    const plain_message v{"alpha", 7};
-    const ores::nats::wire_codec codec(ores::nats::wire_format::json);
-
-    const auto bytes = codec.encode(v);
-    const auto text = std::string(reinterpret_cast<const char*>(bytes.data()), bytes.size());
-    CHECK(text == rfl::json::write(v));
-    CHECK(codec.decode<plain_message>(bytes).value().count == v.count);
 }
 
 TEST_CASE("a message with a generated codec is written by it", "[wire_codec]") {
@@ -105,6 +92,6 @@ TEST_CASE("a message that cannot be read is an error, not a throw", "[wire_codec
     const auto bytes =
         std::span(reinterpret_cast<const std::byte*>(not_json.data()), not_json.size());
 
-    const auto read = codec.decode<plain_message>(bytes);
+    const auto read = codec.decode<generated_message>(bytes);
     CHECK_FALSE(read);
 }

@@ -74,7 +74,7 @@ TEST_CASE("{{entity_singular}}_operations_registers_every_declared_command", "[c
     const auto completions = root_menu.GetCompletions("{{entity_singular}} ");
     for (const auto& verb : {
 {{#shell_commands}}
-             std::string{"{{entity_singular}} {{command}}"},
+             std::string{"{{command}}"},
 {{/shell_commands}}
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) !=

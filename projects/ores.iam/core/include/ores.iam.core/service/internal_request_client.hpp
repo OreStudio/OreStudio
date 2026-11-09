@@ -42,7 +42,7 @@ namespace ores::iam::service {
  * A thin wrapper over ores::nats::service::client::request_sync(): attaches
  * the token as a plain Authorization header (not X-Delegated-Authorization
  * -- this request isn't forwarding an inbound caller's identity, it's
- * originating a new one), serialises/deserialises via reflect-cpp exactly
+ * originating a new one), serialises/deserialises via its codec exactly
  * like every other request-type pair in this codebase, and throws on
  * transport/parse failure rather than returning std::expected, since a
  * server-side orchestrator has no user to show a graceful error to --

@@ -59,7 +59,7 @@ TEST_CASE("auth_event_operations_operations_registers_every_declared_command", "
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("auth_event_operations ");
     for (const auto& verb : {
-             std::string{"auth_event_operations list-auth-events"},
+             std::string{"list-auth-events"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

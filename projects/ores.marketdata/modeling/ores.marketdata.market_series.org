@@ -300,6 +300,36 @@ market_series_repository::read_latest_by_key(context ctx, const std::string& ore
 }
 #+end_src
 
+*** read_latest_by_uri
+:PROPERTIES:
+:ID: 5C7E1A94-2B6D-4F83-A1C7-9E3D5B8F0A26
+:END:
+
+Reads the latest market series of =oresmd_uri= from every provider. A reader that
+wants a value and does not care who supplied it, such as the spot of an FX forward,
+has no provider to name.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::market_series> read_latest_by_uri(context ctx,
+    const std::string& oresmd_uri);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::market_series>
+market_series_repository::read_latest_by_uri(context ctx, const std::string& oresmd_uri) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<market_series_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max &&
+                             "oresmd_uri"_c == oresmd_uri) |
+                       query_builder::order_by("id"_c);
+    return query_builder::execute_read_query<market_series_entity, domain::market_series>(
+        ctx, query,
+        [](const auto& entities) { return market_series_mapper::map(entities); },
+        lg(), "Reading latest market series by URI");
+}
+#+end_src
+
 *** project_identity_after_write
 :PROPERTIES:
 :ID: 8B2F4C71-5D3E-4A96-9E18-7C4B1A6D2F03

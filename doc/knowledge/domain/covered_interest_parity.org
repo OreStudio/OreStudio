@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :quantitative_finance:fx:interest_rates:knowledge:
 #+created: 2026-06-25
-#+updated: 2026-06-25
+#+updated: 2026-11-09
 
 Covered Interest Parity (CIP) is the constraint that ties FX forward
 rates to interest rate curves and the FX spot rate. It is why every
@@ -210,8 +210,9 @@ from a few basis points in calm markets to several tens of basis points
 during funding stress (e.g. 2008, 2020).
 
 In ORE the cross-currency basis is captured by the
-~CC_BASIS_SWAP/BASIS_SPREAD~ quote type. It is added as a spread on
-top of the CIP-derived forward.
+~CC_BASIS_SWAP/BASIS_SPREAD~ quote type. ORE builds cross-currency
+curves such as =SEK-IN-USD= from FX forward and basis quotes, and
+discounts through them.
 
 For synthetic market data generation there are two valid approaches:
 
@@ -302,6 +303,7 @@ derived data, not sampled data.
 
 * See also
 
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — completes: the cluster that applies this relation.
 - [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — discount factors, bootstrapping, and the
   QuantLib term structure machinery that feeds the CIP calculation.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the implied vol surface that sits on top of

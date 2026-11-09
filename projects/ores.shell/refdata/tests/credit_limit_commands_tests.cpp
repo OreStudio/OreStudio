@@ -72,17 +72,17 @@ TEST_CASE("credit_limit_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("credit_limits ");
     for (const auto& verb : {
-             std::string{"credit_limits list"},
-             std::string{"credit_limits get"},
-             std::string{"credit_limits get-many"},
-             std::string{"credit_limits add"},
-             std::string{"credit_limits set"},
-             std::string{"credit_limits put-many"},
-             std::string{"credit_limits delete"},
-             std::string{"credit_limits delete-many"},
-             std::string{"credit_limits by-counterparty-id"},
-             std::string{"credit_limits versions"},
-             std::string{"credit_limits version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-counterparty-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

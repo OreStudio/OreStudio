@@ -77,7 +77,7 @@ project, which is the fractal naming rule in
   the request/response types.
 - =ores.nats= -- NATS transport for service calls.
 - =ores.iam.api= -- the canonical protocol messages the units send.
-- =ores.utility= -- the rfl reflectors and the wire support types.
+- =ores.utility= -- the codecs and the wire support types.
 - =ores.logging= -- logger factory.
 
 * See also

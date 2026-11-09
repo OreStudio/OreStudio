@@ -59,8 +59,8 @@ TEST_CASE("session_operations_operations_registers_every_declared_command", "[co
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("session_operations ");
     for (const auto& verb : {
-             std::string{"session_operations get-active-sessions"},
-             std::string{"session_operations end-session"},
+             std::string{"get-active-sessions"},
+             std::string{"end-session"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-JSON IO declarations. =domain= profile.  Declares the streaming `operator<<` for JSON output. The implementation in the companion `.cpp` archetype uses [[https://github.com/getml/reflect-cpp][reflect-cpp]].
+JSON IO declarations. =domain= profile.  Declares the streaming `operator<<` for JSON output. The implementation in the companion `.cpp` archetype uses the generated codec.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.

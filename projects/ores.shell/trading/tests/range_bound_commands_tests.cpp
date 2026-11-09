@@ -72,17 +72,17 @@ TEST_CASE("range_bound_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("range_bounds ");
     for (const auto& verb : {
-             std::string{"range_bounds list"},
-             std::string{"range_bounds get"},
-             std::string{"range_bounds get-many"},
-             std::string{"range_bounds add"},
-             std::string{"range_bounds set"},
-             std::string{"range_bounds put-many"},
-             std::string{"range_bounds delete"},
-             std::string{"range_bounds delete-many"},
-             std::string{"range_bounds by-trade-id"},
-             std::string{"range_bounds versions"},
-             std::string{"range_bounds version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-trade-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

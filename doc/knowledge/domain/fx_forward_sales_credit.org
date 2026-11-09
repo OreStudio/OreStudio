@@ -1,0 +1,27 @@
+:PROPERTIES:
+:ID: CD0ADD45-4182-534B-B2DF-F014CDF33FCF
+:END:
+#+title: A client's forward rate folds the sales margin into the all-in rate
+#+description: The market forward points are separate from the provider's margin, and the client sees one rate.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+Forward points are market-driven. A provider's margin is separate, but it is folded into the all-in forward rate, so a client sees one number.
+
+* Detail
+
+To measure a margin, compare the all-in rate with the market outright at the same time.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][Forward points are the difference between the outright and spot]] — completes: the market part of the rate.
+
+* Sources
+
+- [[https://www.xe.com/blog/business/what-are-forward-points-in-fx][What are forward points in FX, Xe]]

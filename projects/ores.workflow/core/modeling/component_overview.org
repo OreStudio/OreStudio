@@ -49,7 +49,6 @@ such as report generation pipelines that span multiple services.
 - =ores.workflow.api= — shared domain types and NATS protocol schemas.
 - =ores.dq= — ORM base classes and persistence infrastructure.
 - =ores.iam.core= — identity and authorisation context.
-- =rfl= — JSON serialisation.
 - =soci= — SQL ORM.
 - =nats.c= — NATS messaging client.
 
@@ -91,7 +90,7 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.core.lib
         Boost::boost)
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

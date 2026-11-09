@@ -72,15 +72,15 @@ TEST_CASE("report_type_configuration_type_commands_registers_every_derived_verb"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("report_type_configuration_types ");
     for (const auto& verb : {
-             std::string{"report_type_configuration_types list"},
-             std::string{"report_type_configuration_types get"},
-             std::string{"report_type_configuration_types get-many"},
-             std::string{"report_type_configuration_types add"},
-             std::string{"report_type_configuration_types set"},
-             std::string{"report_type_configuration_types put-many"},
-             std::string{"report_type_configuration_types delete"},
-             std::string{"report_type_configuration_types delete-many"},
-             std::string{"report_type_configuration_types by-report-type-code"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-report-type-code"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

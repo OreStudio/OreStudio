@@ -43,18 +43,15 @@ The full template source. Edit here and re-tangle with
     C1202 has two paths, and a group meets only the first. A plain
     nested member costs the parent one name, so a group declared as a
     plain member lowers the parent's literal: that is the remedy for one
-    literal that is too wide on its own. rfl::Flatten instead hoists the
-    group's names into the parent's literal, recursively, so it keeps a
-    shape and lowers nothing. Neither touches the second path,
-    accumulation across a unit, which is decided by how many types the
-    unit reflects and not by how they are declared. See the
+    literal that is too wide on its own. The second path is accumulation
+    across a unit, which is decided by how many types the unit holds and
+    not by how they are declared. See the
     decomposition section of
     doc/knowledge/architecture/data_oriented_design.org.
 
-    The wire is a separate question. The generated JSON writer is a
-    bare rfl::json::write, so a plain nested member appears as a nested
-    object on the wire. That is a known defect against the atomised
-    shape, not something a group sets out to do.
+    The wire is a separate question. A plain nested member appears
+    as a nested object on the wire. That is a known defect against the
+    atomised shape, not something a group sets out to do.
 
     The second use case is a document-only struct: a shape the ORE
     schema states and no table holds, such as a bond's option block.
@@ -85,7 +82,7 @@ The full template source. Edit here and re-tangle with
     ----------------------
     * Do NOT use for structs that have their own DB table — use
       domain_entity instead.
-    * Do NOT compose a group with rfl::Flatten when the group crosses
+    * Do NOT flatten a group into its parent when the group crosses
       the wire as its own object: flattening it would change the wire
       shape.  A group that is part of a document is written whole, as
       the bond container writes its parts.

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 26C81317-8DD0-48F3-80EB-9A4A6F85406B
+:END:
+#+title: The MXN-TIIE curve config names no overnight convention
+#+description: refdata_overnight_curve_configs_test fails on a fresh database: the seeded MXN-TIIE config has no overnight index convention of that id.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Test 3 of =refdata_overnight_curve_configs_test.sql= fails on a recreated database. The seed names a config =MXN-TIIE=, and =ores_refdata_overnight_index_conventions_tbl= holds no row of that id.
+
+* Why
+
+The full pgTAP suite is red on main until the name or the convention is corrected. A config with no convention gives the curve no day-count source.
+
+* References
+
+=projects/ores.sql/populate/refdata/refdata_ir_curve_overnight_configs_populate.sql=. Seen while testing PR 4514, which does not touch these tables.
+
+* See also
+
+-

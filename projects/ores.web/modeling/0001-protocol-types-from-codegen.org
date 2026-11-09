@@ -18,7 +18,7 @@ exist, and their output is committed under
 * Context
 
 The TypeScript client must encode msgpack bodies whose keys are the exact C++
-member names reflect-cpp writes. A single renamed field desynchronises the
+member names the codec writes. A single renamed field desynchronises the
 client silently: the server cannot decode the request, and because the C++ IAM
 handlers do not reply when decoding fails, the client sees a thirty second
 timeout rather than an error.
@@ -81,7 +81,7 @@ module as well as a C++ header. The entity model cannot express these shapes:
 it always emits =offset= and =limit= fields, so it cannot render an empty
 =refresh_request=, and its reply shapes are fixed.
 
-*Emit JSON Schema from C++ reflection.* =rfl::json::to_schema= already works
+*Emit JSON Schema from C++ reflection.* A reflection library's schema output already works
 in this tree, and every message type is reflectable because the handlers decode
 them. A small binary that walks an explicit list of message types and prints
 JSON Schema would be the absolute single source of truth and would cover the

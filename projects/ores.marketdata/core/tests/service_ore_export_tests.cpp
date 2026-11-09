@@ -32,7 +32,6 @@
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/test_database_manager.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include "tick_test_support.hpp"
 #include <boost/uuid/uuid_generators.hpp>

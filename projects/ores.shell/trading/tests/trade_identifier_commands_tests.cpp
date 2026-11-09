@@ -72,17 +72,17 @@ TEST_CASE("trade_identifier_commands_registers_every_derived_verb", "[commands]"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("trade_identifiers ");
     for (const auto& verb : {
-             std::string{"trade_identifiers list"},
-             std::string{"trade_identifiers get"},
-             std::string{"trade_identifiers get-many"},
-             std::string{"trade_identifiers add"},
-             std::string{"trade_identifiers set"},
-             std::string{"trade_identifiers put-many"},
-             std::string{"trade_identifiers delete"},
-             std::string{"trade_identifiers delete-many"},
-             std::string{"trade_identifiers by-trade-id"},
-             std::string{"trade_identifiers versions"},
-             std::string{"trade_identifiers version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-trade-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

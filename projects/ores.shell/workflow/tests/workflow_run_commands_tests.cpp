@@ -80,7 +80,7 @@ TEST_CASE("workflow_run_commands_registers_the_wait_verb", "[commands]") {
     // with this verb, so a wait that is no longer registered turns a shipped
     // instruction into an unknown command.
     const auto completions = root_menu.GetCompletions("workflow ");
-    CHECK(std::find(completions.begin(), completions.end(), std::string{"workflow wait"}) !=
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"wait"}) !=
           completions.end());
 }
 

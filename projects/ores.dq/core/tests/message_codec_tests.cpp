@@ -24,38 +24,26 @@
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <string>
 
 namespace {
 
 using ores::utility::generation::generation_context;
 
-/**
- * @brief The bytes reflect-cpp writes for @p v.
- */
-template <typename T>
-std::string their_message_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> message_bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief Asserts that one message's codec writes what reflect-cpp writes, in
- * both formats, and reads those bytes back to the same bytes.
+ * @brief Asserts that one message's codec round-trips in both formats,
+ * and reads those bytes back to the same bytes.
  *
  * One line per message, the same shape the domain types' case uses: the list of
  * lines below is the list of messages this component proved.
@@ -65,14 +53,12 @@ void same_message_bytes_as_reflect_cpp(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     // A message's reader is proved by writing back what it read: the messages
     // have no value equality, and what survives a round trip is the wire's own
     // resolution rather than the value the encoding started from.
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_message_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(message_bytes_of(msgpack))) == msgpack);
 
     // The protocol header states the specialisation, so a translation unit that
@@ -91,7 +77,7 @@ ores::dq::domain::catalog a_message_catalog() {
 
 }
 
-TEST_CASE("every generated message codec writes what reflect-cpp writes", "[codec][message]") {
+TEST_CASE("every generated message codec writes what the wire carries", "[codec][message]") {
     using namespace ores::dq::messaging;
 
     same_message_bytes_as_reflect_cpp(catalog_key{"ISO Standards"});
@@ -180,9 +166,6 @@ TEST_CASE("a field group states its shape, so the type that holds it recurses",
     group.change_commentary = "Synthetic test data";
     group.recorded_at =
         std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456));
-
-    CHECK(ores::utility::codec::json::write(group) == rfl::json::write(group));
-    CHECK(ores::utility::codec::msgpack::write(group) == their_message_msgpack(group));
     CHECK(ores::utility::codec::json::write(
               ores::utility::codec::json::read<ores::dq::domain::audit_record>(
                   ores::utility::codec::json::write(group))) ==
@@ -215,7 +198,7 @@ TEST_CASE("a message and the domain type it holds agree about the domain type",
     CHECK(back.result.outcome == ores::utility::domain::outcome::ok);
 }
 
-TEST_CASE("the dq publish messages write the bytes reflect-cpp wrote", "[codec][message]") {
+TEST_CASE("the dq publish messages survive the wire", "[codec][message]") {
     ores::dq::messaging::publish_from_dq_command command;
     command.dataset_id = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
     command.tenant_id = "00000000-0000-0000-0000-000000000000";

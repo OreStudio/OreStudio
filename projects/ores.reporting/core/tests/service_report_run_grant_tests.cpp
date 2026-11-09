@@ -40,7 +40,6 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/ore_parameter_fixture.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>

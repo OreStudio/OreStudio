@@ -72,17 +72,17 @@ TEST_CASE("csa_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("csas ");
     for (const auto& verb : {
-             std::string{"csas list"},
-             std::string{"csas get"},
-             std::string{"csas get-many"},
-             std::string{"csas add"},
-             std::string{"csas set"},
-             std::string{"csas put-many"},
-             std::string{"csas delete"},
-             std::string{"csas delete-many"},
-             std::string{"csas by-netting-set-id"},
-             std::string{"csas versions"},
-             std::string{"csas version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-netting-set-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

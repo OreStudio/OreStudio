@@ -72,16 +72,16 @@ TEST_CASE("trade_generation_book_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("trade_generation_books ");
     for (const auto& verb : {
-             std::string{"trade_generation_books list"},
-             std::string{"trade_generation_books get"},
-             std::string{"trade_generation_books get-many"},
-             std::string{"trade_generation_books add"},
-             std::string{"trade_generation_books set"},
-             std::string{"trade_generation_books put-many"},
-             std::string{"trade_generation_books delete"},
-             std::string{"trade_generation_books delete-many"},
-             std::string{"trade_generation_books versions"},
-             std::string{"trade_generation_books version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

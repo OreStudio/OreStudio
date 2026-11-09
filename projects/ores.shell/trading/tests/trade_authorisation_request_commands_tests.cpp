@@ -72,17 +72,17 @@ TEST_CASE("trade_authorisation_request_commands_registers_every_derived_verb", "
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("trade_authorisation_requests ");
     for (const auto& verb : {
-             std::string{"trade_authorisation_requests list"},
-             std::string{"trade_authorisation_requests get"},
-             std::string{"trade_authorisation_requests get-many"},
-             std::string{"trade_authorisation_requests add"},
-             std::string{"trade_authorisation_requests set"},
-             std::string{"trade_authorisation_requests put-many"},
-             std::string{"trade_authorisation_requests delete"},
-             std::string{"trade_authorisation_requests delete-many"},
-             std::string{"trade_authorisation_requests by-trade-id"},
-             std::string{"trade_authorisation_requests versions"},
-             std::string{"trade_authorisation_requests version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-trade-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

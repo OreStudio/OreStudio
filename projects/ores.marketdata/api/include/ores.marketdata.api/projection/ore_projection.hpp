@@ -122,6 +122,15 @@ public:
      */
     std::string ore_name_or_stored(std::string_view stored) const;
 
+    /**
+     * @brief The address of an ORE index name, or the name as it stands.
+     *
+     * The name stays as it stands when ORE's grammar does not read it, or when
+     * the address could not write the same spelling back, so that an imported
+     * document loses nothing.
+     */
+    [[nodiscard]] static std::string address_of_index_or_stored(std::string_view ore_name);
+
 private:
     std::unordered_map<std::string, std::string> curve_names_;
 };

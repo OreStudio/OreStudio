@@ -558,6 +558,8 @@ std::size_t buffered_subscription::size() const {
 // client
 // ---------------------------------------------------------------------------
 
+nats_connect_error::~nats_connect_error() = default;
+
 client::client(config::nats_options opts)
     : impl_(std::make_unique<impl>()) {
     impl_->opts = std::move(opts);

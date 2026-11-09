@@ -3,7 +3,7 @@
 so it carries every target_link_libraries call the hand CMake made, verbatim.
 
 The first extraction took only the first call, so a second call -- a
-PRIVATE-only addendum, or the one-line ores.rfl.pch link -- was dropped, and the
+PRIVATE-only addendum, or the one-line ores.codec.pch link -- was dropped, and the
 include directory that came with it vanished from every consumer.
 
 Dry run by default; --write applies.

@@ -110,8 +110,7 @@ target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/ores.utility/include)
 
 # The two carriers the codecs write: the JSON and the MessagePack the wire
-# states. Both are linked here because the codecs are this component's, even
-# though reflect-cpp pulls them in transitively today.
+# states.
 find_package(yyjson CONFIG REQUIRED)
 find_package(msgpack-c CONFIG REQUIRED)
 
@@ -129,6 +128,5 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         OpenSSL::Crypto
         faker-cxx::faker-cxx)
-# Note: reflectcpp comes transitively through ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

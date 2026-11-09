@@ -1284,8 +1284,7 @@ the same resource, it is delivery and it is negotiated.
 
 The work is delivered in increments that each land green and each leave the
 system working: the BFF keeps serving the browser the whole time, and the C++
-path joins the deployment behind a flag or a prefix until it has earned the
-traffic.
+path joins the deployment behind a flag until it has earned the traffic.
 
 ** 12.1 How the order was chosen
 
@@ -1323,7 +1322,7 @@ Each row is a story. S is a few days, M is one to two weeks, L is more.
 | N2 | TLS | both listeners, the stream variant, handshake caps and deadlines, certificate reload, the plain listener's three modes | the TLS bench records the real per-connection cost; reload keeps a live stream; the flood test holds the cap | N1 | M |
 | R1 | The route table | the trie, the per-route profile and limits, one error mapper, the CORS allowlist | no regular expression on the hot path; one error envelope across every route | N1 | M |
 | K1 | Area-based codegen | the route template reads the published area; the manifest emits the route table, =openapi.json= and the TypeScript client; a drift check | regeneration is stable and gated; one screen imports the generated client | C1 | M |
-| P1..Pn | Port by traffic | one domain per increment, in the measured order | that prefix is served by C++, the BFF logs zero for it, and its tests are green | S1, N2, R1, K1 | S each |
+| P1..Pn | Port by area | one domain per increment, in dependency order | that area is served by C++, its routes are paired in the inventory, and its tests are green | S1, N2, R1, K1 | S each |
 | V1..Vn | The composed views | each view with its four obligations: name, schema, owner, computation and cache policy | the screen makes one call; the N+1 is gone; the =ETag= is exercised | C1, and the P that owns the data | M each |
 | X1 | The file-backed twelve | a decision and an owner for the agile and QA routes | they live somewhere justified, or they are deleted | C1 | S |
 | Z1 | Delete the BFF | the Fastify process, its unit, its fleet entry and =@ores/contracts= | the BFF's logs are silent, the unit is gone, and the fleet has one HTTP service | every P | S |
@@ -1348,17 +1347,20 @@ Every increment, without exception:
 
 ** 12.4 Cutover mechanics
 
-The cutover does not wait for the end. It starts at S1 and grows one prefix at a
-time.
+The cutover waits for parity and is one switch. The browser calls the BFF until
+the C++ server answers every route ores.web needs, so no request depends on both
+servers at once. When the work is done, we move the switch and test ores.web. If
+ores.web breaks, we move the switch back and use the BFF until the fault is fixed.
 
 - *One cookie name, two servers.* Both run against the same NATS, the same
-  subject prefix and the same session cookie, so a browser that signs in against
-  either is signed in for both while the cutover lasts.
-- *One reverse proxy in front.* The proxy decides per prefix whether
-  =/api/v1/...= goes to the BFF or to the C++ server. A cutover is one line, and a
-  rollback is the same line removed.
-- *Traffic decides the order.* The ranked route list from C1 sets the sequence,
-  and each prefix is cut over only when its increment's exit criterion is met.
+  subject prefix and the same session cookie, so a rollback does not sign anyone
+  out.
+- *One reverse proxy in front.* The proxy sends the browser's requests to the BFF
+  or to the C++ server. The cutover is one line, and a rollback is the same line
+  removed.
+- *The route inventory says when to try.* The switch moves when the inventory's
+  coverage count shows that the C++ server answers every route ores.web calls.
+  The ores.web test decides whether the switch stays.
 - *The BFF is deleted last, and by evidence.* Not by plan date: when its logs
   carry no traffic for a full working week.
 
@@ -1387,9 +1389,9 @@ and adds an interpreter, a GC and a new attack surface to a security boundary.
 | Risk | Weight | Mitigation |
 |---|---|---|
 | Beast has no HTTP/2, so a tab costs one connection | Medium | one stream per session across tabs; proxy option for HTTP/2 |
-| 292 routes is a large port | High | traffic ranking in Phase 0; generate the mechanical ones; the composed views are the real work |
+| 292 routes is a large port | High | port by area, in dependency order; generate the mechanical ones; the composed views are the real work |
 | C++ iteration is slower than TypeScript | High | the manifest removes the drift; unity builds and ccache keep the loop short; prototypes stay in TS |
-| Cookie and CSRF parity during cutover | Medium | one cookie name, one session store, cutover per prefix, the existing verifier scripts |
+| Cookie and CSRF parity during cutover | Medium | one cookie name, one session store, one switch with a tested rollback, the existing verifier scripts |
 | One process is a large blast radius | Medium | per-route limits, per-core isolation, a watchdog, and the drain path |
 | Conflation hides a lost event | Low | the payload is a time; a resync marks everything stale |
 | NATS dispatch thread becomes the bottleneck | Medium | measure the tick; shard subscriptions if needed |
@@ -1439,7 +1441,7 @@ Answered by the evidence, and no longer open:
    capability, rendering concern — as the test that places every route.
 5. Approve the manifest facet as the single contract between the server and the
    SPA.
-6. Approve the phased migration, prioritised by measured traffic, with composed
+6. Approve the phased migration, ordered by area and dependency, with composed
    views redesigned rather than copied.
 7. Approve the TLS design in 6.12, and choose the plain listener's default mode
    (=redirect= for a deployment with a certificate, =serve= only for development).

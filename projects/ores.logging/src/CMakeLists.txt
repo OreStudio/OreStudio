@@ -45,7 +45,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.platform.lib
         ores.utility.lib
-        ores.rfl.pch
+        ores.codec.pch
         Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

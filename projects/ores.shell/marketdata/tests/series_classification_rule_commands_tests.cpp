@@ -72,16 +72,16 @@ TEST_CASE("series_classification_rule_commands_registers_every_derived_verb", "[
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("series_classification_rules ");
     for (const auto& verb : {
-             std::string{"series_classification_rules list"},
-             std::string{"series_classification_rules get"},
-             std::string{"series_classification_rules get-many"},
-             std::string{"series_classification_rules add"},
-             std::string{"series_classification_rules set"},
-             std::string{"series_classification_rules put-many"},
-             std::string{"series_classification_rules delete"},
-             std::string{"series_classification_rules delete-many"},
-             std::string{"series_classification_rules versions"},
-             std::string{"series_classification_rules version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -58,7 +58,6 @@ persistence without depending on =ores.dq=.
 
 - =ores.dq.api= — shared domain types and NATS protocol schemas.
 - =ores.iam.core= — identity and authorisation context.
-- =rfl= — JSON serialisation via reflection.
 - =ores.database= — PostgreSQL access on libpq: the query builder, the unit of work and the context.
 - =nats.c= — NATS messaging client.
 

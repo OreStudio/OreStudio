@@ -32,7 +32,6 @@
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>

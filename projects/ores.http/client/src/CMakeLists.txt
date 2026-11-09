@@ -48,7 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib)
 
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 
 find_package(Boost REQUIRED COMPONENTS url)
 

@@ -25,7 +25,7 @@
 =ores.analytics.api= is a header-only library defining the shared contract for
 the analytics domain. It provides domain types for pricing-engine types,
 pricing-model configurations, and product-parameter mappings, with JSON and
-table I/O via =rfl=, and the NATS protocol schemas consumed by
+table I/O via generated codecs, and the NATS protocol schemas consumed by
 =ores.analytics.core= and UI clients.
 
 * Inputs
@@ -44,7 +44,6 @@ table I/O via =rfl=, and the NATS protocol schemas consumed by
 
 * Dependencies
 
-- =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table rendering.
 
 * Build dependencies
@@ -75,7 +74,7 @@ target_link_libraries(${lib_target_name}
         libfort::fort
         faker-cxx::faker-cxx)
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

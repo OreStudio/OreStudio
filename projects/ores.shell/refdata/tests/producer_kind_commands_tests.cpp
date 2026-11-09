@@ -72,16 +72,16 @@ TEST_CASE("producer_kind_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("producer_kinds ");
     for (const auto& verb : {
-             std::string{"producer_kinds list"},
-             std::string{"producer_kinds get"},
-             std::string{"producer_kinds get-many"},
-             std::string{"producer_kinds add"},
-             std::string{"producer_kinds set"},
-             std::string{"producer_kinds put-many"},
-             std::string{"producer_kinds delete"},
-             std::string{"producer_kinds delete-many"},
-             std::string{"producer_kinds versions"},
-             std::string{"producer_kinds version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -2236,3 +2236,22 @@
    fun:natsConnection_Connect
    ...
 }
+#
+#  NATS C client asynchronous callback thread error state
+#
+#  The library's asynchronous callback thread clears its per-thread error when
+#  it starts, which allocates the same slot as the connect path. The thread and
+#  the slot live until nats_library_cleanup(), which the client layer does not
+#  call. Anchored on the thread's entry point, so a slot allocated elsewhere
+#  still surfaces.
+#
+{
+   NATS C library async callback thread error state
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_getThreadError
+   fun:nats_clearLastError
+   fun:nats_asyncCbsThreadf
+   ...
+}

@@ -59,10 +59,10 @@ TEST_CASE("objects_operations_registers_every_declared_command", "[commands]") {
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("objects ");
     for (const auto& verb : {
-             std::string{"objects put-objects"},
-             std::string{"objects get-objects"},
-             std::string{"objects delete-objects"},
-             std::string{"objects list-objects"},
+             std::string{"put-objects"},
+             std::string{"get-objects"},
+             std::string{"delete-objects"},
+             std::string{"list-objects"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

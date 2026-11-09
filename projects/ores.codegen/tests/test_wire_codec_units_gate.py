@@ -56,9 +56,8 @@ def render_changed_event(opted_in):
 
 
 def test_a_model_without_the_flag_prints_its_row_with_the_codec_too():
-    """Every model has a generated codec, so no branch keeps reflect-cpp."""
+    """Every model has a generated codec, so every branch encodes through it."""
     plain = render_json_io(False)
-    assert "rfl" not in plain
     assert "ores::utility::codec::json::write(v)" in plain
 
 
@@ -66,23 +65,14 @@ def test_a_model_that_opted_in_prints_its_row_with_the_generated_codec():
     codec = render_json_io(True)
     assert 'x.api/domain/widget_codec.hpp' in codec
     assert "codec::json::write(v)" in codec
-    assert "<rfl/json.hpp>" not in codec
-    assert "rfl::json::write" not in codec
 
 
-def test_a_model_that_did_not_opt_in_reads_the_key_with_the_reflector():
-    plain = render_changed_event(False)
-    assert "<rfl/json.hpp>" in plain
-    assert "rfl::json::read<ores::x::messaging::widget_key>" in plain
-    assert "codec/" not in plain
 
 
 def test_a_model_that_opted_in_reads_the_key_with_the_generated_codec():
     codec = render_changed_event(True)
     assert "utility/codec/json_codec.hpp" in codec
     assert "codec::json::try_read<" in codec
-    assert "<rfl/json.hpp>" not in codec
-    assert "rfl::json::read" not in codec
 
 
 def test_an_opted_in_header_carries_no_exception_handling():

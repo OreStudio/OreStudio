@@ -72,16 +72,16 @@ TEST_CASE("swap_index_convention_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("swap_index_conventions ");
     for (const auto& verb : {
-             std::string{"swap_index_conventions list"},
-             std::string{"swap_index_conventions get"},
-             std::string{"swap_index_conventions get-many"},
-             std::string{"swap_index_conventions add"},
-             std::string{"swap_index_conventions set"},
-             std::string{"swap_index_conventions put-many"},
-             std::string{"swap_index_conventions delete"},
-             std::string{"swap_index_conventions delete-many"},
-             std::string{"swap_index_conventions versions"},
-             std::string{"swap_index_conventions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,16 +72,16 @@ TEST_CASE("report_definition_commands_registers_every_derived_verb", "[commands]
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("report_definitions ");
     for (const auto& verb : {
-             std::string{"report_definitions list"},
-             std::string{"report_definitions get"},
-             std::string{"report_definitions get-many"},
-             std::string{"report_definitions add"},
-             std::string{"report_definitions set"},
-             std::string{"report_definitions put-many"},
-             std::string{"report_definitions delete"},
-             std::string{"report_definitions delete-many"},
-             std::string{"report_definitions versions"},
-             std::string{"report_definitions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

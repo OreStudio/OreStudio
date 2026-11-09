@@ -39,8 +39,6 @@ set(files
     "program_options_common_configuration_tests.cpp"
     "program_options_environment_mapper_factory_tests.cpp"
     "program_options_shared_domain_registry_tests.cpp"
-    "rfl_date_reflector_tests.cpp"
-    "rfl_decimal_reflector_tests.cpp"
     "streaming_std_vector_tests.cpp"
     "string_short_code_generator_tests.cpp"
     "tree_builder_tests.cpp"

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C2364358-A46F-4FA5-B434-6464F8AAEAD5
+:END:
+#+title: FX forwards have no end-of-day record
+#+description: A forward computed on read has no end-of-day record of its own, so a verified set of forwards would need storing.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A forward computed on read has no end-of-day record of its own.
+
+* Why
+
+An end-of-day rate set must be complete and independently verified. A verified set of forwards would need storing.
+
+* References
+
+[[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][The FX forward ladder journey]].
+
+* See also
+
+-

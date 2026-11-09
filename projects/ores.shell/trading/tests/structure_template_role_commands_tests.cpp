@@ -72,16 +72,16 @@ TEST_CASE("structure_template_role_commands_registers_every_derived_verb", "[com
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("structure_template_roles ");
     for (const auto& verb : {
-             std::string{"structure_template_roles list"},
-             std::string{"structure_template_roles get"},
-             std::string{"structure_template_roles get-many"},
-             std::string{"structure_template_roles add"},
-             std::string{"structure_template_roles set"},
-             std::string{"structure_template_roles put-many"},
-             std::string{"structure_template_roles delete"},
-             std::string{"structure_template_roles delete-many"},
-             std::string{"structure_template_roles versions"},
-             std::string{"structure_template_roles version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

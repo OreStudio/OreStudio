@@ -702,7 +702,7 @@ generates no service handler.
  * per child table, every element keyed by its trade id.
  *
  * An instrument is not a field of the item above: a std::variant cannot cross
- * the wire, because reflect-cpp names no alternative, and an encoded payload
+ * the wire, because the codec names no alternative, and an encoded payload
  * would be an untyped field. So the tag sits on the container: a reader takes
  * the trade's type from the anchor, routes it with instrument_table_for, and
  * joins the array that table names by the trade id.

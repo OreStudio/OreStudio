@@ -35,9 +35,8 @@ namespace ores::utility::codec {
 /**
  * @brief A duration on the wire: a count and the name of its unit.
  *
- * This is the object reflect-cpp writes for a std::chrono::duration, so a
- * configuration dump and a message read the same way after the move. Only the
- * units reflect-cpp names are accepted.
+ * A configuration dump and a message read the same way. Only the named units
+ * are accepted.
  */
 struct duration_form {
     std::int64_t count = 0;

@@ -18,12 +18,15 @@
  *
  */
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
-namespace {
+namespace domain_wire_codec_probes {
 
 struct sample {
     std::string name;
@@ -31,7 +34,49 @@ struct sample {
     std::vector<std::uint8_t> payload;
 };
 
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<sample>) {
+    return std::tuple{ores::utility::codec::field{"name", &sample::name},
+                      ores::utility::codec::field{"value", &sample::value},
+                      ores::utility::codec::field{"payload", &sample::payload}};
 }
+
+struct whole_numbers {
+    std::int64_t weight = 0;
+    std::int64_t mean = 0;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<whole_numbers>) {
+    return std::tuple{ores::utility::codec::field{"weight", &whole_numbers::weight},
+                      ores::utility::codec::field{"mean", &whole_numbers::mean}};
+}
+
+struct doubles {
+    double weight = 0;
+    double mean = 0;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<doubles>) {
+    return std::tuple{ores::utility::codec::field{"weight", &doubles::weight},
+                      ores::utility::codec::field{"mean", &doubles::mean}};
+}
+
+}
+
+using domain_wire_codec_probes::doubles;
+using domain_wire_codec_probes::sample;
+using domain_wire_codec_probes::whole_numbers;
+
+template <>
+struct ores::utility::codec::wire_traits<sample>
+    : ores::utility::codec::shaped_wire_traits<sample> {};
+
+template <>
+struct ores::utility::codec::wire_traits<whole_numbers>
+    : ores::utility::codec::shaped_wire_traits<whole_numbers> {};
+
+template <>
+struct ores::utility::codec::wire_traits<doubles>
+    : ores::utility::codec::shaped_wire_traits<doubles> {};
 
 TEST_CASE("wire_codec round-trips a reflectable struct under json", "[domain][wire_codec]") {
     const ores::nats::wire_codec codec(ores::nats::wire_format::json);
@@ -86,14 +131,6 @@ TEST_CASE("wire_codec msgpack round-trips a byte-vector field natively, not as b
 TEST_CASE("wire_codec msgpack reads a whole number into a double field", "[domain][wire_codec]") {
     // A JavaScript client has one number type, so it writes a weight of 1 or
     // a mean of -2 as a msgpack integer, never as a float.
-    struct whole_numbers {
-        std::int64_t weight = 0;
-        std::int64_t mean = 0;
-    };
-    struct doubles {
-        double weight = 0;
-        double mean = 0;
-    };
     const ores::nats::wire_codec codec(ores::nats::wire_format::msgpack);
 
     const auto bytes = codec.encode(whole_numbers{1, -2});

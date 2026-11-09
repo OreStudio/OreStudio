@@ -72,16 +72,16 @@ TEST_CASE("curve_global_report_commands_registers_every_derived_verb", "[command
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("curve_global_reports ");
     for (const auto& verb : {
-             std::string{"curve_global_reports list"},
-             std::string{"curve_global_reports get"},
-             std::string{"curve_global_reports get-many"},
-             std::string{"curve_global_reports add"},
-             std::string{"curve_global_reports set"},
-             std::string{"curve_global_reports put-many"},
-             std::string{"curve_global_reports delete"},
-             std::string{"curve_global_reports delete-many"},
-             std::string{"curve_global_reports versions"},
-             std::string{"curve_global_reports version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

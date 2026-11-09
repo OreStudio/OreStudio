@@ -72,9 +72,9 @@ TEST_CASE("lei_bic_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("lei_bic ");
     for (const auto& verb : {
-             std::string{"lei_bic list"},
-             std::string{"lei_bic get"},
-             std::string{"lei_bic get-many"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

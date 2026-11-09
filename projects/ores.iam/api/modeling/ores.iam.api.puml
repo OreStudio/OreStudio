@@ -1888,7 +1888,7 @@ declarations, so none of the ten appears. Each states a subject_prefix and
 converts the generic entity_event_notification into the entity's own event;
 the notification carries the key as raw JSON, and only the entity knows
 which columns its key record holds, so from_notification reads the key with
-rfl::json and leaves the key default-constructed when that read fails. The
+the codec and leaves the key default-constructed when that read fails. The
 prefixes are: iam.v1.account_contact_informations_events, iam.v1.accounts_events, iam.v1.account_types_events, iam.v1.login_info_events, iam.v1.permissions_events, iam.v1.roles_events, iam.v1.sessions_events, iam.v1.tenants_events, iam.v1.tenant_statuses_events, iam.v1.tenant_types_events.
 end note
 

@@ -26,7 +26,7 @@ using ores::diff::domain::diff_entry;
 using ores::diff::domain::diff_result;
 using ores::diff::domain::field_value;
 
-TEST_CASE("diff_result_round_trips_through_rfl_json", "[domain]") {
+TEST_CASE("diff_result_round_trips_through_json", "[domain]") {
     const diff_result original{
         .entries = {
             {.field_name = "Name", .old_value = "US Dollar", .new_value = "United States Dollar"},
@@ -39,7 +39,7 @@ TEST_CASE("diff_result_round_trips_through_rfl_json", "[domain]") {
     CHECK(*restored == original);
 }
 
-TEST_CASE("field_value_round_trips_through_rfl_json", "[domain]") {
+TEST_CASE("field_value_round_trips_through_json", "[domain]") {
     const field_value original{.name = "ISO Code", .value = "USD"};
 
     const auto json = ores::utility::codec::json::write(original);
@@ -49,7 +49,7 @@ TEST_CASE("field_value_round_trips_through_rfl_json", "[domain]") {
     CHECK(*restored == original);
 }
 
-TEST_CASE("diff_result_with_populated_spans_round_trips_through_rfl_json", "[domain]") {
+TEST_CASE("diff_result_with_populated_spans_round_trips_through_json", "[domain]") {
     const diff_result original{.entries = {{.field_name = "Year",
                                             .old_value = "2025",
                                             .new_value = "2026",

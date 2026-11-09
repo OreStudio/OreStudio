@@ -125,9 +125,6 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-{{^has_generated_wire_codec}}
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-{{/has_generated_wire_codec}}
 {{#party_scoped_writes}}
 #include "ores.utility/generation/generation_context.hpp"
 {{/party_scoped_writes}}
@@ -295,10 +292,12 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", "[eventing][integratio
     {{column}}_parent.{{{parent_party_prefix}}}party_id = *party_ctx.party_id();
 {{/parent_supplies_party}}
 {{#parent_party_isolated}}
+{{#party_scoped_writes}}
     // The {{parent_entity_singular}} is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.
     {{column}}_parent.{{{parent_party_prefix}}}party_id = *party_ctx.party_id();
+{{/party_scoped_writes}}
 {{/parent_party_isolated}}
 {{#parent_requires_party}}
 {{^parent_supplies_party}}
@@ -374,9 +373,11 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", "[eventing][integratio
     {{var}}.{{{party_prefix}}}party_id = {{var}}_party.id;
 {{/requires_party}}
 {{#party_isolated}}
+{{#party_scoped_writes}}
     // {{parent_entity_singular}} is party-isolated, so it carries the session
     // party, or the row that references it could not see it.
     {{var}}.{{{party_prefix}}}party_id = *party_ctx.party_id();
+{{/party_scoped_writes}}
 {{/party_isolated}}
 {{#use_system_tenant}}
     // {{parent_entity_singular}} is system-tenant reference data: reference a

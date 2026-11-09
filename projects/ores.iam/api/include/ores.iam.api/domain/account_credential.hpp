@@ -25,7 +25,6 @@
 #ifndef ORES_IAM_API_DOMAIN_ACCOUNT_CREDENTIAL_HPP
 #define ORES_IAM_API_DOMAIN_ACCOUNT_CREDENTIAL_HPP
 
-#include "ores.utility/rfl/skip_comparison.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -101,19 +100,19 @@ struct account_credential final {
      *
      * The stored hash embeds its own salt, so no salt column sits beside it.
      */
-    rfl::Skip<std::string> password_hash;
+    std::string password_hash;
 
     /**
      * @brief The SHA-256 hash, as hex, of a service account's machine password. Unset for an
      * account that does not authenticate as a service.
      */
-    rfl::Skip<std::string> service_password_hash;
+    std::string service_password_hash;
 
     /**
      * @brief Time-based One-Time Password secret for two-factor authentication. No verification
      * path reads it yet, and no caller may ever see it.
      */
-    rfl::Skip<std::string> totp_secret;
+    std::string totp_secret;
 
     /**
      * @brief Username of the person who last modified this account credential.

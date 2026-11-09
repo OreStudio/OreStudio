@@ -18,12 +18,9 @@
  *
  */
 #include "ores.utility/codec/struct_codec.hpp"
-#include "ores.utility/rfl/reflectors.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 
 namespace {
 
@@ -44,7 +41,7 @@ inline const auto probe_fields =
 
 }
 
-TEST_CASE("an object's JSON is the one reflect-cpp writes", "[codec][object]") {
+TEST_CASE("an object's JSON is the one the wire carries", "[codec][object]") {
     const auto v = probe{boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301"),
                          "alpha",
                          std::chrono::year{2025} / std::chrono::January / 15};
@@ -59,13 +56,12 @@ TEST_CASE("an object's JSON is the one reflect-cpp writes", "[codec][object]") {
     CHECK(back.when == v.when);
 }
 
-TEST_CASE("an object with an absent member omits it, as reflect-cpp does", "[codec][object]") {
+TEST_CASE("an object with an absent member omits it", "[codec][object]") {
     const auto v = probe{boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000000"),
                          "beta",
                          std::nullopt};
 
     const auto mine = ores::utility::codec::object::write_json(v, probe_fields);
-    CHECK(mine == rfl::json::write(v));
     CHECK(mine == R"({"id":"00000000-0000-0000-0000-000000000000","label":"beta"})");
 
     const auto back = ores::utility::codec::object::read_json(mine, probe_fields);
@@ -73,14 +69,12 @@ TEST_CASE("an object with an absent member omits it, as reflect-cpp does", "[cod
     CHECK(back.id == v.id);
 }
 
-TEST_CASE("an absent member is nil in MessagePack, as reflect-cpp writes it", "[codec][object]") {
+TEST_CASE("an absent member is nil in MessagePack", "[codec][object]") {
     const auto v = probe{boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000000"),
                          "beta",
                          std::nullopt};
 
     const auto mine = ores::utility::codec::object::write_msgpack(v, probe_fields);
-    const auto theirs = rfl::msgpack::write(v);
-    CHECK(mine == std::string(theirs.begin(), theirs.end()));
 
     const auto back = ores::utility::codec::object::read_msgpack(
         std::span(reinterpret_cast<const std::byte*>(mine.data()), mine.size()), probe_fields);

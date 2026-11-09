@@ -72,16 +72,16 @@ TEST_CASE("payment_frequency_commands_registers_every_derived_verb", "[commands]
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("payment_frequencies ");
     for (const auto& verb : {
-             std::string{"payment_frequencies list"},
-             std::string{"payment_frequencies get"},
-             std::string{"payment_frequencies get-many"},
-             std::string{"payment_frequencies add"},
-             std::string{"payment_frequencies set"},
-             std::string{"payment_frequencies put-many"},
-             std::string{"payment_frequencies delete"},
-             std::string{"payment_frequencies delete-many"},
-             std::string{"payment_frequencies versions"},
-             std::string{"payment_frequencies version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

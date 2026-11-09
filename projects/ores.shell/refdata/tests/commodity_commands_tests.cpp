@@ -72,16 +72,16 @@ TEST_CASE("commodity_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("commodities ");
     for (const auto& verb : {
-             std::string{"commodities list"},
-             std::string{"commodities get"},
-             std::string{"commodities get-many"},
-             std::string{"commodities add"},
-             std::string{"commodities set"},
-             std::string{"commodities put-many"},
-             std::string{"commodities delete"},
-             std::string{"commodities delete-many"},
-             std::string{"commodities versions"},
-             std::string{"commodities version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

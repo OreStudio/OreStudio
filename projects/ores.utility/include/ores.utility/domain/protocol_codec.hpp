@@ -38,8 +38,8 @@ namespace ores::utility::codec {
 /**
  * @brief The envelope's enums travel by the name of the enumerator.
  *
- * reflect-cpp writes an enum as the word the enumerator is spelled with, in
- * both formats, so a value is the same word here. The names are spelled out
+ * An enum is written as the word the enumerator is spelled with, in both
+ * formats. The names are spelled out
  * rather than derived from the enumerator: a rename is then a change to the
  * wire, which is what it is, instead of a silent one.
  */

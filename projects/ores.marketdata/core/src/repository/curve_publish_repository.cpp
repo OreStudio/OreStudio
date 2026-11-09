@@ -485,6 +485,25 @@ curve_publish_repository::read_latest_published_for_series(context ctx,
 }
 
 std::vector<domain::curve_publish>
+curve_publish_repository::read_applied_for_series(context ctx,
+                                                  const boost::uuids::uuid& series_id) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+    const auto query = query_builder::read<std::vector<curve_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "output_series_id"_c == sid &&
+                                            "valid_to"_c == max);
+    auto rows = query_builder::execute_read_query<curve_publish_entity, domain::curve_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return curve_publish_mapper::map(entities); },
+        lg(),
+        "Reading the applied sets of a series.");
+    std::erase_if(rows, [](const auto& r) { return !r.published_at.has_value(); });
+    return rows;
+}
+
+std::vector<domain::curve_publish>
 curve_publish_repository::read_live_for_series(context ctx, const boost::uuids::uuid& series_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
     static constexpr auto max = db_timestamp::max();

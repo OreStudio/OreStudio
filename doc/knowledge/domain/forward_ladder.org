@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:finance:rates:curves:tenors:ore:
 #+created: 2026-07-12
-#+updated: 2026-07-12
+#+updated: 2026-11-09
 
 * Summary
 
@@ -55,6 +55,9 @@ curve's ladder alone.
 
 * See also
 
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:3CDBAF1A-452C-5B0A-AFF2-BFF18FBD5D4E][A forward ladder can start from today, tomorrow or spot]] — completes: where an FX ladder begins.
 - [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — the hub.
 - [[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][Term Structure]] — the underlying data a ladder presents.
 - [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]] — the individual labels a ladder has one row per.

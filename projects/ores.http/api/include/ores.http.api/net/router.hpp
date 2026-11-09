@@ -24,12 +24,11 @@
 #include "ores.http.api/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/codec/json_schema.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstdint>
 #include <functional>
 #include <memory>
 #include <optional>
-#include <rfl/json.hpp>
 #include <vector>
 
 namespace ores::http::net {
@@ -115,7 +114,7 @@ public:
      * codec writes rather than a second description of them.
      * Optionally accepts a generator function to create example data.
      *
-     * @tparam T The request body type (must be rfl-serializable)
+     * @tparam T The request body type (must have a wire codec)
      * @param example_generator Optional function that returns an example T
      * @param required Whether the body is required (default: true)
      * @param content_type Content type (default: application/json)
@@ -146,7 +145,7 @@ public:
      * codec writes rather than a second description of them.
      * Optionally accepts a generator function to create example data.
      *
-     * @tparam T The response body type (must be rfl-serializable)
+     * @tparam T The response body type (must have a wire codec)
      * @param example_generator Optional function that returns an example T
      * @param description Description of the response (default: "Successful response")
      * @param content_type Content type (default: application/json)

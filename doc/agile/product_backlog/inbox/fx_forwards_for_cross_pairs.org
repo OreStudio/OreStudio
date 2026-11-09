@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3551924D-AD9E-43D3-B5A1-1A522AAC317D
+:END:
+#+title: FX forwards for cross pairs
+#+description: The FX forward read answers USD pairs only, so a cross such as EUR/GBP is refused until spot is triangulated.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The FX forward read answers USD pairs. A cross such as EUR/GBP is refused.
+
+* Why
+
+A cross needs a triangulated spot and a rule for the two USD legs. Traders read crosses every day.
+
+* References
+
+[[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][The FX forward ladder journey]].
+
+* See also
+
+-

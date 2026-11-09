@@ -18,7 +18,7 @@ added to one appears in the other.
 
 Each member's element type is the interface =ores.ts.domain= emits for that
 type, imported from the domain module beside it. Field names stay in the C++
-spelling, because they are the JSON keys =rfl::json= writes.
+spelling, because they are the JSON keys the codec writes.
 
 * Template
 
@@ -34,7 +34,7 @@ import type { {{ts_pascal}} } from '{{ts_module}}';
  * Every instrument and instrument child an export carries, one typed array per
  * entity.
  *
- * Field names are the C++ member names, because they are the keys rfl::json
+ * Field names are the C++ member names, because they are the keys the codec
  * writes. Each element carries the trade id it belongs to, so a client joins an
  * array to its trade by that id, and the array states the element's type.
  */

@@ -72,17 +72,17 @@ TEST_CASE("workunit_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("workunits ");
     for (const auto& verb : {
-             std::string{"workunits list"},
-             std::string{"workunits get"},
-             std::string{"workunits get-many"},
-             std::string{"workunits add"},
-             std::string{"workunits set"},
-             std::string{"workunits put-many"},
-             std::string{"workunits delete"},
-             std::string{"workunits delete-many"},
-             std::string{"workunits by-batch-id"},
-             std::string{"workunits versions"},
-             std::string{"workunits version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-batch-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

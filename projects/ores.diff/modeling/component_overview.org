@@ -27,7 +27,7 @@ diff model — =field_value= (field name plus rendered value),
 entries) — and a compare engine that produces a =diff_result= from two
 ordered field lists. Domain services use it to compute history diffs
 server-side; frontends (UI, shell) render its results without any
-comparison logic of their own. The types are rfl-serialisable so
+comparison logic of their own. The types are codec-serialisable so
 protocol messages can embed them directly.
 
 * Inputs
@@ -46,7 +46,7 @@ consumers are unaffected.
 * Outputs
 
 - =diff_result= values: ordered field-level diff entries, embeddable
-  in NATS protocol messages via rfl serialisation.
+  in NATS protocol messages via the generated codec.
 
 * Entry points
 
@@ -60,7 +60,7 @@ consumers are unaffected.
 
 * Dependencies
 
-- None beyond std and =rfl= — the component is deliberately a leaf so
+- None beyond std — the component is deliberately a leaf so
   every domain service and frontend can depend on it without cycles.
 
 * See also
@@ -79,7 +79,7 @@ target_link_libraries(${lib_target_name}
         ores.platform.lib
         ores.utility.lib)
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

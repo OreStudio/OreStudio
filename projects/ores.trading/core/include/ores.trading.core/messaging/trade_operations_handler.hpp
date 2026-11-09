@@ -34,7 +34,7 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <optional>

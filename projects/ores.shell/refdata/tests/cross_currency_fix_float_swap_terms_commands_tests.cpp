@@ -73,17 +73,17 @@ TEST_CASE("cross_currency_fix_float_swap_terms_commands_registers_every_derived_
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("cross_currency_fix_float_swap_terms ");
     for (const auto& verb : {
-             std::string{"cross_currency_fix_float_swap_terms list"},
-             std::string{"cross_currency_fix_float_swap_terms get"},
-             std::string{"cross_currency_fix_float_swap_terms get-many"},
-             std::string{"cross_currency_fix_float_swap_terms add"},
-             std::string{"cross_currency_fix_float_swap_terms set"},
-             std::string{"cross_currency_fix_float_swap_terms put-many"},
-             std::string{"cross_currency_fix_float_swap_terms delete"},
-             std::string{"cross_currency_fix_float_swap_terms delete-many"},
-             std::string{"cross_currency_fix_float_swap_terms by-convention-id"},
-             std::string{"cross_currency_fix_float_swap_terms versions"},
-             std::string{"cross_currency_fix_float_swap_terms version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-convention-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

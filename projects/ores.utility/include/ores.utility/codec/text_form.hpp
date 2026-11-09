@@ -107,7 +107,7 @@ struct text_form<std::string> {
 };
 
 /**
- * @brief A filesystem path is its native string, as reflect-cpp writes it.
+ * @brief A filesystem path is its native string.
  */
 template <>
 struct text_form<std::filesystem::path> {

@@ -72,15 +72,15 @@ TEST_CASE("tenor_convention_resolution_commands_registers_every_derived_verb", "
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("tenor_convention_resolutions ");
     for (const auto& verb : {
-             std::string{"tenor_convention_resolutions list"},
-             std::string{"tenor_convention_resolutions get"},
-             std::string{"tenor_convention_resolutions get-many"},
-             std::string{"tenor_convention_resolutions add"},
-             std::string{"tenor_convention_resolutions set"},
-             std::string{"tenor_convention_resolutions put-many"},
-             std::string{"tenor_convention_resolutions delete"},
-             std::string{"tenor_convention_resolutions delete-many"},
-             std::string{"tenor_convention_resolutions by-convention-code"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-convention-code"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

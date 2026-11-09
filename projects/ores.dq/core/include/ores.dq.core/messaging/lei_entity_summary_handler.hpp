@@ -30,7 +30,6 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <optional>
-#include <rfl/json.hpp>
 
 namespace ores::dq::messaging {
 

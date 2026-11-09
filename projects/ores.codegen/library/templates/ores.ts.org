@@ -26,7 +26,7 @@ drift.
 
 - ={{{ts_license}}}= triple-stache injects the licence header and the
   generated-file marker.
-- Field names stay =snake_case=. They are the JSON keys rfl::json writes
+- Field names stay =snake_case=. They are the JSON keys the codec writes
   from the C++ member names, so the TypeScript field name and the key on
   the wire are one string.
 - Type names take PascalCase (=login_request= → =LoginRequest=), because

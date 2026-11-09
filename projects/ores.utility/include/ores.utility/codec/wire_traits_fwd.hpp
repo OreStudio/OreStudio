@@ -25,12 +25,10 @@ namespace ores::utility::codec {
 /**
  * @brief How a type reaches the wire, in each format the wire states.
  *
- * The primary template keeps reflect-cpp, so a type with no generated codec
- * still travels; a type that has one states a specialisation in its own header,
- * and its translation unit defines the four functions. This declaration exists
- * so a header can state that specialisation without pulling reflect-cpp behind
- * it: a protocol header is included by everyone who sends a message, and none
- * of them need the reflector to compile a declaration.
+ * The primary template has no definition, so a type with no codec does not
+ * compile. A type with a codec states a specialisation in its own header, and
+ * its translation unit defines the four functions. This declaration exists so
+ * a header can state that specialisation without pulling a codec behind it.
  */
 template <typename T>
 struct wire_traits;

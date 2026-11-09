@@ -60,7 +60,7 @@ TEST_CASE("session_statistics_operations_operations_registers_every_declared_com
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("session_statistics_operations ");
     for (const auto& verb : {
-             std::string{"session_statistics_operations get-session-statistics"},
+             std::string{"get-session-statistics"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

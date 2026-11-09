@@ -72,16 +72,16 @@ TEST_CASE("base_correlation_config_commands_registers_every_derived_verb", "[com
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("base_correlation_configs ");
     for (const auto& verb : {
-             std::string{"base_correlation_configs list"},
-             std::string{"base_correlation_configs get"},
-             std::string{"base_correlation_configs get-many"},
-             std::string{"base_correlation_configs add"},
-             std::string{"base_correlation_configs set"},
-             std::string{"base_correlation_configs put-many"},
-             std::string{"base_correlation_configs delete"},
-             std::string{"base_correlation_configs delete-many"},
-             std::string{"base_correlation_configs versions"},
-             std::string{"base_correlation_configs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

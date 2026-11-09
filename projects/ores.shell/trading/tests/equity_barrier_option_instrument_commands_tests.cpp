@@ -72,16 +72,16 @@ TEST_CASE("equity_barrier_option_instrument_commands_registers_every_derived_ver
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("equity_barrier_option_instruments ");
     for (const auto& verb : {
-             std::string{"equity_barrier_option_instruments list"},
-             std::string{"equity_barrier_option_instruments get"},
-             std::string{"equity_barrier_option_instruments get-many"},
-             std::string{"equity_barrier_option_instruments add"},
-             std::string{"equity_barrier_option_instruments set"},
-             std::string{"equity_barrier_option_instruments put-many"},
-             std::string{"equity_barrier_option_instruments delete"},
-             std::string{"equity_barrier_option_instruments delete-many"},
-             std::string{"equity_barrier_option_instruments versions"},
-             std::string{"equity_barrier_option_instruments version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

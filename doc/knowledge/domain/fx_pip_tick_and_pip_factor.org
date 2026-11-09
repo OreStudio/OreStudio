@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04
-#+updated: 2026-07-04
+#+updated: 2026-11-09
 
 * Summary
 
@@ -55,6 +55,9 @@ attribute layered on top of the pip convention, not a substitute for it.
 
 * See also
 
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][Forward points are the difference between the outright and spot]] — completes: the quantity these units measure.
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the hub.
 - [[id:CC6D86D8-33FC-41D6-AC27-F35FA942F436][Currency pair and currency entity fields]] — where =pip_factor=,
   =tick_size=, =decimal_places= live on the entity.

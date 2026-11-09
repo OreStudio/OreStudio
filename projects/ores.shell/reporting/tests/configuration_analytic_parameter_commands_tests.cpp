@@ -72,18 +72,18 @@ TEST_CASE("configuration_analytic_parameter_commands_registers_every_derived_ver
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("configuration_analytic_parameters ");
     for (const auto& verb : {
-             std::string{"configuration_analytic_parameters list"},
-             std::string{"configuration_analytic_parameters get"},
-             std::string{"configuration_analytic_parameters get-many"},
-             std::string{"configuration_analytic_parameters add"},
-             std::string{"configuration_analytic_parameters set"},
-             std::string{"configuration_analytic_parameters put-many"},
-             std::string{"configuration_analytic_parameters delete"},
-             std::string{"configuration_analytic_parameters delete-many"},
-             std::string{"configuration_analytic_parameters by-configuration-analytic-id"},
-             std::string{"configuration_analytic_parameters by-ore-parameter-id"},
-             std::string{"configuration_analytic_parameters versions"},
-             std::string{"configuration_analytic_parameters version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-configuration-analytic-id"},
+             std::string{"by-ore-parameter-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

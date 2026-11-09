@@ -72,16 +72,16 @@ TEST_CASE("cap_floor_proxy_config_commands_registers_every_derived_verb", "[comm
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("cap_floor_proxy_configs ");
     for (const auto& verb : {
-             std::string{"cap_floor_proxy_configs list"},
-             std::string{"cap_floor_proxy_configs get"},
-             std::string{"cap_floor_proxy_configs get-many"},
-             std::string{"cap_floor_proxy_configs add"},
-             std::string{"cap_floor_proxy_configs set"},
-             std::string{"cap_floor_proxy_configs put-many"},
-             std::string{"cap_floor_proxy_configs delete"},
-             std::string{"cap_floor_proxy_configs delete-many"},
-             std::string{"cap_floor_proxy_configs versions"},
-             std::string{"cap_floor_proxy_configs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

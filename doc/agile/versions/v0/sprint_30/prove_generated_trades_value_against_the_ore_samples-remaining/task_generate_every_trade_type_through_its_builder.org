@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA
 :END:
-#+title: Task: Generate every trade type through its builder
-#+description: Each generated trade type is built by its trade builder, family by family and credit first; each family moves its planner onto the builders, deletes its old constructors and clears its entries from the recorded trades' known lists.
+#+title: Task: Close out generating trades through builders
+#+description: Every booked type is built by its builder: the Acme reports record no Trade errors, the known lists end empty or with a reason, and the old constructors are gone.
 #+type: task
 #+level: s1
 #+filetags: :trading:synthetic:builder:prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
@@ -35,12 +35,11 @@ Every trade type the generator books is built by its trade builder, and the repo
 
 * Acceptance
 
-- =convention_lookup= answers what each family's builder asks: the CDS convention for credit, the equity and commodity underlyings for theirs. Moved here from [[id:4435202D-6074-47F6-8BEB-85E25CF70BEF][Look up an oresmd identifier's conventions and project it for ORE]].
-- Each family's planner draws its values and calls the builders; its =construct_*= functions and =*_terms= structs are deleted.
-- Each family's entries leave the recorded trades' known lists, its recorded files change in the same commit, and the lists end empty or with a stated reason per entry.
-- A tagged test runs the ORE engine on each recorded portfolio, with ORE's example configuration, and fails on an error ORE raises reading or building a trade, unless a known list asserted exactly names it; a Trade error caused by missing market data is counted apart. Moved here from [[id:63FF92C8-3E18-49BB-93FA-B0862B5FD4B2][Test that every generated trade builds in ORE]].
+- The family tasks are done: credit, interest rate, FX, bond, equity, commodity and scripted.
 - A run of the Acme reports after provisioning records no Trade errors, only market data errors.
-- The roundtrip tests read every ORE sample trade of each generated type, write it back, and fail on any element ORE needs that we drop or rename.
+- The recorded trades' known lists end empty, or with a stated reason per entry.
+- Every remaining =construct_*= function and =*_terms= struct is deleted.
+- Catalogue trade types the generator does not book are recorded as not generated, each with its reason.
 - =CommodityPairwiseVarianceSwap= leaves the generator or takes a real ORE trade name, because ORE has no such trade.
 - Tests catch the FxOption style and FxSwap far leg defects that the first Acme run found.
 

@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: D2953FE0-2D86-4E0E-B856-5A16FDC6D0F6
+:END:
+#+title: Task: Run the ORE engine on each recorded portfolio
+#+description: A tagged test runs ORE on each recorded generated portfolio and fails on a trade ORE cannot read or build, unless a known list names it.
+#+type: task
+#+level: s1
+#+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/run-the-ore-engine-on-the-recorded-portfolios
+#+pr: 4536
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every recorded generated portfolio is read and built by the ORE engine in a test, so each family's builder work proves itself as it lands.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- A tagged test runs the ORE executable on each recorded portfolio with ORE's example configuration.
+- The test fails on an error ORE raises reading or building a trade, unless a known list names it exactly.
+- The test skips with a stated reason when no ORE executable is configured.
+- The known list holds the types that fail today, each with ORE's message.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4536][#4536]] | [synthetic] Run the ORE engine on the recorded generated trades |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Fixed run directory and none left on failure | generated_trade_ore_engine_tests.cpp | Accept | Directory carries the process id; a failed run keeps it for ORE's log, stated in a comment. |
+| 2 | LD_LIBRARY_PATH replaced the inherited value | generated_trade_ore_engine_tests.cpp | Accept | The stated path is prepended to the inherited one. Linux only, stated in the header. |
+| 3 | Id rewrite assumed the first id is the trade's | generated_trade_ore_engine_tests.cpp | Accept | The pattern is anchored to the opening Trade tag and a trade with no id fails. |
+| 4 | Regex over XML may overflow the stack | generated_trade_ore_engine_tests.cpp | Decline | Each match is one trade, not the whole file; the set is 160 small trades. |
+| 5 | Messages are pinned to the ORE build | generated_trades_known_ore_errors.txt | Accept | Header says an ORE upgrade can change them. |
+| 6 | CI skips the test | generated_trade_ore_engine_tests.cpp | Decline | Out of scope; no CI job has ORE today. |
+| 7 | Trailing carriage return and no timeout | generated_trade_ore_engine_tests.cpp | Accept in part | Trailing carriage returns are stripped; spaces stay, as ORE ends some messages with one. No timeout: one run takes about 4 seconds, and ctest has its own timeout. |
+
+* Result
+
+The test =the ORE engine raises only the known errors on the recorded trades=
+(tags =[ore_engine][external]=) merges every recorded portfolio into one, with
+each trade id renamed for its file. It runs ORE once with the configuration of
+the Products example, pricing only, and reads the trade errors from ORE's
+structured log. The errors must equal =generated_trades_known_ore_errors.txt=
+exactly, so a family that fixes its trades removes its lines.
+
+To run it, set =ORES_ORE_EXECUTABLE= to the =ore= binary and, for a build
+without an rpath, =ORES_ORE_LIBRARY_PATH= to its library directories. Without
+the executable the test skips. One run over 160 trades takes about 4 seconds.
+
+The list starts with 72 lines over 71 types: 39 lines where ORE cannot read the
+trade XML and 33 where it cannot build the trade. Some build errors are missing
+market data in the example configuration, such as equity curves for the
+generated underlyings. Those belong to the market data task.

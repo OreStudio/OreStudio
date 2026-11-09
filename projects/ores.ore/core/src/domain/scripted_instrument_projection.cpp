@@ -353,7 +353,8 @@ auto script_index_address_of(const std::string& name) -> std::string {
     return address.starts_with("oresmd://inflation/") ? name : address;
 }
 
-/// An Index parameter names an index; every other kind holds plain text.
+/// An Index parameter names an index. Any other declared type stays text, even if it
+/// happens to spell an index.
 auto stored_value_of(const scripted_parameter& parameter, const std::string& value) -> std::string {
     return parameter.declared_type == "Index" ? script_index_address_of(value) : value;
 }

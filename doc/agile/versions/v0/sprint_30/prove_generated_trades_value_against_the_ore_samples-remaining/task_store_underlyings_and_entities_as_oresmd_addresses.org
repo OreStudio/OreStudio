@@ -84,7 +84,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A mixed equity pair could split on a slash inside an address | index_reference.hpp | Accept | A pair is now both addresses or both names, with a test. |
+| 2 | Named scripted Underlyings may export addresses | scripted_instrument_projection.cpp | Accept | Added a corpus test that no exported trade states an address. |
+| 3 | Only the Index declared type converts | scripted_instrument_projection.cpp | Accept | Comment added. |
+| 4 | Qualified calls and format noise in the commodity projection | commodity_instrument_projection.cpp | Accept in part | Renamed the local helper so calls are unqualified. Format changes stay, because the format gate needs them. |
+| 5 | Helper for the repeated commodity read | commodity_instrument_projection.cpp | Decline | Each site is one clear line, and a helper adds a name to learn. |
 
 * Result
 

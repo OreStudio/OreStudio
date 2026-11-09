@@ -3609,6 +3609,18 @@ TEST_CASE("an_underlying_name_returns_from_its_address_as_ore_states_it",
           "ISIN:XS0982710740");
 }
 
+TEST_CASE("a_pair_of_equities_with_a_member_no_family_can_hold_stays_as_names",
+          "[ore][xml][portfolio][projection]") {
+    using namespace ores::ore::domain;
+    CHECK(equity_pair_of("EQ-A", ".SPX") == "EQ-A/.SPX");
+    CHECK(equity_pair_of(".SPX", "EQ-A") == ".SPX/EQ-A");
+    const auto addresses = equity_pair_of(".SPX", ".NDX");
+    CHECK(addresses.starts_with("oresmd://"));
+    CHECK(equity_pair_separator(addresses) == ' ');
+    CHECK(addresses.find(' ') != std::string::npos);
+    CHECK(equity_pair_separator(".SPX/EQ-A") == '/');
+}
+
 TEST_CASE("an_underlying_no_family_can_hold_stays_as_written",
           "[ore][xml][portfolio][projection]") {
     using namespace ores::ore::domain;

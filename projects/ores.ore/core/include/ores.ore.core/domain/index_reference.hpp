@@ -97,9 +97,18 @@ inline std::string underlying_name_of(std::string_view stored) {
     return name;
 }
 
-/// A pair of addresses joins on a space, as an address itself holds slashes.
+/**
+ * @brief A stored pair of equities.
+ *
+ * Addresses hold slashes, so a pair of them joins on a space. A pair is both
+ * addresses or both names, so the first member decides how to split it.
+ */
 inline std::string equity_pair_of(std::string_view first, std::string_view second) {
-    return equity_address_of(first) + " " + equity_address_of(second);
+    auto first_address = equity_address_of(first);
+    auto second_address = equity_address_of(second);
+    if (first_address.starts_with("oresmd:") && second_address.starts_with("oresmd:"))
+        return first_address + " " + second_address;
+    return std::string(first).append("/").append(second);
 }
 
 /// The separator of a stored pair, which a trade held as names joins on a slash.

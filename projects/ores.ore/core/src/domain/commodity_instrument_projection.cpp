@@ -161,7 +161,7 @@ auto first_exercise_date_of(const std::optional<record_reader>& option)
 }
 
 /// The underlying a variance swap names, either itself or through a basket.
-auto underlying_name_of(const record_reader& data) -> std::string {
+auto stated_underlying_name_of(const record_reader& data) -> std::string {
     if (const auto name = data.text("Name"))
         return *name;
     if (const auto underlying = data.child("Underlying"))
@@ -333,7 +333,7 @@ auto read_commodity_variance_swap(const record_reader& trade) -> commodity_instr
     const auto data = trade.child("CommodityVarianceSwapData");
     if (!data)
         return r;
-    r.commodity_code = commodity_address_of(underlying_name_of(*data));
+    r.commodity_code = commodity_address_of(stated_underlying_name_of(*data));
     r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
     r.start_date = optional_date_of(*data, "StartDate");
     r.maturity_date = optional_date_of(*data, "EndDate");
@@ -489,7 +489,7 @@ void write_commodity_forward(record_writer& trade, const commodity_instrument& v
     auto data = trade.child("CommodityForwardData");
     data.set_spelling("Position", "Long", "position");
     data.set_text("Maturity", commodity_instrument_projection_to_ore_date(v.maturity_date));
-    data.set_text("Name", ores::ore::domain::underlying_name_of(v.commodity_code));
+    data.set_text("Name", underlying_name_of(v.commodity_code));
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Strike", v.fixed_price.value_or(decimal{}));
     set_decimal_from_double(data, "Quantity", v.quantity);
@@ -498,7 +498,7 @@ void write_commodity_forward(record_writer& trade, const commodity_instrument& v
 void write_commodity_option(record_writer& trade, const commodity_instrument& v) {
     auto data = trade.child("CommodityOptionData");
     write_option_terms(data.child("OptionData"), v);
-    data.set_text("Name", ores::ore::domain::underlying_name_of(v.commodity_code));
+    data.set_text("Name", underlying_name_of(v.commodity_code));
     data.set_spelling("Currency", v.currency, "currency");
     data.set_text("Strike", v.strike_price.value_or(decimal{}).to_string());
     set_decimal_from_double(data, "Quantity", v.quantity);
@@ -530,7 +530,7 @@ void write_commodity_swaption(record_writer& trade, const commodity_instrument_d
     auto floating_leg = data.append("LegData");
     write_commodity_leg_header(floating_leg, "CommodityFloating", false, v);
     auto floating_data = floating_leg.child("CommodityFloatingLegData");
-    floating_data.set_text("Name", ores::ore::domain::underlying_name_of(v.commodity_code));
+    floating_data.set_text("Name", underlying_name_of(v.commodity_code));
     floating_data.set_spelling("PriceType", "FutureSettlement", "price type");
     write_quantity(floating_data.child("Quantities"), v.quantity);
 }
@@ -556,7 +556,7 @@ void write_commodity_swap(record_writer& trade, const commodity_instrument_data&
     auto floating_leg = data.append("LegData");
     write_commodity_leg_header(floating_leg, "CommodityFloating", true, v);
     auto floating_data = floating_leg.child("CommodityFloatingLegData");
-    floating_data.set_text("Name", ores::ore::domain::underlying_name_of(v.commodity_code));
+    floating_data.set_text("Name", underlying_name_of(v.commodity_code));
     floating_data.set_spelling("PriceType", "FutureSettlement", "price type");
     write_quantity(floating_data.child("Quantities"), v.quantity);
     if (v.start_date) {
@@ -575,7 +575,7 @@ void write_commodity_variance_swap(record_writer& trade, const commodity_instrum
     data.set_text("EndDate", commodity_instrument_projection_to_ore_date(v.maturity_date));
     data.set_spelling("Currency", v.currency, "currency");
     if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying"))
-        data.set_text("Name", ores::ore::domain::underlying_name_of(v.commodity_code));
+        data.set_text("Name", underlying_name_of(v.commodity_code));
     data.set_text("LongShort", "Long");
     set_decimal_from_double(data, "Strike", v.variance_strike.value_or(0.0));
     set_decimal_from_double(data, "Notional", v.quantity);
@@ -587,7 +587,7 @@ void write_commodity_variance_swap(record_writer& trade, const commodity_instrum
 void write_commodity_average_price_option(record_writer& trade, const commodity_instrument& v) {
     auto data = trade.child("CommodityAveragePriceOptionData");
     write_option_terms(data.child("OptionData"), v);
-    data.set_text("Name", ores::ore::domain::underlying_name_of(v.commodity_code));
+    data.set_text("Name", underlying_name_of(v.commodity_code));
     data.set_spelling("Currency", v.currency, "currency");
     set_decimal_from_double(data, "Quantity", v.quantity);
     data.set_decimal("Strike", v.strike_price.value_or(decimal{}));
@@ -630,7 +630,7 @@ void write_commodity_option_strip(record_writer& trade, const commodity_instrume
     }
     write_commodity_leg_header(leg, "CommodityFloating", false, v);
     auto floating_data = leg.child("CommodityFloatingLegData");
-    floating_data.set_text("Name", ores::ore::domain::underlying_name_of(v.commodity_code));
+    floating_data.set_text("Name", underlying_name_of(v.commodity_code));
     floating_data.set_spelling("PriceType", "FutureSettlement", "price type");
     write_quantity(floating_data.child("Quantities"), v.quantity);
     if (!v.strip_frequency_code.empty())
@@ -663,7 +663,7 @@ void write_commodity_basket_option(record_writer& trade,
     for (const auto* row : ordered) {
         auto underlying = underlyings.append("Underlying");
         underlying.set_text("Type", "Commodity");
-        underlying.set_text("Name", ores::ore::domain::underlying_name_of(row->underlying_code));
+        underlying.set_text("Name", underlying_name_of(row->underlying_code));
         if (row->weight)
             set_decimal_from_double(underlying, "Weight", *row->weight);
     }

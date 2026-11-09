@@ -159,6 +159,48 @@ TEST_CASE("a party that already holds its copy is planned no row twice", "[party
     CHECK(second.ready.front().config_id == first.configs_to_write.front().id);
 }
 
+TEST_CASE("a curve whose discount curve waits waits too, and writes nothing", "[party_curves]") {
+    auto system = eur_estr();
+    const auto projection_config = id("00000000-0000-4000-8000-0000000000c2");
+    const auto projection_output = id("00000000-0000-4000-8000-0000000000d2");
+    const auto projection_quotes = id("00000000-0000-4000-8000-0000000000e2");
+    const std::string projection_uri =
+        "oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M";
+    ir_curve_bootstrap_config projection;
+    projection.id = projection_config;
+    projection.party_id = system_party;
+    projection.name = "EUR-EURIBOR-6M";
+    projection.output_series_id = projection_output;
+    projection.curve_family_role = "PROJECTION";
+    projection.discount_curve_config_id = eur_config;
+    system.configs.push_back(projection);
+    ir_curve_bootstrap_pillar pillar;
+    pillar.id = id("00000000-0000-4000-8000-0000000000f9");
+    pillar.party_id = system_party;
+    pillar.bootstrap_config_id = projection_config;
+    pillar.market_series_id = projection_quotes;
+    system.pillars.push_back(pillar);
+    system.series.push_back(series(projection_output, system_party,
+                                   "oresmd://ir/EUR?type=series&instrument=discount&quote=rate"
+                                   "&curve_id=EUR-EURIBOR-6M",
+                                   "ore"));
+    system.series.push_back(series(projection_quotes, system_party, projection_uri, "bloomberg"));
+
+    party_curve_holdings acme;
+    acme.party_id = acme_us;
+    acme.series = {series(id("00000000-0000-4000-8000-0000000000b4"), acme_us, projection_uri,
+                          "bloomberg")};
+
+    const auto plan = plan_party_curves(system, acme);
+
+    CHECK(plan.configs_to_write.empty());
+    CHECK(plan.pillars_to_write.empty());
+    CHECK(plan.series_to_write.empty());
+    CHECK(plan.ready.empty());
+    REQUIRE(plan.waiting.size() == 2);
+    CHECK(plan.waiting.back() == "EUR-EURIBOR-6M: its discount curve is not written yet");
+}
+
 TEST_CASE("two parties get different copies of one system row", "[party_curves]") {
     CHECK(party_copy_id(acme_us, "ir_curve_bootstrap_config", eur_config) ==
           party_copy_id(acme_us, "ir_curve_bootstrap_config", eur_config));

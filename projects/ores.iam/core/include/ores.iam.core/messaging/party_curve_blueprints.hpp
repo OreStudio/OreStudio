@@ -185,6 +185,31 @@ struct party_curve_plan {
             plan.pillars_to_write.push_back(std::move(p));
         plan.ready.push_back({config_id, config.name});
     }
+
+    // A curve discounted off another can be written only once that curve exists. Dropping one
+    // config can strand another that discounts off it, so the pass repeats until nothing moves.
+    for (bool dropped = true; dropped;) {
+        dropped = false;
+        std::set<boost::uuids::uuid> available(party.config_ids);
+        for (const auto& c : plan.configs_to_write)
+            available.insert(c.id);
+        for (auto it = plan.configs_to_write.begin(); it != plan.configs_to_write.end();) {
+            if (!it->discount_curve_config_id ||
+                available.contains(*it->discount_curve_config_id)) {
+                ++it;
+                continue;
+            }
+            const auto id = it->id;
+            const auto output = it->output_series_id;
+            std::erase_if(plan.pillars_to_write,
+                          [&](const auto& p) { return p.bootstrap_config_id == id; });
+            std::erase_if(plan.series_to_write, [&](const auto& s) { return s.id == output; });
+            std::erase_if(plan.ready, [&](const auto& r) { return r.config_id == id; });
+            plan.waiting.push_back(it->name + ": its discount curve is not written yet");
+            it = plan.configs_to_write.erase(it);
+            dropped = true;
+        }
+    }
     return plan;
 }
 

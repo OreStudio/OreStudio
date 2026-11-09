@@ -54,6 +54,7 @@
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/route_protocol.hpp"
 #include "ores.marketdata.api/messaging/subscription_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -68,7 +69,6 @@
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
-#include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
@@ -1040,29 +1040,6 @@ private:
         return std::nullopt;
     }
 
-    /**
-     * @brief Bootstraps and publishes each IR curve the system tenant holds a
-     * config for.
-     *
-     * The curves read the quotes of the synthetic feeds the system data starts,
-     * and a feed's first quotes arrive some time after it starts, so a curve the
-     * marketdata service cannot bootstrap yet is asked again every
-     * curve_retry_interval until curve_quote_patience has passed. A curve still
-     * refused then is named with its last reason, and the step completes: one
-     * currency's missing quotes do not hold back the system's other curves or the
-     * tenant's own setup. Each round of waiting is recorded in the step's own log,
-     * so the run says why the step is taking the time it takes rather than looking
-     * stalled.
-     *
-     * A curve is published and not merely republished: the publish goes through
-     * marketdata.v1.ops.publish_curve, so the set is recorded against the request
-     * that authorised it, and the published-curves list and the reads a surface or
-     * a price take see it. The raise is the publish in the system tenant, which
-     * is the installation, so no person has to answer first. Each attempt
-     * previews the bootstrap with
-     * marketdata.v1.ops.compute_curve and publishes only what that preview
-     * accepted, so a retry costs no approval request.
-     */
     /// What one round of curve publishes did, a line for each curve.
     struct curve_publish_outcome {
         std::vector<std::string> published;
@@ -1171,6 +1148,29 @@ private:
         return outcome;
     }
 
+    /**
+     * @brief Bootstraps and publishes each IR curve the system tenant holds a
+     * config for.
+     *
+     * The curves read the quotes of the synthetic feeds the system data starts,
+     * and a feed's first quotes arrive some time after it starts, so a curve the
+     * marketdata service cannot bootstrap yet is asked again every
+     * curve_retry_interval until curve_quote_patience has passed. A curve still
+     * refused then is named with its last reason, and the step completes: one
+     * currency's missing quotes do not hold back the system's other curves or the
+     * tenant's own setup. Each round of waiting is recorded in the step's own log,
+     * so the run says why the step is taking the time it takes rather than looking
+     * stalled.
+     *
+     * A curve is published and not merely republished: the publish goes through
+     * marketdata.v1.ops.publish_curve, so the set is recorded against the request
+     * that authorised it, and the published-curves list and the reads a surface or
+     * a price take see it. The raise is the publish in the system tenant, which
+     * is the installation, so no person has to answer first. Each attempt
+     * previews the bootstrap with
+     * marketdata.v1.ops.compute_curve and publishes only what that preview
+     * accepted, so a retry costs no approval request.
+     */
     void
     publish_system_curves_step(const ores::service::messaging::workflow_step_context& wf,
                                const ores::iam::workflow::provision_tenant_step_command& command) {
@@ -1456,7 +1456,8 @@ private:
                                 .context = {}});
         if (!result.curves_not_published.empty()) {
             std::string reason = std::to_string(result.curves_not_published.size()) +
-                                 " party curve(s) were not published:";
+                                 " party curve(s) were not published. A rerun is safe: it "
+                                 "writes no row twice and publishes only the missing curves:";
             for (const auto& line : result.curves_not_published)
                 reason += " " + line + ";";
             wf.fail(reason);

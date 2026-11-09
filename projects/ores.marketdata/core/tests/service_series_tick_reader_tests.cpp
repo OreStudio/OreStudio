@@ -482,7 +482,7 @@ TEST_CASE("a_provider_that_holds_no_series_of_the_identity_gives_an_empty_reply"
 }
 
 
-TEST_CASE("a_party_with_no_subscription_is_refused", tags) {
+TEST_CASE("a_party_with_no_subscription_is_refused", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h, fresh_curve_id(), boost::uuids::nil_uuid(), "", false);
     const auto t0 = now_second();
@@ -495,7 +495,7 @@ TEST_CASE("a_party_with_no_subscription_is_refused", tags) {
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("a_party_with_only_a_derived_right_is_refused", tags) {
+TEST_CASE("a_party_with_only_a_derived_right_is_refused", "[service][ticks]") {
     database_helper h;
     const auto o = make_series(h, fresh_curve_id(), boost::uuids::nil_uuid(), "", false);
     subscribe(h, o.series.party_id, o.series.provider_code, false, false, true);
@@ -509,7 +509,7 @@ TEST_CASE("a_party_with_only_a_derived_right_is_refused", tags) {
     CHECK(reply.values.empty());
 }
 
-TEST_CASE("the_shared_tick_of_a_provider_is_read_by_every_subscribed_party", tags) {
+TEST_CASE("the_shared_tick_of_a_provider_is_read_by_every_subscribed_party", "[service][ticks]") {
     database_helper h;
     const auto curve = fresh_curve_id();
     const auto first = make_series(h, curve, boost::uuids::nil_uuid(), "ore");

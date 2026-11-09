@@ -3822,6 +3822,15 @@ const fr: SourceCatalogue = {
         'Set the staff passwords': 'Définir les mots de passe du personnel',
         "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.":
             "Définit le mot de passe de chaque compte du personnel via l'API de mot de passe du serveur, afin que le personnel du locataire de démonstration puisse se connecter.",
+        'Turn auto-approval on': "Activer l'approbation automatique",
+        "Closes the tenant's approvals without a person while it is provisioned. Every screen says so while it is on.":
+            "Clôt les approbations du locataire sans intervention humaine pendant son provisionnement. Chaque écran l'indique tant qu'elle est active.",
+        'Hand approvals to people': 'Confier les approbations aux personnes',
+        'Turns auto-approval off, so people decide from here on. A profile that omits this step leaves auto-approval on.':
+            "Désactive l'approbation automatique, afin que les personnes décident désormais. Un profil qui omet cette étape laisse l'approbation automatique active.",
+        'Build the holiday calendars': 'Construire les calendriers des jours fériés',
+        'Builds the business days of every calendar a currency or a currency pair convention names, so a value date never falls on a holiday.':
+            "Construit les jours ouvrés de chaque calendrier qu'une devise ou une convention de paire de devises nomme, afin qu'une date de valeur ne tombe jamais un jour férié.",
         'Attach the photographs': 'Joindre les photographies',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             "Donne aux comptes leurs photographies et à l'entité du locataire son logo.",

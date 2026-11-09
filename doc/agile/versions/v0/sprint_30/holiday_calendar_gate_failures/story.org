@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 66CF6B10-92F7-4DA3-A310-AFAD381CC372
+:END:
+#+title: Story: Hotfix: two changes on main fail four local checks
+#+description: The holiday calendar and auto-approval changes on main fail four local checks: entity table writers, step translations, catalogue formatting and a generated shell recipe.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:refdata:sprint_30:v0:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make the local gate pass on main again. The =entity-writes= check fails on two writers that the holiday calendar work ([[https://github.com/OreStudio/OreStudio/commit/770d405a2b][770d405a2b]]) adds. The =codegen-tests= suite fails because four provisioning steps have no entry in the en, fr and pt word catalogues. Two steps come from the holiday calendar work, and two from the auto-approval work (=00fefd7314=). The auto-approval work also leaves the en and pt catalogues unformatted, which fails the =web= check, and leaves the =approval_operations= shell recipe behind its model, which fails =component-drift=.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                   |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | The fix is complete.                   |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-09                               |
+
+* Acceptance
+
+- =check_entity_table_writes.py= passes, with each new writer listed with its own reason.
+- =test_provision_step_words.py= passes in en, fr and pt.
+- The =web= and =component-drift= checks pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A4ED7B84-CAED-428E-B652-8E314A41E3A2][Scaffold story: Hotfix: two changes on main fail four local checks]] | DONE | 2026-11-09 | 2026-11-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8791DDF9-F48E-4C40-8500-7BAD1127F739][Fix the four checks that main fails]] | DONE | 2026-11-09 | 2026-11-09 | Initial task for: Hotfix: two changes on main fail four local checks |
+
+* Decisions
+
+* Out of scope
+
+- Removing the direct writes. The ratchet records them, and their owners decide.

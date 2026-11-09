@@ -266,11 +266,11 @@ const pt: SourceCatalogue = {
     },
     inbox: {
         autoApproval: {
-            tenant: "o inquilino não exige aprovações",
+            tenant: 'o inquilino não exige aprovações',
             noticeTenant:
-                "A aprovação automática está ativa neste inquilino: os pedidos fecham sem intervenção. {by} definiu-a em {at}: {reason}",
+                'A aprovação automática está ativa neste inquilino: os pedidos fecham sem intervenção. {by} definiu-a em {at}: {reason}',
             noticeInstallation:
-                "A aprovação automática está ativa nesta instalação: os pedidos fecham sem intervenção. {by} definiu-a em {at}: {reason}",
+                'A aprovação automática está ativa nesta instalação: os pedidos fecham sem intervenção. {by} definiu-a em {at}: {reason}',
             chip: 'Aprovada automaticamente',
             deployment: 'a instalação não exige aprovação',
             system_tenant: 'um acto da instalação',
@@ -3807,6 +3807,15 @@ const pt: SourceCatalogue = {
         'Set the staff passwords': 'Definir as palavras-passe do pessoal',
         "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.":
             'Define a palavra-passe de cada conta do pessoal através da API de palavra-passe do servidor, para que o pessoal do inquilino de demonstração possa iniciar sessão.',
+        'Turn auto-approval on': 'Ativar a aprovação automática',
+        "Closes the tenant's approvals without a person while it is provisioned. Every screen says so while it is on.":
+            'Fecha as aprovações do inquilino sem uma pessoa enquanto é provisionado. Todos os ecrãs o indicam enquanto está ativa.',
+        'Hand approvals to people': 'Entregar as aprovações às pessoas',
+        'Turns auto-approval off, so people decide from here on. A profile that omits this step leaves auto-approval on.':
+            'Desativa a aprovação automática, para que as pessoas decidam a partir daqui. Um perfil que omite este passo deixa a aprovação automática ativa.',
+        'Build the holiday calendars': 'Construir os calendários de feriados',
+        'Builds the business days of every calendar a currency or a currency pair convention names, so a value date never falls on a holiday.':
+            'Constrói os dias úteis de cada calendário que uma moeda ou uma convenção de par de moedas nomeia, para que uma data-valor nunca calhe num feriado.',
         'Attach the photographs': 'Anexar as fotografias',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             'Dá as fotografias às contas e o logótipo à entidade do inquilino.',

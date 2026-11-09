@@ -66,6 +66,8 @@ task and name that file in the Command column.
 
 * Notes
 
+The seed task left one item for this task to prove live: the derived source has stored quotes for each pillar of the EURUSD_SSVI blueprint.
+
 Depends on Build the SSVI calibration engine and Seed a surface blueprint for one pair, and on the curves that the IR curves story publishes. The candidate write goes through the market series identity, which the unmerged task Split the market series identity by series kind reworks: agree the order with that task before this one writes series.
 
 * Test Scenarios

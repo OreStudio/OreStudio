@@ -173,3 +173,14 @@ TEST_CASE("a datum ORE has no name for is thrown, and the reason is its own",
         CHECK(e.reference() == surface.uri());
     }
 }
+
+TEST_CASE("an_ore_index_name_is_stored_as_its_address_and_written_back", "[projection]") {
+    const auto address = ore_projection::address_of_index_or_stored("EUR-EURIBOR-6M");
+    CHECK(address.starts_with("oresmd://"));
+    CHECK(ore_projection{}.ore_name_or_stored(address) == "EUR-EURIBOR-6M");
+}
+
+TEST_CASE("a_name_the_address_could_not_write_back_stays_as_it_stands", "[projection]") {
+    CHECK(ore_projection::address_of_index_or_stored("UK RPI") == "UK RPI");
+    CHECK(ore_projection::address_of_index_or_stored("EQ-") == "EQ-");
+}

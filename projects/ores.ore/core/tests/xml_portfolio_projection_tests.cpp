@@ -896,7 +896,8 @@ TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap",
     CHECK(instrument->legs[1].payer == std::optional<bool>(false));
     CHECK(instrument->legs[1].leg_type_code == "Floating");
     CHECK(instrument->legs[1].payment_frequency_code == "Semiannual");
-    CHECK(instrument->legs[1].floating_index_code == "USD-LIBOR-3M");
+    CHECK(instrument->legs[1].floating_index_code ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
 
     REQUIRE(instrument->leg_amounts.size() == 2);
     CHECK(instrument->leg_amounts[0].leg_number == 1);
@@ -921,7 +922,8 @@ TEST_CASE("a_portfolio_document_projects_the_legs_of_a_vanilla_swap",
     REQUIRE(round->legs.size() == 2);
     CHECK(round->legs[0].leg_type_code == "Fixed");
     CHECK(round->legs[1].leg_type_code == "Floating");
-    CHECK(round->legs[1].floating_index_code == "USD-LIBOR-3M");
+    CHECK(round->legs[1].floating_index_code ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
     REQUIRE(round->leg_amounts.size() == 2);
     CHECK(round->leg_amounts[0].amount.to_string() == "1000000");
     CHECK(round->leg_amounts[1].amount.to_string() == "1000000");
@@ -1080,7 +1082,7 @@ TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products",
     const auto* fra_fact = std::get_if<ores::trading::domain::fra_instrument>(&fra->facts);
     REQUIRE(fra_fact != nullptr);
     CHECK(fra_fact->currency == "USD");
-    CHECK(fra_fact->rate_index == "USD-LIBOR-6M");
+    CHECK(fra_fact->rate_index == "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M");
     CHECK(fra_fact->long_short == "Long");
     CHECK(fra_fact->notional.to_string() == "1000000");
     CHECK(fra_fact->strike.to_string() == "0.03");
@@ -1166,7 +1168,8 @@ TEST_CASE("a_portfolio_document_projects_the_remaining_rates_products",
         std::get_if<ores::trading::domain::fra_instrument>(&fra_again->facts);
     REQUIRE(fra_fact_again != nullptr);
     CHECK(fra_fact_again->currency == "USD");
-    CHECK(fra_fact_again->rate_index == "USD-LIBOR-6M");
+    CHECK(fra_fact_again->rate_index ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=6M");
     CHECK(fra_fact_again->notional.to_string() == "1000000");
     CHECK(fra_fact_again->strike.to_string() == "0.03");
 

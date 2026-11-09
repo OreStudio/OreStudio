@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trading:oresmd:sql:prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/store-trade-market-references-as-oresmd-addresses
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
 #+updated: 2026-11-08
-#+environment: swift_curie
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ No trade holds an ORE name: every column that names market data holds an oresmd 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -36,7 +36,7 @@ No trade holds an ORE name: every column that names market data holds an oresmd 
 * Acceptance
 
 - Every trade column that names market data (indices, curves, underlyings, credit names) holds an oresmd address; the inventory of about 60 columns is in the design.
-- Each column is checked by a soft foreign key against the party's series catalogue, as =ores_marketdata_validate_curve_series_fn= checks a curve today.
+- The soft foreign key against the party's series catalogue is out of this task. It lands in the market data task, after the series exist, so that no trade is refused meanwhile.
 - The importer converts ORE names to addresses and the exporter converts back, both through =ore_projection=; the corpus roundtrip still loses nothing.
 - Stored trades are migrated, family by family.
 
@@ -59,6 +59,10 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Delivered family by family, one PR each. The first PR covers the index columns of swap legs and =rate_index= on a FRA. Commodity legs reuse =floating_index_code= for a commodity name, and move with the commodity family.
+
+A name stays as it stands when the address could not write the same spelling back, such as =UK RPI=. Rows stored with an ORE name still export, because =ore_name_or_stored= passes them through. Generated trades hold ORE names until the planner moves onto the builders.
 
 * Test Scenarios
 

@@ -188,7 +188,7 @@ std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::b
     out.facts = domain::vanilla_swap_instrument{};
     out.legs.push_back(leg_of(1, fixed_pays, "Fixed", terms_, fixed));
     auto floating_leg = leg_of(2, !fixed_pays, "Floating", terms_, floating);
-    floating_leg.floating_index_code = swap->index;
+    floating_leg.floating_index_code = terms_.index.get().uri();
     floating_leg.fixing_days = fixing_days;
     floating_leg.is_in_arrears = false;
     out.legs.push_back(std::move(floating_leg));

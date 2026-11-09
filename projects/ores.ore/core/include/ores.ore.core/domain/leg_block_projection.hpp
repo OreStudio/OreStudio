@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_CORE_DOMAIN_LEG_BLOCK_PROJECTION_HPP
 #define ORES_ORE_CORE_DOMAIN_LEG_BLOCK_PROJECTION_HPP
 
+#include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.ore.core/domain/decimal_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
@@ -160,6 +161,17 @@ inline void set_scalar(record_writer& w, std::string_view name, const std::strin
         w.set_text(name, value);
 }
 
+/// The address a leg stores for the ORE index name a document states.
+inline std::string address_of(std::string_view ore_name) {
+    return ores::marketdata::projection::ore_projection::address_of_index_or_stored(ore_name);
+}
+
+/// An index converts by a fixed rule, so its name needs no market configuration.
+inline std::string ore_name_of(std::string_view stored) {
+    static const ores::marketdata::projection::ore_projection projection;
+    return projection.ore_name_or_stored(stored);
+}
+
 inline void stamp_leg(swap_leg& row) {
     row.audit.modified_by = std::string(option_block::block_actor);
     row.audit.performed_by = std::string(option_block::block_actor);
@@ -222,9 +234,9 @@ inline constexpr digital_payload digital_payloads[] = {
 };
 
 inline void read_cms_terms(swap_leg& row, const record_reader& cms, const cms_payload& payload) {
-    row.floating_index_code = text_of(cms, payload.index);
+    row.floating_index_code = address_of(text_of(cms, payload.index));
     if (!payload.index_2.empty())
-        row.floating_index_code_2 = text_of(cms, payload.index_2);
+        row.floating_index_code_2 = address_of(text_of(cms, payload.index_2));
     if (payload.has_duration)
         if (const auto duration = cms.integer("Duration"))
             row.cms_duration = static_cast<int>(*duration);
@@ -310,7 +322,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         }
     }
     if (const auto floating = child_if(leg, "FloatingLegData")) {
-        row.floating_index_code = text_of(*floating, "Index");
+        row.floating_index_code = address_of(text_of(*floating, "Index"));
         if (const auto days = floating->integer("FixingDays"))
             row.fixing_days = static_cast<int>(*days);
         row.is_in_arrears = optional_flag(*floating, "IsInArrears");
@@ -345,7 +357,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         row.digital_is_put_atm_included = flag("IsPutATMIncluded");
     }
     if (const auto formula = child_if(leg, "FormulaBasedLegData")) {
-        row.floating_index_code = text_of(*formula, "Index");
+        row.floating_index_code = address_of(text_of(*formula, "Index"));
         row.is_in_arrears = optional_flag(*formula, "IsInArrears");
         if (const auto days = formula->integer("FixingDays"))
             row.fixing_days = static_cast<int>(*days);
@@ -383,7 +395,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
                 return std::nullopt;
             return values.front();
         };
-        row.floating_index_code = first("Index").value_or("");
+        row.floating_index_code = address_of(first("Index").value_or(""));
         if (const auto base = cpi->decimals("BaseCPI"); !base.empty())
             row.cpi_base = base.front().to_double();
         if (const auto start = first("StartDate"))
@@ -396,7 +408,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
             row.subtract_inflation_notional = is_flag_on(flags.front());
     }
     if (const auto yy = child_if(leg, "YYLegData")) {
-        row.floating_index_code = text_of(*yy, "Index");
+        row.floating_index_code = address_of(text_of(*yy, "Index"));
         if (const auto days = yy->integer("FixingDays"))
             row.fixing_days = static_cast<int>(*days);
         if (yy->has("ObservationLag"))
@@ -667,9 +679,9 @@ inline void write_cms_terms(record_writer cms,
                             const swap_leg& row,
                             const cms_payload& payload,
                             const std::vector<swap_leg_rate>& rates) {
-    cms.set_text(payload.index, row.floating_index_code);
+    cms.set_text(payload.index, ore_name_of(row.floating_index_code));
     if (!payload.index_2.empty())
-        cms.set_text(payload.index_2, row.floating_index_code_2.value_or(""));
+        cms.set_text(payload.index_2, ore_name_of(row.floating_index_code_2.value_or("")));
     if (payload.has_duration && row.cms_duration)
         cms.set_integer("Duration", *row.cms_duration);
     if (row.is_in_arrears)
@@ -1012,7 +1024,7 @@ void write_leg(record_writer& leg,
     }
     if (row.leg_type_code == "FormulaBased") {
         auto formula = leg.child("FormulaBasedLegData");
-        formula.set_text("Index", row.floating_index_code);
+        formula.set_text("Index", ore_name_of(row.floating_index_code));
         if (row.is_in_arrears)
             formula.set_text("IsInArrears", flag_text(*row.is_in_arrears));
         if (row.fixing_days)
@@ -1032,7 +1044,7 @@ void write_leg(record_writer& leg,
     };
     if (row.leg_type_code == "CPI") {
         auto cpi = leg.child("CPILegData");
-        cpi.append_value("Index", row.floating_index_code);
+        cpi.append_value("Index", ore_name_of(row.floating_index_code));
         write_fixed_rates(cpi);
         if (row.cpi_base)
             cpi.append_decimal("BaseCPI", decimal_from_double(*row.cpi_base));
@@ -1052,7 +1064,7 @@ void write_leg(record_writer& leg,
     }
     if (row.leg_type_code == "YY") {
         auto yy = leg.child("YYLegData");
-        yy.set_text("Index", row.floating_index_code);
+        yy.set_text("Index", ore_name_of(row.floating_index_code));
         if (row.fixing_days)
             yy.set_integer("FixingDays", *row.fixing_days);
         if (row.observation_lag)
@@ -1117,7 +1129,7 @@ void write_leg(record_writer& leg,
                 list.append("Rate").set_own_text(rate.value.to_string());
     } else if (row.leg_type_code == "Floating") {
         auto floating = leg.child("FloatingLegData");
-        floating.set_text("Index", row.floating_index_code);
+        floating.set_text("Index", ore_name_of(row.floating_index_code));
         if (row.fixing_days)
             floating.set_integer("FixingDays", *row.fixing_days);
         const auto write_flag = [&floating](std::string_view name,

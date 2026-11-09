@@ -44,7 +44,7 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 | [[id:014A3FB0-36D9-44A5-8236-E60EFF7C1CA8][Seed ORE's built-in index conventions]] | DONE | | 2026-11-08 | Population seeds the Ibor and overnight index conventions ORE defines in code. |
 | [[id:45DFB9BE-495C-4BE5-954B-D06673BB178F][Review how ORE constructs and prices each trade type]] | DONE | 2026-11-09 | 2026-11-09 | Record, per generated type, its mandatory terms, what conventions supply and what pricing needs. |
 | [[id:8735FE9F-153E-4113-8AAB-58A89E4DAFC6][Build trades through trade builders]] | DONE | 2026-11-09 | 2026-11-09 | The builder API: a required term that is left out does not compile, and terms are derived from conventions. |
-| [[id:639CEE8C-0586-4EEF-8F12-C450F956B00F][Store trade market references as oresmd addresses]] | BACKLOG | |  | Every trade column that names market data holds an oresmd address. |
+| [[id:639CEE8C-0586-4EEF-8F12-C450F956B00F][Store trade market references as oresmd addresses]] | STARTED | 2026-11-09 |  | Every trade column that names market data holds an oresmd address. |
 | [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Generate every trade type through its builder]] | BACKLOG | |  | Family by family, credit first, until ORE builds every generated trade. |
 | [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]] | BACKLOG | |  | Every type can be priced, or leaves the generator with a stated reason. |
 | [[id:B4B85683-D59C-4526-A4BF-7A5B1127BA5E][Value the generated trades in a report and make them correct]] | BACKLOG | |  | A report values every type, and each matches ORE's own NPV for its sample. |
@@ -57,6 +57,8 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 - Reports already run end to end and fail on trade errors, which this story fixes, so the last task waits on no other story.
 - Trades use oresmd references internally, so the migration of the trade columns stays in the story, before generation moves onto the builders.
 - =TradeGenerator= is the inspiration for the builders. It covers 11 products, and the review states how its approach extends to every trade type.
+
+- The soft foreign key on trade references lands after the market data task, not with the address migration. A key added first would refuse generated and imported trades until their series exist.
 
 * Out of scope
 

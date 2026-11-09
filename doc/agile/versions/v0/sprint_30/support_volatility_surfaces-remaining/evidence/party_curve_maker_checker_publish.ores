@@ -1,0 +1,7 @@
+# The maker applies the publish that party_curve_maker_checker_decide.ores
+# approved. Set REQUEST to the id the raise printed.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+curve_publish_operations publish-curve 2ce32709-533c-5b7d-86c0-2242ceb4bdd9 2026-11-09T23:35:00Z --approval_request_id ${REQUEST}
+logout

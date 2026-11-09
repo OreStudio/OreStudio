@@ -1,0 +1,13 @@
+# After provisioning, auto-approval is off: a person raises a new publish of
+# ACCOUS's own EUR-ESTR curve, and it waits for a second person.
+# The config id is the party's copy, which the provisioning step derives.
+connect $ORES_NATS_URL
+
+login tenant_admin@acme_corporation Secure-Password-123
+approval_operations get-approvals-mode
+logout
+
+login henry.jones@acme_corporation Secure-Password-123
+curve_publish_operations publish-curve 2ce32709-533c-5b7d-86c0-2242ceb4bdd9 2026-11-09T23:35:00Z --reason "Raised by a person after provisioning"
+approval_operations list-my-approval-requests
+logout

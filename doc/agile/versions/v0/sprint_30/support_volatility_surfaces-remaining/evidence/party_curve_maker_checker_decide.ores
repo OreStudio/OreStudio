@@ -1,0 +1,7 @@
+# A second person, who did not raise it, approves the publish that
+# party_curve_maker_checker_raise.ores raised. Set REQUEST to the id it printed.
+connect $ORES_NATS_URL
+
+login mark.reid@acme_corporation Secure-Password-123
+approval_operations decide-approval ${REQUEST} approve "The EUR quotes match the day's market" none --version 1
+logout

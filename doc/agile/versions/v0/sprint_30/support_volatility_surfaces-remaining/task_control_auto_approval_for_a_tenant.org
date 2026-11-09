@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/control-auto-approval-for-a-tenant
+#+pr: 4535
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -20,34 +20,36 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A tenant can run without waiting on approvals, and anyone can see that it does. A recorded per-tenant switch, optionally limited to some approval kinds, closes raises without a person. Provisioning turns it on. The profile says whether it stays on afterwards, so a demonstration can keep it and a normal tenant returns to maker-checker. Nothing about it is hidden from a person troubleshooting.
+A tenant can run without waiting on approvals, and anyone can see that it does. The existing =system.approvals.mode= setting is the switch. An operation with its own permission changes it for one tenant, and each change is a version with who and why. Provisioning turns it on and off around its steps, and a profile that omits the last step leaves it on for a demonstration.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
 
-- Turning the switch on or off is a versioned record of who, when, why and which kinds, and needs a permission of its own.
-- A raise in a tenant with the switch on closes at once, and the request names the rule that closed it and the switch version.
+- Turning the switch on or off is a versioned record of who, when and why, and needs inbox::approvals:set_mode.
+- A raise in a tenant with the switch on closes at once, and the request names the rule that closed it, from any party and any service.
 - A raise after the switch goes off waits for a person, with no restart.
-- A provisioning profile decides whether the switch stays on when provisioning ends, and the provisioning result says which.
-- While the switch is on, the approvals screen and the curve publish screens show it, with who set it and when.
-- A request or published set closed by the switch reads as auto-approved wherever it is shown, and the approvals screen filters by it.
-- A person whose publish did not wait, or waited, can see why from the request alone.
+- A profile decides whether the switch stays on when provisioning ends, by ordering or omitting end_auto_approval.
+- Auto-approval is on before every other provisioning step, and off after them.
+- While the switch is on, every screen says so, with who set it, when and why.
+- A request closed by the switch reads as auto-approved, and its decision names who set it and the version.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Most of the switch existed. =system.approvals.mode= is versioned and is read per tenant, and the request records the rule that closed it. Three things were missing: a read that reaches the tenant's row from any party, write access to it, and a way for a session to learn the mode.
+
+=approval_lifecycle= reads as the tenant, not the caller's party. =get_approvals_mode= and =set_approvals_mode= are inbox operations, so the screen does not read the settings table.
+
+Dropped from the first draft: limiting the switch to some approval kinds, and a filter on the approvals screen. Nobody asked for either.
 
 * Measurements
 
@@ -61,7 +63,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Live raise while on | Approved at once, =auto_approval_code= tenant, published | =evidence/auto_approval_toggle.ores= | Working tree on 986466a9bf |
+| Live raise while off | Waiting | =evidence/auto_approval_toggle.ores= | Working tree on 986466a9bf |
+| Acme mode history after provisioning | Version 2 auto_approved, version 3 enforced | =ores_variability_system_settings_tbl= | Working tree on 986466a9bf |
+| Tests | Auto-approval 8 cases, ores.iam.api.tests 911, [provision_step] 43, ores.inbox.api.tests 575 | The test binaries | Working tree on 986466a9bf |
 
 * Notes
 
@@ -80,12 +85,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4535][#4535]] | [inbox] Control auto-approval for a tenant, in plain view |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The start step may run before the tenant's row exists | =provision_tenant_workflow.hpp= | Declined | The system steps are a separate run, and the live history shows the tenant row changing in order. |
+| 2 | A system tenant user can switch off approvals for the installation | =approval_operations_handler.hpp= | Declined | That is the installation's documented mode, it needs the permission, and the notice names it. Every tenant has its own seeded row, so few rows fall back to it. |
+| 3 | A failed run leaves the switch on | provisioning | Declined | Stated in the Result. The notice makes it visible, and the shell turns it off. |
+| 4 | =policy_words= reads the mode twice | =approval_lifecycle.cpp= | Declined | One extra read on an auto-approved close. The two reads can differ only if someone changes the mode between them. |
+| 5 | A write has no version check | =approval_lifecycle.cpp= | Declined | The repository's own write already claims the row it replaces. |
+| 6 | The grants sit under the wrong header | =iam_service_db_grants_create.sql= | Fixed | They have their own section. |
+| 7 | Rerun on a fresh database | PR | Done | Recreated and provisioned from the final grant file, and the toggle ran again. |
+| 8 | Confirm the provisioning role holds the permission | =iam_roles_populate.sql= | Done | TenantAdmin holds every permission, and the live run changed the mode. |
+| 9 | A whitespace-only reason passes | =approval_operations_handler.hpp= | Declined | Only administrators reach this, and the reason is advisory. |
 
 * Result
+
+A tenant can now be put on auto-approval and taken off it, and every screen says when it is on. Acme provisions with it on and hands approvals to people when it ends.
+
+The live run found three defects that the tests could not, because their database user has wider rights. No service role could read the settings table, so =system.approvals.mode= had never taken effect outside the tests. The inbox could not write it. Steps with no inputs run together, so the end step ran first and left the switch on.
+
+If a provisioning run fails partway the switch stays on, and the notice shows it.

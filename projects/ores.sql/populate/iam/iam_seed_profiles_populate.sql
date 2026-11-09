@@ -186,6 +186,8 @@ cross join (values
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
     ('acme_demo', 'system_provision', 5, '{}'::jsonb),
     ('acme_demo', 'publish_system_curves', 6, '{}'::jsonb),
+    ('acme_demo', 'start_auto_approval', 8, '{}'::jsonb),
+    ('acme_demo', 'end_auto_approval', 9000, '{}'::jsonb),
     ('acme_demo', 'publish_bundle', 10, '{"bundles": ["base", "marketdata.reference_vintage_2026_05_05"], "opted_in_datasets": ["gleif.lei_counterparties.{counterparty_size}", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_demo', 'build_calendars', 15, '{}'::jsonb),
     ('acme_demo', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),
@@ -365,6 +367,8 @@ cross join (values
     -- the ORE samples bundle the counterparties the ORE examples name.
     ('acme_minimal', 'system_provision', 5, '{}'::jsonb),
     ('acme_minimal', 'publish_system_curves', 6, '{}'::jsonb),
+    ('acme_minimal', 'start_auto_approval', 8, '{}'::jsonb),
+    ('acme_minimal', 'end_auto_approval', 9000, '{}'::jsonb),
     ('acme_minimal', 'publish_bundle', 10, '{"bundles": ["base"], "opted_in_datasets": ["gleif.lei_counterparties.tiny", "ore.counterparty_aliases"]}'::jsonb),
     ('acme_minimal', 'build_calendars', 15, '{}'::jsonb),
     ('acme_minimal', 'import_lei_hierarchy', 20, '{"bundles": ["acme_lei_import"], "root_lei": "9695ACMEGROUP0000030"}'::jsonb),

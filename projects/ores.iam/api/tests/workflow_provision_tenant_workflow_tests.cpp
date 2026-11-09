@@ -21,6 +21,7 @@
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -434,6 +435,8 @@ TEST_CASE("every kind the catalogue declares has a runner in this build", "[work
 
     CHECK(is_executed_step_kind("publish_bundle"));
     CHECK(is_executed_step_kind("build_calendars"));
+    CHECK(is_executed_step_kind("start_auto_approval"));
+    CHECK(is_executed_step_kind("end_auto_approval"));
     CHECK(is_executed_step_kind("import_lei_hierarchy"));
     CHECK(is_executed_step_kind("provision_party"));
     CHECK(is_executed_step_kind("load_staff"));
@@ -481,6 +484,32 @@ TEST_CASE("the schedule step is a kind of the catalogue this build executes", "[
     CHECK_FALSE(words.label.empty());
     CHECK_FALSE(words.description.empty());
     CHECK(words.timeout.count() > 0);
+}
+
+TEST_CASE("auto-approval brackets every other step of a run", "[workflow]") {
+    const auto def = setup_definition();
+    const auto steps = def.build_steps(
+        request_json({declared("start_auto_approval"),
+                      declared("publish_bundle", R"({"bundles":["base"]})"),
+                      declared("build_calendars"),
+                      declared("end_auto_approval")}),
+        tenant_id,
+        correlation_id);
+
+    const auto reads = [&](const std::string& reader, const std::string& name) {
+        for (const auto& step : steps)
+            if (step.name == reader)
+                return std::find(step.consumes.begin(), step.consumes.end(), name) !=
+                       step.consumes.end();
+        return false;
+    };
+
+    CHECK(steps.front().consumes.empty());
+    CHECK(reads("publish_bundle", "start_auto_approval"));
+    CHECK(reads("build_calendars", "start_auto_approval"));
+    CHECK(reads("end_auto_approval", "publish_bundle"));
+    CHECK(reads("end_auto_approval", "build_calendars"));
+    CHECK(reads(std::string(complete_provisioning_step_kind), "end_auto_approval"));
 }
 
 TEST_CASE("the schedule step waits for the staff, which publish the catalogue", "[workflow]") {

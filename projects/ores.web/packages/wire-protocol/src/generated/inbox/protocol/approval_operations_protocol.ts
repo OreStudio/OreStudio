@@ -174,6 +174,39 @@ export interface ListMyApprovalRequestsResponse {
 }
 
 /**
+ * @brief Reads whether the caller's tenant enforces approvals, and who said so.
+ *
+ * Any signed-in person may ask, so that a request which did not wait can be
+ * explained to whoever is looking at it.
+ */
+export interface GetApprovalsModeRequest {}
+
+export interface GetApprovalsModeResponse {
+    result: Result;
+    mode: string;
+    scope: string;
+    set_by: string;
+    set_at: string;
+    reason: string;
+    version: number;
+}
+
+/**
+ * @brief Turns auto-approval on or off for the caller's tenant.
+ *
+ * Needs inbox::approvals:set_mode. Each change is a new version of the setting,
+ * with who made it and why.
+ */
+export interface SetApprovalsModeRequest {
+    auto_approved: boolean;
+    reason: string;
+}
+
+export interface SetApprovalsModeResponse {
+    result: Result;
+}
+
+/**
  * @brief Reads the one request an identifier names.
  *
  * A notice a person is given carries the request it is about, so the notice
@@ -406,6 +439,8 @@ export const subjects = {
     decide_approval_request_request: 'inbox.v1.ops.decide_approval',
     list_approval_queue_request: 'inbox.v1.ops.list_approval_queue',
     list_my_approval_requests_request: 'inbox.v1.ops.list_my_approval_requests',
+    get_approvals_mode_request: 'inbox.v1.ops.get_approvals_mode',
+    set_approvals_mode_request: 'inbox.v1.ops.set_approvals_mode',
     get_approval_request: 'inbox.v1.ops.get_approval',
     expire_overdue_approvals_request: 'inbox.v1.ops.expire_overdue_approvals',
     remind_expiring_approvals_request: 'inbox.v1.ops.remind_expiring_approvals',
@@ -424,6 +459,8 @@ export const requiresSession = {
     decide_approval_request_request: true,
     list_approval_queue_request: true,
     list_my_approval_requests_request: true,
+    get_approvals_mode_request: true,
+    set_approvals_mode_request: true,
     get_approval_request: true,
     expire_overdue_approvals_request: false,
     remind_expiring_approvals_request: false,

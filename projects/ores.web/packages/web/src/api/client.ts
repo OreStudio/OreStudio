@@ -1652,6 +1652,25 @@ export const api = {
      * member may not read: the queue resolves them, and a member's own answer
      * comes back with `roles` empty.
      */
+    /** Whether the tenant enforces approvals, for the notice every screen shows. */
+    async approvalsMode(): Promise<{
+        readonly autoApproved: boolean;
+        readonly scope: string;
+        readonly setBy: string;
+        readonly setAt: string;
+        readonly reason: string;
+    }> {
+        return z
+            .object({
+                autoApproved: z.boolean(),
+                scope: z.string(),
+                setBy: z.string(),
+                setAt: z.string(),
+                reason: z.string(),
+            })
+            .parse(await request('/api/approvals-mode', { method: 'GET' }));
+    },
+
     async myRequests(page: {
         readonly offset: number;
         readonly limit: number;

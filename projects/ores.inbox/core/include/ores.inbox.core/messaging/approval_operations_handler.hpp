@@ -655,6 +655,73 @@ public:
             open, [&](const auto& p) { return has_permission(ctx, p.decide_permission_code); });
     }
 
+    void get_approvals_mode(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        try {
+            const auto state = service::approval_lifecycle(*ctx).approvals_mode();
+            reply(nats_,
+                  msg,
+                  get_approvals_mode_response{
+                      .result = approval_result(outcome::ok, "", ""),
+                      .mode = std::string(state.enforced ? service::enforced_mode :
+                                                           service::auto_approved_mode),
+                      .scope = state.stated_by_tenant ? "tenant" : "installation",
+                      .set_by = state.set_by,
+                      .set_at = state.set_at,
+                      .reason = state.reason,
+                      .version = state.version});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error reading the approvals mode: " << e.what();
+            reply(nats_,
+                  msg,
+                  get_approvals_mode_response{
+                      .result = approval_result(outcome::failed, "mode_failed", e.what())});
+        }
+    }
+
+    void set_approvals_mode(ores::nats::message msg) {
+        using ores::utility::domain::outcome;
+        auto ctx = context_for(msg);
+        if (!ctx)
+            return;
+        if (!has_permission(*ctx, "inbox::approvals:set_mode")) {
+            reply(nats_,
+                  msg,
+                  set_approvals_mode_response{
+                      .result = approval_result(outcome::denied,
+                                                "forbidden",
+                                                "You may not change the approvals mode.")});
+            return;
+        }
+        auto req = decode<set_approvals_mode_request>(msg);
+        if (!req || req->reason.empty()) {
+            reply(nats_,
+                  msg,
+                  set_approvals_mode_response{
+                      .result = approval_result(outcome::invalid,
+                                                "bad_request",
+                                                "Changing the approvals mode needs a reason.")});
+            return;
+        }
+        try {
+            service::approval_lifecycle(*ctx).set_approvals_mode(req->auto_approved, req->reason);
+            reply(nats_,
+                  msg,
+                  set_approvals_mode_response{.result = approval_result(outcome::ok, "", "")});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(approval_operations_handler_lg(), error)
+                << "Error changing the approvals mode: " << e.what();
+            reply(nats_,
+                  msg,
+                  set_approvals_mode_response{
+                      .result = approval_result(outcome::failed, "mode_failed", e.what())});
+        }
+    }
+
     void mine(ores::nats::message msg) {
         using ores::utility::domain::outcome;
         auto ctx = context_for(msg);

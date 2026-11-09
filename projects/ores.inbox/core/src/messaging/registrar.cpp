@@ -160,6 +160,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
             get_approval_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
                 h->get_history(std::move(msg));
             }));
+        subs.push_back(nats.queue_subscribe(
+            get_approvals_mode_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->get_approvals_mode(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(
+            set_approvals_mode_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+                h->set_approvals_mode(std::move(msg));
+            }));
         subs.push_back(
             nats.queue_subscribe(list_my_approval_requests_request::nats_subject,
                                  queue_group,

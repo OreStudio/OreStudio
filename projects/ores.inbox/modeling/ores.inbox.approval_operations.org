@@ -388,6 +388,100 @@ end.
 :default:  0
 :END:
 
+** get_approvals_mode_request
+:PROPERTIES:
+:subject:  inbox.v1.ops.get_approvals_mode
+:response: get_approvals_mode_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads whether the caller's tenant enforces approvals, and who said so.
+ *
+ * Any signed-in person may ask, so that a request which did not wait can be
+ * explained to whoever is looking at it.
+ */
+#+end_src
+
+** get_approvals_mode_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** mode
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Either enforced or auto_approved.
+
+*** scope
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Who states the mode: tenant or installation.
+
+*** set_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** set_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+** set_approvals_mode_request
+:PROPERTIES:
+:subject:  inbox.v1.ops.set_approvals_mode
+:response: set_approvals_mode_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Turns auto-approval on or off for the caller's tenant.
+ *
+ * Needs inbox::approvals:set_mode. Each change is a new version of the setting,
+ * with who made it and why.
+ */
+#+end_src
+
+*** auto_approved
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** set_approvals_mode_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
 ** get_approval_request
 :PROPERTIES:
 :subject:  inbox.v1.ops.get_approval

@@ -1,0 +1,23 @@
+# Turns auto-approval on, raises a publish, turns it off and raises another.
+# The first closes at once and the second waits. Run the FX ladder seed first.
+connect $ORES_NATS_URL
+
+login tenant_admin@acme_corporation Secure-Password-123
+approval_operations set-approvals-mode "Checking that a raise closes without a person" --auto_approved true
+approval_operations get-approvals-mode
+logout
+
+login henry.jones@acme_corporation Secure-Password-123
+curve_publish_operations publish-curve bbbbbbbb-0000-4000-8000-000000000003 2026-11-09T12:00:00Z --reason "Raised while auto-approval is on"
+approval_operations get-approvals-mode
+logout
+
+login tenant_admin@acme_corporation Secure-Password-123
+approval_operations set-approvals-mode "Back to people deciding" --auto_approved false
+approval_operations get-approvals-mode
+logout
+
+login henry.jones@acme_corporation Secure-Password-123
+curve_publish_operations publish-curve bbbbbbbb-0000-4000-8000-000000000103 2026-11-09T12:00:00Z --reason "Raised while auto-approval is off"
+approval_operations list-my-approval-requests
+logout

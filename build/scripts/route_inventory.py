@@ -396,7 +396,7 @@ def coverage(found):
     for route in (r for r in found if r["server"] == "bff"):
         key = (route["method"].upper(), route["path"])
         decision = decide(route)
-        area = decision.area if decision is not None else ""
+        area = decision.area if decision is not None else NO_AREA
         counts = per_area.setdefault(area, [0, 0])
         counts[0] += 1
         counts[1] += key in PAIRS

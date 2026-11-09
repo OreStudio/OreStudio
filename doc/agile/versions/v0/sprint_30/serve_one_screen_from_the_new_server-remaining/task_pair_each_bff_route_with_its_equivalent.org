@@ -84,6 +84,12 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: only a throwaway mutation script exercised the pair check. | =build/scripts/route_inventory.py= | Accept | Added =build/scripts/tests/test_route_pairing.py=. |
 | 2 | Local review: =misspell-fixer .= exits 1 on the whole repository. | Outside this change | Decline | Each changed file exits 0, so the hit is in existing files. |
+| 3 | PR review: a repeated key in =PAIRS= is lost silently. | =build/scripts/tests/test_route_pairing.py= | Accept | A test parses the table and fails on a repeated key. |
+| 4 | PR review: several BFF routes can map to one C++ route. | =build/scripts/route_pairing.py= | Decline | No two pairs share a C++ route today, and a later pair can share one for a valid reason. |
+| 5 | PR review: two section comments look wrong. | =build/scripts/route_pairing.py= | Decline | The comments name the BFF area, and the coverage counts these routes in those areas. |
+| 6 | PR review: an undecided route gets a blank area. | =build/scripts/route_inventory.py= | Accept | =coverage()= now uses =NO_AREA=, and a test covers it. |
+| 7 | PR review: the coverage check is a substring match. | =build/scripts/route_inventory.py= | Decline | The block must match exactly, and only =--write= places it. |
+| 8 | PR review: a later reader can change a verb to make a pair match. | =build/scripts/route_pairing.py= | Accept | The docstring states that verbs can differ on purpose. |
 
 * Result
 

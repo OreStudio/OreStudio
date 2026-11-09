@@ -11,6 +11,9 @@ other, stays a gap until a port task reconciles the key.
 
 A pair records the mapping and does not prove it. The port tasks prove each route
 against the answer the BFF gives.
+
+The two routes of a pair can use different verbs. Many BFF GET and DELETE routes map
+to a C++ POST operation on purpose, so do not change a verb to make a pair match.
 """
 
 IAM_OPS = "/api/v1/iam/ops"

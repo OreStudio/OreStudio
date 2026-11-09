@@ -39,6 +39,10 @@ Every generated trade type can be priced: its market data and its pricing engine
 - FX volatilities and the pricing engines for FX options and bonds are in place, the gap the first Acme run found.
 - A provisioned Acme's reports record no market data errors for the generated trades, unless a known list asserted exactly names each with its reason.
 
+- Each trade column that holds an oresmd address is checked by a soft foreign key against the party's series catalogue, by kind, as =ores_marketdata_validate_curve_series_fn= checks a curve today.
+
+- No stored trade reference holds an ORE name when the key lands, so readers handle one form. A name the address cannot write back, such as =UK RPI=, is resolved here.
+
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions

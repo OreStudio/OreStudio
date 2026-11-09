@@ -85,7 +85,7 @@ TEST_CASE("a_swap_takes_each_legs_terms_from_the_conventions", tags) {
 
     const auto& floating = swap->legs[1];
     CHECK(floating.payer == false);
-    CHECK(floating.floating_index_code == "EUR-EURIBOR-6M");
+    CHECK(floating.floating_index_code == euribor_6m);
     CHECK(floating.payment_frequency_code == "Semiannual");
     CHECK(floating.fixing_days == 2);
     CHECK(floating.day_count_fraction_code == "A360");

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trading:oresmd:sql:prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/store-trade-market-references-as-oresmd-addresses
+#+pr: 4521
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
 #+updated: 2026-11-08
-#+environment: swift_curie
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,19 +26,19 @@ No trade holds an ORE name: every column that names market data holds an oresmd 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-06                               |
 
 * Acceptance
 
-- Every trade column that names market data (indices, curves, underlyings, credit names) holds an oresmd address; the inventory of about 60 columns is in the design.
-- Each column is checked by a soft foreign key against the party's series catalogue, as =ores_marketdata_validate_curve_series_fn= checks a curve today.
+- Swap leg indices and the FRA =rate_index= hold an oresmd address. The other columns moved to [[id:BA2765AD-BCA4-406B-A612-28BFB7B44BC2][Store the remaining trade market references as oresmd addresses]].
+- The soft foreign key against the party's series catalogue is out of this task. It lands in the market data task, after the series exist, so that no trade is refused meanwhile.
 - The importer converts ORE names to addresses and the exporter converts back, both through =ore_projection=; the corpus roundtrip still loses nothing.
-- Stored trades are migrated, family by family.
+- Rows stored with an ORE name still export.
 
 * Plan
 
@@ -60,6 +60,10 @@ task and name that file in the Command column.
 
 * Notes
 
+Delivered family by family, one PR each. The first PR covers the index columns of swap legs and =rate_index= on a FRA. Commodity legs reuse =floating_index_code= for a commodity name, and move with the commodity family.
+
+A name stays as it stands when the address could not write the same spelling back, such as =UK RPI=. Rows stored with an ORE name still export, because =ore_name_or_stored= passes them through. Generated trades hold ORE names until the planner moves onto the builders.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -75,12 +79,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4521][#4521]] | [ore] Store swap leg and FRA indices as oresmd addresses |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Export can throw on a non-index address | =leg_block_projection.hpp= | Keep | The exporter catches each trade and names the refusal. |
+| 2 | Empty index reaches the codec | =ore_projection.cpp= | Accept | Empty returns empty, with a test. |
+| 3 | No CMS assertion | =xml_portfolio_projection_tests.cpp= | Accept | Test reads ORE's CMS spread sample. |
+| 4 | Column holds mixed forms | Story | Accept | Task 5 acceptance states one form. |
+| 5 | Formatter reflow | =rate_instrument_projection.cpp= | Decline | The format gate requires it. |
+| 6 | Double blank line | =ore_projection.cpp= | Accept | Removed. |
 
 * Result
+
+Swap legs and FRAs store an oresmd address for their index. The importer converts through =address_of_index_or_stored=, and the exporter converts back through =ore_name_or_stored=. The corpus roundtrip passes.
+
+This task closed on the first family, because a task is the unit a PR closes. The remaining columns are in the follow-on task. No soft foreign key and no migration script are in this task.

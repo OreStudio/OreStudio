@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 1EB3B50C-36D4-5FE4-A44C-153EA48280E9
+:END:
+#+title: The regulatory treatment of an FX forward turns on settlement and purpose
+#+description: The US Treasury exemption for deliverable FX swaps and forwards, and the EU spot and means-of-payment exclusions.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+Regulation depends on how the contract settles and what it is for. A physically settled FX swap or forward has a US exemption, and an EU contract can fall outside MiFID II by its delivery window or its purpose.
+
+* Detail
+
+** United States
+
+The 2012 Treasury determination exempts FX swaps and forwards from the Commodity Exchange Act definition of a swap. They avoid mandatory clearing, mandatory trade execution and margin. They remain subject to trade reporting and to anti-manipulation rules. The exemption does not cover FX options, currency swaps or non-deliverable forwards.
+
+** European Union
+
+Article 10 of Delegated Regulation 2017/565 excludes a spot contract, delivered within two trading days for major pairs. It also excludes a contract that is a means of payment, such as one used for identifiable goods, services or direct investment, if it meets all the conditions. The EMIR definition of a derivative refers to MiFID financial instruments, so an FX contract outside this exclusion can be an EMIR derivative.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:6A121626-8B14-580C-B356-A6A9FAEC41B1][An outright settles before, on or after the spot date]] — completes: the delivery window.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — contradicts: the US exemption does not cover the NDFs described there.
+
+* Sources
+
+- [[https://corpgov.law.harvard.edu/2012/12/04/treasury-issues-fx-swap-and-fx-forward-exemption/][Treasury issues FX swap and FX forward exemption, Davis Polk]]
+- [[https://www.govinfo.gov/link/fr/77/69698][Treasury determination on FX swaps and forwards, 77 FR 69694]]
+- [[https://www.mfsa.mt/wp-content/uploads/2018/12/20180813_MiFID_FowardContracts.pdf][MiFID forward contracts circular, MFSA]]
+- [[https://www.business.hsbc.com/-/media/media/assets/refresh/financial-regulations/attachments/hsbc-unregulated-fxexcerpt-from-fca-policy-statement.pdf][FCA policy statement excerpt on FX means of payment, HSBC]]
+- [[https://eur-lex.europa.eu/eli/reg/2017/565/oj][Commission Delegated Regulation (EU) 2017/565]]

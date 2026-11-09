@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04
-#+updated: 2026-07-12
+#+updated: 2026-11-09
 
 * Summary
 
@@ -153,6 +153,7 @@ and the report exists to keep the two visible independently.
 
 * See also
 
+- [[id:B60031AD-CE57-5F9D-885C-1DAF504E6004][An NDF pays a cash difference on its settlement date]] — completes: how an NDF is valued.
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
 - [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — base/quote, reciprocals, bounded-context split.
 - [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — holiday calendars behind the fixing-date

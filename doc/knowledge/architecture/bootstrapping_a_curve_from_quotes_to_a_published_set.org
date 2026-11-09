@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:curves:bootstrap:publish:oresmd:structure_note:
 #+created: 2026-10-28
-#+updated: 2026-10-28
+#+updated: 2026-11-09
 
 * Summary
 
@@ -240,3 +240,7 @@ object the rest of the system consumes.
 - [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] -- the compute is a call that reads the quotes and answers the solved points.
 - [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] -- a republish over the same series and as-of converges on the same natural key rather than duplicating the points.
 - [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] -- the bootstrap reads refdata's recipe and market data's observations, and each component owns its own store.
+
+* See also
+
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio computes FX forwards from published curves and stores none]] — completes: a consumer of the published set.

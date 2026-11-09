@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 95E97C86-4C9A-52BD-8E2B-CD54D2A975DD
+:END:
+#+title: A dealer hedges an outright forward with a spot trade and an FX swap
+#+description: Why an outright is a spot trade plus an FX swap, and why forward points sit in a separate book.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+An outright forward is equivalent to a spot trade plus an FX swap. Dealers construct and hedge outrights this way, because the spot trade carries the exchange-rate risk and the swap carries the forward points.
+
+* Detail
+
+In practical dealing the forward book is separate from the spot book, and forward points are not quoted at the spot desk. The forward desk often belongs to the money market department.
+
+IFRS 9 recognises the same split. Each forward has a spot element and a forward element, and an entity can designate only the spot element as the hedging instrument.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:E9A214DE-AD39-4128-9EDB-106C4A606B90][FX Swap]] — completes: the instrument that holds the forward risk.
+- [[id:D7D5F73A-CBFC-58DD-B37C-43C358BAD79F][A forward carries net fair value on balance sheet and its notional off it]] — completes: the accounting of the two elements.
+
+* Sources
+
+- [[https://pages.stern.nyu.edu/~rlevich/b403388/Chap-3.pdf][Levich, International Financial Markets, chapter 3, NYU Stern]]
+- [[https://quantnet.com/threads/how-do-bank-trading-desks-actually-work.21719/][How do bank trading desks actually work?, QuantNet]]
+- [[https://www.scribd.com/document/407798849/0102-forwarde-1-pdf][Forward exchange primer, Finance Trainer]]
+- [[https://zandersgroup.com/en/insights/blog/hedge-accounting-changes-under-ifrs-9][Hedge accounting changes under IFRS 9, Zanders]]

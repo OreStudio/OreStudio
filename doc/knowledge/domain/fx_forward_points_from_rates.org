@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 73A422C1-C74E-52CF-9A0C-78EE1AE23430
+:END:
+#+title: Forward points follow from two money market rates
+#+description: Covered interest parity on discrete money market rates with separate day-count bases, and its inverse.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+Given spot and one money market rate per currency, the forward has a closed form. The form inverts to give either rate from the points.
+
+* Detail
+
+$$F = S \times \frac{1 + r_q \frac{N}{B_q}}{1 + r_b \frac{N}{B_b}}$$
+
+$r_b$ and $r_q$ are the rates of the base and quote currencies, $N$ the days, and $B_b$ and $B_q$ the day-count bases of each rate. The bases can differ, such as ACT/360 for USD and ACT/365 for JPY. The points are $(F - S)$ divided by the pip factor.
+
+Solving for the quote currency rate:
+
+$$r_q = \frac{B_q}{N} \left[ \frac{F}{S} \left( 1 + r_b \frac{N}{B_b} \right) - 1 \right]$$
+
+The growth factors are inverse discount factors, so this is the discrete form of [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]]. The unit tests of =fx_forward_calculator= hold both directions.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][Forward points are the difference between the outright and spot]] — completes: the quantity this gives.
+- [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]] — exemplifies: parity on discrete rates.
+- [[id:5498FC33-2DDA-5E17-99E0-F524BFACA460][An FX-implied curve is backed out from a discount curve and forward points]] — completes: the same inversion over a whole curve.
+
+* Sources
+
+- [[https://en.wikipedia.org/wiki/Forward_exchange_rate][Forward exchange rate, Wikipedia]]
+- [[https://analystprep.com/cfa-level-1-exam/?p=1393][Forward discount or premium, AnalystPrep]]
+- [[https://ryanoconnellfinance.com/forward-exchange-rates/][Forward exchange rates: forward points, outright rates and premiums, Ryan O'Connell]]

@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 68F2B84F-1A50-502B-A5AE-92786949A724
+:END:
+#+title: A forward ladder shows each pair's tenors as outrights and points
+#+description: What a forward ladder shows: the tenors of one pair, in several measures, including broken dates and turns.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+A forward ladder shows the tenors of one pair. For each tenor it states the outright and the forward points.
+
+* Detail
+
+- Standard tenors run from the short dates through 1W to the long end.
+- Broken dates fall between standard tenors. Straight interpolation is a poor estimate around turns, such as year end, where adjusted forwards differed by 1 to 15 pips in LSEG's study.
+- A forward-forward calculator states a rate between two chosen dates without changing the curve.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — exemplifies: a ladder for FX.
+- [[id:4DF1F49A-9AB4-4B56-B170-808490071799][Broken Dates and Turn Points]] — completes: the non-standard tenors.
+- [[id:3CDBAF1A-452C-5B0A-AFF2-BFF18FBD5D4E][A forward ladder can start from today, tomorrow or spot]] — completes: where the rows start.
+
+* Sources
+
+- [[https://chathamfinancial.com/insights/what-is-an-fx-forward-curve][What is an FX forward curve?, Chatham Financial]]
+- [[https://www.lseg.com/en/insights/fx/the-case-for-turn-impact-adjusted-fx-forward-curves][The case for turn-impact-adjusted FX forward curves, LSEG]]
+- [[https://www.bestx.co.uk/publications/bestx-fx-forward-methodology-on-broken-dates][FX forward methodology on broken dates, BestX]]
+- [[https://infront-professional-terminal.helpcenter.infront.co/en/infront-professional-terminal/8.7.200/fx-forward-calculator][FX forward calculator, Infront]]
+- [[https://www.chinamoney.com.cn/english/bmkycvfsc/][FX swap curve, China Money]]

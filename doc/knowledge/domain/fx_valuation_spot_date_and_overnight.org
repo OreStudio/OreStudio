@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04
-#+updated: 2026-07-12
+#+updated: 2026-11-09
 
 * Summary
 
@@ -68,6 +68,9 @@ funding mechanism, see [[id:5CC47697-2655-4ECD-B04D-C6C08FF620D5][Tom/Next]].
 
 * See also
 
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points run between their own two value dates]] — completes: why O/N and T/N are one-day swaps.
 - [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency pairs]] — the hub.
 - [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — the plain spot date this normalises.
 - [[id:F40E2871-BF6C-4552-B936-09427688EBE8][Pip, tick size, and pip factor]] — the pip factor used in the outright

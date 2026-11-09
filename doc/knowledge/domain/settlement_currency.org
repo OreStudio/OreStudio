@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:finance:currency:trading:
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-11-09
 
 * Summary
 
@@ -60,6 +60,7 @@ individual trade.
 
 * See also
 
+- [[id:B60031AD-CE57-5F9D-885C-1DAF504E6004][An NDF pays a cash difference on its settlement date]] — completes: a forward that pays in this currency.
 - [[https://en.wikipedia.org/wiki/Non-deliverable_forward][Wikipedia: Non-deliverable forward]] -- the standard example of a
   third-currency cash settlement.
 - [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.

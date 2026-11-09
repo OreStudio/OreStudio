@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:finance:fx_forward:
 #+created: 2026-09-06
-#+updated: 2026-09-06
+#+updated: 2026-11-09
 
 An FX forward is the simplest currency derivative. Two parties agree
 today on a rate at which they will exchange two currencies on a future
@@ -152,6 +152,7 @@ Native ORE example portfolios with FX forwards sit under
 
 * See also
 
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — completes: the cluster around this product.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 

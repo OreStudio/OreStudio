@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 7FE74060-4007-5912-91BF-67CE74269E94
+:END:
+#+title: A time option forward settles inside a window at one agreed rate
+#+description: A forward whose delivery date the client picks inside a window; the holder must still complete the whole amount.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+A time option forward commits the client to exchange currencies at a pre-agreed rate, at some point between two pre-agreed dates. The word /option/ refers only to that flexibility. The client must still complete the whole amount by the final date.
+
+* Detail
+
+The market also calls it a window forward. A drawdown cannot be earlier than the start date. The flexibility carries a premium over a forward to one date in the window, which comes from the forward points and grows with the length of the window.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:47598B8D-0121-4989-9661-79A8E6D1A070][FX Forward]] — completes: the base product.
+- [[id:E8B5DF1F-027E-5B98-89B2-809EDFDBEDF1][Forward points are the difference between the outright and spot]] — completes: the source of the premium.
+
+* Sources
+
+- [[https://uk.virginmoney.com/downloads/pdf/business/risk-management/foreign-exchange/FX-time-option-forward.pdf][FX time option forward key information document, Virgin Money]]
+- [[https://cambridgecurrencies.com/window-forward-contract/][Window forward contract, Cambridge Currencies]]
+- [[https://uk.virginmoney.com/downloads/pdf/business/m-exchange-user-guide.pdf][M Exchange user guide, Virgin Money]]

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 0CEB75D7-3227-4FDD-A95C-0AD426DB5D26
+:END:
+#+title: Task: Build the FX forward ladder screen
+#+description: The live screen that draws the signed-off prototype through the shared parts, in three languages, tested and signed off.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The live web draws the signed-off forward ladder. This is steps 3 and 4 of [[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][Take a topic through the screen pipeline]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- The live screen draws what the prototype draws, through the shared parts, in English, French and Portuguese.
+- A test scenario passes on a fresh database, and the owner signs off the sheet.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Follows [[id:DC7504E5-A53D-4938-A774-B58CE2A37B57][Make FX forwards available from the IR curves]]. The analysis and external evidence are in its Plan.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

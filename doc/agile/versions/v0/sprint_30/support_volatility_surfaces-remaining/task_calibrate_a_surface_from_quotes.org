@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/calibrate-a-surface-from-quotes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
 #+updated: 2026-11-08
-#+environment: prime_origin
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,10 +26,10 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:4CAB1BEA-C47C-4F7E-B453-5C149047C025][Read FX forwards for a pair]] |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-03                               |
 

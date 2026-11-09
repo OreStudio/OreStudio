@@ -101,6 +101,10 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review: with no session party, two eventing tests keep the generator party_id on seeded parents | cpp_nats_integration_test.cpp.mustache | Accept as designed | Both tests pass and valgrind reports 0 errors. |
+| 2 | @claude: make_epoch needs a test for strictly increasing values | change_stream_tests.cpp | Accept | Test added. |
+| 3 | @claude: the make_epoch counter can differ per shared library | change_hub.hpp | Decline | The macOS failure is in one test binary. |
+| 4 | @claude: nats_connect_error may not be exported | nats_connect_error.hpp | No change | The class has ORES_NATS_EXPORT. |
+| 5 | @claude: the test start listener is permanent | net_transport_tests.cpp | Accept later | Remove it after the macOS hang is found. |
 
 * Result
 

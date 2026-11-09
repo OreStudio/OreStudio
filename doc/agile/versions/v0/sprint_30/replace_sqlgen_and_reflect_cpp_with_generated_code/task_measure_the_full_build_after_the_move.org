@@ -8,7 +8,7 @@
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_30:v0:
 #+owner: marco
 #+branch: feature/measure-the-full-build
-#+pr:
+#+pr: 4523
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4523][#4523]] | [agile] Close the sqlgen and reflect-cpp story |
 
 * Review
 

@@ -32,6 +32,7 @@
 #include "ores.testing/database_helper.hpp"
 #include "test_helpers.hpp"
 #include "test_suite.hpp"
+#include "tick_test_support.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -175,6 +176,29 @@ TEST_CASE("a_snapshot_of_an_object_with_no_axis_is_refused", "[service][series_s
 
     CHECK_FALSE(resp.success);
     CHECK_FALSE(resp.message.empty());
+}
+
+TEST_CASE("a_snapshot_is_refused_to_a_party_with_only_a_derived_right",
+          "[service][series_snapshot_reader]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    service_series_snapshot_reader_import(h,
+                                          "20170910 FX_OPTION/RATE_LNVOL/NZD/SEK/1Y/ATM 0.080\n"
+                                          "20170910 FX_OPTION/RATE_LNVOL/NZD/SEK/2Y/ATM 0.085\n");
+
+    const auto identity = fx_option_identity("NZD", "SEK");
+    const auto series =
+        ores::marketdata::repository::market_series_identity_reader{}.read(h.context(), identity);
+    REQUIRE(series.size() == 1);
+    const auto& s = series.front();
+    ores::marketdata::tests::subscribe(h, s.party_id, s.provider_code, false, false, true);
+
+    const auto party = h.context().with_party(h.tenant_id(), s.party_id, {s.party_id}, h.db_user());
+    const auto resp =
+        series_snapshot_reader::read(party, snapshot_request(identity), instant("2017-09-11T12:00:00Z"));
+
+    CHECK_FALSE(resp.success);
 }
 
 TEST_CASE("a_snapshot_of_an_identity_no_series_carries_is_empty",

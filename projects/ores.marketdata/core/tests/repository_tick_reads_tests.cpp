@@ -229,6 +229,29 @@ TEST_CASE("the_instants_of_a_series_are_the_times_of_its_ticks", "[repository][t
     CHECK(stated.front().points.front().value == "2");
 }
 
+TEST_CASE("a_party_with_only_a_derived_right_computes_from_ticks_and_does_not_read_them",
+          "[repository][ticks]") {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto s = repository_tick_reads_unique_series(generate_synthetic_market_series(ctx));
+    market_series_repository{}.write(h.context(), s);
+    subscribe(h, s.party_id, s.provider_code, false, false, true);
+
+    const auto t0 = now_second();
+    const auto owner = party_context(h, s.party_id);
+    const auto number = repository_tick_reads_number_of(owner, s);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), number, t0, 1.5);
+
+    market_observation_repository repo;
+    CHECK(repo.read_as_of(owner, s.id, t0 + std::chrono::minutes(1)).size() == 1);
+    CHECK(repo.read_as_of_all(owner, t0 + std::chrono::minutes(1)).size() == 1);
+    const auto buckets = repo.read_as_of_buckets(
+        owner, s.id, t0 + std::chrono::minutes(1), std::chrono::minutes(1), 2);
+    REQUIRE(buckets.size() == 2);
+    CHECK(buckets[0].empty());
+    CHECK(buckets[1].empty());
+}
+
 TEST_CASE("the_numbers_of_many_datums_are_assigned_together_and_stay_the_same",
           "[repository][ticks]") {
     database_helper h;

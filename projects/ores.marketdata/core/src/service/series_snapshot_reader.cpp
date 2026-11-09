@@ -25,6 +25,7 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_identity_reader.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
+#include "ores.marketdata.core/repository/tick_entitlement.hpp"
 #include "ores.marketdata.core/service/series_shape.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <cstddef>
@@ -127,6 +128,12 @@ series_snapshot_reader::read(ores::database::context ctx,
         return series_snapshot_reader_refuse(
             "the identity names " + std::to_string(series.size()) +
             " series; state the party or the provider so that it names one");
+
+    // A snapshot returns the values to the party, so a derived right alone does not serve.
+    if (ctx.party_id() && !repository::may_read_ticks(ctx, series.front().provider_code))
+        return series_snapshot_reader_refuse("the party holds no display or non-display right to "
+                                             "provider " +
+                                             series.front().provider_code);
 
     const auto series_id = boost::uuids::to_string(series.front().id);
     const auto declared = read_series_shape(ctx, series_id);

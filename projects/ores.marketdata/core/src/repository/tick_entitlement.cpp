@@ -22,19 +22,58 @@
 
 namespace ores::marketdata::repository {
 
-std::set<std::string> readable_providers(const ores::database::context& ctx) {
+namespace {
+
+using domain::subscription;
+
+bool may_show(const subscription& s) {
+    return s.display || s.non_display;
+}
+
+bool may_compute(const subscription& s) {
+    return may_show(s) || s.derived;
+}
+
+std::set<std::string> providers_where(const ores::database::context& ctx,
+                                      bool (*holds)(const subscription&)) {
     const auto party = ctx.party_id();
     if (!party)
         return {};
     std::set<std::string> providers;
     for (const auto& s : subscription_repository{}.read_latest(ctx))
-        if (s.party_id == *party && (s.display || s.non_display))
+        if (s.party_id == *party && holds(s))
             providers.insert(s.provider_code);
     return providers;
 }
 
+bool holds_right(const ores::database::context& ctx,
+                 const std::string& provider_code,
+                 bool (*holds)(const subscription&)) {
+    const auto party = ctx.party_id();
+    if (!party)
+        return false;
+    for (const auto& s : subscription_repository{}.read_latest_by_provider_code(ctx, provider_code))
+        if (s.party_id == *party && holds(s))
+            return true;
+    return false;
+}
+
+}
+
+std::set<std::string> readable_providers(const ores::database::context& ctx) {
+    return providers_where(ctx, may_show);
+}
+
 bool may_read_ticks(const ores::database::context& ctx, const std::string& provider_code) {
-    return readable_providers(ctx).contains(provider_code);
+    return holds_right(ctx, provider_code, may_show);
+}
+
+std::set<std::string> computable_providers(const ores::database::context& ctx) {
+    return providers_where(ctx, may_compute);
+}
+
+bool may_compute_from_ticks(const ores::database::context& ctx, const std::string& provider_code) {
+    return holds_right(ctx, provider_code, may_compute);
 }
 
 }

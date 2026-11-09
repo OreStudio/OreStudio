@@ -48,8 +48,8 @@ struct tick final {
  *
  * The tick table is append-only and has one index, on the stream, the coordinate and the time,
  * so a read of one stream in a span of time starts from that index. The table carries no
- * tenant and no party policy: the caller has already checked that the session may read the
- * series, and the stream it names is shared by every party.
+ * tenant and no party policy, so every caller must check the subscription, through
+ * tick_entitlement, before it names a stream. The stream is shared by every party.
  */
 class ORES_MARKETDATA_CORE_EXPORT tick_repository {
 private:

@@ -47,6 +47,21 @@ readable_providers(const ores::database::context& ctx);
 ORES_MARKETDATA_CORE_EXPORT bool may_read_ticks(const ores::database::context& ctx,
                                                 const std::string& provider_code);
 
+/**
+ * @brief The providers whose ticks the session's party may compute from.
+ *
+ * A calculation shows no tick to the party, so any right serves: display, non-display or
+ * derived. A read that returns the values to the party needs readable_providers instead.
+ */
+ORES_MARKETDATA_CORE_EXPORT std::set<std::string>
+computable_providers(const ores::database::context& ctx);
+
+/**
+ * @brief Whether the session's party may compute from the ticks of @p provider_code.
+ */
+ORES_MARKETDATA_CORE_EXPORT bool may_compute_from_ticks(const ores::database::context& ctx,
+                                                        const std::string& provider_code);
+
 }
 
 #endif

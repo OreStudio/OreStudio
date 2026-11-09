@@ -416,33 +416,34 @@ namespace {
  * that may not read the provider's ticks, so a series with no ticks, a series the session cannot
  * read and a party with no subscription all answer with no tick. A context with no party is a
  * service context, which reads the store on its own authority, as every service read does. The
- * id is stored nowhere, so every read computes it.
+ * id is stored nowhere, so every read computes it. @p allowed is the right the read needs.
  */
 std::optional<std::string> stream_of(market_observation_repository::context ctx,
-                                     const boost::uuids::uuid& series_id) {
+                                     const boost::uuids::uuid& series_id,
+                                     bool (*allowed)(const ores::database::context&, const std::string&)) {
     const auto series =
         market_series_repository{}.read_latest(ctx, boost::uuids::to_string(series_id));
     if (series.empty())
         return std::nullopt;
     const auto& s = series.front();
-    if (ctx.party_id() && !may_read_ticks(ctx, s.provider_code))
+    if (ctx.party_id() && !allowed(ctx, s.provider_code))
         return std::nullopt;
     return boost::uuids::to_string(datum::stream_id(s.provider_code, s.oresmd_uri));
 }
 
 /*
- * The stream of every series of the tenant that the session may read the ticks of, with the
+ * The stream of every series of the tenant that the session may compute from, with the
  * series each belongs to, in one order. read_as_of_all reads every series in one statement, and
  * no statement derives the id.
  */
 std::pair<std::vector<std::string>, std::vector<std::string>>
 streams_of_every_series(market_observation_repository::context ctx) {
     const auto party = ctx.party_id();
-    const auto readable = party ? readable_providers(ctx) : std::set<std::string>{};
+    const auto usable = party ? computable_providers(ctx) : std::set<std::string>{};
     std::vector<std::string> series;
     std::vector<std::string> streams;
     for (const auto& s : market_series_repository{}.read_latest(ctx)) {
-        if (party && !readable.contains(s.provider_code))
+        if (party && !usable.contains(s.provider_code))
             continue;
         series.push_back(boost::uuids::to_string(s.id));
         streams.push_back(boost::uuids::to_string(datum::stream_id(s.provider_code, s.oresmd_uri)));
@@ -568,7 +569,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     const auto tid = ctx.tenant_id().to_string();
     const auto sid = boost::uuids::to_string(series_id);
     const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
-    const auto stream = stream_of(ctx, series_id);
+    const auto stream = stream_of(ctx, series_id, may_compute_from_ticks);
     if (!stream)
         return {};
 
@@ -822,7 +823,7 @@ market_observation_repository::read_as_of_buckets(
     const auto latest_str = datetime::to_iso8601_utc(latest_boundary);
     const auto bucket_seconds = std::to_string(bucket_size.count());
     const auto count_str = std::to_string(bucket_count);
-    const auto stream = stream_of(ctx, series_id);
+    const auto stream = stream_of(ctx, series_id, may_read_ticks);
     if (!stream)
         return std::vector<std::vector<domain::market_observation>>(bucket_count);
 
@@ -969,7 +970,7 @@ market_observation_repository::read_instants(
     const auto from_str = datetime::to_iso8601_utc(from_datetime);
     const auto to_str = datetime::to_iso8601_utc(to_datetime);
     const auto cap_str = std::to_string(max_instants + 1);
-    const auto stream = stream_of(ctx, series_id);
+    const auto stream = stream_of(ctx, series_id, may_read_ticks);
     if (!stream)
         return {};
 

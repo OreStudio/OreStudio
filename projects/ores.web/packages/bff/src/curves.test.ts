@@ -666,6 +666,17 @@ describe('the published curve routes', () => {
         expect(response.body).toContain('No spot of EUR/USD');
     });
 
+    it('refuses a forward ladder that names a party', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/curves/fx-forward-ladder', {
+            pair_code: 'EUR/USD',
+            as_of: '2026-11-09 23:59:59Z',
+            party_id: '44444444-4444-4444-8444-444444444444',
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('refuses a forward ladder with a malformed as-of', async () => {
         const { server, sessionId, calls } = buildTestServer({});
         const response = await send(server, sessionId, 'POST', '/api/curves/fx-forward-ladder', {

@@ -87,7 +87,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A doc comment of the published sets read sat above the ladder method | =web/src/api/client.ts= | Fixed | The comment is back above its method. |
+| 2 | The BFF forwards a party id from the browser that the service does not check | =bff/src/curves.ts= | Fixed | The route takes no party and a test refuses one. The published read takes the session's party. |
+| 3 | State the ON row contract behind the ladder start | =web/src/marketdata/fxForwardLadder.ts= | Fixed | Stated in the doc comment. The figures agree with a live reply: 1Y from today is 260.43. |
+| 4 | An unknown pair in the address shows a blank select | =web/src/marketdata/FxForwardLadderPage.tsx= | Declined | The refusal names the pair, and falling back would hide it. The pair list changes when crosses arrive. |
+| 5 | The default as-of uses the UTC date | =web/src/marketdata/fxForwardLadder.ts= | Declined | The as-of instant is the end of a UTC day, so the two agree. |
+| 6 | Split the agile and knowledge files out of the PR | doc | Declined | The bookkeeping is agile documents only, and it closes with the task this PR delivers. |
+| 7 | Wait for a run on stored data before merge | PR | Done | The owner ran the screen on published curves and signed it off. |
 
 * Result
 

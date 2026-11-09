@@ -249,7 +249,6 @@ async function call(
 const fxForwardLadderBody = z.strictObject({
     pair_code: word,
     as_of: instant,
-    party_id: z.union([z.uuid(), z.literal('')]).default(''),
 });
 
 export function registerCurveRoutes(
@@ -410,7 +409,7 @@ export function registerCurveRoutes(
     server.post('/api/curves/fx-forward-ladder', async (request) => {
         const session = requireSession(request);
         const body = input(fxForwardLadderBody, request.body);
-        return call(session, fxForwards.get_fx_forward_ladder_request, body);
+        return call(session, fxForwards.get_fx_forward_ladder_request, { ...body, party_id: '' });
     });
 
     // Takes a published set out of use. The server decides who may, so the route

@@ -34,7 +34,12 @@ export interface LadderRow extends FxForwardLadderRow {
     readonly moved: boolean;
 }
 
-/** The forward rate at today and at tomorrow, which the ON row states. */
+/**
+ * The forward rate at today and at tomorrow, which the ON row states.
+ *
+ * ON quotes the swap from today to tomorrow, so its forward rate is tomorrow's
+ * and its swap points lead back to today's.
+ */
 function shortForwards(ladder: FxForwardLadder): { today: number; tomorrow: number } | undefined {
     const on = ladder.rows.find((row) => row.tenor === 'ON');
     if (on === undefined) return undefined;

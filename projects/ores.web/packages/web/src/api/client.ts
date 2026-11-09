@@ -3316,13 +3316,6 @@ export const api = {
         return { sets: answer.sets, total: answer.total };
     },
 
-    /**
-     * One curve's last published sets, oldest first, with the pillars each holds.
-     *
-     * The points travel with the set because a published set is the observations
-     * the publish wrote at its own as-of, and the snapshot read serves the market
-     * as it stands now.
-     */
     /** One pair's forward ladder at one as-of. The server names what a refusal lacks. */
     async fxForwardLadder(query: {
         readonly pairCode: string;
@@ -3337,6 +3330,13 @@ export const api = {
         );
     },
 
+    /**
+     * One curve's last published sets, oldest first, with the pillars each holds.
+     *
+     * The points travel with the set because a published set is the observations
+     * the publish wrote at its own as-of, and the snapshot read serves the market
+     * as it stands now.
+     */
     async publishedCurveSets(query: {
         readonly seriesId: string;
         readonly limit?: number;

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:volatility:calibration:publish:oresmd:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-09
 
 * Summary
 
@@ -62,7 +62,8 @@ with the weight that contributor carries in the calibration.
 
 Two rules belong to the recipe rather than to the engine. The smile model sets
 how many pillars each expiry needs: SSVI and SABR need an ATM, a risk reversal and
-a butterfly at one delta at least, and a five-point spline needs two deltas. And
+a butterfly at one delta at least, or three quotes at explicit strikes, and a
+five-point spline needs two deltas. And
 the conventions decide what a quote means: a butterfly read in the smile
 convention and the same number read as a broker strangle are different surfaces.
 Both are part of what the blueprint decides, and both are checked before any
@@ -100,8 +101,8 @@ has an order, because one pillar's factor feeds the next, and that order is what
 makes its method a bootstrap; a surface's quotes have no such order, so its method
 is a calibration: the model's parameters minimise the weighted squared difference
 between the quotes and the volatilities the model gives at the pillars' strikes.
-For SSVI the parameters are the ATM total variance of each expiry, the skew and
-the curvature; for SABR they are fitted expiry by expiry. A butterfly quoted as a
+For SSVI the parameters are the ATM total variance of each expiry, and the skew
+and the two curvature parameters $\eta$ and $\gamma$ that the expiries share; for SABR they are fitted expiry by expiry. A butterfly quoted as a
 broker strangle enters the calibration as the price of the strangle at its own
 strikes rather than as a smile volatility, as
 [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] explains.

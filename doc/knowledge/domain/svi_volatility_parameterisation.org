@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:volatility:svi:ssvi:
 #+created: 2026-11-03
-#+updated: 2026-11-03
+#+updated: 2026-11-09
 
 * Summary
 
@@ -160,6 +160,11 @@ The paper gives two forms of $\varphi$:
   $\gamma = 1/2$ the SVI-JW parameters of every slice are constant (Lemma 4.1)
   and the ATM skew is $\rho\eta/(2\sqrt{t})$, falling as $1/\sqrt{t}$.
 
+The Heston-like form has no amplitude. Because $1 - (1 - e^{-x})/x < x/2$ for
+$x > 0$, it is always below $1/2$, and that cap can stop it reaching the skew of
+a surface; an experiment fitting a simulated Heston surface missed by 4 volatility
+points RMSE until a scale factor was added (riskhub.org, below).
+
 ** The absence of static arbitrage in SSVI
 
 Corollary 4.1 of the paper: an SSVI surface is free of static arbitrage if, for
@@ -212,6 +217,13 @@ above. A tenant's surface blueprint may fit SSVI, SABR, a spline or another
 smile model to the quotes it reads, so the generator's choice does not bind the
 tenant's.
 
+The calibration engine, =ssvi_calibration_engine= in =ores.analytics.quant=, fits
+the power-law form with $\gamma$ free in $(0, 1)$, as ORE's QuantExt does, so it
+does not assume the generator's $\gamma = 1/2$. With $\gamma$ free, condition 4
+depends on $\theta$, so it is checked expiry by expiry. A fitted surface can be
+tested against the closed form of the ATM skew, which for any $\varphi$ is
+$\rho\sqrt{\theta_t}\,\varphi(\theta_t)/(2\sqrt{t})$.
+
 * See also
 
 - [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note that orders this cluster, and where to read this page in it.
@@ -238,5 +250,11 @@ tenant's.
   [[https://www.risk.net/journal-of-computational-finance/6555351/the-extended-ssvi-volatility-surface][risk.net]];
   working paper (2017),
   [[https://doi.org/10.2139/ssrn.2971502][doi:10.2139/ssrn.2971502]].
+- [[https://riskhub.org/blogs/ssvi-and-surface-wide-parameterization][SSVI and Surface-Wide Parameterization]] (riskhub.org). A worked fit to a simulated Heston
+  surface, comparing raw SVI, per-slice SSVI and global SSVI, and testing out of
+  sample in maturity.
+- ORE's QuantExt, =qle/termstructures/svimodeltraits.cpp= and
+  =test/sviparametricvolatility.cpp=. An open-source implementation of these
+  forms, and the source of the calibration engine's test data.
 - "No arbitrage global parametrization for the eSSVI volatility surface."
   [[https://arxiv.org/abs/2204.00312][arXiv:2204.00312]].

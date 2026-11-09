@@ -8,7 +8,7 @@
 #+filetags: :marketdata:volatility:architecture:sprint_30:v0:
 #+created: 2026-11-08
 #+updated: 2026-11-08
-#+environment: festive-dijkstra
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -22,43 +22,49 @@ The system builds and serves volatility surfaces as market data. A surface is ca
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started. Split from [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]], which closed in sprint 29 with its done tasks. |
 | Waiting on    | Nothing.                               |
-| Next          | Triage into a sprint. |
+| Next          | Build the SSVI calibration engine. |
 | Last touched  | 2026-11-08 |
 
 * Acceptance
 
-
-
-- The volatility surface architecture is in the knowledge base, linked into the existing notes on FX volatility surfaces and surface driving, with no duplicated content.
-- The later tasks of the arc are named from that architecture.
-- A surface is calibrated from its quotes and its slices can be read.
+- A surface is calibrated from its quotes, checked for arbitrage and written as a candidate with lineage.
+- A second person publishes a candidate, and the published surface and its slices can be read and seen on a screen.
+- A report binds to a published surface, and ORE prices an FX option from the exported grid.
+- A synthetic generator publishes contributor quotes that a blueprint can calibrate from.
 - The synthetic feeds start once from their calibrated levels, take a new calibration at the market day roll, and recalibrate on a schedule.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:67D0F734-5703-43DF-BF16-F5513C85A01F][Build the synthetic FX volatility surface generator]] | BACKLOG | | | A generator of kind fx_vol_surface whose SSVI state evolves through bounded processes correlated with spot, observed by contributors with noise profiles; see the approach note and A synthetic contributor publishes noisy observations of a latent surface. |
+| [[id:F557CBF8-8256-4953-A44A-82CF40DE1F86][Build the SSVI calibration engine]] | DONE | 2026-11-09 | 2026-11-09 | A pure quant engine that fits SSVI to weighted FX volatility quotes, samples the output grid and checks the result for arbitrage, with no service or database. |
+| [[id:C1514A65-49C5-4936-8E9D-BC57A4FF4E62][Seed a surface blueprint for one pair]] | BACKLOG | | | Seed the first FX volatility surface blueprint, for EUR/USD, whose pillars read the derived ATM, RR and BF quotes and whose output series exists. |
 | [[id:886DD1DB-7FFD-4EB0-9BE7-D7A5F1C1BEBD][Calibrate a volatility surface from its quotes]] | BACKLOG | | | The marketdata.v1.surface.calibrate operation and its engine, with the recipe and result checks run in the service, writing a candidate with lineage; see Constructing a volatility surface: from quotes to a published set. |
-| [[id:6E5973FF-B931-467F-BE72-542BC819EF10][Calibrate in the provisioning system run]] | BACKLOG | | | The system run of provisioning starts the calibration workflow after it publishes the system data, and a profile may release the feeds once it completes. |
-| [[id:BBCE9F48-939B-43DB-B703-99B3196942D4][Load the public rates as a workflow step]] | BACKLOG | | | The official service serves a step that backfills each accepted public source and completes once its fixings are stored, so a workflow can order calibration after the rates exist. |
-| [[id:958AD1EA-6A2B-4067-A162-5515B9CC7402][Re-anchor a class to the public rates]] | BACKLOG | | | An operator re-anchors an asset class: its feeds restart from the latest calibrated levels, a deliberate and recorded jump, since otherwise a running feed's level follows its own path. |
+| [[id:43BB2A3B-F0D8-4C02-8DE0-06C55C304689][Publish a calibrated surface]] | BACKLOG | | | A maker raises the publish of a surface candidate, a second person decides, and the approved set becomes the authoritative surface for its blueprint and as-of. |
 | [[id:780C7570-E322-4B2F-833A-C352D4A95B84][Read a published surface and its slices]] | BACKLOG | | | The surface and slice reads the slices journey needs, over the published set rather than the quotes; see Constructing a volatility surface: from quotes to a published set. |
-| [[id:D3E4FB25-30DE-48B3-B6B4-E3A766E8EB50][Recalibrate the synthetic feeds on a schedule]] | BACKLOG | | | The scheduler starts the calibration workflow each business day, so new fixings move the levels and the fits without a person starting it. |
-| [[id:E4171CD9-B13C-4F7B-8F61-87AFD65191C4][Resume a feed from its last stored spot]] | BACKLOG | | | A feed that has run before starts again from its own last stored spot, not from the fixing, so a restart, a deploy or a crash puts no jump in the recorded series. |
+| [[id:79AA692B-8977-41A9-B993-A34CDCBEFB74][Export a published surface to ORE through the report binding]] | BACKLOG | | | A report binds to a published surface, and its ORE export writes the grid as ORE volatility quotes with the matching fx_volatility_config. |
+| [[id:2FB43D9C-862E-4996-8B4A-BA3EAB7B6400][Build the calibrate and slices screens]] | BACKLOG | | | The screens of the Calibrate or refresh a surface and Inspect a surface's slices journeys, over the calibrate operation and the published surface reads. |
+| [[id:67D0F734-5703-43DF-BF16-F5513C85A01F][Build the synthetic FX volatility surface generator]] | BACKLOG | | | A generator of kind fx_vol_surface whose SSVI state evolves through bounded processes correlated with spot, observed by contributors with noise profiles; see the approach note and A synthetic contributor publishes noisy observations of a latent surface. |
+| [[id:BBCE9F48-939B-43DB-B703-99B3196942D4][Load the public rates as a workflow step]] | BACKLOG | | | The official service serves a step that backfills each accepted public source and completes once its fixings are stored, so a workflow can order calibration after the rates exist. |
 | [[id:8FB955DB-45B6-480C-AC69-8FBB55ACB8FA][Run the synthetic calibration workflow]] | BACKLOG | | | A workflow on the engine loads the public rates, calibrates the feeds, approves the fits the policy allows and tells the reviewer of the exceptions, started by an operator or by another run. |
 | [[id:813D806C-D1C5-4406-8AF1-1259C39E221A][Release the synthetic feeds after calibration]] | BACKLOG | | | The synthetic adapters serve no demand for an asset class until it is released, so every feed starts once, from its calibrated level, and the recorded spots have no jump. |
+| [[id:6E5973FF-B931-467F-BE72-542BC819EF10][Calibrate in the provisioning system run]] | BACKLOG | | | The system run of provisioning starts the calibration workflow after it publishes the system data, and a profile may release the feeds once it completes. |
+| [[id:E4171CD9-B13C-4F7B-8F61-87AFD65191C4][Resume a feed from its last stored spot]] | BACKLOG | | | A feed that has run before starts again from its own last stored spot, not from the fixing, so a restart, a deploy or a crash puts no jump in the recorded series. |
 | [[id:A0A98F65-9E6B-4AD0-9AB8-3FF9C21CAE4C][Take a new calibration at the market day roll]] | BACKLOG | | | A running feed whose pair has a newly approved calibration, or whose spread was recalibrated, takes it at its next market day roll without a restart. |
+| [[id:D3E4FB25-30DE-48B3-B6B4-E3A766E8EB50][Recalibrate the synthetic feeds on a schedule]] | BACKLOG | | | The scheduler starts the calibration workflow each business day, so new fixings move the levels and the fits without a person starting it. |
+| [[id:958AD1EA-6A2B-4067-A162-5515B9CC7402][Re-anchor a class to the public rates]] | BACKLOG | | | An operator re-anchors an asset class: its feeds restart from the latest calibrated levels, a deliberate and recorded jump, since otherwise a running feed's level follows its own path. |
 
 * Decisions
 
 
 - Split from [[id:3D2A2BD4-4126-4E54-9046-A9E00966D898][Support volatility surfaces]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
 - Reviewed on 2026-11-08 at sprint 30 start. Goal rewritten, because the architecture it named is done. The tasks are two arcs: the surface and the calibration of the synthetic feeds.
+- *The tasks run in dependency order, and the surface path reaches pricing* (2026-11-09). Context: three surface tasks had no goal or acceptance, and the construction note's path from a calibrated surface to a report had no tasks for the publish, the ORE export or the screens. No blueprint was seeded. Decision: the task table is in working order, the surface arc first. The arc adds the engine, split out of the calibrate task so unit tests can prove it alone, a seeded blueprint for EUR/USD, the publish, the ORE export and the screens. Consequences: the story closes only when pricing reads a surface; the first surface calibrates from the derived quotes, so the generator can follow it.
+- *The calibration fits gamma, as QuantExt does* (2026-11-09). Context: the decision of 2026-11-03 set SSVI with gamma = 1/2 for the synthetic surface. QuantExt calibrates a power-law SSVI with gamma in (0, 1), and its bounds on real-shaped smiles are the ground truth this engine ports (=QuantExt/test/sviparametricvolatility.cpp= and =QuantExt/test/bfrrvolsurface.cpp= in ORE 1.8.17.0). [[https://riskhub.org/blogs/ssvi-and-surface-wide-parameterization][SSVI and Surface-Wide Parameterization]] (riskhub.org) found a power-law gamma of 0.28 on a Heston surface. Decision: the calibration engine fits rho, eta and gamma, with phi(theta) = eta * theta^(-gamma). Consequences: the no-arbitrage conditions are checked expiry by expiry, because the curvature condition depends on theta once gamma differs from 1/2. The generator's own choice of gamma is taken up in its task.
 
 * Out of scope
 

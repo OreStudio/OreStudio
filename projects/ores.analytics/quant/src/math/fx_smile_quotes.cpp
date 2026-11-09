@@ -19,8 +19,9 @@
 #include "ores.analytics.quant/math/fx_smile_quotes.hpp"
 #include "ores.analytics.quant/math/root.hpp"
 #include <algorithm>
+#include <array>
 #include <cmath>
-#include <initializer_list>
+#include <cstddef>
 #include <limits>
 #include <utility>
 
@@ -64,14 +65,17 @@ bracket_near(G&& g, double x0, double width, double floor = -std::numeric_limits
 
 class smile_reader final {
 public:
-    smile_reader(const gram_charlier_smile& smile,
+    smile_reader(fx_smile_function smile,
+                 double level,
+                 double years,
                  const fx_market& market,
                  const fx_quote_convention& convention)
         : smile_(smile)
+        , level_(level)
         , market_(market)
         , convention_(convention)
         , forward_(market.forward())
-        , root_years_(std::sqrt(smile.years)) {}
+        , root_years_(std::sqrt(years)) {}
 
     [[nodiscard]] double forward() const noexcept {
         return forward_;
@@ -79,7 +83,7 @@ public:
 
     /// The smile's volatility at log(K / F), or NaN where it is not positive.
     [[nodiscard]] double volatility(double x) const noexcept {
-        const double v = smile_.volatility_at_strike(forward_, forward_ * std::exp(x));
+        const double v = smile_(x);
         return v > 0.0 ? v : nan;
     }
 
@@ -91,7 +95,7 @@ public:
             const double s = volatility(x) * root_years_;
             return x - sign * 0.5 * s * s;
         };
-        const double s0 = smile_.sigma * root_years_;
+        const double s0 = level_ * root_years_;
         const auto bracket = bracket_near(h, sign * 0.5 * s0 * s0, 0.1 * s0 + 1e-8);
         if (!bracket)
             return std::unexpected("the ATM strike: " + bracket.error());
@@ -157,7 +161,8 @@ private:
         return *root;
     }
 
-    gram_charlier_smile smile_;
+    fx_smile_function smile_;
+    double level_;
     fx_market market_;
     fx_quote_convention convention_;
     double forward_;
@@ -183,20 +188,44 @@ std::expected<fx_smile_quotes, std::string> quote_smile(const gram_charlier_smil
         !std::isfinite(smile.excess_kurtosis))
         return std::unexpected("the smile needs a positive, finite level and expiry and finite "
                                "moments");
-    const smile_reader reader(smile, market, convention);
+    const double forward = market.forward();
+    const std::array deltas{0.25, 0.10};
+    std::array<fx_wing_reading, deltas.size()> wings{};
+    const auto atm = read_smile(
+        [&](double x) { return smile.volatility_at_strike(forward, forward * std::exp(x)); },
+        smile.sigma,
+        smile.years,
+        market,
+        convention,
+        deltas,
+        wings);
+    if (!atm)
+        return std::unexpected(atm.error());
+    return fx_smile_quotes{.atm = atm->volatility,
+                           .rr25 = wings[0].risk_reversal,
+                           .bf25 = wings[0].butterfly,
+                           .rr10 = wings[1].risk_reversal,
+                           .bf10 = wings[1].butterfly};
+}
+
+std::expected<fx_atm_reading, std::string> read_smile(fx_smile_function smile,
+                                                      double level,
+                                                      double years,
+                                                      const fx_market& market,
+                                                      const fx_quote_convention& convention,
+                                                      std::span<const double> deltas,
+                                                      std::span<fx_wing_reading> wings) {
+    if (wings.size() < deltas.size())
+        return std::unexpected("the wings are shorter than the deltas");
+    const smile_reader reader(smile, level, years, market, convention);
     const auto x_atm = reader.atm();
     if (!x_atm)
         return std::unexpected(x_atm.error());
     const double atm = reader.volatility(*x_atm);
+    const double forward = market.forward();
 
-    fx_smile_quotes out{.atm = atm, .rr25 = 0.0, .bf25 = 0.0, .rr10 = 0.0, .bf10 = 0.0};
-    struct pillar final {
-        double delta;
-        double* risk_reversal;
-        double* butterfly;
-    };
-    for (const auto& [delta, risk_reversal, butterfly] :
-         {pillar{0.25, &out.rr25, &out.bf25}, pillar{0.10, &out.rr10, &out.bf10}}) {
+    for (std::size_t i = 0; i < deltas.size(); ++i) {
+        const double delta = deltas[i];
         const auto xc = reader.pillar(option_side::call, delta, atm);
         if (!xc)
             return std::unexpected(xc.error());
@@ -205,16 +234,20 @@ std::expected<fx_smile_quotes, std::string> quote_smile(const gram_charlier_smil
             return std::unexpected(xp.error());
         const double vc = reader.volatility(*xc);
         const double vp = reader.volatility(*xp);
-        *risk_reversal = convention.favour == fx_risk_reversal_favour::call ? vc - vp : vp - vc;
-        *butterfly = 0.5 * (vc + vp) - atm;
+        double butterfly = 0.5 * (vc + vp) - atm;
         if (convention.butterfly == fx_butterfly_style::broker) {
-            const auto broker = reader.broker_butterfly(delta, atm, *butterfly);
+            const auto broker = reader.broker_butterfly(delta, atm, butterfly);
             if (!broker)
                 return std::unexpected(broker.error());
-            *butterfly = *broker;
+            butterfly = *broker;
         }
+        wings[i] = {.put_strike = forward * std::exp(*xp),
+                    .call_strike = forward * std::exp(*xc),
+                    .risk_reversal =
+                        convention.favour == fx_risk_reversal_favour::call ? vc - vp : vp - vc,
+                    .butterfly = butterfly};
     }
-    return out;
+    return fx_atm_reading{.strike = forward * std::exp(*x_atm), .volatility = atm};
 }
 
 }

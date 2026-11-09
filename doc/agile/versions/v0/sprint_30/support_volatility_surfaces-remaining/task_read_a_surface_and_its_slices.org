@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Screens and reports can read a published surface. The reads return the published grid for a blueprint and an as-of, and a slice of it at one expiry or one strike. They read the published set and never the quotes or a candidate. See [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] and Inspect a surface's slices.
 
 * Status
 
@@ -35,7 +35,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A read returns the grid of the published set for a blueprint and an as-of, with the two axes in order.
+- A slice read returns one expiry across strikes, or one strike across expiries.
+- A read for an as-of with no published set says so, and returns no candidate.
+- A read names the publish it answers from.
 
 * Plan
 
@@ -58,6 +61,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Depends on Publish a calibrated surface.
 
 * Test Scenarios
 

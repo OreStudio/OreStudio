@@ -21,6 +21,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
+#include <string>
 
 using namespace ores::analytics::quant::math;
 
@@ -186,4 +187,18 @@ TEST_CASE("a smile with no level or no expiry is refused", "[fx_smile_quotes]") 
     CHECK_FALSE(quote_smile({.sigma = 0.1, .skewness = 0.0, .excess_kurtosis = 0.0, .years = 0.0},
                             no_rates,
                             convention));
+}
+
+TEST_CASE("wings shorter than the deltas are refused", "[fx_smile_quotes]") {
+    const double deltas[] = {0.25, 0.10};
+    fx_wing_reading wings[1];
+    const auto reading = read_smile([](double) { return 0.1; },
+                                    0.1,
+                                    1.0,
+                                    no_rates,
+                                    smile_convention_of(fx_delta_type::forward),
+                                    deltas,
+                                    wings);
+    REQUIRE_FALSE(reading.has_value());
+    CHECK(reading.error().find("wings") != std::string::npos);
 }

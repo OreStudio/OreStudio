@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A caller names a blueprint and an as-of, and the system writes a calibrated surface as a candidate. The =marketdata.v1.surface.calibrate= operation reads the quotes the pillars name and the forwards from the published curves of the two currencies. It runs the engine and writes the grid as observations of the output series, with lineage. The recipe checks and the result checks run in the service, so a caller that is not a screen meets the same rules. See [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
 
 * Status
 
@@ -35,7 +35,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A calibrate of the seeded blueprint writes the grid as observations of its output series at the as-of, and answers the points and the error of each pillar.
+- Each point has lineage that names the source series, the contributor weights and the blueprint version.
+- The four recipe checks run before any quote is read, and each refusal names what failed.
+- The arbitrage and error results are held against the candidate.
+- A pillar with no observation is reported, and an expiry left short of its pillars is refused with the series it could not read.
+- A missing published curve of either currency refuses the calibrate and names the currency.
+- A repeat over the same blueprint and as-of converges on the same points.
+- A candidate is not readable as a published surface.
 
 * Plan
 
@@ -58,6 +65,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Depends on Build the SSVI calibration engine and Seed a surface blueprint for one pair, and on the curves that the IR curves story publishes. The candidate write goes through the market series identity, which the unmerged task Split the market series identity by series kind reworks: agree the order with that task before this one writes series.
 
 * Test Scenarios
 

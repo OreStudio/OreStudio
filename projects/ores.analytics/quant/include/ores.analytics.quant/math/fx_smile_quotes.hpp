@@ -21,7 +21,9 @@
 
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/math/fx_delta.hpp"
+#include <boost/compat/function_ref.hpp>
 #include <expected>
+#include <span>
 #include <string>
 
 namespace ores::analytics::quant::math {
@@ -76,6 +78,43 @@ struct fx_smile_quotes final {
     double rr10;
     double bf10;
 };
+
+/// A smile: the volatility at log(K / F).
+using fx_smile_function = boost::compat::function_ref<double(double)>;
+
+/// What a smile quotes at one delta, and the strikes that delta resolves to.
+struct fx_wing_reading final {
+    double put_strike;
+    double call_strike;
+    double risk_reversal;
+    double butterfly;
+};
+
+/// Where a smile puts its at-the-money, and what it quotes there.
+struct fx_atm_reading final {
+    double strike;
+    double volatility;
+};
+
+/**
+ * @brief The quotes of any smile in a convention, at the given deltas.
+ *
+ * A fit calls this many times, so the caller owns the wings and a successful read allocates
+ * nothing. Refuses wings shorter than the deltas, a smile that is not positive where it is
+ * read, and a pillar or butterfly with no solution.
+ *
+ * @param level A volatility near the smile's at-the-money, where the searches start.
+ * @param years The expiry, in years.
+ * @param wings One entry for each delta, written in the order of the deltas.
+ */
+ORES_ANALYTICS_QUANT_EXPORT std::expected<fx_atm_reading, std::string>
+read_smile(fx_smile_function smile,
+           double level,
+           double years,
+           const fx_market& market,
+           const fx_quote_convention& convention,
+           std::span<const double> deltas,
+           std::span<fx_wing_reading> wings);
 
 /**
  * @brief The quotes of a smile in a convention.

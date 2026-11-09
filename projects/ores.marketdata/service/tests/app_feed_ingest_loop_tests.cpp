@@ -1433,7 +1433,7 @@ TEST_CASE("the_ingest_writes_one_row_for_two_consumers_of_the_same_source",
         SKIP("The tick writer role is not configured");
     app_feed_ingest_loop_fixture f;
     const auto bound_source = bound_prefix + run_tag();
-    const auto quote_uri = eur_usd_spot();
+    const auto quote_uri = app_feed_ingest_loop_eur_usd_spot();
     const auto other_party = f.add_party();
     f.route(bound_source);
     f.route(bound_source, other_party);

@@ -27,11 +27,11 @@ the two uninitialised sends that valgrind reports.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -61,9 +61,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Uninitialised send errors, 2 eventing tests | 0 in each test | =valgrind --track-origins=yes= on =write_engine_settings_change_publishes_an_event= and =write_curve_publish_publishes_an_event= | 8d61ecea8b |
+| Shell suites passing with cli 2.3.0 | 16 of 16 | each =ores.shell.*.tests= with =~[long_running]= | 0917b0d297 |
 
 * Notes
+
+Root causes:
+
+- Shell suites: cli 2.3.0 returns the bare verb from completion. =ores.shell= uses =CliFileSession=, so no tab completion is reachable. The tests and their templates now expect the bare verb.
+- GCC: a =const= local made a =std::move= redundant in the trade summary repository.
+- Valgrind MPK: the NATS C library holds one per-thread error slot for its async callback thread. The suppression covers this reachable block.
+- Valgrind UMR: the =cpp_nats_integration_test= template read =*party_ctx.party_id()= for party-isolated parents. In two tests =party_ctx= is the plain =h.context()=, so the optional is empty and the read is undefined behaviour. The row got uninitialised bytes as its =party_id=. The template now reads the session party only when writes are party-scoped. TLS hid the origin. =PGSSLMODE=disable= and a field probe located it.
+- Windows: the cron tests called =localtime_r=. They now call =localtime_safe=.
+- macOS change stream: two epochs could match on a coarse clock. =make_epoch= now increases strictly within a process.
+- macOS next-fire: the exception missed its catch clause. =nats_connect_error= now has a key function in the library, which anchors its type info. This is the likely cause, and only the macOS nightly can confirm it.
+- macOS HTTP client timeout: cause not found. The tests now print each name at start, so the next hang names the test.
+
+Neither macOS nor Windows ran locally. The nightly run is the final proof for those platforms.
 
 * Test Scenarios
 
@@ -86,6 +100,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: with no session party, two eventing tests keep the generator party_id on seeded parents | cpp_nats_integration_test.cpp.mustache | Accept as designed | Both tests pass and valgrind reports 0 errors. |
 
 * Result
+
+All local acceptance is met on =linux-clang-release-ninja=: the shell suites pass with cli 2.3.0, and the two eventing tests report zero valgrind errors. The Windows and macOS fixes and the macOS test-name diagnostic ship unproven until the nightly run.

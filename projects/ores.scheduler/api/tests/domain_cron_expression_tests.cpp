@@ -166,7 +166,8 @@ TEST_CASE("cron_expression equality operator", "[domain][cron_expression]") {
     CHECK_FALSE(*a == *c);
 }
 
-TEST_CASE("cron_expression round-trips through the codec as its string", "[domain][cron_expression]") {
+TEST_CASE("cron_expression round-trips through the codec as its string",
+          "[domain][cron_expression]") {
     const auto parsed = cron_expression::from_string("*/5 * * * *");
     REQUIRE(parsed.has_value());
 

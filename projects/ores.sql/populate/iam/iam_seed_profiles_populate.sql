@@ -210,15 +210,18 @@ cross join (values
         {"name": "ACME Corporation US Inc", "dataset": "acme.acme_us.accounts"},
         {"name": "ACME Corporation HK Ltd", "dataset": "acme.acme_hk.accounts"}
     ]}'::jsonb),
-    -- Each legal entity takes its market data from one vendor, because each synthetic feeds
-    -- collection quotes the markets its own feeds serve: the group and Hong Kong read Bloomberg,
-    -- London reads the uniform demo collection and New York reads LSEG. The step's own provider is
-    -- the one a party the row does not name takes, so a fifth entity lands on Bloomberg without
+    -- Each synthetic feeds collection quotes the markets its own feeds serve: the group and Hong
+    -- Kong read Bloomberg, London reads the uniform demo collection and New York reads LSEG. Only
+    -- Bloomberg quotes the IR ladders and USD spots of all 20 funding currencies, so London and
+    -- New York take it as well, for their own funding curves and forwards. The step's own provider
+    -- is the one a party the row does not name takes, so a fifth entity lands on Bloomberg without
     -- this row changing.
     ('acme_demo', 'subscribe_market_data', 60, '{"provider": "bloomberg", "source": "bloomberg-a", "parties": [
         {"party": "Acme Corporation Plc", "provider": "bloomberg", "source": "bloomberg-a"},
         {"party": "ACME Corporation UK plc", "provider": "demo", "source": "demo-a"},
+        {"party": "ACME Corporation UK plc", "provider": "bloomberg", "source": "bloomberg-a"},
         {"party": "ACME Corporation US Inc", "provider": "lseg", "source": "lseg-a"},
+        {"party": "ACME Corporation US Inc", "provider": "bloomberg", "source": "bloomberg-a"},
         {"party": "ACME Corporation HK Ltd", "provider": "bloomberg", "source": "bloomberg-a"}
     ]}'::jsonb),
     -- the generator. The counterparties are the entity's own

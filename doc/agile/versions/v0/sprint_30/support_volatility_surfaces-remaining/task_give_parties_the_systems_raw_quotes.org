@@ -2,13 +2,13 @@
 :ID: 5616DC55-B325-4316-8CD0-A8E51FAE7D3B
 :END:
 #+title: Task: Give parties the system's raw quotes through subscriptions
-#+description: The system owns raw market data as a vendor would, and a party reaches IR quotes and FX spots only through its subscriptions.
+#+description: The system's feeds play the vendor, and every operational party receives the IR quotes and USD spots of all 20 funding currencies into its own series through its subscriptions.
 #+type: task
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-parties-the-systems-raw-quotes
+#+pr: 4537
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -20,33 +20,35 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Raw market data has one owner. The system tenant holds raw IR quotes and FX spots, as a vendor such as Bloomberg would. A party reads them through its subscriptions, and everything derived from them belongs to the party. Today the FX spots sit under each Acme party and the system tenant holds none, and no party has IR quotes.
+The system's feeds play the vendor, as Bloomberg would. A party receives raw quotes through its subscriptions, into its own series, and each delivery is metered against it. Everything a party derives from them is its own. Before this task two Acme parties could not build funding curves: New York received no IR quotes and no USD spots, and London lacked four of the 20 funding currencies.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
 
-- After provisioning, the system tenant holds the raw IR quotes and FX spots, and no party holds its own copy.
-- A party with a subscription reads a raw quote, and a party without one is refused, naming the subscription.
-- A curve bootstrapped by a party records the raw series and observations it used.
-- Every provisioned party has the subscriptions its funding curves and FX pairs need.
-- A raw quote has one owner, so a change to it is visible to every subscribed party.
-- Every operational party subscribes to the raw quotes of all 20 funding curve currencies and the USD spot of each.
+- Every operational Acme party receives live IR quotes in all 20 funding currencies, and the USD spot of each of the other 19, into its own series.
+- A party keeps its own vendor. A party whose vendor does not quote the funding set also takes Bloomberg.
+- A party that the subscribe step names twice gets one subscription and one route for each provider. A second run writes nothing new.
+- Every tick carries the party that receives it, and deliveries are metered per party.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The delivery design already exists, from sprint 29. A route ties a party and a provider to one source, and the demand for that route is every item that the provider's catalogue maps. Ticks land in =ores_marketdata_ticks_tbl= under the party. The system's curves read the system party's Bloomberg series in the same way.
+
+The gap is coverage. Each synthetic collection quotes only its own markets. Only Bloomberg quotes the IR ladders and USD spots of the whole funding set. The demo collection quotes a short ladder in 20 currencies, and four of them are outside the funding set. LSEG quotes 14 crosses and no IR.
+
+So London and New York take Bloomberg as a second provider. The subscribe step already writes one subscription and one route per party and provider. It now lets a profile name a party more than once. The other way, widening the demo and LSEG collections, needs new generators and vendor ids, for no gain to the surfaces.
+
+Dropped from the first draft: one shared copy that parties read directly. The owner chose delivery into each party's own series. The lineage of a party's curve belongs to the funding curves task.
 
 * Measurements
 
@@ -60,7 +62,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Coverage before, IR currencies / USD spots of the funding set | ACMCOR, ACCOHK 20/19. ACCOUK 16/11. ACCOUS 0/0 | =evidence/party_raw_quote_coverage.sql= | fa1c1883c4 |
+| Coverage after, on a fresh database provisioned with acme_demo | Every Acme party 20/19. ACCOUK takes bloomberg and demo, ACCOUS takes bloomberg and lseg | =evidence/party_raw_quote_coverage.sql= | Working tree on fa1c1883c4 |
+| Public IR fixings stored | 0. FX fixings 29,404 from four Frankfurter sources | =ores_marketdata_market_fixings_tbl= by class | Working tree on fa1c1883c4 |
+| Tests | [provision_step] 44 cases, 112 assertions | =ores.iam.core.tests "[provision_step]"= | Working tree on fa1c1883c4 |
 
 * Notes
 
@@ -79,12 +84,22 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4537][#4537]] | [iam] Give every Acme party the raw quotes of the funding set |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A doc comment has a short line left by the edit | =tenant_provisioning_handler.hpp= | Fixed | Re-wrapped. |
+| 2 | Naming a party by both id and name now gives both providers | =provision_step_arguments.hpp= | Fixed | The helper's comment says so. |
+| 3 | subscribe_party lists subscriptions once per provider | =tenant_provisioning_handler.hpp= | Declined | Two providers for four parties. Hoist it when a party takes many. |
+| 4 | No test for an entry with a source and no provider | tests | Fixed | Added. The step's provider pairs with the entry's source. |
+| 5 | A second provisioning run was not repeated | PR | Declined | The step reads a party's subscription and route for each provider before it writes, and the review confirms that check. A full run costs about ten minutes. |
 
 * Result
+
+Every operational Acme party now receives live IR quotes in all 20 funding currencies and the USD spot of each of the other 19, into its own series. London and New York keep their own vendors and also take Bloomberg. The subscribe step lets a profile name a party more than once, one subscription and one route for each provider.
+
+The delivery design already existed. The first draft of this task said no party should hold its own copy, which would have undone it.
+
+Not measured again: a second provisioning run. The step reads a party's subscriptions and routes before it writes one, so a second run should write nothing new.

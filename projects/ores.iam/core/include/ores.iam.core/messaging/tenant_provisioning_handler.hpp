@@ -1516,14 +1516,16 @@ private:
             provision_step_result{.kind = command.kind, .parties = parties, .images = images}));
     }
 
-    /// Gives each party the tenant holds a subscription to a provider and a route to
-    /// one of its sources: the step's own, or the one the step names for that party.
+    /// Gives each party the tenant holds a subscription to each of its providers and a route to
+    /// one source of each: the step's own, or the ones the step names for that party.
     ///
     /// A demonstration's legal entities are meant to take their market data from different vendors,
     /// because each collection quotes the markets its own feeds serve, so the profile names a
-    /// provider and a source for each party it wants on another. A party the profile does not name
-    /// takes the step's own, and a party it names that the tenant does not hold is refused: a
-    /// subscription written for nobody would leave the tenant quietly on the wrong feed.
+    /// provider and a source for each party it wants on another. A party the profile names twice
+    /// takes both providers, as a bank that reads rates from one vendor and crosses from another
+    /// does. A party the profile does not name takes the step's own, and a party it names that the
+    /// tenant does not hold is refused: a subscription written for nobody would leave the tenant
+    /// quietly on the wrong feed.
     ///
     /// The generators belong to the system, so the tenant publishes none and starts none: the
     /// parties take the shared simulated stream through their subscriptions and routes.
@@ -1547,11 +1549,9 @@ private:
             sources.emplace(key, id);
             return id;
         };
-        const auto default_source = source_of(arguments.provider, arguments.source);
-
-        std::map<std::string, market_data_party_assignment> named;
-        for (const auto& assignment : arguments.parties)
-            named.emplace(assignment.party, assignment);
+        // The step's own source is looked up first, so a profile that names a wrong one fails
+        // before any party is subscribed.
+        source_of(arguments.provider, arguments.source);
 
         std::vector<std::string> subscribed;
         std::set<std::string> matched;
@@ -1563,25 +1563,15 @@ private:
             request.limit = page_size;
             const auto page = discover.request(request).parties;
             for (const auto& party : page) {
-                auto provider = arguments.provider;
-                auto source_id = default_source;
                 const auto id_text = boost::uuids::to_string(party.id);
-                for (const auto* key : {&id_text, &party.full_name}) {
-                    const auto found = named.find(*key);
-                    if (found == named.end())
-                        continue;
-                    matched.insert(found->first);
-                    if (!found->second.provider.empty())
-                        provider = found->second.provider;
-                    if (!found->second.source.empty())
-                        source_id = source_of(provider, found->second.source);
-                    else if (!found->second.provider.empty())
-                        source_id = source_of(provider, arguments.source);
-                    break;
-                }
+                for (const auto& assignment : arguments.parties)
+                    if (assignment.party == id_text || assignment.party == party.full_name)
+                        matched.insert(assignment.party);
                 auto party_client =
                     make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
-                subscribe_party(party_client, party.id, provider, source_id);
+                for (const auto& feed : feeds_of_party(arguments, id_text, party.full_name))
+                    subscribe_party(party_client, party.id, feed.provider,
+                                    source_of(feed.provider, feed.source));
                 subscribed.push_back(id_text);
             }
             if (page.size() < page_size)

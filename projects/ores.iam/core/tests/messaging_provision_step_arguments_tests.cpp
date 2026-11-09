@@ -32,6 +32,8 @@
 namespace {
 
 using ores::iam::messaging::classify_step_kind;
+using ores::iam::messaging::feeds_of_party;
+using ores::iam::messaging::market_data_feed;
 using ores::iam::messaging::parse_lei_hierarchy_arguments;
 using ores::iam::messaging::parse_market_data_arguments;
 using ores::iam::messaging::parse_photo_arguments;
@@ -299,6 +301,32 @@ TEST_CASE("a market data step that names no parties gives every party its own pr
         parse_market_data_arguments(R"({"provider": "bloomberg", "source": "bloomberg-a"})");
 
     CHECK(arguments.parties.empty());
+}
+
+TEST_CASE("a party named twice takes both providers, and the others take the step's own",
+          "[provision_step]") {
+    const auto arguments = parse_market_data_arguments(R"({
+        "provider": "bloomberg", "source": "bloomberg-a",
+        "parties": [
+            {"party": "ACME Corporation US Inc", "provider": "lseg", "source": "lseg-a"},
+            {"party": "ACME Corporation US Inc"},
+            {"party": "ACME Corporation US Inc", "provider": "lseg", "source": "lseg-a"},
+            {"party": "6f1c0b8e-0000-0000-0000-000000000001", "provider": "demo"},
+            {"party": "ACME Corporation HK Ltd", "source": "bloomberg-b"}
+        ]})");
+
+    CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-0000000000ff",
+                         "ACME Corporation US Inc") ==
+          std::vector<market_data_feed>{{.provider = "lseg", .source = "lseg-a"},
+                                        {.provider = "bloomberg", .source = "bloomberg-a"}});
+    CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000001", "Some Name") ==
+          std::vector<market_data_feed>{{.provider = "demo", .source = "bloomberg-a"}});
+    CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000003",
+                         "ACME Corporation HK Ltd") ==
+          std::vector<market_data_feed>{{.provider = "bloomberg", .source = "bloomberg-b"}});
+    CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000002",
+                         "Acme Corporation Plc") ==
+          std::vector<market_data_feed>{{.provider = "bloomberg", .source = "bloomberg-a"}});
 }
 
 TEST_CASE("a market data step refuses a party entry that names no party", "[provision_step]") {

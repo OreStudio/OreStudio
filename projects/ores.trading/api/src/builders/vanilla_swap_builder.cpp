@@ -36,8 +36,10 @@ struct cadence final {
 };
 
 /// A convention states a frequency and an index name a tenor; a schedule takes only a tenor.
-constexpr std::array cadences{cadence{"Annual", "1Y"}, cadence{"Semiannual", "6M"},
-                              cadence{"Quarterly", "3M"}, cadence{"Bimonthly", "2M"},
+constexpr std::array cadences{cadence{"Annual", "1Y"},
+                              cadence{"Semiannual", "6M"},
+                              cadence{"Quarterly", "3M"},
+                              cadence{"Bimonthly", "2M"},
                               cadence{"Monthly", "1M"}};
 
 std::optional<cadence> cadence_of(std::string_view stated) {
@@ -72,9 +74,8 @@ std::string tenor_of(const std::string& index_name) {
     return index_name.substr(index_name.rfind('-') + 1);
 }
 
-domain::instrument_schedule schedule_of(int leg_number,
-                                        const vanilla_swap_terms& terms,
-                                        const leg_conventions& leg) {
+domain::instrument_schedule
+schedule_of(int leg_number, const vanilla_swap_terms& terms, const leg_conventions& leg) {
     domain::instrument_schedule row;
     row.owner_role = "swap";
     row.owner_number = leg_number;
@@ -91,8 +92,11 @@ domain::instrument_schedule schedule_of(int leg_number,
     return row;
 }
 
-domain::swap_leg leg_of(int leg_number, bool payer, std::string type,
-                        const vanilla_swap_terms& terms, const leg_conventions& leg) {
+domain::swap_leg leg_of(int leg_number,
+                        bool payer,
+                        std::string type,
+                        const vanilla_swap_terms& terms,
+                        const leg_conventions& leg) {
     domain::swap_leg row;
     row.identity.leg_number = leg_number;
     row.payer = payer;
@@ -112,8 +116,7 @@ domain::swap_leg_amount notional_of(int leg_number, const vanilla_swap_terms& te
     return row;
 }
 
-domain::swap_leg_rate rate_of(int leg_number, std::string role,
-                              utility::decimal::decimal value) {
+domain::swap_leg_rate rate_of(int leg_number, std::string role, utility::decimal::decimal value) {
     domain::swap_leg_rate row;
     row.leg_number = leg_number;
     row.rate_role = std::move(role);
@@ -126,7 +129,8 @@ domain::swap_leg_rate rate_of(int leg_number, std::string role,
 
 vanilla_swap_builder::vanilla_swap_builder(
     const marketdata::conventions::convention_lookup& conventions, vanilla_swap_terms terms)
-    : conventions_(conventions), terms_(std::move(terms)) {}
+    : conventions_(conventions)
+    , terms_(std::move(terms)) {}
 
 vanilla_swap_builder& vanilla_swap_builder::fixed_day_count(std::string value) {
     fixed_day_count_ = std::move(value);
@@ -160,14 +164,16 @@ std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::b
 
     const auto [floating, fixing_days] = std::visit(
         [&](const auto& definition) {
-            return std::pair{leg_conventions{*float_period, definition.day_count_fraction,
+            return std::pair{leg_conventions{*float_period,
+                                             definition.day_count_fraction,
                                              definition.fixing_calendar,
                                              adjustment_of(definition)},
                              definition.settlement_days};
         },
         *index);
     const leg_conventions fixed{
-        *fixed_period, fixed_day_count_.value_or(swap->fixed_day_count_fraction),
+        *fixed_period,
+        fixed_day_count_.value_or(swap->fixed_day_count_fraction),
         swap->fixed_calendar.value_or(floating.calendar),
         fixed_adjustment_.value_or(swap->fixed_convention.value_or(floating.adjustment))};
 

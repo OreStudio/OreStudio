@@ -86,8 +86,8 @@ std::vector<value_entry> swap_data_of(const std::string& xml) {
 
 TEST_CASE("a_built_swap_writes_the_swap_data_of_ores_own_sample", "[builders][ore_sample]") {
     using ores::utility::decimal::decimal;
-    const auto sample = ores::platform::filesystem::file::read_content(
-        ores::testing::project_root::resolve(
+    const auto sample =
+        ores::platform::filesystem::file::read_content(ores::testing::project_root::resolve(
             "external/ore/examples/Legacy/Example_1/Input/portfolio_swap.xml"));
 
     conv::convention_lookup lookup(ore_example_conventions());

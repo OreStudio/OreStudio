@@ -36,9 +36,12 @@ public:
     required() = delete;
 
     template <typename U = T>
-    required(U&& value) : value_(std::forward<U>(value)) {}
+    required(U&& value)
+        : value_(std::forward<U>(value)) {}
 
-    [[nodiscard]] const T& get() const { return value_; }
+    [[nodiscard]] const T& get() const {
+        return value_;
+    }
 
 private:
     T value_;

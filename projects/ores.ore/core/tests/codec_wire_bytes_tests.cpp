@@ -25,13 +25,10 @@
 #include "ores.ore.core/planner/import_choices.hpp"
 #include "ores.refdata.api/domain/convention_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -42,37 +39,28 @@ using ores::ore::planner::import_choices;
 
 const std::string tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
 template <typename... T>
 void every_default_has_the_same_bytes() {
-    (same_bytes_as_reflect_cpp(T{}), ...);
+    (survives_the_wire(T{}), ...);
 }
 
 boost::uuids::uuid an_id(char last) {
@@ -104,7 +92,7 @@ import_choices some_choices() {
 
 }
 
-TEST_CASE("every ore message's default value has reflect-cpp's bytes", tags) {
+TEST_CASE("every ore message's default value has its wire form", tags) {
     every_default_has_the_same_bytes<export_currency_config_request,
                                      export_currency_config_response,
                                      currency_import_row,
@@ -144,77 +132,71 @@ TEST_CASE("every ore message's default value has reflect-cpp's bytes", tags) {
                                      export_run_configuration_response>();
 }
 
-TEST_CASE("the ore import messages have reflect-cpp's bytes", tags) {
+TEST_CASE("the ore import messages survive the wire", tags) {
     const ore_import_item_error error{"a.xml", "T1", "no leg"};
-    same_bytes_as_reflect_cpp(ore_import_response{true, "ok", {error}, "c1", "w1"});
-    same_bytes_as_reflect_cpp(ore_import_execute_request{"r1", "{}", "c1", "t1"});
-    same_bytes_as_reflect_cpp(ore_import_execute_result{
+    survives_the_wire(ore_import_response{true, "ok", {error}, "c1", "w1"});
+    survives_the_wire(ore_import_execute_request{"r1", "{}", "c1", "t1"});
+    survives_the_wire(ore_import_execute_result{
         false, "partial", "c1", {error}, {"EUR"}, {"P1"}, {"B1", "B2"}, {"T1"}});
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ore_import_rollback_request{"c1", "t1", {"EUR"}, {"P1"}, {"B1"}, {"T1", "T2"}});
 }
 
-TEST_CASE("the run configuration messages have reflect-cpp's bytes", tags) {
+TEST_CASE("the run configuration messages survive the wire", tags) {
     const run_input_file file{"ore.xml", "<ORE/>"};
     const saved_document saved{"conventions", "3f2504e0-4f89-11d3-9a0c-0305e82c3301"};
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         run_configuration_import_execute_request{"d1", "Run", {file, file}, "c1", "t1"});
-    same_bytes_as_reflect_cpp(run_configuration_import_execute_result{
+    survives_the_wire(run_configuration_import_execute_result{
         true, "ok", {"a"}, {"b"}, {"c"}, {"d"}, {"e"}, "d1", true, {saved}});
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         run_configuration_import_rollback_request{"c1", "t1", "d1", true, {saved, saved}});
-    same_bytes_as_reflect_cpp(export_run_configuration_response{true, "ok", {file}});
+    survives_the_wire(export_run_configuration_response{true, "ok", {file}});
 }
 
-TEST_CASE("the currency and pricing engine messages have reflect-cpp's bytes", tags) {
-    same_bytes_as_reflect_cpp(preview_currency_config_import_response{true,
-                                                                      "ok",
-                                                                      "CurrencyConfig",
-                                                                      3,
-                                                                      2,
-                                                                      1,
-                                                                      1,
-                                                                      0,
-                                                                      {{"EUR", "Euro", "held", ""}},
-                                                                      {{"k", "s", "d"}}});
-    same_bytes_as_reflect_cpp(
-        import_currency_config_request{"<x/>", {{"EUR", "keep"}}, "rc", "why"});
-    same_bytes_as_reflect_cpp(
-        import_currency_config_response{true, "ok", 1, 2, 3, 4, {{"USD", "bad"}}});
-    same_bytes_as_reflect_cpp(
-        export_currency_config_response{true, "ok", 1, {{"currencies.xml", "<x/>"}}});
-    same_bytes_as_reflect_cpp(
-        preview_pricing_engines_import_response{true,
-                                                "ok",
-                                                "PricingEngines",
-                                                2,
-                                                5,
-                                                {{"Swap", "DK", "DE", 2}},
-                                                {"g1"},
-                                                "target",
-                                                1,
-                                                1,
-                                                0,
-                                                0,
-                                                {{"k", "e", "c", "o", "n", "w"}},
-                                                {{"k", "s", "d"}}});
-    same_bytes_as_reflect_cpp(
+TEST_CASE("the currency and pricing engine messages survive the wire", tags) {
+    survives_the_wire(preview_currency_config_import_response{true,
+                                                              "ok",
+                                                              "CurrencyConfig",
+                                                              3,
+                                                              2,
+                                                              1,
+                                                              1,
+                                                              0,
+                                                              {{"EUR", "Euro", "held", ""}},
+                                                              {{"k", "s", "d"}}});
+    survives_the_wire(import_currency_config_request{"<x/>", {{"EUR", "keep"}}, "rc", "why"});
+    survives_the_wire(import_currency_config_response{true, "ok", 1, 2, 3, 4, {{"USD", "bad"}}});
+    survives_the_wire(export_currency_config_response{true, "ok", 1, {{"currencies.xml", "<x/>"}}});
+    survives_the_wire(preview_pricing_engines_import_response{true,
+                                                              "ok",
+                                                              "PricingEngines",
+                                                              2,
+                                                              5,
+                                                              {{"Swap", "DK", "DE", 2}},
+                                                              {"g1"},
+                                                              "target",
+                                                              1,
+                                                              1,
+                                                              0,
+                                                              0,
+                                                              {{"k", "e", "c", "o", "n", "w"}},
+                                                              {{"k", "s", "d"}}});
+    survives_the_wire(
         import_pricing_engines_request{"<x/>", "id", "name", "variant", {"r"}, "rc", "why"});
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         import_pricing_engines_response{true, "ok", "id", "name", 1, 2, 3, 4, {{"k", "bad"}}});
-    same_bytes_as_reflect_cpp(export_pricing_engines_response{
+    survives_the_wire(export_pricing_engines_response{
         true, "ok", 1, {{"pricingengine.xml", "<x/>"}}, {{"code", "msg"}}});
 }
 
-TEST_CASE("the import choices have reflect-cpp's bytes", tags) {
+TEST_CASE("the import choices survive the wire", tags) {
     namespace object = ores::utility::codec::object;
     for (const auto& choices : {import_choices{}, some_choices()}) {
         const auto json = object::write_json(choices);
-        CHECK(json == rfl::json::write(choices));
         CHECK(object::write_json(object::read_json<import_choices>(json)) == json);
 
         const auto msgpack = object::write_msgpack(choices);
-        CHECK(msgpack == their_msgpack(choices));
         CHECK(object::write_msgpack(object::read_msgpack<import_choices>(bytes_of(msgpack))) ==
               msgpack);
     }
@@ -228,5 +210,4 @@ TEST_CASE("the import choices refuse a mode they do not know", tags) {
     json.replace(at, known.size(), R"("currency_mode":"some")");
     CHECK_THROWS_WITH(ores::utility::codec::object::read_json<import_choices>(json),
                       Catch::Matchers::ContainsSubstring("a currency import mode"));
-    CHECK_FALSE(rfl::json::read<import_choices>(json));
 }

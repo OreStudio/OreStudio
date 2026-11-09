@@ -106,7 +106,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.utility.lib)
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

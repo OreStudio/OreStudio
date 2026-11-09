@@ -21,7 +21,6 @@
 #define ORES_ORE_SERVICE_MESSAGING_FAMILY_ROW_PARTY_HPP
 
 #include "ores.utility/codec/json_document.hpp"
-#include <rfl/Generic.hpp>
 #include <string>
 
 namespace ores::ore::service::messaging {

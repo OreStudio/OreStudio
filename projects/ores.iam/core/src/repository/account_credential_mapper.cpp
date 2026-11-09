@@ -69,12 +69,10 @@ account_credential_entity account_credential_mapper::map(const domain::account_c
     r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.account_id = v.account_id;
-    r.password_hash =
-        v.password_hash.get().empty() ? std::nullopt : std::optional(v.password_hash.get());
-    r.service_password_hash = v.service_password_hash.get().empty() ?
-                                  std::nullopt :
-                                  std::optional(v.service_password_hash.get());
-    r.totp_secret = v.totp_secret.get().empty() ? std::nullopt : std::optional(v.totp_secret.get());
+    r.password_hash = v.password_hash.empty() ? std::nullopt : std::optional(v.password_hash);
+    r.service_password_hash =
+        v.service_password_hash.empty() ? std::nullopt : std::optional(v.service_password_hash);
+    r.totp_secret = v.totp_secret.empty() ? std::nullopt : std::optional(v.totp_secret);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

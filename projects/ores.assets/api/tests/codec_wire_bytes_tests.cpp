@@ -28,16 +28,13 @@
 #include "ores.assets.api/messaging/image_tag_protocol.hpp"
 #include "ores.assets.api/messaging/publish_operation_protocol.hpp"
 #include "ores.assets.api/messaging/tag_protocol.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 #include <vector>
@@ -46,31 +43,22 @@ namespace {
 
 const std::string tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
@@ -98,16 +86,16 @@ ores::utility::domain::result denied() {
 
 using namespace ores::assets::messaging;
 
-TEST_CASE("the assets domain types write the bytes reflect-cpp wrote", tags) {
+TEST_CASE("the assets domain types survive the wire", tags) {
     auto ctx = a_context();
     auto image = ores::assets::generators::generate_synthetic_image(ctx);
     image.data = {0, 1, 127, 128, 255};
-    same_bytes_as_reflect_cpp(image);
-    same_bytes_as_reflect_cpp(ores::assets::generators::generate_synthetic_tag(ctx));
-    same_bytes_as_reflect_cpp(ores::assets::generators::generate_synthetic_image_tag(ctx));
+    survives_the_wire(image);
+    survives_the_wire(ores::assets::generators::generate_synthetic_tag(ctx));
+    survives_the_wire(ores::assets::generators::generate_synthetic_image_tag(ctx));
 }
 
-TEST_CASE("the image messages write the bytes reflect-cpp wrote", tags) {
+TEST_CASE("the image messages survive the wire", tags) {
     auto ctx = a_context();
     const auto image = ores::assets::generators::generate_synthetic_image(ctx);
 
@@ -117,55 +105,55 @@ TEST_CASE("the image messages write the bytes reflect-cpp wrote", tags) {
     change.write.description = "Flag of the \"UK\"";
     change.write.mime_type = "image/svg+xml";
     change.precondition = {ores::utility::domain::precondition_kind::must_match_version, 2};
-    same_bytes_as_reflect_cpp(change);
+    survives_the_wire(change);
 
     image_event event;
     event.event_id = an_id();
     event.key.code = "gb";
     event.action = "written";
     event.occurred_at = an_instant();
-    same_bytes_as_reflect_cpp(event);
+    survives_the_wire(event);
 
     images_filter filter;
     filter.search = "flag";
-    same_bytes_as_reflect_cpp(filter);
+    survives_the_wire(filter);
 
     list_images_request list;
     list.order = {"code", true};
     list.filter = filter;
-    same_bytes_as_reflect_cpp(list);
+    survives_the_wire(list);
 
     list_images_response listed;
     listed.result = ok();
     listed.images = {image};
-    same_bytes_as_reflect_cpp(listed);
+    survives_the_wire(listed);
 
     get_many_images_response many;
     many.result = ok();
     many.entries = {image_lookup{image_key{"gb"}, image},
                     image_lookup{image_key{"zz"}, std::nullopt}};
-    same_bytes_as_reflect_cpp(many);
+    survives_the_wire(many);
 
     put_image_request put;
     put.change = change;
     put.intent = {"system.test", "a test"};
-    same_bytes_as_reflect_cpp(put);
+    survives_the_wire(put);
 
     delete_many_images_request removals;
     removals.removals = {
         image_removal{image_key{"gb"}, ores::utility::domain::removal_precondition}};
-    same_bytes_as_reflect_cpp(removals);
+    survives_the_wire(removals);
 
     get_image_response missing;
     missing.result = denied();
-    same_bytes_as_reflect_cpp(missing);
+    survives_the_wire(missing);
 }
 
-TEST_CASE("the image operation messages write the bytes reflect-cpp wrote", tags) {
+TEST_CASE("the image operation messages survive the wire", tags) {
     upload_image_request upload;
     upload.mime_type = "image/png";
     upload.data = "iVBORw0KGgo=";
-    same_bytes_as_reflect_cpp(upload);
+    survives_the_wire(upload);
 
     get_image_upload_policy_response policy;
     policy.result = ok();
@@ -173,37 +161,37 @@ TEST_CASE("the image operation messages write the bytes reflect-cpp wrote", tags
     policy.max_size_bytes = 1048576;
     policy.min_width = 16;
     policy.min_height = -1;
-    same_bytes_as_reflect_cpp(policy);
+    survives_the_wire(policy);
 
-    same_bytes_as_reflect_cpp(ensure_image_request{"gb"});
-    same_bytes_as_reflect_cpp(publish_images_from_dq_request{});
+    survives_the_wire(ensure_image_request{"gb"});
+    survives_the_wire(publish_images_from_dq_request{});
 }
 
-TEST_CASE("the tag and image tag messages write the bytes reflect-cpp wrote", tags) {
+TEST_CASE("the tag and image tag messages survive the wire", tags) {
     auto ctx = a_context();
     const auto tag = ores::assets::generators::generate_synthetic_tag(ctx);
     const auto image_tag = ores::assets::generators::generate_synthetic_image_tag(ctx);
 
     tag_lookup found{tag_key{"flag"}, tag};
-    same_bytes_as_reflect_cpp(found);
-    same_bytes_as_reflect_cpp(tag_lookup{tag_key{"none"}, std::nullopt});
+    survives_the_wire(found);
+    survives_the_wire(tag_lookup{tag_key{"none"}, std::nullopt});
 
     tags_filter filter;
     filter.id_one_of = std::vector{an_id()};
-    same_bytes_as_reflect_cpp(filter);
+    survives_the_wire(filter);
 
     image_tag_change change;
     change.write = {an_id(), an_id(), "admin", an_instant()};
     change.precondition = {ores::utility::domain::precondition_kind::any, std::nullopt};
-    same_bytes_as_reflect_cpp(change);
+    survives_the_wire(change);
 
     list_by_image_id_image_tags_request by_image;
     by_image.image_id = an_id();
     by_image.order = {"tag_id", false};
-    same_bytes_as_reflect_cpp(by_image);
+    survives_the_wire(by_image);
 
     put_many_image_tags_response put;
     put.result = ok();
     put.image_tags = {image_tag};
-    same_bytes_as_reflect_cpp(put);
+    survives_the_wire(put);
 }

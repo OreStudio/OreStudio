@@ -22,7 +22,6 @@
 
 #include "ores.utility/codec/text_form.hpp"
 #include <cstdint>
-#include <rfl.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -128,36 +127,6 @@ inline constexpr std::string_view instance_id_header = "X-Workflow-Instance-Id";
  * the tenant-scoped database context the step runs under.
  */
 inline constexpr std::string_view tenant_id_header = "X-Tenant-Id";
-
-}
-
-namespace rfl {
-
-template <>
-struct Reflector<ores::workflow::messaging::step_log_level> {
-    using ReflType = std::string;
-
-    static ores::workflow::messaging::step_log_level to(const ReflType& s) {
-        return ores::workflow::messaging::step_log_level_from_string(s);
-    }
-
-    static ReflType from(const ores::workflow::messaging::step_log_level& v) {
-        return std::string(ores::workflow::messaging::to_string(v));
-    }
-};
-
-template <>
-struct Reflector<ores::workflow::messaging::step_outcome> {
-    using ReflType = std::string;
-
-    static ores::workflow::messaging::step_outcome to(const ReflType& s) {
-        return ores::workflow::messaging::step_outcome_from_string(s);
-    }
-
-    static ReflType from(const ores::workflow::messaging::step_outcome& v) {
-        return std::string(ores::workflow::messaging::to_string(v));
-    }
-};
 
 }
 

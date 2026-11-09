@@ -21,16 +21,22 @@
 #define ORES_NATS_DOMAIN_WIRE_CODEC_HPP
 
 #include "ores.nats/domain/wire_format.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstddef>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
+#include <expected>
 #include <span>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 #include <vector>
 
 namespace ores::nats {
+
+/**
+ * @brief A decoded message, or the reason it could not be read.
+ */
+template <typename T>
+using decoded = std::expected<T, std::runtime_error>;
 
 /**
  * @brief Encodes/decodes NATS message bodies in a single wire_format
@@ -74,7 +80,7 @@ public:
      * wire_format) into a T.
      */
     template <typename T>
-    [[nodiscard]] rfl::Result<T> decode(std::span<const std::byte> data) const {
+    [[nodiscard]] decoded<T> decode(std::span<const std::byte> data) const {
         try {
             switch (format_) {
                 case wire_format::json: {
@@ -86,7 +92,7 @@ public:
                     return utility::codec::wire_traits<T>::read_msgpack(data);
             }
         } catch (const std::exception& e) {
-            return rfl::Unexpected(rfl::Error(e.what()));
+            return std::unexpected(std::runtime_error(e.what()));
         }
         std::unreachable();
     }

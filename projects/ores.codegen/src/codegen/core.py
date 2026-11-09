@@ -692,7 +692,7 @@ def is_field_group_model(model_filename):
 
     Field-group models describe plain C++ structs that group related
     fields from a parent entity to reduce per-struct field count (e.g.
-    for rfl::Flatten<T> composition to avoid MSVC C1202).  They have no
+    to avoid MSVC C1202).  They have no
     primary key, no audit columns, no DB table, and no repository layer.
 
     Args:
@@ -3250,7 +3250,7 @@ def _convention_family_row(entry):
         'is_by_id': entry.write_mode == 'by_id',
         'is_world': entry.write_mode == 'world',
         # A family whose model states the wire codec carries its payload
-        # through the generated codec rather than the reflector, the same
+        # through the generated codec, the same
         # rule every generated domain type follows.
         'has_wire_codec': entry.has_wire_codec,
         'codec_include': (f"ores.{entry.component}.api/domain/{entry.entity}_codec.hpp"
@@ -4504,8 +4504,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 c.get('is_enum') for c in domain_entity['columns']
             )
             # A column the model declares :no_wire: reaches the domain struct
-            # but not its serialized form, so the domain header includes
-            # rfl::Skip where it is used.
+            # but not its serialized form.
             domain_entity['has_no_wire_columns'] = any(
                 c.get('no_wire') for c in domain_entity['columns']
             )

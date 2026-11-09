@@ -32,7 +32,6 @@
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/nats_options_helper.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_helpers.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>

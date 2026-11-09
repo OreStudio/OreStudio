@@ -70,11 +70,6 @@ def test_a_model_that_opted_in_prints_its_row_with_the_generated_codec():
     assert "rfl::json::write" not in codec
 
 
-def test_a_model_that_did_not_opt_in_reads_the_key_with_the_reflector():
-    plain = render_changed_event(False)
-    assert "<rfl/json.hpp>" in plain
-    assert "rfl::json::read<ores::x::messaging::widget_key>" in plain
-    assert "codec/" not in plain
 
 
 def test_a_model_that_opted_in_reads_the_key_with_the_generated_codec():

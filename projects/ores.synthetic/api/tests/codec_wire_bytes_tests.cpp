@@ -62,12 +62,9 @@
 #include "ores.synthetic.api/messaging/feed_selection_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -75,82 +72,66 @@ namespace {
 
 const std::string codec_tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
 template <typename... T>
 void every_default_has_the_same_bytes() {
-    (same_bytes_as_reflect_cpp(T{}), ...);
+    (survives_the_wire(T{}), ...);
 }
 
 }
 
-TEST_CASE("every synthetic domain type has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every synthetic domain type has its wire form", codec_tags) {
     ores::utility::generation::generation_context ctx(20261102);
-    same_bytes_as_reflect_cpp(
-        ores::synthetic::generators::generate_synthetic_calibration_fallback(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::synthetic::generators::generate_synthetic_calibration_policy(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::synthetic::generators::generate_synthetic_calibration_fallback(ctx));
+    survives_the_wire(ores::synthetic::generators::generate_synthetic_calibration_policy(ctx));
+    survives_the_wire(
         ores::synthetic::generators::generate_synthetic_calibration_provider_order(ctx));
-    same_bytes_as_reflect_cpp(ores::synthetic::generators::generate_synthetic_folder(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::synthetic::generators::generate_synthetic_fx_spot_fixing_item(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::synthetic::generators::generate_synthetic_folder(ctx));
+    survives_the_wire(ores::synthetic::generators::generate_synthetic_fx_spot_fixing_item(ctx));
+    survives_the_wire(
         ores::synthetic::generators::generate_synthetic_fx_spot_generation_config(ctx));
-    same_bytes_as_reflect_cpp(ores::synthetic::generators::generate_synthetic_gmm_component(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::synthetic::generators::generate_synthetic_gmm_component(ctx));
+    survives_the_wire(
         ores::synthetic::generators::generate_synthetic_ir_curve_generation_config(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::synthetic::generators::
             generate_synthetic_ir_curve_generation_config_process_parameter_value(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::synthetic::generators::generate_synthetic_ir_curve_template_entry(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::synthetic::generators::generate_synthetic_ir_curve_template_entry(ctx));
+    survives_the_wire(
         ores::synthetic::generators::generate_synthetic_market_data_generation_config(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::synthetic::generators::generate_synthetic_market_data_provider(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::synthetic::generators::generate_synthetic_trade_generation_book(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::synthetic::generators::generate_synthetic_trade_generation_config(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::synthetic::generators::generate_synthetic_market_data_provider(ctx));
+    survives_the_wire(ores::synthetic::generators::generate_synthetic_trade_generation_book(ctx));
+    survives_the_wire(ores::synthetic::generators::generate_synthetic_trade_generation_config(ctx));
+    survives_the_wire(
         ores::synthetic::generators::generate_synthetic_trade_generation_counterparty(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::synthetic::generators::generate_synthetic_trade_generation_trade_type(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::synthetic::generators::generate_synthetic_yield_curve_process_parameter_definition(
             ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::synthetic::generators::generate_synthetic_yield_curve_process_type(ctx));
 }
 
-TEST_CASE("every synthetic operation message's default has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every synthetic operation message's default has its wire form", codec_tags) {
     every_default_has_the_same_bytes<ores::synthetic::messaging::convert_fx_mixture_request,
                                      ores::synthetic::messaging::convert_fx_mixture_response,
                                      ores::synthetic::messaging::convert_fx_simple_request,

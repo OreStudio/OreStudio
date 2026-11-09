@@ -22,10 +22,10 @@
 
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/compression/gzip.hpp"
 #include <filesystem>
 #include <map>
-#include <rfl/json.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -47,10 +47,7 @@ inline std::vector<catalogue_line> catalogue_lines_of(const std::string& content
     while (std::getline(stream, line)) {
         if (line.empty())
             continue;
-        auto parsed = rfl::json::read<catalogue_line>(line);
-        if (!parsed)
-            throw std::runtime_error("unreadable catalogue line: " + line);
-        result.push_back(std::move(*parsed));
+        result.push_back(ores::utility::codec::json::read<catalogue_line>(line));
     }
     return result;
 }

@@ -125,7 +125,6 @@
 #include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_step_commands.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <chrono>

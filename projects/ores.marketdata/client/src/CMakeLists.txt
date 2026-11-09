@@ -48,7 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib)
 
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -61,6 +61,6 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         libfort::fort)
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

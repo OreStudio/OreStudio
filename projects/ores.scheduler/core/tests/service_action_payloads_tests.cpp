@@ -21,15 +21,12 @@
 #include "ores.scheduler.core/service/action_payloads.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <optional>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 #include <vector>
@@ -37,12 +34,6 @@
 namespace {
 
 const std::string tags("[service][codec]");
-
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
 
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
@@ -55,24 +46,34 @@ struct wider_result {
     std::vector<std::string> fields;
 };
 
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<wider_result>) {
+    return std::tuple{ores::utility::codec::field{"outcome", &wider_result::outcome},
+                      ores::utility::codec::field{"code", &wider_result::code},
+                      ores::utility::codec::field{"message", &wider_result::message},
+                      ores::utility::codec::field{"fields", &wider_result::fields}};
+}
+
 struct wider_reply {
     std::string run_id;
     wider_result result;
 };
 
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<wider_reply>) {
+    return std::tuple{ores::utility::codec::field{"run_id", &wider_reply::run_id},
+                      ores::utility::codec::field{"result", &wider_reply::result}};
+}
+
 /**
- * @brief The codec writes the bytes reflect-cpp wrote, in both formats, and
- * reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     namespace object = ores::utility::codec::object;
     const auto json = object::write_json(v);
     CHECK(json == ores::utility::codec::json::write(v));
     CHECK(object::write_json(object::read_json<T>(json)) == json);
 
     const auto msgpack = object::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(object::write_msgpack(object::read_msgpack<T>(bytes_of(msgpack))) == msgpack);
 }
 
@@ -81,10 +82,10 @@ void same_bytes_as_reflect_cpp(const T& v) {
 using namespace ores::scheduler::service;
 using ores::utility::codec::object::read_json;
 
-TEST_CASE("the action payloads write the bytes reflect-cpp wrote", tags) {
-    same_bytes_as_reflect_cpp(mq_payload_fields{"q1", "report.run", R"({"a": "b"})"});
-    same_bytes_as_reflect_cpp(nats_publish_payload{"reporting.v1.ops.trigger", "r1", std::nullopt});
-    same_bytes_as_reflect_cpp(
+TEST_CASE("the action payloads survive the wire", tags) {
+    survives_the_wire(mq_payload_fields{"q1", "report.run", R"({"a": "b"})"});
+    survives_the_wire(nats_publish_payload{"reporting.v1.ops.trigger", "r1", std::nullopt});
+    survives_the_wire(
         nats_trigger_body{boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301"),
                           boost::uuids::string_generator{}("00000000-0000-0000-0000-000000000000"),
                           -42,
@@ -92,11 +93,11 @@ TEST_CASE("the action payloads write the bytes reflect-cpp wrote", tags) {
                           "",
                           "",
                           ""});
-    same_bytes_as_reflect_cpp(reply_body{
+    survives_the_wire(reply_body{
         reply_result{ores::utility::domain::outcome::denied, "denied", "not \"allowed\""}});
 }
 
-TEST_CASE("a job's action payload reads as reflect-cpp read it", tags) {
+TEST_CASE("a job's action payload reads from the wire it", tags) {
     const auto mq = read_json<mq_payload_fields>(
         R"({"queue_id": "q1", "message_type": "t", "payload": "{}", "extra": 1})");
     CHECK(mq.queue_id == "q1");
@@ -124,7 +125,7 @@ TEST_CASE("an answer's result reads among the members it does not name", tags) {
 
 TEST_CASE("an answer's result reads among unnamed members in MessagePack", tags) {
     const wider_reply wider{"x", {ores::utility::domain::outcome::failed, "c", "m", {"f"}}};
-    const auto bytes = their_msgpack(wider);
+    const auto bytes = ores::utility::codec::msgpack::write(wider);
     const ores::nats::wire_codec nats_codec(ores::nats::wire_format::msgpack);
     const auto reply = nats_codec.decode<reply_body>(bytes_of(bytes));
     REQUIRE(reply);

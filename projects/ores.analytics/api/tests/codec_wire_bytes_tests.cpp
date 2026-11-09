@@ -73,12 +73,9 @@
 #include "ores.analytics.api/generators/todays_market_entry_generator.hpp"
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.analytics.api/messaging/publish_operation_protocol.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -86,97 +83,75 @@ namespace {
 
 const std::string codec_tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
 template <typename... T>
 void every_default_has_the_same_bytes() {
-    (same_bytes_as_reflect_cpp(T{}), ...);
+    (survives_the_wire(T{}), ...);
 }
 
 }
 
-TEST_CASE("every analytics domain type has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every analytics domain type has its wire form", codec_tags) {
     ores::utility::generation::generation_context ctx(20261102);
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_credit_simulation_config(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_credit_simulation_entity_config(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_credit_simulation_matrix_config(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_credit_simulation_matrix_row_config(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_credit_simulation_netting_set_config(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_pricing_engine_type(ctx));
-    same_bytes_as_reflect_cpp(ores::analytics::generators::generate_synthetic_pricing_method(ctx));
-    same_bytes_as_reflect_cpp(ores::analytics::generators::generate_synthetic_pricing_model(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_pricing_model_config(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::analytics::generators::generate_synthetic_pricing_engine_type(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_pricing_method(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_pricing_model(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_pricing_model_config(ctx));
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_pricing_model_engine_pair(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_pricing_model_product(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::analytics::generators::generate_synthetic_pricing_model_product(ctx));
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_pricing_model_product_parameter(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_pricing_pair_setting(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_sensitivity_asset_class(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_sensitivity_method(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_sensitivity_template(ctx));
-    same_bytes_as_reflect_cpp(ores::analytics::generators::generate_synthetic_shift_type(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_stress_shift_family(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_stress_test_library(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_stress_test_scenario(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_stress_test_shift(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::analytics::generators::generate_synthetic_pricing_pair_setting(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_sensitivity_asset_class(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_sensitivity_method(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_sensitivity_template(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_shift_type(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_stress_shift_family(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_stress_test_library(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_stress_test_scenario(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_stress_test_shift(ctx));
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_todays_market_collection(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_todays_market_collection_kind(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_todays_market_config(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::analytics::generators::generate_synthetic_todays_market_config(ctx));
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_todays_market_configuration(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::analytics::generators::generate_synthetic_todays_market_configuration_binding(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::analytics::generators::generate_synthetic_todays_market_entry(ctx));
+    survives_the_wire(ores::analytics::generators::generate_synthetic_todays_market_entry(ctx));
 }
 
-TEST_CASE("every analytics operation message's default has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every analytics operation message's default has its wire form", codec_tags) {
     every_default_has_the_same_bytes<
         ores::analytics::messaging::pricing_engines_document,
         ores::analytics::messaging::todays_market_document,
@@ -197,7 +172,7 @@ TEST_CASE("every analytics operation message's default has reflect-cpp's bytes",
         ores::analytics::messaging::publish_todays_market_from_dq_request>();
 }
 
-TEST_CASE("filled configuration documents have reflect-cpp's bytes", codec_tags) {
+TEST_CASE("filled configuration documents survive the wire", codec_tags) {
     namespace g = ores::analytics::generators;
     ores::utility::generation::generation_context ctx(20261105);
 
@@ -206,7 +181,7 @@ TEST_CASE("filled configuration documents have reflect-cpp's bytes", codec_tags)
     engines.products = {g::generate_synthetic_pricing_model_product(ctx),
                         g::generate_synthetic_pricing_model_product(ctx)};
     engines.parameters = {g::generate_synthetic_pricing_model_product_parameter(ctx)};
-    same_bytes_as_reflect_cpp(engines);
+    survives_the_wire(engines);
 
     ores::analytics::messaging::todays_market_document market;
     market.config = g::generate_synthetic_todays_market_config(ctx);
@@ -215,5 +190,5 @@ TEST_CASE("filled configuration documents have reflect-cpp's bytes", codec_tags)
                       g::generate_synthetic_todays_market_entry(ctx)};
     market.configurations = {g::generate_synthetic_todays_market_configuration(ctx)};
     market.bindings = {g::generate_synthetic_todays_market_configuration_binding(ctx)};
-    same_bytes_as_reflect_cpp(market);
+    survives_the_wire(market);
 }

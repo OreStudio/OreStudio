@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 67C0E32A-C7F1-40CB-A08A-9FA5A1CA6253
+:END:
+#+title: Shell completion tests fail with cli 2.3.0
+#+description: cli 2.3.0 no longer prefixes nested completions with the menu name, so 16 shell suites fail.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The 16 =ores.shell.*= test suites fail on their completion checks. Each test asks a
+root menu for =GetCompletions("menu ")= and expects =menu verb=. In cli 2.3.0,
+=Menu::GetCompletionRecursiveHelper= returns the bare =verb= and drops the menu
+name. The shell code does not change this output. Decide whether to patch the
+=cli= overlay so the prefix returns, or to change the tests and the shell.
+
+* Why
+
+The check gate cannot be green while these suites fail. Interactive completion of
+nested shell commands can also be affected. Nobody has tested that yet. The
+failure appeared with the vcpkg update to cli 2.3.0.
+
+Found by the branch that removes reflect-cpp, on 2026-11-09. That branch adds no
+shell menu or completion code. Every failed assertion in the shell suites is a
+completion check.
+
+* References
+
+- =include/cli/menu.h= of cli 2.3.0, =GetCompletionRecursiveHelper=.
+- =build/cmake/overlays/common/cli/=, the overlay that can carry a patch.
+- =projects/ores.shell/api/tests/shell_root_menu_tests.cpp=.
+
+* See also
+
+- [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]]

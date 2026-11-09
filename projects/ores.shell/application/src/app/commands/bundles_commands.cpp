@@ -26,7 +26,6 @@
 #include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.shell/app/shell_root_menu.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
 #include <cli/cli.h>
 #include <functional>

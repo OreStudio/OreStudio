@@ -25,8 +25,9 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/domain/protocol_codec.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/io_context.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -72,6 +73,12 @@ struct admitted_response {
     std::string report_instance_id;
 };
 
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<admitted_response>) {
+    return std::tuple{
+        ores::utility::codec::field{"result", &admitted_response::result},
+        ores::utility::codec::field{"report_instance_id", &admitted_response::report_instance_id}};
+}
+
 ores::scheduler::domain::job_definition make_publish_job(const std::string& payload) {
     ores::scheduler::domain::job_definition job;
     job.job_name = "scheduler_trigger_contract_test_job";
@@ -91,6 +98,10 @@ ores::nats::service::nats_client make_unauthenticated_client(ores::nats::service
 
 using ores::reporting::messaging::trigger_report_instance_request;
 using ores::testing::scoped_database_helper;
+
+template <>
+struct ores::utility::codec::wire_traits<admitted_response>
+    : ores::utility::codec::shaped_wire_traits<admitted_response> {};
 
 TEST_CASE("what the scheduler publishes decodes as the reporting trigger request",
           "[contract][trigger][integration]") {

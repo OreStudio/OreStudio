@@ -96,7 +96,8 @@ fetch_steps(nats_client& session, const std::string& instance_id) {
             workflow::messaging::get_workflow_steps_response>(
             session, std::string(req.nats_subject), req);
         if (!result)
-            return std::unexpected("Failed to parse response: " + result.error().what());
+            return std::unexpected(std::string("Failed to parse response: ") +
+                                   result.error().what());
         return *result;
     } catch (const std::exception& e) {
         return std::unexpected(e.what());
@@ -122,7 +123,8 @@ fetch_step_result(nats_client& session, const std::string& step_id, const std::s
             workflow::messaging::get_step_result_response>(
             session, std::string(req.nats_subject), req);
         if (!result)
-            return std::unexpected("Failed to parse the step result: " + result.error().what());
+            return std::unexpected(std::string("Failed to parse the step result: ") +
+                                   result.error().what());
         return *result;
     } catch (const std::exception& e) {
         return std::unexpected(e.what());

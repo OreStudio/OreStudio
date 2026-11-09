@@ -20,14 +20,11 @@
 #include "ores.telemetry.core/messaging/logs_protocol.hpp"
 #include "ores.telemetry.core/messaging/nats_samples_protocol.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -35,31 +32,22 @@ namespace {
 
 const std::string tags("[messaging][codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
@@ -72,7 +60,7 @@ std::chrono::system_clock::time_point instant() {
 
 using namespace ores::telemetry::messaging;
 
-TEST_CASE("a service roster writes the bytes reflect-cpp wrote", tags) {
+TEST_CASE("a service roster survives the wire", tags) {
     get_service_roster_response v;
     service_roster_slot running;
     running.service_name = "ores.iam.service";
@@ -89,10 +77,10 @@ TEST_CASE("a service roster writes the bytes reflect-cpp wrote", tags) {
     missing.service_name = "ores.trading.service";
     missing.display_name = "Trading";
     v.slots = {running, missing};
-    same_bytes_as_reflect_cpp(v);
+    survives_the_wire(v);
 }
 
-TEST_CASE("a NATS server sample writes the bytes reflect-cpp wrote", tags) {
+TEST_CASE("a NATS server sample survives the wire", tags) {
     nats_server_sample v;
     v.sampled_at = instant();
     v.in_msgs = 18446744073709551615ULL;
@@ -102,10 +90,10 @@ TEST_CASE("a NATS server sample writes the bytes reflect-cpp wrote", tags) {
     v.connections = 12;
     v.mem_bytes = 104857600;
     v.slow_consumers = 1;
-    same_bytes_as_reflect_cpp(v);
+    survives_the_wire(v);
 }
 
-TEST_CASE("a page of logs writes the bytes reflect-cpp wrote", tags) {
+TEST_CASE("a page of logs survives the wire", tags) {
     boost::uuids::string_generator uuid;
     telemetry_log_entry with_session;
     with_session.id = uuid("6f1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d");
@@ -123,14 +111,14 @@ TEST_CASE("a page of logs writes the bytes reflect-cpp wrote", tags) {
     v.success = true;
     v.entries = {with_session, bare};
     v.total_count = 2;
-    same_bytes_as_reflect_cpp(v);
+    survives_the_wire(v);
 }
 
-TEST_CASE("a log publish writes the bytes reflect-cpp wrote", tags) {
+TEST_CASE("a log publish survives the wire", tags) {
     publish_log_entries_request v;
     v.source_name = "ores.web";
     v.tag = "bff";
     v.entries = {publish_log_entry_item{"info", 1793551867123, "router", "started"},
                  publish_log_entry_item{"error", -1, "", ""}};
-    same_bytes_as_reflect_cpp(v);
+    survives_the_wire(v);
 }

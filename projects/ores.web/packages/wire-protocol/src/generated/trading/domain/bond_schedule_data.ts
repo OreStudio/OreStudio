@@ -28,7 +28,7 @@ import type { BondScheduleRules } from './bond_schedule_rules.js';
 /**
  * The BondScheduleData wire shape.
  *
- * Field names are the C++ member names, because they are the keys rfl::json
+ * Field names are the C++ member names, because they are the keys the codec
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  */
 export interface BondScheduleData {

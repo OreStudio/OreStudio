@@ -22,9 +22,7 @@
 /**
  * @brief Stream operation utilities.
  *
- * Holds the std::vector stream operator, which writes a vector as JSON, and
- * the reflect-cpp parsers that give boost::uuids::uuid and tenant_id their
- * string form.
+ * Holds the std::vector stream operator, which writes a vector as JSON.
  */
 namespace ores::utility::streaming {}
 

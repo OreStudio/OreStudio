@@ -25,10 +25,9 @@ The full template source. Edit here and re-tangle with
 The generated file's only job is to give the repository entity struct a
 =std::ostream= =operator<<= — the entity itself is a plain aggregate
 with no out-of-class members, so this is the entire =.cpp=. It's a
-thin wrapper over =rfl::json::write=: printing an entity as JSON is
+thin wrapper over the generated JSON codec: printing an entity as JSON is
 more useful for debugging (logs, test failure output) than a
-hand-rolled field dump would be, and it comes for free once the
-struct is =rfl=-reflectable.
+hand-rolled field dump would be.
 
 The model has exactly two shapes that reach this template —
 =domain_entity= (a regular entity, keyed by =entity_singular=) and

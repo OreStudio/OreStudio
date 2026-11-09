@@ -211,7 +211,7 @@ const uuidLike = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 /**
  * A flag that the server may omit.
  *
- * The C++ structs give most fields an initialiser and `rfl::msgpack` writes
+ * The C++ structs give most fields an initialiser and the MessagePack codec writes
  * every member, so a well-formed reply carries them all. A default keeps a
  * partial reply readable instead of turning it into a hard failure.
  */

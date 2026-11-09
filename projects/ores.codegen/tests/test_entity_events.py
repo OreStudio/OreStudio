@@ -144,7 +144,7 @@ def test_the_event_states_its_subject_prefix_and_its_own_conversion(tmp_path):
     assert "from_notification(const entity_event_notification& notification)" in header
     # The key is the entity's own record, so the conversion is the one place
     # that knows which columns it carries.
-    assert "rfl::json::read<ores::testcomp::messaging::evented_entity_key>" in header
+    assert "ores::testcomp::messaging::evented_entity_key>(notification.key)" in header
 
 
 def test_the_registrar_takes_the_subject_from_the_action(tmp_path):

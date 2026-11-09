@@ -17,9 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/domain/system_setting_codec.hpp"
 #include "ores.variability.api/generators/system_setting_generator.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
@@ -29,8 +28,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 #include <vector>
@@ -39,31 +36,22 @@ namespace {
 
 const std::string tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
@@ -84,14 +72,14 @@ using ores::utility::domain::precondition;
 using ores::utility::domain::precondition_kind;
 using ores::utility::domain::result;
 
-TEST_CASE("a system setting writes the bytes reflect-cpp wrote", tags) {
-    same_bytes_as_reflect_cpp(a_setting());
+TEST_CASE("a system setting survives the wire", tags) {
+    survives_the_wire(a_setting());
 }
 
-TEST_CASE("the system setting messages write the bytes reflect-cpp wrote", tags) {
-    same_bytes_as_reflect_cpp(system_setting_key{"iam.token.access_lifetime_seconds"});
+TEST_CASE("the system setting messages survive the wire", tags) {
+    survives_the_wire(system_setting_key{"iam.token.access_lifetime_seconds"});
 
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         system_setting_change{system_setting_write{an_id(),
                                                    "iam.token.access_lifetime_seconds",
                                                    an_id(),
@@ -100,15 +88,15 @@ TEST_CASE("the system setting messages write the bytes reflect-cpp wrote", tags)
                                                    "Access token \"lifetime\""},
                               precondition{precondition_kind::must_match_version, 3}});
 
-    same_bytes_as_reflect_cpp(system_setting_removal{system_setting_key{"a"},
-                                                     ores::utility::domain::removal_precondition});
+    survives_the_wire(system_setting_removal{system_setting_key{"a"},
+                                             ores::utility::domain::removal_precondition});
 
-    same_bytes_as_reflect_cpp(system_setting_lookup{system_setting_key{"a"}, a_setting()});
-    same_bytes_as_reflect_cpp(system_setting_lookup{system_setting_key{"a"}, std::nullopt});
+    survives_the_wire(system_setting_lookup{system_setting_key{"a"}, a_setting()});
+    survives_the_wire(system_setting_lookup{system_setting_key{"a"}, std::nullopt});
 
-    same_bytes_as_reflect_cpp(system_settings_filter{std::vector{an_id()}});
+    survives_the_wire(system_settings_filter{std::vector{an_id()}});
 
-    same_bytes_as_reflect_cpp(system_setting_event{
+    survives_the_wire(system_setting_event{
         an_id(),
         system_setting_key{"a"},
         "written",
@@ -116,22 +104,21 @@ TEST_CASE("the system setting messages write the bytes reflect-cpp wrote", tags)
         std::chrono::system_clock::time_point(std::chrono::microseconds(1'761'652'800'123'456)),
         std::string("c1")});
 
-    same_bytes_as_reflect_cpp(system_setting_versions_filter{std::nullopt, 1, 4});
+    survives_the_wire(system_setting_versions_filter{std::nullopt, 1, 4});
 
-    same_bytes_as_reflect_cpp(list_system_settings_request{
+    survives_the_wire(list_system_settings_request{
         0, 100, ores::utility::domain::order{"name", true}, std::nullopt, std::string("now")});
 
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         list_system_settings_response{result{outcome::ok, "", "", {}}, {a_setting()}, 1});
 
-    same_bytes_as_reflect_cpp(get_system_setting_response{
+    survives_the_wire(get_system_setting_response{
         result{outcome::denied, "denied", "not allowed", {}}, std::nullopt});
 }
 
-TEST_CASE("the variability operations write the bytes reflect-cpp wrote", tags) {
-    same_bytes_as_reflect_cpp(clear_bootstrap_mode_request{});
-    same_bytes_as_reflect_cpp(complete_party_onboarding_request{an_id()});
-    same_bytes_as_reflect_cpp(get_setting_request{"iam.token.access_lifetime_seconds"});
-    same_bytes_as_reflect_cpp(
-        get_setting_response{result{outcome::ok, "", "", {}}, "900", "integer"});
+TEST_CASE("the variability operations survive the wire", tags) {
+    survives_the_wire(clear_bootstrap_mode_request{});
+    survives_the_wire(complete_party_onboarding_request{an_id()});
+    survives_the_wire(get_setting_request{"iam.token.access_lifetime_seconds"});
+    survives_the_wire(get_setting_response{result{outcome::ok, "", "", {}}, "900", "integer"});
 }

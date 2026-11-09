@@ -34,7 +34,6 @@ so they cross to TypeScript as strings.
 * Includes
 
 #+begin_src cpp :name includes
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_vocabulary.hpp"
 #include <optional>
 #include <string>

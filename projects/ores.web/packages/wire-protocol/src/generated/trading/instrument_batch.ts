@@ -108,7 +108,7 @@ import type { VanillaSwapInstrument } from './domain/vanilla_swap_instrument.js'
  * Every instrument and instrument child an export carries, one typed array per
  * entity.
  *
- * Field names are the C++ member names, because they are the keys rfl::json
+ * Field names are the C++ member names, because they are the keys the codec
  * writes. Each element carries the trade id it belongs to, so a client joins an
  * array to its trade by that id, and the array states the element's type.
  */

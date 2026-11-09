@@ -44,6 +44,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/log/sources/severity_feature.hpp>
+#include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -492,22 +493,22 @@ namespace {
 
 /*
  * The stream of the ticks of one series, as the ingest derives it from the provider and the
- * series URI. Nothing returns when the session cannot see the series, or when it names a party
- * that may not read the provider's ticks, so a series with no ticks, a series the session cannot
- * read and a party with no subscription all answer with no tick. A context with no party is a
+ * series URI. The nil id returns when the session cannot see the series, or when it names a
+ * party that may not read the provider's ticks. No tick carries the nil id, so the read finds no
+ * tick and still answers with the party's own observation rows. A context with no party is a
  * service context, which reads the store on its own authority, as every service read does. The
  * id is stored nowhere, so every read computes it. @p allowed is the right the read needs.
  */
-std::optional<std::string> stream_of(market_observation_repository::context ctx,
+std::string stream_of(market_observation_repository::context ctx,
                                      const boost::uuids::uuid& series_id,
                                      bool (*allowed)(const ores::database::context&, const std::string&)) {
     const auto series =
         market_series_repository{}.read_latest(ctx, boost::uuids::to_string(series_id));
     if (series.empty())
-        return std::nullopt;
+        return boost::uuids::to_string(boost::uuids::nil_uuid());
     const auto& s = series.front();
     if (ctx.party_id() && !allowed(ctx, s.provider_code))
-        return std::nullopt;
+        return boost::uuids::to_string(boost::uuids::nil_uuid());
     return boost::uuids::to_string(datum::stream_id(s.provider_code, s.oresmd_uri));
 }
 
@@ -649,8 +650,6 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     const auto sid = boost::uuids::to_string(series_id);
     const auto as_of_str = datetime::to_iso8601_utc(as_of_datetime);
     const auto stream = stream_of(ctx, series_id, may_compute_from_ticks);
-    if (!stream)
-        return {};
 
     // DISTINCT ON (oresmd_uri) returns exactly one row per point -- the latest at or before
     // as_of_datetime -- reconstructing a curve/grid snapshot from independently-ticking rows.
@@ -681,7 +680,7 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     const auto rows =
         query_builder::execute_parameterized_multi_column_query(ctx,
                                                  sql,
-                                                 {tid, sid, as_of_str, MAX_TIMESTAMP, *stream},
+                                                 {tid, sid, as_of_str, MAX_TIMESTAMP, stream},
                                                  lg(),
                                                  "reading as-of curve snapshot");
 
@@ -735,8 +734,6 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
     // tick of each by one index probe, and the observation rows, reduced to one row for each
     // datum of each series.
     const auto [series_ids, streams] = streams_of_every_series(ctx);
-    if (series_ids.empty())
-        return {};
 
     static const std::string sql = R"(
         WITH coords AS (
@@ -826,8 +823,6 @@ market_observation_repository::read_as_of_buckets(
     const auto bucket_seconds = std::to_string(bucket_size.count());
     const auto count_str = std::to_string(bucket_count);
     const auto stream = stream_of(ctx, series_id, may_read_ticks);
-    if (!stream)
-        return std::vector<std::vector<domain::market_observation>>(bucket_count);
 
     // Bucket boundaries and the per-bucket as-of reduction both happen in the database, in
     // one statement: generate_series() produces the (up to bucket_count) boundaries ending
@@ -875,7 +870,7 @@ market_observation_repository::read_as_of_buckets(
     const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
-        {tid, sid, latest_str, bucket_seconds, count_str, MAX_TIMESTAMP, *stream},
+        {tid, sid, latest_str, bucket_seconds, count_str, MAX_TIMESTAMP, stream},
         lg(),
         "reading as-of bucketed curve evolution");
 
@@ -926,8 +921,6 @@ std::vector<series_instant> market_observation_repository::read_instants(
     const auto to_str = datetime::to_iso8601_utc(to_datetime);
     const auto cap_str = std::to_string(max_instants + 1);
     const auto stream = stream_of(ctx, series_id, may_read_ticks);
-    if (!stream)
-        return {};
 
     // The stated instants travel as one comma-separated string, because the
     // read takes text parameters. An empty one gives an empty array, which is
@@ -1001,7 +994,7 @@ std::vector<series_instant> market_observation_repository::read_instants(
     const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         sql,
-        {tid, sid, from_str, to_str, cap_str, MAX_TIMESTAMP, stated_str, *stream},
+        {tid, sid, from_str, to_str, cap_str, MAX_TIMESTAMP, stated_str, stream},
         lg(),
         "reading the instants of a series");
 

@@ -29,12 +29,14 @@
 #include "ores.testing/make_generation_context.hpp"
 #include "test_helpers.hpp"
 #include "tick_test_support.hpp"
+#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <set>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -244,12 +246,59 @@ TEST_CASE("a_party_with_only_a_derived_right_computes_from_ticks_and_does_not_re
 
     market_observation_repository repo;
     CHECK(repo.read_as_of(owner, s.id, t0 + std::chrono::minutes(1)).size() == 1);
-    CHECK(repo.read_as_of_all(owner, t0 + std::chrono::minutes(1)).size() == 1);
+    const auto every = repo.read_as_of_all(owner, t0 + std::chrono::minutes(1));
+    CHECK(std::ranges::count_if(every, [&](const auto& o) { return o.series_id == s.id; }) == 1);
     const auto buckets = repo.read_as_of_buckets(
         owner, s.id, t0 + std::chrono::minutes(1), std::chrono::minutes(1), 2);
     REQUIRE(buckets.size() == 2);
     CHECK(buckets[0].empty());
     CHECK(buckets[1].empty());
+}
+
+TEST_CASE("a_party_with_no_subscription_reads_its_own_observations_and_no_tick",
+          "[repository][ticks]") {
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto s = repository_tick_reads_unique_series(generate_synthetic_market_series(ctx));
+    market_series_repository{}.write(h.context(), s);
+
+    const auto t0 = now_second();
+    auto observed = generate_synthetic_market_observation(ctx);
+    observed.series_id = s.id;
+    observed.party_id = s.party_id;
+    observed.oresmd_uri = s.oresmd_uri;
+    observed.observation_datetime = t0;
+    observed.value = "1.0";
+    observed.source = "feed.test";
+    market_observation_repository{}.insert(h.context(), observed);
+
+    const auto owner = party_context(h, s.party_id);
+    const auto number = repository_tick_reads_number_of(owner, s);
+    insert_tick(owner, stream_of(s.provider_code, s.oresmd_uri), number, t0 + std::chrono::seconds(5), 2.0);
+
+    market_observation_repository repo;
+    const auto as_of = t0 + std::chrono::minutes(1);
+
+    const auto points = repo.read_as_of(owner, s.id, as_of);
+    REQUIRE(points.size() == 1);
+    CHECK(points.front().id == observed.id);
+
+    std::vector<ores::marketdata::domain::market_observation> mine;
+    for (const auto& o : repo.read_as_of_all(owner, as_of))
+        if (o.series_id == s.id)
+            mine.push_back(o);
+    REQUIRE(mine.size() == 1);
+    CHECK(mine.front().id == observed.id);
+
+    const auto buckets = repo.read_as_of_buckets(owner, s.id, as_of, std::chrono::minutes(1), 1);
+    REQUIRE(buckets.size() == 1);
+    REQUIRE(buckets.front().size() == 1);
+    CHECK(buckets.front().front().id == observed.id);
+
+    const auto instants = repo.read_instants(
+        owner, s.id, t0 - std::chrono::seconds(1), t0 + std::chrono::seconds(10), {}, 10);
+    REQUIRE(instants.size() == 1);
+    CHECK(instants.front().as_of == t0);
 }
 
 TEST_CASE("the_numbers_of_many_datums_are_assigned_together_and_stay_the_same",

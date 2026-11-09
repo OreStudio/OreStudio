@@ -32,8 +32,12 @@ If an instrument/provider is ambiguous, ask for clarification. This deployment c
 Include observation time and source for every quoted value. Distinguish demo data from live market feeds.
 You have at most four rounds and six tool calls. Keep answers concise and cite the supplied tool results.`;
 const terminalValidationErrors = new Set([
-    'invalid_result_units', 'inconsistent_provenance', 'scope_mismatch',
-    'party_mismatch', 'incomplete_scope', 'incomplete_reporting',
+    'invalid_result_units',
+    'inconsistent_provenance',
+    'scope_mismatch',
+    'party_mismatch',
+    'incomplete_scope',
+    'incomplete_reporting',
 ]);
 type ToolRunner = Pick<ToolExecutor, 'execute'>;
 
@@ -41,8 +45,11 @@ export class Agent {
     private active = 0;
     private conversations = new Conversations();
 
-    constructor(private inference: Inference, private executor: ToolRunner,
-        private observe: (event: TimingEvent) => void = () => {}) {}
+    constructor(
+        private inference: Inference,
+        private executor: ToolRunner,
+        private observe: (event: TimingEvent) => void = () => {},
+    ) {}
 
     chat(raw: unknown, session: Session, signal: AbortSignal, requestId?: string) {
         return trace(requestId, this.observe, () => this.runChat(raw, session, signal));
@@ -50,7 +57,8 @@ export class Agent {
 
     private async runChat(raw: unknown, session: Session, signal: AbortSignal) {
         const { message } = input.parse(raw);
-        if (session.chatBusy || this.active >= 1) throw new AppError('agent_busy', 'Inference is busy; try again shortly.', 429);
+        if (session.chatBusy || this.active >= 1)
+            throw new AppError('agent_busy', 'Inference is busy; try again shortly.', 429);
         session.chatBusy = true;
         this.active++;
         const started = Date.now();
@@ -58,15 +66,22 @@ export class Agent {
         const deadline = AbortSignal.any([signal, AbortSignal.timeout(120000)]);
         const check = () => {
             deadline.throwIfAborted();
-            if (!session.active || session.expires <= Date.now()) throw new AppError('session_expired', 'Sign in again.', 401);
+            if (!session.active || session.expires <= Date.now())
+                throw new AppError('session_expired', 'Sign in again.', 401);
         };
-        const reply = (answer: string, selectionRequired?: string) => ({ answer, evidence,
-            dataRetrieved: evidence.length > 0, durationMs: Date.now() - started,
-            ...(selectionRequired ? { selectionRequired } : {}) });
+        const reply = (answer: string, selectionRequired?: string) => ({
+            answer,
+            evidence,
+            dataRetrieved: evidence.length > 0,
+            durationMs: Date.now() - started,
+            ...(selectionRequired ? { selectionRequired } : {}),
+        });
         const execute = async (name: string, args: ToolArguments) => {
             check();
             try {
-                const result = await timedAsync('tool', () => this.executor.execute(name, args, session, deadline));
+                const result = await timedAsync('tool', () =>
+                    this.executor.execute(name, args, session, deadline),
+                );
                 check();
                 evidence.push(result);
                 const output = timed('render', () => present(result));
@@ -76,7 +91,10 @@ export class Agent {
             } catch (error) {
                 if (deadline.aborted) throw error;
                 if (error instanceof AppError && terminalValidationErrors.has(error.code)) {
-                    return { result: undefined, answer: `The requested result is unavailable because validation failed (${error.code}). No verified value is supplied.` };
+                    return {
+                        result: undefined,
+                        answer: `The requested result is unavailable because validation failed (${error.code}). No verified value is supplied.`,
+                    };
                 }
                 throw error;
             }
@@ -88,11 +106,18 @@ export class Agent {
                 const output = await execute(continuation.name, continuation.args);
                 return reply(output.answer ?? 'No formatted result is available.');
             }
-            const plan = continuation?.kind === 'plan' ? continuation.plan : timed('selection', () => readIntent(message));
-            if (plan.refusal || plan.clarification) return reply(plan.refusal ?? plan.clarification!);
+            const plan =
+                continuation?.kind === 'plan'
+                    ? continuation.plan
+                    : timed('selection', () => readIntent(message));
+            if (plan.refusal || plan.clarification)
+                return reply(plan.refusal ?? plan.clarification!);
             if (plan.route === 'scope' && !plan.runId) {
                 this.conversations.set(session, { kind: 'run', plan });
-                return reply('Which stored report run should I use? Reply with its exact run UUID from the report list or UI. I will use the book/portfolio membership at that run’s start time.', 'runId');
+                return reply(
+                    'Which stored report run should I use? Reply with its exact run UUID from the report list or UI. I will use the book/portfolio membership at that run’s start time.',
+                    'runId',
+                );
             }
             const scope = scopeArguments(plan);
             if (scope) {
@@ -106,39 +131,80 @@ export class Agent {
             }
 
             const catalog = timed('selection', () => catalogue(plan.route));
-            const messages: Message[] = [{ role: 'system', content: system }, { role: 'user', content: plan.message }];
+            const messages: Message[] = [
+                { role: 'system', content: system },
+                { role: 'user', content: plan.message },
+            ];
             const seen = new Set<string>();
             let calls = 0;
             for (let turn = 0; turn < 4; turn++) {
                 check();
-                const answer = await timedAsync('inference', () => this.inference.complete(messages, catalog, deadline));
+                const answer = await timedAsync('inference', () =>
+                    this.inference.complete(messages, catalog, deadline),
+                );
                 check();
                 if (!answer.tool_calls?.length) {
-                    if (!answer.content) throw new AppError('empty_answer', 'Model returned no answer.');
+                    if (!answer.content)
+                        throw new AppError('empty_answer', 'Model returned no answer.');
                     return reply(answer.content);
                 }
                 messages.push(answer);
                 for (const call of answer.tool_calls) {
-                    if (++calls > 6) throw new AppError('tool_budget', 'Tool-call limit reached; narrow the request.', 422);
+                    if (++calls > 6)
+                        throw new AppError(
+                            'tool_budget',
+                            'Tool-call limit reached; narrow the request.',
+                            422,
+                        );
                     let result: unknown;
                     try {
-                        if (!catalog.some(t => t.function.name === call.function.name)) throw new AppError('tool_not_in_catalogue', 'Tool is not available for this request.', 400);
-                        const args = preserveReadSelectors(call.function.name, JSON.parse(call.function.arguments), plan);
+                        if (!catalog.some((t) => t.function.name === call.function.name))
+                            throw new AppError(
+                                'tool_not_in_catalogue',
+                                'Tool is not available for this request.',
+                                400,
+                            );
+                        const args = preserveReadSelectors(
+                            call.function.name,
+                            JSON.parse(call.function.arguments),
+                            plan,
+                        );
                         const signature = call.function.name + JSON.stringify(args);
-                        if (seen.has(signature)) throw new AppError('repeated_call', 'Repeated tool call; use available results or clarify.', 422);
+                        if (seen.has(signature))
+                            throw new AppError(
+                                'repeated_call',
+                                'Repeated tool call; use available results or clarify.',
+                                422,
+                            );
                         seen.add(signature);
                         const output = await execute(call.function.name, args);
                         if (output.answer) return reply(output.answer);
                         result = output.result;
                     } catch (error) {
                         if (deadline.aborted) throw error;
-                        result = { error: error instanceof AppError ? error.code : 'invalid_arguments', message: 'Tool did not produce data. Do not invent a result.' };
+                        result = {
+                            error: error instanceof AppError ? error.code : 'invalid_arguments',
+                            message: 'Tool did not produce data. Do not invent a result.',
+                        };
                     }
-                    messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(result) });
+                    messages.push({
+                        role: 'tool',
+                        tool_call_id: call.id,
+                        content: JSON.stringify(result),
+                    });
                 }
-                if (JSON.stringify(messages).length > 24000) throw new AppError('context_budget', 'Result is too large; request fewer rows.', 422);
+                if (JSON.stringify(messages).length > 24000)
+                    throw new AppError(
+                        'context_budget',
+                        'Result is too large; request fewer rows.',
+                        422,
+                    );
             }
-            throw new AppError('turn_budget', 'Model reached its turn limit; narrow the request.', 422);
+            throw new AppError(
+                'turn_budget',
+                'Model reached its turn limit; narrow the request.',
+                422,
+            );
         } finally {
             session.chatBusy = false;
             this.active--;

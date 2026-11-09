@@ -102,12 +102,34 @@ No HTTP/SQL fallback exists.
 Agent tokens are short-lived and hashed in memory. Backend credentials remain
 server-side. Tools check tenant/party and fields; services enforce access.
 There is no automatic refresh or in-session party switch.
+Failed logins are limited per principal: ten per minute. Pending logins count
+until they finish. Valid input is required before counting. Successful logins
+and backend outages do not use the failure budget. State is capped at 1024
+principals; new principals receive 503 when that limit is reached.
 
 The local `CN=ores.agent` certificate does not have certificate-specific broker
 subject permissions. Application allowlisting is not a broker boundary.
 Restricted hosting needs verified broker grants, user access, authentication,
 TLS proxy and Origin rules. A proxy alone does not complete that work.
 Deployment commands do not rewrite broker config.
+
+Origin checks reject a supplied origin unless it is in `allowedOrigins`.
+Clients such as MCP clients can omit Origin. They must still pass the Host
+check and present a valid Bearer token for protected endpoints. Cookies do
+not grant access. Allowed origins must be exact HTTP(S) origins with no path.
+
+For remote access, terminate TLS at a trusted reverse proxy. Keep the agent
+on loopback. Set the upstream Host to `127.0.0.1:<agent-port>`,
+`localhost:<agent-port>` or `[::1]:<agent-port>`. Preserve the browser Origin
+and add its public HTTPS origin to `allowedOrigins`. The agent does not use
+forwarded Host or client-IP headers. Do not expose the loopback HTTP port.
+TLS must protect the login reply and all Bearer-token requests.
+
+The revision above records the tested contract; it does not pin a running
+server. Fixture CI does not check changes to upstream services. Before an
+agent or backend upgrade, test the candidate server with the smoke command
+below and record its revision. A failed contract check blocks that deployment.
+Do not change `backendRevision` just because main has moved.
 
 After building, check a test backend before upgrading it:
 

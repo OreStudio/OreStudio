@@ -15,6 +15,18 @@ Only the agent restarted. Private config and all 19 inspected native/broker/infe
 PIDs stayed unchanged. Main/agent health returned 200. Evidence is in ignored
 `build/output/agent-markdown-*` and `check-agent-markdown-*.mjs` files.
 
+## Post-merge review fixes
+
+2026-11-09: Windows passes 122 agent tests, five installer tests and all three
+replay handling suites (26/26, 8/8 and 11/11). Workflow lint passes. Tests cover
+login isolation/limits, session expiry, backend errors, config, IPv6 Host checks
+and awaited logout. Source format is checked by `verify`.
+
+Only auth, backend, config, main and server have runtime changes. The formatter
+changed no other generated JavaScript. Frozen evaluation files are unchanged.
+This check did not deploy the agent, rerun model/live cases or test the latest
+server contract. Installed-release and model results below remain historical.
+
 ## Known gaps
 
 - No booking, report execution or executable quote tools.

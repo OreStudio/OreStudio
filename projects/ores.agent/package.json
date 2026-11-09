@@ -13,14 +13,17 @@
     "package": "npm run build && node scripts/package.mjs",
     "deploy": "node scripts/deploy.mjs",
     "eval": "npm run build && node evals/run.mjs",
-    "verify": "npm test && node evals/check.mjs",
+    "verify": "npm run format:check && npm test && node evals/check.mjs",
     "eval:compare": "node evals/compare.mjs",
-    "eval:doctor": "npm run build && node evals/preflight.mjs"
+    "eval:doctor": "npm run build && node evals/preflight.mjs",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\""
   },
   "devDependencies": {
     "@types/markdown-it": "14.2.0",
     "@types/node": "24.10.0",
     "esbuild": "0.27.0",
+    "prettier": "3.9.8",
     "typescript": "7.0.2"
   },
   "dependencies": {

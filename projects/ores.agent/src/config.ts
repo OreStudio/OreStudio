@@ -1,27 +1,64 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 import { readFile } from 'node:fs/promises';
+import { z } from 'zod';
 
-export interface Config {
-    host: string;
-    port: number;
-    allowedOrigins: string[];
-    nats: null | { server: string; prefix: string; ca: string; cert: string; key: string };
-    inference: { baseUrl: string; model: string; timeoutMs: number; apiKeyFile?: string; maxOutputTokens?: number };
+function httpUrl(value: string): URL | undefined {
+    try {
+        const url = new URL(value);
+        if (
+            !['http:', 'https:'].includes(url.protocol) ||
+            url.username ||
+            url.password ||
+            url.search ||
+            url.hash
+        )
+            return;
+        return url;
+    } catch {
+        return;
+    }
 }
+const origin = z.string().refine((value) => {
+    const url = httpUrl(value);
+    return url !== undefined && value === url.origin;
+}, 'Use an HTTP(S) origin with no path, credentials, query or fragment.');
+const inferenceUrl = z.string().refine((value) => {
+    const url = httpUrl(value);
+    return (
+        url !== undefined &&
+        (url.protocol === 'https:' || ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
+    );
+}, 'Use loopback HTTP or HTTPS with no credentials, query or fragment.');
+const configSchema = z
+    .object({
+        host: z.enum(['127.0.0.1', '::1']),
+        port: z.number().int().min(0).max(65535),
+        allowedOrigins: z.array(origin),
+        nats: z
+            .object({
+                server: z.string().min(1),
+                prefix: z.string().min(1),
+                ca: z.string().min(1),
+                cert: z.string().min(1),
+                key: z.string().min(1),
+            })
+            .strict()
+            .nullable(),
+        inference: z
+            .object({
+                baseUrl: inferenceUrl,
+                model: z.string().min(1),
+                timeoutMs: z.number().int().min(100).max(120000),
+                apiKeyFile: z.string().min(1).optional(),
+                maxOutputTokens: z.number().int().min(128).max(8192).optional(),
+            })
+            .strict(),
+    })
+    .strict();
+export type Config = z.infer<typeof configSchema>;
 
 export function validateConfig(raw: unknown): Config {
-    const c = raw as Config;
-    if (!c || !['127.0.0.1', '::1'].includes(c.host) || !Number.isInteger(c.port) || c.port < 0 || c.port > 65535) {
-        throw new Error('Configure a loopback host and a valid port; use a TLS reverse proxy for remote access.');
-    }
-    if (!Array.isArray(c.allowedOrigins) || c.allowedOrigins.some(x => typeof x !== 'string')) throw new Error('allowedOrigins must be an array of origins.');
-    if (c.nats !== null && (!c.nats || ['server', 'prefix', 'ca', 'cert', 'key'].some(k => typeof (c.nats as any)[k] !== 'string' || !(c.nats as any)[k]))) throw new Error('Incomplete NATS configuration.');
-    if (!c.inference || !/^https?:\/\//.test(c.inference.baseUrl) || !c.inference.model || !Number.isInteger(c.inference.timeoutMs) || c.inference.timeoutMs < 100) throw new Error('Invalid inference configuration.');
-    const inferenceUrl = new URL(c.inference.baseUrl);
-    if (inferenceUrl.username || inferenceUrl.password || inferenceUrl.search || inferenceUrl.hash || c.inference.timeoutMs > 120000) throw new Error('Invalid inference endpoint or deadline.');
-    if (inferenceUrl.protocol !== 'https:' && !['127.0.0.1', 'localhost', '[::1]'].includes(inferenceUrl.hostname)) throw new Error('Remote inference requires HTTPS.');
-    if (c.inference.apiKeyFile !== undefined && typeof c.inference.apiKeyFile !== 'string') throw new Error('Invalid inference key path.');
-    if (c.inference.maxOutputTokens !== undefined && (!Number.isInteger(c.inference.maxOutputTokens) || c.inference.maxOutputTokens < 128 || c.inference.maxOutputTokens > 8192)) throw new Error('Inference maxOutputTokens must be an integer from 128 to 8192.');
-    return c;
+    return configSchema.parse(raw);
 }
 
 export async function loadConfig(path: string): Promise<Config> {

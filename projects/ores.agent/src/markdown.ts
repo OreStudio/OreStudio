@@ -13,7 +13,9 @@ export function renderMarkdown(answer: string): string {
 }
 
 export function markdownText(value: unknown): string {
-    return String(value).replace(/\r?\n|\r/g, ' ').replace(/[\\`*{}\[\]()#+.!_|>~<&]/g, '\\$&');
+    return String(value)
+        .replace(/\r?\n|\r/g, ' ')
+        .replace(/[\\`*{}\[\]()#+.!_|>~<&]/g, '\\$&');
 }
 
 export function markdownTable(headers: string[], rows: unknown[][]): string {

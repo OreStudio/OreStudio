@@ -15,6 +15,35 @@ Only the agent restarted. Private config and all 19 inspected native/broker/infe
 PIDs stayed unchanged. Main/agent health returned 200. Evidence is in ignored
 `build/output/agent-markdown-*` and `check-agent-markdown-*.mjs` files.
 
+## Post-merge review fixes
+
+2026-11-09: Windows passes 122 agent tests, five installer tests and all three
+replay handling suites (26/26, 8/8 and 11/11). Workflow lint passes. Tests cover
+login isolation/limits, session expiry, backend errors, config, IPv6 Host checks
+and awaited logout. Source format is checked by `verify`.
+
+Only auth, backend, config, main and server have runtime changes. The formatter
+changed no other generated JavaScript. Frozen evaluation files are unchanged.
+This check did not deploy the agent, rerun model/live cases or test the latest
+server contract. Installed-release and model results below remain historical.
+
+## Current backend contract
+
+2026-11-09: checked upstream `f19210e781dd508c1019f499a74ecd40d59912e3`.
+All 23 operation subjects, strict C++ MessagePack request readers and response
+writers pass. All 45 contract cases pass through the real NATS adapter and
+current C++ codecs. The probe records its source fingerprint.
+
+Contract-only fixture copies use `test` instead of the invalid historical
+booking nature `external`, and an object for the empty instrument batch.
+The frozen datasets, grader, baselines and original scores are unchanged.
+CI now rejects changes to the checked protocol/codec source files. Windows
+passes 124 tests and all three unchanged replay suites.
+
+This is not a full current-server deployment test. The probe reused existing
+utility/platform libraries; no server, database, NATS or model was upgraded.
+Existing live evidence still refers to the older installed server.
+
 ## Known gaps
 
 - No booking, report execution or executable quote tools.

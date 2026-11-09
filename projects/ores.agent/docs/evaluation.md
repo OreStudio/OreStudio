@@ -29,7 +29,10 @@ Fixtures are labelled test data. Replay checks program behavior, not model quali
 deterministic agent paths. Small corpora do not establish general accuracy.
 The original and paraphrase corpora use unchanged `fixtures-v1.mjs`, which can
 conceal native/base mistakes. The review corpus uses distinct immutable rows:
-native EUR 10/USD 20; base GBP 0.1/GBP 0.2. It has a separate version and hash.
+native EUR 10/USD 20; base GBP 0.1/GBP 0.2. It has a separate version and hash. Keep both fixture files: `fixtures-v1.mjs`
+reproduces the original results; `fixtures.mjs` supports the stronger review
+checks. They are not interchangeable. Do not format the frozen fixtures,
+corpora, grader or baseline records.
 
 ```text
 npm run eval -- --profile model --config <PRIVATE_CONFIG> --inference-root <INFERENCE_ROOT>
@@ -65,6 +68,9 @@ An explicit directory must not exist. Reports contain:
 
 Known secrets are redacted, but reports still contain private business data.
 Keep raw reports out of Git. Commit only reviewed safe aggregates.
+The JSON files in `evals/baselines/` are reviewed historical evidence. Review
+the scores, failures and source identifiers. They are not inputs to the
+comparison command; that command needs complete private `results.json` files.
 
 ## Scores and exit codes
 
@@ -107,7 +113,8 @@ npm run eval:doctor -- --profile model --config <PRIVATE_CONFIG>
 npm run eval:doctor -- --profile live --config <PRIVATE_CONFIG> --credentials <PRIVATE_CREDENTIALS> --party <PARTY_UUID>
 ```
 
-`verify` runs tests and all three replay corpora. Every handling check must pass
+`verify` checks source format and backend contract sources, runs tests and runs
+all three replay corpora. Every handling check must pass
 without execution errors; blocked business outcomes remain blocked. Reports use
 new `build/output/agent-checks/` paths. After tests, use
 `node evals/check.mjs --out <NEW_DIRECTORY>` to select a report directory.
@@ -149,10 +156,17 @@ Runtime changes need a new [deployment](deployment.md); evaluation-only runs do 
 
 ## GitHub CPU CI
 
-`Agent CPU evaluation` runs on agent code changes in pushes to `main` or
-`feature/local-ai-assistant`. Repository policy disables PR triggers. Document-only changes do
-not trigger it. Manual runs select `all`, `original`, `holdout` or `review`.
-GitHub requires the workflow on the default branch to enable manual dispatch.
+Agent workflows run once per day on the default branch:
+
+| Workflow | Time (UTC) |
+| --- | --- |
+| `Agent CPU evaluation` | 03:17 |
+| `Agent component` | 03:47 |
+
+Pushes and PRs do not start these jobs. GitHub can delay scheduled jobs.
+Manual runs remain available. CPU runs select `all`, `original`, `holdout` or
+`review`. GitHub needs the workflow on the default branch for schedules and
+manual dispatch. A workflow change on a fixes branch takes effect after merge.
 
 Each Windows/Linux job installs the pinned CPU llama.cpp runtime and LFM3 model
 in a temporary root. It forces zero GPU layers, keeps context 262144 and uses

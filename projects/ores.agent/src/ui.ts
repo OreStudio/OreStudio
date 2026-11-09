@@ -3,9 +3,13 @@ import { randomBytes } from 'node:crypto';
 import type { ServerResponse } from 'node:http';
 export function serveUi(res: ServerResponse) {
     const nonce = randomBytes(18).toString('base64');
-    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store',
+    res.writeHead(200, {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'no-store',
         'content-security-policy': `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'nonce-${nonce}'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'`,
-        'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer' });
+        'x-content-type-options': 'nosniff',
+        'referrer-policy': 'no-referrer',
+    });
     res.end(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OreStudio assistant</title><style nonce="${nonce}">
 body{font:16px/1.6 system-ui,sans-serif;background:#101a26;color:#e5edf7;max-width:850px;margin:40px auto;padding:0 24px}h1{font-size:28px}label{display:block;margin-top:12px}input,textarea,select{box-sizing:border-box;width:100%;padding:10px;background:#1c2b3c;color:inherit;border:1px solid #607185;border-radius:6px}button{padding:10px 18px;margin:12px 8px 12px 0;background:#91d7c5;color:#10232b;border:0;border-radius:6px;cursor:pointer}button:disabled{opacity:.5}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.6 ui-monospace,monospace;background:#1c2b3c;padding:16px;border-radius:6px}small{color:#afbed1}.error{color:#ffb7ab}[hidden]{display:none!important}

@@ -7,7 +7,7 @@ import { dirname, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { tools } from "../dist/tools.js";
-import { NatsBackend, backendRevision } from "../dist/backend.js";
+import { NatsBackend, backendContractRevision } from "../dist/backend.js";
 import { Sessions } from "../dist/auth.js";
 import { HttpInference } from "../dist/inference.js";
 import { loadConfig } from "../dist/config.js";
@@ -76,7 +76,7 @@ async function main() {
     agentRevision: revision,
     componentDirty: dirty,
     fingerprints,
-    backendContract: backendRevision,
+    backendContract: backendContractRevision,
     node: process.version,
     platform: process.platform,
     fixtures: options.profile === "live" ? null : { version: legacyFixtures ? "legacy-v1" : "immutable-v2", sha256: await hashFile(join(component, legacyFixtures ? "evals/fixtures-v1.mjs" : "evals/fixtures.mjs")) },

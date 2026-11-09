@@ -8,7 +8,7 @@
 #+filetags: :agent:mcp:local_ai_assistant:sprint_29:v0:
 #+owner: alexhock
 #+branch: feature/local-ai-assistant
-#+pr: 4498
+#+pr: 4534
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
@@ -102,13 +102,45 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4534][#4534]] | [agent] Fix review comments from PR #4498 |
 | [[https://github.com/OreStudio/OreStudio/pull/4498][#4498]] | [agent] Add standalone read-only assistant, MCP and evaluation CI |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Shared login limit | auth.ts | Accept | Limit failed and pending attempts per principal; validate input first; bound state. |
+| 2 | Logout on shutdown | server.ts, main.ts | Accept | Await session and MCP cleanup before closing NATS; bound process shutdown. |
+| 3 | Backend errors all return 403 | backend.ts | Accept | Map known error headers; use safe 502 for unknown errors. |
+| 4 | Shallow config checks | config.ts | Accept | Use strict Zod schemas; validate exact origins and inference URLs. |
+| 5 | Missing Origin and IPv6 Host | deployment.md, review.test.mjs | Accept | Explain token/Host checks; test originless access and bracketed IPv6 Host. |
+| 6 | Mutated login lifetime | auth.ts | Accept | Use a local capped lifetime; test selected-party expiry. |
+| 7 | Proxy Host and TLS | deployment.md | Accept | State TLS, loopback upstream Host and preserved Origin requirements. |
+| 8 | Two fixture files | evaluation.md | Clarify | Keep frozen original fixtures and separate stronger review fixtures. |
+| 9 | Dense code and missing licences | src, package.json | Accept | Apply pinned Prettier; add missing SPDX headers; check format in verify. Frozen eval bytes stay unchanged. |
+| 10 | Backend revision as main moves | deployment.md | Accept | Require candidate-server smoke checks; fixture CI is not live compatibility proof. |
+| 11 | Squash or split the PR | PR history | Decline | PR 4498 is merged. Keep staged history; use a separate fixes branch. |
+| 12 | Generated baseline purpose | evaluation.md | Clarify | Reviewed historical aggregates; full private reports are comparison inputs. |
+| 13 | CPU CI cost | agent workflows | Accept | User requests daily jobs only: 03:17 and 03:47 UTC, plus manual dispatch. No push or PR trigger. |
+| 15 | Current upstream compatibility | backend-contract.json, codec probe | Validate | Check all 23 wire operations and 45 contract cases against f19210e781. Add source drift gate; keep live-server evidence separate. |
+| 14 | Windows CI format check | .gitattributes | Fix | First CI run passed Linux Node 22/24; Windows checkout used CRLF. Force LF for agent source on every platform. |
+
+Current-contract validation (2026-11-09): merged upstream =f19210e781= into
+the fixes branch. Current strict C++ request readers and reply writers pass
+23 operations and 45 contract cases. The source fingerprint prevents a stale
+probe from recording new evidence. Contract-only fixture copies replace the
+historical invalid booking enum and empty instrument array; frozen files and
+scores are unchanged. The new source gate rejects altered subjects, stale
+references and source drift. Windows passes 124 Node tests and all three
+original replay gates. Existing services and data are unchanged; no full
+current-server deployment or live model evaluation is claimed.
+
+Review validation (2026-11-09): Windows passes 122 Node tests, five installer
+tests and replay handling 26/26, 8/8 and 11/11. Actionlint passes for both
+workflows. Format output comparison finds runtime changes only in auth,
+backend, config, main and server. Frozen eval files are unchanged. No deployed
+service, model, broker, schema or business record was changed. Model/live and
+current-server compatibility checks were not repeated.
 
 * Result
 

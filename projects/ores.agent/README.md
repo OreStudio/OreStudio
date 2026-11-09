@@ -30,8 +30,8 @@ Chat and MCP call one internal tool executor. The model proposes calls; code
 checks arguments and identity. The executor uses an independent NATS adapter,
 not the moving main web/BFF package. No extra MCP gateway is needed.
 
-Keep agent and inference releases outside the checkout. Reuse the existing fork
-branch `feature/local-ai-assistant` and native build tree. Agent work does not
+Keep agent and inference releases outside the checkout. Use the fork
+branch `fix/agent-review-comments` and the existing native build tree. Agent work does not
 require a new main-server build.
 
 Local agent/evaluation Stages 0–6 are delivered, with recorded gaps. Later releases

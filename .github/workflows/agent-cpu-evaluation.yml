@@ -1,13 +1,8 @@
 name: Agent CPU evaluation
 
 on:
-  push:
-    branches: [main, feature/local-ai-assistant]
-    paths:
-      - 'projects/ores.agent/**'
-      - '!projects/ores.agent/docs/**'
-      - '!projects/ores.agent/README.md'
-      - '.github/workflows/agent-cpu-evaluation.yml'
+  schedule:
+    - cron: '17 3 * * *'
   workflow_dispatch:
     inputs:
       corpus:

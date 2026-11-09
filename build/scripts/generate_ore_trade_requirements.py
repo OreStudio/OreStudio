@@ -35,10 +35,15 @@ BEGIN = "# BEGIN GENERATED"
 END = "# END GENERATED"
 XS = "{http://www.w3.org/2001/XMLSchema}"
 REGISTRATION = re.compile(r'ORE_REGISTER_TRADE_BUILDER\("(\w+)",\s*([\w:]+)')
-ENGINE_REQUEST = re.compile(r'builder\(\s*"(\w+)"\s*\)')
+ENGINE_REQUEST = re.compile(r'builder\(\s*(?:"(\w+)"|(tradeType_|tradeType\(\)))\s*\)')
 BASE_CLASS = re.compile(r"class\s+(?:ORE\w+\s+)?(\w+)\s*(?:final\s*)?:\s*(?:virtual\s+)?public\s+([\w:]+)")
-BUILD_START = re.compile(r"\b(\w+)::build\s*\([^)]*\)\s*(?:const\s*)?\{")
+BUILD_START = re.compile(r"\b(\w+)::\w*[Bb]uild\w*\s*\([^{;]*\)\s*(?:const\s*)?\{")
 GENERATOR_METHOD = re.compile(r"void\s+build(\w+)\s*\(")
+
+
+def local_name(qualified: str) -> str:
+    """An XSD reference without its namespace prefix."""
+    return qualified.split(":")[-1]
 
 
 @dataclass(frozen=True)
@@ -67,7 +72,7 @@ class Schema:
 
     def required(self, type_name: str) -> list[Term]:
         """The terms a type must state; a required choice is one term."""
-        node = self.types.get(type_name)
+        node = self.types.get(local_name(type_name))
         return [] if node is None else self._walk(node)
 
     def _walk(self, node: ET.Element) -> list[Term]:
@@ -76,13 +81,14 @@ class Schema:
             tag = child.tag.removeprefix(XS)
             optional = child.get("minOccurs") == "0"
             if tag == "element" and not optional:
-                terms.append(Term(child.get("name") or child.get("ref", ""), child.get("type", "")))
+                terms.append(Term(local_name(child.get("name") or child.get("ref", "")),
+                                  local_name(child.get("type", ""))))
             elif tag == "choice" and not optional:
                 options = [o.name for o in self._alternatives(child)]
                 if options:
                     terms.append(Term(" or ".join(options)))
             elif tag == "group" and not optional:
-                group = self.groups.get(child.get("ref", ""))
+                group = self.groups.get(local_name(child.get("ref", "")))
                 if group is not None:
                     terms += self._walk(group)
             elif tag == "extension":
@@ -126,7 +132,7 @@ def element_types() -> dict[str, str]:
     for path in sorted(XSD_DIR.glob("*.xsd")):
         for node in ET.parse(path).getroot().iter(f"{XS}element"):
             if node.get("name", "").endswith("Data") and node.get("type"):
-                out.setdefault(node.get("name"), node.get("type"))
+                out.setdefault(node.get("name"), local_name(node.get("type")))
     return out
 
 
@@ -154,12 +160,15 @@ def scan_engine(engine: Path) -> tuple[dict[str, str], dict[str, list[str]], set
             if link == "ScriptedTrade":
                 scripted.add(name)
             for body in build_bodies.get(link, []):
-                requested += [e for e in ENGINE_REQUEST.findall(body) if e not in requested]
+                for literal, own_type in ENGINE_REQUEST.findall(body):
+                    engine_name = name if own_type else literal
+                    if engine_name not in requested:
+                        requested.append(engine_name)
         engines[name] = requested
     generator = engine / "OREData/ored/portfolio/tradegenerator.hpp"
     covered = set(GENERATOR_METHOD.findall(generator.read_text()))
     commit = subprocess.run(["git", "-C", str(engine), "rev-parse", "--short", "HEAD"],
-                            capture_output=True, text=True).stdout.strip()
+                            capture_output=True, text=True, check=True).stdout.strip()
     return registered, engines, scripted, covered, commit
 
 
@@ -189,6 +198,12 @@ def recorded_status(trade_type: str) -> tuple[str, set[str]]:
     return "absent", set()
 
 
+def generated_types(directory: Path) -> list[str]:
+    """The trade types recorded in a directory, written or refused."""
+    names = {p.name.split(".")[0] for p in directory.glob("*.xml")}
+    return sorted(names | {p.name.split(".")[0] for p in directory.glob("*.refused.txt")})
+
+
 def cell(values: list[str]) -> str:
     return ", ".join(f"={v}=" for v in values) if values else "none"
 
@@ -198,7 +213,7 @@ def render(engine: Path) -> tuple[str, dict[str, int]]:
     samples = data_elements()
     declared = element_types()
     registered, engines, scripted, covered, commit = scan_engine(engine)
-    generated = sorted({p.name.split(".")[0] for p in RECORDED.iterdir()})
+    generated = generated_types(RECORDED)
     rows, shared = [], Counter()
     counts = Counter()
     for kind in generated:
@@ -243,6 +258,9 @@ def main() -> int:
     print(counts)
     if args.write:
         text = DOCUMENT.read_text()
+        if text.count(BEGIN) != 1 or text.count(END) != 1:
+            print(f"{DOCUMENT} needs one '{BEGIN}' and one '{END}' line", file=sys.stderr)
+            return 1
         head, tail = text.split(BEGIN)[0], text.split(END)[1]
         DOCUMENT.write_text(head + table.rstrip("\n") + tail)
     return 0

@@ -49,3 +49,20 @@ def test_optional_elements_groups_and_choices_are_not_required(tmp_path):
 def test_an_unknown_type_requires_nothing(tmp_path):
     (tmp_path / "t.xsd").write_text(XSD)
     assert generator.Schema.load(tmp_path).required("missing") == []
+
+
+def test_a_prefixed_base_type_is_still_found(tmp_path):
+    (tmp_path / "t.xsd").write_text(XSD.replace('base="base"', 'base="ore:base"'))
+    assert "Base" in [t.name for t in generator.Schema.load(tmp_path).required("product")]
+
+
+def test_a_stray_file_is_not_a_trade_type(tmp_path):
+    (tmp_path / "Swap.xml").write_text("<Portfolio/>")
+    (tmp_path / "Bond.refused.txt").write_text("refused")
+    (tmp_path / "README.md").write_text("notes")
+    assert generator.generated_types(tmp_path) == ["Bond", "Swap"]
+
+
+def test_an_engine_is_found_by_name_or_as_the_trade_type():
+    found = generator.ENGINE_REQUEST.findall('f->builder("FxOption"); f->builder(tradeType_);')
+    assert found == [("FxOption", ""), ("", "tradeType_")]

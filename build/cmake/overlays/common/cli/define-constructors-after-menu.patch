@@ -1,0 +1,34 @@
+--- a/include/cli/cli.h
++++ b/include/cli/cli.h
+@@ -191,7 +191,18 @@
+         std::function<void(std::ostream&, const std::string& cmd)> wrongCmdHandler;
+         Messages messages;
+     };
++}
++
++#include "command.h"
++#include "cmdhandler.h"
++#include "select.h"
++#include "variadicfunctioncommand.h"
++#include "freeformcommand.h"
++#include "menu.h"
++#include "clisession.h"
+ 
++namespace cli
++{
+     inline Cli::Cli(std::unique_ptr<Menu> _rootMenu,
+         std::unique_ptr<HistoryStorage> historyStorage,
+         Messages _messages) :
+@@ -211,12 +222,4 @@
+     }
+ }
+ 
+-#include "command.h"
+-#include "cmdhandler.h"
+-#include "select.h"
+-#include "variadicfunctioncommand.h"
+-#include "freeformcommand.h"
+-#include "menu.h"
+-#include "clisession.h"
+-
+ #endif // CLI_CLI_H_

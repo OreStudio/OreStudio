@@ -8,7 +8,7 @@
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/store-remaining-indices-as-oresmd-addresses
-#+pr:
+#+pr: 4525
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4525][#4525]] | [ore] Store credit, FX and bond indices as oresmd addresses |
 
 * Review
 

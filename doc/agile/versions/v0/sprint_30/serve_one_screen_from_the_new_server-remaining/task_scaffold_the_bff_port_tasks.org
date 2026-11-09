@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/scaffold-the-bff-port-tasks
-#+pr:
+#+pr: 4530
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4530][#4530]] | [agile] Split the BFF port into tasks from the route inventory |
 
 * Review
 

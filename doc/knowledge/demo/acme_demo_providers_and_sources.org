@@ -12,10 +12,11 @@
 
 * Summary
 
-The Acme demonstration gives each of its four legal entities one market data
-provider, and one simulated source serves that provider. The group and Hong Kong
+The Acme demonstration gives each of its four legal entities its own market data
+provider, and one simulated source serves each provider. The group and Hong Kong
 read =bloomberg= through =bloomberg-a=, London reads =demo= through =demo-a=,
-and New York reads =lseg= through =lseg-a=. Every source the parties take is
+and New York reads =lseg= through =lseg-a=. London and New York also read
+=bloomberg=, for the rates and USD spots of their funding curves. Every source the parties take is
 of kind =simulated=, so the demonstration runs with no vendor connection and no
 licence. The provider is the row a subscription names. The source is the row a
 route names. The two are never the same row, which is what lets the
@@ -75,7 +76,9 @@ must not change.
 |-------+----------+--------+---------------------|
 | Acme Corporation Plc | =bloomberg= | =bloomberg-a= | the holding company |
 | ACME Corporation UK plc | =demo= | =demo-a= | London |
+| ACME Corporation UK plc | =bloomberg= | =bloomberg-a= | London |
 | ACME Corporation US Inc | =lseg= | =lseg-a= | New York |
+| ACME Corporation US Inc | =bloomberg= | =bloomberg-a= | New York |
 | ACME Corporation HK Ltd | =bloomberg= | =bloomberg-a= | Hong Kong |
 
 The split is not decoration. A synthetic feeds collection quotes the markets its
@@ -84,8 +87,11 @@ quote the USD spots and the curves every ACME book needs, LSEG's quote the
 fourteen cross pairs Bloomberg leaves to the cross-rates matrix, and the demo
 provider's quote eight majors and three emerging pairs on one exaggerated
 volatility. Giving each office a different provider therefore exercises three
-feed collections at once, and each office still marks its trades on a complete
-market. [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly
+feed collections at once. Only Bloomberg quotes the IR ladders and USD spots of
+all 20 funding currencies: the demo provider quotes a short ladder in 20
+currencies, four of them outside the funding set, and LSEG quotes no IR at all.
+Each party bootstraps its own funding curves, so London and New York take
+Bloomberg as a second provider and keep their own. [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly
 one source for each provider]] is the rule that makes the choice a route and not
 a filter.
 

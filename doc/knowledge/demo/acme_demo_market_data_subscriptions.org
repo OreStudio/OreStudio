@@ -49,7 +49,9 @@ derived]], modelled on the subscription.
 |-------+-------------------------+---------+-------------+---------+----------------|
 | Acme Corporation Plc | =bloomberg= | yes | yes | yes | =bloomberg-a= |
 | ACME Corporation UK plc | =demo= | yes | yes | yes | =demo-a= |
+| ACME Corporation UK plc | =bloomberg= | yes | yes | yes | =bloomberg-a= |
 | ACME Corporation US Inc | =lseg= | yes | yes | yes | =lseg-a= |
+| ACME Corporation US Inc | =bloomberg= | yes | yes | yes | =bloomberg-a= |
 | ACME Corporation HK Ltd | =bloomberg= | yes | yes | yes | =bloomberg-a= |
 | System Party | =bloomberg= | yes | yes | yes | =bloomberg-a= |
 
@@ -57,7 +59,9 @@ The step is =subscribe_market_data=, the eighth step of the profile, and its own
 arguments name one provider and one source as the default and then the parties
 that differ from it. In the shipped profile the default is =bloomberg= through
 =bloomberg-a=, which is exactly what the group, Hong Kong and the system party
-take, and London and New York are the two rows that differ. A party the step does
+take. London and New York keep their own vendors and take Bloomberg as well,
+because only Bloomberg quotes the IR ladders and USD spots of all 20 funding
+currencies, and each party bootstraps its own funding curves. A party the step does
 not name takes the default, so a fifth entity added to the tenant is subscribed
 without the profile changing. The step's arguments are
 [[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][its own]].
@@ -68,8 +72,9 @@ The step pages the tenant's parties, matches each against the rows it names by i
 or by full name, and writes the two rows for every party on the page. Three
 consequences follow.
 
-- A party the step names twice, or names by a name the tenant does not hold, is a
-  failure: the step refuses rather than subscribing three of four parties.
+- A party the step names twice takes both providers, one subscription and one
+  route for each. A name the tenant does not hold is a failure: the step refuses
+  rather than subscribing three of four parties.
 - The rows are written idempotently. Re-running the profile looks for a
   subscription of that party and provider, and a route of that party and provider,
   and writes only what is missing, so a second run changes nothing.

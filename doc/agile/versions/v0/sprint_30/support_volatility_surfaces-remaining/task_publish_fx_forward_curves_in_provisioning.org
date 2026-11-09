@@ -63,6 +63,8 @@ task and name that file in the Command column.
 
 * Notes
 
+Waits on [[id:C0BA69C1-6E68-4AD2-896C-0F6283BD3BAF][Read the public overnight rates through an adapter]] and [[id:619CE2BF-C972-47CF-8900-AC2742AC2CD9][Calibrate the synthetic IR feeds from the public rates]]. Until the IR feeds start from public rates, a forward's points carry rate differentials with no tie to the market.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

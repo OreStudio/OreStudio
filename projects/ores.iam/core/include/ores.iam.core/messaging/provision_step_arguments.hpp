@@ -26,6 +26,7 @@
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -542,6 +543,40 @@ parse_market_data_arguments(const std::string& arguments_json) {
         }
     }
     return result;
+}
+
+/// A provider a party subscribes to, and the source of it the party is routed to.
+struct market_data_feed {
+    std::string provider;
+    std::string source;
+
+    bool operator==(const market_data_feed&) const = default;
+};
+
+/**
+ * @brief The providers one party takes under a subscribe_market_data step.
+ *
+ * Each entry that names the party, by its identifier or its exact full name, adds one provider, so
+ * a party can take its rates and USD spots from one vendor and its crosses from another. A provider
+ * or a source the entry leaves out is the step's own. A party that no entry names takes the step's
+ * own provider and source.
+ */
+[[nodiscard]] inline std::vector<market_data_feed>
+feeds_of_party(const market_data_step_arguments& arguments, std::string_view id,
+               std::string_view full_name) {
+    std::vector<market_data_feed> out;
+    for (const auto& entry : arguments.parties) {
+        if (entry.party != id && entry.party != full_name)
+            continue;
+        market_data_feed feed{.provider = entry.provider.empty() ? arguments.provider
+                                                                 : entry.provider,
+                              .source = entry.source.empty() ? arguments.source : entry.source};
+        if (std::ranges::find(out, feed) == out.end())
+            out.push_back(std::move(feed));
+    }
+    if (out.empty())
+        out.push_back({.provider = arguments.provider, .source = arguments.source});
+    return out;
 }
 
 /**

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/measure-the-full-build
+#+pr: 4523
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
 #+updated: 2026-11-08
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The proof that the move met its goal: a shorter total build time.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-27                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-09 |
 
 * Acceptance
 
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4523][#4523]] | [agile] Close the sqlgen and reflect-cpp story |
 
 * Review
 
@@ -92,3 +92,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Not done, because of environmental contention. The measurement needs a quiet
+machine, and the machine is too busy during the day: other environments held
+the load between 5 and 60 while the runs were attempted. Two attempts gave no
+usable number. The first was served by the compiler cache, because
+=CMakeLists.txt= reads =ORES_COMPILER_CACHE= from =.env= and overrides a command
+line setting. The second was stopped.
+
+The migration was required in any case, so its value does not depend on this
+number. The shorter total build time therefore stays unmeasured.

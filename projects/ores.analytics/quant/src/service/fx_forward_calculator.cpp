@@ -95,8 +95,9 @@ calculate_fx_forwards(const fx_forward_request& request) {
             return std::unexpected(far_leg.error());
 
         const auto near_leg =
-            tenor.near_date ? discounts_at(request, *tenor.near_date, tenor.tenor_id + " near leg")
-                            : at_spot;
+            tenor.near_date ?
+                discounts_at(request, *tenor.near_date, tenor.tenor_id + " near leg") :
+                at_spot;
         if (!near_leg)
             return std::unexpected(near_leg.error());
 

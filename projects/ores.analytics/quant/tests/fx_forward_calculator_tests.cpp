@@ -300,8 +300,8 @@ TEST_CASE("forward points match the money market formula on discrete rates with 
                     .tenors = {{.tenor_id = "3M", .value_date = after(tenor_days)}}});
     CHECK(point.forward_points * 0.01 == Approx(expected).epsilon(1e-12));
 
-    const double backed_out_rate = 100.0 * jpy_basis / tenor_days *
-                                   ((expected / spot + 1.0) * usd_growth - 1.0);
+    const double backed_out_rate =
+        100.0 * jpy_basis / tenor_days * ((expected / spot + 1.0) * usd_growth - 1.0);
     CHECK(backed_out_rate == Approx(jpy_rate).epsilon(1e-12));
 }
 
@@ -322,7 +322,8 @@ TEST_CASE("a discount factor above one is valid and the forward stays positive",
     CHECK(point.forward_rate > 0.0);
 }
 
-TEST_CASE("outright values before spot chain from the short-date swaps", "[fx_forward_calculator]") {
+TEST_CASE("outright values before spot chain from the short-date swaps",
+          "[fx_forward_calculator]") {
     constexpr double pip = 0.0001;
     const auto outright = [](const fx_forward_request& request, year_month_day date) {
         auto dated = request;

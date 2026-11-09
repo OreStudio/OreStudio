@@ -58,7 +58,7 @@ create table if not exists "ores_marketdata_ticks_tbl" (
     "value" double precision not null
 );
 
-create index if not exists marketdata_ticks_stream_coord_ts_idx
+create unique index if not exists marketdata_ticks_stream_coord_ts_idx
 on "ores_marketdata_ticks_tbl" (stream_id, coord, ts desc);
 
 do $$

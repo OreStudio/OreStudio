@@ -1395,6 +1395,37 @@ TEST_CASE("a_fixing_of_yesterday_and_a_backfill_reach_the_fixings_and_not_the_ti
                                    ores::marketdata::service::app::adapter_tick_drop::stale) == 0);
 }
 
+TEST_CASE("a_key_written_twice_is_stored_once_and_keeps_its_first_value",
+          "[app][feed_ingest_loop]") {
+    auto writer = make_writer();
+    if (!writer)
+        SKIP("The tick writer role is not configured");
+    using ores::marketdata::service::app::tick_row;
+
+    const auto stream = boost::uuids::to_string(boost::uuids::random_generator{}());
+    const auto feed = boost::uuids::to_string(boost::uuids::random_generator{}());
+    burst_cleanup cleanup;
+    cleanup.streams = {stream};
+    const auto ts = std::chrono::floor<std::chrono::microseconds>(std::chrono::system_clock::now());
+
+    tick_row row;
+    row.stream_id = stream;
+    row.feed_id = feed;
+    row.ts = ts;
+    row.coord = 1;
+    row.value = 1.5;
+    const std::vector<tick_row> first{row};
+    writer->write(first);
+
+    row.value = 2.5;
+    const std::vector<tick_row> second{row};
+    writer->write(second);
+
+    CHECK(tick_rows_of(stream) == "1");
+    CHECK(tick_scalar("select value from ores_marketdata_ticks_tbl where stream_id = '" + stream +
+                      "'") == "1.5");
+}
+
 TEST_CASE("the_ingest_writes_one_row_for_two_consumers_of_the_same_source",
           "[app][feed_ingest_loop]") {
     auto writer = make_writer();

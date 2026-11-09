@@ -120,11 +120,13 @@ grants the schema gives every marketdata table.
 
 | name               | columns                  | unique | current_only | where_extra |
 |--------------------+--------------------------+--------+--------------+-------------|
-| stream_coord_ts    | stream_id, coord, ts desc | false  | false        |             |
+| stream_coord_ts    | stream_id, coord, ts desc | true   | false        |             |
 
 One index serves the reader that takes the ticks of one stream in a span of
-time, a coordinate at a time. The table is not keyed, so the index is the only
-structure over it.
+time, a coordinate at a time. It is unique, so it is also the key of a point: a
+writer skips a key already stored, and a redelivered tick changes nothing. The
+index includes =ts= because a unique index on a hypertable must include the
+partition column.
 
 * Physical space
 

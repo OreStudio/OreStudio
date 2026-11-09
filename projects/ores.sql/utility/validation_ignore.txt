@@ -299,8 +299,8 @@ TENANT_002 ores_marketdata_market_scenario_values_tbl
 # Tick tables. Both are shared: a tick is an observation about a source, and the
 # stream it belongs to is named by a uuid derived from the provider and the
 # series URI, so neither row has a tenant. ores_marketdata_ticks_tbl is an
-# append-only hypertable with no primary key: an index on every row would cost
-# the bulk copy, and a correction is a new row that the reader orders by time.
+# append-only hypertable keyed by a unique index on the stream, the coordinate
+# and the time: a writer skips a key already stored.
 # The history read checks the party's subscription before it returns a tick.
 TENANT_001 ores_marketdata_ticks_tbl
 TENANT_001 ores_marketdata_tick_coords_tbl

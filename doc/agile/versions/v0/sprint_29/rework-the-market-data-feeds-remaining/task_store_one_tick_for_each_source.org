@@ -104,8 +104,8 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Enforce the subscription check on every tick read | tick_repository.hpp | Part | The contract now says every caller must check. The wrapper type and the coverage test stay open. |
 | 2 | Derived-only party gets no ticks on compute paths | tick_entitlement.cpp | Accept | Compute reads accept the derived right. Raw reads stay strict, and a snapshot refuses. |
-| 3 | Stream id omits the feed | series_stream.cpp | Open | Needs the owner decision. |
-| 4 | No unique point key | marketdata_ticks_create.sql | Open | Needs the owner decision. |
+| 3 | Stream id omits the feed | series_stream.cpp | Decline | Owner decision: the id stays. The unique key makes the first value of a key win. |
+| 4 | No unique point key | marketdata_ticks_create.sql | Accept | Unique index, and a staged write that skips stored keys. |
 | 5 | Burst cleanup deletes all ticks | app_feed_ingest_loop_tests.cpp | Accept | The delete names the streams of the run. |
 | 6 | Smoke joins the removed tenant column | compass_smoke.py | Accept | Counts ticks of the feeds the tenant routes. |
 | 7 | Marketdata schema SVG is stale | ores_schema.marketdata.svg | Accept | Regenerated from the puml. |

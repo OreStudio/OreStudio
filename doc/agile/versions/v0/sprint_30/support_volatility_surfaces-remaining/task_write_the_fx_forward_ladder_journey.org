@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/write-the-fx-forward-ladder-journey
-#+pr:
+#+pr: 4524
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4524][#4524]] | [doc] Add the FX forward ladder journey and prototype |
 
 * Review
 

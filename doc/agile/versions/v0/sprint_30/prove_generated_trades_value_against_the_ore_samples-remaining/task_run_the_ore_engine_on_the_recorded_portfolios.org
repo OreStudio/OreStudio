@@ -26,11 +26,11 @@ Every recorded generated portfolio is read and built by the ORE engine in a test
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -86,3 +86,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The test =the ORE engine raises only the known errors on the recorded trades=
+(tags =[ore_engine][external]=) merges every recorded portfolio into one, with
+each trade id renamed for its file. It runs ORE once with the configuration of
+the Products example, pricing only, and reads the trade errors from ORE's
+structured log. The errors must equal =generated_trades_known_ore_errors.txt=
+exactly, so a family that fixes its trades removes its lines.
+
+To run it, set =ORES_ORE_EXECUTABLE= to the =ore= binary and, for a build
+without an rpath, =ORES_ORE_LIBRARY_PATH= to its library directories. Without
+the executable the test skips. One run over 160 trades takes about 4 seconds.
+
+The list starts with 72 lines over 71 types: 39 lines where ORE cannot read the
+trade XML and 33 where it cannot build the trade. Some build errors are missing
+market data in the example configuration, such as equity curves for the
+generated underlyings. Those belong to the market data task.

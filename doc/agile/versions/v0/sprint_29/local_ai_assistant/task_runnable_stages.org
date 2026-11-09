@@ -121,6 +121,7 @@ via its "Verifies task" field.
 | 11 | Squash or split the PR | PR history | Decline | PR 4498 is merged. Keep staged history; use a separate fixes branch. |
 | 12 | Generated baseline purpose | evaluation.md | Clarify | Reviewed historical aggregates; full private reports are comparison inputs. |
 | 13 | CPU CI cost | agent workflows | Accept | User requests daily jobs only: 03:17 and 03:47 UTC, plus manual dispatch. No push or PR trigger. |
+| 14 | Windows CI format check | .gitattributes | Fix | First CI run passed Linux Node 22/24; Windows checkout used CRLF. Force LF for agent source on every platform. |
 
 Review validation (2026-11-09): Windows passes 122 Node tests, five installer
 tests and replay handling 26/26, 8/8 and 11/11. Actionlint passes for both

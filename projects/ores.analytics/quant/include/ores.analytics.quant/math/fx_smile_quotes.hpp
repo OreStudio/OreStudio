@@ -100,8 +100,8 @@ struct fx_atm_reading final {
  * @brief The quotes of any smile in a convention, at the given deltas.
  *
  * A fit calls this many times, so the caller owns the wings and a successful read allocates
- * nothing. Refuses a smile that is not positive where it is read, and a pillar or butterfly
- * with no solution.
+ * nothing. Refuses wings shorter than the deltas, a smile that is not positive where it is
+ * read, and a pillar or butterfly with no solution.
  *
  * @param level A volatility near the smile's at-the-money, where the searches start.
  * @param years The expiry, in years.

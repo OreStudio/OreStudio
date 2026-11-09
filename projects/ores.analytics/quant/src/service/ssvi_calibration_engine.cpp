@@ -43,6 +43,8 @@ using math::fx_wing_reading;
 constexpr double unreadable_penalty = 1e6;
 /// How far a theta may move from the ATM quote's, as a factor either way.
 constexpr double theta_search_factor = 4.0;
+/// The share of the search's reach beyond which a theta counts as stopped by the bound.
+constexpr double theta_bound_share = 1.0 - 1e-6;
 constexpr int theta_search_bits = std::numeric_limits<double>::digits / 2;
 constexpr std::uintmax_t theta_search_iterations = 100;
 constexpr math::nelder_mead_options shared_search{.tolerance = 1e-8, .max_iterations = 1000};
@@ -165,6 +167,7 @@ squared_error(fit_state& state, const fit_expiry& expiry, double theta, const fi
 struct theta_fit final {
     double theta;
     double value;
+    bool at_bound;
 };
 
 theta_fit fit_theta(fit_state& state, const fit_expiry& expiry, const fit_shape& shape) {
@@ -177,7 +180,7 @@ theta_fit fit_theta(fit_state& state, const fit_expiry& expiry, const fit_shape&
         centre + reach,
         theta_search_bits,
         iterations);
-    return {std::exp(log_theta), value};
+    return {std::exp(log_theta), value, std::abs(log_theta - centre) >= reach * theta_bound_share};
 }
 
 /// The strike pillars that fix a slice's three degrees of freedom without an ATM and a wing.
@@ -365,7 +368,9 @@ std::expected<ssvi_calibration, std::string> calibrate_ssvi(const ssvi_request& 
     for (std::size_t e = 0; e < state.expiries.size(); ++e) {
         const auto& expiry = state.expiries[e];
         const auto& source = request.expiries[e];
-        const double theta = fit_theta(state, expiry, shape).theta;
+        const auto fitted_theta = fit_theta(state, expiry, shape);
+        const double theta = fitted_theta.theta;
+        out.converged = out.converged && !fitted_theta.at_bound;
         out.parameters.expiries.push_back(
             {.expiry_id = source.expiry_id, .years = expiry.years, .atm_total_variance = theta});
         const auto slice = slice_of(expiry, theta, shape);

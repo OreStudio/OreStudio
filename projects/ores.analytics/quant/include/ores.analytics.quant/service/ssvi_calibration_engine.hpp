@@ -124,7 +124,8 @@ struct ssvi_calibration final {
     std::vector<ssvi_pillar_fit> pillars;
     std::vector<ssvi_grid_point> grid;
     std::vector<ssvi_violation> violations;
-    /// Whether the search over rho, eta and gamma stopped within its tolerance.
+    /// Whether the search over rho, eta and gamma stopped within its tolerance, with no theta
+    /// held at the bound of its own search.
     bool converged = false;
 };
 
@@ -155,7 +156,8 @@ ssvi_violations(const ssvi_parameters& parameters);
  * quotes in each expiry's convention. Given rho, eta and gamma the expiries are independent, so
  * each theta is solved on its own inside a search over the three shared parameters. The fit does
  * not hold the surface inside the no-arbitrage region: it reports what the quotes imply, in the
- * violations of the result.
+ * violations of the result. The violations cover the quoted expiries. A grid expiry takes its
+ * theta linearly between them, so it is calendar-free whenever they are.
  *
  * Refuses an expiry with neither an ATM and a risk reversal and butterfly at one delta, nor
  * three strike pillars, naming the expiry and what it lacks, and a grid expiry outside the quoted

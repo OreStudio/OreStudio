@@ -215,6 +215,8 @@ std::expected<fx_atm_reading, std::string> read_smile(fx_smile_function smile,
                                                       const fx_quote_convention& convention,
                                                       std::span<const double> deltas,
                                                       std::span<fx_wing_reading> wings) {
+    if (wings.size() < deltas.size())
+        return std::unexpected("the wings are shorter than the deltas");
     const smile_reader reader(smile, level, years, market, convention);
     const auto x_atm = reader.atm();
     if (!x_atm)

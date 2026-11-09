@@ -240,6 +240,35 @@ TEST_CASE("a grid expiry outside the quotes is refused", "[ssvi_calibration_engi
     CHECK(fit.error().find("5Y") != std::string::npos);
 }
 
+TEST_CASE("a theta held at its search bound does not count as converged",
+          "[ssvi_calibration_engine]") {
+    const auto strike = [](const char* id, double k) {
+        return ssvi_pillar{.point_id = id,
+                           .kind = ssvi_quote_kind::strike,
+                           .delta = 0.0,
+                           .log_moneyness = k,
+                           .contributions = {{0.5, 1.0}}};
+    };
+    ssvi_request request;
+    request.expiries = {{.expiry_id = "1Y",
+                         .years = 1.0,
+                         .market = market,
+                         .convention = convention_of(
+                             fx_atm_type::forward, fx_delta_type::spot, fx_butterfly_style::smile),
+                         .pillars = {{.point_id = "ATM",
+                                      .kind = ssvi_quote_kind::atm,
+                                      .delta = 0.0,
+                                      .log_moneyness = 0.0,
+                                      .contributions = {{0.1, 1e-12}}},
+                                     strike("low", -0.01),
+                                     strike("mid", 0.0),
+                                     strike("high", 0.01)}}};
+    const auto fit = calibrate_ssvi(request);
+    REQUIRE(fit.has_value());
+    CHECK(fit->parameters.expiries[0].atm_total_variance == Catch::Approx(0.04).epsilon(1e-3));
+    CHECK_FALSE(fit->converged);
+}
+
 TEST_CASE("a grid expiry with no time is refused", "[ssvi_calibration_engine]") {
     auto request = request_of(spot_smile);
     request.grid_expiries = {{"NaN", std::numeric_limits<double>::quiet_NaN()}};

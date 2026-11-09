@@ -72,16 +72,16 @@ TEST_CASE("equity_accumulator_instrument_commands_registers_every_derived_verb",
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("equity_accumulator_instruments ");
     for (const auto& verb : {
-             std::string{"equity_accumulator_instruments list"},
-             std::string{"equity_accumulator_instruments get"},
-             std::string{"equity_accumulator_instruments get-many"},
-             std::string{"equity_accumulator_instruments add"},
-             std::string{"equity_accumulator_instruments set"},
-             std::string{"equity_accumulator_instruments put-many"},
-             std::string{"equity_accumulator_instruments delete"},
-             std::string{"equity_accumulator_instruments delete-many"},
-             std::string{"equity_accumulator_instruments versions"},
-             std::string{"equity_accumulator_instruments version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

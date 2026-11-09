@@ -72,16 +72,16 @@ TEST_CASE("ibor_index_convention_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("ibor_index_conventions ");
     for (const auto& verb : {
-             std::string{"ibor_index_conventions list"},
-             std::string{"ibor_index_conventions get"},
-             std::string{"ibor_index_conventions get-many"},
-             std::string{"ibor_index_conventions add"},
-             std::string{"ibor_index_conventions set"},
-             std::string{"ibor_index_conventions put-many"},
-             std::string{"ibor_index_conventions delete"},
-             std::string{"ibor_index_conventions delete-many"},
-             std::string{"ibor_index_conventions versions"},
-             std::string{"ibor_index_conventions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -59,7 +59,7 @@ TEST_CASE("report_definition_template_operations_registers_every_declared_comman
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("report_definition_template ");
     for (const auto& verb : {
-             std::string{"report_definition_template list-dq-report-definition-templates"},
+             std::string{"list-dq-report-definition-templates"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

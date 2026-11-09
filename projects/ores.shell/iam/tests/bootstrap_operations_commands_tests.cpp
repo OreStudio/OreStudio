@@ -59,8 +59,8 @@ TEST_CASE("bootstrap_operations_registers_every_declared_command", "[commands]")
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("bootstrap ");
     for (const auto& verb : {
-             std::string{"bootstrap status"},
-             std::string{"bootstrap create-initial-admin"},
+             std::string{"status"},
+             std::string{"create-initial-admin"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

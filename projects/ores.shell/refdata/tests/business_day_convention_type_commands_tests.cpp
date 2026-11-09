@@ -72,16 +72,16 @@ TEST_CASE("business_day_convention_type_commands_registers_every_derived_verb", 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("business_day_convention_types ");
     for (const auto& verb : {
-             std::string{"business_day_convention_types list"},
-             std::string{"business_day_convention_types get"},
-             std::string{"business_day_convention_types get-many"},
-             std::string{"business_day_convention_types add"},
-             std::string{"business_day_convention_types set"},
-             std::string{"business_day_convention_types put-many"},
-             std::string{"business_day_convention_types delete"},
-             std::string{"business_day_convention_types delete-many"},
-             std::string{"business_day_convention_types versions"},
-             std::string{"business_day_convention_types version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

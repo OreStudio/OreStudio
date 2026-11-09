@@ -72,15 +72,15 @@ TEST_CASE("dataset_bundle_member_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("dataset_bundle_members ");
     for (const auto& verb : {
-             std::string{"dataset_bundle_members list"},
-             std::string{"dataset_bundle_members get"},
-             std::string{"dataset_bundle_members get-many"},
-             std::string{"dataset_bundle_members add"},
-             std::string{"dataset_bundle_members set"},
-             std::string{"dataset_bundle_members put-many"},
-             std::string{"dataset_bundle_members delete"},
-             std::string{"dataset_bundle_members delete-many"},
-             std::string{"dataset_bundle_members by-bundle-code"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-bundle-code"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -59,8 +59,8 @@ TEST_CASE("lei_entity_summary_operations_registers_every_declared_command", "[co
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("lei_entity_summary ");
     for (const auto& verb : {
-             std::string{"lei_entity_summary get-lei-entities-summary"},
-             std::string{"lei_entity_summary search-lei-entities"},
+             std::string{"get-lei-entities-summary"},
+             std::string{"search-lei-entities"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

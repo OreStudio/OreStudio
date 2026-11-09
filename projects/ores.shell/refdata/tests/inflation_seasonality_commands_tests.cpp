@@ -72,16 +72,16 @@ TEST_CASE("inflation_seasonality_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("inflation_seasonalities ");
     for (const auto& verb : {
-             std::string{"inflation_seasonalities list"},
-             std::string{"inflation_seasonalities get"},
-             std::string{"inflation_seasonalities get-many"},
-             std::string{"inflation_seasonalities add"},
-             std::string{"inflation_seasonalities set"},
-             std::string{"inflation_seasonalities put-many"},
-             std::string{"inflation_seasonalities delete"},
-             std::string{"inflation_seasonalities delete-many"},
-             std::string{"inflation_seasonalities versions"},
-             std::string{"inflation_seasonalities version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

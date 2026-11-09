@@ -72,18 +72,18 @@ TEST_CASE("credit_simulation_entity_config_commands_registers_every_derived_verb
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("credit_simulation_entity_configs ");
     for (const auto& verb : {
-             std::string{"credit_simulation_entity_configs list"},
-             std::string{"credit_simulation_entity_configs get"},
-             std::string{"credit_simulation_entity_configs get-many"},
-             std::string{"credit_simulation_entity_configs add"},
-             std::string{"credit_simulation_entity_configs set"},
-             std::string{"credit_simulation_entity_configs put-many"},
-             std::string{"credit_simulation_entity_configs delete"},
-             std::string{"credit_simulation_entity_configs delete-many"},
-             std::string{"credit_simulation_entity_configs by-credit-simulation-config-id"},
-             std::string{"credit_simulation_entity_configs by-transition-matrix-id"},
-             std::string{"credit_simulation_entity_configs versions"},
-             std::string{"credit_simulation_entity_configs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-credit-simulation-config-id"},
+             std::string{"by-transition-matrix-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

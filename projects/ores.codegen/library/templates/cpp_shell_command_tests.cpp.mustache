@@ -52,7 +52,7 @@ TEST_CASE("{{entity_singular}}_commands_registers_every_derived_verb", "[command
     const auto completions = root_menu.GetCompletions("{{entity_plural}} ");
     for (const auto& verb : {
 {{#shell.commands}}
-             std::string{"{{entity_plural}} {{command}}"},
+             std::string{"{{command}}"},
 {{/shell.commands}}
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) !=

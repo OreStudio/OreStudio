@@ -72,12 +72,12 @@ TEST_CASE("curve_publish_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("curve_publishes ");
     for (const auto& verb : {
-             std::string{"curve_publishes list"},
-             std::string{"curve_publishes get"},
-             std::string{"curve_publishes get-many"},
-             std::string{"curve_publishes by-request-id"},
-             std::string{"curve_publishes versions"},
-             std::string{"curve_publishes version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"by-request-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

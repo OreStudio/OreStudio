@@ -59,20 +59,20 @@ TEST_CASE("authorization_operations_registers_every_declared_command", "[command
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("authorization ");
     for (const auto& verb : {
-             std::string{"authorization assign-role"},
-             std::string{"authorization assign-role-by-name"},
-             std::string{"authorization revoke-role"},
-             std::string{"authorization revoke-role-by-name"},
-             std::string{"authorization get-account-roles"},
-             std::string{"authorization get-my-roles"},
-             std::string{"authorization list-account-permissions"},
-             std::string{"authorization list-my-permissions"},
-             std::string{"authorization list-role-permissions-page"},
-             std::string{"authorization list-roles-page"},
-             std::string{"authorization list-role-holders"},
-             std::string{"authorization get-role-permissions"},
-             std::string{"authorization put-role-permissions"},
-             std::string{"authorization suggest-role-commands"},
+             std::string{"assign-role"},
+             std::string{"assign-role-by-name"},
+             std::string{"revoke-role"},
+             std::string{"revoke-role-by-name"},
+             std::string{"get-account-roles"},
+             std::string{"get-my-roles"},
+             std::string{"list-account-permissions"},
+             std::string{"list-my-permissions"},
+             std::string{"list-role-permissions-page"},
+             std::string{"list-roles-page"},
+             std::string{"list-role-holders"},
+             std::string{"get-role-permissions"},
+             std::string{"put-role-permissions"},
+             std::string{"suggest-role-commands"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

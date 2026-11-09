@@ -72,16 +72,16 @@ TEST_CASE("monetary_nature_commands_registers_every_derived_verb", "[commands]")
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("monetary_natures ");
     for (const auto& verb : {
-             std::string{"monetary_natures list"},
-             std::string{"monetary_natures get"},
-             std::string{"monetary_natures get-many"},
-             std::string{"monetary_natures add"},
-             std::string{"monetary_natures set"},
-             std::string{"monetary_natures put-many"},
-             std::string{"monetary_natures delete"},
-             std::string{"monetary_natures delete-many"},
-             std::string{"monetary_natures versions"},
-             std::string{"monetary_natures version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,10 +72,10 @@ TEST_CASE("report_error_event_commands_registers_every_derived_verb", "[commands
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("report_error_events ");
     for (const auto& verb : {
-             std::string{"report_error_events list"},
-             std::string{"report_error_events get"},
-             std::string{"report_error_events get-many"},
-             std::string{"report_error_events by-report-instance-id"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"by-report-instance-id"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

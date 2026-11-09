@@ -72,16 +72,16 @@ TEST_CASE("amortization_type_commands_registers_every_derived_verb", "[commands]
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("amortization_types ");
     for (const auto& verb : {
-             std::string{"amortization_types list"},
-             std::string{"amortization_types get"},
-             std::string{"amortization_types get-many"},
-             std::string{"amortization_types add"},
-             std::string{"amortization_types set"},
-             std::string{"amortization_types put-many"},
-             std::string{"amortization_types delete"},
-             std::string{"amortization_types delete-many"},
-             std::string{"amortization_types versions"},
-             std::string{"amortization_types version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

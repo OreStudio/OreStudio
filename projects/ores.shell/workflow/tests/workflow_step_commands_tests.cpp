@@ -72,17 +72,17 @@ TEST_CASE("workflow_step_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("workflow_steps ");
     for (const auto& verb : {
-             std::string{"workflow_steps list"},
-             std::string{"workflow_steps get"},
-             std::string{"workflow_steps get-many"},
-             std::string{"workflow_steps add"},
-             std::string{"workflow_steps set"},
-             std::string{"workflow_steps put-many"},
-             std::string{"workflow_steps delete"},
-             std::string{"workflow_steps delete-many"},
-             std::string{"workflow_steps by-workflow-id"},
-             std::string{"workflow_steps versions"},
-             std::string{"workflow_steps version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-workflow-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

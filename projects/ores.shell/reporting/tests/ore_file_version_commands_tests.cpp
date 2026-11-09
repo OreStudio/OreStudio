@@ -72,17 +72,17 @@ TEST_CASE("ore_file_version_commands_registers_every_derived_verb", "[commands]"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("ore_file_versions ");
     for (const auto& verb : {
-             std::string{"ore_file_versions list"},
-             std::string{"ore_file_versions get"},
-             std::string{"ore_file_versions get-many"},
-             std::string{"ore_file_versions add"},
-             std::string{"ore_file_versions set"},
-             std::string{"ore_file_versions put-many"},
-             std::string{"ore_file_versions delete"},
-             std::string{"ore_file_versions delete-many"},
-             std::string{"ore_file_versions by-ore-file-code"},
-             std::string{"ore_file_versions versions"},
-             std::string{"ore_file_versions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-ore-file-code"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

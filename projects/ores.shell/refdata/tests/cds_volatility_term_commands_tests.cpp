@@ -72,16 +72,16 @@ TEST_CASE("cds_volatility_term_commands_registers_every_derived_verb", "[command
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("cds_volatility_terms ");
     for (const auto& verb : {
-             std::string{"cds_volatility_terms list"},
-             std::string{"cds_volatility_terms get"},
-             std::string{"cds_volatility_terms get-many"},
-             std::string{"cds_volatility_terms add"},
-             std::string{"cds_volatility_terms set"},
-             std::string{"cds_volatility_terms put-many"},
-             std::string{"cds_volatility_terms delete"},
-             std::string{"cds_volatility_terms delete-many"},
-             std::string{"cds_volatility_terms versions"},
-             std::string{"cds_volatility_terms version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

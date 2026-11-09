@@ -72,16 +72,16 @@ TEST_CASE("curve_section_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("curve_sections ");
     for (const auto& verb : {
-             std::string{"curve_sections list"},
-             std::string{"curve_sections get"},
-             std::string{"curve_sections get-many"},
-             std::string{"curve_sections add"},
-             std::string{"curve_sections set"},
-             std::string{"curve_sections put-many"},
-             std::string{"curve_sections delete"},
-             std::string{"curve_sections delete-many"},
-             std::string{"curve_sections versions"},
-             std::string{"curve_sections version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

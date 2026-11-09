@@ -75,16 +75,16 @@ TEST_CASE("index_credit_default_swap_option_instrument_commands_registers_every_
     const auto completions =
         root_menu.GetCompletions("index_credit_default_swap_option_instruments ");
     for (const auto& verb : {
-             std::string{"index_credit_default_swap_option_instruments list"},
-             std::string{"index_credit_default_swap_option_instruments get"},
-             std::string{"index_credit_default_swap_option_instruments get-many"},
-             std::string{"index_credit_default_swap_option_instruments add"},
-             std::string{"index_credit_default_swap_option_instruments set"},
-             std::string{"index_credit_default_swap_option_instruments put-many"},
-             std::string{"index_credit_default_swap_option_instruments delete"},
-             std::string{"index_credit_default_swap_option_instruments delete-many"},
-             std::string{"index_credit_default_swap_option_instruments versions"},
-             std::string{"index_credit_default_swap_option_instruments version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

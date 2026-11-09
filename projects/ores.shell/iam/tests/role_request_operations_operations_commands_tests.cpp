@@ -59,8 +59,8 @@ TEST_CASE("role_request_operations_operations_registers_every_declared_command",
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("role_request_operations ");
     for (const auto& verb : {
-             std::string{"role_request_operations ask-for-roles"},
-             std::string{"role_request_operations get-request-roles"},
+             std::string{"ask-for-roles"},
+             std::string{"get-request-roles"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

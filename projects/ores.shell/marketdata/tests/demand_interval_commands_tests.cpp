@@ -72,16 +72,16 @@ TEST_CASE("demand_interval_commands_registers_every_derived_verb", "[commands]")
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("demand_intervals ");
     for (const auto& verb : {
-             std::string{"demand_intervals list"},
-             std::string{"demand_intervals get"},
-             std::string{"demand_intervals get-many"},
-             std::string{"demand_intervals add"},
-             std::string{"demand_intervals set"},
-             std::string{"demand_intervals put-many"},
-             std::string{"demand_intervals delete"},
-             std::string{"demand_intervals delete-many"},
-             std::string{"demand_intervals versions"},
-             std::string{"demand_intervals version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

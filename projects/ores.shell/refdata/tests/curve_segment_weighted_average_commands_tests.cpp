@@ -72,16 +72,16 @@ TEST_CASE("curve_segment_weighted_average_commands_registers_every_derived_verb"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("curve_segment_weighted_averages ");
     for (const auto& verb : {
-             std::string{"curve_segment_weighted_averages list"},
-             std::string{"curve_segment_weighted_averages get"},
-             std::string{"curve_segment_weighted_averages get-many"},
-             std::string{"curve_segment_weighted_averages add"},
-             std::string{"curve_segment_weighted_averages set"},
-             std::string{"curve_segment_weighted_averages put-many"},
-             std::string{"curve_segment_weighted_averages delete"},
-             std::string{"curve_segment_weighted_averages delete-many"},
-             std::string{"curve_segment_weighted_averages versions"},
-             std::string{"curve_segment_weighted_averages version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

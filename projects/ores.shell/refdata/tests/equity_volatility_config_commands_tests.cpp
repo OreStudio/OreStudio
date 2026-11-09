@@ -72,16 +72,16 @@ TEST_CASE("equity_volatility_config_commands_registers_every_derived_verb", "[co
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("equity_volatility_configs ");
     for (const auto& verb : {
-             std::string{"equity_volatility_configs list"},
-             std::string{"equity_volatility_configs get"},
-             std::string{"equity_volatility_configs get-many"},
-             std::string{"equity_volatility_configs add"},
-             std::string{"equity_volatility_configs set"},
-             std::string{"equity_volatility_configs put-many"},
-             std::string{"equity_volatility_configs delete"},
-             std::string{"equity_volatility_configs delete-many"},
-             std::string{"equity_volatility_configs versions"},
-             std::string{"equity_volatility_configs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

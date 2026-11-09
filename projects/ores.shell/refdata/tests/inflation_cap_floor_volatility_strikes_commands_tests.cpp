@@ -73,16 +73,16 @@ TEST_CASE("inflation_cap_floor_volatility_strikes_commands_registers_every_deriv
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("inflation_cap_floor_volatility_strikes ");
     for (const auto& verb : {
-             std::string{"inflation_cap_floor_volatility_strikes list"},
-             std::string{"inflation_cap_floor_volatility_strikes get"},
-             std::string{"inflation_cap_floor_volatility_strikes get-many"},
-             std::string{"inflation_cap_floor_volatility_strikes add"},
-             std::string{"inflation_cap_floor_volatility_strikes set"},
-             std::string{"inflation_cap_floor_volatility_strikes put-many"},
-             std::string{"inflation_cap_floor_volatility_strikes delete"},
-             std::string{"inflation_cap_floor_volatility_strikes delete-many"},
-             std::string{"inflation_cap_floor_volatility_strikes versions"},
-             std::string{"inflation_cap_floor_volatility_strikes version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,16 +72,16 @@ TEST_CASE("change_reason_category_commands_registers_every_derived_verb", "[comm
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("change_reason_categories ");
     for (const auto& verb : {
-             std::string{"change_reason_categories list"},
-             std::string{"change_reason_categories get"},
-             std::string{"change_reason_categories get-many"},
-             std::string{"change_reason_categories add"},
-             std::string{"change_reason_categories set"},
-             std::string{"change_reason_categories put-many"},
-             std::string{"change_reason_categories delete"},
-             std::string{"change_reason_categories delete-many"},
-             std::string{"change_reason_categories versions"},
-             std::string{"change_reason_categories version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

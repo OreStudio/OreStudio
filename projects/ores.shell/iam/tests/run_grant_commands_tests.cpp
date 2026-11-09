@@ -72,12 +72,12 @@ TEST_CASE("run_grant_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("run_grants ");
     for (const auto& verb : {
-             std::string{"run_grants list"},
-             std::string{"run_grants get"},
-             std::string{"run_grants get-many"},
-             std::string{"run_grants by-grantor-account-id"},
-             std::string{"run_grants versions"},
-             std::string{"run_grants version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"by-grantor-account-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

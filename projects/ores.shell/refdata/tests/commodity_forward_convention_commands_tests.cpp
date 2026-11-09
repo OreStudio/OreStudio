@@ -72,16 +72,16 @@ TEST_CASE("commodity_forward_convention_commands_registers_every_derived_verb", 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("commodity_forward_conventions ");
     for (const auto& verb : {
-             std::string{"commodity_forward_conventions list"},
-             std::string{"commodity_forward_conventions get"},
-             std::string{"commodity_forward_conventions get-many"},
-             std::string{"commodity_forward_conventions add"},
-             std::string{"commodity_forward_conventions set"},
-             std::string{"commodity_forward_conventions put-many"},
-             std::string{"commodity_forward_conventions delete"},
-             std::string{"commodity_forward_conventions delete-many"},
-             std::string{"commodity_forward_conventions versions"},
-             std::string{"commodity_forward_conventions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

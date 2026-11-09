@@ -72,17 +72,17 @@ TEST_CASE("swap_leg_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("swap_legs ");
     for (const auto& verb : {
-             std::string{"swap_legs list"},
-             std::string{"swap_legs get"},
-             std::string{"swap_legs get-many"},
-             std::string{"swap_legs add"},
-             std::string{"swap_legs set"},
-             std::string{"swap_legs put-many"},
-             std::string{"swap_legs delete"},
-             std::string{"swap_legs delete-many"},
-             std::string{"swap_legs by-trade-id"},
-             std::string{"swap_legs versions"},
-             std::string{"swap_legs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-trade-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

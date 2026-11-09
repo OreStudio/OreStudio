@@ -59,7 +59,7 @@ TEST_CASE("registration_policy_operations_registers_every_declared_command", "[c
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("registration_policy ");
     for (const auto& verb : {
-             std::string{"registration_policy registration-policy"},
+             std::string{"registration-policy"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

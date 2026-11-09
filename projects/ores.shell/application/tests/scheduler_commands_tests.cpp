@@ -64,12 +64,12 @@ TEST_CASE("scheduler_commands registers its six verbs", "[commands][scheduler]")
     scheduler_commands::register_commands(root_menu, session);
 
     const auto completions = root_menu.GetCompletions("scheduler ");
-    for (const auto& verb : {std::string{"scheduler jobs"},
-                             std::string{"scheduler schedule"},
-                             std::string{"scheduler remove"},
-                             std::string{"scheduler instances"},
-                             std::string{"scheduler status"},
-                             std::string{"scheduler watch"}})
+    for (const auto& verb : {std::string{"jobs"},
+                             std::string{"schedule"},
+                             std::string{"remove"},
+                             std::string{"instances"},
+                             std::string{"status"},
+                             std::string{"watch"}})
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 }
 

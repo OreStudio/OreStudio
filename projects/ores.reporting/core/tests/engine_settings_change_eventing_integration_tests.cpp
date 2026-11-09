@@ -212,10 +212,6 @@ TEST_CASE("write_engine_settings_change_publishes_an_event", "[eventing][integra
     // matches no active row, so the parent must be written first.
     auto engine_settings_id_parent =
         ores::reporting::generators::generate_synthetic_engine_settings(ctx);
-    // The engine_settings is party-isolated, so it carries the
-    // session party: under any other party the child's insert trigger could
-    // not see it, and the existence check would reject the child.
-    engine_settings_id_parent.party_id = *party_ctx.party_id();
     auto engine_settings_id_parent_configuration_parent =
         ores::reporting::generators::generate_synthetic_configuration(ctx);
     // configuration_type is system-tenant reference data: reference a
@@ -237,9 +233,6 @@ TEST_CASE("write_engine_settings_change_publishes_an_event", "[eventing][integra
                 .front()
                 .code;
     }
-    // configuration is party-isolated, so it carries the session
-    // party, or the row that references it could not see it.
-    engine_settings_id_parent_configuration_parent.party_id = *party_ctx.party_id();
     // Seed the active configuration row ores_reporting_configurations_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.

@@ -72,17 +72,17 @@ TEST_CASE("app_version_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("app_versions ");
     for (const auto& verb : {
-             std::string{"app_versions list"},
-             std::string{"app_versions get"},
-             std::string{"app_versions get-many"},
-             std::string{"app_versions add"},
-             std::string{"app_versions set"},
-             std::string{"app_versions put-many"},
-             std::string{"app_versions delete"},
-             std::string{"app_versions delete-many"},
-             std::string{"app_versions by-app-id"},
-             std::string{"app_versions versions"},
-             std::string{"app_versions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-app-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

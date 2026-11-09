@@ -72,16 +72,16 @@ TEST_CASE("route_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("routes ");
     for (const auto& verb : {
-             std::string{"routes list"},
-             std::string{"routes get"},
-             std::string{"routes get-many"},
-             std::string{"routes add"},
-             std::string{"routes set"},
-             std::string{"routes put-many"},
-             std::string{"routes delete"},
-             std::string{"routes delete-many"},
-             std::string{"routes versions"},
-             std::string{"routes version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

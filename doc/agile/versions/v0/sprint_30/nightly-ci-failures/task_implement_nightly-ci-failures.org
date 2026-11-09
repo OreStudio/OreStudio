@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: D37CDA80-087B-481C-A79F-A8B1273E7B1C
+:END:
+#+title: Task: Implement Hotfix: nightly CI failures
+#+description: Initial task for: Hotfix: nightly CI failures
+#+type: task
+#+level: s1
+#+filetags: :nightly-ci-failures:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/nightly-ci-failures
+#+pr: 4529
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix each confirmed nightly failure in its own commit, and find the origin of
+the two uninitialised sends that valgrind reports.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- Every item in the story's acceptance has a commit or a recorded finding.
+
+* Plan
+
+1. Change the shell tests and their templates to expect the bare verb.
+2. Remove the =const= that makes the =std::move= in the trade summary repository redundant.
+3. Suppress the NATS async callback thread error slot.
+4. Use =time_utils::localtime_safe= in the cron tests.
+5. Find the origin of the uninitialised send with =--track-origins=yes=.
+6. Make the change hub epoch unique within a process.
+7. Give =nats_connect_error= a key function in the library.
+8. Name each HTTP client test as it starts, so the macOS hang names itself.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Uninitialised send errors, 2 eventing tests | 0 in each test | =valgrind --track-origins=yes= on =write_engine_settings_change_publishes_an_event= and =write_curve_publish_publishes_an_event= | 8d61ecea8b |
+| Shell suites passing with cli 2.3.0 | 16 of 16 | each =ores.shell.*.tests= with =~[long_running]= | 0917b0d297 |
+
+* Notes
+
+Root causes:
+
+- Shell suites: cli 2.3.0 returns the bare verb from completion. =ores.shell= uses =CliFileSession=, so no tab completion is reachable. The tests and their templates now expect the bare verb.
+- GCC: a =const= local made a =std::move= redundant in the trade summary repository.
+- Valgrind MPK: the NATS C library holds one per-thread error slot for its async callback thread. The suppression covers this reachable block.
+- Valgrind UMR: the =cpp_nats_integration_test= template read =*party_ctx.party_id()= for party-isolated parents. In two tests =party_ctx= is the plain =h.context()=, so the optional is empty and the read is undefined behaviour. The row got uninitialised bytes as its =party_id=. The template now reads the session party only when writes are party-scoped. TLS hid the origin. =PGSSLMODE=disable= and a field probe located it.
+- Windows: the cron tests called =localtime_r=. They now call =localtime_safe=.
+- macOS change stream: two epochs could match on a coarse clock. =make_epoch= now increases strictly within a process.
+- macOS next-fire: the exception missed its catch clause. =nats_connect_error= now has a key function in the library, which anchors its type info. This is the likely cause, and only the macOS nightly can confirm it.
+- macOS HTTP client timeout: cause not found. The tests now print each name at start, so the next hang names the test.
+
+Neither macOS nor Windows ran locally. The nightly run is the final proof for those platforms.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4529][#4529]] | [ci] Fix nightly failures on Linux, macOS and Windows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review: with no session party, two eventing tests keep the generator party_id on seeded parents | cpp_nats_integration_test.cpp.mustache | Accept as designed | Both tests pass and valgrind reports 0 errors. |
+| 2 | @claude: make_epoch needs a test for strictly increasing values | change_stream_tests.cpp | Accept | Test added. |
+| 3 | @claude: the make_epoch counter can differ per shared library | change_hub.hpp | Decline | The macOS failure is in one test binary. |
+| 4 | @claude: nats_connect_error may not be exported | nats_connect_error.hpp | No change | The class has ORES_NATS_EXPORT. |
+| 5 | @claude: the test start listener is permanent | net_transport_tests.cpp | Accept later | Remove it after the macOS hang is found. |
+
+* Result
+
+All local acceptance is met on =linux-clang-release-ninja=: the shell suites pass with cli 2.3.0, and the two eventing tests report zero valgrind errors. The Windows and macOS fixes and the macOS test-name diagnostic ship unproven until the nightly run.

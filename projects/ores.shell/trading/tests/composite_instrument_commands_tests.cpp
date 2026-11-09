@@ -72,16 +72,16 @@ TEST_CASE("composite_instrument_commands_registers_every_derived_verb", "[comman
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("composite_instruments ");
     for (const auto& verb : {
-             std::string{"composite_instruments list"},
-             std::string{"composite_instruments get"},
-             std::string{"composite_instruments get-many"},
-             std::string{"composite_instruments add"},
-             std::string{"composite_instruments set"},
-             std::string{"composite_instruments put-many"},
-             std::string{"composite_instruments delete"},
-             std::string{"composite_instruments delete-many"},
-             std::string{"composite_instruments versions"},
-             std::string{"composite_instruments version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

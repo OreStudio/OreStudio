@@ -422,6 +422,16 @@ TEST_CASE("an_id_from_an_earlier_process_is_answered_with_a_resync", "[change_st
     REQUIRE(resumed->try_pop() == std::optional<std::string>("event: resync\ndata: {}\n\n"));
 }
 
+TEST_CASE("each_epoch_is_later_than_the_one_before_it", "[change_stream]") {
+    // A tight loop outruns a coarse clock, which is what lets two epochs match.
+    auto previous = std::stoll(detail::make_epoch());
+    for (int i = 0; i < 100000; ++i) {
+        const auto current = std::stoll(detail::make_epoch());
+        REQUIRE(current > previous);
+        previous = current;
+    }
+}
+
 TEST_CASE("an_id_that_is_not_a_frame_id_is_refused", "[change_stream]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that only an id of the frame grammar is read";

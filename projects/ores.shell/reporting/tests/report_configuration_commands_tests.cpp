@@ -72,19 +72,19 @@ TEST_CASE("report_configuration_commands_registers_every_derived_verb", "[comman
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("report_configurations ");
     for (const auto& verb : {
-             std::string{"report_configurations list"},
-             std::string{"report_configurations get"},
-             std::string{"report_configurations get-many"},
-             std::string{"report_configurations add"},
-             std::string{"report_configurations set"},
-             std::string{"report_configurations put-many"},
-             std::string{"report_configurations delete"},
-             std::string{"report_configurations delete-many"},
-             std::string{"report_configurations by-report-definition-id"},
-             std::string{"report_configurations by-configuration-type-code"},
-             std::string{"report_configurations by-configuration-id"},
-             std::string{"report_configurations versions"},
-             std::string{"report_configurations version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-report-definition-id"},
+             std::string{"by-configuration-type-code"},
+             std::string{"by-configuration-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

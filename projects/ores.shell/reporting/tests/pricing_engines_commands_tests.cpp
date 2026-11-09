@@ -60,9 +60,8 @@ TEST_CASE("pricing_engines_commands_registers_the_export", "[commands]") {
     pricing_engines_commands::register_commands(root_menu, session);
 
     const auto completions = root_menu.GetCompletions("pricing_engines ");
-    CHECK(std::find(completions.begin(),
-                    completions.end(),
-                    std::string{"pricing_engines export"}) != completions.end());
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"export"}) !=
+          completions.end());
 
     BOOST_LOG_SEV(lg, debug) << "Registered 1 command(s).";
 }
@@ -179,9 +178,8 @@ TEST_CASE("pricing_engines_commands_registers_the_import", "[commands]") {
 
     const auto completions = root_menu.GetCompletions("pricing_engines ");
     BOOST_LOG_SEV(lg, debug) << "Completions: " << completions.size();
-    CHECK(std::find(completions.begin(),
-                    completions.end(),
-                    std::string{"pricing_engines import"}) != completions.end());
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"import"}) !=
+          completions.end());
 }
 
 TEST_CASE("pricing_engines_commands_process_import_requires_a_session", "[commands]") {

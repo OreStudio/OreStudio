@@ -72,16 +72,16 @@ TEST_CASE("ir_curve_bootstrap_config_commands_registers_every_derived_verb", "[c
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("ir_curve_bootstrap_configs ");
     for (const auto& verb : {
-             std::string{"ir_curve_bootstrap_configs list"},
-             std::string{"ir_curve_bootstrap_configs get"},
-             std::string{"ir_curve_bootstrap_configs get-many"},
-             std::string{"ir_curve_bootstrap_configs add"},
-             std::string{"ir_curve_bootstrap_configs set"},
-             std::string{"ir_curve_bootstrap_configs put-many"},
-             std::string{"ir_curve_bootstrap_configs delete"},
-             std::string{"ir_curve_bootstrap_configs delete-many"},
-             std::string{"ir_curve_bootstrap_configs versions"},
-             std::string{"ir_curve_bootstrap_configs version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -61,7 +61,7 @@ TEST_CASE("history_commands registers the get verb", "[commands][history]") {
     // The command is the only way into the generic history protocol from the
     // shell, so a get that is no longer registered leaves the family unreachable.
     const auto completions = root_menu.GetCompletions("history ");
-    CHECK(std::find(completions.begin(), completions.end(), std::string{"history get"}) !=
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"get"}) !=
           completions.end());
 }
 

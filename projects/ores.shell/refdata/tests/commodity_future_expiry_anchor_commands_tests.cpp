@@ -72,17 +72,17 @@ TEST_CASE("commodity_future_expiry_anchor_commands_registers_every_derived_verb"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("commodity_future_expiry_anchors ");
     for (const auto& verb : {
-             std::string{"commodity_future_expiry_anchors list"},
-             std::string{"commodity_future_expiry_anchors get"},
-             std::string{"commodity_future_expiry_anchors get-many"},
-             std::string{"commodity_future_expiry_anchors add"},
-             std::string{"commodity_future_expiry_anchors set"},
-             std::string{"commodity_future_expiry_anchors put-many"},
-             std::string{"commodity_future_expiry_anchors delete"},
-             std::string{"commodity_future_expiry_anchors delete-many"},
-             std::string{"commodity_future_expiry_anchors by-convention-id"},
-             std::string{"commodity_future_expiry_anchors versions"},
-             std::string{"commodity_future_expiry_anchors version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-convention-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

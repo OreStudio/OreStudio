@@ -59,8 +59,8 @@ TEST_CASE("provider_terms_operations_operations_registers_every_declared_command
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("provider_terms_operations ");
     for (const auto& verb : {
-             std::string{"provider_terms_operations accept-provider-terms"},
-             std::string{"provider_terms_operations withdraw-provider-terms"},
+             std::string{"accept-provider-terms"},
+             std::string{"withdraw-provider-terms"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

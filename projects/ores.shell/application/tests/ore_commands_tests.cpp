@@ -55,9 +55,9 @@ TEST_CASE("ore_commands registers the package verbs", "[commands][ore]") {
     ore_commands::register_commands(root_menu, session);
 
     const auto completions = root_menu.GetCompletions("ore ");
-    for (const auto& verb : {std::string{"ore build-packages"},
-                             std::string{"ore fetch-packages"},
-                             std::string{"ore clean-packages"}}) {
+    for (const auto& verb : {std::string{"build-packages"},
+                             std::string{"fetch-packages"},
+                             std::string{"clean-packages"}}) {
         INFO("missing completion: " << verb);
         CHECK(std::ranges::find(completions, verb) != completions.end());
     }

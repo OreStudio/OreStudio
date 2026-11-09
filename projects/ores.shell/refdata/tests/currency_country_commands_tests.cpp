@@ -72,15 +72,15 @@ TEST_CASE("currency_country_commands_registers_every_derived_verb", "[commands]"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("currency_countries ");
     for (const auto& verb : {
-             std::string{"currency_countries list"},
-             std::string{"currency_countries get"},
-             std::string{"currency_countries get-many"},
-             std::string{"currency_countries add"},
-             std::string{"currency_countries set"},
-             std::string{"currency_countries put-many"},
-             std::string{"currency_countries delete"},
-             std::string{"currency_countries delete-many"},
-             std::string{"currency_countries by-currency-iso-code"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-currency-iso-code"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

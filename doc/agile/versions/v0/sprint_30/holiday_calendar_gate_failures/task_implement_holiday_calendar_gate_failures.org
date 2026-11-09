@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 8791DDF9-F48E-4C40-8500-7BAD1127F739
+:END:
+#+title: Task: Fix the four checks that main fails
+#+description: List two new entity table writers, translate four new provisioning steps, format two catalogues and regenerate one shell recipe.
+#+type: task
+#+level: s1
+#+filetags: :holiday_calendar_gate_failures:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/holiday-calendar-gate-failures
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:66CF6B10-92F7-4DA3-A310-AFAD381CC372][Hotfix: two changes on main fail four local checks]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+List the two new entity table writers in the =entity-writes= baseline, each with its own reason. Add the four new provisioning step sentence pairs to the en, fr and pt catalogues. Format the en and pt catalogues with Prettier, and regenerate the =approval_operations= shell recipe from its model.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:66CF6B10-92F7-4DA3-A310-AFAD381CC372][Hotfix: two changes on main fail four local checks]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- =check_entity_table_writes.py= exits 0.
+- =test_provision_step_words.py= passes in all three languages.
+
+* Plan
+
+Add the two entries to the baseline by hand. =--write-baseline= rewrites every entry's reason to "predates the check", which loses the reasons other changes recorded. Put the catalogue entries before =Attach the photographs=, in the order the step table declares them.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The calendar exceptions publish function follows the pattern of the 64 =*_from_dq_fn= functions the baseline already lists. =generate_calendar_exceptions.cpp= is a build-time generator. It prints SQL and never runs against a database. The fr and pt text is a machine translation that follows the terms the catalogues already use, such as =locataire= and =inquilino=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The four checks pass on this branch. The baseline gains two entries, and each catalogue gains four sentence pairs. Prettier reformats three lines that the auto-approval work left in en and pt, and the =approval_operations= recipe gains the =set-approvals-mode= command its model declares.

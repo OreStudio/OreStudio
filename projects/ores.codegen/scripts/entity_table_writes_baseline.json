@@ -785,6 +785,18 @@
       "name": "ores_marketdata_publish_suppliers_from_dq_fn",
       "file": "projects/ores.sql/create/marketdata/marketdata_publish_from_dq_create.sql",
       "reason": "a DQ publish function, written in SQL like every sibling"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_calendar_exceptions_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "publishes the QuantLib calendar holidays the DQ dataset stages into the tenant, like every other publish_from_dq function"
+    },
+    {
+      "kind": "cpp",
+      "name": "",
+      "file": "projects/ores.ore/scripts/quantlib_calendars/generate_calendar_exceptions.cpp",
+      "reason": "a build-time generator that prints the SQL loading the QuantLib calendar holidays into the system tenant; it never runs against a database"
     }
   ]
 }

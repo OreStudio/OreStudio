@@ -117,6 +117,48 @@ It is addressed at =inbox.v1.ops.list_my_approval_requests=.
 approval_operations list-my-approval-requests
 #+end_src
 
+** =get-approvals-mode=
+:PROPERTIES:
+:ID: D247E277-ABE2-5EEF-AB30-BCD1A64B986D
+:END:
+
+Sends =get_approvals_mode_request= and prints =get_approvals_mode_response=, so the shape is the protocol's and the meaning is the service's. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations get-approvals-mode
+#+end_example
+
+It is addressed at =inbox.v1.ops.get_approvals_mode=.
+
+#+name: approval_operations-get-approvals-mode
+#+begin_src ores-shell :tangle approval_operations-get-approvals-mode.ores :exports none
+approval_operations get-approvals-mode
+#+end_src
+
+** =set-approvals-mode=
+:PROPERTIES:
+:ID: F2F81F13-61A1-510E-BC0F-56866E6D7355
+:END:
+
+Sends =set_approvals_mode_request= and prints =set_approvals_mode_response=, so the shape is the protocol's and the meaning is the service's. It reads =reason=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+approval_operations set-approvals-mode <reason> [--auto_approved <v>]
+#+end_example
+
+It is addressed at =inbox.v1.ops.set_approvals_mode=.
+
+#+name: approval_operations-set-approvals-mode
+#+begin_src ores-shell :tangle approval_operations-set-approvals-mode.ores :exports none
+approval_operations set-approvals-mode __none__
+#+end_src
+
 ** =get-approval=
 :PROPERTIES:
 :ID: 5939718C-21D0-5CCA-9FDE-E0B7D8B0BA84

@@ -266,11 +266,11 @@ export const en: SourceCatalogue = {
     },
     inbox: {
         autoApproval: {
-            tenant: "the tenant does not enforce approvals",
+            tenant: 'the tenant does not enforce approvals',
             noticeTenant:
-                "Auto-approval is on in this tenant, so requests close without a person. {by} set it at {at}: {reason}",
+                'Auto-approval is on in this tenant, so requests close without a person. {by} set it at {at}: {reason}',
             noticeInstallation:
-                "Auto-approval is on for this installation, so requests close without a person. {by} set it at {at}: {reason}",
+                'Auto-approval is on for this installation, so requests close without a person. {by} set it at {at}: {reason}',
             chip: 'Auto-approved',
             deployment: 'the deployment does not enforce approvals',
             system_tenant: "the installation's own act",
@@ -3778,6 +3778,15 @@ export const en: SourceCatalogue = {
         'Set the staff passwords': 'Set the staff passwords',
         "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.":
             "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.",
+        'Turn auto-approval on': 'Turn auto-approval on',
+        "Closes the tenant's approvals without a person while it is provisioned. Every screen says so while it is on.":
+            "Closes the tenant's approvals without a person while it is provisioned. Every screen says so while it is on.",
+        'Hand approvals to people': 'Hand approvals to people',
+        'Turns auto-approval off, so people decide from here on. A profile that omits this step leaves auto-approval on.':
+            'Turns auto-approval off, so people decide from here on. A profile that omits this step leaves auto-approval on.',
+        'Build the holiday calendars': 'Build the holiday calendars',
+        'Builds the business days of every calendar a currency or a currency pair convention names, so a value date never falls on a holiday.':
+            'Builds the business days of every calendar a currency or a currency pair convention names, so a value date never falls on a holiday.',
         'Attach the photographs': 'Attach the photographs',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             "Gives the accounts their photographs, and the tenant's party its logo.",

@@ -21,6 +21,7 @@
 #define ORES_ORE_CORE_DOMAIN_UNDERLYING_BLOCK_PROJECTION_HPP
 
 #include "ores.ore.core/domain/decimal_projection.hpp"
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.trading.api/domain/instrument_underlying.hpp"
@@ -56,15 +57,15 @@ bool states_a_list(const Record& holder, std::string_view element) {
     return f != nullptr && f->kind == xml::field_kind::repeated_nested;
 }
 
-inline auto optional_text(const record_reader& block,
-                          std::string_view name) -> std::optional<std::string> {
+inline auto optional_text(const record_reader& block, std::string_view name)
+    -> std::optional<std::string> {
     if (!block.declares(name) || !block.has(name))
         return std::nullopt;
     return block.text(name);
 }
 
-inline auto optional_integer(const record_reader& block,
-                             std::string_view name) -> std::optional<int> {
+inline auto optional_integer(const record_reader& block, std::string_view name)
+    -> std::optional<int> {
     if (!block.declares(name) || !block.has(name))
         return std::nullopt;
     if (const auto value = block.integer(name))
@@ -88,7 +89,8 @@ void read_underlying(Data& result,
     row.underlying_role = std::string(role);
     row.sequence_number = sequence_number;
     row.underlying_type = optional_text(block, "Type").value_or("");
-    row.name = optional_text(block, "Name").value_or("");
+    row.name =
+        underlying_address_of(row.underlying_type, optional_text(block, "Name").value_or(""));
     row.identifier_type = optional_text(block, "IdentifierType");
     row.currency = optional_text(block, "Currency");
     row.exchange = optional_text(block, "Exchange");
@@ -136,7 +138,7 @@ std::vector<const instrument_underlying*> underlyings_of(const Data& v, std::str
 
 inline void write_underlying(record_writer block, const instrument_underlying& row) {
     block.set_text("Type", row.underlying_type);
-    block.set_text("Name", row.name);
+    block.set_text("Name", underlying_name_of(row.name));
     const auto text = [&](std::string_view name, const std::optional<std::string>& value) {
         if (value && block.declares(name))
             block.set_text(name, *value);

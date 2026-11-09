@@ -45,6 +45,68 @@ inline std::string ore_name_of(std::string_view stored) {
     return projection.ore_name_or_stored(stored);
 }
 
+/// The index family that names an underlying of an ORE underlying type.
+struct underlying_family final {
+    std::string_view type;
+    std::string_view prefix;
+};
+
+inline constexpr underlying_family underlying_families[] = {
+    {"Equity", "EQ-"}, {"Commodity", "COMM-"}, {"FX", "FX-"}, {"Bond", "BOND-"}};
+
+/**
+ * @brief The address a trade stores for an underlying of the type.
+ *
+ * ORE names an underlying by its bare subject, so the address takes its family
+ * from the type. A name that a family cannot hold and return stays as written.
+ */
+inline std::string underlying_address_of(std::string_view type, std::string_view ore_name) {
+    for (const auto& family : underlying_families) {
+        if (family.type != type)
+            continue;
+        if (ore_name.empty() || ore_name.starts_with(family.prefix))
+            break;
+        auto address = address_of(std::string(family.prefix).append(ore_name));
+        if (address.starts_with("oresmd:"))
+            return address;
+        break;
+    }
+    return std::string(ore_name);
+}
+
+inline std::string equity_address_of(std::string_view ore_name) {
+    return underlying_address_of("Equity", ore_name);
+}
+
+inline std::string commodity_address_of(std::string_view ore_name) {
+    return underlying_address_of("Commodity", ore_name);
+}
+
+inline std::string fx_address_of(std::string_view ore_name) {
+    return underlying_address_of("FX", ore_name);
+}
+
+/// The bare name ORE states for an underlying a trade stores.
+inline std::string underlying_name_of(std::string_view stored) {
+    if (!stored.starts_with("oresmd:"))
+        return std::string(stored);
+    auto name = ore_name_of(stored);
+    for (const auto& family : underlying_families)
+        if (name.starts_with(family.prefix))
+            return name.substr(family.prefix.size());
+    return name;
+}
+
+/// A pair of addresses joins on a space, as an address itself holds slashes.
+inline std::string equity_pair_of(std::string_view first, std::string_view second) {
+    return equity_address_of(first) + " " + equity_address_of(second);
+}
+
+/// The separator of a stored pair, which a trade held as names joins on a slash.
+inline char equity_pair_separator(std::string_view stored) {
+    return stored.starts_with("oresmd:") ? ' ' : '/';
+}
+
 }
 
 #endif

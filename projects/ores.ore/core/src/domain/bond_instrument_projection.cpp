@@ -285,8 +285,8 @@ auto read_amortization(const record_reader& a) -> bond_amortization_data {
 
 auto read_stub(const record_reader& s) -> bond_stub_interpolation {
     bond_stub_interpolation row;
-    row.short_index = bond_instrument_projection_text_of(s, "ShortIndex");
-    row.long_index = bond_instrument_projection_text_of(s, "LongIndex");
+    row.short_index = address_of(bond_instrument_projection_text_of(s, "ShortIndex"));
+    row.long_index = address_of(bond_instrument_projection_text_of(s, "LongIndex"));
     if (s.has("RoundingType"))
         row.rounding_type = bond_spelling_of(s, "RoundingType");
     if (s.has("RoundingPrecision"))
@@ -604,7 +604,7 @@ void read_conversion_targets(const record_reader& data,
 
     std::string underlying_id;
     if (const auto underlying = conversion->child("Underlying"))
-        underlying_id = bond_instrument_projection_text_of(*underlying, "Name");
+        underlying_id = equity_address_of(bond_instrument_projection_text_of(*underlying, "Name"));
 
     int sequence = 0;
     for (const auto& ratio : ratios->children("ConversionRatio")) {
@@ -1075,8 +1075,8 @@ void write_amortization(record_writer w, const bond_amortization_data& row) {
 }
 
 void write_stub(record_writer w, const bond_stub_interpolation& row) {
-    w.set_text("ShortIndex", row.short_index);
-    w.set_text("LongIndex", row.long_index);
+    w.set_text("ShortIndex", ore_name_of(row.short_index));
+    w.set_text("LongIndex", ore_name_of(row.long_index));
     if (row.rounding_type)
         set_spelling_or(w, "RoundingType", *row.rounding_type, "Closest", "rounding type");
     if (row.rounding_precision)
@@ -1354,7 +1354,7 @@ void write_conversion_targets(const std::vector<bond_issue_conversion_target>& t
     if (!targets.front().underlying_id.empty()) {
         auto underlying = conversion.child("Underlying");
         underlying.set_text("Type", "Equity");
-        underlying.set_text("Name", targets.front().underlying_id);
+        underlying.set_text("Name", underlying_name_of(targets.front().underlying_id));
     }
 }
 

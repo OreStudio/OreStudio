@@ -352,7 +352,7 @@ auto read_fx_generic_barrier_option(const record_reader& trade) -> fx_barrier_op
     const auto data = trade.child("FxGenericBarrierOptionData");
     if (!data)
         return r;
-    r.underlying_code = underlying_code_of(*data);
+    r.underlying_code = fx_address_of(underlying_code_of(*data));
     r.bought_currency = fx_instrument_projection_spelling_of(*data, "PayCurrency");
     const auto option = data->child("OptionData");
     r.option_type = fx_instrument_projection_option_type_of(option);
@@ -443,7 +443,7 @@ auto read_fx_variance_swap(const record_reader& trade) -> fx_variance_swap_instr
     const auto data = trade.child("FxVarianceSwapData");
     if (!data)
         return r;
-    r.underlying_code = underlying_code_of(*data);
+    r.underlying_code = fx_address_of(underlying_code_of(*data));
     r.start_date = fx_instrument_projection_to_domain_date(
         fx_instrument_projection_text_of(*data, "StartDate"));
     r.end_date =
@@ -481,7 +481,7 @@ auto read_fx_accumulator(fx_instrument_data& result, const record_reader& trade)
         return r;
     r.currency = fx_instrument_projection_spelling_of(*data, "Currency");
     if (const auto underlying = data->child("Underlying"))
-        r.underlying_code = fx_instrument_projection_text_of(*underlying, "Name");
+        r.underlying_code = fx_address_of(fx_instrument_projection_text_of(*underlying, "Name"));
     r.fixing_amount = fx_instrument_projection_decimal_of(*data, "FixingAmount");
     if (const auto strike = data->decimal("Strike"))
         r.strike = *strike;
@@ -678,7 +678,7 @@ void write_fx_generic_barrier_option(record_writer& trade,
         data.set_spelling("PayCurrency", v.bought_currency, "currency");
     if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying") &&
         !v.underlying_code.empty())
-        data.set_text("Name", v.underlying_code);
+        data.set_text("Name", underlying_name_of(v.underlying_code));
     fx_instrument_projection_write_option_entry(
         data.child("OptionData"), v.option_type, v.expiry_date);
     if (!barrier_block::write_kept_barriers(data, "Barriers", carrier, "barrier"))
@@ -751,7 +751,7 @@ void write_fx_variance_swap(record_writer& trade,
         data.set_spelling("Currency", v.currency, "currency");
     if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying") &&
         !v.underlying_code.empty())
-        data.set_text("Name", v.underlying_code);
+        data.set_text("Name", underlying_name_of(v.underlying_code));
     data.set_text("LongShort", v.long_short);
     set_decimal_from_double(data, "Strike", v.strike);
     data.set_decimal("Notional", v.notional);
@@ -800,7 +800,7 @@ void write_fx_accumulator(record_writer& trade,
 
     if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying")) {
         auto underlying = data.child("Underlying");
-        underlying.set_text("Name", v.underlying_code);
+        underlying.set_text("Name", underlying_name_of(v.underlying_code));
         underlying.set_text("Type", "FX");
     }
     data.child("OptionData").set_text("LongShort", v.long_short);

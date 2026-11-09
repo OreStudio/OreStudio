@@ -357,7 +357,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
         scalar_terms::read_terms(row, *fixed, commodity_fixed_leg_terms);
     if (const auto commodity = child_if(leg, "CommodityFloatingLegData")) {
         scalar_terms::read_terms(row, *commodity, commodity_floating_leg_terms);
-        row.floating_index_code = text_of(*commodity, "Name");
+        row.floating_index_code = commodity_address_of(text_of(*commodity, "Name"));
         if (commodity->has("PriceType"))
             row.commodity_price_type = spelling_of(*commodity, "PriceType");
         if (commodity->has("PricingCalendar"))
@@ -967,7 +967,7 @@ void write_leg(record_writer& leg,
     }
     if (row.leg_type_code == "CommodityFloating") {
         auto payload = leg.child("CommodityFloatingLegData");
-        payload.set_text("Name", row.floating_index_code);
+        payload.set_text("Name", underlying_name_of(row.floating_index_code));
         scalar_terms::write_terms(payload, row, commodity_floating_leg_terms);
         if (row.commodity_price_type)
             set_spelling_or(

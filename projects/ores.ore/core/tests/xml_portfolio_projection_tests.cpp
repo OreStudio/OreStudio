@@ -21,10 +21,13 @@
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
@@ -3532,4 +3535,34 @@ TEST_CASE("a_scripted_trade_states_what_the_population_writes_and_reads_it_back"
     REQUIRE(performance_row != nullptr);
     CHECK(performance_row->script_name == "PerformanceOption_01");
     CHECK(performance_row->parameters_json.find("StrikePrices") != std::string::npos);
+}
+
+TEST_CASE("a_cms_spread_leg_holds_both_indices_as_addresses_and_writes_them_back",
+          "[ore][xml][portfolio][projection]") {
+    const auto text =
+        ores::platform::filesystem::file::read_content(ores::testing::project_root::resolve(
+            "external/ore/examples/Products/Example_Trades/IR_Swap_CMS_Spread_Option.xml"));
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    REQUIRE(!items.empty());
+
+    const auto legs_of = [](const auto& item) {
+        const auto* swap =
+            std::get_if<ores::trading::domain::swap_instrument_data>(&item.instrument);
+        REQUIRE(swap != nullptr);
+        return swap->legs;
+    };
+    const auto spread_leg = [](const auto& legs) {
+        const auto found = std::ranges::find_if(
+            legs, [](const auto& leg) { return leg.floating_index_code_2.has_value(); });
+        REQUIRE(found != legs.end());
+        return *found;
+    };
+
+    const auto leg = spread_leg(legs_of(items[0]));
+    CHECK(leg.floating_index_code.starts_with("oresmd://"));
+    CHECK(leg.floating_index_code_2->starts_with("oresmd://"));
+
+    const auto again = spread_leg(legs_of(rebuild(items[0])));
+    CHECK(again.floating_index_code == leg.floating_index_code);
+    CHECK(again.floating_index_code_2 == leg.floating_index_code_2);
 }

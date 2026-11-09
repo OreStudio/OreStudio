@@ -110,8 +110,9 @@ std::string ore_projection::ore_name_or_stored(std::string_view stored) const {
     throw ore_projection_error(refusal);
 }
 
-
 std::string ore_projection::address_of_index_or_stored(std::string_view ore_name) {
+    if (ore_name.empty())
+        return {};
     const auto index = datum::ore_index_codec::read(ore_name);
     if (!index || datum::ore_index_codec::write(*index) != ore_name)
         return std::string(ore_name);

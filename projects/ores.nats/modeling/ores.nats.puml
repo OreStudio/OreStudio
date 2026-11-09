@@ -175,7 +175,7 @@ end note
 
 class ores::nats::wire_codec <<facet>> {
     {static} +encode(obj) : vector<byte>
-    {static} +decode(data) : rfl::Result<T>
+    {static} +decode(data) : decoded<T>
     +format() : wire_format
 }
 note right of "ores.nats::wire_codec"
@@ -209,11 +209,9 @@ ores.nats::service::jwks ..> ores.nats::service::retry : retries until IAM answe
 
 package "external" <<Rectangle>> {
     class nats.c as "nats.c" <<library>>
-    class rfl as "rfl" <<library>>
 }
 ores.nats::service::client ..> nats.c : connection, request, JetStream
 ores.nats::service::jetstream_admin ..> nats.c : js_AddStream
-ores.nats::wire_codec ..> rfl : json and msgpack
 
 
 ' Local Variables:

@@ -79,7 +79,6 @@ Private:
 - =ores.marketdata.client= and =ores.marketdata.core= — the fixing reads an
   FX feed starts from.
 - =ores.refdata.core= — the reference data the IR resolver resolves.
-- =rfl= — JSON serialisation via reflection.
 - =ores.utility= — UUID and timestamp helpers.
 
 The facet cannot depend on =ores.synthetic.core=, because core links api.

@@ -50,7 +50,7 @@ Key conventions for every handler:
 - Logger: =inline static std::string_view logger_name= with fully
   qualified path; static accessor returns a local singleton.
 - All handler declarations go in the =private= section of the header.
-- Include =<rfl/json.hpp>= and =ores.utility/rfl/reflectors.hpp= for
+- Include the type's =_codec.hpp= for
   request/response serialisation.
 - Return =co_return http_response::ok(body)= or =co_return http_response::error(...)=.
 

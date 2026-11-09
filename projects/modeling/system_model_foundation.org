@@ -22,7 +22,7 @@ exported across Foundation shared libraries.
 
 Primitive helpers with no internal dependencies: UUID v7 generation,
 Base64/Base32 encoding, string conversion, datetime helpers, faker utilities,
-and =rfl= type reflectors. The lowest point in the dependency graph — nothing in
+and the wire codecs. The lowest point in the dependency graph — nothing in
 Foundation depends on anything below it.
 
 | Sub-component | Role                                    | Dependencies |

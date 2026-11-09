@@ -94,7 +94,7 @@ that declares a subject and a response. The command name is the message name
 without its =_request= suffix, kebab-cased, unless the message states a
 =shell_command= of its own.
 
-The body sends the request and prints the reply through =rfl::json::write=. An
+The body sends the request and prints the reply through its JSON codec. An
 operation unit therefore reads as JSON where a hand-written command may have
 printed rows.
 

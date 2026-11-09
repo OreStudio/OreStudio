@@ -16,7 +16,7 @@ correlation id) and a *payload* (an opaque byte buffer). ORE Studio's
 envelope is always transport metadata, handled uniformly regardless
 of protocol; only the payload's encoding is a project-wide choice
 between JSON and MessagePack, made once at process startup and
-exposed as =ores::nats::wire_codec=. Most =rfl::json::write=/=read=
+exposed as =ores::nats::wire_codec=. Most JSON write and read
 call sites encode or decode that payload and must route through the
 process-wide codec. A minority of =std::string= fields that happen to
 hold JSON text are not the wire payload -- they are persisted or
@@ -55,7 +55,7 @@ class wire_codec final {
 public:
     explicit wire_codec(wire_format format);
     template <typename T> std::vector<std::byte> encode(const T& obj) const;
-    template <typename T> rfl::Result<T> decode(std::span<const std::byte> data) const;
+    template <typename T> decoded<T> decode(std::span<const std::byte> data) const;
 };
 #+end_src
 
@@ -200,7 +200,7 @@ unrelated schema change to a binary column type). Recognised examples:
 - *Scheduler job action payloads* (=ores.reporting=,
   =ores.scheduler=): =job_definition::action_payload= is a DB-persisted
   field re-published later by the scheduler's own action handlers;
-  building it with =rfl::json::write= is populating a stored column,
+  building it with the JSON codec is populating a stored column,
   not encoding a NATS message.
 - *Import/report "request_json" fields*: =ore_import_execute_request::
   import_choices_json=, =start_workflow_message::request_json=, and
@@ -213,8 +213,7 @@ unrelated schema change to a binary column type). Recognised examples:
   independent of =wire_format=, because it is bootstrap plumbing that
   may run before a client's own =wire_codec= is even established. Both
   the =auth_handler::public_key= reply and =fetch_jwks_public_key='s
-  parse hard-code JSON (the latter via raw =boost::json=, not =rfl=,
-  since it runs before reflect-cpp context is relevant).
+  parse hard-code JSON (the latter via raw =boost::json=).
 
 When auditing a NATS call site, ask: *is this string field the actual
 bytes handed to =publish=/=request=/=authenticated_request=, or is it
@@ -224,18 +223,18 @@ former is this document's concern.
 ** Practical audit pattern
 
 To find remaining hard-coded call sites when preparing for a msgpack
-rollout, search for =rfl::json::write=/=read= co-located with a NATS
+rollout, search for =codec::json::write=/=read= co-located with a NATS
 transport call:
 
 #+begin_src sh
 grep -rl 'request_sync\|\.request(\|authenticated_request(\|\.publish(\|js_publish(' \
     projects --include=*.hpp --include=*.cpp \
-  | xargs grep -l 'rfl::json::write\|rfl::json::read'
+  | xargs grep -l 'codec::json::write\|codec::json::read'
 #+end_src
 
 Then classify each hit per the two categories above before touching
 it -- see the "Migrate remaining service-to-service hard-coded
-rfl::json call sites to wire_codec" task for a worked example of this
+JSON call sites to wire_codec" task for a worked example of this
 triage across ~25 files.
 
 * See also

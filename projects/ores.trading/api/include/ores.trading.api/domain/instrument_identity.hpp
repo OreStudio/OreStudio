@@ -38,7 +38,7 @@ namespace ores::trading::domain {
 /**
  * @brief Common identity fields shared by all instrument types.
  *
- * Extracted as a plain nested sub-struct to keep each rfl-reflected literal
+ * Extracted as a plain nested sub-struct to keep each generated codec
  * under the MSVC C1202 ceiling. See the decomposition section of
  * doc/knowledge/architecture/data_oriented_design.org.
  */

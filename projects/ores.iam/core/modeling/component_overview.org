@@ -56,7 +56,6 @@ data generator produces test accounts for development and CI use.
 
 - =ores.iam.api= — shared domain types and NATS protocol schemas.
 - =ores.dq= — ORM base classes and data-quality infrastructure.
-- =rfl= — JSON serialisation via reflection.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
 - =libsodium= / scrypt — secure password hashing.

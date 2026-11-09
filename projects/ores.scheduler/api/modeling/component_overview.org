@@ -25,7 +25,7 @@
 =ores.scheduler.api= is a header-only library defining the shared contract for
 the scheduler domain. It provides domain types for job definitions (cron
 expressions, action types), job instances (execution records), and job status
-values, together with JSON and table I/O via =rfl=, and the NATS protocol
+values, together with JSON and table I/O via generated codecs, and the NATS protocol
 schemas consumed by =ores.scheduler.core= and any client managing scheduled
 jobs.
 
@@ -34,7 +34,7 @@ Everything the job-definition entity puts on the wire is generated from
 table and table-I/O companions, the entity protocol, the change event, the
 generator, and the TypeScript projection. The hand-written types here are
 =cron_expression=, which is the entity's one custom column type and carries
-its own =rfl= reflector and stream operator, and the job-instance and
+its own text form and stream operator, and the job-instance and
 job-status types behind the two operational views.
 
 * Inputs
@@ -59,7 +59,6 @@ job-status types behind the two operational views.
 
 * Dependencies
 
-- =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table rendering.
 - =croncpp= — cron expression validation and next-occurrence computation.
 

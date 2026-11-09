@@ -24,7 +24,7 @@
 
 =ores.iam.api= is the shared contract library for the IAM domain. It provides
 domain types for accounts, roles, tenants, parties, and session tokens,
-together with JSON and table I/O via =rfl=, and the NATS message protocol
+together with JSON and table I/O via generated codecs, and the NATS message protocol
 schemas for the 0x2000–0x2FFF range consumed by both =ores.iam.core= (server)
 and client components. It is a compiled library, not header-only: =src/= builds
 the domain tables, JSON I/O, generators, and the session auth service.
@@ -48,7 +48,6 @@ the domain tables, JSON I/O, generators, and the session auth service.
 
 * Dependencies
 
-- =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table rendering.
 
 * Build dependencies

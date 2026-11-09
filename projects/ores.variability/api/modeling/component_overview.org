@@ -46,7 +46,6 @@ protocol schemas for the variability subject hierarchy. Both
 
 * Dependencies
 
-- =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table rendering.
 
 * Build dependencies

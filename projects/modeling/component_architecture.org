@@ -48,7 +48,7 @@ Current simple components:
 | =ores.geo= | Geographic utilities (IP-to-country, etc.) |
 | =ores.logging= | Boost.Log setup and logger factory |
 | =ores.nats= | NATS client wrapper |
-| =ores.platform= | Platform abstraction (reflect-cpp, JSON glue) |
+| =ores.platform= | Platform abstraction (JSON glue) |
 | =ores.security= | Authentication and authorisation primitives |
 | =ores.service= | Shared service-layer helpers (handler_helpers, request_context) |
 | =ores.storage= | Object storage client |
@@ -246,7 +246,6 @@ adjust to actual deps after generation):
 - =INTERFACE=: expose to consumers without linking directly (avoids duplicate-library warnings on macOS).
 
 *Common transitive deps — do not add explicitly:*
-- =reflectcpp= arrives transitively via =ores.platform.lib= (PUBLIC)
 - =Boost::program_options= arrives via =ores.telemetry.lib= (PUBLIC)
 
 * Scaffold kinds

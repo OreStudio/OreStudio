@@ -71,7 +71,7 @@ rule in [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
   helpers.
 - =ores.nats= -- NATS transport for service calls.
 - =ores.analytics.api= -- the domain types and protocol messages the units send.
-- =ores.utility= -- the rfl reflectors a response is printed with.
+- =ores.utility= -- the codecs a response is printed with.
 - =ores.platform= -- the date and time formatting a recipe reads back.
 - =ores.logging= -- logger factory.
 - =cli= -- the menu and handler types the units register against.

@@ -25,7 +25,7 @@
 =ores.dq.api= is a header-only library defining the shared contract for the
 data-quality domain. It provides domain types for badges, badge definitions,
 datasets, dataset bundles, coding schemes, change-management records, and
-artefact types, together with JSON and table I/O via =rfl=, and the NATS
+artefact types, together with JSON and table I/O via generated codecs, and the NATS
 message protocol schemas consumed by =ores.dq.core= and all domain components
 that interact with the DQ system.
 
@@ -46,7 +46,6 @@ that interact with the DQ system.
 
 * Dependencies
 
-- =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table rendering.
 
 * Build dependencies

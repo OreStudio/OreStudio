@@ -21,9 +21,13 @@
 #define ORES_MARKETDATA_OFFICIAL_DOMAIN_FRANKFURTER_HPP
 
 #include "ores.http.client/net/transport.hpp"
+#include "ores.marketdata.official/domain/fetcher.hpp"
 #include "ores.marketdata.official/export.hpp"
 #include <chrono>
+#include <cstdint>
 #include <expected>
+#include <functional>
+#include <map>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -69,14 +73,42 @@ parse_universe(std::string_view json, std::string_view key);
  * @brief Reads one provider at a time through Frankfurter, never the blended rate.
  *
  * The blended rate is Frankfurter's own sum and hides which bank the number came from, so
- * every read names a provider.
+ * every read names a provider. A provider's ids are the currencies it quotes against its
+ * pivot, and a fixing is the rate of the pivot in that currency.
  */
-class ORES_MARKETDATA_OFFICIAL_EXPORT frankfurter_fetcher final {
+class ORES_MARKETDATA_OFFICIAL_EXPORT frankfurter_fetcher final : public fetcher {
 public:
     frankfurter_fetcher(http::client::net::transport& transport, std::string base_url);
 
+    [[nodiscard]] std::string_view adapter_code() const override {
+        return "frankfurter";
+    }
+
+    [[nodiscard]] std::string_view id_scheme() const override {
+        return "iso4217";
+    }
+
+    [[nodiscard]] std::string_view field() const override {
+        return "rate";
+    }
+
+    /// The currencies the provider @p key quotes, which also records its pivot.
+    [[nodiscard]] std::expected<std::vector<std::string>, std::string>
+    universe(std::string_view key) override;
+
+    /**
+     * @brief The rates the provider @p key published against its pivot.
+     *
+     * A rate against another base would be filed under the wrong item, since an item names
+     * the pivot, so it is refused and counted. The universe of @p key must be read first.
+     */
+    [[nodiscard]] std::expected<std::vector<published_fixing>, std::string>
+    fixings(std::string_view key,
+            std::chrono::year_month_day from,
+            std::chrono::year_month_day to) override;
+
     /// What the provider @p key quotes.
-    [[nodiscard]] std::expected<provider_universe, std::string> universe(std::string_view key);
+    [[nodiscard]] std::expected<provider_universe, std::string> provider(std::string_view key);
 
     /**
      * @brief The rates the provider @p key published from @p from to @p to, both included,
@@ -92,11 +124,18 @@ public:
           std::chrono::year_month_day from,
           std::chrono::year_month_day to);
 
+    /// The rates refused because their base was not the provider's pivot.
+    [[nodiscard]] std::uint64_t misbased() const {
+        return misbased_;
+    }
+
 private:
     std::expected<std::string, std::string> read(const std::string& url);
 
     http::client::net::transport& transport_;
     std::string base_url_;
+    std::map<std::string, std::string, std::less<>> pivots_;
+    std::uint64_t misbased_ = 0;
 };
 
 }

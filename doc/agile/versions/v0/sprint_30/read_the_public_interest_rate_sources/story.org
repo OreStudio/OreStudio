@@ -40,7 +40,7 @@ The public overnight rate of as many currencies as their publishers allow is sto
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] | STARTED | 2026-11-09 | | The Frankfurter adapter's announce, demand, backfill and publish code moves into a library that each specialised public source adapter links, so a new adapter supplies only its fetching and parsing. |
+| [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] | DONE | 2026-11-09 | 2026-11-09 | The Frankfurter adapter splits into a fetcher, which reads its publisher, and a shared half, which announces, answers the demand, backfills and publishes, so a new adapter supplies only its fetcher. |
 | [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]] | BACKLOG |  | | Each overnight index that the synthetic IR feeds quote is one rate item, and each publisher's series maps to it as a vendor instrument of that publisher. |
 | [[id:967DF1CA-32EE-42EB-8CB1-EF73238FE07B][Add the New York Fed adapter]] | BACKLOG |  | | A specialised adapter reads SOFR from the New York Fed markets API and stores its history as fixings in the system tenant. |
 | [[id:319D1167-5429-404D-A212-D2E616CEB13A][Add the ECB Data Portal adapter]] | BACKLOG |  | | A specialised adapter reads €STR from the ECB Data Portal and stores its history as fixings in the system tenant. |
@@ -54,7 +54,7 @@ The public overnight rate of as many currencies as their publishers allow is sto
 * Decisions
 
 - One adapter for each publisher. Each publisher has its own API, its own format and its own terms, so an adapter that reads many publishers does too much work. Two publishers share an adapter only when their API and format are the same, as the Frankfurter providers are.
-- The plumbing is shared and the fetching is not. A library holds the announce, the demand, the backfill and the publish; an adapter supplies its fetcher, its parser and its settings. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+- The plumbing is shared and the fetching is not. The shared half announces, answers the demand, backfills and publishes; an adapter supplies its fetcher and its settings. One process hosts every adapter, as =ores.synthetic.service= hosts two. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
 - Each publisher is read directly, not through an aggregator such as FRED, because the survey read the terms of each publisher and not of the aggregators.
 - Each adapter task ends with fixings stored in a fresh environment: the adapter, the catalogue mapping, the supplier, the session and the feed land together.
 - One session per supplier; the supplier and the publisher coincide for the direct APIs.

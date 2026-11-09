@@ -23,17 +23,16 @@
 
 namespace ores::marketdata::official::domain {
 
-source_feed::source_feed(hosted_source source, frankfurter_fetcher& fetcher, int backfill_days)
+source_feed::source_feed(hosted_source source, fetcher& reader, int backfill_days)
     : source_(std::move(source))
-    , fetcher_(fetcher)
+    , reader_(reader)
     , backfill_days_(backfill_days) {}
 
 std::expected<void, std::string> source_feed::load_universe() {
-    auto universe = fetcher_.universe(source_.frankfurter_key);
+    auto universe = reader_.universe(source_.key);
     if (!universe)
         return std::unexpected(universe.error());
-    pivot_ = std::move(universe->pivot);
-    universe_ = {universe->currencies.begin(), universe->currencies.end()};
+    universe_ = {universe->begin(), universe->end()};
     return {};
 }
 
@@ -41,8 +40,9 @@ messaging::adapter_announce_request source_feed::announcement() const {
     messaging::adapter_announce_request request;
     request.adapter_id = source_.source_name;
     request.provider_code = source_.provider_code;
-    for (const auto& currency : universe_)
-        request.universe.push_back({std::string(id_scheme), currency, std::string(rate_field)});
+    for (const auto& id : universe_)
+        request.universe.push_back(
+            {std::string(reader_.id_scheme()), id, std::string(reader_.field())});
     return request;
 }
 
@@ -50,7 +50,7 @@ messaging::adapter_demand_response
 source_feed::answer(const messaging::adapter_demand_request& request) const {
     messaging::adapter_demand_response response;
     for (const auto& id : request.ids) {
-        if (id.id_scheme == id_scheme && id.field == rate_field &&
+        if (id.id_scheme == reader_.id_scheme() && id.field == reader_.field() &&
             universe_.contains(id.external_id))
             response.accepted.push_back(id);
         else
@@ -75,58 +75,53 @@ std::expected<std::size_t, std::string> source_feed::refresh(std::chrono::year_m
     if (demanded_.empty())
         return 0;
     const auto window_start = std::chrono::year_month_day{sys_days{today} - days{backfill_days_}};
-    // A currency starts after the later of the last day it sent and the last day it was read
+    // An id starts after the later of the last day it sent and the last day it was read
     // through, so one that publishes nothing costs a read of a day, not of the window.
     const auto after = [](std::chrono::year_month_day d) {
         return std::chrono::year_month_day{sys_days{d} + days{1}};
     };
     auto from = today;
-    for (const auto& currency : demanded_) {
+    for (const auto& id : demanded_) {
         auto start = window_start;
-        if (const auto sent = last_sent_.find(currency); sent != last_sent_.end())
+        if (const auto sent = last_sent_.find(id); sent != last_sent_.end())
             start = std::max(start, after(sent->second));
-        if (const auto read = read_through_.find(currency); read != read_through_.end())
+        if (const auto read = read_through_.find(id); read != read_through_.end())
             start = std::max(start, after(read->second));
         from = std::min(from, start);
     }
     if (from > today)
         return 0;
 
-    auto rates = fetcher_.rates(source_.frankfurter_key, pivot_, from, today);
-    if (!rates)
-        return std::unexpected(rates.error());
-    std::ranges::stable_sort(*rates, {}, &published_rate::date);
+    auto fixings = reader_.fixings(source_.key, from, today);
+    if (!fixings)
+        return std::unexpected(fixings.error());
+    std::ranges::stable_sort(*fixings, {}, &published_fixing::date);
     std::size_t sent = 0;
-    for (const auto& rate : *rates) {
-        // A rate against another base would be filed under the wrong item, since an item names
-        // the pivot; it is refused rather than sent.
-        if (rate.base != pivot_) {
-            ++misbased_;
+    for (const auto& fixing : *fixings) {
+        if (!demanded_.contains(fixing.external_id))
             continue;
-        }
-        if (!demanded_.contains(rate.quote))
+        const auto last = last_sent_.find(fixing.external_id);
+        if (last != last_sent_.end() && fixing.date <= last->second)
             continue;
-        const auto last = last_sent_.find(rate.quote);
-        if (last != last_sent_.end() && rate.date <= last->second)
-            continue;
-        publish(tick_of(rate, ++sequence_));
-        last_sent_.insert_or_assign(rate.quote, rate.date);
+        publish(tick_of(fixing, ++sequence_));
+        last_sent_.insert_or_assign(fixing.external_id, fixing.date);
         ++sent;
     }
-    // Today's rate may not be published yet, so a read counts only through yesterday.
+    // Today's value may not be published yet, so a read counts only through yesterday.
     const auto yesterday = std::chrono::year_month_day{sys_days{today} - days{1}};
-    for (const auto& currency : demanded_)
-        read_through_.insert_or_assign(currency, yesterday);
+    for (const auto& id : demanded_)
+        read_through_.insert_or_assign(id, yesterday);
     return sent;
 }
 
-messaging::adapter_tick source_feed::tick_of(const published_rate& rate, std::uint64_t sequence) {
+messaging::adapter_tick source_feed::tick_of(const published_fixing& fixing,
+                                             std::uint64_t sequence) const {
     messaging::adapter_tick tick;
-    tick.id_scheme = std::string(id_scheme);
-    tick.external_id = rate.quote;
-    tick.field = std::string(rate_field);
-    tick.value = rate.rate;
-    tick.vendor_time = std::chrono::sys_days{rate.date} + std::chrono::hours(12);
+    tick.id_scheme = std::string(reader_.id_scheme());
+    tick.external_id = fixing.external_id;
+    tick.field = std::string(reader_.field());
+    tick.value = fixing.value;
+    tick.vendor_time = std::chrono::sys_days{fixing.date} + std::chrono::hours(12);
     tick.sequence = sequence;
     return tick;
 }

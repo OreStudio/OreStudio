@@ -23,6 +23,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -56,6 +57,29 @@ public:
         if (found == bodies.end())
             return std::unexpected(net::failure{net::failure_kind::network, "no stored body"});
         return net::response{200, "application/json", found->second};
+    }
+};
+
+/// A publisher in a notation of its own, so a source shows it is not tied to Frankfurter.
+class series_fetcher final : public fetcher {
+public:
+    std::vector<published_fixing> published;
+
+    std::string_view adapter_code() const override {
+        return "series";
+    }
+    std::string_view id_scheme() const override {
+        return "series_code";
+    }
+    std::string_view field() const override {
+        return "value";
+    }
+    std::expected<std::vector<std::string>, std::string> universe(std::string_view) override {
+        return std::vector<std::string>{"RATE_ON"};
+    }
+    std::expected<std::vector<published_fixing>, std::string>
+    fixings(std::string_view, year_month_day, year_month_day) override {
+        return published;
     }
 };
 
@@ -94,6 +118,16 @@ TEST_CASE("a_response_that_is_not_a_list_of_rates_is_refused", "[domain][frankfu
     CHECK(parse_rates("[]").value().empty());
 }
 
+TEST_CASE("the_fixings_of_a_provider_wait_for_its_universe", "[domain][frankfurter]") {
+    stored_transport transport;
+    frankfurter_fetcher sut(transport, "https://x");
+
+    const auto fixings = sut.fixings("ECB", d(20), d(21));
+
+    CHECK_FALSE(fixings.has_value());
+    CHECK(transport.asked.empty());
+}
+
 TEST_CASE("the_fetcher_asks_for_one_provider_and_never_the_blend", "[domain][frankfurter]") {
     stored_transport transport;
     transport.bodies["https://api.frankfurter.dev/v2/providers/ecb/"
@@ -118,7 +152,7 @@ TEST_CASE("a_source_sends_its_demanded_currencies_once_and_then_only_what_is_new
     transport.bodies[base + "/v2/providers/ecb/rates?from=2026-10-22&to=2026-10-22&base=EUR"] =
         R"([{"date":"2026-10-22","base":"EUR","quote":"USD","rate":1.1620}])";
     frankfurter_fetcher fetcher(transport, base);
-    source_feed sut({"ecb-frankfurter", "ecb", "ECB"}, fetcher, 2);
+    source_feed sut({"ecb-frankfurter", "ecb", "frankfurter", "ECB"}, fetcher, 2);
     REQUIRE(sut.load_universe().has_value());
 
     const auto answer = sut.demand({{{"iso4217", "USD", "rate"}, {"iso4217", "JPY", "rate"}}});
@@ -146,7 +180,7 @@ TEST_CASE("a_source_announces_its_universe_in_the_publishers_notation", "[domain
     stored_transport transport;
     transport.bodies["https://x/v2/providers"] = providers;
     frankfurter_fetcher fetcher(transport, "https://x");
-    source_feed sut({"boe-frankfurter", "boe", "BOE"}, fetcher, 30);
+    source_feed sut({"boe-frankfurter", "boe", "frankfurter", "BOE"}, fetcher, 30);
     REQUIRE(sut.load_universe().has_value());
 
     const auto announce = sut.announcement();
@@ -166,7 +200,7 @@ TEST_CASE("a_rate_against_another_base_than_the_pivot_is_refused", "[domain][sou
         R"([{"date":"2026-10-20","base":"EUR","quote":"USD","rate":1.1612},)"
         R"({"date":"2026-10-21","base":"GBP","quote":"USD","rate":1.3389}])";
     frankfurter_fetcher fetcher(transport, base);
-    source_feed sut({"boe-frankfurter", "boe", "BOE"}, fetcher, 1);
+    source_feed sut({"boe-frankfurter", "boe", "frankfurter", "BOE"}, fetcher, 1);
     REQUIRE(sut.load_universe().has_value());
     sut.demand({{{"iso4217", "USD", "rate"}}});
 
@@ -176,7 +210,7 @@ TEST_CASE("a_rate_against_another_base_than_the_pivot_is_refused", "[domain][sou
 
     REQUIRE(sent_count.value() == 1);
     CHECK(sent.front().value == "1.3389");
-    CHECK(sut.misbased() == 1);
+    CHECK(fetcher.misbased() == 1);
 }
 
 TEST_CASE("a_demanded_currency_with_no_rates_reads_only_the_new_day_next_time",
@@ -189,7 +223,7 @@ TEST_CASE("a_demanded_currency_with_no_rates_reads_only_the_new_day_next_time",
     transport.bodies[base + "/v2/providers/ecb/rates?from=2026-10-21&to=2026-10-22&base=EUR"] =
         "[]";
     frankfurter_fetcher fetcher(transport, base);
-    source_feed sut({"ecb-frankfurter", "ecb", "ECB"}, fetcher, 2);
+    source_feed sut({"ecb-frankfurter", "ecb", "frankfurter", "ECB"}, fetcher, 2);
     REQUIRE(sut.load_universe().has_value());
     sut.demand({{{"iso4217", "CZK", "rate"}}});
     const auto none = [](const ores::marketdata::messaging::adapter_tick&) {
@@ -212,7 +246,7 @@ TEST_CASE("a_publish_that_fails_ends_the_refresh_and_the_next_sends_what_was_not
     transport.bodies[base + "/v2/providers/ecb/rates?from=2026-10-21&to=2026-10-21&base=EUR"] =
         ecb_rates;
     frankfurter_fetcher fetcher(transport, base);
-    source_feed sut({"ecb-frankfurter", "ecb", "ECB"}, fetcher, 2);
+    source_feed sut({"ecb-frankfurter", "ecb", "frankfurter", "ECB"}, fetcher, 2);
     REQUIRE(sut.load_universe().has_value());
     sut.demand({{{"iso4217", "USD", "rate"}}});
 
@@ -229,4 +263,33 @@ TEST_CASE("a_publish_that_fails_ends_the_refresh_and_the_next_sends_what_was_not
                         })
                 .value() == 1);
     CHECK(resent == std::vector<std::string>{"1.1598"});
+}
+
+TEST_CASE("a_source_speaks_the_notation_of_its_fetcher", "[domain][source_feed]") {
+    series_fetcher fetcher;
+    fetcher.published = {{d(21), "RATE_ON", "3.62"}, {d(20), "RATE_ON", "3.61"}};
+    source_feed sut({"on-series", "pub", "series", "PUB"}, fetcher, 5);
+    REQUIRE(sut.load_universe().has_value());
+
+    const auto announce = sut.announcement();
+    REQUIRE(announce.universe.size() == 1);
+    CHECK(announce.universe.front().id_scheme == "series_code");
+    CHECK(announce.universe.front().external_id == "RATE_ON");
+    CHECK(announce.universe.front().field == "value");
+
+    const auto answer =
+        sut.demand({{{"iso4217", "RATE_ON", "rate"}, {"series_code", "RATE_ON", "value"}}});
+    CHECK(answer.accepted.size() == 1);
+    CHECK(answer.rejected.size() == 1);
+
+    std::vector<ores::marketdata::messaging::adapter_tick> sent;
+    REQUIRE(
+        sut.refresh(d(22),
+                    [&](const ores::marketdata::messaging::adapter_tick& t) { sent.push_back(t); })
+            .value() == 2);
+    REQUIRE(sent.size() == 2);
+    CHECK(sent[0].id_scheme == "series_code");
+    CHECK(sent[0].field == "value");
+    CHECK(sent[0].value == "3.61");
+    CHECK(sent[1].value == "3.62");
 }

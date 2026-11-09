@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "config_options_tests.cpp"
     "domain_frankfurter_tests.cpp"
     "main.cpp"
 )

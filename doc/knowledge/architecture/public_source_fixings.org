@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:adapter:fixing:calibration:
 #+created: 2026-10-23
-#+updated: 2026-10-28
+#+updated: 2026-11-09
 
 * Summary
 
@@ -17,8 +17,10 @@ to, and Frankfurter is one: it delivers many publishers' daily rates over one
 endpoint. A *session* is one configured adapter at a supplier, and a *feed* binds
 one publisher to one session and one service — here the =end_of_day= service.
 
-One adapter, the public sources adapter, fetches what the publishers publish and
-sends it as ticks over the adapter contract, as the simulator does. The values
+One process, =ores.marketdata.official=, hosts one specialised adapter for each
+access route: Frankfurter is the first, and each publisher with its own API, such
+as the New York Fed, gets an adapter of its own. Each fetches what its publisher
+publishes and sends it as ticks over the adapter contract, as the simulator does. The values
 are official fixings, so they are durable: the ingest keeps them in a tick class
 of their own, with no age gate and no expiry. When a synthetic feed starts, it
 reads the latest fixing on or before the date of the market clock, so a feed
@@ -70,9 +72,9 @@ value in the supplier's own notation, and a =market_data_mapping= maps it to an
 oresmd item. The mapping belongs to the publisher, because the same value can
 arrive through more than one supplier.
 
-The design is generic. The catalogue is data, so a new publisher is a row and a
-set of vendor ids, not code. A fetcher is code, and one fetcher serves many
-publishers: Frankfurter alone reaches about a hundred publishers. The counts are
+The design is generic. The catalogue is data, so a new publisher on an existing
+route is a row and a set of vendor ids, not code. A new route is a fetcher, and
+one fetcher can serve many publishers: Frankfurter alone reaches about a hundred. The counts are
 in "Coverage at the start".
 
 ** The item is an FX fixing
@@ -128,15 +130,24 @@ rules.
   time of day a provider publishes matters to when the adapter asks, not to
   what the store keeps.
 
-** The public sources adapter
+** The public sources adapters
 
-One service speaks the adapter contract for every public source. It announces,
-answers its demand set, sends a heartbeat, and publishes ticks.
+One process speaks the adapter contract for every public source. It hosts one
+adapter for each access route, and each adapter is specialised: it reads one
+API in one format under one set of terms. Two publishers share an adapter only
+when their API and format are the same, as the Frankfurter providers are.
 
-- *Fetchers.* A fetcher reads one access route. Frankfurter is the first. The
-  US Treasury par curve, SOFR, SONIA and €STR are later fetchers, for the
-  curves. The fetcher takes its transport as an interface, so its tests run on
-  stored responses with no network.
+- *The split.* An adapter is a fetcher, which is the specialised half, and the
+  shared half, which is the same for every publisher. The fetcher names its
+  adapter code and the notation of its ids, reads its publisher's universe, and
+  reads what it published over a window. The shared half announces, answers
+  the demand set, sends a heartbeat, backfills, and publishes ticks. A source
+  names the adapter that reads it, as
+  =<source name>:<provider code>:<adapter code>:<key>=.
+- *Fetchers.* Frankfurter is the first. SOFR from the New York Fed, €STR from
+  the ECB Data Portal, SONIA from the Bank of England and CORRA from the Bank of
+  Canada follow, for the overnight rates. A fetcher takes its transport as an
+  interface, so its tests run on stored responses with no network.
 - *One publisher a request.* The Frankfurter fetcher asks for one provider at a
   time, =/v2/providers/<key>/rates=, and never for the blended rate. Frankfurter
   rebases every provider's rates to the euro unless the request names a base, so
@@ -234,6 +245,9 @@ key.
   publisher is a provider, and the values are durable fixings. The new parts
   are the durable class, the adapter, the provider terms and the reader. DQ
   keeps the canned vintages.
+- *2026-11-09: one adapter for each route.* The overnight rates come from
+  publishers with APIs of their own, so the adapter split into a shared half
+  and one fetcher for each route, all hosted in the one process.
 
 * See also
 

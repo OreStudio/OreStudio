@@ -52,12 +52,14 @@ struct adapter_timing final {
 };
 
 /**
- * @brief Serves each hosted source over the adapter contract.
+ * @brief Serves each hosted source over the adapter contract, through the fetcher of its
+ * adapter.
  *
- * One thread reads each source's universe, announces it, sends its heartbeat and
- * refreshes it: at once after a new demand, and then at the poll interval. A demand set is
- * answered on the bus's own thread from the universe alone, and the loop takes it, so a
- * refresh that waits on Frankfurter never delays a reply.
+ * The process hosts one specialised adapter for each publisher's access route, and each
+ * source names the adapter that reads it. One thread reads each source's universe,
+ * announces it, sends its heartbeat and refreshes it: at once after a new demand, and then
+ * at the poll interval. A demand set is answered on the bus's own thread from the universe
+ * alone, and the loop takes it, so a refresh that waits on a publisher never delays a reply.
  */
 class ORES_MARKETDATA_OFFICIAL_EXPORT official_adapter final {
 private:
@@ -68,9 +70,15 @@ private:
     }
 
 public:
+    /**
+     * @brief Hosts @p sources, each read by the one of @p fetchers whose adapter code it
+     * names.
+     *
+     * @throws std::invalid_argument when a source names an adapter no fetcher serves.
+     */
     official_adapter(ores::nats::service::client& nats,
                      std::vector<domain::hosted_source> sources,
-                     domain::frankfurter_fetcher& fetcher,
+                     const std::vector<domain::fetcher*>& fetchers,
                      int backfill_days,
                      adapter_timing timing);
     ~official_adapter();
@@ -102,7 +110,7 @@ private:
 
     void on_demand(served& s, const ores::nats::message& msg);
     bool announce(served& s);
-    /// Serves one source, and reads Frankfurter only when @p may_refresh; says whether it
+    /// Serves one source, and reads its publisher only when @p may_refresh; says whether it
     /// read it.
     bool serve(served& s, std::chrono::steady_clock::time_point now, bool may_refresh);
     void loop();

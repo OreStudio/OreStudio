@@ -25,6 +25,27 @@ namespace ores #F2F2F2 {
     namespace marketdata #F2F2F2 {
         namespace official #F2F2F2 {
             namespace domain #F2F2F2 {
+                class published_fixing <<struct>> {
+                    +date : year_month_day
+                    +external_id : string
+                    +value : string
+                }
+
+                class hosted_source <<struct>> {
+                    +source_name : string
+                    +provider_code : string
+                    +adapter_code : string
+                    +key : string
+                }
+
+                abstract class fetcher {
+                    +adapter_code() : string_view
+                    +id_scheme() : string_view
+                    +field() : string_view
+                    +universe(string_view key) : expected<vector<string>, string>
+                    +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
+                }
+
                 class published_rate <<struct>> {
                     +date : year_month_day
                     +base : string
@@ -32,15 +53,10 @@ namespace ores #F2F2F2 {
                     +rate : string
                 }
 
-                class hosted_source <<struct>> {
-                    +source_name : string
-                    +provider_code : string
-                    +frankfurter_key : string
-                }
-
                 class frankfurter_fetcher {
-                    +currencies(string_view key) : expected<vector<string>, string>
-                    +rates(string_view key, year_month_day from, year_month_day to) : expected<vector<published_rate>, string>
+                    +provider(string_view key) : expected<provider_universe, string>
+                    +rates(string_view key, string_view pivot, year_month_day from, year_month_day to) : expected<vector<published_rate>, string>
+                    +misbased() : uint64_t
                 }
 
                 class source_feed {
@@ -54,8 +70,10 @@ namespace ores #F2F2F2 {
                     +refresh(year_month_day today, publish_fn) : expected<size_t, string>
                 }
 
+                fetcher <|-- frankfurter_fetcher
                 source_feed --> hosted_source
-                source_feed --> frankfurter_fetcher
+                source_feed --> fetcher
+                fetcher ..> published_fixing
                 frankfurter_fetcher ..> published_rate
             }
 
@@ -72,6 +90,7 @@ namespace ores #F2F2F2 {
 
                 application --> official_adapter
                 official_adapter "1" *-- "many" ores::marketdata::official::domain::source_feed
+                official_adapter "1" o-- "many" ores::marketdata::official::domain::fetcher
             }
         }
     }

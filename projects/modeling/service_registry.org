@@ -634,15 +634,15 @@ hold the permission.
 
 It carries no =account_var=: it reaches nothing but the bus and Frankfurter, and
 the market data service maps and stores what it sends. Each =--source= is a
-source of the official rates catalogue,
+source of the official rates catalogue, named with the adapter that reads it,
 =projects/ores.sql/populate/marketdata/marketdata_official_catalogue_populate.sql=.
 
 ** Extra args
 
-- --source ecb-frankfurter:ecb:ECB
-- --source imf-frankfurter:imf:IMF
-- --source boc-frankfurter:boc:BOC
-- --source tcmb-frankfurter:tcmb:TCMB
+- --source ecb-frankfurter:ecb:frankfurter:ECB
+- --source imf-frankfurter:imf:frankfurter:IMF
+- --source boc-frankfurter:boc:frankfurter:BOC
+- --source tcmb-frankfurter:tcmb:frankfurter:TCMB
 
 * ores.compute.wrapper
 :PROPERTIES:

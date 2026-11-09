@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-SOFR is stored as fixings in the system tenant, with its history, read from the New York Fed through the markets API, =markets.newyorkfed.org/api/rates/secured/sofr=, in JSON. The adapter is specialised: it reads the New York Fed alone, and it supplies only its fetcher, its parser and its settings to the library of [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]].
+SOFR is stored as fixings in the system tenant, with its history, read from the New York Fed through the markets API, =markets.newyorkfed.org/api/rates/secured/sofr=, in JSON. The adapter is specialised: it reads the New York Fed alone, and it supplies only its fetcher and its settings to the shared half of [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]].
 
 * Status
 

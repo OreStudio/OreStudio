@@ -54,7 +54,7 @@ struct options final {
      */
     std::vector<domain::hosted_source> sources;
     /**
-     * @brief The days a source sends when a currency is first demanded.
+     * @brief The days a source sends when an id is first demanded.
      */
     std::uint32_t backfill_days{400};
     /**
@@ -80,8 +80,8 @@ static_assert(::ores::utility::codec::names_every_member<options>(),
 std::ostream& operator<<(std::ostream& s, const options& v);
 
 /**
- * @brief Reads one source as =<source name>:<provider code>:<Frankfurter key>=, such as
- * =ecb-frankfurter:ecb:ECB=.
+ * @brief Reads one source as =<source name>:<provider code>:<adapter code>:<key>=, such as
+ * =ecb-frankfurter:ecb:frankfurter:ECB=.
  */
 std::optional<domain::hosted_source> parse_source(const std::string& text);
 

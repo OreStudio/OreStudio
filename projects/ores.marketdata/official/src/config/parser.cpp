@@ -66,11 +66,11 @@ options_description make_options_description() {
                                "Address of Frankfurter: the hosted service or a team's own")(
         source_arg.c_str(),
         value<std::vector<std::string>>()->composing(),
-        "A source to host, as <source name>:<provider code>:<Frankfurter key>, such as "
-        "ecb-frankfurter:ecb:ECB (repeatable)")(
+        "A source to host, as <source name>:<provider code>:<adapter code>:<key>, such as "
+        "ecb-frankfurter:ecb:frankfurter:ECB (repeatable)")(
         backfill_days_arg.c_str(),
         value<std::uint32_t>()->default_value(400),
-        "Days a source sends when a currency is first demanded")(
+        "Days a source sends when an id is first demanded")(
         poll_minutes_arg.c_str(),
         value<std::uint32_t>()->default_value(60),
         "Minutes between two reads of a source once its demand is served (minimum 1)");
@@ -135,7 +135,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
             auto source = ores::marketdata::official::config::parse_source(text);
             if (!source)
                 BOOST_THROW_EXCEPTION(parser_exception(
-                    "A source is <source name>:<provider code>:<Frankfurter key>, not '" + text +
+                    "A source is <source name>:<provider code>:<adapter code>:<key>, not '" + text +
                     "'."));
             if (std::ranges::any_of(
                     r.sources, [&](const auto& s) { return s.source_name == source->source_name; }))

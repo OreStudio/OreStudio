@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
-#+updated: 2026-10-25
+#+updated: 2026-11-09
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The tick store holds one row for each tick of a source, not one for each routed 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C2C442FA-8A95-46F6-84C3-64AC22DE05EE][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-09                               |
 
 * Acceptance
 
@@ -77,7 +77,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Ticks a provisioned tenant stored on a fresh database | 20792 | =./compass.sh smoke ticks --fresh=, run by =./compass.sh check= | 83a8dc0084 |
+| Marketdata test cases that pass on a recreated database | api 943, core 381, service 208 | =./compass.sh build test_ores.marketdata.{api,core,service}.tests= | 83a8dc0084 |
 
 * Notes
 
@@ -114,5 +115,35 @@ via its "Verifies task" field.
 | 10 | Writer role grants on the dictionary | feed_ingest_loop.cpp | Decline | resolve_all runs as the service role through ctx_, not the writer role. |
 | 11 | Coordinate cache scan | feed_ingest_loop.cpp | Decline | The scan covers the streams of one URI, one for each provider, so it stays short. |
 | 12 | Stream namespace must not change | series_stream.hpp | Accept | Added the note. |
+| 13 | Suites: a party with no right lost its own observation rows | market_observation_repository.cpp | Accept | Found by the service suite. The read now hides only the ticks. Regression test added. |
+| 14 | Suites: the snapshot refused every party with no display right | series_snapshot_reader.cpp | Accept | It now refuses only a party with a derived right alone. |
+| 15 | Suites: tests assumed an empty shared store | tick_test_support.hpp | Accept | A fixed export tick is written only when absent, and the ingest test URIs draw more random characters. |
 
 * Result
+
+The tick store holds one row for each tick of a stream. The stream id is a
+name UUID of the provider code and the series URI. The tick row and the
+coordinate dictionary carry no tenant and no party. A unique key on stream,
+coordinate and time keeps one value for each point, and the writer skips a
+key that it already stored, so the first value wins. Reads check the party's
+subscription. A raw read needs display or non-display. A compute read also
+accepts derived. A party with no right reads its own observation rows and no
+tick.
+
+Acceptance:
+
+- One row for each tick, with no routes read for the store: met. The ingest
+  test of two consumers of one source stores one row.
+- A routed party reads the shared stream, and the tick read tests pass: met.
+  On a recreated database the marketdata suites pass: api 943 test cases,
+  core 381, service 208.
+- A provisioned tenant ticks end to end, proved by the smoke check: met. The
+  ticks-smoke check of compass check provisioned a tenant on a fresh database,
+  and the tenant's routed feeds stored 20792 ticks. See Measurements.
+- The pages describe the shared store: met by
+  [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]
+  and [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]].
+
+Open: the entitled-stream wrapper type and its coverage test (review item 1).
+A party with a derived right alone cannot read a snapshot of its own
+published curve. The write cost of the staged insert is not measured.

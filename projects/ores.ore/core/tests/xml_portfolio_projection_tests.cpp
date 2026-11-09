@@ -2130,7 +2130,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_gr
     CHECK(instrument->legs[1].leg_group == std::optional<std::string>("contingent"));
     CHECK(instrument->legs[1].leg_type_code == "Floating");
     CHECK(instrument->legs[1].payment_frequency_code == "Quarterly");
-    CHECK(instrument->legs[1].floating_index_code == "USD-LIBOR-3M");
+    CHECK(instrument->legs[1].floating_index_code ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
 
     REQUIRE(instrument->leg_amounts.size() == 2);
     CHECK(instrument->leg_amounts[0].leg_number == 1);
@@ -2158,7 +2159,8 @@ TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_gr
     REQUIRE(round->legs.size() == 2);
     CHECK(round->legs[0].leg_group == std::optional<std::string>("independent"));
     CHECK(round->legs[1].leg_group == std::optional<std::string>("contingent"));
-    CHECK(round->legs[1].floating_index_code == "USD-LIBOR-3M");
+    CHECK(round->legs[1].floating_index_code ==
+          "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
     REQUIRE(round->leg_rates.size() == 2);
     CHECK(round->leg_rates[1].value.to_string() == "0.0015");
 }

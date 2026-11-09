@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
@@ -144,15 +145,15 @@ auto credit_instrument_projection_to_ore_date(const std::optional<std::chrono::y
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-auto credit_instrument_projection_text_of(const record_reader& r,
-                                          std::string_view name) -> std::string {
+auto credit_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto credit_instrument_projection_spelling_of(const record_reader& r,
-                                              std::string_view name) -> std::string {
+auto credit_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
@@ -256,7 +257,8 @@ swap_leg credit_instrument_projection_read_leg(const record_reader& leg,
         credit_instrument_projection_spelling_of(leg, "PaymentConvention");
     row.payment_frequency_code = tenor_to_payment_frequency(first_tenor(leg.child("ScheduleData")));
     if (const auto floating = leg.child("FloatingLegData"))
-        row.floating_index_code = credit_instrument_projection_text_of(*floating, "Index");
+        row.floating_index_code =
+            address_of(credit_instrument_projection_text_of(*floating, "Index"));
     row.leg_group = std::string(group);
     stamp(row);
     return row;
@@ -753,7 +755,7 @@ void credit_instrument_projection_write_leg(record_writer& leg,
                 list.append("Rate").set_own_text(rate.value.to_string());
     } else if (row.leg_type_code == "Floating") {
         auto floating = leg.child("FloatingLegData");
-        floating.set_text("Index", row.floating_index_code);
+        floating.set_text("Index", ore_name_of(row.floating_index_code));
         const auto spreads = std::count_if(rates.begin(), rates.end(), [](const auto& rate) {
             return rate.rate_role == "spread";
         });

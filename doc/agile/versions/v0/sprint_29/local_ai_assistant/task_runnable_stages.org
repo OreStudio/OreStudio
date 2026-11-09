@@ -8,7 +8,7 @@
 #+filetags: :agent:mcp:local_ai_assistant:sprint_29:v0:
 #+owner: alexhock
 #+branch: feature/local-ai-assistant
-#+pr: 4498
+#+pr: 4534
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
@@ -102,6 +102,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4534][#4534]] | [agent] Fix review comments from PR #4498 |
 | [[https://github.com/OreStudio/OreStudio/pull/4498][#4498]] | [agent] Add standalone read-only assistant, MCP and evaluation CI |
 
 * Review

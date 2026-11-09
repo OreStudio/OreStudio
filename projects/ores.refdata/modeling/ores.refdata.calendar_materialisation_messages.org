@@ -62,6 +62,16 @@ Calendar to regenerate; absent means every calendar.
 Last year (inclusive) to materialise up to; absent falls back to the
 calendar.materialisation.end_horizon system setting.
 
+*** in_use_only
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+With no calendar_code, build only the calendars a currency or a currency
+pair convention names. A calendar nothing names stays unbuilt until someone
+asks for it.
+
 ** regenerate_calendar_dates_response
 
 *** success

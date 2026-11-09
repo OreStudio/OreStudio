@@ -171,6 +171,21 @@ are one value written twice and both move together.
  */
 #+end_src
 
+** publish_calendar_exceptions_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_calendar_exceptions_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared calendar exceptions.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_calendar_exceptions_from_dq_fn.
+ */
+#+end_src
+
 ** publish_calendar_types_from_dq_request
 :PROPERTIES:
 :subject: refdata.v1.ops.publish_calendar_types_from_dq

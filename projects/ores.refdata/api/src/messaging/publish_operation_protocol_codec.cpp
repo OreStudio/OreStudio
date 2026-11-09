@@ -258,6 +258,32 @@ wire_traits<ores::refdata::messaging::publish_calendar_events_from_dq_request>::
 }
 
 std::string
+wire_traits<ores::refdata::messaging::publish_calendar_exceptions_from_dq_request>::write_json(
+    const ores::refdata::messaging::publish_calendar_exceptions_from_dq_request& v) {
+    return object::write_json(v);
+}
+
+ores::refdata::messaging::publish_calendar_exceptions_from_dq_request
+wire_traits<ores::refdata::messaging::publish_calendar_exceptions_from_dq_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::refdata::messaging::publish_calendar_exceptions_from_dq_request>(
+        text);
+}
+
+std::string
+wire_traits<ores::refdata::messaging::publish_calendar_exceptions_from_dq_request>::write_msgpack(
+    const ores::refdata::messaging::publish_calendar_exceptions_from_dq_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::refdata::messaging::publish_calendar_exceptions_from_dq_request
+wire_traits<ores::refdata::messaging::publish_calendar_exceptions_from_dq_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<
+        ores::refdata::messaging::publish_calendar_exceptions_from_dq_request>(data);
+}
+
+std::string
 wire_traits<ores::refdata::messaging::publish_calendar_types_from_dq_request>::write_json(
     const ores::refdata::messaging::publish_calendar_types_from_dq_request& v) {
     return object::write_json(v);

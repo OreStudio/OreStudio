@@ -33,6 +33,7 @@
 export interface RegenerateCalendarDatesRequest {
     calendar_code: string | null;
     end_year: number | null;
+    in_use_only: boolean;
 }
 
 export interface RegenerateCalendarDatesResponse {

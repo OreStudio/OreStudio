@@ -23,11 +23,14 @@
 #include "ores.refdata.api/domain/calendar_rule.hpp"
 #include "ores.refdata.api/generators/calendar_generator.hpp"
 #include "ores.refdata.api/generators/country_generator.hpp"
+#include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/calendar_exception_repository.hpp"
 #include "ores.refdata.core/repository/calendar_repository.hpp"
 #include "ores.refdata.core/repository/calendar_rule_repository.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
+#include "ores.refdata.core/repository/currency_calendar_repository.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/service/calendar_materialisation_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -377,6 +380,45 @@ TEST_CASE("regenerate_is_extend_only_and_does_not_rewrite_existing_watermark",
     // Extending the horizon further only writes the newly-covered days.
     const auto extended_pass = service.regenerate(cal.code, next_year + std::chrono::years{1});
     CHECK(extended_pass > 0);
+}
+
+TEST_CASE("regenerate_in_use_builds_only_the_calendars_a_currency_names",
+          "[service][calendar_materialisation]") {
+    scoped_database_helper h;
+    ores::refdata::repository::currency_repository ccy_repo;
+    ores::refdata::repository::currency_calendar_repository link_repo(h.context());
+    calendar_repository cal_repo;
+    calendar_date_repository date_repo(h.context());
+    calendar_materialisation_service service(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    service_calendar_materialisation_service_write_zz_country_sentinel(h, gctx);
+
+    auto calendars = generate_synthetic_calendars(2, gctx);
+    for (auto& c : calendars) {
+        c.source = "user";
+        c.is_editable = true;
+    }
+    cal_repo.write(h.context(), calendars);
+    const auto currency = generate_fictional_currencies(1, gctx).front();
+    ccy_repo.write(h.context(), {currency});
+
+    ores::refdata::domain::currency_calendar link;
+    link.tenant_id = h.tenant_id().to_string();
+    link.currency_iso_code = currency.iso_code;
+    link.calendar_code = calendars[0].code;
+    link.modified_by = h.db_user();
+    link.performed_by = h.db_user();
+    link.change_reason_code = "system.test";
+    link.change_commentary = "Synthetic test data";
+    link_repo.write(link);
+
+    const auto today_y = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(
+                                                         std::chrono::system_clock::now())}
+                             .year();
+    CHECK(service.regenerate_in_use(today_y) > 0);
+    CHECK_FALSE(date_repo.read_latest_by_calendar(calendars[0].code).empty());
+    CHECK(date_repo.read_latest_by_calendar(calendars[1].code).empty());
 }
 
 TEST_CASE("regenerate_unknown_calendar_throws", "[service][calendar_materialisation]") {

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-calendar-dates-in-provisioning
+#+pr: 4532
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,25 +26,27 @@ A freshly provisioned tenant has correct business days. Provisioning loads the h
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
 
 - Provisioning Acme on a fresh database leaves TARGET, UnitedStates.Settlement and Japan built with their holidays.
-- 2026-12-25 reads as closed in TARGET and UnitedStates.Settlement, and the unit tests compare each calendar with QuantLib for at least one year.
+- 2026-12-25 reads as closed in TARGET and UnitedStates.Settlement, and the generated holidays come from the QuantLib that ORE prices with.
 - EUR/USD on 2026-11-09 has a spot date of 2026-11-12, because 2026-11-11 is a US holiday.
 - A second provisioning run writes no duplicate dates.
+- Provisioning from ores.shell and from the ores.web wizard leaves the same calendars built.
+- Only calendars a currency or a pair convention names are built. Another calendar builds on demand through Rebuild.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Sprint 24 transcribed only four calendars by hand. The owner chose to generate the rest. =projects/ores.ore/scripts/quantlib_calendars/generate.sh= compiles a small tool against the QuantLib of the ORE vendor package and writes one exception row for each day a calendar differs from a Monday to Friday week. The services keep no runtime dependency on QuantLib.
+
+The rows reach a tenant through the =refdata.calendar_exceptions= dataset in the =base= bundle. The =build_calendars= step, after =publish_bundle=, builds only the calendars a currency or a pair convention names.
 
 * Measurements
 
@@ -58,7 +60,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Generated exception rows | 26,780 across 60 calendars, 2020 to 2060, QuantLib 1.42.1 | =generate.sh= | Working tree on 8b6e8420d7 |
+| Calendars built for Acme by =ores.shell= | 35, 473,025 days, in 192 s | =provision_step build_calendars= in the IAM log, and =ores_refdata_calendar_dates_tbl= | Working tree on 8b6e8420d7 |
+| Calendars built for a tenant by =POST /api/provision-tenant= | 35, 473,025 days, in 177 s | The same | Working tree on 8b6e8420d7 |
+| Closed days of the lunar calendars in 2026 and 2035 | China.SSE 19 and 1, Taiwan 15 and 4, Singapore 11 and 5, Turkey 11 and 5 | =generate.sh= | Working tree on 8b6e8420d7 |
+| Calendar materialisation tests | 8 cases, 2954 assertions, all pass | =ores.refdata.core.tests "[calendar_materialisation]"= | Working tree on 8b6e8420d7 |
+| Provision step tests | 910 and 43 cases, all pass | =ores.iam.api.tests=, =ores.iam.core.tests "[provision_step]"= | Working tree on 8b6e8420d7 |
 
 * Notes
 
@@ -77,12 +84,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4532][#4532]] | [refdata] Build holiday calendars in provisioning |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A doc comment of =publish_bundle_step= sat above the new constant | =tenant_provisioning_handler.hpp= | Fixed | The comment is back above its function. |
+| 2 | The end year 2060 lives in the generator and the step | =generate.sh= | Fixed | The script fails if the two differ. |
+| 3 | An upsert rewrites unchanged rows | =refdata_publish_from_dq_create.sql= | Fixed | Measured on a live tenant: 26,780 new versions before the fix, and none after it, with all 26,780 reported as skipped. |
+| 4 | =ORE_ENGINE= defaults to a personal path | =generate.sh= | Fixed | The script now requires it. |
+| 5 | =replace_all= closes user-authored exceptions | =refdata_publish_from_dq_create.sql= | Declined | Every publish function here defines =replace_all= that way. |
+| 6 | The 600 s client timeout may be tight | =tenant_provisioning_handler.hpp= | Declined | Runs took 177 s and 192 s, and the workflow step's deadline is 1200 s. |
+| 7 | Generated rows could hold duplicates | =refdata_calendar_exceptions_populate.sql= | Declined | Checked: the 26,780 rows hold no duplicate pair. The generator walks each date once. |
+| 8 | State the request's precedence | =ores.refdata.calendar_materialisation_messages.org= | Declined | The field's description already says it applies with no calendar code. |
 
 * Result
+
+A freshly provisioned tenant has correct business days, from either client. The =build_calendars= step built 35 calendars for Acme through =ores.shell= and for a second tenant through the web provision route. EUR/USD on 2026-11-09 now has a spot date of 2026-11-12, because 2026-11-11 is a US holiday, and 2026-12-25 is closed in TARGET and UnitedStates.Settlement.
+
+The holidays are generated from the QuantLib that ORE prices with, so dates and pricing agree. QuantLib's lists of lunar holidays stop, so later years in those calendars miss holidays; the capture tracks it.
+
+A repeat of the build writes nothing, as =regenerate_is_extend_only_and_does_not_rewrite_existing_watermark= holds. A second provisioning of one tenant was not run. The two clients share one route to the server, and the web wizard's own screens were not driven.

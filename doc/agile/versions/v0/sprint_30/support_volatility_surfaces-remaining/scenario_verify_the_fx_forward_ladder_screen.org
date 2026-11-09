@@ -25,7 +25,7 @@ These are readiness conditions. The environment is already in this state. The co
 - Both curves are published at that as-of through the real flow. =henry.jones= raised them with =evidence/fx_forward_ladder_raise.ores=, =mark.reid= approved them with =evidence/fx_forward_ladder_decide.ores=, and =henry.jones= published them with =evidence/fx_forward_ladder_publish.ores=.
 - Only EUR and USD have an Acme funding curve. USD/JPY has no curve on purpose.
 
-Known limit: no calendar holds holiday rules yet, so holidays count as business days. The spot date 2026-11-11 is Veterans Day, and the screen shows it as a normal value date. [[id:E95199BA-2B52-49FD-BEC2-9594B012DC6D][Calendars hold no holiday rules, so value dates ignore holidays]] tracks this. Do not fail this scenario for that date.
+Provisioning now builds holiday calendars, so the figures below predate them. On a fresh environment the spot date is 2026-11-12.
 
 * Scenario Info
 

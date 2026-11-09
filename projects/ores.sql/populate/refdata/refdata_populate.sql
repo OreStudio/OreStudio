@@ -63,6 +63,7 @@
 
 \echo ''
 \echo '--- Calendar Events Seed Data ---'
+\ir ./refdata_calendar_exceptions_seed_populate.sql
 \ir ./refdata_calendar_events_seed_populate.sql
 
 \echo ''

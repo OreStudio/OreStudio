@@ -8,7 +8,7 @@
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-generated-trades-correct
-#+pr:
+#+pr: 4511
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4511][#4511]] | [synthetic] Revise the generated trades story and record what ORE requires of each trade |
 
 * Review
 

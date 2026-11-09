@@ -66,7 +66,7 @@ std::string refusal_in_reply(const std::vector<std::byte>& body) {
 
     const auto decoded = ores::nats::default_wire_codec().decode<reply_body>(body);
     if (!decoded)
-        return "its answer could not be read: " + decoded.error().what();
+        return std::string("its answer could not be read: ") + decoded.error().what();
 
     if (decoded->result.outcome == ores::utility::domain::outcome::ok)
         return {};

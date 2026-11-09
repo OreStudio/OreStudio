@@ -72,7 +72,7 @@ def test_scalars_and_vectors_project():
     assert _ts_type("bool") == "boolean"
     assert _ts_type("std::uint64_t") == "number"
     assert _ts_type("std::vector<std::string>") == "string[]"
-    # tenant_id's rfl reflector writes std::string, so a message-shaped
+    # tenant_id's text_form writes a string, so a message-shaped
     # model that carries the type its C++ domain struct declares projects
     # it rather than tripping the silent-gap guard.
     assert _ts_type("utility::uuid::tenant_id") == "string"
@@ -104,7 +104,7 @@ def test_a_type_with_no_projection_stays_none():
 
 
 def test_a_map_projects_onto_a_record():
-    # rfl::json writes a map as a JSON object, and a JSON object's keys are
+    # The codec writes a map as a JSON object, and a JSON object's keys are
     # strings whatever the C++ key type is, so the Record is always keyed by
     # string and only the value decides the projection.
     assert _ts_type("std::map<std::string, int>") == "Record<string, number>"
@@ -117,7 +117,7 @@ def test_a_map_projects_onto_a_record():
 
 
 def test_a_date_projects_onto_a_string():
-    # A date crosses the wire as the ISO 8601 string its rfl reflector
+    # A date crosses the wire as the ISO 8601 string its text_form
     # writes, the same shape boost::uuids::uuid takes.
     assert _ts_type("std::chrono::year_month_day") == "string"
     assert _ts_type("std::optional<std::chrono::year_month_day>") == "string | null"

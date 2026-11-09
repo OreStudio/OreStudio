@@ -17,14 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cctype>
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <sstream>
 #include <string>
@@ -69,15 +67,15 @@ using ores::workflow::messaging::list_workflow_instance_summaries_request;
 TEST_CASE("the instances list request the web client sends decodes", "[messaging]") {
     const auto bytes = read_hex_fixture("list_workflow_instance_summaries_request.msgpack.hex");
 
-    const auto decoded = rfl::msgpack::read<list_workflow_instance_summaries_request>(
-        std::span<const std::byte>(bytes));
-    REQUIRE(decoded);
+    const auto decoded =
+        ores::utility::codec::wire_traits<list_workflow_instance_summaries_request>::read_msgpack(
+            std::span<const std::byte>(bytes));
 
-    CHECK(decoded->limit == 1000);
-    CHECK(decoded->status_filter.empty());
-    CHECK(decoded->type_filter == "provision_tenant_workflow");
-    CHECK(decoded->target_kind_filter == "tenant");
-    CHECK(decoded->target_id_filter.empty());
-    CHECK(decoded->target_ids_filter ==
+    CHECK(decoded.limit == 1000);
+    CHECK(decoded.status_filter.empty());
+    CHECK(decoded.type_filter == "provision_tenant_workflow");
+    CHECK(decoded.target_kind_filter == "tenant");
+    CHECK(decoded.target_id_filter.empty());
+    CHECK(decoded.target_ids_filter ==
           std::vector<std::string>{"11111111-1111-1111-1111-111111111111"});
 }

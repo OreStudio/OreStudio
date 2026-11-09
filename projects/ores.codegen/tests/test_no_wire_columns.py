@@ -8,7 +8,7 @@ The generated domain type doubles as the wire type, so a column on the
 struct is a field in every response that carries it. A credential column
 must therefore stay readable and writable in C++ while never being
 serialized. The model says so with :no_wire: true, and the domain class
-template wraps the member in rfl::Skip. The TypeScript twin and the
+template keeps the member and the wire codec leaves it out. The TypeScript twin and the
 history field mapper, which render the same struct, must drop it too, or
 the field leaves by a second door.
 """
@@ -82,8 +82,8 @@ PLAIN_ENTITY = ENTITY.replace(
     "")
 
 # A skipped column that is also nullable, which is the shape the account
-# credential's secrets have. It reaches the domain as an rfl::Skip, so the
-# mapper cannot call .empty() on the member itself.
+# credential's secrets have. It reaches the domain as a plain string, so the
+# mapper maps an empty value to an absent column.
 NULLABLE_ENTITY = ENTITY.replace(
     "** secret_hash\n:PROPERTIES:\n:type:     text\n:cpp_type: std::string\n"
     ":no_wire:  true\n:END:",
@@ -111,21 +111,8 @@ def _generate(tmp_path, template, output, body=ENTITY):
 def test_domain_keeps_the_member_and_skips_it_on_the_wire(tmp_path):
     domain = _generate(tmp_path, "cpp_domain_type_class.hpp.mustache", "probe.hpp")
 
-    assert "rfl::Skip<std::string> secret_hash;" in domain
-    assert '#include "ores.utility/rfl/skip_comparison.hpp"' in domain
-    # The plain column is untouched, so the flag cannot have spread to it.
+    assert "std::string secret_hash;" in domain
     assert "std::string label;" in domain
-    assert "rfl::Skip<std::string> label;" not in domain
-
-
-def test_a_model_without_the_flag_emits_no_skip(tmp_path):
-    domain = _generate(
-        tmp_path, "cpp_domain_type_class.hpp.mustache", "probe.hpp",
-        body=PLAIN_ENTITY)
-
-    assert "std::string label;" in domain
-    assert "rfl::Skip" not in domain
-    assert "skip_comparison.hpp" not in domain
 
 
 def test_the_typescript_twin_omits_the_column(tmp_path):
@@ -153,17 +140,13 @@ def test_the_generated_entity_still_carries_the_column(tmp_path):
     assert "secret_hash" in entity
 
 
-def test_a_nullable_skipped_column_is_read_through_get(tmp_path):
-    """rfl::Skip carries the value but declares no member functions, so
-    v.secret_hash.empty() does not compile. The mapper reads the value the
-    skip wraps, which is the column's own value and nothing else."""
+def test_a_nullable_no_wire_column_maps_to_an_optional(tmp_path):
+    """The domain holds a plain string, so the mapper reads it as one."""
     mapper = _generate(
         tmp_path, "cpp_domain_type_mapper.cpp.mustache", "probe_mapper.cpp",
         body=NULLABLE_ENTITY)
 
-    assert "v.secret_hash.get().empty()" in mapper
-    assert "std::optional(v.secret_hash.get())" in mapper
-    assert "v.secret_hash.empty()" not in mapper
+    assert "v.secret_hash.empty()" in mapper
+    assert "std::optional(v.secret_hash)" in mapper
     # The plain column is untouched, so the read cannot have spread to it.
     assert "r.label = v.label;" in mapper
-    assert "label.get()" not in mapper

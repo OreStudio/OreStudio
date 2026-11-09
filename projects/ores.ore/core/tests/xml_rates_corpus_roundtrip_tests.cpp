@@ -47,7 +47,6 @@
 #include "ores.trading.api/domain/swap_leg_rate_json_io.hpp"
 #include "ores.trading.api/domain/swaption_instrument_json_io.hpp"
 #include "ores.trading.api/domain/vanilla_swap_instrument_json_io.hpp"
-#include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "test_helpers.hpp"
 #include <boost/uuid/string_generator.hpp>

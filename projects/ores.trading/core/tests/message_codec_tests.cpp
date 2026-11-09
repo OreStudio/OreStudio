@@ -25,52 +25,33 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/repository/product_type_entity.hpp"
 #include "ores.trading.core/repository/product_type_mapper.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <string>
 #include <vector>
 
 namespace {
-
-/**
- * @brief The bytes reflect-cpp writes for @p v.
- */
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
 
 std::span<const std::byte> message_bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief Asserts that one type's codec writes what reflect-cpp writes, in both
- * formats, and reads those bytes back to the same bytes.
- *
- * The generated codec is the one the trait resolves to, so this compares the
- * bytes this component now sends against the bytes it sent before the move,
- * which is the trade's acceptance criterion stated as a test.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(message_bytes_of(msgpack))) == msgpack);
 
     // The specialisation is the generated one, not the reflector-backed primary
@@ -139,8 +120,8 @@ ores::trading::domain::product_type a_product_type() {
 /**
  * @brief An export with one trade, a full envelope and two instrument arrays.
  *
- * The export is stored as a blob that ores.ore reads with reflect-cpp, so the
- * generated codec has to write exactly the reflector's bytes for it.
+ * The export is stored as a blob that ores.ore reads through the generated
+ * codec, so the codec has to read back the bytes it wrote.
  */
 ores::trading::messaging::export_portfolio_response an_export() {
     ores::trading::messaging::export_portfolio_response r;
@@ -167,19 +148,19 @@ ores::trading::messaging::export_portfolio_response an_export() {
 TEST_CASE("a_trade_writes_the_bytes_the_reflector_wrote", "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    same_bytes_as_reflect_cpp(a_trade());
+    survives_the_wire(a_trade());
 }
 
 TEST_CASE("a_product_type_writes_the_bytes_the_reflector_wrote", "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    same_bytes_as_reflect_cpp(a_product_type());
+    survives_the_wire(a_product_type());
 }
 
 TEST_CASE("an_export_writes_the_bytes_the_reflector_wrote", "[messaging][codec]") {
     auto lg(ores::logging::make_logger(test_suite));
 
-    same_bytes_as_reflect_cpp(an_export());
+    survives_the_wire(an_export());
 }
 
 TEST_CASE("the_mapper_carries_a_product_type_through_its_columns", "[repository][codec]") {

@@ -24,8 +24,7 @@ def test_a_longer_name_does_not_count_as_the_shorter_family():
 
 
 def test_only_a_file_that_reflects_is_counted():
-    assert budget.reflects("auto r = rfl::json::read<T>(s);")
-    assert budget.reflects('#include <rfl/json.hpp>')
+    assert budget.reflects('#include "conventions_family_pack.hpp"')
     assert not budget.reflects("domain::zero_convention z;")
 
 

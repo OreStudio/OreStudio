@@ -69,13 +69,10 @@
 #include "ores.dq.api/generators/subject_area_generator.hpp"
 #include "ores.dq.api/generators/treatment_dimension_generator.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 #include <string_view>
@@ -85,45 +82,23 @@ namespace {
 using ores::utility::generation::generation_context;
 
 /**
- * @brief The bytes reflect-cpp writes for @p v, which is what the generated
- * codec has to reproduce.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
-/**
- * @brief Asserts that one type's codec writes what reflect-cpp writes, in both
- * formats, and reads those bytes back to what reflect-cpp reads.
- *
- * The reader is compared with reflect-cpp's reader rather than with the value
- * the encoding started from, because the wire states an instant to the
- * microsecond and a generator hands out finer ones: what survives a round trip
- * is the wire's own resolution, and both readers agree on it or one of them is
- * wrong about the format.
- *
- * The codec is named as a template argument rather than built into the helper
- * so that a type's case is one line, and the list of lines below is the list of
- * types: a type with no case here is a type whose codec nothing compares.
- */
-template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
-    CHECK(codec::read_json(json) == rfl::json::read<T>(json).value());
+    // The wire states an instant to the microsecond and a generator hands out
+    // finer ones, so the comparison is at the wire's own resolution.
+    CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
-    CHECK(codec::read_msgpack(std::span<const std::byte>(
-              reinterpret_cast<const std::byte*>(msgpack.data()), msgpack.size())) ==
-          rfl::msgpack::read<T>(std::span<const char>(msgpack.data(), msgpack.size())).value());
+    CHECK(codec::write_msgpack(codec::read_msgpack(std::span<const std::byte>(
+              reinterpret_cast<const std::byte*>(msgpack.data()), msgpack.size()))) == msgpack);
 
-    // The seam resolved to this type's specialisation rather than falling
-    // through to reflect-cpp, which is what the bytes alone cannot say.
+    // The seam resolved to this type's specialisation, which is what the
+    // bytes alone cannot say.
     CHECK(codec::is_generated);
 }
 
@@ -146,36 +121,35 @@ ores::dq::domain::dataset_dependency a_dataset_dependency() {
 
 }
 
-TEST_CASE("every generated codec writes what reflect-cpp writes", "[codec]") {
+TEST_CASE("every generated codec writes what the wire carries", "[codec]") {
     generation_context ctx(20261029);
 
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_artefact_type(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_badge_definition(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_badge_mapping(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_badge_severity(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_catalog(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_change_reason_category(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_change_reason(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_code_domain(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::dq::generators::generate_synthetic_coding_scheme_authority_type(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_coding_scheme(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_data_domain(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_dataset_bundle(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_dataset_bundle_member(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_dataset(ctx));
-    same_bytes_as_reflect_cpp(a_dataset_dependency());
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_fsm_state(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_fsm_transition(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_lei_bic(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_lei_entity(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_lei_relationship(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_methodology(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_nature_dimension(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_origin_dimension(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_publication(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_subject_area(ctx));
-    same_bytes_as_reflect_cpp(ores::dq::generators::generate_synthetic_treatment_dimension(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_artefact_type(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_badge_definition(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_badge_mapping(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_badge_severity(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_catalog(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_change_reason_category(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_change_reason(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_code_domain(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_coding_scheme_authority_type(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_coding_scheme(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_data_domain(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_dataset_bundle(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_dataset_bundle_member(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_dataset(ctx));
+    survives_the_wire(a_dataset_dependency());
+    survives_the_wire(ores::dq::generators::generate_synthetic_fsm_state(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_fsm_transition(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_lei_bic(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_lei_entity(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_lei_relationship(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_methodology(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_nature_dimension(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_origin_dimension(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_publication(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_subject_area(ctx));
+    survives_the_wire(ores::dq::generators::generate_synthetic_treatment_dimension(ctx));
 }
 
 TEST_CASE("the wire codec sends a dq type through its generated codec", "[codec][wire_codec]") {

@@ -37,7 +37,7 @@ namespace ores::nats::service {
  *
  * The shared primitive behind both ores::qt::ClientManager's and
  * ores.shell's request helpers: previously each had its own
- * hard-coded rfl::json::write/read pair (ClientManager's inline, and
+ * hard-coded write and read pair (ClientManager's inline, and
  * copy-pasted independently into ~13 ores.shell command files).
  * Exceptions from the transport (nats_connect_error,
  * session_expired_error, etc.) propagate uncaught -- callers with
@@ -46,7 +46,7 @@ namespace ores::nats::service {
  * ores.shell) wrap this in their own try/catch.
  */
 template <typename Response, typename Request>
-rfl::Result<Response>
+decoded<Response>
 request_and_decode(nats_client& session, std::string_view subject, const Request& req) {
     const auto& codec = default_wire_codec();
     const auto bytes = codec.encode(req);
@@ -61,7 +61,7 @@ request_and_decode(nats_client& session, std::string_view subject, const Request
  * request (Bearer token from @p session) with an optional @p timeout.
  */
 template <typename Response, typename Request>
-rfl::Result<Response>
+decoded<Response>
 authenticated_request_and_decode(nats_client& session,
                                  std::string_view subject,
                                  const Request& req,
@@ -81,7 +81,7 @@ authenticated_request_and_decode(nats_client& session,
  * provision_commands.cpp wizard call sites already used.
  */
 template <typename Request>
-rfl::Result<typename Request::response_type>
+decoded<typename Request::response_type>
 request_and_decode(nats_client& session,
                    const Request& req,
                    std::chrono::milliseconds timeout = default_request_timeout,

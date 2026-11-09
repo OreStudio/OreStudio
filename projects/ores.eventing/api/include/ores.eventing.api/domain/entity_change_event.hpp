@@ -21,7 +21,9 @@
 #define ORES_EVENTING_API_DOMAIN_ENTITY_CHANGE_EVENT_HPP
 
 #include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
 #include <string>
 #include <tuple>
@@ -78,5 +80,9 @@ static_assert(::ores::utility::codec::names_every_member<entity_change_event>(),
               "entity_change_event gained a member its wire_fields does not name.");
 
 }
+
+template <>
+struct ores::utility::codec::wire_traits<ores::eventing::domain::entity_change_event>
+    : ores::utility::codec::shaped_wire_traits<ores::eventing::domain::entity_change_event> {};
 
 #endif

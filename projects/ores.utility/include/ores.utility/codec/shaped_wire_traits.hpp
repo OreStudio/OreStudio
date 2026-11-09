@@ -33,7 +33,7 @@ namespace ores::utility::codec {
  *
  * A generated type gets its traits from its codec header. A hand-written type
  * that crosses the wire opts in with one line, so a carrier encodes it through
- * the codec rather than the reflect-cpp fallback:
+ * the codec:
  *
  * @code
  * template <>

@@ -9,8 +9,8 @@ each source file in the scopes below, the distinct convention family value
 types the file names while it reflects, and fails when a file names more than
 its budget.
 
-A file reflects when it includes an ``rfl`` header, calls ``rfl::`` or includes one
-of the project headers that reflect on its behalf. Headers are measured as well
+A file reflects when it includes one of the project headers that reflect on
+its behalf. Headers are measured as well
 as sources, because an inline template reflects wherever it is included. The
 families are the registry's: the check reads the value types out of the
 generated registry header, so a family added to the modelling tree joins the
@@ -51,7 +51,7 @@ SUFFIXES = (".cpp", ".hpp", ".inc")
 BUDGET = 1
 
 # Project headers whose templates reflect the type a unit hands them, so the
-# unit reflects although it never names an ``rfl`` header itself.
+# unit reflects.
 REFLECTING_HEADERS = ("conventions_family_pack.hpp",)
 
 # Files over the budget, with the ceiling each holds and why.
@@ -83,8 +83,7 @@ def family_types(root: Path = ROOT) -> list[str]:
 
 
 def reflects(text: str) -> bool:
-    return ("rfl::" in text or "<rfl/" in text or
-            any(f'"{header}"' in text for header in REFLECTING_HEADERS))
+    return any(f'"{header}"' in text for header in REFLECTING_HEADERS)
 
 
 def families_named(text: str, types: list[str]) -> set[str]:

@@ -24,12 +24,11 @@
 #include "ores.http.api/export.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/codec/json_schema.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <cstdint>
 #include <functional>
 #include <memory>
 #include <optional>
-#include <rfl/json.hpp>
 #include <vector>
 
 namespace ores::http::net {

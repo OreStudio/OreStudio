@@ -35,20 +35,17 @@ a time by enabling the facet in the entity's own =:PROPERTIES:= drawer with
 The opt-in is per entity rather than per component because the codec states
 every member of the type, and a member whose type has no carrier cannot be
 encoded. A component joins as its models are covered, which is the same order
-the story that introduced this facet states: one component at a time, with
-reflect-cpp kept underneath the whole estate until the last one has moved.
+the story that introduced this facet states: one component at a time.
 
 * Mustache incantations
 
 The field list repeats the member order =cpp_domain_type_class.hpp.mustache=
 declares, and it has to: the JSON is a list of members in declaration order, so
 a list that disagreed with the struct would encode a different object. The
-repetition is deliberate and is guarded by the per-type byte comparison, which
-fails the moment the two orders part -- one test per type, in both formats,
-against what reflect-cpp writes for the same value.
+repetition is deliberate and is guarded by the per-type round trip, which
+fails the moment the two orders part -- one test per type, in both formats.
 
-A member the model marks =:no_wire:= is absent from the field list, which is
-what =rfl::Skip= does for the reflector this replaces.
+A member the model marks =:no_wire:= is absent from the field list.
 
 * Archetypes
 
@@ -64,4 +61,4 @@ what =rfl::Skip= does for the reflector this replaces.
 
 - [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.
 - [[id:6D061F78-B9C2-461A-87A8-CCD65F73BA5F][ores.cpp.domain.json_io_header]] — the streaming form of the same type, which
-  this facet does not replace: the two coexist until the reflector is deleted.
+  this facet does not replace.

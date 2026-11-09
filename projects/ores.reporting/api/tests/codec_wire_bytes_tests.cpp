@@ -112,12 +112,9 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -125,121 +122,92 @@ namespace {
 
 const std::string codec_tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
 template <typename... T>
 void every_default_has_the_same_bytes() {
-    (same_bytes_as_reflect_cpp(T{}), ...);
+    (survives_the_wire(T{}), ...);
 }
 
 }
 
-TEST_CASE("every reporting domain type has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every reporting domain type has its wire form", codec_tags) {
     ores::utility::generation::generation_context ctx(20261102);
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_analytic_type(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_concurrency_policy(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_configuration(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_configuration_analytic(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::reporting::generators::generate_synthetic_analytic_type(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_concurrency_policy(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_configuration(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_configuration_analytic(ctx));
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_configuration_analytic_parameter(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_configuration_market_binding(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_configuration_parameter(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_configuration_type(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_cut(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_cut_approval_detail(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_cut_family(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_cut_gap(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_cut_kind(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_cut_resolution_rule(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_engine_settings(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::reporting::generators::generate_synthetic_configuration_parameter(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_configuration_type(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_cut(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_cut_approval_detail(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_cut_family(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_cut_gap(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_cut_kind(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_cut_resolution_rule(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_engine_settings(ctx));
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_engine_settings_building(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_engine_settings_change(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::reporting::generators::generate_synthetic_engine_settings_change(ctx));
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_engine_settings_execution(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_engine_settings_fixings(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_engine_settings_group(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::reporting::generators::generate_synthetic_engine_settings_fixings(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_engine_settings_group(ctx));
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_engine_settings_group_setting(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_file_type(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_ore_file(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_ore_file_version(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_ore_file_category(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_ore_parameter(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::reporting::generators::generate_synthetic_file_type(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_file(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_file_version(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_file_category(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_parameter(ctx));
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_ore_parameter_setting_value_set(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_ore_parameter_value_domain(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_ore_parameter_value_set(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::reporting::generators::generate_synthetic_ore_parameter_value_set(ctx));
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_ore_parameter_value_set_catalogue(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_ore_parameter_value_set_value(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_report_cashflow(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_report_configuration(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_report_definition(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_report_error_event(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_report_error_scope(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_report_instance(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_report_instance_kind(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_report_metric(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_report_trigger_event(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_report_trigger_type(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_report_type(ctx));
-    same_bytes_as_reflect_cpp(
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_cashflow(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_configuration(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_definition(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_error_event(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_error_scope(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_instance(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_instance_kind(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_metric(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_trigger_event(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_trigger_type(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_report_type(ctx));
+    survives_the_wire(
         ores::reporting::generators::generate_synthetic_report_type_configuration_type(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::reporting::generators::generate_synthetic_risk_report_config(ctx));
-    same_bytes_as_reflect_cpp(ores::reporting::generators::generate_synthetic_run_result(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_risk_report_config(ctx));
+    survives_the_wire(ores::reporting::generators::generate_synthetic_run_result(ctx));
 }
 
-TEST_CASE("every reporting operation message's default has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every reporting operation message's default has its wire form", codec_tags) {
     using namespace ores::reporting::messaging;
     every_default_has_the_same_bytes<engine_settings_value_change,
                                      engine_settings_change_line,
@@ -314,12 +282,10 @@ TEST_CASE("every reporting operation message's default has reflect-cpp's bytes",
                                      delete_run_document_response>();
 }
 
-TEST_CASE("a report definition template has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("a report definition template has its wire form", codec_tags) {
     namespace object = ores::utility::codec::object;
     const ores::reporting::domain::report_definition_template t{
         "Daily risk", "End of day", "risk", "0 18 * * 1-5", "skip", 3};
-    CHECK(object::write_json(t) == rfl::json::write(t));
-    CHECK(object::write_msgpack(t) == their_msgpack(t));
     CHECK(object::write_json(object::read_json<ores::reporting::domain::report_definition_template>(
               object::write_json(t))) == object::write_json(t));
 }

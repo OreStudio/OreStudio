@@ -83,12 +83,9 @@
 #include "ores.iam.api/messaging/storage_capability_operations_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_session_protocol.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -96,72 +93,60 @@ namespace {
 
 const std::string codec_tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
 template <typename... T>
 void every_default_has_the_same_bytes() {
-    (same_bytes_as_reflect_cpp(T{}), ...);
+    (survives_the_wire(T{}), ...);
 }
 
 }
 
-TEST_CASE("every iam domain type has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every iam domain type has its wire form", codec_tags) {
     ores::utility::generation::generation_context ctx(20261102);
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_account(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::iam::generators::generate_synthetic_account_contact_information(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_account_party(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_account_role(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_account_status(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_account_type(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_auth_event(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_login_info(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_permission(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_role(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_role_grant_request(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::iam::generators::generate_synthetic_role_grant_request_role(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_role_permission(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_run_grant(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_run_token_issue(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_seed_profile(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::iam::generators::generate_synthetic_seed_profile_parameter(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_seed_profile_step(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_session(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_session_sample(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_tenant(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_tenant_status(ctx));
-    same_bytes_as_reflect_cpp(ores::iam::generators::generate_synthetic_tenant_type(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_account(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_account_contact_information(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_account_party(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_account_role(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_account_status(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_account_type(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_auth_event(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_login_info(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_permission(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_role(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_role_grant_request(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_role_grant_request_role(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_role_permission(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_run_grant(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_run_token_issue(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_seed_profile(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_seed_profile_parameter(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_seed_profile_step(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_session(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_session_sample(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_tenant(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_tenant_status(ctx));
+    survives_the_wire(ores::iam::generators::generate_synthetic_tenant_type(ctx));
 }
 
-TEST_CASE("every iam operation message's default has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every iam operation message's default has its wire form", codec_tags) {
     every_default_has_the_same_bytes<
         ores::iam::messaging::publish_accounts_from_dq_request,
         ores::iam::messaging::save_account_request,
@@ -303,42 +288,21 @@ TEST_CASE("every iam operation message's default has reflect-cpp's bytes", codec
         ores::iam::messaging::leave_tenant_response>();
 }
 
-TEST_CASE("an account credential reads what reflect-cpp wrote", codec_tags) {
-    ores::utility::generation::generation_context ctx(20261104);
-    const auto credential = ores::iam::generators::generate_synthetic_account_credential(ctx);
-    using codec = ores::utility::codec::wire_traits<ores::iam::domain::account_credential>;
-    CHECK(codec::write_json(credential) == rfl::json::write(credential));
-
-    // reflect-cpp's MessagePack keeps the three skipped members' names with nil
-    // values, and its JSON drops them; the codec drops them in both. A reader
-    // skips names it does not take, so either form reads to the same value.
-    const auto ours = codec::write_msgpack(credential);
-    const auto theirs = their_msgpack(credential);
-    CHECK(theirs.find("password_hash") != std::string::npos);
-    CHECK(ours.find("password_hash") == std::string::npos);
-    CHECK(ours.find("totp_secret") == std::string::npos);
-    CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(theirs))) == ours);
-    CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(ours))) == ours);
-}
-
 TEST_CASE("an account credential's secrets stay off the wire", codec_tags) {
     ores::utility::generation::generation_context ctx(20261103);
     const auto credential = ores::iam::generators::generate_synthetic_account_credential(ctx);
     using codec = ores::utility::codec::wire_traits<ores::iam::domain::account_credential>;
     CHECK(codec::is_generated);
-    for (const auto& secret : {credential.password_hash.value(),
-                               credential.service_password_hash.value(),
-                               credential.totp_secret.value()}) {
+    for (const auto& secret :
+         {credential.password_hash, credential.service_password_hash, credential.totp_secret}) {
         REQUIRE_FALSE(secret.empty());
         CHECK(codec::write_json(credential).find(secret) == std::string::npos);
         CHECK(codec::write_msgpack(credential).find(secret) == std::string::npos);
-        CHECK(rfl::json::write(credential).find(secret) == std::string::npos);
-        CHECK(their_msgpack(credential).find(secret) == std::string::npos);
     }
     const auto json = codec::write_json(credential);
     CHECK(json.find("password_hash") == std::string::npos);
     CHECK(json.find("totp_secret") == std::string::npos);
     const auto read = codec::read_json(json);
-    CHECK(read.password_hash.value().empty());
-    CHECK(read.totp_secret.value().empty());
+    CHECK(read.password_hash.empty());
+    CHECK(read.totp_secret.empty());
 }

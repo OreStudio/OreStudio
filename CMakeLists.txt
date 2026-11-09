@@ -392,14 +392,13 @@ if(WIN32)
     # conflicts with WinSock2.h pulled in by Boost.ASIO (socket_types.hpp).
     add_compile_definitions(WIN32_LEAN_AND_MEAN)
     # Keep Windows.h from defining min and max as function-like macros. A unity
-    # unit that includes Windows.h before reflect-cpp makes
-    # std::numeric_limits<T>::max() expand as a macro call with no arguments,
-    # which fails the build inside rfl's own headers.
+    # unit that includes Windows.h makes std::numeric_limits<T>::max() expand
+    # as a macro call with no arguments.
     add_compile_definitions(NOMINMAX)
     if(MSVC)
         # Allow object files with more than 65535 addressable sections.
         # Required by large translation units (e.g. registrar.cpp with many
-        # template instantiations from rfl and Boost headers).
+        # template instantiations from Boost headers).
         add_compile_options(/bigobj)
     endif()
 endif()
@@ -442,7 +441,6 @@ target_link_libraries(ores.openssl_cleanup INTERFACE OpenSSL::Crypto)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)
-find_package(reflectcpp CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
 # libpq, through the PostgreSQL::PostgreSQL imported target

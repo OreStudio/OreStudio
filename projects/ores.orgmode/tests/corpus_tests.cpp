@@ -22,7 +22,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
-#include <rfl/json.hpp>
 #include <vector>
 
 namespace {
@@ -69,29 +68,18 @@ TEST_CASE("every .org doc in the repo parses without crashing, and dumps to JSON
     // list or a moved repo root is caught immediately.
     REQUIRE(files.size() > 100);
 
-    const fs::path out_dir = fs::path(ORES_TEST_OUTPUT_DIR) / "orgmode_corpus_json";
-    fs::create_directories(out_dir);
-
     std::vector<std::string> failures;
     std::size_t parsed = 0;
     for (const auto& file : files) {
         try {
-            const auto doc = ores::orgmode::parser::parse_file(file);
-            const auto json = rfl::json::write(doc);
-
-            auto rel = fs::relative(file, repo_root).string();
-            std::replace(rel.begin(), rel.end(), '/', '_');
-            std::ofstream out(out_dir / (rel + ".json"));
-            out << json;
-
+            ores::orgmode::parser::parse_file(file);
             ++parsed;
         } catch (const std::exception& e) {
             failures.push_back(file.string() + ": " + e.what());
         }
     }
 
-    INFO("Parsed " << parsed << "/" << files.size() << " files. JSON written to "
-                   << out_dir.string());
+    INFO("Parsed " << parsed << "/" << files.size() << " files.");
     if (!failures.empty()) {
         std::string msg = std::to_string(failures.size()) + " file(s) failed to parse:\n";
         for (const auto& f : failures)

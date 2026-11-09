@@ -21,6 +21,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.testing/database_helper.hpp"
+#include "ores.utility/codec/shaped_wire_traits.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "test_suite.hpp"
@@ -40,6 +41,11 @@ struct payload {
     std::string name;
     int count = 0;
 };
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<payload>) {
+    return std::tuple{ores::utility::codec::field{"name", &payload::name},
+                      ores::utility::codec::field{"count", &payload::count}};
+}
 
 // A domain object of the shape stamp() writes to.
 struct record {
@@ -75,6 +81,10 @@ constexpr auto wire_fields(std::type_identity<document>) {
 }
 
 using namespace ores::service::messaging;
+
+template <>
+struct ores::utility::codec::wire_traits<payload>
+    : ores::utility::codec::shaped_wire_traits<payload> {};
 
 TEST_CASE("has_permission accepts an exact match and refuses an unrelated permission",
           "[handler_helpers]") {

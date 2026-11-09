@@ -28,51 +28,33 @@
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.core/repository/currency_entity.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <sstream>
 #include <string>
 #include <yyjson.h>
 
 namespace {
 
-/**
- * @brief The bytes reflect-cpp writes for @p v.
- */
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> message_bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief Asserts that one type's codec writes what reflect-cpp writes, in both
- * formats, and reads those bytes back to the same bytes.
- *
- * The generated codec is the one the trait resolves to, so this compares the
- * bytes this component now sends against the bytes it sent before the move.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(message_bytes_of(msgpack))) == msgpack);
 
     // The specialisation is the generated one, not the reflector-backed
@@ -129,29 +111,29 @@ ores::refdata::messaging::currency_write a_currency_write() {
 
 }
 
-TEST_CASE("a refdata row codec writes what reflect-cpp writes", "[codec][refdata]") {
-    same_bytes_as_reflect_cpp(a_currency());
+TEST_CASE("a refdata row codec writes what the wire carries", "[codec][refdata]") {
+    survives_the_wire(a_currency());
 }
 
-TEST_CASE("every generated refdata message codec writes what reflect-cpp writes",
+TEST_CASE("every generated refdata message codec writes what the wire carries",
           "[codec][refdata][message]") {
     using namespace ores::refdata::messaging;
 
-    same_bytes_as_reflect_cpp(currency_key{"GBP"});
+    survives_the_wire(currency_key{"GBP"});
 
     // One write with both optionals stated and one with neither, because the
     // two formats disagree about an absent value: JSON omits the member and
     // MessagePack writes nil.
-    same_bytes_as_reflect_cpp(a_currency_write());
+    survives_the_wire(a_currency_write());
 
     auto bare = a_currency_write();
     bare.ore_currency_type = "Fiat";
     bare.image_id = boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
-    same_bytes_as_reflect_cpp(bare);
+    survives_the_wire(bare);
 
-    same_bytes_as_reflect_cpp(currency_removal{currency_key{"GBP"}});
+    survives_the_wire(currency_removal{currency_key{"GBP"}});
 
-    same_bytes_as_reflect_cpp(currency_event{
+    survives_the_wire(currency_event{
         boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301"),
         currency_key{"GBP"},
         "written",
@@ -161,24 +143,22 @@ TEST_CASE("every generated refdata message codec writes what reflect-cpp writes"
 
     // A response holding the row proves the message recurses into the row's
     // codec rather than into a shape of its own.
-    same_bytes_as_reflect_cpp(get_currency_response{
+    survives_the_wire(get_currency_response{
         ores::utility::domain::result{ores::utility::domain::outcome::ok, "", "", {}},
         a_currency()});
 
-    same_bytes_as_reflect_cpp(list_currencies_response{
+    survives_the_wire(list_currencies_response{
         ores::utility::domain::result{ores::utility::domain::outcome::ok, "", "", {}},
         {a_currency()},
         1});
 
-    same_bytes_as_reflect_cpp(
-        currencies_filter{std::vector<std::string>{"GBP", "EUR"}, std::nullopt});
+    survives_the_wire(currencies_filter{std::vector<std::string>{"GBP", "EUR"}, std::nullopt});
 
-    same_bytes_as_reflect_cpp(
-        list_currencies_request{0,
-                                100,
-                                ores::utility::domain::order{"iso_code", false},
-                                currencies_filter{std::nullopt, std::nullopt},
-                                std::nullopt});
+    survives_the_wire(list_currencies_request{0,
+                                              100,
+                                              ores::utility::domain::order{"iso_code", false},
+                                              currencies_filter{std::nullopt, std::nullopt},
+                                              std::nullopt});
 }
 
 TEST_CASE("a refdata field group states its shape, so its holder recurses", "[codec][refdata]") {
@@ -186,9 +166,6 @@ TEST_CASE("a refdata field group states its shape, so its holder recurses", "[co
     group.id = boost::uuids::string_generator{}("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
     group.party_id = boost::uuids::string_generator{}("5c9d4a3b-2e1f-4a6b-8c7d-9e0f1a2b3c4d");
     group.kind_code = "OIS";
-
-    CHECK(ores::utility::codec::json::write(group) == rfl::json::write(group));
-    CHECK(ores::utility::codec::msgpack::write(group) == their_msgpack(group));
 }
 
 TEST_CASE("the wire codec sends a refdata message through its generated codec",
@@ -246,18 +223,18 @@ TEST_CASE("a generated event header converts a notification without the reflecto
     CHECK(unreadable.action == "written");
 }
 
-TEST_CASE("a printed row is the JSON the reflector prints", "[codec][refdata]") {
+TEST_CASE("a printed row is its wire JSON", "[codec][refdata]") {
     // The json_io unit prints a row for a log; the codec writes it, so the two
     // must agree or the log changes shape.
     const auto c = a_currency();
     std::ostringstream printed;
     printed << c;
-    CHECK(printed.str() == rfl::json::write(c));
+    CHECK(printed.str() == ores::utility::codec::json::write(c));
 }
 
-TEST_CASE("a printed storage row carries what the reflector prints", "[codec][refdata][storage]") {
+TEST_CASE("a printed storage row carries its members", "[codec][refdata][storage]") {
     // The repository logs the row it maps, and the row prints from its column
-    // list, so the log has to say what the reflector said.
+    // list, so the log has to name each stated member.
     auto row = ores::refdata::repository::currency_entity{};
     row.iso_code = "GBP";
     row.name = "Pound Sterling";
@@ -271,15 +248,11 @@ TEST_CASE("a printed storage row carries what the reflector prints", "[codec][re
     row.ore_currency_type = "Fiat";
 
     const auto printed = ores::database::query_builder::write_json(row);
-    const auto reflected = rfl::json::write(row);
 
     INFO(printed);
-    INFO(reflected);
-    auto* mine = yyjson_read(printed.data(), printed.size(), 0);
-    auto* theirs = yyjson_read(reflected.data(), reflected.size(), 0);
-    REQUIRE(mine != nullptr);
-    REQUIRE(theirs != nullptr);
-    CHECK(yyjson_equals(yyjson_doc_get_root(mine), yyjson_doc_get_root(theirs)));
-    yyjson_doc_free(mine);
-    yyjson_doc_free(theirs);
+    CHECK(printed.contains("\"iso_code\":\"GBP\""));
+    CHECK(printed.contains("\"name\":\"Pound Sterling\""));
+    CHECK(printed.contains("\"version\":3"));
+    CHECK(printed.contains("\"ore_currency_type\":\"Fiat\""));
+    CHECK_FALSE(printed.contains("\"valid_from\":null"));
 }

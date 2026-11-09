@@ -46,11 +46,10 @@ TEST_CASE("credential_domain_carries_every_secret", "[domain]") {
     BOOST_LOG_SEV(lg, info) << "Credential: " << sut;
 
     CHECK(sut.account_id == account_id);
-    CHECK(sut.password_hash.value() ==
-          "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
-    CHECK(sut.service_password_hash.value() ==
+    CHECK(sut.password_hash == "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8");
+    CHECK(sut.service_password_hash ==
           "6b3a55e0261b0304143f805a24924d0c1c44524821305f31d9277843b8a1f10f");
-    CHECK(sut.totp_secret.value() == "JBSWY3DPEHPK3PXP");
+    CHECK(sut.totp_secret == "JBSWY3DPEHPK3PXP");
 }
 
 TEST_CASE("credential_serialisation_carries_no_secret", "[domain]") {
@@ -102,7 +101,7 @@ TEST_CASE("credential_convert_multiple_to_json_carries_no_secret", "[domain]") {
         const auto json = os.str();
 
         CHECK(!json.empty());
-        CHECK(json.find(acc.password_hash.value()) == std::string::npos);
+        CHECK(json.find(acc.password_hash) == std::string::npos);
     }
 }
 

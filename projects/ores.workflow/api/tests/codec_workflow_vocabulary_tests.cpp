@@ -22,41 +22,23 @@
 #include "ores.workflow.api/messaging/workflow_vocabulary.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 
 namespace wire_json = ores::utility::codec::json;
 namespace wire_msgpack = ores::utility::codec::msgpack;
 
-namespace {
+namespace {}
 
-template <typename T>
-std::string rfl_msgpack_vocabulary(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
-}
-
-TEST_CASE("the workflow vocabulary is the tokens reflect-cpp writes", "[codec]") {
+TEST_CASE("the workflow vocabulary is the tokens the wire carries", "[codec]") {
     using namespace ores::workflow::messaging;
 
     for (const auto v : {step_log_level::info, step_log_level::warn, step_log_level::error}) {
-        CHECK(wire_json::write(v) == rfl::json::write(v));
-        CHECK(wire_msgpack::write(v) == rfl_msgpack_vocabulary(v));
         CHECK(wire_json::read<step_log_level>(wire_json::write(v)) == v);
         CHECK(wire_msgpack::read<step_log_level>(wire_msgpack::write(v)) == v);
-        CHECK(wire_json::read<step_log_level>(rfl::json::write(v)) == v);
-        CHECK(wire_msgpack::read<step_log_level>(rfl_msgpack_vocabulary(v)) == v);
     }
     for (const auto v :
          {step_outcome::completed, step_outcome::completed_with_warnings, step_outcome::failed}) {
-        CHECK(wire_json::write(v) == rfl::json::write(v));
-        CHECK(wire_msgpack::write(v) == rfl_msgpack_vocabulary(v));
         CHECK(wire_json::read<step_outcome>(wire_json::write(v)) == v);
         CHECK(wire_msgpack::read<step_outcome>(wire_msgpack::write(v)) == v);
-        CHECK(wire_json::read<step_outcome>(rfl::json::write(v)) == v);
-        CHECK(wire_msgpack::read<step_outcome>(rfl_msgpack_vocabulary(v)) == v);
     }
 }
 

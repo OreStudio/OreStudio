@@ -29,7 +29,7 @@ import type { AuditRecord } from '../../dq/domain/audit_record.js';
 /**
  * The convention wire shape.
  *
- * Field names are the C++ member names, because they are the keys rfl::json
+ * Field names are the C++ member names, because they are the keys the codec
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  *
  * See the sibling protocol module for the messages that carry this type.

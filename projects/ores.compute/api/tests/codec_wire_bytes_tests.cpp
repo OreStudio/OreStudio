@@ -43,13 +43,10 @@
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -57,59 +54,48 @@ namespace {
 
 const std::string codec_tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
 template <typename... T>
 void every_default_has_the_same_bytes() {
-    (same_bytes_as_reflect_cpp(T{}), ...);
+    (survives_the_wire(T{}), ...);
 }
 
 }
 
-TEST_CASE("every compute domain type has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every compute domain type has its wire form", codec_tags) {
     ores::utility::generation::generation_context ctx(20261102);
-    same_bytes_as_reflect_cpp(ores::compute::generators::generate_synthetic_app(ctx));
-    same_bytes_as_reflect_cpp(ores::compute::generators::generate_synthetic_app_version(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::compute::generators::generate_synthetic_app_version_platform(ctx));
-    same_bytes_as_reflect_cpp(ores::compute::generators::generate_synthetic_batch(ctx));
-    same_bytes_as_reflect_cpp(ores::compute::generators::generate_synthetic_grid_sample(ctx));
-    same_bytes_as_reflect_cpp(ores::compute::generators::generate_synthetic_host(ctx));
-    same_bytes_as_reflect_cpp(ores::compute::generators::generate_synthetic_node_sample(ctx));
-    same_bytes_as_reflect_cpp(ores::compute::generators::generate_synthetic_platform(ctx));
-    same_bytes_as_reflect_cpp(ores::compute::generators::generate_synthetic_result(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::compute::generators::generate_synthetic_workflow_batch_link(ctx));
-    same_bytes_as_reflect_cpp(ores::compute::generators::generate_synthetic_workunit(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_app(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_app_version(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_app_version_platform(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_batch(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_grid_sample(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_host(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_node_sample(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_platform(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_result(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_workflow_batch_link(ctx));
+    survives_the_wire(ores::compute::generators::generate_synthetic_workunit(ctx));
 }
 
-TEST_CASE("every telemetry and work message's default has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every telemetry and work message's default has its wire form", codec_tags) {
     using namespace ores::compute::messaging;
     every_default_has_the_same_bytes<get_grid_stats_request,
                                      node_stats_summary,
@@ -132,7 +118,7 @@ TEST_CASE("every telemetry and work message's default has reflect-cpp's bytes", 
                                      submit_result_response>();
 }
 
-TEST_CASE("filled work and telemetry messages have reflect-cpp's bytes", codec_tags) {
+TEST_CASE("filled work and telemetry messages survive the wire", codec_tags) {
     ores::compute::messaging::claim_work_response claimed;
     claimed.success = true;
     claimed.has_work = true;
@@ -150,7 +136,7 @@ TEST_CASE("filled work and telemetry messages have reflect-cpp's bytes", codec_t
     claimed.logs_uri = "s3://l";
     claimed.storage_token = "tok";
     claimed.attempt = 3;
-    same_bytes_as_reflect_cpp(claimed);
+    survives_the_wire(claimed);
 
     ores::compute::messaging::get_grid_series_response series;
     series.success = true;
@@ -173,17 +159,17 @@ TEST_CASE("filled work and telemetry messages have reflect-cpp's bytes", codec_t
     series.outcomes_success = {4, 5};
     series.outcomes_client_error = {0, 1};
     series.outcomes_no_reply = {1, 0};
-    same_bytes_as_reflect_cpp(series);
+    survives_the_wire(series);
 }
 
-TEST_CASE("the entity list responses have reflect-cpp's bytes", codec_tags) {
+TEST_CASE("the entity list responses survive the wire", codec_tags) {
     ores::utility::generation::generation_context ctx(20261103);
-    same_bytes_as_reflect_cpp(ores::compute::messaging::list_apps_response{
+    survives_the_wire(ores::compute::messaging::list_apps_response{
         ores::utility::domain::result{ores::utility::domain::outcome::ok, "", "", {}},
         {ores::compute::generators::generate_synthetic_app(ctx),
          ores::compute::generators::generate_synthetic_app(ctx)},
         2});
-    same_bytes_as_reflect_cpp(ores::compute::messaging::list_batches_response{
+    survives_the_wire(ores::compute::messaging::list_batches_response{
         ores::utility::domain::result{
             ores::utility::domain::outcome::denied, "denied", "not allowed", {}},
         {ores::compute::generators::generate_synthetic_batch(ctx)},

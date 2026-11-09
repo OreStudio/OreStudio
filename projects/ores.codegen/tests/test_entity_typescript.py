@@ -316,8 +316,7 @@ def test_domain_member_types_project():
 
 
 def test_the_ip_address_projects_to_a_string():
-    """rfl::json writes boost::asio::ip::address through its reflector's
-    std::string ReflType, so the domain member is a string, not a gap."""
+    """The codec writes boost::asio::ip::address as text, so the domain member is a string, not a gap."""
     assert _ts_domain_type("boost::asio::ip::address") == "string"
     assert _ts_domain_type(
         "std::optional<boost::asio::ip::address>") == "string | null"

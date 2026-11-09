@@ -90,7 +90,7 @@ public:
      * Interprets the tm fields as the process's local timezone (via
      * std::mktime), then converts to UTC. Use this when the source data
      * is in the session/system timezone — e.g. a timestamp returned by
-     * libpq whose offset has been stripped by rfl::Timestamp::strptime.
+     * libpq whose offset has been stripped by strptime.
      *
      * @param tm The tm struct to convert (passed by value because mktime
      *           may normalise DST and other fields).

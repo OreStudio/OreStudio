@@ -19,11 +19,8 @@
  */
 #include "ores.storage.api/messaging/objects_protocol.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -31,42 +28,33 @@ namespace {
 
 const std::string codec_tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
 template <typename... T>
 void every_default_has_the_same_bytes() {
-    (same_bytes_as_reflect_cpp(T{}), ...);
+    (survives_the_wire(T{}), ...);
 }
 
 }
 
-TEST_CASE("every storage message's default has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every storage message's default has its wire form", codec_tags) {
     using namespace ores::storage::messaging;
     every_default_has_the_same_bytes<put_objects_request,
                                      put_objects_response,
@@ -79,14 +67,14 @@ TEST_CASE("every storage message's default has reflect-cpp's bytes", codec_tags)
                                      list_objects_response>();
 }
 
-TEST_CASE("filled storage messages have reflect-cpp's bytes", codec_tags) {
+TEST_CASE("filled storage messages survive the wire", codec_tags) {
     using namespace ores::storage::messaging;
     put_objects_request put;
     put.bucket = "reports";
     put.key = "runs/2026/\"quoted\"\n.tar.gz";
     put.content = "aGVsbG8gd29ybGQ=";
     put.content_encoding = "base64";
-    same_bytes_as_reflect_cpp(put);
+    survives_the_wire(put);
 
     get_objects_response got;
     got.success = false;
@@ -94,23 +82,23 @@ TEST_CASE("filled storage messages have reflect-cpp's bytes", codec_tags) {
     got.found = true;
     got.size_bytes = 4294967296ULL;
     got.content = "aGVsbG8=";
-    same_bytes_as_reflect_cpp(got);
+    survives_the_wire(got);
 
     delete_objects_response removed;
     removed.success = true;
     removed.removed = true;
-    same_bytes_as_reflect_cpp(removed);
+    survives_the_wire(removed);
 
     list_objects_request list;
     list.bucket = "reports";
     list.prefix = "runs/";
     list.offset = 200;
     list.limit = 50;
-    same_bytes_as_reflect_cpp(list);
+    survives_the_wire(list);
 
     list_objects_response listing;
     listing.success = true;
     listing.objects = {{"runs/a", 12}, {"runs/b", 0}};
     listing.total_available_count = 2;
-    same_bytes_as_reflect_cpp(listing);
+    survives_the_wire(listing);
 }

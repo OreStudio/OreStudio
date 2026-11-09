@@ -21,7 +21,7 @@ table to them.
 
 One archetype: an interface per entity or junction, named in PascalCase,
 with the object's fields in the order the C++ domain class declares them
-and the field names in =snake_case= — they are the keys rfl::json writes.
+and the field names in =snake_case= — they are the keys the codec writes.
 
 The interface is the object the protocol payloads carry, stated once. A
 protocol response that lists =tenant_type= rows references =TenantType=,

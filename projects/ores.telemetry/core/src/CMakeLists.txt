@@ -48,7 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib)
 
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -57,8 +57,6 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.nats.lib
     INTERFACE
-        # reflectcpp is provided by ores.platform.lib at build time; expose to consumers here
-        reflectcpp::reflectcpp
     PRIVATE
         ores.service.lib
         ores.platform.lib

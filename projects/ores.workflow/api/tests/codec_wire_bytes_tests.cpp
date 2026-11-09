@@ -18,9 +18,8 @@
  *
  */
 #include "ores.utility/codec/struct_codec.hpp"
-#include "ores.utility/codec/wire_traits.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/domain/workflow_instance_codec.hpp"
 #include "ores.workflow.api/domain/workflow_plan_dependency_codec.hpp"
 #include "ores.workflow.api/domain/workflow_plan_step_codec.hpp"
@@ -33,8 +32,6 @@
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/workflow/identity_workflow.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 #include <span>
 #include <string>
 
@@ -42,53 +39,41 @@ namespace {
 
 const std::string codec_tags("[codec]");
 
-template <typename T>
-std::string their_msgpack(const T& v) {
-    const auto bytes = rfl::msgpack::write(v);
-    return std::string(bytes.begin(), bytes.end());
-}
-
 std::span<const std::byte> bytes_of(const std::string& s) {
     return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
 }
 
 /**
- * @brief The generated codec writes the bytes reflect-cpp wrote, in both
- * formats, and reads them back to the same bytes.
+ * @brief The codec reads back what it wrote, in both formats.
  */
 template <typename T>
-void same_bytes_as_reflect_cpp(const T& v) {
+void survives_the_wire(const T& v) {
     using codec = ores::utility::codec::wire_traits<T>;
     CHECK(codec::is_generated);
 
     const auto json = codec::write_json(v);
-    CHECK(json == rfl::json::write(v));
     CHECK(codec::write_json(codec::read_json(json)) == json);
 
     const auto msgpack = codec::write_msgpack(v);
-    CHECK(msgpack == their_msgpack(v));
     CHECK(codec::write_msgpack(codec::read_msgpack(bytes_of(msgpack))) == msgpack);
 }
 
 template <typename... T>
 void every_default_has_the_same_bytes() {
-    (same_bytes_as_reflect_cpp(T{}), ...);
+    (survives_the_wire(T{}), ...);
 }
 
 }
 
-TEST_CASE("every workflow domain type has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every workflow domain type has its wire form", codec_tags) {
     ores::utility::generation::generation_context ctx(20261102);
-    same_bytes_as_reflect_cpp(
-        ores::workflow::generators::generate_synthetic_workflow_instance(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::workflow::generators::generate_synthetic_workflow_plan_dependency(ctx));
-    same_bytes_as_reflect_cpp(
-        ores::workflow::generators::generate_synthetic_workflow_plan_step(ctx));
-    same_bytes_as_reflect_cpp(ores::workflow::generators::generate_synthetic_workflow_step(ctx));
+    survives_the_wire(ores::workflow::generators::generate_synthetic_workflow_instance(ctx));
+    survives_the_wire(ores::workflow::generators::generate_synthetic_workflow_plan_dependency(ctx));
+    survives_the_wire(ores::workflow::generators::generate_synthetic_workflow_plan_step(ctx));
+    survives_the_wire(ores::workflow::generators::generate_synthetic_workflow_step(ctx));
 }
 
-TEST_CASE("every workflow message's default has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("every workflow message's default has its wire form", codec_tags) {
     using namespace ores::workflow::messaging;
     every_default_has_the_same_bytes<step_log_entry,
                                      step_completed_event,
@@ -109,7 +94,7 @@ TEST_CASE("every workflow message's default has reflect-cpp's bytes", codec_tags
                                      retry_workflow_instance_response>();
 }
 
-TEST_CASE("a completed step with its log has reflect-cpp's bytes", codec_tags) {
+TEST_CASE("a completed step with its log has its wire form", codec_tags) {
     using namespace ores::workflow::messaging;
     step_completed_event event;
     event.workflow_instance_id = "i1";
@@ -118,22 +103,21 @@ TEST_CASE("a completed step with its log has reflect-cpp's bytes", codec_tags) {
     event.result_json = R"({"a":1})";
     event.error_message = "";
     event.log = {{step_log_level::warn, "skipped", "row 3"}, {step_log_level::error, "bad", ""}};
-    same_bytes_as_reflect_cpp(event);
+    survives_the_wire(event);
 
     namespace json = ores::utility::codec::json;
-    CHECK(json::write(event.log) == rfl::json::write(event.log));
-    const auto log = json::try_read<std::vector<step_log_entry>>(rfl::json::write(event.log));
+    const auto log = json::try_read<std::vector<step_log_entry>>(json::write(event.log));
     REQUIRE(log);
     CHECK(json::write(*log) == json::write(event.log));
 }
 
 TEST_CASE("the step claim messages go on the wire through their fields", codec_tags) {
     using namespace ores::workflow::messaging;
-    same_bytes_as_reflect_cpp(claim_step_request{"s1", "t1", "svc/42"});
-    same_bytes_as_reflect_cpp(claim_step_response{true, false, "running", "held", 2});
+    survives_the_wire(claim_step_request{"s1", "t1", "svc/42"});
+    survives_the_wire(claim_step_response{true, false, "running", "held", 2});
 }
 
-TEST_CASE("the identity workflow's messages have reflect-cpp's bytes", codec_tags) {
+TEST_CASE("the identity workflow's messages survive the wire", codec_tags) {
     namespace object = ores::utility::codec::object;
     using ores::workflow::workflow::identity_step_request;
     using ores::workflow::workflow::identity_workflow_request;
@@ -141,7 +125,5 @@ TEST_CASE("the identity workflow's messages have reflect-cpp's bytes", codec_tag
         {identity_step_request{"a", std::string("warn"), true, 2},
          identity_step_request{"b", std::nullopt, std::nullopt, std::nullopt}}};
     const auto json = object::write_json(request);
-    CHECK(json == rfl::json::write(request));
     CHECK(object::write_json(object::read_json<identity_workflow_request>(json)) == json);
-    CHECK(object::write_msgpack(request) == their_msgpack(request));
 }

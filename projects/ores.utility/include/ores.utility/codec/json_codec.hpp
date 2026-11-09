@@ -183,8 +183,6 @@ struct json_codec<serialization::error_code> {
  * A type whose value is a number has no text form to state, and a generated
  * field list holds every member a model declares -- a version number, a
  * display order -- so the carriers have to cover numbers as well as text.
- * The number is the one reflect-cpp writes, because that is the encoding this
- * replaces.
  */
 template <typename T>
     requires std::is_integral_v<T> && (!std::is_same_v<T, bool>)

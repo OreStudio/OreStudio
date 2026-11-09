@@ -97,16 +97,14 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/benchmarks/xml
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.utility)
 
-# Interface library for RFL precompiled headers. Link PRIVATE to any target
-# that includes <rfl.hpp> or <rfl/json.hpp>. PCH is omitted when
+# Interface library for the codec precompiled header. Link PRIVATE to any target
+# that encodes. PCH is omitted when
 # WITH_PROFILING is set: sccache expects a .gcno alongside every compiled
 # output, but the PCH step does not produce one.
-add_library(ores.rfl.pch INTERFACE)
+add_library(ores.codec.pch INTERFACE)
 if(NOT WITH_PROFILING)
-    target_precompile_headers(ores.rfl.pch INTERFACE
-        <rfl.hpp>
-        <rfl/json.hpp>
-        <ores.utility/rfl/reflectors.hpp>)
+    target_precompile_headers(ores.codec.pch INTERFACE
+        <ores.utility/codec/struct_codec.hpp>)
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.platform)

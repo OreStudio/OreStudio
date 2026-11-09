@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-The entity's value type: members from the model's columns plus =valid_from= / =valid_to=. =domain= profile.  A plain C++ aggregate `struct` — no user-declared constructors, copyable, movable, and aggregate-initialisable. Relies on [[https://github.com/getml/reflect-cpp][reflect-cpp]] (via the companion `_json_io` archetype) for serialisation; the domain type itself carries no serialisation code.
+The entity's value type: members from the model's columns plus =valid_from= / =valid_to=. =domain= profile.  A plain C++ aggregate `struct` — no user-declared constructors, copyable, movable, and aggregate-initialisable. Relies on the generated codec (via the companion `_json_io` archetype) for serialisation; the domain type itself carries no serialisation code.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -32,9 +32,6 @@ The full template source. Edit here and re-tangle with
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
-{{#has_no_wire_columns}}
-#include "ores.utility/rfl/skip_comparison.hpp"
-{{/has_no_wire_columns}}
 {{#has_base64_columns}}
 #include <cstdint>
 #include <vector>
@@ -128,7 +125,7 @@ struct {{entity_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
 
 {{/sql_only}}
 {{/is_identity_group_column}}
@@ -226,9 +223,6 @@ struct {{entity_singular}} final {
 {{#cpp.includes.domain}}
 #include {{{.}}}
 {{/cpp.includes.domain}}
-{{#has_no_wire_columns}}
-#include "ores.utility/rfl/skip_comparison.hpp"
-{{/has_no_wire_columns}}
 {{#has_base64_columns}}
 #include <cstdint>
 #include <vector>
@@ -284,7 +278,7 @@ struct {{name_singular}} final {
      * {{{detail}}}
 {{/detail}}
      */
-    {{#no_wire}}rfl::Skip<{{{cpp_type}}}>{{/no_wire}}{{^no_wire}}{{{cpp_type}}}{{/no_wire}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}}{{^default_value}}{{{cpp_value_init}}}{{/default_value}};
 
 {{/columns}}
     /**

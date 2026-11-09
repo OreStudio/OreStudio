@@ -27,7 +27,6 @@
 
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/export.hpp"
 #include "ores.workflow.api/messaging/workflow_vocabulary.hpp"
 #include <cstddef>

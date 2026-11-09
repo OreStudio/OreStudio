@@ -79,7 +79,7 @@ struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::domain::market_d
      * @brief States that this is a generated codec.
      *
      * A test asserts this rather than the encoding, because the encoding is
-     * what the type's own case already compares with the reflector: what it
+     * what the type's own case already round-trips: what it
      * cannot see is whether the seam resolved to this specialisation or fell
      * through to the primary template, and a marker that only this
      * specialisation declares is that answer at compile time.

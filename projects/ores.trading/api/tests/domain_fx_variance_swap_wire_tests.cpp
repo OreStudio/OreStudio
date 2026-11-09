@@ -18,11 +18,9 @@
  *
  */
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.trading.api/domain/fx_variance_swap_instrument_codec.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
-#include <rfl/json.hpp>
-#include <rfl/msgpack.hpp>
 
 namespace {
 
@@ -42,12 +40,12 @@ TEST_CASE("an_fx_variance_swap_keeps_its_dates_across_the_wire", "[fx][wire]") {
     row.notional = *ores::utility::decimal::decimal::from_double(1000000.0);
     row.moment_type = "Variance";
 
-    const auto written = rfl::json::write(row);
+    using codec = ores::utility::codec::wire_traits<fx_variance_swap_instrument>;
+    const auto written = codec::write_json(row);
     INFO(written);
-    const auto back = rfl::json::read<fx_variance_swap_instrument>(written);
-    REQUIRE(back.has_value());
-    CHECK(back->start_date == row.start_date);
-    CHECK(back->end_date == row.end_date);
+    const auto back = codec::read_json(written);
+    CHECK(back.start_date == row.start_date);
+    CHECK(back.end_date == row.end_date);
 }
 
 TEST_CASE("an_fx_variance_swap_keeps_its_dates_across_msgpack", "[fx][wire]") {
@@ -62,9 +60,10 @@ TEST_CASE("an_fx_variance_swap_keeps_its_dates_across_msgpack", "[fx][wire]") {
     row.notional = *ores::utility::decimal::decimal::from_double(1000000.0);
     row.moment_type = "Variance";
 
-    const auto bytes = rfl::msgpack::write(row);
-    const auto back = rfl::msgpack::read<fx_variance_swap_instrument>(bytes);
-    REQUIRE(back.has_value());
-    CHECK(back->start_date == row.start_date);
-    CHECK(back->end_date == row.end_date);
+    using codec = ores::utility::codec::wire_traits<fx_variance_swap_instrument>;
+    const auto bytes = codec::write_msgpack(row);
+    const auto back = codec::read_msgpack(
+        std::span(reinterpret_cast<const std::byte*>(bytes.data()), bytes.size()));
+    CHECK(back.start_date == row.start_date);
+    CHECK(back.end_date == row.end_date);
 }

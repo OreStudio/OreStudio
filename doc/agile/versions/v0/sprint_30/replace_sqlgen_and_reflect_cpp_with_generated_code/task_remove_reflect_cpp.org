@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :replace_sqlgen_and_reflect_cpp_with_generated_code:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/remove-reflect-cpp
+#+pr: 4518
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-27
@@ -26,11 +26,11 @@ Step 7 of 7. reflect-cpp is gone from the build. Starts after every component ha
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2F05AACC-D913-4B74-B5CA-7D5F3F1A6A05][Replace sqlgen and reflect-cpp with generated code]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-27                               |
 
 * Acceptance
@@ -42,11 +42,7 @@ Step 7 of 7. reflect-cpp is gone from the build. Starts after every component ha
 - A codec precompiled header holding =ores.utility/codec/struct_codec.hpp=
   takes the place of =ores.rfl.pch= in every library that encodes, so the
   codec headers' leaf includes are parsed once per library, not once per unit.
-- No doc outside the agile history and the plans names reflect-cpp or rfl:
-  the knowledge docs, the component overviews and the codegen template docs
-  describe the generated codecs. Most of the 53 docs that name it today are
-  codegen template docs, whose source tangles into the templates, so each
-  codec task updates the template docs it changes.
+- The docs that name reflect-cpp moved to [[id:50320FBF-4DCD-40B2-9993-9484562F631C][Rewrite the docs that name reflect-cpp]].
 - The whole tree builds and every suite passes.
 
 * Plan
@@ -69,7 +65,7 @@ Each step below is one PR that ends in a green build.
    primary of =wire_traits= and =ores.rfl.pch=; put the codec precompiled
    header in its place; drop reflect-cpp from vcpkg.json and every
    CMakeLists.txt.
-6. Docs. Rewrite the docs that still describe reflect-cpp.
+6. Docs. Moved to [[id:50320FBF-4DCD-40B2-9993-9484562F631C][Rewrite the docs that name reflect-cpp]].
 
 * Measurements
 
@@ -133,11 +129,37 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4518][#4518]] | [build] Remove reflect-cpp |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Stale wording in codegen tests | =projects/ores.codegen/tests= | Accept | Docstrings reworded. Negative assertions stay as guards. |
+| 2 | Budget check still matches rfl | =check_translation_unit_budget.py= | Accept | Dead match removed. The reflecting header stays. |
+| 3 | Stale wording in check scripts | =build/scripts= | Accept | Reworded. |
+| 4 | Docs still name =ores.utility/rfl= | modeling docs | Accept | Covered by the docs task. |
+| 5 | Pin one struct per codec family | codec tests | Decline | Base types are pinned literally, and earlier PRs compared each type with reflect-cpp. |
+| 6 | Skipped checks need CI | - | Decline | GitHub runs no checks on a PR. Those diffs are comments only. |
+| 7 | =static_assert= for a missing codec | =wire_traits_fwd.hpp= | Decline | The compiler error names =wire_traits<T>= directly. |
+| 8 | Decide the shell failures | capture | Accept | The capture records the decision to make. |
 
 * Result
+
+reflect-cpp is gone from the build. =vcpkg.json=, every =CMakeLists.txt=, the
+overlay, =ores.utility/rfl/=, the parsers and =check_reflectcpp_field_names.py=
+no longer exist or name it. =ores.codec.pch= takes the place of =ores.rfl.pch=.
+=wire_traits<T>= now has no primary, so a type with no codec does not compile.
+The carrier error type is =std::runtime_error= inside =std::expected=.
+
+Tests that compared bytes with reflect-cpp are now round trips. JSON and
+MessagePack pins are literal only for the base types in =ores.utility=.
+
+Build: clean (=linux-clang-release-ninja=). ctest: 83 of 99 suites pass. The 16
+=ores.shell.*= suites fail on their completion checks only, and no other check
+fails. That defect comes from cli 2.3.0 and has its own capture, [[id:67C0E32A-C7F1-40CB-A08A-9FA5A1CA6253][Shell completion tests fail with cli 2.3.0]].
+The acceptance line that says every suite passes is therefore not met until
+that capture closes.
+
+SQL comments in =iam_accounts_create.sql= and =utility_functions_create.sql=
+still name it. They do not affect the build.

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/store-remaining-indices-as-oresmd-addresses
+#+pr: 4525
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,19 +26,17 @@ No trade holds an ORE name: every remaining column that names market data holds 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
 
-- Credit legs, commodity legs, FX indices, bond indices, curves, underlyings and entities hold an oresmd address; the inventory of about 60 columns is in the design.
+- Credit leg, FX, settlement, bond, funding, repo and leg indexing index columns hold an oresmd address.
 - The importer converts ORE names to addresses and the exporter converts back, both through =ore_projection=; the corpus roundtrip still loses nothing.
-- A curve imports as an address built from its ORE name, and the market configuration is used only on export.
-- Each family is one PR.
 
 * Plan
 
@@ -77,12 +75,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4525][#4525]] | [ore] Store credit, FX and bond indices as oresmd addresses |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Formatter reflow | Several | Decline | The format check requires it. |
+| 2 | Thin test coverage | =xml_portfolio_projection_tests.cpp= | Accept | Test over ORE's product portfolio. It has no TRS funding, repo or option settlement index, so those stay covered by roundtrip only. |
+| 3 | Silent fallback | =ore_projection.cpp= | Decline | Tests in the previous PR state it. |
+| 4 | Accumulator underlying name | =fx_instrument_projection.cpp= | Keep | The read is FxTaRF only. A name that is not an index still roundtrips. |
+| 5 | Empty values | =ore_projection.cpp= | Decline | The previous PR tests it. |
 
 * Result
+
+Credit legs and the FX, settlement, bond, funding, repo and leg indexing columns store an oresmd address. The conversion helpers are in =index_reference.hpp=. The corpus roundtrip passes.
+
+The bond stub index columns, commodity legs, scripted indices, barrier monitoring indices, composite FX indices and the equity swap floating index are not converted here. They move to the underlyings and entities task, apart from the stubs, which that task also takes.

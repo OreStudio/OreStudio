@@ -20,8 +20,8 @@
 #ifndef ORES_ORE_CORE_DOMAIN_LEG_BLOCK_PROJECTION_HPP
 #define ORES_ORE_CORE_DOMAIN_LEG_BLOCK_PROJECTION_HPP
 
-#include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.ore.core/domain/decimal_projection.hpp"
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/scalar_terms_projection.hpp"
@@ -161,17 +161,6 @@ inline void set_scalar(record_writer& w, std::string_view name, const std::strin
         w.set_text(name, value);
 }
 
-/// The address a leg stores for the ORE index name a document states.
-inline std::string address_of(std::string_view ore_name) {
-    return ores::marketdata::projection::ore_projection::address_of_index_or_stored(ore_name);
-}
-
-/// An index converts by a fixed rule, so its name needs no market configuration.
-inline std::string ore_name_of(std::string_view stored) {
-    static const ores::marketdata::projection::ore_projection projection;
-    return projection.ore_name_or_stored(stored);
-}
-
 inline void stamp_leg(swap_leg& row) {
     row.audit.modified_by = std::string(option_block::block_actor);
     row.audit.performed_by = std::string(option_block::block_actor);
@@ -269,7 +258,7 @@ inline void read_equity_terms(swap_leg& row, const record_reader& equity) {
         if (terms->has("EquityCurrency"))
             row.equity_currency = text_of(*terms, "EquityCurrency");
         if (terms->has("FXIndex"))
-            row.fx_index = text_of(*terms, "FXIndex");
+            row.fx_index = address_of(text_of(*terms, "FXIndex"));
     }
 }
 
@@ -315,7 +304,7 @@ inline swap_leg read_leg(const record_reader& leg, int leg_number) {
             row.fx_reset_foreign_currency = reset.spelling("ForeignCurrency");
             row.fx_reset_start_date = reset.text("StartDate");
             row.fx_reset_foreign_amount = reset.decimal("ForeignAmount");
-            row.fx_reset_fx_index = reset.text("FXIndex");
+            row.fx_reset_fx_index = address_of_optional(reset.text("FXIndex"));
             if (const auto days = reset.integer("FixingDays"))
                 row.fx_reset_fixing_days = static_cast<int>(*days);
             row.fx_reset_fixing_calendar = reset.text("FixingCalendar");
@@ -442,7 +431,7 @@ void read_leg_indexings(Data& result, const record_reader& leg, int leg_number) 
         swap_leg_indexing row;
         row.leg_number = leg_number;
         row.sequence_number = ++sequence_number;
-        row.index_name = text_of(indexing, "Index");
+        row.index_name = address_of(text_of(indexing, "Index"));
         row.quantity = decimal_as_double(indexing, "Quantity");
         row.initial_fixing = indexing.decimal("InitialFixing");
         if (const auto days = indexing.integer("FixingDays"))
@@ -477,7 +466,7 @@ void write_leg_indexings(record_writer& leg, const swap_leg& row, const Data& v)
         auto writer = group.append("Indexing");
         if (indexing.quantity)
             set_decimal_from_double(writer, "Quantity", *indexing.quantity);
-        writer.set_text("Index", indexing.index_name);
+        writer.set_text("Index", ore_name_of(indexing.index_name));
         if (indexing.initial_fixing)
             writer.set_decimal("InitialFixing", *indexing.initial_fixing);
         const auto role = indexing_valuation_role(indexing.sequence_number);
@@ -671,7 +660,7 @@ inline void write_equity_terms(record_writer payload, const swap_leg& row) {
         if (row.equity_currency)
             terms.set_text("EquityCurrency", *row.equity_currency);
         if (row.fx_index)
-            terms.set_text("FXIndex", *row.fx_index);
+            terms.set_text("FXIndex", ore_name_of(*row.fx_index));
     }
 }
 
@@ -919,7 +908,7 @@ void write_leg(record_writer& leg,
         if (row.fx_reset_foreign_amount)
             reset.set_decimal("ForeignAmount", *row.fx_reset_foreign_amount);
         if (row.fx_reset_fx_index)
-            reset.set_text("FXIndex", *row.fx_reset_fx_index);
+            reset.set_text("FXIndex", ore_name_of(*row.fx_reset_fx_index));
         if (row.fx_reset_fixing_days)
             reset.set_integer("FixingDays", *row.fx_reset_fixing_days);
         if (row.fx_reset_fixing_calendar)

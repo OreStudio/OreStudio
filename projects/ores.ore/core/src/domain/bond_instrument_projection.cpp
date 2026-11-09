@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/domain/underlying_block_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
@@ -137,8 +138,8 @@ auto to_ore_date(const std::chrono::year_month_day& d) -> std::string {
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto bond_instrument_projection_text_of(const record_reader& r,
-                                        std::string_view name) -> std::string {
+auto bond_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
@@ -166,8 +167,8 @@ auto decimal_text(const record_reader& r) -> decimal {
     return r.own_decimal().value_or(decimal{});
 }
 
-auto bond_instrument_projection_decimal_of(const record_reader& r,
-                                           std::string_view name) -> decimal {
+auto bond_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     return decimal_from_double(decimal_as_double(r, name).value_or(0.0));
 }
 
@@ -295,7 +296,7 @@ auto read_stub(const record_reader& s) -> bond_stub_interpolation {
 
 auto read_settlement(const record_reader& s) -> bond_settlement_data {
     bond_settlement_data row;
-    row.fx_index = bond_instrument_projection_text_of(s, "FXIndex");
+    row.fx_index = address_of(bond_instrument_projection_text_of(s, "FXIndex"));
     if (s.has("FixingDate"))
         row.fixing_date = bond_instrument_projection_text_of(s, "FixingDate");
     return row;
@@ -303,7 +304,7 @@ auto read_settlement(const record_reader& s) -> bond_settlement_data {
 
 auto read_floating_leg(const record_reader& f) -> bond_floating_leg_data {
     bond_floating_leg_data row;
-    row.index = bond_instrument_projection_text_of(f, "Index");
+    row.index = address_of(bond_instrument_projection_text_of(f, "Index"));
     if (f.has("IsInArrears"))
         row.is_in_arrears = is_flag_on(bond_instrument_projection_text_of(f, "IsInArrears"));
     if (f.has("LastRecentPeriod"))
@@ -364,7 +365,7 @@ auto read_floating_leg(const record_reader& f) -> bond_floating_leg_data {
 
 auto read_formula_leg(const record_reader& f) -> bond_formula_based_leg_data {
     bond_formula_based_leg_data row;
-    row.index = bond_instrument_projection_text_of(f, "Index");
+    row.index = address_of(bond_instrument_projection_text_of(f, "Index"));
     if (f.has("IsInArrears"))
         row.is_in_arrears = is_flag_on(bond_instrument_projection_text_of(f, "IsInArrears"));
     row.fixing_days = f.integer("FixingDays").value_or(0);
@@ -448,7 +449,7 @@ auto read_leg(const record_reader& ld) -> bond_leg_data {
 auto read_option_settlement(const record_reader& s) -> bond_option_settlement {
     bond_option_settlement row;
     row.pay_currency = bond_spelling_of(s, "PayCurrency");
-    row.fx_index = bond_instrument_projection_text_of(s, "FXIndex");
+    row.fx_index = address_of(bond_instrument_projection_text_of(s, "FXIndex"));
     if (s.has("FixingDate"))
         row.fixing_date = bond_instrument_projection_text_of(s, "FixingDate");
     return row;
@@ -835,7 +836,8 @@ auto read_bond_trs(const record_reader& trade) -> bond_instrument_data {
     if (funding_leg) {
         if (const auto floating = funding_leg->child("FloatingLegData")) {
             trs.funding_leg_type = "Floating";
-            trs.funding_index = bond_instrument_projection_text_of(*floating, "Index");
+            trs.funding_index =
+                address_of_optional(bond_instrument_projection_text_of(*floating, "Index"));
         } else if (const auto fixed = funding_leg->child("FixedLegData")) {
             trs.funding_leg_type = "Fixed";
             if (const auto rates = fixed->child("Rates")) {
@@ -890,7 +892,8 @@ auto read_bond_repo(const record_reader& trade) -> bond_instrument_data {
         }
         if (!row.repo_rate) {
             if (const auto floating = repo_leg->child("FloatingLegData"))
-                row.repo_index = bond_instrument_projection_text_of(*floating, "Index");
+                row.repo_index =
+                    address_of_optional(bond_instrument_projection_text_of(*floating, "Index"));
         }
     }
     stamp_row(row);
@@ -964,9 +967,8 @@ auto read_ascot(const record_reader& trade) -> bond_instrument_data {
 // Writing: the spellings a table refuses
 // ---------------------------------------------------------------------------
 
-auto accepts_spelling(const record_writer& w,
-                      std::string_view name,
-                      std::string_view value) -> bool {
+auto accepts_spelling(const record_writer& w, std::string_view name, std::string_view value)
+    -> bool {
     const auto* f = xml::find_field(w.type(), name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;
@@ -1082,7 +1084,7 @@ void write_stub(record_writer w, const bond_stub_interpolation& row) {
 }
 
 void write_floating_leg(record_writer w, const bond_floating_leg_data& row) {
-    w.set_text("Index", row.index);
+    w.set_text("Index", ore_name_of(row.index));
     if (row.is_in_arrears)
         w.set_text("IsInArrears", flag_text(*row.is_in_arrears));
     if (row.last_recent_period)
@@ -1142,7 +1144,7 @@ void write_floating_leg(record_writer w, const bond_floating_leg_data& row) {
 }
 
 void write_formula_leg(record_writer w, const bond_formula_based_leg_data& row) {
-    w.set_text("Index", row.index);
+    w.set_text("Index", ore_name_of(row.index));
     if (row.is_in_arrears)
         w.set_text("IsInArrears", flag_text(*row.is_in_arrears));
     w.set_integer("FixingDays", row.fixing_days);
@@ -1209,7 +1211,7 @@ void write_leg(record_writer leg, const bond_leg_data& row) {
         write_schedule(leg.child("PaymentSchedule"), row.payment_schedule);
     if (row.settlement) {
         auto settlement = leg.child("SettlementData");
-        settlement.set_text("FXIndex", row.settlement->fx_index);
+        settlement.set_text("FXIndex", ore_name_of(row.settlement->fx_index));
         if (row.settlement->fixing_date)
             settlement.set_text("FixingDate", *row.settlement->fixing_date);
     }
@@ -1221,7 +1223,7 @@ void write_leg(record_writer leg, const bond_leg_data& row) {
 
 void write_option_settlement(record_writer w, const bond_option_settlement& row) {
     set_spelling_or(w, "PayCurrency", row.pay_currency, "USD", "currency");
-    w.set_text("FXIndex", row.fx_index);
+    w.set_text("FXIndex", ore_name_of(row.fx_index));
     if (row.fixing_date)
         w.set_text("FixingDate", *row.fixing_date);
 }
@@ -1557,7 +1559,7 @@ void write_bond_trs(record_writer trade,
             funding_leg.set_spelling("LegType", "Floating", "leg type");
         auto floating = funding_leg.child("FloatingLegData");
         if (data.trs->funding_index)
-            floating.set_text("Index", *data.trs->funding_index);
+            floating.set_text("Index", ore_name_of(*data.trs->funding_index));
     }
 
     if (data.trs_payer)
@@ -1581,7 +1583,7 @@ void write_bond_repo(record_writer trade,
     if (floating) {
         auto floating_leg = leg.child("FloatingLegData");
         if (data.repo->repo_index)
-            floating_leg.set_text("Index", *data.repo->repo_index);
+            floating_leg.set_text("Index", ore_name_of(*data.repo->repo_index));
     } else if (data.repo && data.repo->repo_rate && !data.repo->repo_rate->is_zero() &&
                !(data.repo_leg.rate && data.repo_leg.rate->fixed)) {
         auto rates = leg.child("FixedLegData").child("Rates");

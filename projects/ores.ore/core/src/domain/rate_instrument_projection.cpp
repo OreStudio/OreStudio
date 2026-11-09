@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
@@ -327,7 +328,7 @@ auto read_fra(const record_reader& trade) -> swap_instrument_data {
         rate_instrument_projection_text_of(*data, "EndDate"));
     fact.currency = rate_instrument_projection_spelling_of(*data, "Currency");
     fact.notional = rate_instrument_projection_decimal_of(*data, "Notional");
-    fact.rate_index = leg_block::address_of(rate_instrument_projection_text_of(*data, "Index"));
+    fact.rate_index = address_of(rate_instrument_projection_text_of(*data, "Index"));
     fact.strike = rate_instrument_projection_decimal_of(*data, "Strike");
     fact.long_short = rate_instrument_projection_spelling_of(*data, "LongShort");
 
@@ -674,9 +675,9 @@ void write_fra(record_writer& trade, const swap_instrument_data& v) {
     // reading the first leg would write an empty index for a trade whose legs
     // are ordered fixed first.
     if (!fact.rate_index.empty())
-        data.set_text("Index", leg_block::ore_name_of(fact.rate_index));
+        data.set_text("Index", ore_name_of(fact.rate_index));
     else if (!v.legs.empty())
-        data.set_text("Index", leg_block::ore_name_of(v.legs.front().floating_index_code));
+        data.set_text("Index", ore_name_of(v.legs.front().floating_index_code));
     for (const auto& rate : v.leg_rates)
         if (rate.rate_role == "fixed") {
             set_decimal_from_double(data, "Strike", rate.value.to_double());

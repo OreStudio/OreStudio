@@ -3,7 +3,7 @@
 A route forwards a request and answers with the reply, and both are messages of
 the model it serves. A model that opted into the wire codec has generated
 functions for them, so its route reads the body and writes the reply through
-those functions and names no reflector; a model that did not keeps reflect-cpp.
+those functions.
 Both route templates, the entity one and the operation one, are rendered from a
 real opted-in model, then again with the switch off.
 
@@ -74,7 +74,7 @@ def test_an_opted_in_route_names_no_reflector():
 
 
 def test_a_route_without_the_flag_names_no_reflector_either():
-    """Every model has a generated codec, so no branch keeps reflect-cpp."""
+    """Every model has a generated codec, so every branch encodes through it."""
     for model, template, section in CASES:
         text = render(model, template, section, False)
         assert "rfl::" not in text, model

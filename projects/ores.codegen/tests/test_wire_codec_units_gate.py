@@ -56,7 +56,7 @@ def render_changed_event(opted_in):
 
 
 def test_a_model_without_the_flag_prints_its_row_with_the_codec_too():
-    """Every model has a generated codec, so no branch keeps reflect-cpp."""
+    """Every model has a generated codec, so every branch encodes through it."""
     plain = render_json_io(False)
     assert "rfl" not in plain
     assert "ores::utility::codec::json::write(v)" in plain

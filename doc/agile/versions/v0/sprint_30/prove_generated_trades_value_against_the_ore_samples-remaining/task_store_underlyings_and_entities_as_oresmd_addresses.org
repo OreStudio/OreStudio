@@ -8,7 +8,7 @@
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/store-underlyings-and-entities-as-oresmd-addresses
-#+pr:
+#+pr: 4533
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4533][#4533]] | [ore] Store trade underlyings and leftover indices as oresmd addresses |
 
 * Review
 

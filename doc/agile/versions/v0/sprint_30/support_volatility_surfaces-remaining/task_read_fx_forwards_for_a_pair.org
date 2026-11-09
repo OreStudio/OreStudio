@@ -60,7 +60,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Market data service tests | 220 test cases, 2290 assertions, all pass; 14 cases under =[fx_forward_ladder]= | =publish/bin/ores.marketdata.service.tests= | Working tree on main |
+| Market data service tests | 221 test cases on the rebased head, all pass; 15 cases under =[fx_forward_ladder]= | =publish/bin/ores.marketdata.service.tests= | Working tree on main |
 | Market data API tests | 945 test cases, 4396 assertions, all pass | =publish/bin/ores.marketdata.api.tests= | Working tree on main |
 
 * Notes
@@ -88,7 +88,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A bad code in reference data escapes as a transport error | =src/app/fx_forward_ladder_service.cpp= | Fixed | The read replies with the message for any exception. |
+| 2 | An as-of on a non-business day starts the ladder there | =src/fx_forward_ladder_plan.cpp= | Fixed | It counts from the next business day. A test holds it. |
+| 3 | The weekend mask is fixed | =src/fx_forward_ladder_plan.cpp= | Declined | The tenor resolution service makes the same assumption, and the calendars carry the rest. |
+| 4 | Spot days use the larger of the two currencies | =src/app/fx_forward_ladder_service.cpp= | Declined | The currency model defines the pair's spot days that way. |
+| 5 | No staleness guard | =src/fx_forward_ladder_plan.cpp= | Declined | The reply names each input's as-of, and the screen shows it. A maximum age needs a product decision. |
+| 6 | Every config is read twice | =src/app/fx_forward_ladder_service.cpp= | Declined | The table holds one row per curve, and the read is on demand. |
+| 7 | The party comparison is case sensitive | =src/app/fx_forward_ladder_service.cpp= | Declined | Clients send the server's own lower-case identifiers. |
+| 8 | The move sits beside a read of another member | =src/app/fx_forward_ladder_service.cpp= | Declined | It is safe, as the reviewer notes. |
+| 9 | Test a successful reply | =tests/fx_forward_ladder_plan_tests.cpp= | Declined | A publish row needs a real approval request. The screen task carries the live check. |
 
 * Result
 

@@ -221,7 +221,7 @@ messaging::get_fx_forward_ladder_response fx_forward_ladder_service::read(
     context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_request& request) {
     try {
         return answer(ctx, request);
-    } catch (const refused& e) {
+    } catch (const std::exception& e) {
         ores::marketdata::messaging::get_fx_forward_ladder_response out;
         out.pair_code = request.pair_code;
         out.as_of = request.as_of;

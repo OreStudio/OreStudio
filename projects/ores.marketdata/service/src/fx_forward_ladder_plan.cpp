@@ -113,11 +113,13 @@ joint_calendar(std::span<const std::vector<ores::refdata::domain::calendar_date>
         holidays, 1, {std::bitset<7>{weekend_mask}});
 }
 
-fx_ladder_dates build_ladder_dates(std::chrono::year_month_day horizon,
+fx_ladder_dates build_ladder_dates(std::chrono::year_month_day as_of_date,
                                    int spot_days,
                                    quant::domain::business_day_convention roll,
                                    bool end_of_month,
                                    const quant::domain::business_day_calendar_set& calendar) {
+    const auto horizon = calendar_arithmetic::adjust(
+        as_of_date, quant::domain::business_day_convention::following, only_calendar, calendar);
     const auto advance = [&](std::chrono::year_month_day from, date_period period) {
         return calendar_arithmetic::advance(
             from, period, roll, end_of_month, only_calendar, calendar);

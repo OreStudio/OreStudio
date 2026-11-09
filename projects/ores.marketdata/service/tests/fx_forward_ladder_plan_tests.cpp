@@ -185,6 +185,16 @@ TEST_CASE("a value date on a weekend rolls under the convention", "[fx_forward_l
     CHECK(row(l, "1M").value_date == 2026y / December / 14d);
 }
 
+TEST_CASE("an as-of on a weekend counts from the next business day", "[fx_forward_ladder]") {
+    const auto l = build_ladder_dates(2026y / November / 7d,
+                                      2,
+                                      business_day_convention::modified_following,
+                                      false,
+                                      open_calendar);
+    CHECK(row(l, "ON").near_date == monday);
+    CHECK(l.spot_date == 2026y / November / 11d);
+}
+
 TEST_CASE("the read refuses a cross through the service", "[fx_forward_ladder][db]") {
     ores::testing::database_helper h;
     const auto reply = ores::marketdata::service::app::fx_forward_ladder_service::read(

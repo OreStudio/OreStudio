@@ -75,11 +75,12 @@ struct fx_ladder_dates final {
  *
  * ON and TN are swaps of their own two dates, and TN exists only for a pair settling after T+1.
  * Every later tenor runs from the spot date.
+ * An as-of that is not a business day counts from the next one.
  *
  * @param spot_days The pair's spot days, at least one.
  */
 ORES_MARKETDATA_SERVICE_EXPORT fx_ladder_dates
-build_ladder_dates(std::chrono::year_month_day horizon,
+build_ladder_dates(std::chrono::year_month_day as_of_date,
                    int spot_days,
                    analytics::quant::domain::business_day_convention roll,
                    bool end_of_month,

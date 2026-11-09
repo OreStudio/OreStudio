@@ -26,19 +26,19 @@ No trade holds an ORE name: every column that names market data holds an oresmd 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-06                               |
 
 * Acceptance
 
-- Every trade column that names market data (indices, curves, underlyings, credit names) holds an oresmd address; the inventory of about 60 columns is in the design.
+- Swap leg indices and the FRA =rate_index= hold an oresmd address. The other columns moved to [[id:BA2765AD-BCA4-406B-A612-28BFB7B44BC2][Store the remaining trade market references as oresmd addresses]].
 - The soft foreign key against the party's series catalogue is out of this task. It lands in the market data task, after the series exist, so that no trade is refused meanwhile.
 - The importer converts ORE names to addresses and the exporter converts back, both through =ore_projection=; the corpus roundtrip still loses nothing.
-- Stored trades are migrated, family by family.
+- Rows stored with an ORE name still export.
 
 * Plan
 
@@ -93,3 +93,7 @@ via its "Verifies task" field.
 | 6 | Double blank line | =ore_projection.cpp= | Accept | Removed. |
 
 * Result
+
+Swap legs and FRAs store an oresmd address for their index. The importer converts through =address_of_index_or_stored=, and the exporter converts back through =ore_name_or_stored=. The corpus roundtrip passes.
+
+This task closed on the first family, because a task is the unit a PR closes. The remaining columns are in the follow-on task. No soft foreign key and no migration script are in this task.

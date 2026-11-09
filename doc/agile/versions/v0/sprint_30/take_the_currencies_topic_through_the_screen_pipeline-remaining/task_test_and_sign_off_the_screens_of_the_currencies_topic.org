@@ -108,5 +108,12 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Local review: web, sql and docs classes | the scenario, the runner, the sheets, the captures, records.tsx, the seed | Accept | The runner's first failures were its own: a select found by its label where the label carries the option text, a link panel read as a dialog, a count read before Refresh; each is fixed in the runner. The four captures gained short titles, their tags, their bucket and a Why. The classification label became a link to its page, which the prototype drew and the build had dropped |
+| 2 | Seed header claims idempotent | the pair classifications seed | Accept | The header now says the script runs once. Capture filed for the seeds with this pattern. |
+| 3 | Seed and provisioner depend on order | the seed, the provisioner | Accept | Seed order is correct, and a probe tenant received all 4 rows. Database recreate and pgTAP did not run. |
+| 4 | ClassifiedValue may nest in a link | records.tsx | Accept | Checked the call sites: list cells and detail values, with no wrapping link. |
+| 5 | Add a ClassifiedValue test | records.test.tsx | Accept | Covers a known code and an unknown code. |
+| 6 | gaps.map may break a memo | RecordTimeline.tsx | Decline | The component has no useMemo. |
+| 7 | Union type for gap keys | Timeline.tsx | Decline | KNOWN_GAPS is shared by other screens, so the change is outside this PR. |
+| 8 | Explain the misspell exit | .misspell-fixer.ignore | Accept | The hits were French and Portuguese words. The locale files are now ignored. Older docs still have hits. |
 
 * Result

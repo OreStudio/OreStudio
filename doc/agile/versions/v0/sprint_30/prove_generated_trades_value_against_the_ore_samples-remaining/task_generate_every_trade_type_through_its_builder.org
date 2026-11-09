@@ -41,6 +41,7 @@ Every trade type the generator books is built by its trade builder, and the repo
 - A tagged test runs the ORE engine on each recorded portfolio, with ORE's example configuration, and fails on an error ORE raises reading or building a trade, unless a known list asserted exactly names it; a Trade error caused by missing market data is counted apart. Moved here from [[id:63FF92C8-3E18-49BB-93FA-B0862B5FD4B2][Test that every generated trade builds in ORE]].
 - A run of the Acme reports after provisioning records no Trade errors, only market data errors.
 - The roundtrip tests read every ORE sample trade of each generated type, write it back, and fail on any element ORE needs that we drop or rename.
+- =CommodityPairwiseVarianceSwap= leaves the generator or takes a real ORE trade name, because ORE has no such trade.
 - Tests catch the FxOption style and FxSwap far leg defects that the first Acme run found.
 
 * Plan

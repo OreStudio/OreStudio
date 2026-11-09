@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 10F9A53C-B978-428F-A0B1-48C97AC5828C
+:END:
+#+title: What ORE requires of each trade
+#+description: Per generated trade type, the terms ORE requires, the engine that prices it, and how TradeGenerator's approach extends to every type.
+#+type: knowledge
+#+level: cross
+#+filetags: :ore:trading:synthetic:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+This page states what ORE needs from each trade the generator books. The table below is generated from ORE's schemas, its samples and its Engine source, so it can be regenerated at a new ORE commit. It is the input to the trade builders: a builder requires the terms its row lists. Most of the 85 types are made of a few shared pieces, so the builders follow the same split.
+
+* Detail
+
+** Reading the table
+
+- *Required terms* are the elements the XSD requires of the type's data element. A required choice shows as =A or B=. Nested terms are in the shared pieces table.
+- *Pricing engine* is the engine a trade asks =EngineFactory= for by name in =build()=. *scripted* means the trade prices through =ScriptedTrade=. *not named* means =build()= does not name its engine literally, so that row must be read by hand.
+- *Recorded* says what the generator writes today: =written=, or =refused= by the exporter.
+- *Required, not written* is the work the builders must do for that type. It compares element names only, so it says that a term is absent, not that a written value is right.
+
+The XSD is the floor, not the whole contract. =fromXML= and =build()= reject more than the schema does, for example a leg's day count or a schedule rule. The valuation step of the story catches what this table cannot.
+
+** How TradeGenerator extends to every type
+
+=OREData/ored/portfolio/tradegenerator.cpp= builds 11 products. Its method is the part worth keeping: =buildSwap= takes an index, a notional, a maturity and a rate, then reads the frequency, day count, calendar and rule from the index's convention. It builds one leg through =buildLeg=, and derives the other leg from that leg's schedule.
+
+The 74 other types extend it the same way, in three layers:
+
+1. *Shared pieces.* =optionData=, =legData=, =scheduleData=, =barrierData= and =underlying= are used across families, as the shared pieces table shows. Each gets one sub-builder, and =buildLeg= is the model for them.
+2. *Conventions supply what the market fixes.* A leg's frequency, day count, calendar and adjustment come from =convention_lookup=. =TradeGenerator= only reads swap, OIS, commodity future and inflation conventions, so the CDS, equity and FX families need their conventions added to the lookup.
+3. *A thin builder per product.* It states the product's required terms and composes the shared pieces. A family with a scripted payoff states its underlying, its observation dates and its strike, and =ScriptedTrade= does the rest.
+
+** Findings
+
+- =CommodityPairwiseVarianceSwap= is booked by the generator but is not a registered ORE trade name, so its name needs correcting or it leaves the generator.
+- =BondPosition= and =CommodityWindowBarrierOption= have no data element in ORE's XSDs, so their required terms come from =fromXML=.
+
+# BEGIN GENERATED
+
+Read at ORE commit =3d75a6908=. Regenerate with =build/scripts/generate_ore_trade_requirements.py=.
+
+** Trade types
+
+| Type | ORE class | Data element | Required terms | Pricing engine | TradeGenerator | Recorded | Required, not written |
+|-
+| =Ascot= | =Ascot= | =AscotData= | =ConvertibleBondData=, =OptionData=, =ReferenceSwapData= | =Ascot= | no | written | none |
+| =BalanceGuaranteedSwap= | =BalanceGuaranteedSwap= | =BalanceGuaranteedSwapData= | =ReferenceSecurity=, =Tranches=, =LegData= | =BalanceGuaranteedSwap=, =CapFlooredIborLeg= | no | refused | none |
+| =Bond= | =Bond= | =BondData= | =SecurityId= | =Bond= | no | written | none |
+| =BondFuture= | =BondFuture= | =BondFutureData= | =ContractName=, =ContractNotional=, =LongShort= | =BondFuture= | no | refused | none |
+| =BondOption= | =BondOption= | =BondOptionData= | =OptionData=, =strikeGroup=, =BondData= | =BondOption= | no | written | =strikeGroup= |
+| =BondPosition= | =BondPosition= | not in the XSD | none | not named | no | written | none |
+| =BondRepo= | =BondRepo= | =BondRepoData= | =BondData=, =RepoData= | =BondRepo= | no | written | none |
+| =BondTRS= | =BondTRS= | =BondTRSData= | =BondData=, =TotalReturnData=, =FundingData= | =BondTRS=, =BondTRS= | no | refused | none |
+| =CallableBond= | =CallableBond= | =CallableBondData= | =BondData= | =CallableBond=, =Bond= | no | written | none |
+| =CallableSwap= | =CallableSwap= | =CallableSwapData= | =OptionData or LegData= | not named | no | written | none |
+| =CapFloor= | =CapFloor= | =CapFloorData= | =LongShort=, =LegData= | =CapFloor_as_Swap=, =Swap=, =Swap=, =CpiCapFloor=, =YYCapFloor= | yes | written | none |
+| =CommodityAccumulator= | =CommodityAccumulator= | =CommodityAccumulatorData= | =Currency=, =FixingAmount=, =Underlying=, =OptionData=, =ObservationDates=, =RangeBounds= | scripted | no | written | =Currency=, =FixingAmount=, =Underlying=, =OptionData=, =ObservationDates=, =RangeBounds= |
+| =CommodityAsianOption= | =CommodityAsianOption= | =CommodityAsianOptionData= | =Currency=, =Quantity=, =strikeGroup=, =OptionData= | not named | no | written | =Currency=, =Quantity=, =strikeGroup=, =OptionData= |
+| =CommodityAveragePriceOption= | =CommodityAveragePriceOption= | =CommodityAveragePriceOptionData= | =OptionData=, =Name=, =Currency=, =Quantity=, =Strike=, =PriceType=, =StartDate=, =EndDate=, =PaymentCalendar=, =PaymentLag=, =PaymentConvention=, =PricingCalendar= | not named | no | written | none |
+| =CommodityBasketOption= | =CommodityBasketOption= | =CommodityBasketOptionData= | =Currency=, =Notional=, =Underlyings=, =OptionData= | scripted | no | written | none |
+| =CommodityBasketVarianceSwap= | =CommodityBasketVarianceSwap= | =CommodityBasketVarianceSwapData= | =LongShort=, =Strike=, =Notional=, =Underlyings=, =ValuationSchedule=, =SquaredPayoff=, =SettlementDate=, =Currency= | scripted | no | written | =LongShort=, =Strike=, =Notional=, =Underlyings=, =ValuationSchedule=, =SquaredPayoff=, =SettlementDate=, =Currency= |
+| =CommodityBestEntryOption= | =CommodityBestEntryOption= | =CommodityBestEntryOptionData= | =LongShort=, =Currency=, =Notional=, =Multiplier=, =Cap=, =Strike=, =TriggerLevel=, =ResetMinimum=, =Premium=, =ExpiryDate=, =StrikeDate=, =PremiumDate=, =SettlementDate=, =StrikeObservationDates=, =Underlying= | scripted | no | written | =LongShort=, =Currency=, =Notional=, =Multiplier=, =Cap=, =Strike=, =TriggerLevel=, =ResetMinimum=, =Premium=, =ExpiryDate=, =StrikeDate=, =PremiumDate=, =SettlementDate=, =StrikeObservationDates=, =Underlying= |
+| =CommodityDigitalAveragePriceOption= | =CommodityDigitalAveragePriceOption= | =CommodityDigitalAveragePriceOptionData= | =OptionData=, =Name=, =Currency=, =DigitalCashPayoff=, =Strike=, =PriceType=, =StartDate=, =EndDate=, =PaymentCalendar=, =PaymentLag=, =PaymentConvention=, =PricingCalendar= | not named | no | written | =OptionData=, =Name=, =Currency=, =DigitalCashPayoff=, =Strike=, =PriceType=, =StartDate=, =EndDate=, =PaymentCalendar=, =PaymentLag=, =PaymentConvention=, =PricingCalendar= |
+| =CommodityDigitalOption= | =CommodityDigitalOption= | =CommodityDigitalOptionData= | =OptionData=, =Name=, =Currency=, =Strike=, =Payoff= | not named | no | written | =OptionData=, =Name=, =Currency=, =Strike=, =Payoff= |
+| =CommodityForward= | =CommodityForward= | =CommodityForwardData= | =Position=, =Maturity=, =Name=, =Currency=, =Strike=, =Quantity= | not named | yes | written | none |
+| =CommodityForwardVolatilityAgreement= | =CommodityForwardVolatilityAgreement= | =CommodityForwardVolatilityAgreementData= | =FvaDate=, =OptionExpiry=, =PremiumDate=, =Underlying=, =LongShort=, =ImpliedVolStrike=, =Quantity=, =PayCcy=, =SettlementDate= | scripted | no | written | =FvaDate=, =OptionExpiry=, =PremiumDate=, =Underlying=, =LongShort=, =ImpliedVolStrike=, =Quantity=, =PayCcy=, =SettlementDate= |
+| =CommodityGenericBarrierOption= | =CommodityGenericBarrierOption= | =CommodityGenericBarrierOptionData= | =PayCurrency=, =underlyingTypes=, =OptionData=, =Barriers= | scripted | no | written | =PayCurrency=, =underlyingTypes=, =OptionData=, =Barriers= |
+| =CommodityOption= | =CommodityOption= | =CommodityOptionData= | =OptionData=, =Name=, =Currency=, =strikeGroup=, =Quantity= | not named | yes | written | =strikeGroup= |
+| =CommodityOptionStrip= | =CommodityOptionStrip= | =CommodityOptionStripData= | =LegData= | not named | no | written | none |
+| =CommodityPairwiseVarianceSwap= | not registered | not in the XSD | none | not named | no | written | none |
+| =CommodityPosition= | =CommodityPosition= | =CommodityPositionData= | =Quantity=, =Underlying= | not named | no | written | =Quantity=, =Underlying= |
+| =CommodityRainbowOption= | =CommodityRainbowOption= | =CommodityRainbowOptionData= | =Currency=, =Notional=, =Strike=, =Underlyings=, =OptionData= | scripted | no | written | =Currency=, =Notional=, =Strike=, =Underlyings=, =OptionData= |
+| =CommoditySpreadOption= | =CommoditySpreadOption= | =CommoditySpreadOptionData= | =LegData=, =OptionData=, =SpreadStrike= | not named | no | written | =LegData=, =OptionData=, =SpreadStrike= |
+| =CommodityStrikeResettableOption= | =CommodityStrikeResettableOption= | =CommodityStrikeResettableOptionData= | =LongShort=, =OptionType=, =Currency=, =Strike=, =ResetStrike=, =Quantity=, =TriggerType=, =TriggerPrice=, =Underlying=, =ExpiryDate=, =SettlementDate=, =Premium=, =PremiumDate=, =ObservationDates= | scripted | no | written | =LongShort=, =OptionType=, =Currency=, =Strike=, =ResetStrike=, =Quantity=, =TriggerType=, =TriggerPrice=, =Underlying=, =ExpiryDate=, =SettlementDate=, =Premium=, =PremiumDate=, =ObservationDates= |
+| =CommoditySwap= | =CommoditySwap= | =SwapData= | =LegData= | =CrossCurrencyCommoditySwap=, =CommoditySwap= | yes | written | none |
+| =CommoditySwaption= | =CommoditySwaption= | =CommoditySwaptionData= | =OptionData=, =LegData= | not named | no | written | none |
+| =CommodityTaRF= | =CommodityTaRF= | =CommodityTaRFData= | =Currency=, =FixingAmount=, =Underlying=, =ScheduleData=, =OptionData=, =Barriers= | scripted | no | written | =Currency=, =FixingAmount=, =Underlying=, =ScheduleData=, =OptionData=, =Barriers= |
+| =CommodityVarianceSwap= | =ComVarSwap= | =CommodityVarianceSwapData= | =StartDate=, =EndDate=, =Currency=, =underlyingTypes=, =LongShort=, =Strike=, =Notional=, =Calendar= | not named | no | written | =underlyingTypes= |
+| =CommodityWindowBarrierOption= | =CommodityWindowBarrierOption= | not in the XSD | none | scripted | no | written | none |
+| =CommodityWorstOfBasketSwap= | =CommodityWorstOfBasketSwap= | =CommodityWorstOfBasketSwapData= | =LongShort=, =Currency=, =Quantity=, =Underlyings=, =InitialPrices=, =FloatingPeriodSchedule=, =FloatingPayDates=, =KnockOutLevels=, =FixedTriggerLevels=, =FixedRate=, =FloatingIndex=, =FloatingDayCountFraction= | scripted | no | written | =LongShort=, =Currency=, =Quantity=, =Underlyings=, =InitialPrices=, =FloatingPeriodSchedule=, =FloatingPayDates=, =KnockOutLevels=, =FixedTriggerLevels=, =FixedRate=, =FloatingIndex=, =FloatingDayCountFraction= |
+| =ConvertibleBond= | =ConvertibleBond= | =ConvertibleBondData= | =BondData= | =ConvertibleBond=, =Bond= | no | written | none |
+| =CreditDefaultSwap= | =CreditDefaultSwap= | =CreditDefaultSwapData= | =creditCurveIdType=, =LegData= | =CreditDefaultSwap= | no | written | =creditCurveIdType=, =LegData= |
+| =CreditLinkedSwap= | =CreditLinkedSwap= | =CreditLinkedSwapData= | =CreditCurveId= | not named | no | written | =CreditCurveId= |
+| =CrossCurrencySwap= | =CrossCurrencySwap= | =CrossCurrencySwapData= | =LegData= | =CrossCurrencySwap=, =Swap= | no | written | none |
+| =DoubleDigitalOption= | =DoubleDigitalOption= | =DoubleDigitalOptionData= | =Expiry=, =Settlement=, =BinaryPayout=, =BinaryLevel1=, =BinaryLevel2=, =Type1=, =Type2=, =Position=, =PayCcy= | scripted | no | written | none |
+| =EquityAccumulator= | =EquityAccumulator= | =EquityAccumulatorData= | =Currency=, =FixingAmount=, =Underlying=, =OptionData=, =ObservationDates=, =RangeBounds= | scripted | no | written | none |
+| =EquityAsianOption= | =EquityAsianOption= | =EquityAsianOptionData= | =Currency=, =Quantity=, =strikeGroup=, =OptionData= | not named | no | written | =strikeGroup= |
+| =EquityBarrierOption= | =EquityBarrierOption= | =EquityBarrierOptionData= | =OptionData=, =BarrierData=, =underlyingTypes=, =Currency=, =strikeGroup=, =Quantity= | not named | no | written | =underlyingTypes=, =strikeGroup= |
+| =EquityCliquetOption= | =EquityCliquetOption= | =EquityCliquetOptionData= | =underlyingTypes=, =Currency=, =Notional=, =LongShort=, =OptionType=, =Moneyness=, =ScheduleData= | not named | no | written | =underlyingTypes= |
+| =EquityDigitalOption= | =EquityDigitalOption= | =EquityDigitalOptionData= | =OptionData=, =Strike=, =PayoffAmount=, =underlyingTypes=, =Quantity= | not named | no | written | =underlyingTypes= |
+| =EquityDoubleBarrierOption= | =EquityDoubleBarrierOption= | =EquityDoubleBarrierOptionData= | =OptionData=, =BarrierData=, =underlyingTypes=, =Currency=, =strikeGroup=, =Quantity= | not named | no | written | =underlyingTypes=, =strikeGroup= |
+| =EquityEuropeanBarrierOption= | =EquityEuropeanBarrierOption= | =EquityEuropeanBarrierOptionData= | =OptionData=, =BarrierData=, =underlyingTypes=, =Currency=, =strikeGroup=, =Quantity= | =EquityOption=, =EquityDigitalOption= | no | written | =underlyingTypes=, =strikeGroup= |
+| =EquityForward= | =EquityForward= | =EquityForwardData= | =LongShort=, =Maturity=, =underlyingTypes=, =Currency=, =Strike=, =Quantity= | not named | yes | written | =underlyingTypes= |
+| =EquityOption= | =EquityOption= | =EquityOptionData= | =OptionData=, =underlyingTypes=, =Currency=, =Quantity=, =strikeGroup= | not named | yes | written | =underlyingTypes=, =strikeGroup= |
+| =EquityOptionPosition= | =EquityOptionPosition= | =EquityOptionPositionData= | =Quantity=, =Underlying= | not named | no | refused | none |
+| =EquityPosition= | =EquityPosition= | =EquityPositionData= | =Quantity=, =Underlying= | not named | no | written | none |
+| =EquitySwap= | =EquitySwap= | =EquitySwapData= | =LegData= | =CrossCurrencySwap=, =Swap= | yes | written | none |
+| =EquityTaRF= | =EquityTaRF= | =EquityTaRFData= | =Currency=, =FixingAmount=, =Underlying=, =ScheduleData=, =OptionData=, =Barriers= | scripted | no | written | none |
+| =EquityTouchOption= | =EquityTouchOption= | =EquityTouchOptionData= | =OptionData=, =BarrierData=, =underlyingTypes=, =PayoffCurrency=, =PayoffAmount= | =Swap= | no | written | =underlyingTypes= |
+| =EquityVarianceSwap= | =EqVarSwap= | =EquityVarianceSwapData= | =StartDate=, =EndDate=, =Currency=, =underlyingTypes=, =LongShort=, =Strike=, =Notional=, =Calendar= | not named | no | written | =underlyingTypes= |
+| =EquityWorstOfBasketSwap= | =EquityWorstOfBasketSwap= | =EquityWorstOfBasketSwapData= | =LongShort=, =Currency=, =Quantity=, =Underlyings=, =InitialPrices=, =FloatingPeriodSchedule=, =FloatingPayDates=, =KnockOutLevels=, =FixedTriggerLevels=, =FixedRate=, =FloatingIndex=, =FloatingDayCountFraction= | scripted | no | written | none |
+| =FlexiSwap= | =FlexiSwap= | =FlexiSwapData= | =OptionLongShort=, =LegData= | =FlexiSwap=, =CrossCurrencySwap=, =Swap= | no | written | none |
+| =ForwardBond= | =ForwardBond= | =ForwardBondData= | =BondData=, =SettlementData=, =LongInForward= | =ForwardBond= | no | refused | none |
+| =ForwardRateAgreement= | =ForwardRateAgreement= | =ForwardRateAgreementData= | =StartDate=, =EndDate=, =Currency=, =Index=, =LongShort=, =Strike=, =Notional= | =Swap=, =CrossCurrencySwap= | no | written | none |
+| =FxAccumulator= | =FxAccumulator= | =FxAccumulatorData= | =Currency=, =FixingAmount=, =Underlying=, =OptionData=, =ObservationDates=, =RangeBounds= | scripted | no | written | none |
+| =FxAverageForward= | =FxAverageForward= | =FxAverageForwardData= | =PaymentDate=, =ObservationDates=, =FixedPayer=, =ReferenceNotional=, =ReferenceCurrency=, =SettlementNotional=, =SettlementCurrency=, =FXIndex= | =Swap= | no | written | none |
+| =FxBarrierOption= | =FxBarrierOption= | =FxBarrierOptionData= | =OptionData=, =BarrierData=, =BoughtCurrency=, =BoughtAmount=, =SoldCurrency=, =SoldAmount= | not named | no | written | none |
+| =FxDigitalBarrierOption= | =FxDigitalBarrierOption= | =FxDigitalBarrierOptionData= | =OptionData=, =BarrierData=, =Strike=, =PayoffAmount=, =ForeignCurrency=, =DomesticCurrency= | =FxDigitalOption= | no | written | none |
+| =FxDigitalOption= | =FxDigitalOption= | =FxDigitalOptionData= | =OptionData=, =Strike=, =PayoffAmount=, =ForeignCurrency=, =DomesticCurrency= | =FxDigitalOption= | no | written | none |
+| =FxDoubleBarrierOption= | =FxDoubleBarrierOption= | =FxDoubleBarrierOptionData= | =OptionData=, =BarrierData=, =BoughtCurrency=, =BoughtAmount=, =SoldCurrency=, =SoldAmount= | not named | no | written | none |
+| =FxDoubleTouchOption= | =FxDoubleTouchOption= | =FxDoubleTouchOptionData= | =OptionData=, =BarrierData=, =ForeignCurrency=, =DomesticCurrency=, =PayoffCurrency=, =PayoffAmount= | =Swap= | no | written | none |
+| =FxEuropeanBarrierOption= | =FxEuropeanBarrierOption= | =FxEuropeanBarrierOptionData= | =OptionData=, =BarrierData=, =BoughtCurrency=, =BoughtAmount=, =SoldCurrency=, =SoldAmount= | =FxOptionEuropeanCS=, =FxOptionForward=, =FxOptionForward=, =FxOptionForward=, =FxOption=, =FxDigitalOption= | no | written | none |
+| =FxForward= | =FxForward= | =FxForwardData= | =ValueDate=, =BoughtCurrency=, =BoughtAmount=, =SoldCurrency=, =SoldAmount= | not named | yes | written | none |
+| =FxGenericBarrierOption= | =FxGenericBarrierOption= | =FxGenericBarrierOptionData= | =PayCurrency=, =underlyingTypes=, =OptionData=, =Barriers= | scripted | no | written | =underlyingTypes= |
+| =FxKIKOBarrierOption= | =FxKIKOBarrierOption= | =FxKIKOBarrierOptionData= | =OptionData=, =Barriers=, =BoughtCurrency=, =BoughtAmount=, =SoldCurrency=, =SoldAmount= | =FxBarrierOption=, =FxOption=, =FxBarrierOption=, =FxDoubleBarrierOption= | no | written | none |
+| =FxOption= | =FxOption= | =FxOptionData= | =OptionData=, =BoughtCurrency=, =BoughtAmount=, =SoldCurrency= | =FxForward= | yes | written | none |
+| =FxSwap= | =FxSwap= | =FxSwapData= | =NearDate=, =NearBoughtCurrency=, =NearBoughtAmount=, =NearSoldCurrency=, =NearSoldAmount=, =FarDate=, =FarBoughtAmount=, =FarSoldAmount= | =FxForward= | no | written | none |
+| =FxTaRF= | =FxTaRF= | =FxTaRFData= | =Currency=, =FixingAmount=, =Underlying=, =ScheduleData=, =OptionData=, =Barriers= | scripted | no | written | none |
+| =FxTouchOption= | =FxTouchOption= | =FxTouchOptionData= | =OptionData=, =BarrierData=, =ForeignCurrency=, =DomesticCurrency=, =PayoffCurrency=, =PayoffAmount= | =Swap= | no | written | none |
+| =FxVarianceSwap= | =FxVarSwap= | =FxVarianceSwapData= | =StartDate=, =EndDate=, =Currency=, =underlyingTypes=, =LongShort=, =Strike=, =Notional=, =Calendar= | not named | no | written | =underlyingTypes= |
+| =IndexCreditDefaultSwap= | =IndexCreditDefaultSwap= | =IndexCreditDefaultSwapData= | =CreditCurveId=, =LegData= | =IndexCreditDefaultSwap= | no | written | =CreditCurveId=, =LegData= |
+| =IndexCreditDefaultSwapOption= | =IndexCreditDefaultSwapOption= | =IndexCreditDefaultSwapOptionData= | =OptionData=, =IndexCreditDefaultSwapData= | =IndexCreditDefaultSwapOption=, =IndexCreditDefaultSwap= | no | written | =OptionData=, =IndexCreditDefaultSwapData= |
+| =InflationSwap= | =InflationSwap= | =InflationSwapData= | =LegData= | =CrossCurrencySwap=, =Swap= | yes | written | none |
+| =IntradayPowerForward= | =IntradayPowerForward= | =IntradayPowerForwardData= | =Position=, =Maturity=, =Name=, =Currency=, =Strike=, =Quantity=, =DeliveryDate=, =DeliveryStart or PowerLoadProfileData= | not named | no | written | =Position=, =Maturity=, =Name=, =Currency=, =Strike=, =Quantity=, =DeliveryDate=, =DeliveryStart or PowerLoadProfileData= |
+| =KnockOutSwap= | =KnockOutSwap= | =KnockOutSwapData= | =BarrierData=, =BarrierStartDate=, =LegData= | scripted | no | written | none |
+| =PerformanceOption_01= | =PerformanceOption_01= | =PerformanceOption01Data= | =NotionalAmount=, =ParticipationRate=, =ValuationDate=, =SettlementDate=, =Underlyings=, =StrikePrices=, =Strike=, =Position=, =PayCcy= | scripted | no | written | none |
+| =RiskParticipationAgreement= | =RiskParticipationAgreement= | =RiskParticipationAgreementData= | =ParticipationRate=, =ProtectionStart=, =ProtectionEnd=, =CreditCurveId=, =ProtectionFee=, =Underlying= | not named | no | written | =ParticipationRate=, =ProtectionStart=, =ProtectionEnd=, =CreditCurveId=, =ProtectionFee=, =Underlying= |
+| =ScriptedTrade= | =ScriptedTrade= | =ScriptedTradeData= | =Data= | scripted | no | written | none |
+| =Swap= | =Swap= | =SwapData= | =LegData= | =CrossCurrencySwap=, =Swap= | yes | written | none |
+| =Swaption= | =Swaption= | =SwaptionData= | =OptionData or LegData= | =CrossCurrencySwap=, =Swap=, =Swap=, =CrossCurrencySwap=, =Swap= | no | written | none |
+
+** Shared pieces
+
+| XSD type | Used by | Required terms |
+|-
+| =optionData= | 36 | =LongShort= |
+| =scheduleData= | 15 | none |
+| =legData= | 13 | =Payer=, =LegType= |
+| =underlying= | 11 | =Type=, =Name= |
+| =barrierData= | 11 | =Type=, =Levels= |
+| =bondData= | 6 | =SecurityId= |
+| =underlyings= | 6 | =Underlying= |
+| =fundingData= | 2 | =LegData= |
+| =convertibleBondData= | 1 | =BondData= |
+| =tranches= | 1 | =Tranche=, =ScheduleData= |
+| =totalReturnData= | 1 | =Payer=, =PriceType=, =ScheduleData= |
+| =legData_capfloor= | 1 | =LegType=, =Currency=, =DayCounter=, =Notionals=, =ScheduleData=, =legDataType= |
+| =equityOptionUnderlyingData= | 1 | =Underlying=, =OptionData=, =Strike= |
+| =settlementData= | 1 | =ForwardMaturityDate= |
+| =indexCreditDefaultSwapData= | 1 | =CreditCurveId=, =LegData= |
+
+# END GENERATED
+
+* See also
+
+- [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]], the story this page serves.

@@ -173,7 +173,7 @@ grant select on ores_database_info_tbl
 -- Per-service grants
 -- ---------------------------------------------------------------------------
 -- ---------------------------------------------------------------------------
--- iam_service: IAM domain service
+-- The approvals mode: every service that raises an approval reads it
 -- ---------------------------------------------------------------------------
 -- The inbox reads the approvals mode on every raise and writes it when a tenant
 -- changes it.
@@ -184,6 +184,9 @@ select _ores_grant_select_fn('ores_variability_system_settings_', :'reporting_se
 select _ores_grant_select_fn('ores_variability_system_settings_', :'trading_service_user');
 select _ores_grant_select_fn('ores_variability_system_settings_', :'marketdata_service_user');
 
+-- ---------------------------------------------------------------------------
+-- iam_service: IAM domain service
+-- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_iam_', :'iam_service_user');
 select _ores_grant_select_fn('ores_assets_', :'iam_service_user');
 select _ores_grant_select_fn('ores_dq_', :'iam_service_user');

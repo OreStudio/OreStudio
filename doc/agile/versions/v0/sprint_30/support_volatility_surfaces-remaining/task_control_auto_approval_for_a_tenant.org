@@ -91,7 +91,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The start step may run before the tenant's row exists | =provision_tenant_workflow.hpp= | Declined | The system steps are a separate run, and the live history shows the tenant row changing in order. |
+| 2 | A system tenant user can switch off approvals for the installation | =approval_operations_handler.hpp= | Declined | That is the installation's documented mode, it needs the permission, and the notice names it. Every tenant has its own seeded row, so few rows fall back to it. |
+| 3 | A failed run leaves the switch on | provisioning | Declined | Stated in the Result. The notice makes it visible, and the shell turns it off. |
+| 4 | =policy_words= reads the mode twice | =approval_lifecycle.cpp= | Declined | One extra read on an auto-approved close. The two reads can differ only if someone changes the mode between them. |
+| 5 | A write has no version check | =approval_lifecycle.cpp= | Declined | The repository's own write already claims the row it replaces. |
+| 6 | The grants sit under the wrong header | =iam_service_db_grants_create.sql= | Fixed | They have their own section. |
+| 7 | Rerun on a fresh database | PR | Done | Recreated and provisioned from the final grant file, and the toggle ran again. |
+| 8 | Confirm the provisioning role holds the permission | =iam_roles_populate.sql= | Done | TenantAdmin holds every permission, and the live run changed the mode. |
+| 9 | A whitespace-only reason passes | =approval_operations_handler.hpp= | Declined | Only administrators reach this, and the reason is advisory. |
 
 * Result
 

@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/give-parties-the-systems-raw-quotes
-#+pr:
+#+pr: 4537
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4537][#4537]] | [iam] Give every Acme party the raw quotes of the funding set |
 
 * Review
 

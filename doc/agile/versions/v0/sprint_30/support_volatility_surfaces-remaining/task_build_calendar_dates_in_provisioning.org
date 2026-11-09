@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/build-calendar-dates-in-provisioning
-#+pr:
+#+pr: 4532
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4532][#4532]] | [refdata] Build holiday calendars in provisioning |
 
 * Review
 

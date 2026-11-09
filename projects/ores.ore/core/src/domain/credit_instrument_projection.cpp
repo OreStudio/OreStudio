@@ -29,6 +29,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -1029,10 +1030,31 @@ auto read_credit_instrument(xml::record_reader trade, std::string_view trade_typ
 auto write_credit_instrument(xml::record_writer& trade,
                              std::string_view trade_type,
                              const trading::domain::trade_instrument& instrument,
-                             const ores::marketdata::projection::ore_projection&) -> bool {
+                             const ores::marketdata::projection::ore_projection& projection)
+    -> bool {
     const auto* v = std::get_if<credit_instrument_data>(&instrument);
     if (v == nullptr || !is_credit_trade_type(trade_type))
         return false;
+
+    auto named = *v;
+    const auto name_curves = [&](auto& rows) {
+        for (auto& row : rows) {
+            if constexpr (std::is_same_v<decltype(row.credit_curve_id), std::string>) {
+                row.credit_curve_id = projection.ore_name_or_stored(row.credit_curve_id);
+            } else if (row.credit_curve_id) {
+                row.credit_curve_id = projection.ore_name_or_stored(*row.credit_curve_id);
+            }
+        }
+    };
+    name_curves(named.credit_default_swap_instruments);
+    name_curves(named.index_credit_default_swap_instruments);
+    name_curves(named.credit_linked_swap_instruments);
+    name_curves(named.risk_participation_agreement_instruments);
+    name_curves(named.constituents);
+    if (named.wrapped_index_swap)
+        named.wrapped_index_swap->credit_curve_id =
+            projection.ore_name_or_stored(named.wrapped_index_swap->credit_curve_id);
+    v = &named;
 
     if (trade_type == "CreditDefaultSwap")
         write_cds(trade, *v);

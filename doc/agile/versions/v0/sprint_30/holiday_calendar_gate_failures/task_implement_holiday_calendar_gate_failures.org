@@ -8,7 +8,7 @@
 #+filetags: :holiday_calendar_gate_failures:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/holiday-calendar-gate-failures
-#+pr:
+#+pr: 4538
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4538][#4538]] | [build] Fix the four local checks main fails |
 
 * Review
 

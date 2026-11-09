@@ -101,7 +101,7 @@ via its "Verifies task" field.
 | 5 | A duplicate series of one item and provider is ignored silently | =party_curve_blueprints.hpp= | Declined | The unique index on tenant, party, item and provider rules it out. |
 | 6 | version = 0 repeats | =party_curve_blueprints.hpp= | Declined | Three lines. A helper would hide which copy resets what. |
 | 7 | The list limits could truncate | =tenant_provisioning_handler.hpp= | Declined | The system holds 20 blueprints and 140 pillars, well under each limit. |
-| 8 | Three minutes of patience per party | =tenant_provisioning_handler.hpp= | Declined | Quotes arrive within seconds of the subscription; the live run waited none. |
+| 8 | Three minutes of patience per party | =tenant_provisioning_handler.hpp= | Declined | The live run waited nine rounds of ten seconds for the first party's quotes, and none for the other three, so the whole step took under two minutes. |
 | 9 | An include is out of order | =tenant_provisioning_handler.hpp= | Fixed | Moved to the marketdata group. |
 
 * Result

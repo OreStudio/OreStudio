@@ -224,6 +224,15 @@ cross join (values
         {"party": "ACME Corporation US Inc", "provider": "bloomberg", "source": "bloomberg-a"},
         {"party": "ACME Corporation HK Ltd", "provider": "bloomberg", "source": "bloomberg-a"}
     ]}'::jsonb),
+    -- A curve is derived data, so each legal entity bootstraps its own funding curves from the
+    -- quotes its subscriptions deliver, and publishes them under the run's auto-approval. The
+    -- curves are the system's blueprints, copied into each party.
+    ('acme_demo', 'publish_party_curves', 65, '{"parties": [
+        "Acme Corporation Plc",
+        "ACME Corporation UK plc",
+        "ACME Corporation US Inc",
+        "ACME Corporation HK Ltd"
+    ]}'::jsonb),
     -- the generator. The counterparties are the entity's own
     -- tradeable links, which is why the step resolves them rather than the
     -- row naming them. No anchor is stated: the population is meant to sit

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/bootstrap-funding-curves-in-provisioning
+#+pr: 4539
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ Every provisioned party has its own published funding curves. A curve is derived
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -45,9 +45,14 @@ Every provisioned party has its own published funding curves. A curve is derived
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The system tenant already holds 20 curve blueprints: a bootstrap config, its pillars and an output series per currency. The system run publishes them from the system party's Bloomberg series. A new step, =publish_party_curves=, gives each party it names its own copy, after =subscribe_market_data= and inside the auto-approval bracket.
+
+- =plan_party_curves= is a pure function. It maps each system config, pillar and output series to the party's copy. Each pillar reads the party's own series of the same item and provider. Ids derive from the party and the system row, so a second run names the same rows and writes only what is missing. A config whose quotes have not reached the party waits, and the plan names the series it lacks.
+- The step reads the system blueprints as the system administrator, and each party's series and configs in the party's session. It waits up to three minutes for the quotes, writes the rows, then previews and publishes each curve the party has not published yet.
+- The preview and publish loop moves out of the system step into =publish_curves=, so both steps publish the same way.
+- A curve that does not publish fails the step, named with its party.
+
+What reads the system-tenant curves: only the system tenant itself. The curve reader, the reports and the forward ladder read the session's tenant, and the derived FX vol feed reads no curve. The system curves stay as the reference set the system run checks.
 
 * Measurements
 
@@ -61,7 +66,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Published funding curves after provisioning acme_demo on a fresh database | ACMCOR, ACCOUK, ACCOUS and ACCOHK: 20 each, in 20 currencies, every approval closed by the tenant rule | =evidence/party_funding_curves.sql= | Working tree on e8a7f40f9b |
+| What a party curve read | Its lineage names the party's own Bloomberg series, for example ACCOHK's EUR-ESTR | =evidence/party_funding_curves.sql= | Working tree on e8a7f40f9b |
+| A person's publish after provisioning | Mode enforced; henry.jones raised ACCOUS EUR-ESTR, it waited, mark.reid approved, henry.jones applied it | =evidence/party_curve_maker_checker_*.ores= | Working tree on e8a7f40f9b |
+| Tests | [provision_step] and [party_curves] 49 cases, 154 assertions. [workflow] 32 cases, 212 assertions | =ores.iam.core.tests=, =ores.iam.api.tests= | Working tree on e8a7f40f9b |
 
 * Notes
 
@@ -80,12 +88,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4539][#4539]] | [iam] Bootstrap and publish each party's funding curves in provisioning |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The system step's doc comment sits above the new struct | =tenant_provisioning_handler.hpp= | Fixed | Moved back above the step. |
+| 2 | A curve whose discount curve waits points at a config never written | =party_curve_blueprints.hpp= | Fixed | A repeated pass moves it to waiting with its rows. New test. |
+| 3 | The failure message should say a rerun is safe | =tenant_provisioning_handler.hpp= | Fixed | It does now. |
+| 4 | The plan is stale at write time | =tenant_provisioning_handler.hpp= | Declined | One provisioning run per tenant writes these rows. A retried step reads the holdings first, and a precondition-any put of an existing id writes a new version with the same content. |
+| 5 | A duplicate series of one item and provider is ignored silently | =party_curve_blueprints.hpp= | Declined | The unique index on tenant, party, item and provider rules it out. |
+| 6 | version = 0 repeats | =party_curve_blueprints.hpp= | Declined | Three lines. A helper would hide which copy resets what. |
+| 7 | The list limits could truncate | =tenant_provisioning_handler.hpp= | Declined | The system holds 20 blueprints and 140 pillars, well under each limit. |
+| 8 | Three minutes of patience per party | =tenant_provisioning_handler.hpp= | Declined | The live run waited nine rounds of ten seconds for the first party's quotes, and none for the other three, so the whole step took under two minutes. |
+| 9 | An include is out of order | =tenant_provisioning_handler.hpp= | Fixed | Moved to the marketdata group. |
 
 * Result
+
+Every operational Acme party now publishes its own 20 funding curves during provisioning. The curves copy the system's blueprints, read the quotes the party's own subscriptions deliver, and close under the tenant's auto-approval. After provisioning, a person publishes through maker-checker as before.
+
+Nothing outside the system tenant reads the system curves. They stay as the reference set the system run checks.
+
+Not run live: a curve that fails to publish, and a second run of the step. The plan's tests cover the second run, and the step skips a curve the party has already published.
+
+The first live run failed because the workflow service also builds the step list, and I had not rebuilt it.

@@ -266,6 +266,20 @@ TEST_CASE("the setup run's steps declare which steps must answer first", "[workf
     CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 7);
 }
 
+TEST_CASE("a party's curves wait for the subscriptions that deliver their quotes", "[workflow]") {
+    const auto def = setup_definition();
+    const auto steps = def.build_steps(request_json({declared("provision_party"),
+                                                     declared("subscribe_market_data"),
+                                                     declared("publish_party_curves")}),
+                                       tenant_id,
+                                       correlation_id);
+
+    for (const auto& step : steps)
+        if (step.name == "publish_party_curves")
+            CHECK(step.consumes == std::vector<std::string>{"subscribe_market_data"});
+    CHECK(steps[steps.size() - 2].name == "publish_party_curves");
+}
+
 TEST_CASE("the trade generation waits for the books, the staff and the feeds", "[workflow]") {
     const auto def = setup_definition();
     const auto steps = def.build_steps(request_json({declared("publish_bundle"),

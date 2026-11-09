@@ -54,6 +54,7 @@ enum class provision_step_action {
     start_auto_approval,
     end_auto_approval,
     subscribe_market_data,
+    publish_party_curves,
     generate_trades,
     schedule_reports,
     complete_provisioning,
@@ -103,6 +104,8 @@ enum class provision_step_action {
         return provision_step_action::build_calendars;
     if (kind == "subscribe_market_data")
         return provision_step_action::subscribe_market_data;
+    if (kind == publish_party_curves_step_kind)
+        return provision_step_action::publish_party_curves;
     if (kind == "generate_trades")
         return provision_step_action::generate_trades;
     if (kind == schedule_reports_step_kind)
@@ -739,6 +742,18 @@ parse_report_schedule_arguments(const std::string& arguments_json) {
         if (party.empty())
             throw std::runtime_error("The step names an empty party in its 'parties' argument.");
     return result;
+}
+
+/**
+ * @brief Reads a publish_party_curves step's arguments: the parties that bootstrap their own
+ * curves.
+ *
+ * The step states no curve. Each party copies every blueprint the system tenant holds, so a
+ * curve the system gains reaches the parties without the profile changing.
+ */
+[[nodiscard]] inline std::vector<std::string>
+parse_party_curves_arguments(const std::string& arguments_json) {
+    return parse_report_schedule_arguments(arguments_json).parties;
 }
 
 }

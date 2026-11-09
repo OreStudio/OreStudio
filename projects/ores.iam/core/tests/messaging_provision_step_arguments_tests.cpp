@@ -67,6 +67,8 @@ TEST_CASE("the executor classifies each kind it executes into its own action", "
     CHECK(classify_step_kind("attach_photos") == provision_step_action::attach_photos);
     CHECK(classify_step_kind("subscribe_market_data") ==
           provision_step_action::subscribe_market_data);
+    CHECK(classify_step_kind("publish_party_curves") ==
+          provision_step_action::publish_party_curves);
     CHECK(classify_step_kind("generate_trades") == provision_step_action::generate_trades);
     CHECK(classify_step_kind("schedule_reports") == provision_step_action::schedule_reports);
     CHECK(classify_step_kind("complete_provisioning") ==

@@ -1,0 +1,11 @@
+# Step 2: the Market Risk decider, who did not raise them, approves both requests.
+# Run with USD_REQUEST and EUR_REQUEST set to the ids step 1 printed.
+connect $ORES_NATS_URL
+
+login mark.reid@acme_corporation Secure-Password-123
+
+approval_operations decide-approval ${USD_REQUEST} approve "The USD quotes match the day's market" none --version 1
+
+approval_operations decide-approval ${EUR_REQUEST} approve "The EUR quotes match the day's market" none --version 1
+
+logout

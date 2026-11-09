@@ -26,11 +26,11 @@ The live web draws the signed-off forward ladder. This is steps 3 and 4 of [[id:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | The screen is built and waits for its live check. |
-| Waiting on   | A live run and the owner's sign off. |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
+| [[id:535F4797-2CB5-459B-A0D5-7286537F3EB1][Verify the FX forward ladder screen]] | PENDING | Runs on seeded EUR and USD curves published through maker-checker. |
 |          |       |       |
 
 * PRs
@@ -89,3 +90,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The FX forward ladder screen is live at =/market-data/fx-forwards=. It shows spot, both funding curves, the four measures, the ladder start and forward-forward for one USD pair, in English, French and Portuguese.
+
+The owner tried the screen on seeded curves published through maker-checker and signed it off in conversation on 2026-11-09. The scenario records step 1 as PASS and leaves the other steps unrecorded. The route's replies and refusals were checked live, and the web tests pass.
+
+The screen reads through compute-on-read, which the task Show published FX forward curves and their provenance replaces. Value dates ignore holidays until the task Build holiday calendars in provisioning is done.

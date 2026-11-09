@@ -31,7 +31,8 @@ namespace ores::marketdata::datum {
  *
  * The value belongs to the generator, not to a deployment. Every store derives
  * the id of a stream in this namespace, so the id is a function of the provider
- * and the series URI alone and no table has to say what it is.
+ * and the series URI alone and no table has to say what it is. The value must
+ * never change, because a new value orphans every stored tick.
  */
 inline constexpr boost::uuids::uuid series_stream_namespace = {{0x7d,
                                                                 0x41,

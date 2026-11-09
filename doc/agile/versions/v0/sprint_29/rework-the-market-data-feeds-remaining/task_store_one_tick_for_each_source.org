@@ -102,6 +102,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Enforce the subscription check on every tick read | tick_repository.hpp | Part | The contract now says every caller must check. The wrapper type and the coverage test stay open. |
+| 2 | Derived-only party gets no ticks on compute paths | tick_entitlement.cpp | Accept | Compute reads accept the derived right. Raw reads stay strict, and a snapshot refuses. |
+| 3 | Stream id omits the feed | series_stream.cpp | Open | Needs the owner decision. |
+| 4 | No unique point key | marketdata_ticks_create.sql | Open | Needs the owner decision. |
+| 5 | Burst cleanup deletes all ticks | app_feed_ingest_loop_tests.cpp | Accept | The delete names the streams of the run. |
+| 6 | Smoke joins the removed tenant column | compass_smoke.py | Accept | Counts ticks of the feeds the tenant routes. |
+| 7 | Marketdata schema SVG is stale | ores_schema.marketdata.svg | Accept | Regenerated from the puml. |
+| 8 | Full subscription read for each check | tick_entitlement.cpp | Accept | may_read_ticks reads by provider. readable_providers still serves bulk reads. |
+| 9 | Overlapping party checks | series_tick_reader.cpp | Decline | Different conditions, and both return party_required. |
+| 10 | Writer role grants on the dictionary | feed_ingest_loop.cpp | Decline | resolve_all runs as the service role through ctx_, not the writer role. |
+| 11 | Coordinate cache scan | feed_ingest_loop.cpp | Decline | The scan covers the streams of one URI, one for each provider, so it stays short. |
+| 12 | Stream namespace must not change | series_stream.hpp | Accept | Added the note. |
 
 * Result

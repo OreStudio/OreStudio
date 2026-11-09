@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/build-the-fx-forward-ladder-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,10 +26,10 @@ The live web draws the signed-off forward ladder. This is steps 3 and 4 of [[id:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Now          | The screen is built and waits for its live check. |
+| Waiting on   | A live run and the owner's sign off. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-09                               |
 
@@ -56,7 +56,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web tests | 200 files, 2486 tests, all pass | =npx vitest run --root packages/web= | Working tree on main |
+| BFF curve tests | 43 tests, all pass | =npx vitest run --root packages/bff src/curves.test= | Working tree on main |
 
 * Notes
 

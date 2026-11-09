@@ -628,6 +628,54 @@ describe('the published curve routes', () => {
         });
     });
 
+    it("reads a pair's forward ladder and returns it without the outcome fields", async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'marketdata.v1.ops.get_fx_forward_ladder': {
+                success: true,
+                message: '',
+                pair_code: 'EUR/USD',
+                spot: 1.085,
+                rows: [],
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/fx-forward-ladder', {
+            pair_code: 'EUR/USD',
+            as_of: '2026-11-09 23:59:59Z',
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ pair_code: 'EUR/USD', spot: 1.085, rows: [] });
+        expect(calls[0]?.body).toEqual({
+            pair_code: 'EUR/USD',
+            as_of: '2026-11-09 23:59:59Z',
+            party_id: '',
+        });
+    });
+
+    it('carries the refusal of a forward ladder to the screen', async () => {
+        const { server, sessionId } = buildTestServer({
+            'marketdata.v1.ops.get_fx_forward_ladder': {
+                success: false,
+                message: 'No spot of EUR/USD was observed at or before the as-of.',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/curves/fx-forward-ladder', {
+            pair_code: 'EUR/USD',
+            as_of: '2026-11-09 23:59:59Z',
+        });
+        expect(response.statusCode).toBeGreaterThanOrEqual(400);
+        expect(response.body).toContain('No spot of EUR/USD');
+    });
+
+    it('refuses a forward ladder with a malformed as-of', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/curves/fx-forward-ladder', {
+            pair_code: 'EUR/USD',
+            as_of: 'yesterday',
+        });
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('ends a set with the reason the person chose', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'marketdata.v1.ops.withdraw_curve': {

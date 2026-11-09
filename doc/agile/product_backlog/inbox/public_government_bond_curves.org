@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F542128F-A247-4F0D-948F-44FA02529CFD
+:END:
+#+title: Read the public government bond curves
+#+description: The US Treasury par curve, the H.15 curve, the gilt curve and the ECB's EUR AAA spot curve could be read as pillared items, moved here from Read the public interest rate sources, which now reads overnight rates only.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:ir:curves:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Read the public government bond curves as pillared items: the US Treasury par yield curve, the H.15 Treasury curve on FRED, the Bank of England gilt curve, and the ECB's EUR AAA spot curve. Each publisher has its own adapter, as the overnight rates do.
+
+* Why
+
+The story Read the public interest rate sources first planned these curves with the overnight rates. The overnight-index bootstrap does not read them, so the story dropped them on 2026-11-09. They are useful later as a source of real curve shapes to calibrate the synthetic IR curves against, or as a government discount curve.
+
+* References
+
+- [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]]
+
+* See also
+
+- [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][Calibration sources]]

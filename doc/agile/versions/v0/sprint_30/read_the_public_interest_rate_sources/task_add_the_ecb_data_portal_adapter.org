@@ -2,7 +2,7 @@
 :ID: 319D1167-5429-404D-A212-D2E616CEB13A
 :END:
 #+title: Task: Add the ECB Data Portal adapter
-#+description: A module that reads ECB Data Portal series: €STR and the EUR AAA spot curve.
+#+description: A specialised adapter reads €STR from the ECB Data Portal and stores its history as fixings in the system tenant.
 #+type: task
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-11-08
+#+updated: 2026-11-09
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A module reads ECB Data Portal series and publishes them on the contract.
+€STR is stored as fixings in the system tenant, with its history, read from the ECB Data Portal through series =EST/B.EU000A2X2A25.WT= of =data-api.ecb.europa.eu=, in CSV. The adapter is specialised: it reads the ECB Data Portal alone, and it supplies only its fetcher, its parser and its settings to the library of [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]].
 
 * Status
 
@@ -29,14 +29,19 @@ A module reads ECB Data Portal series and publishes them on the contract.
 | State        | BACKLOG                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] and [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]]. |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Last touched | 2026-11-09 |
 
 * Acceptance
 
-- It fetches €STR and curve pillars.
-- It serves an end-of-day feed through a session.
+- The adapter reads the ECB Data Portal alone, and it does not copy the announce, the demand, the backfill or the publish code.
+- The ECB Data Portal is a supplier in the catalogue, its €STR series maps to the €STR item of [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]], and a session and a feed of it are seeded in the system tenant.
+- The session's terms are accepted at setup, as the terms of the FX sources are. A session whose terms are not accepted is skipped and reported, and provisioning does not fail.
+- A fresh environment stores the €STR history as fixings within minutes of provisioning, and the log names the source and the count it stored.
+- Each fixing is stored as published, with the credit that the terms ask for.
+- The depth of the history is measured and written into [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][the calibration sources note]].
+- Unit tests parse a recorded response of the ECB Data Portal, and a malformed response gives an error, not a fixing.
 
 * Plan
 

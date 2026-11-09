@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 0DB85F8F-4C7D-4428-B514-AF69CE8E5D86
+:END:
+#+title: Task: Separate the public source adapter's plumbing from its fetching
+#+description: The Frankfurter adapter's announce, demand, backfill and publish code moves into a library that each specialised public source adapter links, so a new adapter supplies only its fetching and parsing.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:adapter:read_the_public_interest_rate_sources:sprint_30:v0:
+#+owner: marco
+#+branch: feature/read-the-public-overnight-rates
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each public source has its own adapter, because each publisher has its own API, its own format and its own terms. The code that does not depend on the publisher is in one library: the announce, the demand set, the backfill from the latest stored fixing, the refresh and the publish of ticks. An adapter supplies a fetcher and a parser for its publisher, its adapter code and its settings, and nothing more. The Frankfurter adapter is the first user of the library, and its behaviour does not change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- The library holds the code that does not depend on the publisher, and the Frankfurter adapter links it.
+- The library does not name a publisher, a publisher's key or a publisher's format.
+- The tests of the Frankfurter adapter pass with no change to what they assert, and a fresh environment stores the same count of FX fixings as before.
+- A new adapter supplies its fetcher, its parser, its adapter code and its settings, and nothing else.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Today the adapter knows only Frankfurter. =source_feed= takes a =frankfurter_fetcher=, =hosted_source= has a =frankfurter_key=, and =official_adapter.cpp= sets the adapter code to ="frankfurter"=. The synthetic simulator and the derived FX volatility source in =ores.synthetic= are adapters too; read how they are hosted before the plan names where the library lives.
+
+Two publishers share one adapter only when their API and format are the same, as the Frankfurter providers are. Otherwise each publisher has its own adapter.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

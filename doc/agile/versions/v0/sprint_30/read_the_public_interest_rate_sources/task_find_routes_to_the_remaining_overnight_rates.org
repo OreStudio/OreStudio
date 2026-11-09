@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: E5A66CAD-EABC-4916-B8BC-5EF2A5DD4BDA
+:END:
+#+title: Task: Find a route to the overnight rate of each remaining currency
+#+description: For each currency without a usable source, read the publisher's route and terms, and add an adapter task for each source that is usable.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:ir:research:read_the_public_interest_rate_sources:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The system reads the public overnight rate of as many of the 28 currencies as their publishers allow. The survey in [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][the calibration sources note]] found a usable source for four currencies: USD, EUR, GBP and CAD. This task reads the route and the terms of each other currency, and adds an adapter task for each source that is usable.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- AUD has a route that a script can read, or the note records why none exists. The RBA server refused a script with 403.
+- NZD has its terms and its route read. The RBNZ server refused a script with 403 on both.
+- The Bank of Japan's call rate is not loaded until the task's owner asks the Bank's Public Relations Department whether this use is commercial, and writes its answer into [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][the calibration sources note]].
+- Each of the other twenty currencies has its route and its terms read, and its Usable column filled.
+- Each usable source has its own adapter task in [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]]. An existing adapter reads the source only when the API and the format are the same.
+- The index questions of PLN and TWD are answered, or passed to the task that replaces ceased or misnamed feeds.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+CHF is out: SIX counts a curve built from SARON as derived data, which needs a SIX Data License. Do not read it again unless the licence question changes.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

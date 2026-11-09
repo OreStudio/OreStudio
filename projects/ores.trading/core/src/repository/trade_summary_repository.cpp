@@ -726,7 +726,7 @@ std::vector<domain::trade_summary> trade_summary_repository::read_blotter_page(
 
     auto where = qb::condition{"tenant_id = ?",
                                {ores::database::pq::text_param(ctx.tenant_id().to_string())}};
-    if (const auto condition = trade_summary_filter_condition(filter))
+    if (auto condition = trade_summary_filter_condition(filter))
         where = std::move(where) && std::move(*condition);
 
     if (!after.empty()) {

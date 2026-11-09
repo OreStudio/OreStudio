@@ -27,6 +27,7 @@
 #include <regex>
 #include <set>
 #include <string>
+#include <type_traits>
 
 using namespace ores::trading::builders;
 using namespace std::chrono;
@@ -178,4 +179,34 @@ TEST_CASE("every_catalogued_trade_type_has_a_builder_or_awaits_one", tags) {
         accounted.emplace(type);
     }
     CHECK(accounted == catalogue);
+}
+
+TEST_CASE("a_notional_that_is_not_positive_fails_and_names_the_term", tags) {
+    conv::convention_lookup lookup(euribor_conventions());
+    auto zero = terms();
+    zero.notional = decimal{};
+    const auto swap = vanilla_swap_builder(lookup, zero).build();
+    REQUIRE_FALSE(swap.has_value());
+    CHECK(swap.error().term == "notional");
+}
+
+TEST_CASE("an_empty_currency_fails_and_names_the_term", tags) {
+    conv::convention_lookup lookup(euribor_conventions());
+    auto blank = terms();
+    blank.currency = std::string{};
+    const auto swap = vanilla_swap_builder(lookup, blank).build();
+    REQUIRE_FALSE(swap.has_value());
+    CHECK(swap.error().term == "currency");
+}
+
+TEST_CASE("a_required_term_copies_from_a_value_that_is_not_const", tags) {
+    required<std::string> original(std::string("EUR"));
+    required<std::string> copy = original;
+    CHECK(copy.get() == "EUR");
+}
+
+TEST_CASE("a_builder_does_not_accept_conventions_that_would_dangle", tags) {
+    STATIC_CHECK_FALSE(std::is_constructible_v<vanilla_swap_builder,
+                                               conv::convention_lookup&&,
+                                               vanilla_swap_terms>);
 }

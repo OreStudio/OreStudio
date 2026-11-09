@@ -26,6 +26,7 @@
 #include "ores.trading.api/builders/required.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/export.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <expected>
 #include <optional>
@@ -60,6 +61,9 @@ public:
 
     vanilla_swap_builder(const marketdata::conventions::convention_lookup& conventions,
                          vanilla_swap_terms terms);
+
+    /// The builder keeps a reference to the conventions, so they must outlive it.
+    vanilla_swap_builder(marketdata::conventions::convention_lookup&&, vanilla_swap_terms) = delete;
 
     vanilla_swap_builder& fixed_day_count(std::string value);
 

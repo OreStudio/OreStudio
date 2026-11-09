@@ -82,7 +82,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Converting constructor of =required= is unconstrained | =required.hpp= | Accept | Constrained, with a test that copies a non-const term. |
+| 2 | Temporary conventions dangle | =vanilla_swap_builder.hpp= | Accept | Rvalue overload deleted. |
+| 3 | Missing decimal include | =vanilla_swap_builder.hpp= | Accept | Added. |
+| 4 | Notional and currency not validated | =vanilla_swap_builder.cpp= | Accept | Both fail and name the term. |
+| 5 | Cadence table lacks Weekly, Daily and others | =vanilla_swap_builder.cpp= | Decline | Unknown values already fail. Task 4 adds entries when a convention needs them. |
+| 6 | Comment on =tenor_of= | =vanilla_swap_builder.cpp= | Decline | An index name always has a hyphen, and the function comment states the contract. |
+| 7 | Registry dispatch and caching | =builder_registry.hpp= | Decline | One caller, which is a test. |
+| 8 | Comments on fixed values and the F override | =vanilla_swap_builder.cpp= | Decline | A vanilla swap has no spread. The test already comments the override. |
 
 * Result
 

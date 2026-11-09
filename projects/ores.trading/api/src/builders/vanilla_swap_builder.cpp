@@ -143,6 +143,10 @@ vanilla_swap_builder& vanilla_swap_builder::fixed_adjustment(std::string value) 
 }
 
 std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::build() const {
+    if (terms_.notional.get() <= utility::decimal::decimal{})
+        return std::unexpected(build_error{"notional", "must be positive"});
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must not be empty"});
     if (terms_.maturity.get() <= terms_.start.get())
         return std::unexpected(build_error{"maturity", "must be after the start"});
 

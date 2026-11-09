@@ -20,6 +20,8 @@
 #ifndef ORES_TRADING_API_BUILDERS_REQUIRED_HPP
 #define ORES_TRADING_API_BUILDERS_REQUIRED_HPP
 
+#include <concepts>
+#include <type_traits>
 #include <utility>
 
 namespace ores::trading::builders {
@@ -36,6 +38,7 @@ public:
     required() = delete;
 
     template <typename U = T>
+        requires(!std::is_same_v<std::remove_cvref_t<U>, required>) && std::constructible_from<T, U>
     required(U&& value)
         : value_(std::forward<U>(value)) {}
 

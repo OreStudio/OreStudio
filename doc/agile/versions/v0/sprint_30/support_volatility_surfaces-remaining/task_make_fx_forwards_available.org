@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The system states the FX forward of any pair that has spot and published funding curves. A reader sees four measures for each tenor: the FX forward rate, the discount factors, the forward points and the swap points. A new screen shows them. The volatility surface calibration reads its forwards from the same code. No forward is sampled or typed: each one comes from the spot and the two published IR curves. See [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]].
+The system can compute an FX forward. A pure function takes a spot, a spot date, a pip factor, tenor dates and two discount curves, and returns the forward rate, the discount factors, the forward points and the swap points of each tenor. A knowledge cluster records the domain with public sources. See [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | PR 1, the pure function and the knowledge notes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR 2, the read operation. |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -40,10 +40,8 @@ The system states the FX forward of any pair that has spot and published funding
 - Forward points are (F(T) - S) / pip factor. Swap points are (F(far) - F(near)) / pip factor, and the near leg defaults to spot.
 - ON and TN state the swap of their own two dates, so their swap points differ from their forward points.
 - The tests hold the parity by a round trip: money invested in the base currency and covered at the forward equals money invested in the quote currency.
-- A read operation answers one pair at one as-of, and names the published set of each currency and the spot observation it used.
-- A missing spot, a missing published funding curve, a missing pair convention and a tenor beyond a curve are each refused, and the refusal names what is missing.
-- A screen shows one pair at one as-of, as a ladder of the four measures and a chart of the measure the user selects. A control sets the start of the ladder to today, tomorrow or spot, and marks the rows it moves. The screen shows spot and the pip factor.
-- The screen labels the numbers as implied by the IR curves, with no cross-currency basis.
+- A curve that cannot state a date is refused, and the refusal names the currency and the tenor.
+- The FX forwards cluster cites public sources, and every claim it dropped is listed in * Plan.
 
 * Plan
 
@@ -102,11 +100,7 @@ Checked on 2026-11-09. The findings are in the [[id:9FB155A4-54FD-57D5-93A1-1FEC
 
 ** Delivery
 
-Three PRs, each one usable by the next:
-
-1. The pure function and its tests.
-2. The read operation, with the Calibrate task consuming the same reader.
-3. The BFF route and the screen.
+This task delivers the pure function and the notes. The rest follows in [[id:4CAB1BEA-C47C-4F7E-B453-5C149047C025][Task: Read FX forwards for a pair]], [[id:FDA768D6-9E87-45B2-BC9F-AB38D85B9A5E][Task: Write the FX forward ladder journey]], [[id:0532452A-1890-455C-842D-EF2EC8BF9A41][Task: Prototype the FX forward ladder]], [[id:0CEB75D7-3227-4FDD-A95C-0AD426DB5D26][Task: Build the FX forward ladder screen]].
 
 ** Ground truth
 
@@ -157,6 +151,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Date coverage relies on the interpolator throwing | =src/service/fx_forward_calculator.cpp= | Declined | It throws outside the curve, and the refusal tests hold a tenor beyond a curve and a near leg before it. |
+| 2 | Empty or equal currency codes pass through | =service/fx_forward_calculator.hpp= | Declined | The codes only label refusals. The read operation in PR 2 resolves the pair from reference data. |
+| 3 | A near date after the value date is accepted | =service/fx_forward_calculator.hpp= | Declined | The result is defined and is the same swap with its sign reversed. |
+| 4 | Short dates look up their near leg separately | =src/service/fx_forward_calculator.cpp= | Declined | The reviewer advises no change. Ladders are small. |
+| 5 | Record why QuantLib's fair forward is not ported | =tests/fx_forward_calculator_tests.cpp= | Declined | The first test already has that comment. |
 
 * Result
+
+=calculate_fx_forwards= computes all four measures for each tenor and refuses what it cannot state. It is in =ores.analytics.quant= and no service calls it yet. The notes are in the [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] cluster. Not run are the database, service and smoke gates, because no service calls the library.

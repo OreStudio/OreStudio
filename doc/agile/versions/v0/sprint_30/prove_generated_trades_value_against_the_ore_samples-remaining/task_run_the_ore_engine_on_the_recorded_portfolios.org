@@ -89,7 +89,7 @@ via its "Verifies task" field.
 | 4 | Regex over XML may overflow the stack | generated_trade_ore_engine_tests.cpp | Decline | Each match is one trade, not the whole file; the set is 160 small trades. |
 | 5 | Messages are pinned to the ORE build | generated_trades_known_ore_errors.txt | Accept | Header says an ORE upgrade can change them. |
 | 6 | CI skips the test | generated_trade_ore_engine_tests.cpp | Decline | Out of scope; no CI job has ORE today. |
-| 7 | Trailing carriage return and no timeout | generated_trade_ore_engine_tests.cpp | Accept in part | Trailing carriage returns and spaces are stripped. No timeout: one run takes about 4 seconds, and ctest has its own timeout. |
+| 7 | Trailing carriage return and no timeout | generated_trade_ore_engine_tests.cpp | Accept in part | Trailing carriage returns are stripped; spaces stay, as ORE ends some messages with one. No timeout: one run takes about 4 seconds, and ctest has its own timeout. |
 
 * Result
 

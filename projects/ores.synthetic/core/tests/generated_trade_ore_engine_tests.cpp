@@ -139,7 +139,7 @@ std::set<std::string> known_errors() {
     std::set<std::string> lines;
     std::istringstream text(text_of(ores::testing::project_root::resolve(known_errors_file)));
     for (std::string line; std::getline(text, line);) {
-        while (!line.empty() && (line.back() == '\r' || line.back() == ' '))
+        if (line.ends_with('\r'))
             line.pop_back();
         if (!line.empty() && !line.starts_with("#"))
             lines.insert(line);

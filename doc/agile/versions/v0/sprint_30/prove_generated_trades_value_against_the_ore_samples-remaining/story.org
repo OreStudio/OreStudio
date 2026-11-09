@@ -48,7 +48,15 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 | [[id:BA2765AD-BCA4-406B-A612-28BFB7B44BC2][Store the remaining trade market references as oresmd addresses]] | DONE | 2026-11-09 | 2026-11-09 | Credit and commodity legs, FX and bond indices, curves, underlyings and entities hold an oresmd address. |
 | [[id:46D4F712-DE5C-49E0-B94F-2EC4DF873A81][Store trade curve references as oresmd addresses]] | DONE | 2026-11-09 | 2026-11-09 | Reference, credit, volatility and income curve columns hold an oresmd address built from the ORE curve name on import, and the market configuration names them on export. |
 | [[id:5126758B-B4A9-4B3E-A512-CE3756FF86BC][Store trade underlyings and entities as oresmd addresses]] | DONE | 2026-11-09 | 2026-11-09 | Underlying, equity, commodity, reference entity, issuer and security columns hold an oresmd address. |
-| [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Generate every trade type through its builder]] | BACKLOG | |  | Family by family, credit first, until ORE builds every generated trade. |
+| [[id:D2953FE0-2D86-4E0E-B856-5A16FDC6D0F6][Run the ORE engine on each recorded portfolio]] | STARTED | 2026-11-09 |  | A tagged test runs ORE on each recorded generated portfolio and fails on a trade ORE cannot read or build, unless a known list names it. |
+| [[id:D702F8DB-DC51-4663-A9DC-7F9960660A02][Generate credit trades through their builders]] | BACKLOG | |  | Every credit type the generator books is built by its trade builder, and ORE builds it. |
+| [[id:671F4E8B-C675-4913-B950-0541DFCAE94B][Generate interest rate trades through their builders]] | BACKLOG | |  | Every interest rate type the generator books is built by its trade builder, and ORE builds it. |
+| [[id:B5E6E9CE-C1ED-4462-A651-02332DF3382E][Generate FX trades through their builders]] | BACKLOG | |  | Every FX type the generator books is built by its trade builder, and ORE builds it. |
+| [[id:0AF4A4DA-DCBC-4F26-975C-926B8FDF0ECE][Generate bond trades through their builders]] | BACKLOG | |  | Every bond type the generator books is built by its trade builder, and ORE builds it. |
+| [[id:910BC16A-C381-47C5-909B-04A463591703][Generate equity trades through their builders]] | BACKLOG | |  | Every equity type the generator books is built by its trade builder, and ORE builds it. |
+| [[id:686571A9-A33B-4A40-A916-D1EFEDA85E5B][Generate commodity trades through their builders]] | BACKLOG | |  | Every commodity type the generator books is built by its trade builder, and ORE builds it. |
+| [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]] | BACKLOG | |  | Every scripted type the generator books is built by its trade builder, and ORE builds it. |
+| [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Close out generating trades through builders]] | BACKLOG | |  | Every booked type is built by its builder: the Acme reports record no Trade errors, the known lists end empty or with a reason, and the old constructors are gone. |
 | [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]] | BACKLOG | |  | Every type can be priced, or leaves the generator with a stated reason. |
 | [[id:B4B85683-D59C-4526-A4BF-7A5B1127BA5E][Value the generated trades in a report and make them correct]] | BACKLOG | |  | A report values every type, and each matches ORE's own NPV for its sample. |
 
@@ -62,6 +70,7 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 - =TradeGenerator= is the inspiration for the builders. It covers 11 products, and the review states how its approach extends to every trade type.
 
 - The soft foreign key on trade references lands after the market data task, not with the address migration. A key added first would refuse generated and imported trades until their series exist.
+- Generating trades through builders splits into one task per family, after a task that runs the ORE engine on the recorded portfolios, and ends with a close-out task. Builders cover the types the generator books; the other catalogue types are recorded as not generated. The user chose this on 2026-11-09.
 
 * Out of scope
 

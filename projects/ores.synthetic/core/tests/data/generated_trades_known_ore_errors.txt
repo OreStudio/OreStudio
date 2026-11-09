@@ -1,0 +1,75 @@
+# Errors the ORE engine raises reading or building a recorded generated trade.
+# One line per trade type, error kind and message, separated by tabs, sorted.
+# A family's builder task removes its lines; the test fails on any change.
+Ascot	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
+Bond	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
+BondOption	Error parsing Trade XML	Error: No XML Child Node Strike found.
+BondPosition	Error parsing Trade XML	Error: No XML Child Node Identifier found.
+BondRepo	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
+CallableBond	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
+CallableSwap	Error parsing Trade XML	XML Node is NULL (expected OptionData)
+CommodityAccumulator	Error parsing Trade XML	CommodityAccumulatorData node not found
+CommodityAsianOption	Error parsing Trade XML	No CommodityAsianOptionData node found.
+CommodityBasketOption	Error building trade for context 'analytic/PRICING'	payoff type '' not recognised
+CommodityBasketVarianceSwap	Error parsing Trade XML	BasketVarianceSwapData node not found
+CommodityBestEntryOption	Error parsing Trade XML	BestEntryOptionData node not found
+CommodityDigitalAveragePriceOption	Error parsing Trade XML	No CommodityDigitalAveragePriceOptionData Node
+CommodityDigitalOption	Error parsing Trade XML	A commodity option needs a 'CommodityDigitalOptionData' node
+CommodityForward	Error building trade for context 'analytic/PRICING'	Quanto cashflow is not supported. Underlying commodity index currency USD is diffferent than the settlement currency EUR
+CommodityForwardVolatilityAgreement	Error parsing Trade XML	ForwardVolatilityAgreementData node not found
+CommodityGenericBarrierOption	Error parsing Trade XML	CommodityGenericBarrierOptionData node not found
+CommodityOption	Error building trade for context 'analytic/PRICING'	Settlement type "" not recognized
+CommodityOptionStrip	Error building trade for context 'analytic/PRICING'	makeSchedule(): Schedule does not have an end date, this is not supported in this context / for this trade type. Please provide an end date.
+CommodityPairwiseVarianceSwap	Error parsing Trade XML	TradeFactory::getBuilder(CommodityPairwiseVarianceSwap): no builder found
+CommodityPosition	Error parsing Trade XML	XML Node is NULL (expected CommodityPositionData)
+CommodityRainbowOption	Error parsing Trade XML	CommodityRainbowOptionData node not found
+CommoditySpreadOption	Error parsing Trade XML	XML Node is NULL (expected CommoditySpreadOptionData)
+CommodityStrikeResettableOption	Error parsing Trade XML	StrikeResettableOptionData node not found
+CommoditySwap	Error building trade for context 'analytic/PRICING'	vector::reserve
+CommoditySwaption	Error building trade for context 'analytic/PRICING'	Settlement type "" not recognized
+CommodityTaRF	Error parsing Trade XML	CommodityTaRFData node not found
+CommodityWindowBarrierOption	Error parsing Trade XML	CommodityWindowBarrierOptionData node not found
+CommodityWorstOfBasketSwap	Error parsing Trade XML	WorstOfBasketSwapData node not found
+ConvertibleBond	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
+CreditDefaultSwap	Error parsing Trade XML	No CreditDefaultSwapData Node
+CreditLinkedSwap	Error parsing Trade XML	XMLNode is NULL (was looking for child CreditCurveId)
+DoubleDigitalOption	Error parsing Trade XML	XMLUtils::getNodeName(): XML Node is NULL
+EquityAccumulator	Error building trade for context 'analytic/PRICING'	invalid payoff type, expected Accumulator or Decumulator
+EquityAsianOption	Error parsing Trade XML	ScheduleData::fromXML(): no node given
+EquityBarrierOption	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
+EquityCliquetOption	Error parsing Trade XML	XMLUtils::getNodeName(): XML Node is NULL
+EquityDigitalOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
+EquityDoubleBarrierOption	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity curve under configuration 'default' or 'default'
+EquityEuropeanBarrierOption	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity spot under configuration 'default' or 'default'
+EquityForward	Error building trade for context 'analytic/PRICING'	did not find object 'GB0005405286' of type equity curve under configuration 'default' or 'default'
+EquityOption	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
+EquityPosition	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
+EquitySwap	Error parsing Trade XML	XML Node is NULL (expected FloatingLegData)
+EquityTaRF	Error parsing Trade XML	either RangeBounds or RangeBoundSet nodes required
+EquityTouchOption	Error building trade for context 'analytic/PRICING'	No eqIndex provided
+EquityVarianceSwap	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity spot under configuration 'default' or 'default'
+EquityWorstOfBasketSwap	Error parsing Trade XML	Unknown Underlying type share
+FlexiSwap	Error building trade for context 'analytic/PRICING'	No EngineBuilder for LGM/Grid/FlexiSwap
+ForwardRateAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'EUR-ESTR' of type ibor index under configuration 'default' or 'default'
+FxAccumulator	Error building trade for context 'analytic/PRICING'	invalid payoff type, expected Accumulator or Decumulator
+FxAverageForward	Error building trade for context 'analytic/PRICING'	makeSchedule(): Schedule does not have an end date, this is not supported in this context / for this trade type. Please provide an end date.
+FxBarrierOption	Error building trade for context 'analytic/PRICING'	Invalid number of barrier levels
+FxDigitalBarrierOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
+FxDigitalOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
+FxDoubleBarrierOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
+FxEuropeanBarrierOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
+FxGenericBarrierOption	Error building trade for context 'analytic/PRICING'	Could not build index info for 'EUR/USD', expected a valid COMM, FX, EQ, GENERIC, Ibor, Swap, Inflation index identifier.
+FxKIKOBarrierOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
+FxSwap	Error building trade for context 'analytic/PRICING'	null date SimpleCashFlow
+FxTaRF	Error parsing Trade XML	either RangeBounds or RangeBoundSet nodes required
+FxTouchOption	Error parsing Trade XML	Barrier type "KnockOut" not recognized
+FxVarianceSwap	Error building trade for context 'analytic/PRICING'	four tokens required in FX-EUR/USD: FX-TAG-CCY1-CCY2
+IndexCreditDefaultSwap	Error parsing Trade XML	No IndexCreditDefaultSwapData Node
+IndexCreditDefaultSwapOption	Error parsing Trade XML	Expected IndexCreditDefaultSwapOptionData node on trade .
+InflationSwap	Error parsing Trade XML	Error: No XML Node Rates found.
+IntradayPowerForward	Error parsing Trade XML	XMLNode is NULL (was looking for child Position)
+PerformanceOption_01	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
+RiskParticipationAgreement	Error parsing Trade XML	RiskParticipationAgreement::fromXML(): RiskParticipationAgreementData not found
+ScriptedTrade	Error building trade for context 'analytic/PRICING'	Could not build index info for '.SPX', expected a valid COMM, FX, EQ, GENERIC, Ibor, Swap, Inflation index identifier.
+ScriptedTrade	Error building trade for context 'analytic/PRICING'	Could not build index info for 'GB0005405286', expected a valid COMM, FX, EQ, GENERIC, Ibor, Swap, Inflation index identifier.
+Swaption	Error building trade for context 'analytic/PRICING'	Settlement type "" not recognized

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: D2953FE0-2D86-4E0E-B856-5A16FDC6D0F6
+:END:
+#+title: Task: Run the ORE engine on each recorded portfolio
+#+description: A tagged test runs ORE on each recorded generated portfolio and fails on a trade ORE cannot read or build, unless a known list names it.
+#+type: task
+#+level: s1
+#+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/run-the-ore-engine-on-the-recorded-portfolios
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every recorded generated portfolio is read and built by the ORE engine in a test, so each family's builder work proves itself as it lands.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- A tagged test runs the ORE executable on each recorded portfolio with ORE's example configuration.
+- The test fails on an error ORE raises reading or building a trade, unless a known list names it exactly.
+- The test skips with a stated reason when no ORE executable is configured.
+- The known list holds the types that fail today, each with ORE's message.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

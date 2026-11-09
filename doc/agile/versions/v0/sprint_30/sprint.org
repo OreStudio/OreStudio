@@ -133,7 +133,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] | STARTED | 2026-11-09 | | The Linux, macOS, Windows and valgrind nightlies fail on shell completion tests, compile errors, test defects and memcheck reports. |
 
 * Achievements
 

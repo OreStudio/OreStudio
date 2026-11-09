@@ -1,0 +1,233 @@
+:PROPERTIES:
+:ID: 8E2F4A17-6C3B-4D90-A5E1-7B9C2D4F6A13
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.fx_forward_operations
+#+description: Codegen operation model for the read of a currency pair's FX forward ladder at an as-of.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: fx_forward_operation
+#+namespace: ores::marketdata::messaging
+#+brief: The read of a pair's FX forward ladder.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+The read behind the FX forward ladder screen. A forward is computed from one spot
+and the published funding curve of each currency, and is not stored, so the reply
+names those inputs beside the rows. A refusal is a reply with =success= false and
+a message that names what is missing, because a reader needs to know which input
+to go and fix.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** fx_forward_curve_source
+
+#+begin_src cpp :name comment
+/**
+ * @brief The published funding curve one side of the pair was read from.
+ */
+#+end_src
+
+*** currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** curve_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** output_series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** publish_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** fx_forward_ladder_row
+
+#+begin_src cpp :name comment
+/**
+ * @brief One tenor of the ladder.
+ *
+ * Forward points run from spot to the value date. Swap points run from the near
+ * date to the value date, so a reader can recompute them for another near date
+ * from the forward rates alone.
+ */
+#+end_src
+
+*** tenor
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** near_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:default: {}
+:END:
+
+*** value_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:default: {}
+:END:
+
+*** base_discount
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** quote_discount
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** forward_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** forward_points
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** swap_points
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** get_fx_forward_ladder_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.get_fx_forward_ladder
+:response: get_fx_forward_ladder_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The forward ladder of one USD pair at one as-of.
+ */
+#+end_src
+
+*** pair_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The pair, such as =EUR/USD=.
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The party whose funding curves to read. Empty reads the one funding curve the
+tenant holds per currency, and is refused when it holds more than one.
+
+** get_fx_forward_ladder_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** pair_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** spot
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** spot_observed_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** spot_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:default: {}
+:END:
+
+*** spot_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** pip_factor
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** decimal_places
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** base_curve
+:PROPERTIES:
+:cpp_type: fx_forward_curve_source
+:END:
+
+*** quote_curve
+:PROPERTIES:
+:cpp_type: fx_forward_curve_source
+:END:
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<fx_forward_ladder_row>
+:END:

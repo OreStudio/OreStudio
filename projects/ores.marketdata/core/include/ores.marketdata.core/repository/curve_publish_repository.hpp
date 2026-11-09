@@ -222,6 +222,9 @@ public:
     std::optional<domain::curve_publish>
     read_latest_published_for_series(context ctx, const boost::uuids::uuid& series_id);
 
+    std::vector<domain::curve_publish> read_applied_for_series(context ctx,
+                                                               const boost::uuids::uuid& series_id);
+
     std::vector<domain::curve_publish> read_live_for_series(context ctx,
                                                             const boost::uuids::uuid& series_id);
 

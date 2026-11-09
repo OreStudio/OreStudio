@@ -29,7 +29,7 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 | State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
-| Waiting on   | [[id:4CAB1BEA-C47C-4F7E-B453-5C149047C025][Read FX forwards for a pair]] |
+| Waiting on   | Nothing. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-03                               |
 

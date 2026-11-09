@@ -98,18 +98,17 @@ A forward has no entity. It is computed on read; see [[id:AB7A0BE5-7EB8-5B44-B98
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
 | Open the ladder | List the currency pairs | =refdata.v1.currency_pairs.list= | exists |
-| Choose the pair and the as-of | Read the ladder of one pair at one as-of | =marketdata.v1.ops.get_fx_forward_ladder= | missing |
-| Read what it is built from | Part of the ladder reply | =marketdata.v1.ops.get_fx_forward_ladder= | missing |
+| Choose the pair and the as-of | Read the ladder of one pair at one as-of | =marketdata.v1.ops.get_fx_forward_ladder= | exists |
+| Read what it is built from | Part of the ladder reply | =marketdata.v1.ops.get_fx_forward_ladder= | exists |
 | Open a curve | Read the published sets of one curve | =marketdata.v1.ops.get_published_curve_sets= | exists |
 
 The start, the measure and the forward-forward need no read. The reply states each tenor's dates and forward rate, so the client computes the rest.
 
 * What is missing
 
-1. *There is no ladder read.* [[id:4CAB1BEA-C47C-4F7E-B453-5C149047C025][Read FX forwards for a pair]] adds it over =calculate_fx_forwards=. Until then no screen can be built.
-2. *A fresh database has nothing to answer from.* It holds no spot series, no published curve and no published pair convention. A demonstration needs a feed run, a publish of both curves and a publish of the conventions.
-3. *A cross is refused.* [[id:3551924D-AD9E-43D3-B5A1-1A522AAC317D][FX forwards for cross pairs]] records the work.
-4. *A forward has no end-of-day record.* The read recomputes it, so no verified set of forwards can be kept. [[id:C2364358-A46F-4FA5-B434-6464F8AAEAD5][FX forwards have no end-of-day record]] records the work.
+1. *A fresh database has nothing to answer from.* It holds no spot series, no published curve and no published pair convention. A demonstration needs a feed run, a publish of both curves and a publish of the conventions.
+2. *A cross is refused.* [[id:3551924D-AD9E-43D3-B5A1-1A522AAC317D][FX forwards for cross pairs]] records the work.
+3. *A forward has no end-of-day record.* The read recomputes it, so no verified set of forwards can be kept. [[id:C2364358-A46F-4FA5-B434-6464F8AAEAD5][FX forwards have no end-of-day record]] records the work.
 
 * Related journeys
 

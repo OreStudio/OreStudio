@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-fx-forwards-for-a-pair
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ A consumer asks for one USD-hub pair at one as-of and gets its FX forwards, read
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -44,9 +44,9 @@ A consumer asks for one USD-hub pair at one as-of and gets its FX forwards, read
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Name the data shape first. =fx_forward_ladder_plan= holds the pure decisions: which set stands at an as-of, the pair's joint calendar and the ladder's dates. =fx_forward_ladder_service= reads the inputs and calls =calculate_fx_forwards=. A missing input is a =success= false reply and not an error.
+
+The dates use =calendar_arithmetic::advance= over one calendar closed when any of the pair's calendars is closed. The tenor resolution service takes one calendar, so it cannot answer a pair.
 
 * Measurements
 
@@ -60,7 +60,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Market data service tests | 220 test cases, 2290 assertions, all pass; 14 cases under =[fx_forward_ladder]= | =publish/bin/ores.marketdata.service.tests= | Working tree on main |
+| Market data API tests | 945 test cases, 4396 assertions, all pass | =publish/bin/ores.marketdata.api.tests= | Working tree on main |
 
 * Notes
 
@@ -90,3 +91,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=marketdata.v1.ops.get_fx_forward_ladder= answers a USD pair at an as-of and names the spot and the set of each curve it used. The acceptance items are covered by unit tests, with the cross and missing-convention refusals also run through the database.
+
+Not proved: a successful reply against stored data. A =curve_publish= row needs a real approval request, so no test seeds one. The first successful reply needs a feed run and a publish of both curves, and the screen task carries that check. Calendars are read as materialised, so a date past a calendar's window is treated as open.

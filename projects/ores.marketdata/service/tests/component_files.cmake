@@ -43,5 +43,6 @@ set(files
     "curve_pillar_reader_tests.cpp"
     "curve_republish_resolver_fomc_tests.cpp"
     "curve_republish_resolver_tests.cpp"
+    "fx_forward_ladder_plan_tests.cpp"
     "main.cpp"
 )

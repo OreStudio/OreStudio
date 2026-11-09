@@ -546,6 +546,40 @@ curve_publish_repository::read_latest_published_for_series(
 }
 #+end_src
 
+*** read_applied_for_series
+:PROPERTIES:
+:ID: 3A8D6F27-1E5B-4C94-B7A2-6F0C9E2D4B51
+:END:
+
+Every set of a series that a person applied, in no order. A reader at a past as-of
+needs the set in force then, which is not always the newest.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::curve_publish>
+read_applied_for_series(context ctx, const boost::uuids::uuid& series_id);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::curve_publish>
+curve_publish_repository::read_applied_for_series(
+    context ctx, const boost::uuids::uuid& series_id) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+    const auto query = query_builder::read<std::vector<curve_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "output_series_id"_c == sid &&
+                                            "valid_to"_c == max);
+    auto rows = query_builder::execute_read_query<curve_publish_entity, domain::curve_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return curve_publish_mapper::map(entities); },
+        lg(),
+        "Reading the applied sets of a series.");
+    std::erase_if(rows, [](const auto& r) { return !r.published_at.has_value(); });
+    return rows;
+}
+#+end_src
+
 *** read_live_for_series
 :PROPERTIES:
 :ID: 8B21F0C7-4D6A-4E93-9F58-2C7B1A6D3E04

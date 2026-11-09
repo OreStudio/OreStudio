@@ -399,8 +399,7 @@ TEST_CASE("the_reads_for_every_series_give_what_the_reads_for_each_series_give",
     const auto owner =
         t.ctx.with_party(t.ctx.tenant_id(), ticked.party_id, {ticked.party_id}, t.base.db_user());
     ores::marketdata::tests::subscribe(t.base, t.ctx, ticked.party_id, ticked.provider_code);
-    const auto stream =
-        ores::marketdata::tests::stream_of(ticked.provider_code, ticked.oresmd_uri);
+    const auto stream = ores::marketdata::tests::stream_of(ticked.provider_code, ticked.oresmd_uri);
     const auto number = ores::marketdata::repository::tick_coords_repository{}.resolve(
         owner, stream, stored.front().oresmd_uri);
     using namespace std::chrono;

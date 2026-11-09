@@ -18,8 +18,8 @@
  *
  */
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/datum/series_stream.hpp"
+#include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/generators/feed_generator.hpp"
 #include "ores.marketdata.api/generators/market_data_mapping_generator.hpp"
@@ -628,7 +628,8 @@ std::vector<std::string> burst_uris() {
 /// It answers the one question the measurements ask.
 class burst_reader {
 public:
-    burst_reader() : conn_(PQconnectdb(connection_info().c_str()), &PQfinish) {
+    burst_reader()
+        : conn_(PQconnectdb(connection_info().c_str()), &PQfinish) {
         REQUIRE(PQstatus(conn_.get()) == CONNECTION_OK);
     }
 
@@ -699,12 +700,12 @@ struct burst_cleanup {
             in += (in.empty() ? "" : ",") + ("'" + s + "'");
         // The table is shared with every other run, so the delete names this run's streams.
         const std::vector<std::string> statements{
-            "delete from ores_marketdata_ticks_tbl where ts >= '" + from +
-                "' and stream_id in (" + in + ")",
+            "delete from ores_marketdata_ticks_tbl where ts >= '" + from + "' and stream_id in (" +
+                in + ")",
             "delete from ores_marketdata_tick_coords_tbl where stream_id in (" + in + ")"};
         for (const auto& statement : statements) {
-            std::unique_ptr<PGresult, decltype(&PQclear)> r(
-                PQexec(conn.get(), statement.c_str()), &PQclear);
+            std::unique_ptr<PGresult, decltype(&PQclear)> r(PQexec(conn.get(), statement.c_str()),
+                                                            &PQclear);
         }
     }
 };
@@ -986,8 +987,7 @@ TEST_CASE("burst_serial_against_pipelined_through_nats", "[.][burst]") {
             for (const auto& tick : ticks)
                 publish(tick);
         });
-        cleanup.streams.insert(
-            cleanup.streams.end(), set.streams.begin(), set.streams.end());
+        cleanup.streams.insert(cleanup.streams.end(), set.streams.begin(), set.streams.end());
         const auto base = std::chrono::system_clock::now();
         const auto start = burst_clock::now();
         std::chrono::system_clock::time_point last_ts;

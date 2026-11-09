@@ -195,8 +195,8 @@ TEST_CASE("a_snapshot_is_refused_to_a_party_with_only_a_derived_right",
     ores::marketdata::tests::subscribe(h, s.party_id, s.provider_code, false, false, true);
 
     const auto party = h.context().with_party(h.tenant_id(), s.party_id, {s.party_id}, h.db_user());
-    const auto resp =
-        series_snapshot_reader::read(party, snapshot_request(identity), instant("2017-09-11T12:00:00Z"));
+    const auto resp = series_snapshot_reader::read(
+        party, snapshot_request(identity), instant("2017-09-11T12:00:00Z"));
 
     CHECK_FALSE(resp.success);
 }

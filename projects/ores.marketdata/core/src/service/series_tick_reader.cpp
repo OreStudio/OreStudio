@@ -96,10 +96,9 @@ series_tick_reader::read(ores::database::context ctx,
         return response;
     }
     if (!repository::may_read_ticks(ctx, resolved.provider_code)) {
-        response.result = refuse(outcome_code::not_subscribed,
-                                 {.entity = "ticks",
-                                  .field = "provider",
-                                  .value = resolved.provider_code});
+        response.result =
+            refuse(outcome_code::not_subscribed,
+                   {.entity = "ticks", .field = "provider", .value = resolved.provider_code});
         return response;
     }
 

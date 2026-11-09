@@ -105,8 +105,9 @@ struct handler_fixture {
         // The history read returns a tick only to a party that may display the provider's feeds.
         // The suite reuses its tenant and the system party, and a party holds one subscription
         // to a provider, so a later case finds the first case's row.
-        const auto existing = ores::marketdata::repository::subscription_repository{}
-                                  .read_latest_by_provider_code(owner, provider);
+        const auto existing =
+            ores::marketdata::repository::subscription_repository{}.read_latest_by_provider_code(
+                owner, provider);
         if (existing.empty()) {
             auto entitlement =
                 ores::marketdata::generators::generate_synthetic_subscription(generation);

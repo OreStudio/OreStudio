@@ -782,8 +782,7 @@ void feed_ingest_loop::prepare_rows(prepared_batch& batch) {
         row.coord = coord_of[i];
         row.value = it.plan->value;
         const auto at = row_at.try_emplace(
-            row_key{streams[i], coord_of[i], row.ts.time_since_epoch().count()},
-            batch.rows.size());
+            row_key{streams[i], coord_of[i], row.ts.time_since_epoch().count()}, batch.rows.size());
         if (at.second)
             batch.rows.push_back(row);
         else

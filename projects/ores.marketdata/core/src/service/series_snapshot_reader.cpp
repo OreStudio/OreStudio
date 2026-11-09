@@ -136,7 +136,8 @@ series_snapshot_reader::read(ores::database::context ctx,
         ctx.party_id() && repository::may_compute_from_ticks(ctx, provider) &&
         !repository::may_read_ticks(ctx, provider))
         return series_snapshot_reader_refuse("the party holds no display or non-display right to "
-                                             "provider " + provider);
+                                             "provider " +
+                                             provider);
 
     const auto series_id = boost::uuids::to_string(series.front().id);
     const auto declared = read_series_shape(ctx, series_id);

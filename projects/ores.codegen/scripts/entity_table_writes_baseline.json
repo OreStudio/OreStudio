@@ -19,6 +19,12 @@
       "reason": "predates the check"
     },
     {
+      "kind": "cpp",
+      "name": "",
+      "file": "projects/ores.marketdata/service/src/app/tick_writer.cpp",
+      "reason": "the bulk tick writer: it copies each batch into a session staging table under the INSERT-only writer role and inserts it with on conflict do nothing, which the repositories cannot express"
+    },
+    {
       "kind": "sql_function",
       "name": "ores_assets_publish_images_from_dq_fn",
       "file": "projects/ores.sql/create/assets/assets_publish_from_dq_create.sql",

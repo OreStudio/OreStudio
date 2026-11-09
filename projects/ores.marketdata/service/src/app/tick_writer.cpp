@@ -64,12 +64,8 @@ void execute(pg_conn* conn, const char* sql) {
 
 std::string tick_copy_line(const tick_row& row) {
     const auto micros = std::chrono::floor<std::chrono::microseconds>(row.ts);
-    return std::format("{},{},{:%F %T}+00,{},{}\n",
-                       row.stream_id,
-                       row.feed_id,
-                       micros,
-                       row.coord,
-                       row.value);
+    return std::format(
+        "{},{},{:%F %T}+00,{},{}\n", row.stream_id, row.feed_id, micros, row.coord, row.value);
 }
 
 tick_writer::tick_writer(tick_writer_options options)
@@ -115,11 +111,10 @@ void tick_writer::write(std::span<const tick_row> rows) {
                     "value double precision) on commit delete rows");
         execute(conn_, "begin");
         {
-            result_guard begin(
-                PQexec(conn_,
-                       "copy ores_marketdata_ticks_stage "
-                       "(stream_id, feed_id, ts, coord, value) "
-                       "from stdin with (format csv)"));
+            result_guard begin(PQexec(conn_,
+                                      "copy ores_marketdata_ticks_stage "
+                                      "(stream_id, feed_id, ts, coord, value) "
+                                      "from stdin with (format csv)"));
             if (PQresultStatus(begin.result) != PGRES_COPY_IN)
                 throw std::runtime_error(PQerrorMessage(conn_));
         }

@@ -419,11 +419,10 @@ TEST_CASE("an_identity_that_states_the_party_names_that_partys_series", "[servic
     request.identity.party_id = boost::uuids::to_string(second.series.party_id);
     // The session's party is the one that names its series and holds the subscription, which
     // the history read checks before it returns a tick.
-    const auto both = h.context().with_party(
-        h.tenant_id(),
-        second.series.party_id,
-        {first.series.party_id, second.series.party_id},
-        h.db_user());
+    const auto both = h.context().with_party(h.tenant_id(),
+                                             second.series.party_id,
+                                             {first.series.party_id, second.series.party_id},
+                                             h.db_user());
     const auto reply = series_tick_reader::read(both, request);
 
     CHECK(reply.result.outcome == outcome::ok);

@@ -500,8 +500,8 @@ namespace {
  * id is stored nowhere, so every read computes it. @p allowed is the right the read needs.
  */
 std::string stream_of(market_observation_repository::context ctx,
-                                     const boost::uuids::uuid& series_id,
-                                     bool (*allowed)(const ores::database::context&, const std::string&)) {
+                      const boost::uuids::uuid& series_id,
+                      bool (*allowed)(const ores::database::context&, const std::string&)) {
     const auto series =
         market_series_repository{}.read_latest(ctx, boost::uuids::to_string(series_id));
     if (series.empty())
@@ -677,12 +677,12 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
         ORDER BY oresmd_uri, observation_datetime DESC, src_rank
     )";
 
-    const auto rows =
-        query_builder::execute_parameterized_multi_column_query(ctx,
-                                                 sql,
-                                                 {tid, sid, as_of_str, MAX_TIMESTAMP, stream},
-                                                 lg(),
-                                                 "reading as-of curve snapshot");
+    const auto rows = query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {tid, sid, as_of_str, MAX_TIMESTAMP, stream},
+        lg(),
+        "reading as-of curve snapshot");
 
     std::vector<observation_record> result;
     result.reserve(rows.size());

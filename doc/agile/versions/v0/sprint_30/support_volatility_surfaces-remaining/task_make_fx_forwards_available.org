@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: DC7504E5-A53D-4938-A774-B58CE2A37B57
+:END:
+#+title: Task: Make FX forwards available from the IR curves
+#+description: Compute FX forward rates, discount factors, forward points and swap points from the published IR curves and spot, read them through a service operation, and show all four on a screen.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/make-fx-forwards-available
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The system states the FX forward of any pair that has spot and published funding curves. A reader sees four measures for each tenor: the FX forward rate, the discount factors, the forward points and the swap points. A new screen shows them. The volatility surface calibration reads its forwards from the same code. No forward is sampled or typed: each one comes from the spot and the two published IR curves. See [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | PR 1, the pure function and the knowledge notes. |
+| Waiting on   | Nothing.                               |
+| Next         | PR 2, the read operation. |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- A pure function in =ores.analytics.quant= takes a spot, a spot date, a pip factor, tenor dates and two discount curves. It returns the forward rate, both discount factors, the forward points and the swap points for each tenor.
+- The forward at date T is S * (DF_base(T) / DF_base(spot date)) / (DF_quote(T) / DF_quote(spot date)), with S in quote currency per unit of base currency.
+- Forward points are (F(T) - S) / pip factor. Swap points are (F(far) - F(near)) / pip factor, and the near leg defaults to spot.
+- ON and TN state the swap of their own two dates, so their swap points differ from their forward points.
+- The tests hold the parity by a round trip: money invested in the base currency and covered at the forward equals money invested in the quote currency.
+- A read operation answers one pair at one as-of, and names the published set of each currency and the spot observation it used.
+- A missing spot, a missing published funding curve, a missing pair convention and a tenor beyond a curve are each refused, and the refusal names what is missing.
+- A screen shows one pair at one as-of, as a ladder of the four measures and a chart of the measure the user selects. A control sets the start of the ladder to today, tomorrow or spot, and marks the rows it moves. The screen shows spot and the pip factor.
+- The screen labels the numbers as implied by the IR curves, with no cross-currency basis.
+
+* Plan
+
+Analysis on 2026-11-09. Swap points were agreed as the far outright less the near outright, with the near leg defaulting to spot, and USD-hub pairs come first.
+
+** What exists
+
+| Need | State | Evidence |
+|------+-------+----------|
+| Discount factors | Exists. Each of 20 currencies has one FUNDING curve, written as =discount= observations. | =ores_refdata_ir_curve_bootstrap_configs_tbl=, for example =EUR-ESTR= and =USD-SOFR-FOMC= |
+| Interpolation | Exists. It is exposed, and only the bootstrap calls it. | =curve_bootstrap_engine::interpolate_discount_factor= |
+| Read of a published set | Exists. | =curve_publish_repository::read_latest_published_for_series=, =published_curve_reader= |
+| Forward arithmetic | Missing. =forward_rate_calculator= gives instantaneous IR forwards, not FX. =fx_market= holds a spot and two discount factors with no source. | =forward_rate_calculator.hpp=, =fx_delta.hpp= |
+| Pip factor | Modelled. EUR/USD is 0.0001 and USD/JPY is 0.01 in the 179 seeded artefact rows. | =ores_dq_currency_pair_conventions_artefact_tbl= |
+| Datum key for a forward | Exists. =fx_fwd= has unit currency, currency and term. A classification rule files it under =fx= and =forward=. No series uses it. | =datum/schema.hpp:338= |
+| Screens | Published curves have a list, a detail page, points and compare tabs. =LineChart= is reusable. Nothing shows a forward. | =projects/ores.web/packages/web/src/marketdata= |
+
+** Gaps
+
+1. A fresh database holds no market values. It has 0 observations, 0 curve publishes, 0 =fx_spot= series and 0 rows in the published pair and pair convention tables. A live proof needs feeds, a bootstrap, a publish of both curves and a publish of the conventions.
+2. The spot lag has no home on the pair. =ores_refdata_currency_pair_conventions_tbl= has no =spot_days= column. The ORE import reads =SpotDays= into =fx_convention=, and the currency table has its own =spot_days=. I did not trace what the import stores. The plan is to take the larger =spot_days= of the two currencies, and to refuse if either is absent.
+3. Spot exists for a USD hub only: the seeds name 14 currencies, and curves exist for 20 different ones. NOK has spot and no curve. A cross such as EUR/GBP needs a triangulated spot. =CRM_DERIVATION= suggests a cross-rates source, which I did not trace.
+4. The curves are single-currency OIS, so the result is pure parity with no cross-currency basis. ORE example configurations discount through curves such as =USD-IN-EUR=, built from FX forward and basis quotes. An ORE price under such a configuration will not match these forwards.
+
+** Decisions proposed
+
+- Compute on read and store nothing. A forward is a pure function of two published sets and one spot, so a stored copy can only go stale. Add stored =fx_fwd= observations only when a consumer needs them, such as an ORE export of =FXFWD= quotes.
+- Work on dates and discount factors, never on year fractions. The curves mix A360 and A365F, and a ratio of discount factors does not depend on them.
+- Forward points run from spot to the tenor. Swap points run from a near leg to a far leg. The two are equal for a spot-start swap, so a selector for the near leg is what makes swap points useful.
+- Spot is the latest =fx_spot= observation at or before the as-of. The result names it, with its age.
+
+** External evidence
+
+Checked on 2026-11-09. The findings are in the [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] cluster, with their sources.
+
+| Claim | Verdict | Effect |
+|-------+---------+--------|
+| $F = S \times D_b / D_q$, with $S$ quote per base | Confirmed: parity sources, QuantExt | Implemented |
+| QuantLib's =fairForwardRate= | Inverted against its own convention; confirmed by its =testAtTheMoney= | Not ported |
+| Points are $(F - S)$ over the pip factor | Confirmed | Implemented |
+| Points from two discrete rates with separate bases | Confirmed | Test |
+| O/N, T/N and S/N are one-day swaps between their own dates | Confirmed | =near_date= per row |
+| Outrights before spot chain from those swaps | Derived from the definitions; no source states it directly | Test |
+| A forward-forward is the difference of two outrights | Confirmed | =near_date=; test |
+| Market forwards contain the cross-currency basis | Confirmed: BIS | Screen label; design note |
+| USD is the hub | Confirmed for market share; the single-hub consistency argument is ours | USD-hub scope |
+| An outright equals spot plus an FX swap | Confirmed: NYU course notes | Knowledge only |
+| Forwards are recorded at net fair value | Confirmed: BIS. Replaced gross ledger entries, which no source supports | Knowledge only |
+| US treatment of FX forwards | Corrected: the exemption removes clearing, execution and margin. It is not a venue registration exception, and NDFs are outside it | Knowledge only |
+| An NDF discounts to its fixing date until it fixes | Not confirmed: ORE discounts from the payment date | Removed |
+| A time option's points are set by the worse of two dates | Not confirmed: sources confirm only a premium over a single-date forward | Removed |
+| Freezing forward curves after approval; keeping every rate version | Not confirmed: sources confirm a consistent end-of-day set and independent verification | Removed; the design note keeps the need for an end-of-day record |
+| Value-today treatment as trade or cash; ledger account names; sales credit split; projection fixings on a roll | Not confirmed | Removed |
+
+=currency.spot_days= is the source of a pair's spot days, per =ores.refdata.currency.org=.
+
+** Delivery
+
+Three PRs, each one usable by the next:
+
+1. The pure function and its tests.
+2. The read operation, with the Calibrate task consuming the same reader.
+3. The BFF route and the screen.
+
+** Ground truth
+
+Do not port the expected value of =testFairForwardRate= from QuantLib. =DiscountingFxForwardEngine= computes S * D_target / D_source and documents S as target per source. With the test's own data (S = 1.35 SGD per USD, USD 5%, SGD 3.5%, six months), that gives 1.3602, and parity gives 1.3399. The covered round trip balances only at 1.3399. The test only compares the formula with itself. QuantExt agrees with parity: =FxRateQuote= converts spot to today with S * D_target / D_source, the inverse direction. The port uses this fixture with the round trip as its oracle.
+
+=FXFWD= and =FXFWD/RATE= quotes in ORE are points, scaled by =PointsFactor=, so an outright must not be written under that key without the scaling.
+
+The knowledge page on parity needs one correction: it says the basis is added on top of the forward, while ORE builds cross-currency curves from forward and basis quotes. Fix it when this task closes.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Quant test binary | 637 test cases, 2214072 assertions, all pass; 17 cases and 111 assertions under =[fx_forward_calculator]= | =publish/bin/ores.analytics.quant.tests= | Working tree on edc9f1e6f9 |
+
+* Notes
+
+Calibrate a volatility surface from its quotes waits for this task, because it needs a forward for each expiry.
+
+Sources: =QuantLib/ql/pricingengines/forward/discountingfxforwardengine.cpp=, =QuantLib/test-suite/fxforward.cpp=, =QuantExt/qle/indexes/fxindex.cpp=, and =Examples/Input/curveconfig.xml= in ORE, for the =SEK-IN-USD= curve built from FX forwards.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

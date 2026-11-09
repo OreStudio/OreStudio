@@ -65,6 +65,7 @@ set(files
     "scheduler_trace_tests.cpp"
     "service_calendar_arithmetic_tests.cpp"
     "service_tenor_resolution_engine_tests.cpp"
+    "ssvi_calibration_engine_tests.cpp"
     "tick_scheduler_tests.cpp"
     "topology_builder_tests.cpp"
     "two_factor_gaussian_process_tests.cpp"

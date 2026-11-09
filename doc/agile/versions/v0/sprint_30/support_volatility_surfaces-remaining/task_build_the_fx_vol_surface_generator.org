@@ -65,6 +65,8 @@ task and name that file in the Command column.
 
 This task can run after the rest of the surface arc, because the derived source supplies the first quotes.
 
+The generator keeps its fixed gamma of 1/2, for the reasons in the approach note. The calibration engine fits gamma, so a blueprint reading these quotes need not recover 1/2.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

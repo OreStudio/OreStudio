@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The system can fit a volatility surface to its quotes. A pure engine beside the curve engine in =projects/ores.analytics/quant= takes the weighted ATM, risk reversal and butterfly quotes of each expiry, the forward to each expiry and the pair's conventions as inputs. It fits SSVI with gamma = 1/2, samples the fitted surface on an output grid, and checks the result for arbitrage. It reads no database and calls no service, so unit tests prove it. SSVI is the only smile model in this task. See [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
+The system can fit a volatility surface to its quotes. A pure engine beside the curve engine in =projects/ores.analytics/quant= takes the weighted ATM, risk reversal and butterfly quotes of each expiry, the forward to each expiry and the pair's conventions as inputs. It fits power-law SSVI, with gamma calibrated as QuantExt does, samples the fitted surface on an output grid, and checks the result for arbitrage. It reads no database and calls no service, so unit tests prove it. SSVI is the only smile model in this task. See [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -41,14 +41,17 @@ The system can fit a volatility surface to its quotes. A pure engine beside the 
 - A butterfly quoted as a broker strangle enters the fit as the price of the strangle at its own strikes, and gives a different surface from the same number read as a smile butterfly.
 - Between expiries the engine interpolates in total variance.
 - The result reports calendar spread arbitrage and butterfly arbitrage, using the SSVI conditions on the parameters, and tests show each violation detected.
+- QuantExt's =testCalibratedSsvi= power-law case passes on its own smiles and bounds, and =testSmileBF= and =testBrokerBF= hold on the fitted smile.
 - A pillar whose error exceeds the tolerance is reported by name.
 - An expiry without the pillars SSVI needs is refused, and the error names the expiry and the missing pillars.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Name the data shape first. =calibrate_ssvi= flattens the request into one =fit_state= of hot rows, with cold strings left in the request, and one wing buffer, so an objective evaluation needs no container of its own.
+
+Variable projection. Given rho, eta and gamma the expiries are independent. A =nelder_mead<3>= searches the shared parameters, and =boost::math::tools::brent_find_minima= solves each log theta inside it.
+
+=math::read_smile= reads any smile in a convention. =quote_smile= delegates to it, so the generator and the fit share one reading of a butterfly.
 
 * Measurements
 
@@ -62,11 +65,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quant test binary | 618 test cases, 2213956 assertions, all pass | =publish/bin/ores.analytics.quant.tests= | Working tree on 95ac1762a0 |
 
 * Notes
 
 Depends on nothing. This task was split out of Calibrate a volatility surface from its quotes.
+
+Sources:
+
+- Ground truth for the fit: =QuantExt/test/sviparametricvolatility.cpp= and =QuantExt/test/bfrrvolsurface.cpp= in ORE 1.8.17.0. The smiles of =testCalibratedSsvi= are copied unchanged into =ssvi_quantext_equity_smiles.hpp=.
+- Ground truth for strike resolution: =test-suite/blackdeltacalculator.cpp= in QuantLib, already ported to =fx_delta_tests.cpp=. QuantLib itself has raw SVI only, in =test-suite/svivolatility.cpp=, and its invariant is reused for an SSVI slice.
+- The published slice, ATM skew check and raw SVI mapping in the tests: [[https://riskhub.org/blogs/ssvi-and-surface-wide-parameterization][SSVI and Surface-Wide Parameterization]] (riskhub.org). Its advice to test out of sample in maturity supports refusing a grid expiry outside the quotes.
 
 * Test Scenarios
 
@@ -89,6 +98,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A NaN grid expiry passes the range check and reaches =std::prev= of the first expiry | =src/service/ssvi_calibration_engine.cpp= | Fixed | The check now fails on NaN. A test holds it. |
 
 * Result
+
+The engine fits power-law SSVI to weighted quotes and is in =service/ssvi_calibration_engine=. It fits gamma as QuantExt does, returns each expiry's theta, rho, eta, gamma, the error and strikes of each pillar and the sampled grid, and reports arbitrage. All acceptance items are met by unit tests.
+
+Ported ground truth is QuantExt's =testCalibratedSsvi= power-law case on its 13 smiles and its bounds, its moneyness arbitrage grid, and =testSmileBF= and =testBrokerBF= at both expiries and both deltas of the fixture. Each slice of those two tests is fitted alone, because SSVI shares its curvature across expiries.
+
+Not run are the database, service and smoke gates, because the change is a pure library that no service calls yet.

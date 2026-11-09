@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trading:builder:prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/build-trades-through-trade-builders
+#+pr: 4513
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-06
 #+updated: 2026-11-08
-#+environment: swift_curie
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A caller builds a complete swap by stating its economic terms; the builder resol
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-06                               |
 
 * Acceptance
@@ -76,12 +76,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4513][#4513]] | [trading] Build vanilla swaps from economic terms and conventions |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Converting constructor of =required= is unconstrained | =required.hpp= | Accept | Constrained, with a test that copies a non-const term. |
+| 2 | Temporary conventions dangle | =vanilla_swap_builder.hpp= | Accept | Rvalue overload deleted. |
+| 3 | Missing decimal include | =vanilla_swap_builder.hpp= | Accept | Added. |
+| 4 | Notional and currency not validated | =vanilla_swap_builder.cpp= | Accept | Both fail and name the term. |
+| 5 | Cadence table lacks Weekly, Daily and others | =vanilla_swap_builder.cpp= | Decline | Unknown values already fail. Task 4 adds entries when a convention needs them. |
+| 6 | Comment on =tenor_of= | =vanilla_swap_builder.cpp= | Decline | An index name always has a hyphen, and the function comment states the contract. |
+| 7 | Registry dispatch and caching | =builder_registry.hpp= | Decline | One caller, which is a test. |
+| 8 | Comments on fixed values and the F override | =vanilla_swap_builder.cpp= | Decline | A vanilla swap has no spread. The test already comments the override. |
 
 * Result
+
+The trade builder API exists in =ores.trading.api=: =required<T>=, =build_error{term, message}=, a registry, and =vanilla_swap_builder=.
+
+- The builder takes the economic terms and derives each leg from the swap and index conventions.
+- A vanilla swap on EUR-EURIBOR-6M writes the same =SwapData= as ORE's =Example_1= sample. The test sets one override, because the sample rolls its fixed leg =F= and its convention states =MF=.
+- Stored conventions state a frequency (=Annual=) and a schedule needs a tenor (=1Y=). The builder maps one to the other and names the term when it cannot.
+- The registry test reads the trade type catalogue. It has 121 types, 1 built and 120 listed in =trade_types_awaiting_builders.txt=, which task 4 empties.
+
+This task builds the vanilla swap only. Other swap shapes and all other families are task 4.

@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "builders/vanilla_swap_builder.cpp"
     "domain/activity_category_codec.cpp"
     "domain/activity_category_json_io.cpp"
     "domain/activity_category_table.cpp"
@@ -807,6 +808,10 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/build_error.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/builder_registry.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/required.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/vanilla_swap_builder.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/activity_category.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/activity_category_codec.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/activity_category_json_io.hpp"

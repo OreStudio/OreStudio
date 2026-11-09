@@ -8,7 +8,7 @@
 #+filetags: :nightly-ci-failures:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/nightly-ci-failures
-#+pr:
+#+pr: 4529
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4529][#4529]] | [ci] Fix nightly failures on Linux, macOS and Windows |
 
 * Review
 

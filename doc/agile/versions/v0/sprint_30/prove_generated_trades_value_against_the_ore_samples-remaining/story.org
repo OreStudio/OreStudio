@@ -1,58 +1,62 @@
 :PROPERTIES:
 :ID: 47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5
 :END:
-#+title: Story: Prove generated trades value against the ORE samples — the remaining work
-#+description: A run of the Acme portfolio dropped 61 of 73 trades. The trade XML we write lacks fields ORE needs, the generator books trades with missing data, and the market has no FX volatilities or pricing engines for most products. Find why the roundtrip tests and the generator checks missed this, close those gaps, and then price the FX exotics and the bond family.
+#+title: Story: Make the generated trades value correctly in ORE
+#+description: Generated trades must be correct according to ORE. A run of the Acme portfolio dropped 61 of 73 trades. Review how ORE constructs each trade, build trades through builders, give each type what it needs to price, and end by valuing them in a report against ORE's own NPVs.
 #+type: story
 #+level: s2
 #+filetags: :trading:ore:synthetic:test:marketdata:sprint_30:v0:
 #+created: 2026-11-08
 #+updated: 2026-11-08
-#+environment: festive-dijkstra
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-Every product type the generator books has a trade that ORE builds and values, and a test that fails when the trade XML or the generated data drifts from the ORE samples.
+Every trade the generator books is correct according to ORE: ORE builds it, and a report values it to the NPV ORE itself gives for the same trade.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started. Split from [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]], which closed in sprint 29 with its done tasks. |
 | Waiting on    | Nothing.                               |
-| Next          | Triage into a sprint. |
+| Next          | Review how ORE constructs and prices each trade type. |
 | Last touched  | 2026-11-08 |
 
 * Acceptance
 
-- The roundtrip tests read every ORE sample trade of each product type the
-  generator books, write it back, and fail on any element ORE needs that we drop
-  or rename. The cause of each gap the run below found is stated.
-- The generator's output for each product type is compared with the ORE sample of
-  that type, and the comparison fails on a missing or empty element ORE needs.
-- A run of the Acme portfolio builds every trade the generator books: no trade
-  fails to parse or to build for want of a field, a curve or an index name.
-- Every FX option type and every bond type that ORE prices has the market data and
-  the pricing engine configuration to value it, or is left out of the generator
-  with the reason stated.
+- ORE's construction and pricing needs are recorded per generated trade type, from ORE's own code.
+- A required term a builder is not given does not compile or names itself, and every generated type is built by its builder.
+- ORE builds every generated trade: no trade fails to parse or build for want of a field, a curve or an index name.
+- Every generated type has the market data and pricing engine configuration to value it, or is left out of the generator with the reason stated.
+- A report over every generated type completes, and each type matches ORE's own NPV within a stated tolerance, within 0.01% of the reference NPV, or 0.0001% of notional if larger.
+- A test fails when the trade XML, the generated data or a value drifts from ORE.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8735FE9F-153E-4113-8AAB-58A89E4DAFC6][Build trades through trade builders]] | BACKLOG | | | The trade builder API in the trading API: required terms that do not compile when left out, build errors that name the term, a registry matched to the trade type catalogue, and the swap builders that derive their legs from conventions. |
-| [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Generate every trade type through its builder]] | BACKLOG | | | Each generated trade type is built by its trade builder, family by family and credit first; each family moves its planner onto the builders, deletes its old constructors and clears its entries from the recorded trades' known lists. |
-| [[id:014A3FB0-36D9-44A5-8236-E60EFF7C1CA8][Seed ORE's built-in index conventions]] | DONE | | 2026-11-08 | Population seeds the Ibor and overnight index conventions ORE defines in code (indexparser.cpp), each with its oresmd address, so a convention lookup can answer for EURIBOR, SOFR and the rest in every tenant. |
-| [[id:639CEE8C-0586-4EEF-8F12-C450F956B00F][Store trade market references as oresmd addresses]] | BACKLOG | | | Every trade column that names market data (indices, curves, underlyings, credit names) holds an oresmd address, checked against the party's series catalogue as a curve already is; the importer and exporter convert to and from ORE names. |
+| [[id:014A3FB0-36D9-44A5-8236-E60EFF7C1CA8][Seed ORE's built-in index conventions]] | DONE | | 2026-11-08 | Population seeds the Ibor and overnight index conventions ORE defines in code. |
+| [[id:45DFB9BE-495C-4BE5-954B-D06673BB178F][Review how ORE constructs and prices each trade type]] | DONE | 2026-11-09 | 2026-11-09 | Record, per generated type, its mandatory terms, what conventions supply and what pricing needs. |
+| [[id:8735FE9F-153E-4113-8AAB-58A89E4DAFC6][Build trades through trade builders]] | BACKLOG | |  | The builder API: a required term that is left out does not compile, and terms are derived from conventions. |
+| [[id:639CEE8C-0586-4EEF-8F12-C450F956B00F][Store trade market references as oresmd addresses]] | BACKLOG | |  | Every trade column that names market data holds an oresmd address. |
+| [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Generate every trade type through its builder]] | BACKLOG | |  | Family by family, credit first, until ORE builds every generated trade. |
+| [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]] | BACKLOG | |  | Every type can be priced, or leaves the generator with a stated reason. |
+| [[id:B4B85683-D59C-4526-A4BF-7A5B1127BA5E][Value the generated trades in a report and make them correct]] | BACKLOG | |  | A report values every type, and each matches ORE's own NPV for its sample. |
 
 * Decisions
 
-- Split from [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] on 2026-11-08 at sprint 29 close. The acceptance above is copied from that story; its done tasks are recorded there.
+- Split from [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] on 2026-11-08 at sprint 29 close. Its done tasks are recorded there.
+- Revised on 2026-11-09: the point of the story is that trades are correct, so it ends with a valuation. "Correct" is measured against ORE: the NPV of a trade on an ORE sample's terms, against the NPV ORE gives for the sample. The review of ORE's code became a task of its own, because the design only cited =TradeGenerator=, which builds 11 products against 85 generated types.
+- The tasks run in table order, each using the one before it.
+- Reports already run end to end and fail on trade errors, which this story fixes, so the last task waits on no other story.
+- Trades use oresmd references internally, so the migration of the trade columns stays in the story, before generation moves onto the builders.
+- =TradeGenerator= is the inspiration for the builders. It covers 11 products, and the review states how its approach extends to every trade type.
 
 * Out of scope
 
@@ -60,5 +64,5 @@ Every product type the generator books has a trade that ORE builds and values, a
   Bond in it.
 - The fixes that let a run store its NPV, done on the task named above: the
   curves of group 3, the FxOption style and the FxSwap far leg. This story still
-  owns the tests that should have caught the last two.
+  owns the tests that should have caught the last two, on the generate task.
 

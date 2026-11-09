@@ -83,12 +83,12 @@ const STARTS={spot:'Spot',today:'Today',tomorrow:'Tomorrow'};
 const STATES={ok:'Answered','stale-spot':'Old spot','no-spot':'No spot','no-curve':'No curve','no-convention':'No convention',cross:'Cross'};
 
 const q=new URLSearchParams(location.search);
-const S={pair:q.get('pair')in PAIRS?q.get('pair'):'EUR/USD',asof:q.get('asof')in ASOFS?q.get('asof'):'2026-11-09',
-  start:q.get('start')in STARTS?q.get('start'):'spot',measure:q.get('measure')in MEASURES?q.get('measure'):'outright',
-  near:q.get('near')||'3M',far:q.get('far')||'6M',state:q.get('state')in STATES?q.get('state'):'ok'};
+const S={pair:Object.hasOwn(PAIRS,q.get('pair'))?q.get('pair'):'EUR/USD',asof:Object.hasOwn(ASOFS,q.get('asof'))?q.get('asof'):'2026-11-09',
+  start:Object.hasOwn(STARTS,q.get('start'))?q.get('start'):'spot',measure:Object.hasOwn(MEASURES,q.get('measure'))?q.get('measure'):'outright',
+  near:q.get('near')||'3M',far:q.get('far')||'6M',state:Object.hasOwn(STATES,q.get('state'))?q.get('state'):'ok'};
 const FIXED={cross:'EUR/GBP','no-curve':'USD/NOK'};
 if(FIXED[S.state])S.pair=FIXED[S.state];
-function go(p){Object.assign(S,p);if(FIXED[S.state])S.pair=FIXED[S.state];const u=new URLSearchParams(S);history.replaceState(null,'','?'+u);render()}
+function go(p){const was=FIXED[S.state];Object.assign(S,p);if(FIXED[S.state])S.pair=FIXED[S.state];else if(was&&!p.pair)S.pair='EUR/USD';const u=new URLSearchParams(S);history.replaceState(null,'','?'+u);render()}
 
 const DAY=864e5,d0=s=>new Date(s+'T00:00:00Z');
 const iso=d=>d.toISOString().slice(0,10);
@@ -183,7 +183,7 @@ function forwardForward(L){
 }
 function inputs(L){
   const stale=S.state==='stale-spot';
-  const c=x=>`<a href="#" title="Opens the published curve">${CURVES[x].name}</a> <div class="faint">${CURVES[x].set}</div>`;
+  const c=x=>`<a href="#" onclick="return false" title="Opens the published curve">${CURVES[x].name}</a> <div class="faint">${CURVES[x].set}</div>`;
   return `<div class="panel"><h2>What this is built from</h2><div class="facts">
    <div><div class="lab">Spot</div><div class="val mono">${fx(L.spot,L.pr.dp)}</div><div class="faint">${stale?'observed 09:12:40, 6 h 47 m before the as-of':L.A.spotAge}</div>${stale?'<span class="tag warn">Old spot</span>':''}</div>
    <div><div class="lab">Spot date</div><div class="val mono">${iso(L.spotD)}</div><div class="faint">T+${L.pr.lag}</div></div>

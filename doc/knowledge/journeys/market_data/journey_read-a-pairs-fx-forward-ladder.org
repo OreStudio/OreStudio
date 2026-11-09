@@ -37,7 +37,7 @@ The journey reads and changes nothing. A forward here is not a published object:
 6. *Change the start.* The person starts the ladder from spot, today or tomorrow. The system sets the near date of the tenors after S/N, recomputes their swap points and marks those rows. The short dates keep their own dates.
 7. *Read a forward-forward.* The person picks a near and a far tenor. The system states both forward rates, the swap points between them and the days. The ladder does not change.
 8. *Meet a refusal.* If a spot, a curve or a convention is missing, or the pair is a cross, the system shows no numbers and names what is missing.
-9. *Leave.* The address holds the pair, the as-of, the start and the measure, so the person can send this exact view to someone else.
+9. *Leave.* The address holds the pair, the as-of, the start, the measure and the forward-forward tenors, so the person can send this exact view to someone else.
 
 * Screens and wireframes
 

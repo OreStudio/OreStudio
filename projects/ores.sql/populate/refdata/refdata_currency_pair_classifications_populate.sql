@@ -25,8 +25,8 @@
  * seeded pairs already carry, so the pair screen can name them and a new pair
  * can pick one.
  *
- * This script is idempotent - uses INSERT ON CONFLICT DO UPDATE so that
- * description text is kept up-to-date in a single atomic statement.
+ * Runs once, on an empty table. A second run fails with already_exists, because
+ * the insert trigger refuses a version 0 write when a current row exists.
  */
 
 \echo '--- Currency Pair Classifications ---'

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/barrier_block_projection.hpp"
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
@@ -121,23 +122,23 @@ auto equity_instrument_projection_to_ore_date(const std::chrono::year_month_day&
     return d.ok() ? ores::platform::time::datetime::to_iso8601_date(d) : std::string{};
 }
 
-auto equity_instrument_projection_text_of(const record_reader& r,
-                                          std::string_view name) -> std::string {
+auto equity_instrument_projection_text_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.text(name))
         return *value;
     return {};
 }
 
-auto equity_instrument_projection_spelling_of(const record_reader& r,
-                                              std::string_view name) -> std::string {
+auto equity_instrument_projection_spelling_of(const record_reader& r, std::string_view name)
+    -> std::string {
     if (const auto value = r.spelling(name))
         return *value;
     return {};
 }
 
 /// A schema decimal element as the domain's exact decimal, zero when absent.
-auto equity_instrument_projection_decimal_of(const record_reader& r,
-                                             std::string_view name) -> decimal {
+auto equity_instrument_projection_decimal_of(const record_reader& r, std::string_view name)
+    -> decimal {
     if (const auto value = r.decimal(name))
         return *value;
     return decimal{};
@@ -241,13 +242,13 @@ struct range_bound_text final {
 // Reading: one function per product
 // ---------------------------------------------------------------------------
 
-auto read_equity_option(const record_reader& trade,
-                        std::string_view trade_type) -> equity_option_instrument {
+auto read_equity_option(const record_reader& trade, std::string_view trade_type)
+    -> equity_option_instrument {
     auto r = equity_instrument_projection_make_row<equity_option_instrument>(trade_type);
     const auto data = trade.child("EquityOptionData");
     if (!data)
         return r;
-    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.underlying_name = equity_address_of(equity_instrument_projection_underlying_name_of(*data));
     r.currency = equity_instrument_projection_text_of(*data, "Currency");
     r.notional = equity_instrument_projection_decimal_of(*data, "Quantity");
     const auto option = data->child("OptionData");
@@ -263,7 +264,7 @@ auto read_equity_forward(const record_reader& trade) -> equity_forward_instrumen
     const auto data = trade.child("EquityForwardData");
     if (!data)
         return r;
-    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.underlying_name = equity_address_of(equity_instrument_projection_underlying_name_of(*data));
     r.currency = equity_instrument_projection_text_of(*data, "Currency");
     r.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
     r.forward_price = equity_instrument_projection_optional_decimal_of(*data, "Strike");
@@ -287,7 +288,8 @@ auto read_equity_swap(const record_reader& trade) -> equity_instrument_data {
     leg_block::append_legs(result, *data);
     for (const auto& leg : data->children("LegData")) {
         if (const auto equity = leg.child("EquityLegData")) {
-            r.underlying_name = equity_instrument_projection_underlying_name_of(*equity);
+            r.underlying_name =
+                equity_address_of(equity_instrument_projection_underlying_name_of(*equity));
             r.return_type = equity_instrument_projection_text_of(*equity, "ReturnType");
             if (const auto quantity =
                     equity_instrument_projection_optional_decimal_of(*equity, "Quantity"))
@@ -322,7 +324,7 @@ auto read_equity_variance_swap(const record_reader& trade) -> equity_variance_sw
     const auto data = trade.child("EquityVarianceSwapData");
     if (!data)
         return r;
-    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.underlying_name = equity_address_of(equity_instrument_projection_underlying_name_of(*data));
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.notional = equity_instrument_projection_decimal_of(*data, "Notional");
     r.variance_strike = decimal_as_double(*data, "Strike").value_or(0.0);
@@ -342,7 +344,7 @@ auto read_equity_barrier_option(const record_reader& trade,
     const auto data = trade.child(element);
     if (!data)
         return r;
-    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.underlying_name = equity_address_of(equity_instrument_projection_underlying_name_of(*data));
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.notional = equity_instrument_projection_decimal_of(*data, "Quantity");
     const auto option = data->child("OptionData");
@@ -368,7 +370,8 @@ auto read_equity_asian_option(const record_reader& trade) -> equity_asian_option
     if (!data)
         return r;
     if (const auto underlying = data->child("Underlying"))
-        r.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
+        r.underlying_name =
+            equity_address_of(equity_instrument_projection_text_of(*underlying, "Name"));
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.notional = equity_instrument_projection_decimal_of(*data, "Quantity");
     const auto option = data->child("OptionData");
@@ -390,7 +393,7 @@ auto read_equity_digital_option(const record_reader& trade) -> equity_digital_op
     const auto data = trade.child("EquityDigitalOptionData");
     if (!data)
         return r;
-    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.underlying_name = equity_address_of(equity_instrument_projection_underlying_name_of(*data));
     const auto option = data->child("OptionData");
     r.option_type = equity_instrument_projection_option_type_of(option);
     r.expiry_date = expiry_date_of(option);
@@ -408,7 +411,7 @@ auto read_equity_touch_option(const record_reader& trade) -> equity_digital_opti
     const auto data = trade.child("EquityTouchOptionData");
     if (!data)
         return r;
-    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.underlying_name = equity_address_of(equity_instrument_projection_underlying_name_of(*data));
     r.currency = equity_instrument_projection_spelling_of(*data, "PayoffCurrency");
     r.notional = equity_instrument_projection_decimal_of(*data, "PayoffAmount");
     const auto option = data->child("OptionData");
@@ -439,9 +442,9 @@ auto read_equity_outperformance_option(const record_reader& trade) -> equity_opt
     // The option row has no basket column, so the pair travels as one name.
     const auto first = data->child("Underlying1");
     const auto second = data->child("Underlying2");
-    r.underlying_name =
-        (first ? equity_instrument_projection_text_of(*first, "Name") : std::string{}) + "/" +
-        (second ? equity_instrument_projection_text_of(*second, "Name") : std::string{});
+    r.underlying_name = equity_pair_of(
+        first ? equity_instrument_projection_text_of(*first, "Name") : std::string{},
+        second ? equity_instrument_projection_text_of(*second, "Name") : std::string{});
     return r;
 }
 
@@ -452,7 +455,8 @@ auto read_equity_accumulator(const record_reader& trade) -> equity_instrument_da
     if (!data)
         return equity_instrument_data{equity_instrument_variant{r}, {}};
     if (const auto underlying = data->child("Underlying"))
-        r.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
+        r.underlying_name =
+            equity_address_of(equity_instrument_projection_text_of(*underlying, "Name"));
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.fixing_amount = equity_instrument_projection_decimal_of(*data, "FixingAmount");
     r.strike = equity_instrument_projection_decimal_of(*data, "Strike");
@@ -481,7 +485,8 @@ auto read_equity_tarf(const record_reader& trade) -> equity_accumulator_instrume
     if (!data)
         return r;
     if (const auto underlying = data->child("Underlying"))
-        r.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
+        r.underlying_name =
+            equity_address_of(equity_instrument_projection_text_of(*underlying, "Name"));
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.fixing_amount = equity_instrument_projection_decimal_of(*data, "FixingAmount");
     r.strike = equity_instrument_projection_decimal_of(*data, "Strike");
@@ -507,7 +512,7 @@ auto read_equity_cliquet_option(const record_reader& trade) -> equity_option_ins
     const auto data = trade.child("EquityCliquetOptionData");
     if (!data)
         return r;
-    r.underlying_name = equity_instrument_projection_underlying_name_of(*data);
+    r.underlying_name = equity_address_of(equity_instrument_projection_underlying_name_of(*data));
     r.currency = equity_instrument_projection_spelling_of(*data, "Currency");
     r.notional = equity_instrument_projection_decimal_of(*data, "Notional");
     r.option_type = equity_instrument_projection_spelling_of(*data, "OptionType");
@@ -552,8 +557,9 @@ auto read_equity_worst_of_basket_swap(const record_reader& trade) -> equity_inst
         for (const auto& underlying : underlyings->children("Underlying")) {
             equity_basket_constituent row;
             row.sequence_number = static_cast<int>(ordinal++);
-            row.underlying_name = equity_instrument_projection_text_of(underlying, "Name");
             row.underlying_kind = equity_instrument_projection_text_of(underlying, "Type");
+            row.underlying_name = underlying_address_of(
+                row.underlying_kind, equity_instrument_projection_text_of(underlying, "Name"));
             if (underlying.has("IdentifierType"))
                 row.identifier_type = underlying.text("IdentifierType");
             constituents.push_back(std::move(row));
@@ -602,7 +608,8 @@ auto read_equity_position(const record_reader& trade) -> equity_instrument_data 
         inst.quantity = decimal_as_double(*data, "Quantity").value_or(0.0);
         const auto rows = data->children("Underlying");
         if (!rows.empty())
-            inst.underlying_name = equity_instrument_projection_text_of(rows.front(), "Name");
+            inst.underlying_name =
+                equity_address_of(equity_instrument_projection_text_of(rows.front(), "Name"));
     }
     return equity_instrument_data{std::move(inst), {}};
 }
@@ -618,7 +625,8 @@ auto read_equity_option_position(const record_reader& trade) -> equity_instrumen
             equity_position_option_underlying row;
             row.sequence_number = ++sequence_number;
             if (const auto underlying = entry.child("Underlying")) {
-                row.underlying_name = equity_instrument_projection_text_of(*underlying, "Name");
+                row.underlying_name =
+                    equity_address_of(equity_instrument_projection_text_of(*underlying, "Name"));
                 row.weight = decimal_as_double(*underlying, "Weight");
                 if (underlying->has("IdentifierType"))
                     row.identifier_type = underlying->text("IdentifierType");
@@ -717,7 +725,7 @@ void write_name_or_underlying(record_writer& data,
                               const equity_instrument_data& carrier,
                               const std::string& name) {
     if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying"))
-        data.set_text("Name", name);
+        data.set_text("Name", underlying_name_of(name));
 }
 
 void write_underlying_or_equity(record_writer& data,
@@ -726,7 +734,7 @@ void write_underlying_or_equity(record_writer& data,
     if (underlying_block::write_underlyings(data, "Underlying", carrier, "underlying"))
         return;
     auto underlying = data.child("Underlying");
-    underlying.set_text("Name", name);
+    underlying.set_text("Name", underlying_name_of(name));
     underlying.set_text("Type", "Equity");
 }
 
@@ -775,7 +783,7 @@ void write_equity_swap(record_writer& trade,
     equity_leg.set_spelling("LegType", "Equity", "leg type");
     equity_leg.set_text("Payer", equity_instrument_projection_flag_text(true));
     auto equity = equity_leg.child("EquityLegData");
-    equity.set_text("Name", v.underlying_name);
+    equity.set_text("Name", underlying_name_of(v.underlying_name));
     equity.set_text("ReturnType", v.return_type);
     if (!v.notional.is_zero())
         equity.set_decimal("Quantity", v.notional);
@@ -844,7 +852,7 @@ void write_equity_asian_option(record_writer& trade,
     if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying") &&
         !v.underlying_name.empty()) {
         auto underlying = data.child("Underlying");
-        underlying.set_text("Name", v.underlying_name);
+        underlying.set_text("Name", underlying_name_of(v.underlying_name));
         underlying.set_text("Type", "Equity");
     }
     option_block::write_product_schedule(data, carrier, "ObservationDates", "observation_schedule");
@@ -891,16 +899,16 @@ void write_equity_outperformance_option(record_writer& trade, const equity_optio
     data.set_decimal("StrikeReturn", v.strike);
 
     // The option row carries the pair as one name, so the split is its reverse.
-    const auto separator = v.underlying_name.find('/');
+    const auto separator = v.underlying_name.find(equity_pair_separator(v.underlying_name));
     const auto first =
         separator == std::string::npos ? v.underlying_name : v.underlying_name.substr(0, separator);
     const auto second =
         separator == std::string::npos ? first : v.underlying_name.substr(separator + 1);
     auto underlying1 = data.child("Underlying1");
-    underlying1.set_text("Name", first);
+    underlying1.set_text("Name", underlying_name_of(first));
     underlying1.set_text("Type", "Equity");
     auto underlying2 = data.child("Underlying2");
-    underlying2.set_text("Name", second);
+    underlying2.set_text("Name", underlying_name_of(second));
     underlying2.set_text("Type", "Equity");
 
     // The schema requires both initial prices and the row keeps neither, so the
@@ -1026,12 +1034,13 @@ void write_equity_worst_of_basket_swap(record_writer& trade,
     for (const auto& row : ordered_rows) {
         if (row.underlying_name.empty())
             continue;
-        members.push_back({row.underlying_name, row.underlying_kind, row.identifier_type});
+        members.push_back(
+            {underlying_name_of(row.underlying_name), row.underlying_kind, row.identifier_type});
         if (row.initial_price.has_value())
             prices.push_back(*row.initial_price);
     }
     if (members.empty() && !v.underlying_name.empty())
-        members.push_back({v.underlying_name, "Equity", std::nullopt});
+        members.push_back({underlying_name_of(v.underlying_name), "Equity", std::nullopt});
     if (!members.empty()) {
         auto underlyings = data.child("Underlyings");
         for (const auto& member : members) {
@@ -1080,7 +1089,7 @@ void write_equity_position(record_writer& trade,
         !v.underlying_name.empty()) {
         auto underlying = data.append("Underlying");
         underlying.set_text("Type", "Equity");
-        underlying.set_text("Name", v.underlying_name);
+        underlying.set_text("Name", underlying_name_of(v.underlying_name));
     }
 }
 
@@ -1102,7 +1111,7 @@ void write_equity_option_position(record_writer& trade,
         auto entry = data.append("Underlying");
         auto underlying = entry.child("Underlying");
         underlying.set_text("Type", "Equity");
-        underlying.set_text("Name", row->underlying_name);
+        underlying.set_text("Name", underlying_name_of(row->underlying_name));
         if (row->identifier_type)
             underlying.set_text("IdentifierType", *row->identifier_type);
         if (row->weight)
@@ -1254,8 +1263,8 @@ std::optional<std::string> equity_option_data_element(std::string_view trade_typ
     return std::nullopt;
 }
 
-auto read_equity_product(const xml::record_reader& trade,
-                         std::string_view trade_type) -> trading::domain::trade_instrument {
+auto read_equity_product(const xml::record_reader& trade, std::string_view trade_type)
+    -> trading::domain::trade_instrument {
     if (trade_type == "EquityPosition")
         return trading::domain::trade_instrument{read_equity_position(trade)};
     if (trade_type == "EquityOptionPosition")
@@ -1329,6 +1338,8 @@ auto read_equity_instrument(xml::record_reader trade, std::string_view trade_typ
                         barrier_block::read_monitoring(row, *product, "EQIndex");
                     with_equity_terms<Row>(
                         [&](const auto& terms) { scalar_terms::read_terms(row, *product, terms); });
+                    if constexpr (std::is_same_v<Row, equity_swap_instrument>)
+                        row.floating_index = address_of_optional(row.floating_index);
                     if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
                         if (const auto strike = product->child("StrikeData"))
                             if (strike->has("Currency"))
@@ -1443,6 +1454,9 @@ auto write_equity_instrument(xml::record_writer& trade,
                     with_equity_terms<Row>([&](const auto& terms) {
                         scalar_terms::write_terms(*product, row, terms);
                     });
+                    if constexpr (std::is_same_v<Row, equity_swap_instrument>)
+                        if (row.floating_index)
+                            product->set_text("FloatingIndex", ore_name_of(*row.floating_index));
                     if constexpr (std::is_same_v<Row, equity_asian_option_instrument>)
                         if (row.strike_currency) {
                             auto strike = product->child("StrikeData");

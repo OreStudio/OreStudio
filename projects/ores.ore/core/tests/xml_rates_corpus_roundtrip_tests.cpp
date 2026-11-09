@@ -142,6 +142,41 @@ bool is_rates(const trade_import_item& item) {
  */
 } // namespace
 
+TEST_CASE("no trade of the corpus exports an oresmd address",
+          "[ore][xml][roundtrip][corpus][external]") {
+    const auto dir =
+        ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades");
+    REQUIRE(fs::exists(dir));
+
+    std::size_t trades = 0;
+    std::set<std::string> leaking;
+    for (const auto& entry : fs::recursive_directory_iterator(dir)) {
+        if (!entry.is_regular_file() || entry.path().extension() != ".xml")
+            continue;
+        std::vector<trade_import_item> items;
+        try {
+            items = importer::import_portfolio_with_context(entry.path());
+        } catch (const std::exception&) {
+            continue;
+        }
+        for (const auto& item : items) {
+            // A trade that holds other trades cannot export alone.
+            std::string exported;
+            try {
+                exported = export_one(item);
+            } catch (const std::exception&) {
+                continue;
+            }
+            ++trades;
+            if (exported.find("oresmd:") != std::string::npos)
+                leaking.insert(entry.path().filename().string() + " (" + item.ore_id + ")");
+        }
+    }
+    INFO("trades=" << trades);
+    CHECK(trades > 100);
+    CHECK(leaking == std::set<std::string>{});
+}
+
 TEST_CASE("every rates trade in the corpus comes back as the same family rows",
           "[ore][xml][roundtrip][rates][corpus][external]") {
     const auto dir =

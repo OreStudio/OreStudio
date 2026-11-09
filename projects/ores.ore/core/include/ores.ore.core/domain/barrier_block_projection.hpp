@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_CORE_DOMAIN_BARRIER_BLOCK_PROJECTION_HPP
 #define ORES_ORE_CORE_DOMAIN_BARRIER_BLOCK_PROJECTION_HPP
 
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.trading.api/domain/instrument_barrier.hpp"
@@ -238,8 +239,8 @@ concept monitored = requires(Row& row) {
 };
 
 /// A text or enumerated scalar the product declares, as written.
-inline auto declared_scalar(const record_reader& product,
-                            std::string_view name) -> std::optional<std::string> {
+inline auto declared_scalar(const record_reader& product, std::string_view name)
+    -> std::optional<std::string> {
     const auto* f = xml::find_field(product.type(), name, false);
     if (f == nullptr || !product.has(name))
         return std::nullopt;
@@ -268,7 +269,7 @@ void read_monitoring(Row& row, const record_reader& product, std::string_view in
     if (const auto start = declared_scalar(product, "StartDate"))
         row.barrier_start_date = option_block::to_optional_domain_date(*start);
     row.barrier_calendar = declared_scalar(product, "Calendar");
-    row.barrier_fixing_index = declared_scalar(product, index_element);
+    row.barrier_fixing_index = address_of_optional(declared_scalar(product, index_element));
 }
 
 /// Writes a monitored row's terms where the product declares them.
@@ -278,7 +279,8 @@ void write_monitoring(record_writer& product, const Row& row, std::string_view i
         set_declared_scalar(
             product, "StartDate", option_block::to_ore_date(*row.barrier_start_date));
     set_declared_scalar(product, "Calendar", row.barrier_calendar);
-    set_declared_scalar(product, index_element, row.barrier_fixing_index);
+    if (row.barrier_fixing_index)
+        set_declared_scalar(product, index_element, ore_name_of(*row.barrier_fixing_index));
 }
 
 }

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/store-underlyings-and-entities-as-oresmd-addresses
+#+pr: 4533
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -20,22 +20,23 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every underlying, entity and security a trade names is stored as an oresmd address.
+Every underlying a trade names is stored as an oresmd address. Entities and securities stay identifiers.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
 
-- Underlying, equity, commodity, reference entity, issuer and security columns hold an oresmd address.
+- Underlying, equity and commodity columns hold an oresmd address.
+- Issuer, reference entity and security columns stay identifiers. The user decided this, because the grammar addresses market data and not parties.
 - Commodity legs, scripted indices, barrier monitoring indices, composite FX indices, the equity swap floating index and the bond stub indices move here.
 - Stored trades hold one form when the soft foreign key lands.
 - The corpus roundtrip still loses nothing.
@@ -77,12 +78,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4533][#4533]] | [ore] Store trade underlyings and leftover indices as oresmd addresses |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A mixed equity pair could split on a slash inside an address | index_reference.hpp | Accept | A pair is now both addresses or both names, with a test. |
+| 2 | Named scripted Underlyings may export addresses | scripted_instrument_projection.cpp | Accept | Added a corpus test that no exported trade states an address. |
+| 3 | Only the Index declared type converts | scripted_instrument_projection.cpp | Accept | Comment added. |
+| 4 | Qualified calls and format noise in the commodity projection | commodity_instrument_projection.cpp | Accept in part | Renamed the local helper so calls are unqualified. Format changes stay, because the format gate needs them. |
+| 5 | Helper for the repeated commodity read | commodity_instrument_projection.cpp | Decline | Each site is one clear line, and a helper adds a name to learn. |
 
 * Result
+
+Equity, commodity, FX and bond underlying columns hold addresses, built from ORE's
+bare name and the underlying type. Barrier monitoring indices, composite FX indices,
+the equity swap floating index, bond stub indices, commodity legs and scripted index
+parameters also hold addresses. The exporter writes back the name ORE states.
+
+Issuers, reference entities and security ids stay identifiers, by decision. A script
+may name a bare security, which the codec reads as inflation, so a scripted name the
+codec reads as inflation stays as written. This also keeps scripted inflation indices
+as names.
+
+Generated trades still hold ORE names until the builders take over.

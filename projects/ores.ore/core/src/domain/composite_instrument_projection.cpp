@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/leg_block_projection.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
@@ -124,7 +125,7 @@ void read_total_return(composite_instrument_data& r, const xml::record_reader& d
         if (const auto terms = ret->child("FXTerms")) {
             std::string indices;
             for (const auto& index : terms->values("FXIndex"))
-                indices += (indices.empty() ? "" : " ") + index;
+                indices += (indices.empty() ? "" : " ") + address_of(index);
             if (!indices.empty())
                 row.return_fx_index = indices;
         }
@@ -191,7 +192,7 @@ void write_total_return(xml::record_writer& trade,
         std::string_view indices = *row.return_fx_index;
         while (!indices.empty()) {
             const auto space = indices.find(' ');
-            terms.append_value("FXIndex", indices.substr(0, space));
+            terms.append_value("FXIndex", ore_name_of(indices.substr(0, space)));
             if (space == std::string_view::npos)
                 break;
             indices.remove_prefix(space + 1);

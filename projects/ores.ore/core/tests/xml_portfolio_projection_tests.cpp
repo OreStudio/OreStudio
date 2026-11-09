@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
@@ -1563,7 +1564,7 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
     REQUIRE(accumulator->accumulators.size() == 1);
     const auto& accumulator_row = accumulator->accumulators[0];
     CHECK(accumulator_row.currency == "USD");
-    CHECK(accumulator_row.underlying_code == "EUR-USD");
+    CHECK(ores::ore::domain::underlying_name_of(accumulator_row.underlying_code) == "EUR-USD");
     CHECK(accumulator_row.fixing_amount.to_string() == "1000");
     CHECK(accumulator_row.strike.to_string() == "1.05");
     // The mapper states the accumulator's direction as long without reading the
@@ -1585,7 +1586,8 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
         std::get_if<ores::trading::domain::fx_instrument_data>(&items[3].instrument);
     REQUIRE(variance != nullptr);
     REQUIRE(variance->variance_swaps.size() == 1);
-    CHECK(variance->variance_swaps[0].underlying_code == "EUR-USD");
+    CHECK(ores::ore::domain::underlying_name_of(variance->variance_swaps[0].underlying_code) ==
+          "EUR-USD");
     CHECK(variance->variance_swaps[0].start_date == date_of(2024, 1, 15));
     CHECK(variance->variance_swaps[0].end_date == date_of(2025, 1, 15));
     CHECK(variance->variance_swaps[0].currency == "USD");
@@ -1621,7 +1623,8 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
         std::get_if<ores::trading::domain::fx_instrument_data>(&accumulator_again.instrument);
     REQUIRE(accumulator_round != nullptr);
     REQUIRE(accumulator_round->accumulators.size() == 1);
-    CHECK(accumulator_round->accumulators[0].underlying_code == "EUR-USD");
+    CHECK(ores::ore::domain::underlying_name_of(
+              accumulator_round->accumulators[0].underlying_code) == "EUR-USD");
     CHECK(accumulator_round->accumulators[0].long_short == "Long");
     CHECK(accumulator_round->accumulators[0].strike.to_string() == "1.05");
     CHECK(accumulator_round->accumulators[0].knock_out_barrier->to_string() == "1.2");
@@ -1634,7 +1637,8 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products",
         std::get_if<ores::trading::domain::fx_instrument_data>(&variance_again.instrument);
     REQUIRE(variance_round != nullptr);
     REQUIRE(variance_round->variance_swaps.size() == 1);
-    CHECK(variance_round->variance_swaps[0].underlying_code == "EUR-USD");
+    CHECK(ores::ore::domain::underlying_name_of(
+              variance_round->variance_swaps[0].underlying_code) == "EUR-USD");
     CHECK(variance_round->variance_swaps[0].strike == 0.08);
     CHECK(variance_round->variance_swaps[0].notional.to_string() == "2000000");
     CHECK(variance_round->variance_swaps[0].end_date == date_of(2025, 1, 15));
@@ -2647,7 +2651,7 @@ TEST_CASE("a_portfolio_document_projects_an_equity_option_and_its_underlying",
         std::get_if<ores::trading::domain::equity_option_instrument>(&data->instrument);
     REQUIRE(option != nullptr);
     CHECK(option->identity.trade_type_code == "EquityOption");
-    CHECK(option->underlying_name == "RIC:.SPX");
+    CHECK(ores::ore::domain::underlying_name_of(option->underlying_name) == "RIC:.SPX");
     CHECK(option->currency == "USD");
     CHECK(option->notional.to_string() == "775");
     CHECK(option->option_type == "Call");
@@ -2666,7 +2670,7 @@ TEST_CASE("a_portfolio_document_projects_an_equity_option_and_its_underlying",
         std::get_if<ores::trading::domain::equity_option_instrument>(&round_data->instrument);
     REQUIRE(round != nullptr);
     CHECK(round->identity.trade_type_code == "EquityOption");
-    CHECK(round->underlying_name == "RIC:.SPX");
+    CHECK(ores::ore::domain::underlying_name_of(round->underlying_name) == "RIC:.SPX");
     CHECK(round->currency == "USD");
     CHECK(round->notional.to_string() == "775");
     CHECK(round->option_type == "Call");
@@ -2767,7 +2771,7 @@ TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entri
     REQUIRE(plain != nullptr);
     CHECK(plain->identity.trade_type_code == "EquityPosition");
     CHECK(plain->quantity == 5000.0);
-    CHECK(plain->underlying_name == ".SPX");
+    CHECK(ores::ore::domain::underlying_name_of(plain->underlying_name) == ".SPX");
     CHECK(position->underlyings.empty());
 
     const auto* entries =
@@ -2778,10 +2782,10 @@ TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entri
     REQUIRE(held != nullptr);
     CHECK(held->identity.trade_type_code == "EquityOptionPosition");
     CHECK(held->quantity == 1000.0);
-    CHECK(held->underlying_name == ".SPX");
+    CHECK(ores::ore::domain::underlying_name_of(held->underlying_name) == ".SPX");
     REQUIRE(entries->underlyings.size() == 2);
     CHECK(entries->underlyings[0].sequence_number == 1);
-    CHECK(entries->underlyings[0].underlying_name == ".SPX");
+    CHECK(ores::ore::domain::underlying_name_of(entries->underlyings[0].underlying_name) == ".SPX");
     CHECK(entries->underlyings[0].strike.to_string() == "3300");
     CHECK(entries->underlyings[0].weight == std::optional<double>(0.5));
     CHECK(entries->underlyings[0].long_short == "Long");
@@ -2789,7 +2793,8 @@ TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entri
     CHECK(entries->underlyings[0].exercise_type == "European");
     CHECK(entries->underlyings[0].settlement_type == "Cash");
     CHECK(entries->underlyings[1].sequence_number == 2);
-    CHECK(entries->underlyings[1].underlying_name == ".SX5E");
+    CHECK(ores::ore::domain::underlying_name_of(entries->underlyings[1].underlying_name) ==
+          ".SX5E");
     CHECK(entries->underlyings[1].strike.to_string() == "3400");
     CHECK(entries->underlyings[1].long_short == "Short");
     CHECK(entries->underlyings[1].option_type == "Put");
@@ -2806,7 +2811,7 @@ TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entri
     CHECK(plain_again.anchor.trade_type == "EquityPosition");
     CHECK(plain_round->identity.trade_type_code == "EquityPosition");
     CHECK(plain_round->quantity == 5000.0);
-    CHECK(plain_round->underlying_name == ".SPX");
+    CHECK(ores::ore::domain::underlying_name_of(plain_round->underlying_name) == ".SPX");
     CHECK(plain_round_data->underlyings.empty());
 
     const auto entries_again = rebuild(items[1]);
@@ -2821,12 +2826,14 @@ TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entri
     CHECK(round->quantity == 1000.0);
     REQUIRE(round_data->underlyings.size() == 2);
     CHECK(round_data->underlyings[0].sequence_number == 1);
-    CHECK(round_data->underlyings[0].underlying_name == ".SPX");
+    CHECK(ores::ore::domain::underlying_name_of(round_data->underlyings[0].underlying_name) ==
+          ".SPX");
     CHECK(round_data->underlyings[0].strike.to_string() == "3300");
     CHECK(round_data->underlyings[0].weight == std::optional<double>(0.5));
     CHECK(round_data->underlyings[0].settlement_type == "Cash");
     CHECK(round_data->underlyings[1].sequence_number == 2);
-    CHECK(round_data->underlyings[1].underlying_name == ".SX5E");
+    CHECK(ores::ore::domain::underlying_name_of(round_data->underlyings[1].underlying_name) ==
+          ".SX5E");
     CHECK(round_data->underlyings[1].strike.to_string() == "3400");
     CHECK(round_data->underlyings[1].settlement_type == "Physical");
 }
@@ -2848,7 +2855,7 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
         &barrier_data->instrument);
     REQUIRE(barrier != nullptr);
     CHECK(barrier->identity.trade_type_code == "EquityBarrierOption");
-    CHECK(barrier->underlying_name == "RIC:.SPX");
+    CHECK(ores::ore::domain::underlying_name_of(barrier->underlying_name) == "RIC:.SPX");
     CHECK(barrier->currency == "USD");
     CHECK(barrier->notional.to_string() == "1000");
     CHECK(barrier->option_type == "Call");
@@ -2866,7 +2873,7 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
         &accumulator_data->instrument);
     REQUIRE(accumulator != nullptr);
     CHECK(accumulator->identity.trade_type_code == "EquityAccumulator");
-    CHECK(accumulator->underlying_name == ".STOXX50");
+    CHECK(ores::ore::domain::underlying_name_of(accumulator->underlying_name) == ".STOXX50");
     CHECK(accumulator->currency == "EUR");
     CHECK(accumulator->fixing_amount.to_string() == "30");
     CHECK(accumulator->strike.to_string() == "4000");
@@ -2895,7 +2902,7 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
     REQUIRE(barrier_round != nullptr);
     CHECK(barrier_again.anchor.trade_type == "EquityBarrierOption");
     CHECK(barrier_round->identity.trade_type_code == "EquityBarrierOption");
-    CHECK(barrier_round->underlying_name == "RIC:.SPX");
+    CHECK(ores::ore::domain::underlying_name_of(barrier_round->underlying_name) == "RIC:.SPX");
     CHECK(barrier_round->currency == "USD");
     CHECK(barrier_round->notional.to_string() == "1000");
     CHECK(barrier_round->option_type == "Call");
@@ -2914,7 +2921,7 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
     REQUIRE(round != nullptr);
     CHECK(accumulator_again.anchor.trade_type == "EquityAccumulator");
     CHECK(round->identity.trade_type_code == "EquityAccumulator");
-    CHECK(round->underlying_name == ".STOXX50");
+    CHECK(ores::ore::domain::underlying_name_of(round->underlying_name) == ".STOXX50");
     CHECK(round->currency == "EUR");
     CHECK(round->fixing_amount.to_string() == "30");
     CHECK(round->strike.to_string() == "4000");
@@ -2947,7 +2954,7 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swa
     CHECK(forward_data->constituents.empty());
     const auto& forward = forward_data->instrument;
     CHECK(forward.identity.trade_type_code == "CommodityForward");
-    CHECK(forward.commodity_code == "NGAS");
+    CHECK(ores::ore::domain::underlying_name_of(forward.commodity_code) == "NGAS");
     CHECK(forward.currency == "USD");
     CHECK(forward.quantity == 1000.0);
     REQUIRE(forward.fixed_price.has_value());
@@ -2962,7 +2969,7 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swa
     REQUIRE(swap_data != nullptr);
     const auto& swap = swap_data->instrument;
     CHECK(swap.identity.trade_type_code == "CommoditySwap");
-    CHECK(swap.commodity_code == "NGAS");
+    CHECK(ores::ore::domain::underlying_name_of(swap.commodity_code) == "NGAS");
     CHECK(swap.currency == "USD");
     CHECK(swap.quantity == 1000.0);
     CHECK(swap.start_date == std::optional<std::chrono::year_month_day>(date_of(2025, 1, 15)));
@@ -2978,7 +2985,7 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swa
     REQUIRE(forward_round_data != nullptr);
     const auto& forward_round = forward_round_data->instrument;
     CHECK(forward_round.identity.trade_type_code == "CommodityForward");
-    CHECK(forward_round.commodity_code == "NGAS");
+    CHECK(ores::ore::domain::underlying_name_of(forward_round.commodity_code) == "NGAS");
     CHECK(forward_round.currency == "USD");
     CHECK(forward_round.quantity == 1000.0);
     REQUIRE(forward_round.fixed_price.has_value());
@@ -2993,7 +3000,7 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swa
     const auto& swap_round = swap_round_data->instrument;
     CHECK(swap_again.anchor.trade_type == "CommoditySwap");
     CHECK(swap_round.identity.trade_type_code == "CommoditySwap");
-    CHECK(swap_round.commodity_code == "NGAS");
+    CHECK(ores::ore::domain::underlying_name_of(swap_round.commodity_code) == "NGAS");
     CHECK(swap_round.currency == "USD");
     CHECK(swap_round.quantity == 1000.0);
     CHECK(swap_round.start_date ==
@@ -3018,7 +3025,7 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_
     REQUIRE(apo_data != nullptr);
     const auto& apo = apo_data->instrument;
     CHECK(apo.identity.trade_type_code == "CommodityAveragePriceOption");
-    CHECK(apo.commodity_code == "WTI");
+    CHECK(ores::ore::domain::underlying_name_of(apo.commodity_code) == "WTI");
     CHECK(apo.currency == "USD");
     CHECK(apo.quantity == 500.0);
     REQUIRE(apo.strike_price.has_value());
@@ -3037,7 +3044,7 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_
     REQUIRE(basket_data != nullptr);
     const auto& basket = basket_data->instrument;
     CHECK(basket.identity.trade_type_code == "CommodityBasketOption");
-    CHECK(basket.commodity_code == "GOLD");
+    CHECK(ores::ore::domain::underlying_name_of(basket.commodity_code) == "GOLD");
     CHECK(basket.currency == "EUR");
     CHECK(basket.quantity == 100.0);
     REQUIRE(basket.strike_price.has_value());
@@ -3048,11 +3055,13 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_
           std::optional<std::chrono::year_month_day>(date_of(2026, 12, 31)));
     REQUIRE(basket_data->constituents.size() == 2);
     CHECK(basket_data->constituents[0].sequence_number == 1);
-    CHECK(basket_data->constituents[0].underlying_code == "GOLD");
+    CHECK(ores::ore::domain::underlying_name_of(basket_data->constituents[0].underlying_code) ==
+          "GOLD");
     CHECK(basket_data->constituents[0].weight == std::optional<double>(0.6));
     CHECK(basket_data->constituents[0].change_reason_code == "system.external_data_import");
     CHECK(basket_data->constituents[1].sequence_number == 2);
-    CHECK(basket_data->constituents[1].underlying_code == "SILVER");
+    CHECK(ores::ore::domain::underlying_name_of(basket_data->constituents[1].underlying_code) ==
+          "SILVER");
     CHECK(basket_data->constituents[1].weight == std::optional<double>(0.4));
 
     const auto apo_again = rebuild(items[0]);
@@ -3062,7 +3071,7 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_
     const auto& apo_round = apo_round_data->instrument;
     CHECK(apo_again.anchor.trade_type == "CommodityAveragePriceOption");
     CHECK(apo_round.identity.trade_type_code == "CommodityAveragePriceOption");
-    CHECK(apo_round.commodity_code == "WTI");
+    CHECK(ores::ore::domain::underlying_name_of(apo_round.commodity_code) == "WTI");
     CHECK(apo_round.currency == "USD");
     CHECK(apo_round.quantity == 500.0);
     REQUIRE(apo_round.strike_price.has_value());
@@ -3083,7 +3092,7 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_
     const auto& basket_round = basket_round_data->instrument;
     CHECK(basket_again.anchor.trade_type == "CommodityBasketOption");
     CHECK(basket_round.identity.trade_type_code == "CommodityBasketOption");
-    CHECK(basket_round.commodity_code == "GOLD");
+    CHECK(ores::ore::domain::underlying_name_of(basket_round.commodity_code) == "GOLD");
     CHECK(basket_round.currency == "EUR");
     CHECK(basket_round.quantity == 100.0);
     REQUIRE(basket_round.strike_price.has_value());
@@ -3094,10 +3103,12 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_
           std::optional<std::chrono::year_month_day>(date_of(2026, 12, 31)));
     REQUIRE(basket_round_data->constituents.size() == 2);
     CHECK(basket_round_data->constituents[0].sequence_number == 1);
-    CHECK(basket_round_data->constituents[0].underlying_code == "GOLD");
+    CHECK(ores::ore::domain::underlying_name_of(
+              basket_round_data->constituents[0].underlying_code) == "GOLD");
     CHECK(basket_round_data->constituents[0].weight == std::optional<double>(0.6));
     CHECK(basket_round_data->constituents[1].sequence_number == 2);
-    CHECK(basket_round_data->constituents[1].underlying_code == "SILVER");
+    CHECK(ores::ore::domain::underlying_name_of(
+              basket_round_data->constituents[1].underlying_code) == "SILVER");
     CHECK(basket_round_data->constituents[1].weight == std::optional<double>(0.4));
 }
 
@@ -3247,7 +3258,9 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     // in the parameters and comes back out of the document it is written to.
     const auto* double_digital = scripted_of(items[1].instrument);
     REQUIRE(double_digital != nullptr);
-    CHECK(double_digital->underlyings_json == R"(["TR20H-EUR-USD","NYMEX:CL"])");
+    CHECK(
+        double_digital->underlyings_json ==
+        R"(["oresmd://fx/EUR?type=fixing&index=fx&source=TR20H&ccy=USD","oresmd://commodity/NYMEX:CL?type=fixing&index=commodity"])");
     CHECK(double_digital->parameters_json.find(R"("Underlying2Type":"Commodity")") !=
           std::string::npos);
 
@@ -3265,7 +3278,7 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     const auto* cliquet =
         std::get_if<ores::trading::domain::equity_option_instrument>(&cliquet_data->instrument);
     REQUIRE(cliquet != nullptr);
-    CHECK(cliquet->underlying_name == "RIC:.SPX");
+    CHECK(ores::ore::domain::underlying_name_of(cliquet->underlying_name) == "RIC:.SPX");
     CHECK(cliquet->currency == "USD");
     CHECK(cliquet->notional.to_string() == "1000");
     CHECK(cliquet->option_type == "Call");
@@ -3290,7 +3303,7 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     const auto* digital = std::get_if<ores::trading::domain::equity_digital_option_instrument>(
         &digital_data->instrument);
     REQUIRE(digital != nullptr);
-    CHECK(digital->underlying_name == "RIC:.SPX");
+    CHECK(ores::ore::domain::underlying_name_of(digital->underlying_name) == "RIC:.SPX");
     CHECK(digital->notional.to_string() == "1000");
     REQUIRE(digital->strike.has_value());
     CHECK(digital->strike->to_string() == "3300");
@@ -3319,10 +3332,12 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
     REQUIRE(worst_of != nullptr);
     // The basket is rows now, in the document's order, not an encoded string.
     REQUIRE(worst_of_data->basket_constituents.size() == 2);
-    CHECK(worst_of_data->basket_constituents[0].underlying_name == "RIC:.SPX");
+    CHECK(ores::ore::domain::underlying_name_of(
+              worst_of_data->basket_constituents[0].underlying_name) == "RIC:.SPX");
     CHECK(worst_of_data->basket_constituents[0].underlying_kind == "Equity");
     CHECK(worst_of_data->basket_constituents[1].underlying_kind == "Equity");
-    CHECK(worst_of_data->basket_constituents[1].underlying_name == "RIC:.NDX");
+    CHECK(ores::ore::domain::underlying_name_of(
+              worst_of_data->basket_constituents[1].underlying_name) == "RIC:.NDX");
     CHECK(worst_of_data->basket_constituents[0].sequence_number == 1);
     CHECK(worst_of_data->basket_constituents[1].sequence_number == 2);
     // A price per constituent, a level per period: two names, one date.
@@ -3345,9 +3360,11 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires",
         &worst_of_again_data->instrument);
     REQUIRE(worst_of_again != nullptr);
     REQUIRE(worst_of_again_data->basket_constituents.size() == 2);
-    CHECK(worst_of_again_data->basket_constituents[0].underlying_name == "RIC:.SPX");
+    CHECK(ores::ore::domain::underlying_name_of(
+              worst_of_again_data->basket_constituents[0].underlying_name) == "RIC:.SPX");
     CHECK(worst_of_again_data->basket_constituents[0].underlying_kind == "Equity");
-    CHECK(worst_of_again_data->basket_constituents[1].underlying_name == "RIC:.NDX");
+    CHECK(ores::ore::domain::underlying_name_of(
+              worst_of_again_data->basket_constituents[1].underlying_name) == "RIC:.NDX");
     REQUIRE(worst_of_again_data->basket_constituents.size() == 2);
     CHECK(worst_of_again_data->basket_constituents[0]
               .initial_price.value_or(ores::utility::decimal::decimal{})
@@ -3570,6 +3587,49 @@ TEST_CASE("a_cms_spread_leg_holds_both_indices_as_addresses_and_writes_them_back
     CHECK(again.floating_index_code_2 == leg.floating_index_code_2);
 }
 
+TEST_CASE("an_underlying_name_returns_from_its_address_as_ore_states_it",
+          "[ore][xml][portfolio][projection]") {
+    using namespace ores::ore::domain;
+    for (const auto* name : {"MSFT.O", ".NDX", "GB0005405286", "RIC:.SPX", "ISIN:XS0982710740"}) {
+        INFO(name);
+        const auto address = underlying_address_of("Equity", name);
+        CHECK(address.starts_with("oresmd://"));
+        CHECK(underlying_name_of(address) == name);
+    }
+    for (const auto* name : {"NYMEX:CL", "ICE:B"}) {
+        INFO(name);
+        const auto address = commodity_address_of(name);
+        CHECK(address.starts_with("oresmd://"));
+        CHECK(underlying_name_of(address) == name);
+    }
+    const auto fx = fx_address_of("ECB-EUR-USD");
+    CHECK(fx.starts_with("oresmd://"));
+    CHECK(underlying_name_of(fx) == "ECB-EUR-USD");
+    CHECK(underlying_name_of(underlying_address_of("Bond", "ISIN:XS0982710740")) ==
+          "ISIN:XS0982710740");
+}
+
+TEST_CASE("a_pair_of_equities_with_a_member_no_family_can_hold_stays_as_names",
+          "[ore][xml][portfolio][projection]") {
+    using namespace ores::ore::domain;
+    CHECK(equity_pair_of("EQ-A", ".SPX") == "EQ-A/.SPX");
+    CHECK(equity_pair_of(".SPX", "EQ-A") == ".SPX/EQ-A");
+    const auto addresses = equity_pair_of(".SPX", ".NDX");
+    CHECK(addresses.starts_with("oresmd://"));
+    CHECK(equity_pair_separator(addresses) == ' ');
+    CHECK(addresses.find(' ') != std::string::npos);
+    CHECK(equity_pair_separator(".SPX/EQ-A") == '/');
+}
+
+TEST_CASE("an_underlying_no_family_can_hold_stays_as_written",
+          "[ore][xml][portfolio][projection]") {
+    using namespace ores::ore::domain;
+    CHECK(underlying_address_of("Equity", "") == "");
+    CHECK(underlying_address_of("Equity", "EQ-MSFT.O") == "EQ-MSFT.O");
+    CHECK(underlying_address_of("InterestRate", "EUR-EURIBOR-6M") == "EUR-EURIBOR-6M");
+    CHECK(underlying_name_of("EQ-MSFT.O") == "EQ-MSFT.O");
+}
+
 TEST_CASE("every_converted_index_column_of_ores_product_portfolio_holds_an_address",
           "[ore][xml][portfolio][projection]") {
     const auto text = ores::platform::filesystem::file::read_content(
@@ -3611,6 +3671,27 @@ TEST_CASE("every_converted_index_column_of_ores_product_portfolio_holds_an_addre
         hold("bond_trs.funding_index", row.funding_index);
     for (const auto& row : batch.bond_repos)
         hold("bond_repo.repo_index", row.repo_index);
+    for (const auto& row : batch.instrument_underlyings)
+        if (row.underlying_type == "Equity" || row.underlying_type == "Commodity" ||
+            row.underlying_type == "FX" || row.underlying_type == "Bond")
+            hold("instrument_underlying.name", row.name);
+    for (const auto& row : batch.equity_option_instruments)
+        hold("equity_option.underlying_name", row.underlying_name);
+    for (const auto& row : batch.equity_barrier_option_instruments) {
+        hold("equity_barrier_option.underlying_name", row.underlying_name);
+        hold("equity_barrier_option.barrier_fixing_index", row.barrier_fixing_index);
+    }
+    for (const auto& row : batch.equity_basket_constituents)
+        hold("equity_basket_constituent.underlying_name", row.underlying_name);
+    for (const auto& row : batch.commodity_instruments)
+        hold("commodity.commodity_code", row.commodity_code);
+    for (const auto& row : batch.commodity_basket_constituents)
+        hold("commodity_basket_constituent.underlying_code", row.underlying_code);
+    for (const auto& row : batch.fx_barrier_option_instruments)
+        hold("fx_barrier_option.barrier_fixing_index", row.barrier_fixing_index);
+    for (const auto& row : batch.scripted_parameters)
+        if (row.declared_type == "Index")
+            hold("scripted_parameter.index", row.value);
 
     // The sample writes this FX index without its FX- prefix, so an address could not spell it.
     const std::vector<std::string> kept_as_written = {"TR20H-EUR-USD"};
@@ -3625,7 +3706,10 @@ TEST_CASE("every_converted_index_column_of_ores_product_portfolio_holds_an_addre
                                "swap_leg.fx_reset_fx_index",
                                "swap_leg_indexing.index_name",
                                "fx_asian_forward.fx_index",
-                               "fx_forward.settlement_fx_index"}) {
+                               "fx_forward.settlement_fx_index",
+                               "instrument_underlying.name",
+                               "equity_option.underlying_name",
+                               "commodity.commodity_code"}) {
         INFO(column);
         CHECK(columns.contains(column));
     }

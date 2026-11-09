@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/option_block_projection.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/domain/scalar_terms_projection.hpp"
@@ -187,8 +188,8 @@ auto own_text(const xml::record_reader& record, std::string_view name) -> std::s
     return child->own_text().value_or("");
 }
 
-auto vector_values(const xml::record_reader& record,
-                   std::string_view name) -> std::vector<std::string> {
+auto vector_values(const xml::record_reader& record, std::string_view name)
+    -> std::vector<std::string> {
     const auto child = record.child(name);
     if (!child)
         return {};
@@ -332,7 +333,7 @@ void append_leaf(xml::record_writer& w, std::string_view name, const std::string
 /// The terms of a derived schedule, each kept on its own column.
 struct derived_term {
     std::string_view element;
-    std::optional<std::string> scripted_parameter::*column;
+    std::optional<std::string> scripted_parameter::* column;
 };
 
 constexpr derived_term derived_terms[] = {
@@ -346,9 +347,30 @@ constexpr derived_term derived_terms[] = {
     {"ShiftAnchor", &scripted_parameter::shift_anchor},
 };
 
-auto make_parameter(scripted_instrument_data& data,
-                    std::string name,
-                    std::string type) -> scripted_parameter& {
+/// The codec reads any name it cannot place as inflation, and a script may name a bare security.
+auto script_index_address_of(const std::string& name) -> std::string {
+    auto address = address_of(name);
+    return address.starts_with("oresmd://inflation/") ? name : address;
+}
+
+/// An Index parameter names an index. Any other declared type stays text, even if it
+/// happens to spell an index.
+auto stored_value_of(const scripted_parameter& parameter, const std::string& value) -> std::string {
+    return parameter.declared_type == "Index" ? script_index_address_of(value) : value;
+}
+
+auto stated_value_of(const scripted_parameter& parameter, const std::string& value) -> std::string {
+    return parameter.declared_type == "Index" ? ore_name_of(value) : value;
+}
+
+auto addresses_of(std::vector<std::string> names) -> std::vector<std::string> {
+    for (auto& name : names)
+        name = script_index_address_of(name);
+    return names;
+}
+
+auto make_parameter(scripted_instrument_data& data, std::string name, std::string type)
+    -> scripted_parameter& {
     scripted_parameter row;
     row.sequence_number = static_cast<int>(data.parameters.size()) + 1;
     row.name = std::move(name);
@@ -367,7 +389,7 @@ void add_values(scripted_instrument_data& data,
         scripted_parameter_value row;
         row.parameter_sequence_number = parameter.sequence_number;
         row.sequence_number = ++sequence_number;
-        row.value = value;
+        row.value = stored_value_of(parameter, value);
         option_block::stamp_row(row);
         data.parameter_values.push_back(std::move(row));
     }
@@ -396,7 +418,7 @@ void read_generic_parameters(scripted_instrument_data& data, const xml::record_r
             auto& parameter =
                 make_parameter(data, entry.text("Name").value_or(""), std::string(kind));
             if (const auto value = scalar_text(entry, "Value"))
-                parameter.value = *value;
+                parameter.value = stored_value_of(parameter, *value);
             if (kind == "Event") {
                 if (const auto coarsening = scalar_text(entry, "ApplyCoarsening"))
                     parameter.apply_coarsening = *coarsening;
@@ -455,13 +477,13 @@ void read_named_parameters(scripted_instrument_data& data, const xml::record_rea
             parameter.shape = "vector";
             add_values(data, parameter, leaf_list(*element, "Value"));
         } else if (const auto value = element->own_text()) {
-            parameter.value = *value;
+            parameter.value = stored_value_of(parameter, *value);
         }
     }
 }
 
-auto values_of(const scripted_instrument_data& data,
-               int parameter_sequence_number) -> std::vector<std::string> {
+auto values_of(const scripted_instrument_data& data, int parameter_sequence_number)
+    -> std::vector<std::string> {
     std::vector<const scripted_parameter_value*> rows;
     for (const auto& row : data.parameter_values)
         if (row.parameter_sequence_number == parameter_sequence_number)
@@ -508,13 +530,13 @@ void write_generic_parameters(xml::record_writer& values, const scripted_instrum
         auto entry = values.append(parameter->declared_type);
         entry.set_text("Name", parameter->name);
         if (parameter->value)
-            set_scalar_text(entry, "Value", *parameter->value);
+            set_scalar_text(entry, "Value", stated_value_of(*parameter, *parameter->value));
         if (parameter->apply_coarsening)
             set_scalar_text(entry, "ApplyCoarsening", *parameter->apply_coarsening);
         if (parameter->shape == "vector") {
             auto list = entry.child("Values");
             for (const auto& value : values_of(data, parameter->sequence_number))
-                append_leaf(list, "Value", value);
+                append_leaf(list, "Value", stated_value_of(*parameter, value));
         } else {
             write_event(entry, data, *parameter);
         }
@@ -527,10 +549,10 @@ void write_named_parameters(xml::record_writer& product, const scripted_instrume
         element.set_text("type", parameter->declared_type);
         if (parameter->shape == "vector") {
             for (const auto& value : values_of(data, parameter->sequence_number))
-                append_leaf(element, "Value", value);
+                append_leaf(element, "Value", stated_value_of(*parameter, value));
         } else if (parameter->shape == "scalar") {
             if (parameter->value)
-                element.set_own_text(*parameter->value);
+                element.set_own_text(stated_value_of(*parameter, *parameter->value));
         } else {
             write_event(element, data, *parameter);
         }
@@ -541,13 +563,13 @@ void write_named_parameters(xml::record_writer& product, const scripted_instrume
 
 namespace {
 
-auto read_scripted_row(xml::record_reader trade,
-                       std::string_view trade_type) -> std::optional<scripted_instrument> {
+auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
+    -> std::optional<scripted_instrument> {
     if (trade_type == "ScriptedTrade") {
         auto r = scripted_instrument_projection_make_base(trade_type);
         if (const auto named = trade.child("AsianBasketOptionData")) {
             r.script_name = "AsianBasketOption";
-            r.underlyings_json = json_array(vector_values(*named, "Underlyings"));
+            r.underlyings_json = json_array(addresses_of(vector_values(*named, "Underlyings")));
             r.parameters_json = make_params_json(own_text(*named, "PutCall"),
                                                  number_text(own_text(*named, "Notional")),
                                                  number_text(own_text(*named, "Strike")));
@@ -555,7 +577,7 @@ auto read_scripted_row(xml::record_reader trade,
         }
         if (const auto named = trade.child("AverageStrikeBasketOptionData")) {
             r.script_name = "AverageStrikeBasketOption";
-            r.underlyings_json = json_array(vector_values(*named, "Underlyings"));
+            r.underlyings_json = json_array(addresses_of(vector_values(*named, "Underlyings")));
             r.parameters_json = make_params_json(
                 own_text(*named, "PutCall"), number_text(own_text(*named, "Notional")), 0.0);
             return r;
@@ -594,7 +616,7 @@ auto read_scripted_row(xml::record_reader trade,
                 if (!indices.empty()) {
                     std::vector<std::string> names;
                     for (const auto& index : indices)
-                        names.push_back(index.text("Value").value_or(""));
+                        names.push_back(script_index_address_of(index.text("Value").value_or("")));
                     r.underlyings_json = json_array(names);
                 }
             }
@@ -611,8 +633,8 @@ auto read_scripted_row(xml::record_reader trade,
             for (const auto* name : {"Underlying1", "Underlying2", "Underlying3", "Underlying4"}) {
                 if (const auto u = d->child(name)) {
                     if (const auto n = u->text("Name")) {
-                        names.push_back(*n);
                         types.push_back(u->text("Type").value_or(""));
+                        names.push_back(underlying_address_of(types.back(), *n));
                     }
                 }
             }
@@ -647,8 +669,9 @@ auto read_scripted_row(xml::record_reader trade,
             if (const auto underlyings = d->child("Underlyings"))
                 for (const auto& u : underlyings->children("Underlying")) {
                     const auto index = std::to_string(names.size() + 1);
-                    names.push_back(u.text("Name").value_or(""));
                     types.push_back(u.text("Type").value_or(""));
+                    names.push_back(
+                        underlying_address_of(types.back(), u.text("Name").value_or("")));
                     if (const auto weight = u.decimal("Weight"))
                         underlying_terms +=
                             ",\"UnderlyingWeight" + index + "\":\"" + weight->to_string() + "\"";
@@ -765,7 +788,7 @@ auto write_scripted_instrument(xml::record_writer& trade,
         for (const auto& value : indices) {
             auto index = values.append("Index");
             index.set_text("Name", "Underlying");
-            index.set_text("Value", value);
+            index.set_text("Value", ore_name_of(value));
         }
         return true;
     }
@@ -789,7 +812,7 @@ auto write_scripted_instrument(xml::record_writer& trade,
         const auto types = underlying_types_of(params);
         for (std::size_t i = 0; i < names.size() && i < 4; ++i) {
             auto underlying = d.child("Underlying" + std::to_string(i + 1));
-            underlying.set_text("Name", names[i]);
+            underlying.set_text("Name", underlying_name_of(names[i]));
             set_underlying_type(underlying, types, i);
         }
         return true;
@@ -841,7 +864,7 @@ auto write_scripted_instrument(xml::record_writer& trade,
             auto underlyings = d.child("Underlyings");
             for (std::size_t i = 0; i < names.size(); ++i) {
                 auto underlying = underlyings.append("Underlying");
-                underlying.set_text("Name", names[i]);
+                underlying.set_text("Name", underlying_name_of(names[i]));
                 set_underlying_type(underlying, types, i);
                 const auto index = std::to_string(i + 1);
                 for (const auto& [key, value] : params) {

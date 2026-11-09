@@ -8,7 +8,7 @@
 #+filetags: :trading:ore:synthetic:test:marketdata:sprint_30:v0:
 #+created: 2026-11-08
 #+updated: 2026-11-08
-#+environment: festive-dijkstra
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]], carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started. Split from [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]], which closed in sprint 29 with its done tasks. |
 | Waiting on    | Nothing.                               |
@@ -42,7 +42,7 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:014A3FB0-36D9-44A5-8236-E60EFF7C1CA8][Seed ORE's built-in index conventions]] | DONE | | 2026-11-08 | Population seeds the Ibor and overnight index conventions ORE defines in code. |
-| [[id:45DFB9BE-495C-4BE5-954B-D06673BB178F][Review how ORE constructs and prices each trade type]] | BACKLOG | |  | Record, per generated type, its mandatory terms, what conventions supply and what pricing needs. |
+| [[id:45DFB9BE-495C-4BE5-954B-D06673BB178F][Review how ORE constructs and prices each trade type]] | STARTED | 2026-11-09 |  | Record, per generated type, its mandatory terms, what conventions supply and what pricing needs. |
 | [[id:8735FE9F-153E-4113-8AAB-58A89E4DAFC6][Build trades through trade builders]] | BACKLOG | |  | The builder API: a required term that is left out does not compile, and terms are derived from conventions. |
 | [[id:639CEE8C-0586-4EEF-8F12-C450F956B00F][Store trade market references as oresmd addresses]] | BACKLOG | |  | Every trade column that names market data holds an oresmd address. |
 | [[id:B19AE99F-0E8F-4701-9E9C-4987D5C5E4DA][Generate every trade type through its builder]] | BACKLOG | |  | Family by family, credit first, until ORE builds every generated trade. |

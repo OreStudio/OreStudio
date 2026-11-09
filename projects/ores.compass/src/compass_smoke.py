@@ -142,13 +142,18 @@ def _tenant_geometry(root: Path, tenant: str) -> tuple[int, int]:
 
 
 def _tick_counts(root: Path, tenant: str) -> tuple[int, str, str, int]:
-    """The tick count, its first and last instant, and its future-dated count."""
+    """The tick count, its first and last instant, and its future-dated count.
+
+    A tick carries no tenant, so the tenant's ticks are those of the feeds it routes.
+    """
     row = _sql(root, (
         "select count(*), coalesce(min(ts)::text, ''), coalesce(max(ts)::text, ''), "
         "count(*) filter (where ts > now() + interval '5 seconds') "
         "from ores_marketdata_ticks_tbl tk "
-        "join ores_iam_tenants_tbl t on t.id = tk.tenant_id "
-        f"where t.code = '{tenant}'"))
+        "where tk.feed_id in (select r.feed_id from ores_marketdata_routes_tbl r "
+        "join ores_iam_tenants_tbl t on t.id = r.tenant_id "
+        f"where t.code = '{tenant}' "
+        "and r.valid_to = ores_utility_infinity_timestamp_fn())"))
     parts = row.split("|")
     if len(parts) != 4:
         raise RuntimeError(f"unexpected tick query output: {row!r}")

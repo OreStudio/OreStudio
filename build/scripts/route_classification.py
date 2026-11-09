@@ -411,6 +411,11 @@ RULES = (
          BFF, RESOURCE, "market-data",
          "Computes a curve's points from a bootstrap configuration and stores nothing, a"
          " derived read of the curve the configuration describes."),
+    Rule("the FX forward ladder",
+         ("exact", "POST /api/curves/fx-forward-ladder"),
+         BFF, RESOURCE, "market-data",
+         "One currency pair's forward ladder at one as-of, one service read that stores"
+         " nothing and names the missing input when it refuses."),
     Rule("the published curves",
          ("prefix", "POST /api/curves/published"),
          BFF, RESOURCE, "market-data",

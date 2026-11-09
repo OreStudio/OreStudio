@@ -35,8 +35,10 @@ component that must answer each one after the port.
 either server is absent from this table, when a row names a route neither server
 answers, when two routes share one identity, when a route is unclassified, and when a
 decision names no published kind or area, carries no evidence, or calls itself a
-composed view without stating its owner, computation and cache policy. The gate runs
-it as the =route-inventory= check.
+composed view without stating its owner, computation and cache policy. It also fails
+when a pair in =build/scripts/route_pairing.py= names a route that neither server
+answers, and when the coverage section does not match the pairs. The gate runs it as
+the =route-inventory= check.
 
 * What it reads, and what it cannot
 
@@ -70,7 +72,7 @@ an API publishes no area, so it is counted under =(none)=.
 | auth | audit, iam, server | 49 | resource 44, transport capability 5 |
 | changes | core, server | 3 | transport capability 3 |
 | grid | grid-app-versions, grid-downloads, grid-jobs, operations | 14 | composed view 3, resource 11 |
-| market-data | adapters, connectivity, curves, fixing-series, public-rates, series, subscriptions | 30 | composed view 6, resource 24 |
+| market-data | adapters, connectivity, curves, fixing-series, public-rates, series, subscriptions | 31 | composed view 6, resource 25 |
 | operations | core, inbox, operations, server | 6 | composed view 2, resource 3, transport capability 1 |
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, counterparties, curve-configuration, records, refdata, server, tenors | 277 | composed view 1, resource 276 |
@@ -133,9 +135,364 @@ change of its own, not part of the port.
 | the synthetic folder tree | GET /api/synthetic/feed-folders | web/src/api/client.ts | ores.synthetic | the folders and the feeds under each, at any depth, with the count of each kind so no screen reads the feeds | ETag on the whole view, stale after 60 s |
 | the tenor catalogue | GET /api/tenors/catalogue | web/src/api/tenors.ts | ores.refdata | the tenors with their conventions and schedules, three collection reads | ETag on the whole view, stale after 5 min |
 
+* The coverage
+
+How many BFF routes each area pairs with a C++ route, counted from
+=build/scripts/route_pairing.py=. A pair records the mapping and does not
+prove it; the port tasks prove each route against the answer the BFF gives.
+
+| Area | BFF routes | Paired | Gaps |
+|------+------------+--------+------|
+| access | 31 | 15 | 16 |
+| agile | 6 | 0 | 6 |
+| analytics | 6 | 0 | 6 |
+| assets | 5 | 2 | 3 |
+| auth | 18 | 13 | 5 |
+| changes | 2 | 1 | 1 |
+| grid | 14 | 0 | 14 |
+| market-data | 31 | 0 | 31 |
+| operations | 5 | 0 | 5 |
+| qa | 6 | 0 | 6 |
+| reference-data | 30 | 1 | 29 |
+| reporting | 44 | 0 | 44 |
+| simulation | 28 | 0 | 28 |
+| tenancy | 21 | 8 | 13 |
+| trading | 24 | 0 | 24 |
+| workflow | 17 | 0 | 17 |
+| (none) | 35 | 0 | 35 |
+| total | 323 | 40 | 283 |
+
+* The pairing
+
+| BFF route | C++ equivalent |
+|-----------+----------------|
+| POST =/api/account/password= | POST /api/v1/iam/ops/change_password |
+| GET =/api/accounts= | GET /api/v1/access/accounts |
+| GET =/api/accounts/:accountId/access= | POST /api/v1/iam/ops/get_account_roles |
+| GET =/api/accounts/:accountId/contact-information= | GET /api/v1/access/account_contact_informations/by-account-id/{account_id} |
+| PUT =/api/accounts/:accountId/contact-information= | PUT /api/v1/access/account_contact_informations |
+| POST =/api/accounts/:accountId/lock= | POST /api/v1/iam/ops/lock_account |
+| GET =/api/accounts/:accountId/permissions= | none |
+| PUT =/api/accounts/:accountId/reporting-line= | none |
+| POST =/api/accounts/:accountId/roles= | POST /api/v1/iam/ops/assign_role |
+| DELETE =/api/accounts/:accountId/roles/:roleId= | POST /api/v1/iam/ops/revoke_role |
+| POST =/api/accounts/:accountId/unlock= | POST /api/v1/iam/ops/unlock_account |
+| GET =/api/accounts/:username= | GET /api/v1/access/accounts/{username} |
+| GET =/api/accounts/:username/picture= | none |
+| PUT =/api/accounts/:username/profile= | none |
+| GET =/api/accounts/:username/sign-ins= | none |
+| GET =/api/agile/backlog= | none |
+| GET =/api/agile/board= | none |
+| GET =/api/agile/charts= | none |
+| GET =/api/agile/docs/:id= | none |
+| GET =/api/agile/sprints= | none |
+| GET =/api/agile/trees= | none |
+| GET =/api/analytics/sensitivity-templates= | none |
+| POST =/api/analytics/sensitivity-templates= | none |
+| DELETE =/api/analytics/sensitivity-templates/:code= | none |
+| GET =/api/analytics/sensitivity-templates/:code= | none |
+| PUT =/api/analytics/sensitivity-templates/:code= | none |
+| GET =/api/analytics/sensitivity-templates/:code/history= | none |
+| GET =/api/analytics/sensitivity-templates/choices= | none |
+| GET =/api/auth-events= | POST /api/v1/iam/auth_events/list |
+| GET =/api/blotter= | none |
+| POST =/api/book-changes= | none |
+| POST =/api/book-changes/preview= | none |
+| GET =/api/books/:id= | none |
+| PUT =/api/books/books= | none |
+| GET =/api/books/pick-lists= | none |
+| PUT =/api/books/portfolios= | none |
+| GET =/api/books/portfolios/:id/rights= | none |
+| GET =/api/books/tree= | none |
+| GET =/api/bootstrap= | none |
+| POST =/api/bootstrap/administrator= | POST /api/v1/iam/ops/create_initial_admin |
+| POST =/api/bootstrap/complete= | none |
+| GET =/api/change-reasons= | none |
+| GET =/api/classifications= | none |
+| GET =/api/classifications/:list= | none |
+| PUT =/api/classifications/:list/order= | none |
+| POST =/api/classifications/:list/rows= | none |
+| DELETE =/api/classifications/:list/rows/:code= | none |
+| PUT =/api/classifications/:list/rows/:code= | none |
+| PUT =/api/classifications/:list/rows/:code/label= | none |
+| POST =/api/client-log= | none |
+| GET =/api/conventions/:family= | none |
+| PUT =/api/conventions/:family= | none |
+| GET =/api/conventions/:family/documents/:id= | none |
+| PUT =/api/conventions/:family/documents/:id/terms= | none |
+| GET =/api/conventions/families= | none |
+| GET =/api/conventions/pick-lists= | none |
+| GET =/api/counterparties= | GET /api/v1/reference-data/counterparties |
+| GET =/api/counterparties/:id= | none |
+| PUT =/api/counterparties/:id/business-centres= | none |
+| GET =/api/counterparties/:id/visibility= | none |
+| PUT =/api/counterparties/:id/visibility= | none |
+| GET =/api/counterparties/children= | none |
+| PUT =/api/counterparties/composite= | none |
+| GET =/api/counterparties/pick-lists= | none |
+| POST =/api/curves/compute= | none |
+| POST =/api/curves/evolution= | none |
+| POST =/api/curves/fx-forward-ladder= | none |
+| POST =/api/curves/manual-point= | none |
+| POST =/api/curves/manual-point/clear= | none |
+| POST =/api/curves/published= | none |
+| POST =/api/curves/published-sets= | none |
+| POST =/api/curves/published/withdraw= | none |
+| POST =/api/curves/series= | none |
+| POST =/api/curves/series-by-id= | none |
+| POST =/api/curves/series-list= | none |
+| POST =/api/curves/slice= | none |
+| POST =/api/curves/snapshot= | none |
+| GET =/api/draft-reasons= | none |
+| GET =/api/events= | GET /api/v1/changes |
+| POST =/api/events/watch= | none |
+| GET =/api/geo/country= | POST /api/v1/iam/ops/lookup_country |
+| GET =/api/health= | none |
+| GET =/api/history= | none |
+| GET =/api/hold-reasons= | none |
+| GET =/api/image-map= | none |
+| GET =/api/image-upload-policy= | none |
+| GET =/api/images= | GET /api/v1/assets/images |
+| POST =/api/images= | POST /api/v1/assets/images |
+| GET =/api/images/:id= | none |
+| GET =/api/labels= | none |
+| GET =/api/lei-entities= | none |
+| GET =/api/login-info= | GET /api/v1/auth/login_info |
+| GET =/api/login-info/:accountId= | GET /api/v1/auth/login_info/{account_id} |
+| GET =/api/marketdata/adapters= | none |
+| GET =/api/marketdata/catalogue= | none |
+| GET =/api/marketdata/connectivity= | none |
+| GET =/api/marketdata/fixing-series= | none |
+| GET =/api/marketdata/public-rates= | none |
+| POST =/api/marketdata/public-rates/:code/accept-terms= | none |
+| POST =/api/marketdata/public-rates/:code/withdraw-terms= | none |
+| POST =/api/marketdata/public-rates/accept-terms= | none |
+| GET =/api/marketdata/public-rates/coverage= | none |
+| GET =/api/marketdata/public-rates/fixings= | none |
+| GET =/api/marketdata/public-rates/fixings.csv= | none |
+| GET =/api/marketdata/routes= | none |
+| POST =/api/marketdata/routes= | none |
+| DELETE =/api/marketdata/routes/:publisher= | none |
+| GET =/api/marketdata/subscriptions= | none |
+| POST =/api/marketdata/subscriptions= | none |
+| DELETE =/api/marketdata/subscriptions/:provider= | none |
+| GET =/api/me/access= | none |
+| GET =/api/me/contact-information= | none |
+| PUT =/api/me/contact-information= | none |
+| POST =/api/me/default-party= | none |
+| GET =/api/me/notifications= | none |
+| POST =/api/me/notifications/clear= | none |
+| POST =/api/me/notifications/read= | none |
+| GET =/api/me/notifications/unread-count= | none |
+| GET =/api/me/parties= | none |
+| GET =/api/me/permissions= | none |
+| PUT =/api/me/profile= | none |
+| GET =/api/me/requests= | none |
+| POST =/api/me/requests= | none |
+| DELETE =/api/me/requests/:id= | none |
+| GET =/api/me/sessions= | none |
+| GET =/api/me/ways-to-hold= | none |
+| GET =/api/operations/bus= | none |
+| GET =/api/operations/grid= | none |
+| GET =/api/operations/grid/app-versions/:id= | none |
+| PUT =/api/operations/grid/app-versions/:id/release-note= | none |
+| GET =/api/operations/grid/jobs/batches= | none |
+| GET =/api/operations/grid/jobs/batches/:id= | none |
+| GET =/api/operations/grid/jobs/batches/:id/workunits= | none |
+| GET =/api/operations/grid/jobs/results= | none |
+| GET =/api/operations/grid/jobs/results/:id= | none |
+| GET =/api/operations/grid/jobs/results/:id/output= | none |
+| GET =/api/operations/grid/jobs/workunits/:id= | none |
+| GET =/api/operations/grid/jobs/workunits/:id/input= | none |
+| GET =/api/operations/grid/jobs/workunits/:id/results= | none |
+| GET =/api/operations/grid/series= | none |
+| GET =/api/operations/grid/usage= | none |
+| GET =/api/operations/logs= | none |
+| GET =/api/operations/services= | none |
+| POST =/api/oresmd/compose= | none |
+| POST =/api/oresmd/parse= | none |
+| POST =/api/oresmd/parse-many= | none |
+| GET =/api/oresmd/schema= | none |
+| GET =/api/overview= | none |
+| GET =/api/parties= | GET /api/v1/reference-data/parties |
+| GET =/api/password-policy= | none |
+| GET =/api/permissions= | GET /api/v1/access/permissions |
+| POST =/api/provision-party= | none |
+| POST =/api/provision-tenant= | none |
+| GET =/api/qa/docs/:id= | none |
+| GET =/api/qa/scenarios= | none |
+| GET =/api/qa/scenarios/:id= | none |
+| GET =/api/qa/scenarios/:id/files/:name= | none |
+| PUT =/api/qa/scenarios/:id/run= | none |
+| POST =/api/qa/scenarios/:id/steps/:step/images= | none |
+| GET =/api/queue/authorisations= | none |
+| GET =/api/refdata= | none |
+| DELETE =/api/refdata/:resource= | none |
+| GET =/api/refdata/:resource= | none |
+| PUT =/api/refdata/:resource= | none |
+| GET =/api/refdata/:resource/by/:parent= | none |
+| GET =/api/refdata/:resource/key/:key= | none |
+| GET =/api/refdata/calendars/:code/days= | none |
+| POST =/api/refdata/calendars/:code/rebuild= | none |
+| GET =/api/refdata/currencies/ore-document= | none |
+| POST =/api/refdata/currencies/ore-import= | none |
+| POST =/api/refdata/currencies/ore-import/preview= | none |
+| GET =/api/refdata/curve-configurations= | none |
+| GET =/api/refdata/curve-configurations/:id= | none |
+| PUT =/api/refdata/curve-configurations/:id= | none |
+| GET =/api/registration-policy= | none |
+| GET =/api/reporting-tree= | none |
+| GET =/api/reporting/choices= | none |
+| GET =/api/reporting/configurations/:id= | none |
+| GET =/api/reporting/cut-kind-choices= | none |
+| GET =/api/reporting/cut-kinds= | none |
+| DELETE =/api/reporting/cut-kinds/:code= | none |
+| GET =/api/reporting/cut-kinds/:code= | none |
+| PUT =/api/reporting/cut-kinds/:code= | none |
+| GET =/api/reporting/cuts= | none |
+| GET =/api/reporting/cuts/:id= | none |
+| GET =/api/reporting/cuts/:id/runs= | none |
+| POST =/api/reporting/cuts/take= | none |
+| GET =/api/reporting/engine-settings= | none |
+| POST =/api/reporting/engine-settings= | none |
+| DELETE =/api/reporting/engine-settings/:id= | none |
+| GET =/api/reporting/engine-settings/:id= | none |
+| PUT =/api/reporting/engine-settings/:id= | none |
+| PUT =/api/reporting/engine-settings/:id/groups/:group= | none |
+| GET =/api/reporting/engine-settings/:id/history= | none |
+| GET =/api/reporting/engine-settings/documentation= | none |
+| GET =/api/reporting/ore-files/:code/schema= | none |
+| GET =/api/reporting/pricing-engines= | none |
+| POST =/api/reporting/pricing-engines= | none |
+| DELETE =/api/reporting/pricing-engines/:id= | none |
+| GET =/api/reporting/pricing-engines/:id= | none |
+| PUT =/api/reporting/pricing-engines/:id= | none |
+| GET =/api/reporting/pricing-engines/:id/history= | none |
+| GET =/api/reporting/pricing-engines/:id/ore-document= | none |
+| POST =/api/reporting/pricing-engines/ore-import= | none |
+| POST =/api/reporting/pricing-engines/ore-import/preview= | none |
+| GET =/api/reporting/pricing-engines/vocabulary= | none |
+| GET =/api/reporting/report-health= | none |
+| GET =/api/reporting/reports= | none |
+| PUT =/api/reporting/reports/:id= | none |
+| GET =/api/reporting/reports/:id/configurations= | none |
+| POST =/api/reporting/reports/:id/run= | none |
+| GET =/api/reporting/reports/:id/runs= | none |
+| GET =/api/reporting/reports/:segment= | none |
+| GET =/api/reporting/reports/by-name/:name= | none |
+| POST =/api/reporting/reports/schedule= | none |
+| POST =/api/reporting/reports/unschedule= | none |
+| GET =/api/reporting/runs/:id= | none |
+| GET =/api/reporting/runs/:id/errors= | none |
+| GET =/api/reporting/runs/:id/files= | none |
+| GET =/api/reporting/runs/:id/files/:file= | none |
+| GET =/api/reporting/runs/:id/files/:file/info= | none |
+| GET =/api/reporting/runs/:id/results= | none |
+| GET =/api/requests= | none |
+| GET =/api/requests/:id= | none |
+| GET =/api/requests/:id/changes= | none |
+| GET =/api/requests/:id/checks= | none |
+| POST =/api/requests/:id/decision= | none |
+| GET =/api/requests/:id/story= | none |
+| GET =/api/roles= | GET /api/v1/access/roles |
+| POST =/api/roles= | POST /api/v1/access/roles |
+| DELETE =/api/roles/:name= | DELETE /api/v1/access/roles/{name} |
+| PUT =/api/roles/:roleId= | none |
+| GET =/api/roles/:roleId/holders= | none |
+| GET =/api/roles/:roleId/permissions= | POST /api/v1/iam/ops/get_role_permissions |
+| PUT =/api/roles/:roleId/permissions= | POST /api/v1/iam/roles_permissions/put |
+| POST =/api/roles/:roleId/permissions/changes= | none |
+| GET =/api/roles/page= | none |
+| GET =/api/seed-profiles= | GET /api/v1/tenancy/seed_profiles |
+| GET =/api/series/:id/observations= | none |
+| DELETE =/api/session= | DELETE /api/v1/auth/sessions |
+| GET =/api/session= | GET /api/v1/auth/sessions/me |
+| POST =/api/session= | POST /api/v1/auth/sessions |
+| GET =/api/session-statistics= | POST /api/v1/iam/ops/get_session_statistics |
+| POST =/api/session/party= | none |
+| POST =/api/session/switch-party= | none |
+| GET =/api/sessions= | GET /api/v1/access/sessions |
+| POST =/api/sessions/:sessionId/end= | POST /api/v1/iam/ops/end_session |
+| GET =/api/sessions/active= | POST /api/v1/iam/ops/get_active_sessions |
+| POST =/api/signup= | POST /api/v1/iam/ops/signup |
+| GET =/api/site= | none |
+| GET =/api/site/deployment= | none |
+| GET =/api/structure-kinds= | none |
+| GET =/api/structures= | none |
+| POST =/api/structures= | none |
+| GET =/api/structures/:key= | none |
+| GET =/api/structures/:key/leg-candidates= | none |
+| POST =/api/structures/:key/legs= | none |
+| DELETE =/api/structures/:key/legs/:tradeId= | none |
+| GET =/api/synthetic= | none |
+| DELETE =/api/synthetic/:resource= | none |
+| GET =/api/synthetic/:resource= | none |
+| PUT =/api/synthetic/:resource= | none |
+| GET =/api/synthetic/:resource/by/:parent= | none |
+| GET =/api/synthetic/:resource/key/:key= | none |
+| GET =/api/synthetic/calibration/:assetClass= | none |
+| DELETE =/api/synthetic/calibration/:assetClass/policy= | none |
+| PUT =/api/synthetic/calibration/:assetClass/policy= | none |
+| POST =/api/synthetic/calibration/:assetClass/run= | none |
+| DELETE =/api/synthetic/calibration/feeds/:id/pin= | none |
+| PUT =/api/synthetic/calibration/feeds/:id/pin= | none |
+| POST =/api/synthetic/calibration/variance/:id/review= | none |
+| POST =/api/synthetic/convert/fx= | none |
+| POST =/api/synthetic/convert/fx-simple= | none |
+| POST =/api/synthetic/convert/ir= | none |
+| GET =/api/synthetic/feed-folders= | none |
+| GET =/api/synthetic/feed-raster= | none |
+| POST =/api/synthetic/feed-selection/start= | none |
+| POST =/api/synthetic/feed-selection/stop= | none |
+| POST =/api/synthetic/feeds/:id/start= | none |
+| POST =/api/synthetic/feeds/:id/stop= | none |
+| GET =/api/synthetic/feeds/:id/ticks= | none |
+| GET =/api/synthetic/folder-feeds= | none |
+| POST =/api/synthetic/folders/:id/start= | none |
+| POST =/api/synthetic/folders/:id/stop= | none |
+| GET =/api/synthetic/market-history= | none |
+| GET =/api/synthetic/market-regime= | none |
+| POST =/api/synthetic/market-regime= | none |
+| PUT =/api/synthetic/market-regime/settings= | none |
+| GET =/api/synthetic/market-trace= | none |
+| POST =/api/synthetic/preview/ir-shape= | none |
+| POST =/api/synthetic/simulate/fx= | none |
+| POST =/api/synthetic/simulate/ir= | none |
+| GET =/api/tenant-setup= | none |
+| GET =/api/tenant-statuses= | GET /api/v1/tenancy/tenant_statuses |
+| GET =/api/tenant-types= | GET /api/v1/tenancy/tenant_types |
+| GET =/api/tenants= | GET /api/v1/tenancy/tenants |
+| DELETE =/api/tenants/:code= | DELETE /api/v1/tenancy/tenants/{code} |
+| GET =/api/tenants/:code= | GET /api/v1/tenancy/tenants/{code} |
+| GET =/api/tenants/:code/accounts/:username/sign-ins= | none |
+| GET =/api/tenants/:code/images/:id= | none |
+| GET =/api/tenants/:code/parties= | none |
+| GET =/api/tenants/:code/people= | none |
+| GET =/api/tenors/catalogue= | none |
+| PUT =/api/tenors/conventions= | none |
+| GET =/api/tenors/conventions/:code/resolutions= | none |
+| DELETE =/api/tenors/conventions/:code/resolutions/:tenor= | none |
+| PUT =/api/tenors/conventions/:code/resolutions/:tenor= | none |
+| GET =/api/tenors/pick-lists= | none |
+| POST =/api/tenors/preview-resolution= | none |
+| POST =/api/tenors/resolve= | none |
+| POST =/api/tenors/resolve-convention= | none |
+| PUT =/api/tenors/tenors= | none |
+| GET =/api/timeline= | none |
+| GET =/api/trade-link-types= | none |
+| GET =/api/trades= | none |
+| POST =/api/trades= | none |
+| GET =/api/trades/:id= | none |
+| POST =/api/trades/:id/links= | none |
+| GET =/api/trades/:id/versions/:version= | none |
+| GET =/api/trades/new= | none |
+| GET =/api/ungrouped-trades= | none |
+| GET =/api/workflow/:instanceId= | none |
+| POST =/api/workflow/:instanceId/retry= | none |
+
 * The inventory
 
-735 routes: 322 answered by the BFF and 413 by ores.http.
+736 routes: 323 answered by the BFF and 413 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -204,25 +561,26 @@ change of its own, not part of the port.
 | resource | reference-data | get | =/api/counterparties/children= | bff | projects/ores.web/packages/bff/src/counterparties.ts:252 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/composite= | bff | projects/ores.web/packages/bff/src/counterparties.ts:316 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | not an API | (none) | get | =/api/counterparties/pick-lists= | bff | projects/ores.web/packages/bff/src/counterparties.ts:288 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
-| resource | market-data | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:306 | Computes a curve's points from a bootstrap configuration and stores nothing, a derived read of the curve the configuration describes. |
-| resource | market-data | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:372 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
-| resource | market-data | post | =/api/curves/manual-point= | bff | projects/ores.web/packages/bff/src/curves.ts:347 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
-| resource | market-data | post | =/api/curves/manual-point/clear= | bff | projects/ores.web/packages/bff/src/curves.ts:354 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
-| resource | market-data | post | =/api/curves/published= | bff | projects/ores.web/packages/bff/src/curves.ts:388 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
-| resource | market-data | post | =/api/curves/published-sets= | bff | projects/ores.web/packages/bff/src/curves.ts:396 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
-| resource | market-data | post | =/api/curves/published/withdraw= | bff | projects/ores.web/packages/bff/src/curves.ts:404 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
-| resource | market-data | post | =/api/curves/series= | bff | projects/ores.web/packages/bff/src/curves.ts:252 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
-| resource | market-data | post | =/api/curves/series-by-id= | bff | projects/ores.web/packages/bff/src/curves.ts:262 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
-| resource | market-data | post | =/api/curves/series-list= | bff | projects/ores.web/packages/bff/src/curves.ts:340 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
-| resource | market-data | post | =/api/curves/slice= | bff | projects/ores.web/packages/bff/src/curves.ts:366 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
-| resource | market-data | post | =/api/curves/snapshot= | bff | projects/ores.web/packages/bff/src/curves.ts:360 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:312 | Computes a curve's points from a bootstrap configuration and stores nothing, a derived read of the curve the configuration describes. |
+| resource | market-data | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:378 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/fx-forward-ladder= | bff | projects/ores.web/packages/bff/src/curves.ts:409 | One currency pair's forward ladder at one as-of, one service read that stores nothing and names the missing input when it refuses. |
+| resource | market-data | post | =/api/curves/manual-point= | bff | projects/ores.web/packages/bff/src/curves.ts:353 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/manual-point/clear= | bff | projects/ores.web/packages/bff/src/curves.ts:360 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/published= | bff | projects/ores.web/packages/bff/src/curves.ts:394 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published-sets= | bff | projects/ores.web/packages/bff/src/curves.ts:402 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/published/withdraw= | bff | projects/ores.web/packages/bff/src/curves.ts:417 | The published curve as a thing: the set in use, the sets a party holds, and the withdrawal that takes one out of use with the reason it names. |
+| resource | market-data | post | =/api/curves/series= | bff | projects/ores.web/packages/bff/src/curves.ts:258 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series-by-id= | bff | projects/ores.web/packages/bff/src/curves.ts:268 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/series-list= | bff | projects/ores.web/packages/bff/src/curves.ts:346 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/slice= | bff | projects/ores.web/packages/bff/src/curves.ts:372 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
+| resource | market-data | post | =/api/curves/snapshot= | bff | projects/ores.web/packages/bff/src/curves.ts:366 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
 | resource | trading | get | =/api/draft-reasons= | bff | projects/ores.web/packages/bff/src/booking.ts:362 | The reasons a trade may be captured as a draft with, a tenant-wide code list the booking form offers. |
 | transport capability | changes | get | =/api/events= | bff | projects/ores.web/packages/bff/src/server.ts:2944 | The change stream a client subscribes to, and the watch set that says which subjects it wants; delivery of events, not a domain object. |
 | transport capability | changes | post | =/api/events/watch= | bff | projects/ores.web/packages/bff/src/server.ts:2986 | The change stream a client subscribes to, and the watch set that says which subjects it wants; delivery of events, not a domain object. |
 | resource | auth | get | =/api/geo/country= | bff | projects/ores.web/packages/bff/src/audit.ts:166 | Resolves one address to a country against the tenant's published ranges, the read the sign-in audit uses to say where a session came from. |
 | transport capability | (none) | get | =/api/health= | bff | projects/ores.web/packages/bff/src/server.ts:692 | The liveness answer the deployment's probes read, beside the metrics endpoints the design puts in the server. |
 | not an API | (none) | get | =/api/history= | bff | projects/ores.web/packages/bff/src/classifications.ts:369 | One history route for every entity type, named by an opaque entityType string, so the payload has no per-entity schema; ores.http already serves /versions for each versioned collection. |
-| resource | workflow | get | =/api/hold-reasons= | bff | projects/ores.web/packages/bff/src/inbox.ts:729 | The codes a decider may park a request with, a tenant-wide lookup that carries no personal data. |
+| resource | workflow | get | =/api/hold-reasons= | bff | projects/ores.web/packages/bff/src/inbox.ts:750 | The codes a decider may park a request with, a tenant-wide lookup that carries no personal data. |
 | composed view | assets | get | =/api/image-map= | bff | projects/ores.web/packages/bff/src/server.ts:2828 | Which image every flagged record uses, weaving currencies, countries, calendars and business centres into one code to image map, five reads, with a calendar and a business centre falling back to their country's flag and a placeholder for a code that has none. |
 | resource | assets | get | =/api/image-upload-policy= | bff | projects/ores.web/packages/bff/src/server.ts:2817 | The rule an uploaded image must satisfy, read from the validator that enforces it rather than copied into a picker. |
 | resource | assets | get | =/api/images= | bff | projects/ores.web/packages/bff/src/server.ts:2839 | The tenant's image catalogue: a page of the chooser's rows, an upload that answers the identifier, and one image's bytes. |
@@ -253,16 +611,16 @@ change of its own, not part of the port.
 | resource | access | get | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1666 | The signed-in person's own contact record, answered with nothing when there is none yet because the first write creates it. |
 | resource | access | put | =/api/me/contact-information= | bff | projects/ores.web/packages/bff/src/server.ts:1678 | The signed-in person's own profile or contact record, whose account the session names so the body carries no id. |
 | resource | access | post | =/api/me/default-party= | bff | projects/ores.web/packages/bff/src/server.ts:1257 | Sets or clears the party quick sign-in uses on the signed-in account. |
-| resource | workflow | get | =/api/me/notifications= | bff | projects/ores.web/packages/bff/src/inbox.ts:748 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
-| resource | workflow | post | =/api/me/notifications/clear= | bff | projects/ores.web/packages/bff/src/inbox.ts:790 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
-| resource | workflow | post | =/api/me/notifications/read= | bff | projects/ores.web/packages/bff/src/inbox.ts:773 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
-| resource | workflow | get | =/api/me/notifications/unread-count= | bff | projects/ores.web/packages/bff/src/inbox.ts:762 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | get | =/api/me/notifications= | bff | projects/ores.web/packages/bff/src/inbox.ts:769 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | post | =/api/me/notifications/clear= | bff | projects/ores.web/packages/bff/src/inbox.ts:811 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | post | =/api/me/notifications/read= | bff | projects/ores.web/packages/bff/src/inbox.ts:794 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
+| resource | workflow | get | =/api/me/notifications/unread-count= | bff | projects/ores.web/packages/bff/src/inbox.ts:783 | The signed-in person's notifications, their unread count, and the reads that mark or clear them. |
 | resource | tenancy | get | =/api/me/parties= | bff | projects/ores.web/packages/bff/src/server.ts:1248 | The parties the signed-in person works in, each named by the server because the association read carries an identifier alone. |
 | resource | access | get | =/api/me/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1315 | The roles the signed-in person holds with who gave each and why, or one page of what those roles let them do, the documented alias for the principal. |
 | resource | access | put | =/api/me/profile= | bff | projects/ores.web/packages/bff/src/server.ts:1646 | The signed-in person's own profile or contact record, whose account the session names so the body carries no id. |
-| resource | workflow | get | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:557 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
-| resource | workflow | post | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:564 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
-| resource | workflow | delete | =/api/me/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:580 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
+| resource | workflow | get | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:578 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
+| resource | workflow | post | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:585 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
+| resource | workflow | delete | =/api/me/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:601 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
 | resource | auth | get | =/api/me/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1849 | The signed-in person's own open sessions, a self read the server scopes to the caller. |
 | composed view | access | get | =/api/me/ways-to-hold= | bff | projects/ores.web/packages/bff/src/server.ts:1223 | The roles the person could ask for that would give them a permission, weaving the role catalogue and what each role grants against the grants the person already has. |
 | composed view | operations | get | =/api/operations/bus= | bff | projects/ores.web/packages/bff/src/operations.ts:593 | The NATS server samples over a window and one row per stream, a second read for each named stream, because no operation lists the streams. |
@@ -298,7 +656,7 @@ change of its own, not part of the port.
 | resource | qa | get | =/api/qa/scenarios/:id/files/:name= | bff | projects/ores.web/packages/bff/src/qa.ts:227 | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
 | resource | qa | put | =/api/qa/scenarios/:id/run= | bff | projects/ores.web/packages/bff/src/qa.ts:172 | Runs one scenario and answers its verdict, the write that makes it a run rather than a document. |
 | resource | qa | post | =/api/qa/scenarios/:id/steps/:step/images= | bff | projects/ores.web/packages/bff/src/qa.ts:193 | An image a tester attaches to one step of a scenario, written into the scenario's own store and read back with it. |
-| composed view | operations | get | =/api/queue/authorisations= | bff | projects/ores.web/packages/bff/src/inbox.ts:621 | The authorisation requests this person may decide with the deal each one names as it looks now, the open requests and the answered tail in one answer. |
+| composed view | operations | get | =/api/queue/authorisations= | bff | projects/ores.web/packages/bff/src/inbox.ts:642 | The authorisation requests this person may decide with the deal each one names as it looks now, the open requests and the answered tail in one answer. |
 | not an API | (none) | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:499 | A catalogue of the resources a screen may read, each with its key fields, sortable fields, search flag, version flag and the write and delete permission names, which is a table description rather than a resource. |
 | not an API | (none) | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:679 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:525 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
@@ -361,12 +719,12 @@ change of its own, not part of the port.
 | resource | reporting | get | =/api/reporting/runs/:id/files/:file= | bff | projects/ores.web/packages/bff/src/report-run-files.ts:711 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
 | resource | reporting | get | =/api/reporting/runs/:id/files/:file/info= | bff | projects/ores.web/packages/bff/src/report-run-files.ts:619 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
 | resource | reporting | get | =/api/reporting/runs/:id/results= | bff | projects/ores.web/packages/bff/src/grid-report-results.ts:880 | One report run: its state, its results at the level the reader asked for, and its output archive as the run stored it. |
-| composed view | workflow | get | =/api/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:601 | The requests this person may decide, gathered from every kind into one queue with each kind's subject, which is the approval inbox the design names. |
-| resource | workflow | get | =/api/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:641 | One request an identifier names, when the person may open it, which a queue read cannot answer because a notice is read after the request stopped waiting. |
-| composed view | workflow | get | =/api/requests/:id/changes= | bff | projects/ores.web/packages/bff/src/inbox.ts:671 | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |
-| composed view | workflow | get | =/api/requests/:id/checks= | bff | projects/ores.web/packages/bff/src/inbox.ts:691 | Runs a request's proposed lines through the real write and answers what it says now, weaving the request with the record as it stands. |
-| resource | workflow | post | =/api/requests/:id/decision= | bff | projects/ores.web/packages/bff/src/inbox.ts:702 | Approves, refuses, holds or resumes one request against the version read. |
-| composed view | workflow | get | =/api/requests/:id/story= | bff | projects/ores.web/packages/bff/src/inbox.ts:658 | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |
+| composed view | workflow | get | =/api/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:622 | The requests this person may decide, gathered from every kind into one queue with each kind's subject, which is the approval inbox the design names. |
+| resource | workflow | get | =/api/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:662 | One request an identifier names, when the person may open it, which a queue read cannot answer because a notice is read after the request stopped waiting. |
+| composed view | workflow | get | =/api/requests/:id/changes= | bff | projects/ores.web/packages/bff/src/inbox.ts:692 | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |
+| composed view | workflow | get | =/api/requests/:id/checks= | bff | projects/ores.web/packages/bff/src/inbox.ts:712 | Runs a request's proposed lines through the real write and answers what it says now, weaving the request with the record as it stands. |
+| resource | workflow | post | =/api/requests/:id/decision= | bff | projects/ores.web/packages/bff/src/inbox.ts:723 | Approves, refuses, holds or resumes one request against the version read. |
+| composed view | workflow | get | =/api/requests/:id/story= | bff | projects/ores.web/packages/bff/src/inbox.ts:679 | One request's whole story woven from every row any component wrote for it, the request's versions, the answers given on it, the roles it asked for and the notices, or the change lines of its kind beside the live record's values. |
 | resource | access | get | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1457 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
 | resource | access | post | =/api/roles= | bff | projects/ores.web/packages/bff/src/server.ts:1486 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
 | resource | access | delete | =/api/roles/:name= | bff | projects/ores.web/packages/bff/src/server.ts:1546 | The tenant's roles: the collection, one page of it for the editor, one role's rename or removal, the permission set it grants and the people who hold it. |
@@ -589,50 +947,50 @@ change of its own, not part of the port.
 | resource | reference-data | get | =/api/v1/reference-data/business_unit_types/{code}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_type_routes.cpp:449 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/business_unit_types/{code}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_type_routes.cpp:465 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/business_units= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:362 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/business_units= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:406 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | put | =/api/v1/reference-data/business_units= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:420 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | get | =/api/v1/reference-data/business_units/by-party-id/{party_id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:480 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/business_units/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:465 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/business_units/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:392 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/business_units/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:435 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | delete | =/api/v1/reference-data/business_units/{unit_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:449 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/business_units= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:404 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | put | =/api/v1/reference-data/business_units= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:417 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | get | =/api/v1/reference-data/business_units/by-party-id/{party_id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:473 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | post | =/api/v1/reference-data/business_units/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:459 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/business_units/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:391 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/business_units/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:431 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | delete | =/api/v1/reference-data/business_units/{unit_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:444 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | get | =/api/v1/reference-data/business_units/{unit_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:379 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/business_units/{unit_code}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:499 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/business_units/{unit_code}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:516 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/business_units/{unit_code}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:491 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/business_units/{unit_code}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_unit_routes.cpp:507 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/calendar_events= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:385 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_events= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:447 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | put | =/api/v1/reference-data/calendar_events= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:467 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_events/by-calendar-code/{calendar_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:551 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_events/by-diary-entry-type/{diary_entry_type}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:578 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_events/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:530 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_events/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:427 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_events/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:488 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | delete | =/api/v1/reference-data/calendar_events/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:508 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_events= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:433 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | put | =/api/v1/reference-data/calendar_events= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:446 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_events/by-calendar-code/{calendar_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:502 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_events/by-diary-entry-type/{diary_entry_type}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:522 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_events/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:488 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_events/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:420 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_events/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:460 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | delete | =/api/v1/reference-data/calendar_events/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:473 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | get | =/api/v1/reference-data/calendar_events/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:408 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_events/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:605 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_events/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:628 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_events/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:542 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_events/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_event_routes.cpp:558 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/calendar_exceptions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:363 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_exceptions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:410 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | put | =/api/v1/reference-data/calendar_exceptions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:425 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_exceptions/by-calendar-code/{calendar_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:489 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_exceptions/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:473 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_exceptions/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:395 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_exceptions/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:441 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | delete | =/api/v1/reference-data/calendar_exceptions/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:456 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_exceptions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:406 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | put | =/api/v1/reference-data/calendar_exceptions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:419 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_exceptions/by-calendar-code/{calendar_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:475 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_exceptions/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:461 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_exceptions/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:393 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_exceptions/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:433 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | delete | =/api/v1/reference-data/calendar_exceptions/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:446 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | get | =/api/v1/reference-data/calendar_exceptions/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:381 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_exceptions/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:511 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_exceptions/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:529 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_exceptions/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:495 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_exceptions/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_exception_routes.cpp:511 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/calendar_rules= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:361 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_rules= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:408 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | put | =/api/v1/reference-data/calendar_rules= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:423 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_rules/by-calendar-code/{calendar_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:487 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_rules/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:471 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_rules/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:393 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/calendar_rules/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:439 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | delete | =/api/v1/reference-data/calendar_rules/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:454 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_rules= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:404 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | put | =/api/v1/reference-data/calendar_rules= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:417 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_rules/by-calendar-code/{calendar_code}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:473 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_rules/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:459 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_rules/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:391 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/calendar_rules/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:431 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | delete | =/api/v1/reference-data/calendar_rules/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:444 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | get | =/api/v1/reference-data/calendar_rules/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:379 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_rules/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:509 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/calendar_rules/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:527 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_rules/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:493 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/calendar_rules/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_rule_routes.cpp:509 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_routes.cpp:339 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_routes.cpp:381 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_routes.cpp:394 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
@@ -728,25 +1086,25 @@ change of its own, not part of the port.
 | resource | reference-data | get | =/api/v1/reference-data/currency_pairs/{pair_code}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_pair_routes.cpp:454 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/currency_pairs/{pair_code}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_pair_routes.cpp:470 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:365 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:444 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | put | =/api/v1/reference-data/ir_curve_bootstrap_configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:469 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_configs/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:548 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_configs/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:418 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_configs/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:495 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | delete | =/api/v1/reference-data/ir_curve_bootstrap_configs/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:521 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:420 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | put | =/api/v1/reference-data/ir_curve_bootstrap_configs= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:433 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_configs/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:476 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_configs/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:406 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_configs/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:447 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | delete | =/api/v1/reference-data/ir_curve_bootstrap_configs/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:461 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_configs/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:394 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_configs/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:575 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_configs/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:604 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_configs/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:491 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_configs/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_config_routes.cpp:508 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_pillars= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:349 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_pillars= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:406 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | put | =/api/v1/reference-data/ir_curve_bootstrap_pillars= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:424 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_pillars/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:482 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_pillars/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:387 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_pillars/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:443 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | delete | =/api/v1/reference-data/ir_curve_bootstrap_pillars/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:462 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_pillars= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:396 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | put | =/api/v1/reference-data/ir_curve_bootstrap_pillars= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:409 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_pillars/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:452 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_pillars/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:382 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/ir_curve_bootstrap_pillars/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:423 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | delete | =/api/v1/reference-data/ir_curve_bootstrap_pillars/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:437 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_pillars/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:370 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_pillars/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:502 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_pillars/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:524 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_pillars/{id}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:467 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/ir_curve_bootstrap_pillars/{id}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/ir_curve_bootstrap_pillar_routes.cpp:484 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/parties= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_routes.cpp:339 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/parties= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_routes.cpp:381 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/parties= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_routes.cpp:394 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
@@ -758,15 +1116,15 @@ change of its own, not part of the port.
 | resource | reference-data | get | =/api/v1/reference-data/parties/{short_code}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_routes.cpp:450 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/parties/{short_code}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_routes.cpp:466 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/party_contact_informations= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:367 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/party_contact_informations= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:412 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | put | =/api/v1/reference-data/party_contact_informations= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:426 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | get | =/api/v1/reference-data/party_contact_informations/by-party-id/{party_id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:488 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/party_contact_informations/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:472 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/party_contact_informations/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:397 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/party_contact_informations/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:441 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | delete | =/api/v1/reference-data/party_contact_informations/{contact_type}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:456 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/party_contact_informations= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:410 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | put | =/api/v1/reference-data/party_contact_informations= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:423 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | get | =/api/v1/reference-data/party_contact_informations/by-party-id/{party_id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:481 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | post | =/api/v1/reference-data/party_contact_informations/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:466 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/party_contact_informations/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:396 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/party_contact_informations/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:437 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | delete | =/api/v1/reference-data/party_contact_informations/{contact_type}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:451 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | get | =/api/v1/reference-data/party_contact_informations/{contact_type}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:384 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/party_contact_informations/{contact_type}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:508 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/party_contact_informations/{contact_type}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_contact_information_routes.cpp:500 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/party_counterparties= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_counterparty_routes.cpp:351 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/party_counterparties= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_counterparty_routes.cpp:392 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/party_counterparties= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_counterparty_routes.cpp:405 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
@@ -805,16 +1163,16 @@ change of its own, not part of the port.
 | resource | reference-data | get | =/api/v1/reference-data/party_id_schemes/{code}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_id_scheme_routes.cpp:447 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/party_id_schemes/{code}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_id_scheme_routes.cpp:463 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | get | =/api/v1/reference-data/party_identifiers= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:363 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/party_identifiers= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:407 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | put | =/api/v1/reference-data/party_identifiers= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:421 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | get | =/api/v1/reference-data/party_identifiers/by-party-id/{party_id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:481 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | post | =/api/v1/reference-data/party_identifiers/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:466 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/party_identifiers/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:393 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | post | =/api/v1/reference-data/party_identifiers/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:436 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
-| resource | reference-data | delete | =/api/v1/reference-data/party_identifiers/{id_value}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:450 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/party_identifiers= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:405 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | put | =/api/v1/reference-data/party_identifiers= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:418 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | get | =/api/v1/reference-data/party_identifiers/by-party-id/{party_id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:474 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | post | =/api/v1/reference-data/party_identifiers/delete-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:460 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/party_identifiers/get-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:392 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | post | =/api/v1/reference-data/party_identifiers/put-many= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:432 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
+| resource | reference-data | delete | =/api/v1/reference-data/party_identifiers/{id_value}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:445 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | get | =/api/v1/reference-data/party_identifiers/{id_value}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:380 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/party_identifiers/{id_value}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:500 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
-| resource | reference-data | get | =/api/v1/reference-data/party_identifiers/{id_value}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:517 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/party_identifiers/{id_value}/versions= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:492 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
+| resource | reference-data | get | =/api/v1/reference-data/party_identifiers/{id_value}/versions/{version}= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_identifier_routes.cpp:508 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | simulation | get | =/api/v1/simulation/yield_curve_process_types= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:340 | A generated synthetic collection, answering under the published simulation area: the list, one row by key, its versions, and the bulk get. |
 | resource | simulation | post | =/api/v1/simulation/yield_curve_process_types= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:382 | A generated write of a synthetic collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | simulation | put | =/api/v1/simulation/yield_curve_process_types= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_routes.cpp:395 | A generated write of a synthetic collection: create, replace, remove, or one of the bulk put and delete calls. |

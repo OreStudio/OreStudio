@@ -691,16 +691,17 @@ struct burst_cleanup {
         std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
         if (PQstatus(conn.get()) != CONNECTION_OK)
             return;
+        if (streams.empty())
+            return;
         const auto from = ores::platform::time::datetime::to_iso8601_utc(since);
-        std::vector<std::string> statements{
-            "delete from ores_marketdata_ticks_tbl where ts >= '" + from + "'"};
-        if (!streams.empty()) {
-            std::string in;
-            for (const auto& s : streams)
-                in += (in.empty() ? "" : ",") + ("'" + s + "'");
-            statements.push_back("delete from ores_marketdata_tick_coords_tbl where stream_id in (" +
-                                 in + ")");
-        }
+        std::string in;
+        for (const auto& s : streams)
+            in += (in.empty() ? "" : ",") + ("'" + s + "'");
+        // The table is shared with every other run, so the delete names this run's streams.
+        const std::vector<std::string> statements{
+            "delete from ores_marketdata_ticks_tbl where ts >= '" + from +
+                "' and stream_id in (" + in + ")",
+            "delete from ores_marketdata_tick_coords_tbl where stream_id in (" + in + ")"};
         for (const auto& statement : statements) {
             std::unique_ptr<PGresult, decltype(&PQclear)> r(
                 PQexec(conn.get(), statement.c_str()), &PQclear);

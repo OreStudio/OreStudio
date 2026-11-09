@@ -42,7 +42,8 @@
  * no party, as a rebuild's does, leaves the party unconstrained.
  *
  * An imported bond can hold the ORE name of its curve, which is not an address
- * and has no series to match, so the check applies only to an address.
+ * and has no series to match, so the check applies only to an address. A value
+ * that nearly reads as one is checked too, so that a mistyped address is refused.
  */
 
 create or replace function ores_marketdata_validate_curve_series_fn(
@@ -52,7 +53,7 @@ create or replace function ores_marketdata_validate_curve_series_fn(
 declare
     v_party_id uuid;
 begin
-    if p_value is null or p_value = '' or p_value not like 'oresmd://%' then
+    if p_value is null or p_value = '' or p_value !~* '^\s*oresmd:' then
         return p_value;
     end if;
 

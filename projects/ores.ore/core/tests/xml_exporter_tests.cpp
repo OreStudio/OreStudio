@@ -998,6 +998,16 @@ TEST_CASE("export_portfolio_names_each_curve_of_a_bond_and_a_credit_swap", "[ore
     const auto cds_xml = exporter::export_portfolio_leaving_out(cds_items, swaps, projection).xml;
     CHECK(cds_xml.contains("<CreditCurveId>NAMED</CreditCurveId>"));
     CHECK(!cds_xml.contains("oresmd://"));
+
+    auto [index_items, indices] = make_export_payload(importer::import_portfolio_with_context(
+        example_path("Credit_Index_Credit_Default_Swap.xml")));
+    REQUIRE(!indices.index_credit_default_swap_instruments.empty());
+    for (auto& swap : indices.index_credit_default_swap_instruments)
+        swap.credit_curve_id = curve->uri();
+    const auto index_xml =
+        exporter::export_portfolio_leaving_out(index_items, indices, projection).xml;
+    CHECK(index_xml.contains("<CreditCurveId>NAMED</CreditCurveId>"));
+    CHECK(!index_xml.contains("oresmd://"));
 }
 
 // =============================================================================

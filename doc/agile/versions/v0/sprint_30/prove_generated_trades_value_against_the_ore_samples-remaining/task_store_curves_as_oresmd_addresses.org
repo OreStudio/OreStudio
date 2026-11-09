@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/store-curves-as-oresmd-addresses
+#+pr: 4526
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,18 +26,19 @@ Every curve a trade names is stored as an oresmd address.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
 
-- Reference, credit, volatility and income curve columns hold an oresmd address.
-- A curve imports as an address built from its ORE name, and the market configuration names it on export.
+- The exporter names every curve column through =ore_projection=, so a trade may hold an address in any of them.
+- The bond insert trigger checks only a value that is an address, so an imported bond can hold its ORE curve name.
 - The corpus roundtrip still loses nothing.
+- An imported curve name becomes an address only in the market data task, when the series catalogue or market configuration can resolve it. An ORE curve name states no currency, instrument or quote, so an address cannot be built from it.
 
 * Plan
 
@@ -76,12 +77,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4526][#4526]] | [ore] Name every curve of a bond and a credit trade on export |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A mistyped address passes the trigger | =marketdata_validate_curve_series_fn_create.sql= | Accept | A value that nearly reads as an address is checked and refused. |
+| 2 | Export copies the instrument | Projections | Decline | One trade at a time, and small. |
+| 3 | Index swap row not asserted | =xml_exporter_tests.cpp= | Accept | Test covers the plain string column on an index CDS. |
+| 4 | pgTAP case | SQL | Decline | Tested in a rolled-back transaction. The soft key replaces this check after the market data task. |
 
 * Result
+
+The exporter names every curve column of a bond and a credit trade through =ore_projection=, so a trade may hold an address in any of them. The bond insert trigger now checks only a value that is an address, so an imported bond can hold its ORE curve name. Tested in a rolled-back transaction on the database.
+
+This task does not make imported curves into addresses. An ORE curve name states no currency, instrument or quote, so that step needs the series catalogue or a market configuration. It moved to the market data task.

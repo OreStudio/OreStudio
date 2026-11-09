@@ -1690,6 +1690,16 @@ auto write_bond_instrument(xml::record_writer& trade,
     if (data == nullptr || !is_bond_trade_type(trade_type))
         return false;
 
+    auto named = *data;
+    const auto name_curve = [&](std::optional<std::string>& curve) {
+        if (curve && !curve->empty())
+            curve = projection.ore_name_or_stored(*curve);
+    };
+    name_curve(named.issue.credit_curve_id);
+    name_curve(named.issue.income_curve_id);
+    name_curve(named.issue.volatility_curve_id);
+    data = &named;
+
     const auto reference_curve = reference_curve_of(*data, projection);
     if (trade_type == "Bond")
         write_bond(trade, *data, reference_curve);

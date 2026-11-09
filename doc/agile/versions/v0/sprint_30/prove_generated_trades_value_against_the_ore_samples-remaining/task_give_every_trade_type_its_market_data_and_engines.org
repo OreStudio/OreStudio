@@ -43,6 +43,8 @@ Every generated trade type can be priced: its market data and its pricing engine
 
 - No stored trade reference holds an ORE name when the key lands, so readers handle one form. A name the address cannot write back, such as =UK RPI=, is resolved here.
 
+- An imported curve name becomes an address when the series catalogue or market configuration resolves it, and stays as written otherwise. Credit curve series are in the catalogue.
+
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions

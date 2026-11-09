@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: B4B85683-D59C-4526-A4BF-7A5B1127BA5E
+:END:
+#+title: Task: Value the generated trades in a report and make them correct
+#+description: A report over every generated trade type completes, and each trade values correctly: a trade built on an ORE sample's terms reproduces ORE's own NPV for that sample.
+#+type: task
+#+level: s1
+#+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A report run over the generated trades shows they value correctly according to ORE. This is the step that closes the story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- A report over a provisioned Acme, covering every generated trade type, completes through the grid, with every trade in =npv.csv=, a finite value and no Trade errors.
+- *Correct is measured against ORE:* for each type, a trade the builder makes with the terms of ORE's sample of that type, on the sample's market, gives the NPV ORE gives for the sample, within a stated tolerance.
+- The reference is ORE's =ExpectedOutput/npv.csv= where one exists (25 of the 85 types on 2026-11-09), and otherwise a run of ORE on its own sample of the type.
+- A type with no ORE sample is listed with its reason, and is held to a stated plausibility bound, an absolute NPV against its notional.
+- A tagged test repeats the comparison, so a change to the generator that moves a value fails.
+- Every difference found is fixed at its cause in the builder, the market data or the export. The known lists of the recorded trades end empty, or with a stated reason per entry.
+
+* Plan
+
+Run the report as [[id:0A7DA00D-EA4E-4EA6-B597-6186A76A9F9E][How do I prove a report runs end to end?]] describes, then compare =npv.csv=. Report each type as a row: built, valued, reference NPV, our NPV, difference.
+
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

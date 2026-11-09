@@ -2031,6 +2031,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approvals:decide_controller', 'Decide approval requests as Controller');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approvals:decide_finance', 'Decide approval requests as Finance');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approvals:decide_market_risk', 'Decide approval requests as Market Risk');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approvals:set_mode', 'Turn auto-approval on or off for the tenant');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approvals:decide_operations', 'Decide approval requests as Operations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_requests:read',         'Read and list approval requests');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'inbox::approval_requests:write',        'Create and update approval requests');

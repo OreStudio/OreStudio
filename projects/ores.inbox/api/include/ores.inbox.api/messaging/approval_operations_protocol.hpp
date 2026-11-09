@@ -264,6 +264,70 @@ struct list_my_approval_requests_response {
 };
 
 /**
+ * @brief Reads whether the caller's tenant enforces approvals, and who said so.
+ *
+ * Any signed-in person may ask, so that a request which did not wait can be
+ * explained to whoever is looking at it.
+ */
+struct get_approvals_mode_request {
+    using response_type = struct get_approvals_mode_response;
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.get_approvals_mode";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+
+    friend bool operator==(const get_approvals_mode_request&,
+                           const get_approvals_mode_request&) = default;
+};
+
+struct get_approvals_mode_response {
+    ores::utility::domain::result result;
+    std::string mode;
+    std::string scope;
+    std::string set_by;
+    std::chrono::system_clock::time_point set_at;
+    std::string reason;
+    int version = 0;
+
+    friend bool operator==(const get_approvals_mode_response&,
+                           const get_approvals_mode_response&) = default;
+};
+
+/**
+ * @brief Turns auto-approval on or off for the caller's tenant.
+ *
+ * Needs inbox::approvals:set_mode. Each change is a new version of the setting,
+ * with who made it and why.
+ */
+struct set_approvals_mode_request {
+    using response_type = struct set_approvals_mode_response;
+    static constexpr std::string_view nats_subject = "inbox.v1.ops.set_approvals_mode";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    bool auto_approved = false;
+    std::string reason;
+
+    friend bool operator==(const set_approvals_mode_request&,
+                           const set_approvals_mode_request&) = default;
+};
+
+struct set_approvals_mode_response {
+    ores::utility::domain::result result;
+
+    friend bool operator==(const set_approvals_mode_response&,
+                           const set_approvals_mode_response&) = default;
+};
+
+/**
  * @brief Reads the one request an identifier names.
  *
  * A notice a person is given carries the request it is about, so the notice
@@ -750,6 +814,67 @@ struct get_approval_parts_response {
 }
 
 /**
+ * @brief The members of get_approvals_mode_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approvals_mode_request>) {
+    return std::tuple{};
+}
+
+/**
+ * @brief The members of get_approvals_mode_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_approvals_mode_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &get_approvals_mode_response::result},
+        ::ores::utility::codec::field{"mode", &get_approvals_mode_response::mode},
+        ::ores::utility::codec::field{"scope", &get_approvals_mode_response::scope},
+        ::ores::utility::codec::field{"set_by", &get_approvals_mode_response::set_by},
+        ::ores::utility::codec::field{"set_at", &get_approvals_mode_response::set_at},
+        ::ores::utility::codec::field{"reason", &get_approvals_mode_response::reason},
+        ::ores::utility::codec::field{"version", &get_approvals_mode_response::version},
+    };
+}
+
+/**
+ * @brief The members of set_approvals_mode_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<set_approvals_mode_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"auto_approved", &set_approvals_mode_request::auto_approved},
+        ::ores::utility::codec::field{"reason", &set_approvals_mode_request::reason},
+    };
+}
+
+/**
+ * @brief The members of set_approvals_mode_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<set_approvals_mode_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"result", &set_approvals_mode_response::result},
+    };
+}
+
+/**
  * @brief The members of get_approval_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -1098,6 +1223,46 @@ struct ORES_INBOX_API_EXPORT
     static std::string
     write_msgpack(const ores::inbox::messaging::list_my_approval_requests_response& v);
     static ores::inbox::messaging::list_my_approval_requests_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approvals_mode_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approvals_mode_request& v);
+    static ores::inbox::messaging::get_approvals_mode_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::get_approvals_mode_request& v);
+    static ores::inbox::messaging::get_approvals_mode_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::get_approvals_mode_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::get_approvals_mode_response& v);
+    static ores::inbox::messaging::get_approvals_mode_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::get_approvals_mode_response& v);
+    static ores::inbox::messaging::get_approvals_mode_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::set_approvals_mode_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::set_approvals_mode_request& v);
+    static ores::inbox::messaging::set_approvals_mode_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::set_approvals_mode_request& v);
+    static ores::inbox::messaging::set_approvals_mode_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_INBOX_API_EXPORT wire_traits<ores::inbox::messaging::set_approvals_mode_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::inbox::messaging::set_approvals_mode_response& v);
+    static ores::inbox::messaging::set_approvals_mode_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::inbox::messaging::set_approvals_mode_response& v);
+    static ores::inbox::messaging::set_approvals_mode_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

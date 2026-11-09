@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -298,11 +299,46 @@ TEST_CASE("a_deployment_that_does_not_enforce_approvals_closes_every_kind", "[ap
     const auto raised = lifecycle.raise(*seeded, "A test bed needs the role", asker.id);
 
     CHECK(raised.state_code == "approved");
-    CHECK(raised.auto_approval_code == "deployment");
+    CHECK(raised.auto_approval_code == "tenant");
     const auto decisions = decisions_on(h, boost::uuids::to_string(raised.id));
     REQUIRE(decisions.size() == 1);
     CHECK(decisions.front()[2].value_or("").find("does not enforce approvals") !=
           std::string::npos);
+}
+
+TEST_CASE("a_person_in_another_party_is_bound_by_the_tenants_mode", "[approval][auto]") {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approvals_mode mode(h, "auto_approved");
+    const auto base = acting(h);
+    const auto other_party = boost::uuids::random_generator{}();
+    approval_lifecycle lifecycle(
+        base.with_party(base.tenant_id(), other_party, {other_party}, base.actor()));
+
+    const auto seeded = lifecycle.kind("iam.role_grant");
+    REQUIRE(seeded);
+    const auto raised = lifecycle.raise(*seeded, "The party's person asks", asker.id);
+
+    CHECK(raised.state_code == "approved");
+    CHECK(raised.auto_approval_code == "tenant");
+}
+
+TEST_CASE("turning_the_mode_off_makes_the_next_raise_wait", "[approval][auto]") {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approvals_mode mode(h, "auto_approved");
+    approval_lifecycle lifecycle(acting(h));
+
+    REQUIRE_FALSE(lifecycle.approvals_mode().enforced);
+    lifecycle.set_approvals_mode(false, "People decide from here on");
+
+    const auto state = lifecycle.approvals_mode();
+    CHECK(state.enforced);
+    CHECK(state.stated_by_tenant);
+    CHECK(state.reason == "People decide from here on");
+    const auto seeded = lifecycle.kind("iam.role_grant");
+    REQUIRE(seeded);
+    CHECK(lifecycle.raise(*seeded, "Asked after the switch", asker.id).state_code == "waiting");
 }
 
 TEST_CASE("a_kind_that_asks_for_no_approvals_and_names_no_policy_refuses_the_raise",

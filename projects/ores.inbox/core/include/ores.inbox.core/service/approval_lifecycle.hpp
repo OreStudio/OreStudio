@@ -138,6 +138,17 @@ inline constexpr std::string_view auto_approved_mode = "auto_approved";
 /// The value that keeps the maker and checker pair.
 inline constexpr std::string_view enforced_mode = "enforced";
 
+/// Whether a tenant enforces approvals, and who stated it.
+struct approvals_mode_state final {
+    bool enforced = true;
+    /// False when the installation states the mode for this tenant.
+    bool stated_by_tenant = false;
+    std::string set_by;
+    std::string reason;
+    std::chrono::system_clock::time_point set_at{};
+    int version = 0;
+};
+
 /**
  * @brief Which rule closed a request without a person.
  *
@@ -147,6 +158,7 @@ inline constexpr std::string_view enforced_mode = "enforced";
  */
 enum class auto_approval_rule {
     deployment,
+    tenant,
     system_tenant,
     every_request,
 };
@@ -187,6 +199,18 @@ public:
      * enforces approvals keeps the pair.
      */
     [[nodiscard]] bool enforces_approvals() const;
+
+    /**
+     * @brief The approvals mode of the caller's tenant, and who stated it.
+     *
+     * Read as the tenant and not as the caller's party, because the setting
+     * lives under the tenant's system party and a person working in another
+     * party is still bound by it.
+     */
+    [[nodiscard]] approvals_mode_state approvals_mode() const;
+
+    /// Writes a new version of the tenant's approvals mode, with the reason.
+    void set_approvals_mode(bool auto_approved, const std::string& reason);
 
     /**
      * @brief Which rule closes this raise without a person, or nothing when one decides it.

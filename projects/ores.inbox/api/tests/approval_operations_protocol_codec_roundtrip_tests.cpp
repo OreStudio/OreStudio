@@ -80,6 +80,22 @@ TEST_CASE("ores::inbox::messaging::list_my_approval_requests_response",
         ores::inbox::messaging::list_my_approval_requests_response>();
 }
 
+TEST_CASE("ores::inbox::messaging::get_approvals_mode_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::inbox::messaging::get_approvals_mode_request>();
+}
+
+TEST_CASE("ores::inbox::messaging::get_approvals_mode_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::inbox::messaging::get_approvals_mode_response>();
+}
+
+TEST_CASE("ores::inbox::messaging::set_approvals_mode_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::inbox::messaging::set_approvals_mode_request>();
+}
+
+TEST_CASE("ores::inbox::messaging::set_approvals_mode_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::inbox::messaging::set_approvals_mode_response>();
+}
+
 TEST_CASE("ores::inbox::messaging::get_approval_request", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::inbox::messaging::get_approval_request>();
 }

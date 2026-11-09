@@ -99,6 +99,8 @@ inline constexpr std::string_view system_provision_step_kind = "system_provision
 inline constexpr std::string_view publish_system_curves_step_kind = "publish_system_curves";
 inline constexpr std::string_view publish_bundle_step_kind = "publish_bundle";
 inline constexpr std::string_view build_calendars_step_kind = "build_calendars";
+inline constexpr std::string_view start_auto_approval_step_kind = "start_auto_approval";
+inline constexpr std::string_view end_auto_approval_step_kind = "end_auto_approval";
 inline constexpr std::string_view import_lei_hierarchy_step_kind = "import_lei_hierarchy";
 inline constexpr std::string_view provision_party_step_kind = "provision_party";
 inline constexpr std::string_view load_staff_step_kind = "load_staff";
@@ -118,6 +120,8 @@ inline constexpr std::string_view provision_step_kinds[] = {system_provision_ste
                                                             publish_system_curves_step_kind,
                                                             publish_bundle_step_kind,
                                                             build_calendars_step_kind,
+                                                            start_auto_approval_step_kind,
+                                                            end_auto_approval_step_kind,
                                                             import_lei_hierarchy_step_kind,
                                                             provision_party_step_kind,
                                                             load_staff_step_kind,
@@ -199,6 +203,16 @@ struct step_kind_words {
                 "Sets each staff account's password through the server's own password API, so "
                 "the demonstration tenant's people can sign in.",
                 orchestrating_step_timeout};
+    if (kind == start_auto_approval_step_kind)
+        return {"Turn auto-approval on",
+                "Closes the tenant's approvals without a person while it is provisioned. Every "
+                "screen says so while it is on.",
+                write_step_timeout};
+    if (kind == end_auto_approval_step_kind)
+        return {"Hand approvals to people",
+                "Turns auto-approval off, so people decide from here on. A profile that omits "
+                "this step leaves auto-approval on.",
+                write_step_timeout};
     if (kind == build_calendars_step_kind)
         return {"Build the holiday calendars",
                 "Builds the business days of every calendar a currency or a currency pair "
@@ -254,6 +268,8 @@ inline constexpr std::string_view provision_executed_step_kinds[] = {
     publish_system_curves_step_kind,
     publish_bundle_step_kind,
     build_calendars_step_kind,
+    start_auto_approval_step_kind,
+    end_auto_approval_step_kind,
     import_lei_hierarchy_step_kind,
     provision_party_step_kind,
     load_staff_step_kind,
@@ -581,6 +597,24 @@ inline void declare_inputs(std::vector<ores::workflow::service::workflow_step_de
                 steps[i].consumes.push_back(*producer);
         }
         present.insert_or_assign(kinds[i], steps[i].name);
+    }
+
+    // A step with no input starts at once, so auto-approval has to bracket the
+    // run explicitly: on before any other step, and off after all of them.
+    const auto reads = [](auto& step, const std::string& name) {
+        if (std::find(step.consumes.begin(), step.consumes.end(), name) == step.consumes.end())
+            step.consumes.push_back(name);
+    };
+    const auto start = present.find(std::string(start_auto_approval_step_kind));
+    for (std::size_t i = 0; i < steps.size(); ++i) {
+        if (kinds[i] == end_auto_approval_step_kind) {
+            for (std::size_t earlier = 0; earlier < i; ++earlier)
+                reads(steps[i], steps[earlier].name);
+            for (std::size_t later = i + 1; later < steps.size(); ++later)
+                reads(steps[later], steps[i].name);
+        } else if (start != present.end() && kinds[i] != start_auto_approval_step_kind) {
+            reads(steps[i], start->second);
+        }
     }
 }
 

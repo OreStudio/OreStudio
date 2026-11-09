@@ -97,6 +97,28 @@ export interface AppShellProps {
     readonly children: ReactNode;
 }
 
+/** Says, on every screen, that requests in this tenant close without a person. */
+export function ApprovalsModeNotice(): ReactNode {
+    const { t } = useTranslation();
+    const mode = useQuery({
+        queryKey: ['approvals-mode'],
+        queryFn: () => api.approvalsMode(),
+        refetchInterval: 60_000,
+        retry: false,
+    });
+    if (mode.data?.autoApproved !== true) return null;
+    return (
+        <Notice tone="warn">
+            {t(
+                mode.data.scope === 'tenant'
+                    ? 'inbox.autoApproval.noticeTenant'
+                    : 'inbox.autoApproval.noticeInstallation',
+                { by: mode.data.setBy, at: mode.data.setAt, reason: mode.data.reason },
+            )}
+        </Notice>
+    );
+}
+
 export function AppShell({
     username,
     tenantName,
@@ -198,6 +220,7 @@ export function AppShell({
             <main className="min-w-0 flex-1 overflow-y-auto px-5 py-8">
                 <div className={`mx-auto w-full ${SHELL_WIDTHS[width]}`}>
                     <AccessNotice />
+                    <ApprovalsModeNotice />
                     {children}
                 </div>
             </main>

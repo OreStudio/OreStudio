@@ -266,6 +266,11 @@ export const en: SourceCatalogue = {
     },
     inbox: {
         autoApproval: {
+            tenant: "the tenant does not enforce approvals",
+            noticeTenant:
+                "Auto-approval is on in this tenant, so requests close without a person. {by} set it at {at}: {reason}",
+            noticeInstallation:
+                "Auto-approval is on for this installation, so requests close without a person. {by} set it at {at}: {reason}",
             chip: 'Auto-approved',
             deployment: 'the deployment does not enforce approvals',
             system_tenant: "the installation's own act",

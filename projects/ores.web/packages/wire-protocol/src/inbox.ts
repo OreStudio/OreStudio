@@ -83,11 +83,30 @@ import {
  * broker connection at all.
  */
 
+const approvalsModeReplySchema = z.object({
+    result: resultEnvelopeSchema,
+    mode: z.string(),
+    scope: z.string(),
+    set_by: z.string(),
+    set_at: z.string(),
+    reason: z.string(),
+});
+
+/** What a person is told about the tenant's approvals. */
+export interface ApprovalsMode {
+    readonly autoApproved: boolean;
+    readonly scope: string;
+    readonly setBy: string;
+    readonly setAt: string;
+    readonly reason: string;
+}
+
 /** Subjects for the inbox operations, kept beside the operations that use them. */
 export const INBOX_SUBJECTS = {
     askForRoles: roleRequestSubjects.ask_for_roles_request,
     getRequestRoles: roleRequestSubjects.get_request_roles_request,
     mine: approvalSubjects.list_my_approval_requests_request,
+    approvalsMode: approvalSubjects.get_approvals_mode_request,
     queue: approvalSubjects.list_approval_queue_request,
     getRequest: approvalSubjects.get_approval_request,
     getRequestHistory: approvalSubjects.get_approval_history_request,
@@ -928,6 +947,23 @@ export async function askForRoles(
  * The requests the signed-in person raised, newest first, each with the roles
  * it asks for and the latest thing said about it.
  */
+/** Whether the tenant enforces approvals, and who said so. */
+export async function readApprovalsMode(caller: AuthenticatedCaller): Promise<ApprovalsMode> {
+    const reply = await caller.callAuthenticated(
+        INBOX_SUBJECTS.approvalsMode,
+        {},
+        approvalsModeReplySchema,
+    );
+    ok(INBOX_SUBJECTS.approvalsMode, reply.result);
+    return {
+        autoApproved: reply.mode === 'auto_approved',
+        scope: reply.scope,
+        setBy: reply.set_by,
+        setAt: reply.set_at,
+        reason: reply.reason,
+    };
+}
+
 export async function readMyRequests(
     caller: AuthenticatedCaller,
     input: { readonly offset: number; readonly limit: number },

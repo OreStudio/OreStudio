@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument_codec.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 

@@ -26,13 +26,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AccountAccess, HistoryVersion } from '@ores/wire-protocol/browser';
-import type { RecordResourceView, RecordRow } from '../api/client.js';
+import type { ClassificationRow, RecordResourceView, RecordRow } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { CURRENCY_FIELDS, CurrenciesPage, CurrencyPage } from './currencies.js';
 import { CurrencyPairPage } from './currencyPairs.js';
 import { DeskGroupPage } from './deskGroups.js';
 import { FIRST_PAGE, pageKey } from './RecordList.js';
 import {
+    ClassifiedValue,
     RecordDetails,
     revertChanges,
     valuesFromHistory,
@@ -445,5 +446,43 @@ describe('a field the screen draws itself', () => {
         expect(draw({})).toContain('Euro');
         expect(draw()).toContain('Euro');
         expect(draw({})).not.toContain('<a ');
+    });
+});
+
+describe('a classified value', () => {
+    const MAJOR: ClassificationRow = {
+        code: 'major',
+        name: 'Major',
+        description: 'The most traded pairs',
+        displayOrder: 1,
+        version: 1,
+        modifiedBy: 'priya',
+        recordedAt: '2026-10-04 09:05:00Z',
+        reasonCode: 'system.initial_load',
+        commentary: 'Seeded',
+        labelCode: null,
+    };
+
+    function draw(code: string): string {
+        const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+        client.setQueryData(['labels'], { labels: [], domains: {} });
+        client.setQueryData(['classifications', 'pair-class'], [MAJOR]);
+        return renderToStaticMarkup(
+            <QueryClientProvider client={client}>
+                <MemoryRouter>
+                    <ClassifiedValue list="pair-class" code={code} />
+                </MemoryRouter>
+            </QueryClientProvider>,
+        );
+    }
+
+    it('links a code the list holds to the page of its classification', () => {
+        const html = draw('major');
+        expect(html).toContain('href="/refdata/classifications/pair-class/major"');
+        expect(html).toContain('Major');
+    });
+
+    it('leaves a code the list does not hold as plain text, so the gap shows', () => {
+        expect(draw('unheard')).toBe('unheard');
     });
 });

@@ -32,6 +32,7 @@ from route_classification import (  # noqa: E402
     RULES,
     VIEWS,
 )
+from route_pairing import PAIRS  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 INVENTORY = ROOT / "doc/knowledge/architecture/http_route_inventory.org"
@@ -86,8 +87,10 @@ component that must answer each one after the port.
 either server is absent from this table, when a row names a route neither server
 answers, when two routes share one identity, when a route is unclassified, and when a
 decision names no published kind or area, carries no evidence, or calls itself a
-composed view without stating its owner, computation and cache policy. The gate runs
-it as the =route-inventory= check.
+composed view without stating its owner, computation and cache policy. It also fails
+when a pair in =build/scripts/route_pairing.py= names a route that neither server
+answers, and when the coverage section does not match the pairs. The gate runs it as
+the =route-inventory= check.
 
 * What it reads, and what it cannot
 
@@ -386,11 +389,60 @@ def composed_views(found):
     return lines
 
 
+def coverage(found):
+    """The coverage and pairing sections, counted from route_pairing."""
+    per_area = {}
+    rows = []
+    for route in (r for r in found if r["server"] == "bff"):
+        key = (route["method"].upper(), route["path"])
+        decision = decide(route)
+        area = decision.area if decision is not None else ""
+        counts = per_area.setdefault(area, [0, 0])
+        counts[0] += 1
+        counts[1] += key in PAIRS
+        target = " ".join(PAIRS[key]) if key in PAIRS else "none"
+        rows.append(f"| {key[0]} ={key[1]}= | {target} |")
+
+    lines = ["* The coverage", ""]
+    lines.append("How many BFF routes each area pairs with a C++ route, counted from")
+    lines.append("=build/scripts/route_pairing.py=. A pair records the mapping and does not")
+    lines.append("prove it; the port tasks prove each route against the answer the BFF gives.")
+    lines.append("")
+    lines.append("| Area | BFF routes | Paired | Gaps |")
+    lines.append("|------+------------+--------+------|")
+    for area in sorted(per_area, key=lambda a: (a == NO_AREA, a)):
+        total, paired = per_area[area]
+        lines.append(f"| {area} | {total} | {paired} | {total - paired} |")
+    total = sum(counts[0] for counts in per_area.values())
+    paired = sum(counts[1] for counts in per_area.values())
+    lines.append(f"| total | {total} | {paired} | {total - paired} |")
+    lines.extend(["", "* The pairing", ""])
+    lines.append("| BFF route | C++ equivalent |")
+    lines.append("|-----------+----------------|")
+    lines.extend(rows)
+    lines.append("")
+    return lines
+
+
+def bad_pairs(found):
+    """The pairs that name a BFF route or a C++ route that neither server answers."""
+    bff = {(r["method"].upper(), r["path"]) for r in found if r["server"] == "bff"}
+    cpp = {(r["method"].upper(), r["path"]) for r in found if r["server"] != "bff"}
+    problems = []
+    for source, target in PAIRS.items():
+        if source not in bff:
+            problems.append(f"{' '.join(source)}: the BFF does not answer this route")
+        if target not in cpp:
+            problems.append(f"{' '.join(source)}: ores.http does not answer {' '.join(target)}")
+    return problems
+
+
 def render(found):
     bff = sum(1 for route in found if route["server"] == "bff")
     lines = [HEADER.rstrip(), ""]
     lines.extend(area_map(found))
     lines.extend(composed_views(found))
+    lines.extend(coverage(found))
     lines.append("* The inventory")
     lines.append("")
     lines.append(f"{len(found)} routes: {bff} answered by the BFF and "
@@ -466,8 +518,11 @@ def check():
     undecided = [route for route in found if decide(route) is None]
     unreadable = unreadable_registrations(found)
     unpublished = bad_decisions()
+    broken_pairs = bad_pairs(found)
+    stale_coverage = ("\n".join(coverage(found)) not in INVENTORY.read_text()
+                      if INVENTORY.exists() else True)
     if not (missing or stale or disagreeing or duplicates or undecided or unreadable
-            or unpublished):
+            or unpublished or broken_pairs or stale_coverage):
         print(f"route inventory is current: {len(found)} route(s)")
         return 0
 
@@ -513,6 +568,13 @@ def check():
             print(f"  {name}: {problem}")
         if len(unpublished) > 15:
             print(f"  and {len(unpublished) - 15} more")
+    if broken_pairs:
+        print(f"{len(broken_pairs)} pair(s) in route_pairing name a route neither server "
+              f"answers:")
+        for problem in broken_pairs:
+            print(f"  {problem}")
+    if stale_coverage:
+        print("the coverage and pairing sections do not match route_pairing")
     print("run: python3 build/scripts/route_inventory.py --write")
     return 1
 

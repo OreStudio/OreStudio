@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/pair-each-bff-route-with-its-equivalent
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Record for each BFF route the C++ route that answers it, or state that none does
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -42,9 +42,7 @@ Record for each BFF route the C++ route that answers it, or state that none does
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Keep the pairs as data in =build/scripts/route_pairing.py=. Pair a route only when the C++ route clearly does the same thing, and leave a route that uses a different key as a gap. Compute the coverage from the pairs and write it to the inventory. Make the inventory check fail on a pair to a missing route and on a coverage section that does not match the pairs.
 
 * Measurements
 
@@ -58,7 +56,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Routes in the inventory | 736 (323 BFF, 413 ores.http) | =python3 build/scripts/route_inventory.py --write= | branch from 8b6e8420d7 |
+| BFF routes paired | 40 of 323, 283 gaps | The coverage section of =http_route_inventory.org= | branch from 8b6e8420d7 |
 
 * Notes
 
@@ -83,6 +82,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: only a throwaway mutation script exercised the pair check. | =build/scripts/route_inventory.py= | Accept | Added =build/scripts/tests/test_route_pairing.py=. |
+| 2 | Local review: =misspell-fixer .= exits 1 on the whole repository. | Outside this change | Decline | Each changed file exits 0, so the hit is in existing files. |
 
 * Result
+
+=build/scripts/route_pairing.py= records 40 pairs. The inventory prints each of the 323 BFF routes with its C++ route or "none", and prints the coverage per area. The =route-inventory= check fails on a pair that names a missing route and on a coverage section that does not match the pairs. Four mutations and =test_route_pairing.py= show this behaviour. The local gate is green.
+
+A pair records the mapping and does not prove it. The port tasks prove each route against the answer the BFF gives. This task also classifies =POST /api/curves/fx-forward-ladder=, because main failed the check without that classification.

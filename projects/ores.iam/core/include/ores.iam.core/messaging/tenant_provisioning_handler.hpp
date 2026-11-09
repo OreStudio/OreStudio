@@ -1177,10 +1177,6 @@ private:
             wf.warn(ores::utility::codec::json::write(result), step_log);
     }
 
-    /// Publishes each bundle the step names, one nested run each, and reports
-    /// only once every run has finished. The datasets the profile opts in
-    /// travel with the publication, so a bundle that publishes a member only
-    /// when a starting point asks for it publishes it here.
     /// The last year generate_calendar_exceptions writes. Later days would be
     /// built as weekdays with no holidays.
     static constexpr int last_generated_holiday_year = 2060;
@@ -1206,6 +1202,10 @@ private:
         wf.complete(ores::utility::codec::json::write(result));
     }
 
+    /// Publishes each bundle the step names, one nested run each, and reports
+    /// only once every run has finished. The datasets the profile opts in
+    /// travel with the publication, so a bundle that publishes a member only
+    /// when a starting point asks for it publishes it here.
     void publish_bundle_step(const ores::service::messaging::workflow_step_context& wf,
                              const ores::iam::workflow::provision_tenant_step_command& command,
                              const step_actor& actor) {

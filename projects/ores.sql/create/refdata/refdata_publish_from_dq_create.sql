@@ -4662,7 +4662,9 @@ begin
 
     create temporary table exceptions_to_publish on commit drop as
     select dq.calendar_code, dq.exception_date, dq.is_business_day, dq.description,
-           existing.id as existing_id
+           existing.id as existing_id,
+           existing.is_business_day is not distinct from dq.is_business_day
+           and existing.description is not distinct from dq.description as unchanged
     from ores_dq_calendar_exceptions_artefact_tbl dq
     left join ores_refdata_calendar_exceptions_tbl existing
       on existing.tenant_id = p_target_tenant_id
@@ -4672,10 +4674,10 @@ begin
     where dq.dataset_id = p_dataset_id
       and dq.tenant_id = ores_utility_system_tenant_id_fn();
 
-    if p_mode = 'insert_only' then
-        delete from exceptions_to_publish where existing_id is not null;
-        get diagnostics v_skipped = row_count;
-    end if;
+    delete from exceptions_to_publish
+    where existing_id is not null
+      and (p_mode = 'insert_only' or unchanged);
+    get diagnostics v_skipped = row_count;
 
     select count(*) filter (where existing_id is null),
            count(*) filter (where existing_id is not null)

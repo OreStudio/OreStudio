@@ -10,7 +10,7 @@ set -euo pipefail
 
 root="$(git rev-parse --show-toplevel)"
 ore_version="${ORE_VERSION:-1.8.17.0}"
-engine="${ORE_ENGINE:-$HOME/Vault/Development/ORE/Engine}"
+engine="${ORE_ENGINE:?Set ORE_ENGINE to a built checkout of ORE $ore_version}"
 preset="${ORES_PRESET:-linux-clang-release-ninja}"
 output="$root/build/output/$preset"
 work="$(mktemp -d)"
@@ -26,4 +26,14 @@ clang++ -std=c++20 -O1 -Wno-deprecated-declarations \
     -o "$work/generate" "$work/lib/libQuantLib.so.1" \
     -Wl,-rpath,"$work/lib" -Wl,--allow-shlib-undefined
 
-"$work/generate" "$root/projects/ores.sql/populate/refdata/refdata_calendar_exceptions_populate.sql"
+"$work/generate" "$root/projects/ores.sql/populate/refdata/refdata_calendar_exceptions_populate.sql" \
+    | tee "$work/summary"
+
+# The build_calendars step builds to this year. Past the data it would write
+# weekdays with no holidays.
+last_year="$(sed -n '1s/.* to //p' "$work/summary")"
+handler="$root/projects/ores.iam/core/include/ores.iam.core/messaging/tenant_provisioning_handler.hpp"
+if ! grep -q "last_generated_holiday_year = $last_year;" "$handler"; then
+    echo "The generator ends in $last_year but last_generated_holiday_year in $handler does not." >&2
+    exit 1
+fi

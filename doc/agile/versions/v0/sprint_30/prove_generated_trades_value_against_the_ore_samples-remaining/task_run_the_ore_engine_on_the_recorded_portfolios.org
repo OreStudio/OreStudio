@@ -83,7 +83,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Fixed run directory and none left on failure | generated_trade_ore_engine_tests.cpp | Accept | Directory carries the process id; a failed run keeps it for ORE's log, stated in a comment. |
+| 2 | LD_LIBRARY_PATH replaced the inherited value | generated_trade_ore_engine_tests.cpp | Accept | The stated path is prepended to the inherited one. Linux only, stated in the header. |
+| 3 | Id rewrite assumed the first id is the trade's | generated_trade_ore_engine_tests.cpp | Accept | The pattern is anchored to the opening Trade tag and a trade with no id fails. |
+| 4 | Regex over XML may overflow the stack | generated_trade_ore_engine_tests.cpp | Decline | Each match is one trade, not the whole file; the set is 160 small trades. |
+| 5 | Messages are pinned to the ORE build | generated_trades_known_ore_errors.txt | Accept | Header says an ORE upgrade can change them. |
+| 6 | CI skips the test | generated_trade_ore_engine_tests.cpp | Decline | Out of scope; no CI job has ORE today. |
+| 7 | Trailing carriage return and no timeout | generated_trade_ore_engine_tests.cpp | Accept in part | Trailing carriage returns and spaces are stripped. No timeout: one run takes about 4 seconds, and ctest has its own timeout. |
 
 * Result
 

@@ -1,6 +1,8 @@
 # Errors the ORE engine raises reading or building a recorded generated trade.
 # One line per trade type, error kind and message, separated by tabs, sorted.
 # A family's builder task removes its lines; the test fails on any change.
+# The messages are ORE's own, so an upgrade of external/ore or of the engine
+# that runs the test can change them; record the new messages then.
 Ascot	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
 Bond	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
 BondOption	Error parsing Trade XML	Error: No XML Child Node Strike found.

@@ -19,6 +19,7 @@
  */
 #include "ores.ore.core/log/engine_log.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.platform/process/pid.hpp"
 #include "ores.testing/project_root.hpp"
 #include <boost/asio/io_context.hpp>
 #include <boost/process/v2/environment.hpp>
@@ -46,7 +47,7 @@
  * must still be raised, so a family that fixes its trades removes its lines.
  *
  * ORES_ORE_EXECUTABLE names the engine. ORES_ORE_LIBRARY_PATH, when set, is
- * where the engine finds its shared libraries.
+ * where the engine finds its shared libraries on Linux.
  */
 
 namespace {
@@ -72,7 +73,7 @@ std::string merged_portfolio() {
     std::sort(files.begin(), files.end());
 
     const std::regex trade_pattern(R"(<Trade\b[\s\S]*?</Trade>)");
-    const std::regex id_pattern(R"(id="[^"]*")");
+    const std::regex id_pattern(R"re(^<Trade\b[^>]*?\bid="[^"]*")re");
     std::string out = "<?xml version=\"1.0\"?>\n<Portfolio>\n";
     for (const auto& file : files) {
         const auto text = text_of(file);
@@ -80,10 +81,13 @@ std::string merged_portfolio() {
         for (auto it = std::sregex_iterator(text.begin(), text.end(), trade_pattern);
              it != std::sregex_iterator();
              ++it) {
-            const auto id = "id=\"" + file.stem().string() + "-" + std::to_string(++count) + "\"";
-            out += std::regex_replace(
-                       it->str(), id_pattern, id, std::regex_constants::format_first_only) +
-                   "\n";
+            const auto id = file.stem().string() + "-" + std::to_string(++count);
+            const auto trade = it->str();
+            std::smatch opening;
+            REQUIRE(std::regex_search(trade, opening, id_pattern));
+            const auto tag = opening.str();
+            out += tag.substr(0, tag.rfind("id=\"")) + "id=\"" + id + "\"" +
+                   trade.substr(tag.size()) + "\n";
         }
     }
     return out + "</Portfolio>\n";
@@ -107,10 +111,19 @@ void stage_input(const fs::path& input) {
 int run_engine(const std::string& executable, const fs::path& run_dir) {
     namespace bp2 = boost::process::v2;
     std::vector<bp2::environment::key_value_pair> env;
-    for (const auto& entry : bp2::environment::current())
+    const bp2::environment::key library_key("LD_LIBRARY_PATH");
+    std::string libraries;
+    if (const char* stated = std::getenv("ORES_ORE_LIBRARY_PATH"))
+        libraries = stated;
+    for (const auto& entry : bp2::environment::current()) {
+        if (!libraries.empty() && entry.key() == library_key) {
+            libraries += ":" + entry.value().string();
+            continue;
+        }
         env.emplace_back(entry);
-    if (const char* libraries = std::getenv("ORES_ORE_LIBRARY_PATH"))
-        env.emplace_back(std::string("LD_LIBRARY_PATH=") + libraries);
+    }
+    if (!libraries.empty())
+        env.emplace_back("LD_LIBRARY_PATH=" + libraries);
 
     boost::asio::io_context context;
     bp2::process engine(context,
@@ -125,9 +138,12 @@ int run_engine(const std::string& executable, const fs::path& run_dir) {
 std::set<std::string> known_errors() {
     std::set<std::string> lines;
     std::istringstream text(text_of(ores::testing::project_root::resolve(known_errors_file)));
-    for (std::string line; std::getline(text, line);)
+    for (std::string line; std::getline(text, line);) {
+        while (!line.empty() && (line.back() == '\r' || line.back() == ' '))
+            line.pop_back();
         if (!line.empty() && !line.starts_with("#"))
             lines.insert(line);
+    }
     return lines;
 }
 
@@ -156,7 +172,10 @@ TEST_CASE("the ORE engine raises only the known errors on the recorded trades",
     if (executable == nullptr || *executable == '\0')
         SKIP("ORES_ORE_EXECUTABLE names no ORE engine.");
 
-    const auto run_dir = fs::temp_directory_path() / "ores_generated_trades_ore_engine";
+    // A failed run leaves its directory behind, so ORE's log can be read.
+    const auto run_dir =
+        fs::temp_directory_path() / ("ores_generated_trades_ore_engine_" +
+                                     std::to_string(ores::platform::process::current_pid()));
     fs::remove_all(run_dir);
     stage_input(run_dir / "Input");
 

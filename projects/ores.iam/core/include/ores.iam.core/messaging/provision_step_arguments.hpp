@@ -558,8 +558,9 @@ struct market_data_feed {
  *
  * Each entry that names the party, by its identifier or its exact full name, adds one provider, so
  * a party can take its rates and USD spots from one vendor and its crosses from another. A provider
- * or a source the entry leaves out is the step's own. A party that no entry names takes the step's
- * own provider and source.
+ * or a source the entry leaves out is the step's own. Entries that name the party by its
+ * identifier and by its name both count. A party that no entry names takes the step's own
+ * provider and source.
  */
 [[nodiscard]] inline std::vector<market_data_feed>
 feeds_of_party(const market_data_step_arguments& arguments, std::string_view id,

@@ -1523,9 +1523,9 @@ private:
     /// because each collection quotes the markets its own feeds serve, so the profile names a
     /// provider and a source for each party it wants on another. A party the profile names twice
     /// takes both providers, as a bank that reads rates from one vendor and crosses from another
-    /// does. A party the profile does not name
-    /// takes the step's own, and a party it names that the tenant does not hold is refused: a
-    /// subscription written for nobody would leave the tenant quietly on the wrong feed.
+    /// does. A party the profile does not name takes the step's own, and a party it names that the
+    /// tenant does not hold is refused: a subscription written for nobody would leave the tenant
+    /// quietly on the wrong feed.
     ///
     /// The generators belong to the system, so the tenant publishes none and starts none: the
     /// parties take the shared simulated stream through their subscriptions and routes.

@@ -311,7 +311,8 @@ TEST_CASE("a party named twice takes both providers, and the others take the ste
             {"party": "ACME Corporation US Inc", "provider": "lseg", "source": "lseg-a"},
             {"party": "ACME Corporation US Inc"},
             {"party": "ACME Corporation US Inc", "provider": "lseg", "source": "lseg-a"},
-            {"party": "6f1c0b8e-0000-0000-0000-000000000001", "provider": "demo"}
+            {"party": "6f1c0b8e-0000-0000-0000-000000000001", "provider": "demo"},
+            {"party": "ACME Corporation HK Ltd", "source": "bloomberg-b"}
         ]})");
 
     CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-0000000000ff",
@@ -320,6 +321,9 @@ TEST_CASE("a party named twice takes both providers, and the others take the ste
                                         {.provider = "bloomberg", .source = "bloomberg-a"}});
     CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000001", "Some Name") ==
           std::vector<market_data_feed>{{.provider = "demo", .source = "bloomberg-a"}});
+    CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000003",
+                         "ACME Corporation HK Ltd") ==
+          std::vector<market_data_feed>{{.provider = "bloomberg", .source = "bloomberg-b"}});
     CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000002",
                          "Acme Corporation Plc") ==
           std::vector<market_data_feed>{{.provider = "bloomberg", .source = "bloomberg-a"}});

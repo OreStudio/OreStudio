@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 9EB30BAF-1D6A-523A-A8F8-2939ECF03831
+:END:
+#+title: FX forward ladder
+#+description: One read-only page shows a USD pair's forward ladder in all four measures, beside the spot and curves it rests on.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:market_data:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+| Item          | Where                                                |
+|---------------+------------------------------------------------------|
+| Prototype     | [[file:fx-forward-ladder/][the prototype]]       |
+| Gemini review | none                                                 |
+| Group         | [[file:index.org][Market data prototypes]]       |
+
+* Summary
+
+This prototype argues what [[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][Read a pair's FX forward ladder]] should look like before it is built. One read-only page shows the forward rate, the discount factors, the forward points and the swap points of each tenor. It always shows the spot and the two curves that the numbers rest on.
+
+It is throwaway. It reads no service and every value is mock data. The page computes the ladder with the arithmetic of =calculate_fx_forwards=, so its numbers agree with each other.
+
+Open the [[file:fx-forward-ladder/][ladder]].
+
+* Detail
+
+** The question
+
+A desk needs one curve in several measures. Separate pages would hide that the four measures are the same numbers. This page holds all four as columns, and a control chooses which one the chart draws.
+
+** States
+
+Switch with the bottom bar, or =?state=.
+
+| State | What it shows |
+|-------+---------------|
+| =ok= | The inputs, the chart, the ladder and the forward-forward. |
+| =stale-spot= | The same, with a spot marked as old. |
+| =no-spot= | A refusal that names the missing spot. |
+| =no-curve= | A refusal that names the currency with no published curve. =USD/NOK= shows it. |
+| =no-convention= | A refusal that names the missing convention. |
+| =cross= | A refusal for a pair with no USD leg. =EUR/GBP= shows it. |
+
+** Addresses
+
+Every view has an address: =?pair=, =?asof=, =?start= of =spot=, =today= or =tomorrow=, =?measure= of =outright=, =discount=, =forward= or =swap=, and =?near= and =?far= for the forward-forward.
+
+** What is real
+
+The dates skip weekends only. No holiday calendar applies. The rates, spots, curve names and publishers are invented. Links to a curve go nowhere.
+
+** Rules
+
+- RS-LIST-01, RS-LIST-02 and RS-LIST-03 give the breadcrumb, the sentence and Refresh.
+- RS-LIST-20 keeps the state in the address.
+- RS-PAGE-05 sets each label above its value.
+
+** A view no rule draws yet
+
+The ladder is one derived read, and its rows are tenors and not records. No rule covers it, so the prototype defines it:
+
+- Fixed rows in maturity order, with no search, sort or pager.
+- Short dates first, and each row states its near date and value date.
+- A row whose near date the start control moved carries a tag.
+- A refusal replaces the numbers and names what is missing. It never shows a partial ladder.
+
+** Verdict
+
+Waiting for the owner's sign off.
+
+* See also
+
+- [[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][Read a pair's FX forward ladder]] — the journey this answers to.
+- [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — the surface.

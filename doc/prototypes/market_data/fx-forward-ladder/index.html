@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FX forward ladder prototype — Market data journeys</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.75rem 1rem 6rem}
+h1,h2{margin:0;font-weight:600}h1{font-size:1.25rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}a{color:var(--accent);text-decoration:none}
+button,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:14px}
+.crumbs{font-size:.8rem;color:var(--ink-faint)}.crumbs span{margin:0 6px}
+.head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px;min-width:0}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.controls{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px}.field label,.field .lab{font-size:.75rem;color:var(--ink-faint)}
+select{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:var(--panel-2);border:0;border-right:1px solid var(--line);padding:6px 11px;color:var(--ink-dim)}
+.seg button:last-child{border-right:0}.seg button[aria-pressed=true]{background:var(--accent);color:#0d1117;font-weight:600}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 12px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.facts .lab{font-size:.75rem;color:var(--ink-faint)}.facts .val{overflow-wrap:anywhere}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 7px;font-size:.7rem;color:var(--ink-dim);white-space:nowrap}
+.tag.warn{color:var(--warn);border-color:#4a3a17}.tag.move{color:var(--accent);border-color:#1f3d5c}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:9px 12px;color:var(--ink-dim);background:#161619}
+.alert{border:1px solid #5a2320;border-radius:var(--radius);padding:14px;background:#201414}.alert strong{color:var(--bad)}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{text-align:right;padding:5px 9px;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+th{font-size:.72rem;color:var(--ink-faint);font-weight:600}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel)}
+td{font-family:var(--mono)}td:first-child{font-family:inherit;font-weight:600}
+.sel{background:#1b2533}th:first-child.sel{background:var(--panel)}
+tr.short td:first-child{color:var(--ink-dim)}tr.spot td{border-bottom-color:var(--line)}
+tr.moved td.near{color:var(--accent)}
+.neg{color:#e7a39e}
+svg{display:block;width:100%;height:auto;background:var(--panel-2);border:1px solid var(--line);border-radius:6px}
+.legend{display:flex;gap:14px;font-size:.75rem;color:var(--ink-dim)}.legend i{display:inline-block;width:12px;height:2px;vertical-align:middle;margin-right:5px}
+.ffout{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);color:var(--warn);font-size:.75rem;border-bottom:1px solid #4a3a17}
+.proto-bar{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:4px 6px;background:#0c0c0e;border:1px solid var(--line);border-radius:999px;font-size:.75rem;max-width:calc(100vw - 16px);overflow-x:auto}
+.proto-bar button{background:none;border:0;color:var(--ink-dim);padding:5px 9px;border-radius:999px;white-space:nowrap}
+.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}.proto-bar .label{padding:0 8px;color:var(--ink-faint)}
+</style>
+</head>
+<body>
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+  The journey is doc/knowledge/journeys/market_data/journey_read-a-pairs-fx-forward-ladder.org.
+  The address holds the state: ?pair=&asof=&start=&measure=&near=&far=&state=
+  The arithmetic is that of calculate_fx_forwards in ores.analytics.quant.
+-->
+<div class="proto-note">Prototype. Mock data only.</div>
+<div class="wrap" id="app"></div>
+<nav class="proto-bar" id="bar" aria-label="Prototype states"></nav>
+<script>
+const CURVES={
+  EUR:{name:'EUR-ESTR',set:'as of 16:00, published by Ana Silva',rates:[[0,2.02],[30,2.04],[90,2.06],[180,2.08],[365,2.14],[730,2.28],[1825,2.55]]},
+  USD:{name:'USD-SOFR-FOMC',set:'as of 16:00, published by Ana Silva',rates:[[0,4.31],[30,4.28],[90,4.20],[180,4.08],[365,3.92],[730,3.76],[1825,3.74]]},
+  GBP:{name:'GBP-SONIA',set:'as of 16:00, published by Jo Reed',rates:[[0,4.00],[30,3.97],[90,3.91],[180,3.82],[365,3.72],[730,3.66],[1825,3.74]]},
+  JPY:{name:'JPY-TONAR',set:'as of 15:00, published by Jo Reed',rates:[[0,.48],[30,.50],[90,.54],[180,.60],[365,.72],[730,.88],[1825,1.12]]},
+  CAD:{name:'CAD-CORRA',set:'as of 16:00, published by Jo Reed',rates:[[0,3.02],[30,3.00],[90,2.96],[180,2.92],[365,2.90],[730,2.96],[1825,3.10]]}
+};
+const PAIRS={
+  'EUR/USD':{spot:1.0850,pip:.0001,dp:5,lag:2},
+  'GBP/USD':{spot:1.2735,pip:.0001,dp:5,lag:2},
+  'USD/JPY':{spot:152.40,pip:.01,dp:3,lag:2},
+  'USD/CAD':{spot:1.3790,pip:.0001,dp:5,lag:1},
+  'USD/NOK':{spot:10.8420,pip:.0001,dp:5,lag:2},
+  'EUR/GBP':{spot:.8520,pip:.0001,dp:5,lag:2}
+};
+const ASOFS={'2026-11-09':{label:'2026-11-09 16:00',spotAge:'observed 16:00:02, 2 s before the as-of',bump:0},
+             '2026-11-06':{label:'2026-11-06 16:00',spotAge:'observed 15:59:58, 2 s before the as-of',bump:-.0035}};
+const MEASURES={outright:'Forward rate',discount:'Discount factors',forward:'Forward points',swap:'Swap points'};
+const STARTS={spot:'Spot',today:'Today',tomorrow:'Tomorrow'};
+const STATES={ok:'Answered','stale-spot':'Old spot','no-spot':'No spot','no-curve':'No curve','no-convention':'No convention',cross:'Cross'};
+
+const q=new URLSearchParams(location.search);
+const S={pair:q.get('pair')in PAIRS?q.get('pair'):'EUR/USD',asof:q.get('asof')in ASOFS?q.get('asof'):'2026-11-09',
+  start:q.get('start')in STARTS?q.get('start'):'spot',measure:q.get('measure')in MEASURES?q.get('measure'):'outright',
+  near:q.get('near')||'3M',far:q.get('far')||'6M',state:q.get('state')in STATES?q.get('state'):'ok'};
+const FIXED={cross:'EUR/GBP','no-curve':'USD/NOK'};
+if(FIXED[S.state])S.pair=FIXED[S.state];
+function go(p){Object.assign(S,p);if(FIXED[S.state])S.pair=FIXED[S.state];const u=new URLSearchParams(S);history.replaceState(null,'','?'+u);render()}
+
+const DAY=864e5,d0=s=>new Date(s+'T00:00:00Z');
+const iso=d=>d.toISOString().slice(0,10);
+const wk=d=>d.getUTCDay()%6===0;
+function biz(d,n){let x=new Date(+d);while(n>0){x=new Date(+x+DAY);if(!wk(x))n--}return x}
+function roll(d){let x=new Date(+d);while(wk(x))x=new Date(+x+DAY);return x}
+function months(d,n){const x=new Date(+d);x.setUTCMonth(x.getUTCMonth()+n);return roll(x)}
+function disc(c,asof,d){
+  const t=(d-asof)/DAY;if(t<=0)return 1;
+  const pts=CURVES[c].rates.map(([x,r])=>[x,-r/100*x/365]);
+  let i=1;while(i<pts.length-1&&pts[i][0]<t)i++;
+  const [a,la]=pts[i-1],[b,lb]=pts[i];
+  return Math.exp(la+(t-a)/(b-a)*(lb-la));
+}
+function ladder(){
+  const pr=PAIRS[S.pair],[b,q2]=S.pair.split('/'),A=ASOFS[S.asof];
+  const asof=d0(S.asof),tom=biz(asof,1),spotD=biz(asof,pr.lag),spot=pr.spot*(1+A.bump);
+  const F=d=>spot*(disc(b,asof,d)/disc(b,asof,spotD))/(disc(q2,asof,d)/disc(q2,asof,spotD));
+  const startD={spot:spotD,today:asof,tomorrow:tom}[S.start];
+  const rows=[{t:'ON',near:asof,val:tom,short:1}];
+  if(pr.lag===2)rows.push({t:'TN',near:tom,val:spotD,short:1});
+  rows.push({t:'SP',near:spotD,val:spotD,short:1,spot:1},{t:'SN',near:spotD,val:biz(spotD,1),short:1});
+  [['1W',7],['2W',14]].forEach(([t,n])=>rows.push({t,val:roll(new Date(+spotD+n*DAY))}));
+  [['1M',1],['2M',2],['3M',3],['6M',6],['9M',9],['1Y',12],['18M',18],['2Y',24],['5Y',60]].forEach(([t,n])=>rows.push({t,val:months(spotD,n)}));
+  rows.forEach(r=>{if(!r.near){r.near=startD;r.moved=S.start!=='spot'}
+    r.db=disc(b,asof,r.val);r.dq=disc(q2,asof,r.val);r.f=F(r.val);r.fp=(r.f-spot)/pr.pip;r.sp=(r.f-F(r.near))/pr.pip});
+  return {pr,b,q2,A,asof,spotD,spot,F,rows};
+}
+const fx=(v,n)=>v.toLocaleString('en-GB',{minimumFractionDigits:n,maximumFractionDigits:n});
+const sgn=v=>(v>0?'+':'')+fx(v,2);
+const pts=v=>`<span class="${v<0?'neg':''}">${sgn(v)}</span>`;
+
+function refusal(){
+  const [b,q2]=S.pair.split('/');
+  if(S.pair==='EUR/GBP')return['This pair is a cross.',`${S.pair} has no USD leg, and only USD pairs are answered for now. Read EUR/USD and GBP/USD.`];
+  if(S.pair==='USD/NOK'){const c='NOK';return[`No published funding curve for ${c}.`,`No curve of ${c} has been published at or before ${ASOFS[S.asof].label}.`]}
+  if(S.state==='no-spot')return[`No spot for ${S.pair}.`,`No spot was observed at or before ${ASOFS[S.asof].label}.`];
+  if(S.state==='no-convention')return[`No convention for ${S.pair}.`,`The pair has no published convention, so its pip factor is not known.`];
+}
+function seg(key,opts){return `<div class="seg" role="group">`+Object.entries(opts).map(([k,l])=>`<button aria-pressed="${S[key]===k}" data-${key}="${k}">${l}</button>`).join('')+`</div>`}
+function controls(){
+  return `<div class="panel"><div class="controls">
+   <div class="field"><label for="pair">Pair</label><select id="pair">${Object.keys(PAIRS).map(p=>`<option ${p===S.pair?'selected':''}>${p}</option>`).join('')}</select></div>
+   <div class="field"><label for="asof">As of</label><select id="asof">${Object.entries(ASOFS).map(([k,a])=>`<option value="${k}" ${k===S.asof?'selected':''}>${a.label}</option>`).join('')}</select></div>
+   <div class="field"><span class="lab">Ladder starts from</span>${seg('start',STARTS)}</div>
+   <div class="field"><span class="lab">Chart</span>${seg('measure',MEASURES)}</div>
+  </div></div>`;
+}
+function chart(L){
+  const small=innerWidth<640,W=small?400:1000,H=small?210:230,l=small?62:78,r=14,t=14,b=26,R=L.rows,step=small?3:1;
+  const x=i=>l+i*(W-l-r)/(R.length-1);
+  const series=S.measure==='discount'?[[R.map(a=>a.db),'#58a6ff',L.b],[R.map(a=>a.dq),'#d29922',L.q2]]:
+    S.measure==='outright'?[[R.map(a=>a.f),'#58a6ff','Forward rate']]:
+    S.measure==='forward'?[[R.map(a=>a.fp),'#58a6ff','Forward points']]:[[R.map(a=>a.sp),'#58a6ff','Swap points']];
+  const all=series.flatMap(s=>s[0]);let lo=Math.min(...all),hi=Math.max(...all);
+  if(S.measure!=='outright'&&S.measure!=='discount'){lo=Math.min(lo,0);hi=Math.max(hi,0)}
+  const pad=(hi-lo||1)*.08;lo-=pad;hi+=pad;const y=v=>t+(hi-v)/(hi-lo)*(H-t-b);
+  const dp=S.measure==='outright'?L.pr.dp:S.measure==='discount'?4:0;
+  let g='';for(let i=0;i<=3;i++){const v=lo+(hi-lo)*i/3;g+=`<line x1="${l}" x2="${W-r}" y1="${y(v)}" y2="${y(v)}" stroke="#30363d"/><text x="${l-8}" y="${y(v)+4}" fill="#a1a1aa" font-size="12" text-anchor="end">${fx(v,dp)}</text>`}
+  if(lo<0&&hi>0)g+=`<line x1="${l}" x2="${W-r}" y1="${y(0)}" y2="${y(0)}" stroke="#71717a" stroke-dasharray="4 3"/>`;
+  R.forEach((a,i)=>{if(i%step)return;g+=`<text x="${x(i)}" y="${H-8}" fill="#a1a1aa" font-size="12" text-anchor="middle">${a.t}</text>`});
+  series.forEach(([v,c])=>{g+=`<polyline fill="none" stroke="${c}" stroke-width="2" points="${v.map((a,i)=>x(i)+','+y(a)).join(' ')}"/>`;v.forEach((a,i)=>g+=`<circle cx="${x(i)}" cy="${y(a)}" r="3" fill="${c}"/>`)});
+  return `<div class="panel"><h2>${MEASURES[S.measure]} by tenor</h2>
+   <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${MEASURES[S.measure]} of ${S.pair} by tenor">${g}</svg>
+   <div class="legend">${series.map(s=>`<span><i style="background:${s[1]}"></i>${s[2]}</span>`).join('')}<span class="faint">Tenors are evenly spaced, so the short dates stay legible.</span></div></div>`;
+}
+function table(L){
+  const hl=k=>S.measure===k?'sel':'';
+  const rows=L.rows.map(r=>`<tr class="${r.short?'short':''} ${r.spot?'spot':''} ${r.moved?'moved':''}">
+    <td>${r.t}${r.moved?` <span class="tag move">from ${S.start}</span>`:''}</td>
+    <td class="near">${iso(r.near)}</td><td>${iso(r.val)}</td>
+    <td class="${hl('outright')}">${fx(r.f,L.pr.dp)}</td>
+    <td class="${hl('forward')}">${pts(r.fp)}</td><td class="${hl('swap')}">${pts(r.sp)}</td>
+    <td class="${hl('discount')}">${fx(r.db,6)}</td><td class="${hl('discount')}">${fx(r.dq,6)}</td></tr>`).join('');
+  return `<div class="panel"><h2>Ladder</h2><div class="scroll"><table><thead><tr>
+    <th>Tenor</th><th>Near date</th><th>Value date</th><th class="${hl('outright')}">Forward rate</th><th class="${hl('forward')}">Forward points</th><th class="${hl('swap')}">Swap points</th><th class="${hl('discount')}">${L.b} discount factor</th><th class="${hl('discount')}">${L.q2} discount factor</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="faint">Forward points run from spot to the value date. Swap points run from the near date to the value date. Discount factors are from the as-of.</p></div>`;
+}
+function forwardForward(L){
+  const T=L.rows.filter(r=>!r.short),near=T.find(r=>r.t===S.near)||T[4],far=T.find(r=>r.t===S.far)||T[6];
+  const opt=(id,cur)=>`<select id="${id}">${T.map(r=>`<option ${r===cur?'selected':''}>${r.t}</option>`).join('')}</select>`;
+  const bad=far.val<=near.val;
+  return `<div class="panel"><h2>Forward-forward</h2>
+   <div class="controls"><div class="field"><label for="near">Near tenor</label>${opt('near',near)}</div><div class="field"><label for="far">Far tenor</label>${opt('far',far)}</div></div>
+   ${bad?`<p class="muted">Choose a far tenor after the near tenor.</p>`:`<div class="ffout">
+    <div><div class="faint">Near forward rate</div><div class="mono">${fx(near.f,L.pr.dp)}</div></div>
+    <div><div class="faint">Far forward rate</div><div class="mono">${fx(far.f,L.pr.dp)}</div></div>
+    <div><div class="faint">${near.t} x ${far.t} swap points</div><div class="mono">${pts((far.f-near.f)/L.pr.pip)}</div></div>
+    <div><div class="faint">Days</div><div class="mono">${Math.round((far.val-near.val)/DAY)}</div></div></div>`}
+   <p class="faint">This reads the ladder and does not change it.</p></div>`;
+}
+function inputs(L){
+  const stale=S.state==='stale-spot';
+  const c=x=>`<a href="#" title="Opens the published curve">${CURVES[x].name}</a> <div class="faint">${CURVES[x].set}</div>`;
+  return `<div class="panel"><h2>What this is built from</h2><div class="facts">
+   <div><div class="lab">Spot</div><div class="val mono">${fx(L.spot,L.pr.dp)}</div><div class="faint">${stale?'observed 09:12:40, 6 h 47 m before the as-of':L.A.spotAge}</div>${stale?'<span class="tag warn">Old spot</span>':''}</div>
+   <div><div class="lab">Spot date</div><div class="val mono">${iso(L.spotD)}</div><div class="faint">T+${L.pr.lag}</div></div>
+   <div><div class="lab">Pip factor</div><div class="val mono">${L.pr.pip}</div></div>
+   <div><div class="lab">${L.b} funding curve</div><div class="val">${c(L.b)}</div></div>
+   <div><div class="lab">${L.q2} funding curve</div><div class="val">${c(L.q2)}</div></div>
+  </div><div class="notice">Implied by the two published IR curves and spot. These rates hold no cross-currency basis, so they can differ from quoted forwards.</div></div>`;
+}
+function render(){
+  const R=refusal();
+  let body;
+  if(R)body=`<div class="alert" role="alert"><strong>${R[0]}</strong><p class="muted">${R[1]}</p></div>`;
+  else{const L=ladder();body=inputs(L)+chart(L)+table(L)+forwardForward(L)}
+  document.getElementById('app').innerHTML=`
+   <div class="crumbs">Home<span>/</span>Market data<span>/</span>FX forward ladder</div>
+   <div class="head"><div><h1>FX forward ladder</h1><p class="muted">The forward rates of one USD pair at one as-of, implied by its published IR curves.</p></div><button class="btn">Refresh</button></div>
+   ${controls()}${body}`;
+  document.getElementById('bar').innerHTML=`<span class="label">State</span>`+Object.entries(STATES).map(([k,l])=>`<button class="${S.state===k?'on':''}" data-state="${k}">${l}</button>`).join('');
+  document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>go({start:b.dataset.start}));
+  document.querySelectorAll('[data-measure]').forEach(b=>b.onclick=()=>go({measure:b.dataset.measure}));
+  document.querySelectorAll('[data-state]').forEach(b=>b.onclick=()=>go({state:b.dataset.state}));
+  ['asof','near','far'].forEach(id=>{const e=document.getElementById(id);if(e)e.onchange=()=>go({[id]:e.value})});
+  document.getElementById('pair').onchange=e=>go({pair:e.target.value,state:'ok'});
+}
+render();
+</script>
+</body>
+</html>

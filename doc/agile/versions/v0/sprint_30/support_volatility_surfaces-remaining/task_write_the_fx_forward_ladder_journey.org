@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-fx-forward-ladder-journey
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,10 +26,10 @@ A trader's goal of reading a pair's forward ladder is written as a user journey,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Now          | Waiting for the owner's sign off. |
+| Waiting on   | The owner's sign off. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-09                               |
 
@@ -61,6 +61,8 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Journey: [[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][Read a pair's FX forward ladder]]. Written with the prototype, by the owner's choice, so both are signed off together.
 
 Follows [[id:DC7504E5-A53D-4938-A774-B58CE2A37B57][Make FX forwards available from the IR curves]]. The analysis and external evidence are in its Plan.
 

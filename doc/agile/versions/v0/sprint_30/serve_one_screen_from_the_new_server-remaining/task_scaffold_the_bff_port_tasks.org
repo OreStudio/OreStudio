@@ -84,6 +84,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The section 12 introduction still allowed a cutover per prefix. | doc/plans/2026-10-28-single-http-server-design.org | Accept | Fixed: the sentence names the flag only. |
 | 2 | Section 11.1 still says the generic routers die, against the rule that the C++ server answers every route ores.web calls. | doc/plans/2026-10-28-single-http-server-design.org | Defer | The task for the routes outside the published API shows which routes this affects, and amends the section. |
+| 3 | Three lines of the design still named the per-prefix cutover and the order by traffic. | doc/plans/2026-10-28-single-http-server-design.org | Accept | Fixed: the risk rows and the migration approval state the one switch and the order by area. |
 
 * Result
 

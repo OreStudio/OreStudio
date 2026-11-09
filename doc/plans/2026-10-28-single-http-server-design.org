@@ -1389,9 +1389,9 @@ and adds an interpreter, a GC and a new attack surface to a security boundary.
 | Risk | Weight | Mitigation |
 |---|---|---|
 | Beast has no HTTP/2, so a tab costs one connection | Medium | one stream per session across tabs; proxy option for HTTP/2 |
-| 292 routes is a large port | High | traffic ranking in Phase 0; generate the mechanical ones; the composed views are the real work |
+| 292 routes is a large port | High | port by area, in dependency order; generate the mechanical ones; the composed views are the real work |
 | C++ iteration is slower than TypeScript | High | the manifest removes the drift; unity builds and ccache keep the loop short; prototypes stay in TS |
-| Cookie and CSRF parity during cutover | Medium | one cookie name, one session store, cutover per prefix, the existing verifier scripts |
+| Cookie and CSRF parity during cutover | Medium | one cookie name, one session store, one switch with a tested rollback, the existing verifier scripts |
 | One process is a large blast radius | Medium | per-route limits, per-core isolation, a watchdog, and the drain path |
 | Conflation hides a lost event | Low | the payload is a time; a resync marks everything stale |
 | NATS dispatch thread becomes the bottleneck | Medium | measure the tick; shard subscriptions if needed |
@@ -1441,7 +1441,7 @@ Answered by the evidence, and no longer open:
    capability, rendering concern — as the test that places every route.
 5. Approve the manifest facet as the single contract between the server and the
    SPA.
-6. Approve the phased migration, prioritised by measured traffic, with composed
+6. Approve the phased migration, ordered by area and dependency, with composed
    views redesigned rather than copied.
 7. Approve the TLS design in 6.12, and choose the plain listener's default mode
    (=redirect= for a deployment with a certificate, =serve= only for development).

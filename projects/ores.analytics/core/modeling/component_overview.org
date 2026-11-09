@@ -51,7 +51,6 @@ exposes all CRUD operations to clients.
 - =ores.analytics.api= — shared domain types and NATS protocol schemas.
 - =ores.dq= — ORM base classes and persistence infrastructure.
 - =ores.iam.core= — identity and authorisation context.
-- =rfl= — JSON serialisation via reflection.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
 

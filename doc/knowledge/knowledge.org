@@ -62,6 +62,7 @@ Finance concepts the codebase relies on.
 | [[id:ACB0A386-18D6-4045-B387-AED43C1C8B06][Report families]] | Structure note for the report pages: the intraday monitors, their close twins, the desk maps and the ladder family, and the order to read them |
 | [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] | The money and cash foundation, ISO 4217, and the currency roles a book or trade carries |
 | [[id:5DD9A309-91E0-4CAB-BD9D-6ECB3B5EB58E][Currency Pairs]] | Pairs as reference data: naming, deliverability, quoting, classification |
+| [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] | Forward rates, points, ladders, and how desks and Finance use them |
 | [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-Rates Matrix]] | The no-arbitrage spanning tree of driver and derived spot rates |
 | [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] | Requirements, identifiers, resolution, dependency closure, snapshotting, filtering |
 | [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] | Day counts, discount factors, bootstrapping |

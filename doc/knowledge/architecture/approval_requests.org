@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:approval:four-eyes:workflow:
 #+created: 2026-10-04
-#+updated: 2026-10-04
+#+updated: 2026-11-09
 
 * Summary
 
@@ -294,6 +294,7 @@ change events are what it listens to.
 
 * See also
 
+- [[id:75B40B64-FF31-5381-922B-0EB1F521BC38][An end-of-day FX rate set must be complete and independently verified]] — completes: a sign-off this could carry.
 - [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]] — how this record grows to hold several deciding functions, a pending change, a gate in the write path and one screen set for every kind.
 - [[id:DF0FBED2-59C1-43DE-945F-D8839884C38D][Ask for more access]] — the first kind: a member asks for a role.
 - [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational authorisation queue]] — the trade queue whose rules this record takes.

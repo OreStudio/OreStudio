@@ -62,20 +62,8 @@ def test_a_real_opted_in_model_reaches_the_template_opted_in():
         assert render_data(model, template)[section]["has_generated_wire_codec"], model
 
 
-def test_an_opted_in_route_names_no_reflector():
+def test_an_opted_in_route_uses_its_codec():
     for model, template, section in CASES:
         text = render(model, template, section, True)
-        assert "rfl::" not in text, model
-        assert "<rfl/" not in text, model
-        assert "rfl/reflectors" not in text, model
         assert "write_json(*decoded)" in text, model
         assert "_read_body<request_type>(req.body)" in text, model
-        assert "rfl::json::read" not in text, model
-
-
-def test_a_route_without_the_flag_names_no_reflector_either():
-    """Every model has a generated codec, so every branch encodes through it."""
-    for model, template, section in CASES:
-        text = render(model, template, section, False)
-        assert "rfl::" not in text, model
-        assert "<rfl/" not in text, model

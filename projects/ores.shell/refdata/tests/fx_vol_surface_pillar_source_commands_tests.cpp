@@ -72,16 +72,16 @@ TEST_CASE("fx_vol_surface_pillar_source_commands_registers_every_derived_verb", 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("fx_vol_surface_pillar_sources ");
     for (const auto& verb : {
-             std::string{"fx_vol_surface_pillar_sources list"},
-             std::string{"fx_vol_surface_pillar_sources get"},
-             std::string{"fx_vol_surface_pillar_sources get-many"},
-             std::string{"fx_vol_surface_pillar_sources add"},
-             std::string{"fx_vol_surface_pillar_sources set"},
-             std::string{"fx_vol_surface_pillar_sources put-many"},
-             std::string{"fx_vol_surface_pillar_sources delete"},
-             std::string{"fx_vol_surface_pillar_sources delete-many"},
-             std::string{"fx_vol_surface_pillar_sources versions"},
-             std::string{"fx_vol_surface_pillar_sources version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

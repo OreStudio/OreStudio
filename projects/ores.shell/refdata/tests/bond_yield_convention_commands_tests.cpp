@@ -72,16 +72,16 @@ TEST_CASE("bond_yield_convention_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("bond_yield_conventions ");
     for (const auto& verb : {
-             std::string{"bond_yield_conventions list"},
-             std::string{"bond_yield_conventions get"},
-             std::string{"bond_yield_conventions get-many"},
-             std::string{"bond_yield_conventions add"},
-             std::string{"bond_yield_conventions set"},
-             std::string{"bond_yield_conventions put-many"},
-             std::string{"bond_yield_conventions delete"},
-             std::string{"bond_yield_conventions delete-many"},
-             std::string{"bond_yield_conventions versions"},
-             std::string{"bond_yield_conventions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

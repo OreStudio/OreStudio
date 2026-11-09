@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: DA0C1F28-2F5A-54B5-BFD0-583362415D34
+:END:
+#+title: A spot position is rolled forward with a tom-next swap
+#+description: Tom-next rollover of open spot positions and how its swap points carry the interest differential.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+An open spot position is carried to the next value date with a tom-next swap. The swap's points reflect the interest differential between the two currencies.
+
+* Detail
+
+Brokers roll open positions at a daily cut-off, usually 5 pm New York time, and adjust the position with the tom-next points.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:0CAD6D4D-604A-4FB9-A823-5231E759D760][FX Spot Revaluation Types]] — completes: other treatments of spot.
+- [[id:85526DCE-31B2-4D46-BA3F-564876397BE2][Valuation spot date and overnight]] — completes: the short end the roll reads.
+- [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points run between their own two value dates]] — exemplifies: tom-next in use.
+
+* Sources
+
+- [[https://www.ig.com/en/glossary-trading-terms/tom-next-definition][Tom next definition, IG]]
+- [[https://www.home.saxo/en-gb/rates-and-conditions/forex/financing][Forex financing, Saxo]]

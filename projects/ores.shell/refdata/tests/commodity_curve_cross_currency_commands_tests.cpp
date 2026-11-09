@@ -72,16 +72,16 @@ TEST_CASE("commodity_curve_cross_currency_commands_registers_every_derived_verb"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("commodity_curve_cross_currencies ");
     for (const auto& verb : {
-             std::string{"commodity_curve_cross_currencies list"},
-             std::string{"commodity_curve_cross_currencies get"},
-             std::string{"commodity_curve_cross_currencies get-many"},
-             std::string{"commodity_curve_cross_currencies add"},
-             std::string{"commodity_curve_cross_currencies set"},
-             std::string{"commodity_curve_cross_currencies put-many"},
-             std::string{"commodity_curve_cross_currencies delete"},
-             std::string{"commodity_curve_cross_currencies delete-many"},
-             std::string{"commodity_curve_cross_currencies versions"},
-             std::string{"commodity_curve_cross_currencies version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

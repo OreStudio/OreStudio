@@ -187,10 +187,6 @@ TEST_CASE("write_curve_publish_publishes_an_event", "[eventing][integration]") {
     // active row, so the parent must be written first.
     auto bootstrap_config_id_parent =
         ores::refdata::generators::generate_synthetic_ir_curve_bootstrap_config(ctx);
-    // The ir_curve_bootstrap_config is party-isolated, so it carries the
-    // session party: under any other party the child's insert trigger could
-    // not see it, and the existence check would reject the child.
-    bootstrap_config_id_parent.party_id = *party_ctx.party_id();
     ores::refdata::repository::ir_curve_bootstrap_config_repository bootstrap_config_id_repo;
     bootstrap_config_id_repo.write(party_ctx, bootstrap_config_id_parent);
     v.bootstrap_config_id = bootstrap_config_id_parent.id;

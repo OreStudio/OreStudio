@@ -72,17 +72,17 @@ TEST_CASE("party_product_type_deal_class_commands_registers_every_derived_verb",
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("party_product_type_deal_classes ");
     for (const auto& verb : {
-             std::string{"party_product_type_deal_classes list"},
-             std::string{"party_product_type_deal_classes get"},
-             std::string{"party_product_type_deal_classes get-many"},
-             std::string{"party_product_type_deal_classes add"},
-             std::string{"party_product_type_deal_classes set"},
-             std::string{"party_product_type_deal_classes put-many"},
-             std::string{"party_product_type_deal_classes delete"},
-             std::string{"party_product_type_deal_classes delete-many"},
-             std::string{"party_product_type_deal_classes by-party-id"},
-             std::string{"party_product_type_deal_classes versions"},
-             std::string{"party_product_type_deal_classes version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-party-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

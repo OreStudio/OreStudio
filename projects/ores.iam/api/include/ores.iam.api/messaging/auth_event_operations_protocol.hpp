@@ -43,7 +43,7 @@ namespace ores::iam::messaging {
  * @brief One authentication event, as the log records it.
  *
  * The event time is an instant, so it crosses the wire in the project's one
- * timestamp shape: the rfl parser writes it with `to_iso8601_utc`, and the
+ * timestamp shape: the codec writes it with `to_iso8601_utc`, and the
  * bytes do not depend on the timezone of the session that read the row. See
  * =doc/knowledge/architecture/time_architecture.org=.
  */

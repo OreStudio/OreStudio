@@ -72,16 +72,16 @@ TEST_CASE("tag_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("tags ");
     for (const auto& verb : {
-             std::string{"tags list"},
-             std::string{"tags get"},
-             std::string{"tags get-many"},
-             std::string{"tags add"},
-             std::string{"tags set"},
-             std::string{"tags put-many"},
-             std::string{"tags delete"},
-             std::string{"tags delete-many"},
-             std::string{"tags versions"},
-             std::string{"tags version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

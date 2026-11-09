@@ -72,15 +72,15 @@ TEST_CASE("badge_mapping_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("badge_mappings ");
     for (const auto& verb : {
-             std::string{"badge_mappings list"},
-             std::string{"badge_mappings get"},
-             std::string{"badge_mappings get-many"},
-             std::string{"badge_mappings add"},
-             std::string{"badge_mappings set"},
-             std::string{"badge_mappings put-many"},
-             std::string{"badge_mappings delete"},
-             std::string{"badge_mappings delete-many"},
-             std::string{"badge_mappings by-code-domain-code"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-code-domain-code"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -24,6 +24,7 @@ import { z } from 'zod';
 import { isWireTimestamp } from '@ores/wire-protocol';
 import { subjects } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
 import { subjects as publishedCurves } from '@ores/wire-protocol/generated/marketdata/protocol/published_curves_operations_protocol';
+import { subjects as fxForwards } from '@ores/wire-protocol/generated/marketdata/protocol/fx_forward_operation_protocol';
 import { subjects as marketSeriesSubjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_series_protocol';
 import { HttpFailure } from './errors.js';
 import { NO_ORDER, input, resultSchema } from './refdata-calls.js';
@@ -245,6 +246,11 @@ async function call(
     );
 }
 
+const fxForwardLadderBody = z.strictObject({
+    pair_code: word,
+    as_of: instant,
+});
+
 export function registerCurveRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,
@@ -397,6 +403,13 @@ export function registerCurveRoutes(
         const session = requireSession(request);
         const body = input(publishedSetsBody, request.body);
         return call(session, publishedCurves.get_published_curve_sets_request, body);
+    });
+
+    // One pair's forward ladder at one as-of. A refusal names the missing input.
+    server.post('/api/curves/fx-forward-ladder', async (request) => {
+        const session = requireSession(request);
+        const body = input(fxForwardLadderBody, request.body);
+        return call(session, fxForwards.get_fx_forward_ladder_request, { ...body, party_id: '' });
     });
 
     // Takes a published set out of use. The server decides who may, so the route

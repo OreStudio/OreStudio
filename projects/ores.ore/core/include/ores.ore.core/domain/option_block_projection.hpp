@@ -19,6 +19,7 @@
 #ifndef ORES_ORE_CORE_DOMAIN_OPTION_BLOCK_PROJECTION_HPP
 #define ORES_ORE_CORE_DOMAIN_OPTION_BLOCK_PROJECTION_HPP
 
+#include "ores.ore.core/domain/index_reference.hpp"
 #include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -78,8 +79,8 @@ void stamp_row(Row& row) {
     row.change_commentary = std::string(block_change_commentary);
 }
 
-inline auto
-accepts_spelling(const record_writer& w, std::string_view name, std::string_view value) -> bool {
+inline auto accepts_spelling(const record_writer& w, std::string_view name, std::string_view value)
+    -> bool {
     const auto* f = xml::find_field(w.type(), name, false);
     if (f == nullptr || f->tokens == nullptr)
         return false;
@@ -119,8 +120,8 @@ inline auto to_ore_date(const std::optional<std::chrono::year_month_day>& d) -> 
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
 }
 
-inline auto
-to_optional_domain_date(const std::string& text) -> std::optional<std::chrono::year_month_day> {
+inline auto to_optional_domain_date(const std::string& text)
+    -> std::optional<std::chrono::year_month_day> {
     if (text.empty())
         return std::nullopt;
     return ores::platform::time::datetime::from_iso8601_date(text);
@@ -171,8 +172,8 @@ inline auto split_numbers(const std::string& text) -> std::vector<std::string> {
     return out;
 }
 
-inline auto optional_decimal_of(const record_reader& r,
-                                std::string_view name) -> std::optional<decimal> {
+inline auto optional_decimal_of(const record_reader& r, std::string_view name)
+    -> std::optional<decimal> {
     const auto value = decimal_as_double(r, name);
     if (!value)
         return std::nullopt;
@@ -198,8 +199,8 @@ inline auto decimal_from_text(const std::string& text) -> std::optional<decimal>
     return std::nullopt;
 }
 
-inline auto
-exercise_date_list(const std::optional<record_reader>& group) -> std::vector<std::string> {
+inline auto exercise_date_list(const std::optional<record_reader>& group)
+    -> std::vector<std::string> {
     if (!group)
         return {};
     return group->values("ExerciseDate");
@@ -336,7 +337,7 @@ void read_premiums(Data& result, const record_reader& option) {
         row.has_settlement = premium.has("SettlementData");
         if (const auto settlement = premium.child("SettlementData")) {
             row.settlement_pay_currency = spelling_of(*settlement, "PayCurrency");
-            row.settlement_fx_index = text_of(*settlement, "FXIndex");
+            row.settlement_fx_index = address_of(text_of(*settlement, "FXIndex"));
             if (settlement->has("FixingDate"))
                 row.settlement_fixing_date =
                     to_optional_domain_date(text_of(*settlement, "FixingDate"));
@@ -469,7 +470,7 @@ void read_option_block(Data& result, const record_reader& od) {
     row.has_settlement_data = od.has("SettlementData");
     if (const auto settlement = od.child("SettlementData")) {
         row.settlement_pay_currency = spelling_of(*settlement, "PayCurrency");
-        row.settlement_fx_index = text_of(*settlement, "FXIndex");
+        row.settlement_fx_index = address_of(text_of(*settlement, "FXIndex"));
         if (settlement->has("FixingDate"))
             row.settlement_fixing_date =
                 to_optional_domain_date(text_of(*settlement, "FixingDate"));
@@ -756,7 +757,7 @@ void write_premiums(record_writer& holder, const Data& v) {
             auto settlement = writer.child("SettlementData");
             settlement.set_spelling(
                 "PayCurrency", premium.settlement_pay_currency.value_or(""), "currency");
-            settlement.set_text("FXIndex", premium.settlement_fx_index.value_or(""));
+            settlement.set_text("FXIndex", ore_name_of(premium.settlement_fx_index.value_or("")));
             set_optional_date(settlement, "FixingDate", premium.settlement_fixing_date);
         }
     }
@@ -843,7 +844,7 @@ void write_option_block(record_writer& option, const Data& v) {
         auto settlement = option.child("SettlementData");
         settlement.set_spelling(
             "PayCurrency", row.settlement_pay_currency.value_or(""), "currency");
-        settlement.set_text("FXIndex", row.settlement_fx_index.value_or(""));
+        settlement.set_text("FXIndex", ore_name_of(row.settlement_fx_index.value_or("")));
         set_optional_date(settlement, "FixingDate", row.settlement_fixing_date);
     }
 

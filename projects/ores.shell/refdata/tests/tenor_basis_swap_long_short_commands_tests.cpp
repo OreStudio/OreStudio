@@ -72,17 +72,17 @@ TEST_CASE("tenor_basis_swap_long_short_commands_registers_every_derived_verb", "
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("tenor_basis_swap_long_shorts ");
     for (const auto& verb : {
-             std::string{"tenor_basis_swap_long_shorts list"},
-             std::string{"tenor_basis_swap_long_shorts get"},
-             std::string{"tenor_basis_swap_long_shorts get-many"},
-             std::string{"tenor_basis_swap_long_shorts add"},
-             std::string{"tenor_basis_swap_long_shorts set"},
-             std::string{"tenor_basis_swap_long_shorts put-many"},
-             std::string{"tenor_basis_swap_long_shorts delete"},
-             std::string{"tenor_basis_swap_long_shorts delete-many"},
-             std::string{"tenor_basis_swap_long_shorts by-convention-id"},
-             std::string{"tenor_basis_swap_long_shorts versions"},
-             std::string{"tenor_basis_swap_long_shorts version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-convention-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

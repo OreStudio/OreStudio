@@ -72,20 +72,20 @@ TEST_CASE("file_type_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("file_types ");
     for (const auto& verb : {
-             std::string{"file_types list"},
-             std::string{"file_types get"},
-             std::string{"file_types get-many"},
-             std::string{"file_types add"},
-             std::string{"file_types set"},
-             std::string{"file_types put-many"},
-             std::string{"file_types delete"},
-             std::string{"file_types delete-many"},
-             std::string{"file_types by-ore-file-code"},
-             std::string{"file_types by-analytic-type-code"},
-             std::string{"file_types by-configuration-type-code"},
-             std::string{"file_types by-produced-by-file-type-code"},
-             std::string{"file_types versions"},
-             std::string{"file_types version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-ore-file-code"},
+             std::string{"by-analytic-type-code"},
+             std::string{"by-configuration-type-code"},
+             std::string{"by-produced-by-file-type-code"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

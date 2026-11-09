@@ -72,16 +72,16 @@ TEST_CASE("business_unit_type_commands_registers_every_derived_verb", "[commands
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("business_unit_types ");
     for (const auto& verb : {
-             std::string{"business_unit_types list"},
-             std::string{"business_unit_types get"},
-             std::string{"business_unit_types get-many"},
-             std::string{"business_unit_types add"},
-             std::string{"business_unit_types set"},
-             std::string{"business_unit_types put-many"},
-             std::string{"business_unit_types delete"},
-             std::string{"business_unit_types delete-many"},
-             std::string{"business_unit_types versions"},
-             std::string{"business_unit_types version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

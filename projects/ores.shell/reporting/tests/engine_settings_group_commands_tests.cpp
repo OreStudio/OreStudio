@@ -72,16 +72,16 @@ TEST_CASE("engine_settings_group_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("engine_settings_groups ");
     for (const auto& verb : {
-             std::string{"engine_settings_groups list"},
-             std::string{"engine_settings_groups get"},
-             std::string{"engine_settings_groups get-many"},
-             std::string{"engine_settings_groups add"},
-             std::string{"engine_settings_groups set"},
-             std::string{"engine_settings_groups put-many"},
-             std::string{"engine_settings_groups delete"},
-             std::string{"engine_settings_groups delete-many"},
-             std::string{"engine_settings_groups versions"},
-             std::string{"engine_settings_groups version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -72,16 +72,16 @@ TEST_CASE("deposit_convention_commands_registers_every_derived_verb", "[commands
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("deposit_conventions ");
     for (const auto& verb : {
-             std::string{"deposit_conventions list"},
-             std::string{"deposit_conventions get"},
-             std::string{"deposit_conventions get-many"},
-             std::string{"deposit_conventions add"},
-             std::string{"deposit_conventions set"},
-             std::string{"deposit_conventions put-many"},
-             std::string{"deposit_conventions delete"},
-             std::string{"deposit_conventions delete-many"},
-             std::string{"deposit_conventions versions"},
-             std::string{"deposit_conventions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

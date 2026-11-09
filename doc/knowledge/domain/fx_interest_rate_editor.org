@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: F1F326CE-5384-559E-AF4A-88DBBC4EC557
+:END:
+#+title: Swap points and interest rate differentials are two views of one number
+#+description: Swap points imply a rate differential and the reverse, so a system can key one and derive the other.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+Swap points and an interest rate differential determine each other through parity. Brokers derive the bid and ask interest rates of a currency from swap points quoted by banks. A system can hold either one and derive the other.
+
+* Detail
+
+*Open question.* Should ORE Studio let a user key swap points, derive them only, or configure this by pair? It derives them today.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:73A422C1-C74E-52CF-9A0C-78EE1AE23430][Forward points follow from two money market rates]] — completes: the formula in each direction.
+- [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]] — answers: ORE Studio takes the derived option.
+
+* Sources
+
+- [[https://www.home.saxo/en-gb/rates-and-conditions/forex/financing][Forex financing, Saxo]]
+- [[https://en.wikipedia.org/wiki/Forward_exchange_rate][Forward exchange rate, Wikipedia]]

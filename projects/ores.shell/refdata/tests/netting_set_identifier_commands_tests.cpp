@@ -72,17 +72,17 @@ TEST_CASE("netting_set_identifier_commands_registers_every_derived_verb", "[comm
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("netting_set_identifiers ");
     for (const auto& verb : {
-             std::string{"netting_set_identifiers list"},
-             std::string{"netting_set_identifiers get"},
-             std::string{"netting_set_identifiers get-many"},
-             std::string{"netting_set_identifiers add"},
-             std::string{"netting_set_identifiers set"},
-             std::string{"netting_set_identifiers put-many"},
-             std::string{"netting_set_identifiers delete"},
-             std::string{"netting_set_identifiers delete-many"},
-             std::string{"netting_set_identifiers by-netting-set-id"},
-             std::string{"netting_set_identifiers versions"},
-             std::string{"netting_set_identifiers version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-netting-set-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

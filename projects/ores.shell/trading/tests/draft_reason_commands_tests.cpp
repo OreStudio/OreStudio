@@ -72,16 +72,16 @@ TEST_CASE("draft_reason_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("draft_reasons ");
     for (const auto& verb : {
-             std::string{"draft_reasons list"},
-             std::string{"draft_reasons get"},
-             std::string{"draft_reasons get-many"},
-             std::string{"draft_reasons add"},
-             std::string{"draft_reasons set"},
-             std::string{"draft_reasons put-many"},
-             std::string{"draft_reasons delete"},
-             std::string{"draft_reasons delete-many"},
-             std::string{"draft_reasons versions"},
-             std::string{"draft_reasons version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

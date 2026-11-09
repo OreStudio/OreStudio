@@ -78,8 +78,8 @@ whether the message is a bundle or a package.
 ** What happened, and what the gap was
 
 A message carried every convention entity type in one aggregate, the ORE
-conventions document. On MSVC it did not compile: =rfl='s
-=no_duplicate_field_names= is a constexpr check over reflected field
+conventions document. On MSVC it did not compile: the reflection
+library's duplicate-name check was a constexpr check over reflected field
 names whose cost grows with the square of the name count, and the
 instantiation exceeded the compiler's limit. It compiles on clang and on
 gcc.

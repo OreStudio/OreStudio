@@ -59,11 +59,11 @@ TEST_CASE("workflow_operations_registers_every_declared_command", "[commands]") 
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("workflow ");
     for (const auto& verb : {
-             std::string{"workflow step-result"},
-             std::string{"workflow instances"},
-             std::string{"workflow steps"},
-             std::string{"workflow definitions"},
-             std::string{"workflow retry"},
+             std::string{"step-result"},
+             std::string{"instances"},
+             std::string{"steps"},
+             std::string{"definitions"},
+             std::string{"retry"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

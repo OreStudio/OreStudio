@@ -93,7 +93,7 @@ See [validation](validation.md) for Windows evidence and the open Linux GPU chec
 
 ## NATS and access
 
-Backend reference: `fc4f559dfb187a368bf2a8cd4053d8e833348835`.
+Checked contract: `f19210e781dd508c1019f499a74ecd40d59912e3`. This is test evidence, not a server version lock.
 `src/backend.ts` defines the independent operation allowlist. It uses MessagePack,
 mTLS, user Bearer token, `Nats-Session-Id` and correlation IDs. Reads have an
 eight-second deadline without retry. Cancellation discards pending results.
@@ -125,11 +125,32 @@ and add its public HTTPS origin to `allowedOrigins`. The agent does not use
 forwarded Host or client-IP headers. Do not expose the loopback HTTP port.
 TLS must protect the login reply and all Bearer-token requests.
 
-The revision above records the tested contract; it does not pin a running
-server. Fixture CI does not check changes to upstream services. Before an
-agent or backend upgrade, test the candidate server with the smoke command
-below and record its revision. A failed contract check blocks that deployment.
-Do not change `backendRevision` just because main has moved.
+`npm run verify` checks the allowlisted C++ protocol headers and their local
+codec dependencies against `backend-contract.json`. A source change fails CI
+and requires a new contract check. It does not lock the server version or
+prove that running services use those files.
+
+To renew evidence, build the small [codec probe](../tests/contracts/CMakeLists.txt)
+against the candidate checkout and prepared dependencies. It does not build
+or start server services. From the component directory:
+
+```text
+node scripts/check-backend-contracts.mjs prepare <PROBE_BUILD_DIR>
+cmake -S tests/contracts -B <PROBE_BUILD_DIR> -DDEPENDENCY_ROOT=<DEPENDENCY_PREFIX> -DAPI_LIB_DIR=<UTILITY_PLATFORM_LIB_DIR>
+cmake --build <PROBE_BUILD_DIR> --parallel 1
+node scripts/check-backend-contracts.mjs record <PROBE_EXECUTABLE> <FULL_CANDIDATE_SHA>
+```
+
+Use the matching C++ compiler environment. Shared libraries must be on the
+loader path. Set `backendContractRevision` to the checked SHA. Record refuses
+a stale probe or failed wire tests. The record includes normalized source
+hashes; Windows CRLF checkout does not change them.
+
+The probe checks 23 operations and 45 contract cases. Its separate fixture
+view uses valid booking-nature values and a typed empty instrument batch.
+Frozen eval files and scores stay unchanged. These are wire tests, not live
+business acceptance. Before deployment, also test the candidate running server
+with the smoke command below. A failed check blocks deployment.
 
 After building, check a test backend before upgrading it:
 

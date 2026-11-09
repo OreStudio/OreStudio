@@ -97,6 +97,14 @@ public:
      */
     std::size_t regenerate_all(std::optional<std::chrono::year> end_year = std::nullopt);
 
+    /**
+     * @brief Regenerates the calendars a currency or a currency pair
+     * convention names, and fails on the first one that cannot be built.
+     *
+     * @return Number of calendar_date rows written, summed across them.
+     */
+    std::size_t regenerate_in_use(std::optional<std::chrono::year> end_year = std::nullopt);
+
 private:
     context ctx_;
 };

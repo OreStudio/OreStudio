@@ -58,6 +58,7 @@ struct regenerate_calendar_dates_request {
     static constexpr bool requires_session = true;
     std::optional<std::string> calendar_code;
     std::optional<int> end_year;
+    bool in_use_only = false;
 
     friend bool operator==(const regenerate_calendar_dates_request&,
                            const regenerate_calendar_dates_request&) = default;
@@ -85,6 +86,8 @@ struct regenerate_calendar_dates_response {
         ::ores::utility::codec::field{"calendar_code",
                                       &regenerate_calendar_dates_request::calendar_code},
         ::ores::utility::codec::field{"end_year", &regenerate_calendar_dates_request::end_year},
+        ::ores::utility::codec::field{"in_use_only",
+                                      &regenerate_calendar_dates_request::in_use_only},
     };
 }
 

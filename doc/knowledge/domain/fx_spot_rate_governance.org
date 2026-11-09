@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:fx:crm:governance:domain:
 #+created: 2026-06-28
-#+updated: 2026-06-28
+#+updated: 2026-11-09
 
 * Summary
 
@@ -44,6 +44,7 @@ right one.
 
 * See also
 
+- [[id:75B40B64-FF31-5381-922B-0EB1F521BC38][An end-of-day FX rate set must be complete and independently verified]] — completes: the independent check of the day's set.
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the hub.
 - [[id:46224A12-6BE5-413E-A2B0-08B7308E786C][FX currency conventions]] — verification focuses on G11.
 - [[id:4B7E9471-F9A8-461E-B50C-C7B9A57C6D04][Spot rate blending]] — combining sources into the rate this governs.

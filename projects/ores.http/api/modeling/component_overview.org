@@ -52,7 +52,7 @@ exposed to external clients (web, mobile) alongside the NATS-based internal API.
 * Dependencies
 
 - Boost.Beast, Boost.Asio — async HTTP server.
-- =nlohmann/json= or =rfl= — JWT claim serialisation.
+- =nlohmann/json= — JWT claim serialisation.
 - =ores.iam.api= — JWT claims types aligned with IAM sessions.
 
 * Build dependencies

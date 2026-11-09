@@ -28,6 +28,7 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/error_code.hpp>
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
@@ -58,8 +59,17 @@ namespace detail {
  * with the process. A restart is exactly what this mark changes.
  */
 inline std::string make_epoch() {
+    // The clock can read the same twice, as macOS's does within a microsecond, so
+    // the mark moves past the last one issued rather than trusting it to differ.
+    static std::atomic<std::int64_t> last{0};
     const auto started = std::chrono::system_clock::now().time_since_epoch();
-    return std::to_string(std::chrono::duration_cast<std::chrono::nanoseconds>(started).count());
+    const auto now = std::chrono::duration_cast<std::chrono::nanoseconds>(started).count();
+    auto seen = last.load();
+    std::int64_t next = 0;
+    do {
+        next = std::max<std::int64_t>(now, seen + 1);
+    } while (!last.compare_exchange_weak(seen, next));
+    return std::to_string(next);
 }
 
 }

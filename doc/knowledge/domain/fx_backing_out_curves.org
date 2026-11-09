@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 5498FC33-2DDA-5E17-99E0-F524BFACA460
+:END:
+#+title: An FX-implied curve is backed out from a discount curve and forward points
+#+description: Covered interest parity in reverse: a discount curve and outrights give an FX-implied curve in the other currency.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+Parity runs in both directions. A discount curve in one currency, spot and the outrights give an /FX-implied/ curve in the other currency.
+
+* Detail
+
+With $s$ the spot date:
+
+$$\frac{D_q(T)}{D_q(s)} = \frac{S}{F(T)} \times \frac{D_b(T)}{D_b(s)}$$
+
+This curve holds the cross-currency basis, so it is not the same as the other currency's own OIS curve. QuantLib bootstraps such a curve with =FxSwapRateHelper=, and ORE builds =SEK-IN-USD= from FX forward and basis quotes.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:47E963BF-2299-5565-BAE7-4F8C9BBA421C][The US dollar is the natural hub for FX forward curves]] — completes: the usual starting curve.
+- [[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][Covered Interest Parity and FX Forward Pricing]] — completes: the relation in reverse.
+- [[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]] — completes: where such a curve fits.
+
+* Sources
+
+- =DiscountingFxForwardEngine= and =FxSwapRateHelper= in [[https://github.com/lballabio/QuantLib][QuantLib]]
+- =DiscountingFxForwardEngine= and the =SEK-IN-USD= example in [[https://github.com/OpenSourceRisk/Engine][ORE]]
+- [[https://www.riskval.com/post/market-view-enhancements-weekly-release-3-20-20][Market view enhancements, Riskval]]
+- [[https://www.bis.org/publ/qtrpdf/r_qt1609y.htm][CIP, FX swaps, cross-currency swaps and the factors that move the basis, BIS Quarterly Review, September 2016]]

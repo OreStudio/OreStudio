@@ -72,16 +72,16 @@ TEST_CASE("seed_profile_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("seed_profiles ");
     for (const auto& verb : {
-             std::string{"seed_profiles list"},
-             std::string{"seed_profiles get"},
-             std::string{"seed_profiles get-many"},
-             std::string{"seed_profiles add"},
-             std::string{"seed_profiles set"},
-             std::string{"seed_profiles put-many"},
-             std::string{"seed_profiles delete"},
-             std::string{"seed_profiles delete-many"},
-             std::string{"seed_profiles versions"},
-             std::string{"seed_profiles version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

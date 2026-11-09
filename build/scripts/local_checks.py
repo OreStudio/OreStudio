@@ -525,7 +525,8 @@ CATALOGUE: tuple[Check, ...] = (
                "projects/ores.web/packages/bff/src/*",
                "doc/knowledge/architecture/http_route_inventory.org",
                "build/scripts/route_inventory.py",
-               "build/scripts/route_classification.py"),
+               "build/scripts/route_classification.py",
+               "build/scripts/route_pairing.py"),
         fix="Run python3 build/scripts/route_inventory.py --write and commit the "
             "table, or delete the row of a route neither server answers.",
     ),

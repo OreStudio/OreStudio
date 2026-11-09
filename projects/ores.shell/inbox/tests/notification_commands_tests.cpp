@@ -72,17 +72,17 @@ TEST_CASE("notification_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("notifications ");
     for (const auto& verb : {
-             std::string{"notifications list"},
-             std::string{"notifications get"},
-             std::string{"notifications get-many"},
-             std::string{"notifications add"},
-             std::string{"notifications set"},
-             std::string{"notifications put-many"},
-             std::string{"notifications delete"},
-             std::string{"notifications delete-many"},
-             std::string{"notifications by-kind-code"},
-             std::string{"notifications versions"},
-             std::string{"notifications version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-kind-code"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

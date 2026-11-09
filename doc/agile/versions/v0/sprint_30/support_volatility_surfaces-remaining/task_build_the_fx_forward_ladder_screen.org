@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 0CEB75D7-3227-4FDD-A95C-0AD426DB5D26
+:END:
+#+title: Task: Build the FX forward ladder screen
+#+description: The live screen that draws the signed-off prototype through the shared parts, in three languages, tested and signed off.
+#+type: task
+#+level: s1
+#+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/build-the-fx-forward-ladder-screen
+#+pr: 4528
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The live web draws the signed-off forward ladder. This is steps 3 and 4 of [[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][Take a topic through the screen pipeline]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- The live screen draws what the prototype draws, through the shared parts, in English, French and Portuguese.
+- A test scenario passes on a fresh database, and the owner signs off the sheet.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Web tests | 200 files, 2486 tests, all pass | =npx vitest run --root packages/web= | Working tree on main |
+| BFF curve tests | 43 tests, all pass | =npx vitest run --root packages/bff src/curves.test= | Working tree on main |
+
+* Notes
+
+This task carries the first live check of a successful =marketdata.v1.ops.get_fx_forward_ladder= reply, against a feed run and two published curves.
+
+Follows [[id:DC7504E5-A53D-4938-A774-B58CE2A37B57][Make FX forwards available from the IR curves]]. The analysis and external evidence are in its Plan.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| [[id:535F4797-2CB5-459B-A0D5-7286537F3EB1][Verify the FX forward ladder screen]] | PENDING | Runs on seeded EUR and USD curves published through maker-checker. |
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4528][#4528]] | [web] Show the FX forward ladder of a USD pair |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A doc comment of the published sets read sat above the ladder method | =web/src/api/client.ts= | Fixed | The comment is back above its method. |
+| 2 | The BFF forwards a party id from the browser that the service does not check | =bff/src/curves.ts= | Fixed | The route takes no party and a test refuses one. The published read takes the session's party. |
+| 3 | State the ON row contract behind the ladder start | =web/src/marketdata/fxForwardLadder.ts= | Fixed | Stated in the doc comment. The figures agree with a live reply: 1Y from today is 260.43. |
+| 4 | An unknown pair in the address shows a blank select | =web/src/marketdata/FxForwardLadderPage.tsx= | Declined | The refusal names the pair, and falling back would hide it. The pair list changes when crosses arrive. |
+| 5 | The default as-of uses the UTC date | =web/src/marketdata/fxForwardLadder.ts= | Declined | The as-of instant is the end of a UTC day, so the two agree. |
+| 6 | Split the agile and knowledge files out of the PR | doc | Declined | The bookkeeping is agile documents only, and it closes with the task this PR delivers. |
+| 7 | Wait for a run on stored data before merge | PR | Done | The owner ran the screen on published curves and signed it off. |
+
+* Result
+
+The FX forward ladder screen is live at =/market-data/fx-forwards=. It shows spot, both funding curves, the four measures, the ladder start and forward-forward for one USD pair, in English, French and Portuguese.
+
+The owner tried the screen on seeded curves published through maker-checker and signed it off in conversation on 2026-11-09. The scenario records step 1 as PASS and leaves the other steps unrecorded. The route's replies and refusals were checked live, and the web tests pass.
+
+The screen reads through compute-on-read, which the task Show published FX forward curves and their provenance replaces. Value dates ignore holidays until the task Build holiday calendars in provisioning is done.

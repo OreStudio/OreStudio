@@ -222,6 +222,14 @@ export const CARDS = {
         permission: 'marketdata::curve_snapshots:read',
         screenTitleKey: 'marketdata.published.title',
     },
+    fxForwards: {
+        titleKey: 'marketdata.fxForwards.title',
+        bodyKey: 'marketdata.fxForwards.lead',
+        to: PATHS.fxForwards,
+        icon: 'chart',
+        permission: 'marketdata::market_observations:read',
+        screenTitleKey: 'marketdata.fxForwards.title',
+    },
     curveEvolution: {
         titleKey: 'market.evolution.title',
         bodyKey: 'marketdata.area.screens.evolutionBody',
@@ -456,6 +464,7 @@ export const AREA_CARDS = {
         'publicRates',
         'calibration',
         'publishedCurves',
+        'fxForwards',
         'curveEvolution',
     ],
     operations: [

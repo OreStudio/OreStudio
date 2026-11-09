@@ -2,10 +2,10 @@
 :ID: C951B5F1-B51C-4274-BA4D-6297AD46A4FB
 :END:
 #+title: Polymorphic payloads over NATS
-#+description: Deprecated. How not to carry one of several concrete types in a message, why rfl cannot tag a variant of the trading instrument types, and the data-oriented replacement: one typed array per concrete type, joined by key.
+#+description: Deprecated. How not to carry one of several concrete types in a message, why a reflected variant of the trading instrument types could not be tagged, and the data-oriented replacement: one typed array per concrete type, joined by key.
 #+type: knowledge
 #+level: cross
-#+filetags: :architecture:nats:rfl:serialisation:
+#+filetags: :architecture:nats:serialisation:
 #+created: 2026-06-25
 #+updated: 2026-10-08
 
@@ -23,7 +23,7 @@ Why it is deprecated: it is polymorphism at the message level who pays for it.
 Data-oriented design puts the type in the container, not in a per-element tag.
 A tagged payload field is one of two things, and both are wrong:
 
-- A =std::variant= field. =rfl= encodes it as an =index= key holding the
+- A =std::variant= field. Reflection encoded it as an =index= key holding the
   zero-based position of the active alternative, which breaks silently when an
   alternative is added, removed or reordered.
 - A hand-written type-name plus encoded-body pair, such as
@@ -45,21 +45,20 @@ A tagged payload field is one of two things, and both are wrong:
 This is the array-of-structs to struct-of-arrays change, applied to message
 layout: the tag moves from every element to the container.
 
-* Why rfl cannot tag the variant
+* Why reflection could not tag the variant
 
-This is the constraint that produced the deprecated designs, and it still
-holds. Any replacement has to respect it.
+This is the constraint that produced the deprecated designs. The generated
+codecs do not have it, but the rule above stands on its own.
 
-=rfl= writes a =std::variant= as:
+Reflection wrote a =std::variant= as:
 
 #+begin_src json
 { "index": 2, "value": { ... } }
 #+end_src
 
-=rfl::TaggedUnion= and =rfl::AddTagsToVariants= write a readable tag instead,
-but they do not compile for the trading instrument types: they build an
-=rfl::Literal= over every field name reachable through the variant, 502 of
-them, which exceeds the fold-expression nesting limit on macOS and the
+The tagged forms wrote a readable tag instead, but did not compile for the
+trading instrument types: they built a literal over every field name
+reachable through the variant, 502 of them, which exceeded the fold-expression nesting limit on macOS and the
 recursive-type limit on MSVC.
 
 The consequence is that a typed replacement must be flat at the *leaf* level.
@@ -83,7 +82,7 @@ Every trading instrument crossed the export boundary through it:
 =trade_export_item.instrument= in
 =projects/ores.trading/api/include/ores.trading.api/messaging/trade_operations_protocol.hpp=.
 The type name was a hand-written literal kept in sync with =trade_instrument=
-by hand, and the body was the =rfl= JSON of the concrete type. The tag
+by hand, and the body was the reflected JSON of the concrete type. The tag
 duplicated =trade_type=, which the same message already carried on the trade
 anchor and which the trade type catalogue already maps to the concrete type.
 

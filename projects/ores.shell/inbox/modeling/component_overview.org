@@ -58,7 +58,7 @@ domain.
 - =ores.shell.api= -- argument parsing, feedback and request helpers.
 - =ores.nats= -- NATS transport for service calls.
 - =ores.inbox.api= -- the domain types and protocol messages the units send.
-- =ores.utility= -- the rfl reflectors a response is printed with.
+- =ores.utility= -- the codecs a response is printed with.
 - =ores.logging= -- logger factory.
 - =cli= -- the menu and handler types the units register against.
 

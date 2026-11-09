@@ -77,16 +77,16 @@ TEST_CASE(
     const auto completions =
         root_menu.GetCompletions("ir_curve_generation_config_process_parameter_values ");
     for (const auto& verb : {
-             std::string{"ir_curve_generation_config_process_parameter_values list"},
-             std::string{"ir_curve_generation_config_process_parameter_values get"},
-             std::string{"ir_curve_generation_config_process_parameter_values get-many"},
-             std::string{"ir_curve_generation_config_process_parameter_values add"},
-             std::string{"ir_curve_generation_config_process_parameter_values set"},
-             std::string{"ir_curve_generation_config_process_parameter_values put-many"},
-             std::string{"ir_curve_generation_config_process_parameter_values delete"},
-             std::string{"ir_curve_generation_config_process_parameter_values delete-many"},
-             std::string{"ir_curve_generation_config_process_parameter_values versions"},
-             std::string{"ir_curve_generation_config_process_parameter_values version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

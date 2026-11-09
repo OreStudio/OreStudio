@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: B60031AD-CE57-5F9D-885C-1DAF504E6004
+:END:
+#+title: An NDF pays a cash difference on its settlement date
+#+description: The fixing date sets the rate and the settlement date sets the cash flow, so discounting runs from the settlement date.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+An NDF settles the difference between its contracted rate and the fixing rate, on an agreed notional, in a deliverable currency. The fixing date sets the rate. The settlement date, usually one or two business days later, sets the cash flow.
+
+* Detail
+
+ORE values a cash-settled forward by discounting from its payment date. Before the fixing date it uses the forward rate. After the fixing date it uses the fixing, so spot no longer changes the settlement amount.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][Deliverability and non-deliverable instruments]] — completes: this adds how an NDF is valued.
+- [[id:2F7AD024-2CDF-4B31-9845-0879179B0D1A][Settlement Currency]] — completes: the currency that replaces delivery.
+
+* Sources
+
+- [[https://en.wikipedia.org/wiki/Non-deliverable_forward][Non-deliverable forward, Wikipedia]]
+- =DiscountingFxForwardEngine= and the =SEK-IN-USD= example in [[https://github.com/OpenSourceRisk/Engine][ORE]]

@@ -7,20 +7,20 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/calibrate-a-surface-from-quotes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
 #+updated: 2026-11-08
-#+environment: prime_origin
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A caller names a blueprint and an as-of, and the system writes a calibrated surface as a candidate. The =marketdata.v1.surface.calibrate= operation reads the quotes the pillars name and the forwards from the published curves of the two currencies. It runs the engine and writes the grid as observations of the output series, with lineage. The recipe checks and the result checks run in the service, so a caller that is not a screen meets the same rules. See [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
+A caller names a blueprint and an as-of, and the system writes a calibrated surface as a candidate. The =marketdata.v1.surface.calibrate= operation reads the quotes the pillars name and the forwards from the party's published FX forward set. It runs the engine and writes the grid as observations of the output series, with lineage. The recipe checks and the result checks run in the service, so a caller that is not a screen meets the same rules. See [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]].
 
 * Status
 
@@ -29,7 +29,7 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 | State        | BACKLOG                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | Published FX forward sets for each party. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-03                               |
 
@@ -43,6 +43,7 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 - A missing published curve of either currency refuses the calibrate and names the currency.
 - A repeat over the same blueprint and as-of converges on the same points.
 - A candidate is not readable as a published surface.
+- The forwards come from the party's published forward set, and the lineage names that set.
 
 * Plan
 

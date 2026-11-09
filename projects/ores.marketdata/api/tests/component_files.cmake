@@ -51,6 +51,7 @@ set(files
     "feed_scope_codec_roundtrip_tests.cpp"
     "feed_scope_protocol_codec_roundtrip_tests.cpp"
     "fixing_read_operations_protocol_codec_roundtrip_tests.cpp"
+    "fx_forward_operation_protocol_codec_roundtrip_tests.cpp"
     "main.cpp"
     "market_calibration_value_codec_roundtrip_tests.cpp"
     "market_calibration_value_protocol_codec_roundtrip_tests.cpp"

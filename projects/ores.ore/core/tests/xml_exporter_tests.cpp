@@ -969,6 +969,47 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards",
     CHECK(translated.contains("<IncomeCurveId>EUR-EURIBOR-6M</IncomeCurveId>"));
 }
 
+TEST_CASE("export_portfolio_names_each_curve_of_a_bond_and_a_credit_swap", "[ore][xml][exporter]") {
+    const auto quote = ores::marketdata::datum::ore_key_codec::read("ZERO/RATE/EUR/EUR6M/A365/5Y");
+    REQUIRE(quote);
+    const auto curve =
+        ores::marketdata::datum::market_reference::of(ores::marketdata::datum::series_of(*quote));
+    REQUIRE(curve);
+    const ores::marketdata::projection::ore_projection projection({{curve->uri(), "NAMED"}});
+
+    auto [bond_items, bonds] = make_export_payload(
+        importer::import_portfolio_with_context(example_path("Cash_Bonds.xml")));
+    REQUIRE(!bonds.bond_instruments.empty());
+    bonds.bond_instruments.resize(1);
+    auto& issue = bonds.bond_instruments.front().issue;
+    issue.credit_curve_id = curve->uri();
+    issue.income_curve_id = curve->uri();
+    issue.volatility_curve_id = curve->uri();
+    const auto bond_xml = exporter::export_portfolio_leaving_out(bond_items, bonds, projection).xml;
+    CHECK(bond_xml.contains("<CreditCurveId>NAMED</CreditCurveId>"));
+    CHECK(bond_xml.contains("<IncomeCurveId>NAMED</IncomeCurveId>"));
+    CHECK(bond_xml.contains("<VolatilityCurveId>NAMED</VolatilityCurveId>"));
+
+    auto [cds_items, swaps] = make_export_payload(
+        importer::import_portfolio_with_context(example_path("Credit_Default_Swap.xml")));
+    REQUIRE(!swaps.credit_default_swap_instruments.empty());
+    for (auto& swap : swaps.credit_default_swap_instruments)
+        swap.credit_curve_id = curve->uri();
+    const auto cds_xml = exporter::export_portfolio_leaving_out(cds_items, swaps, projection).xml;
+    CHECK(cds_xml.contains("<CreditCurveId>NAMED</CreditCurveId>"));
+    CHECK(!cds_xml.contains("oresmd://"));
+
+    auto [index_items, indices] = make_export_payload(importer::import_portfolio_with_context(
+        example_path("Credit_Index_Credit_Default_Swap.xml")));
+    REQUIRE(!indices.index_credit_default_swap_instruments.empty());
+    for (auto& swap : indices.index_credit_default_swap_instruments)
+        swap.credit_curve_id = curve->uri();
+    const auto index_xml =
+        exporter::export_portfolio_leaving_out(index_items, indices, projection).xml;
+    CHECK(index_xml.contains("<CreditCurveId>NAMED</CreditCurveId>"));
+    CHECK(!index_xml.contains("oresmd://"));
+}
+
 // =============================================================================
 // export_pricing_engines tests
 // =============================================================================

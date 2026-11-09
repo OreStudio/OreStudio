@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.platform/time/time_utils.hpp"
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -96,7 +97,7 @@ TEST_CASE("cron_expression::next_occurrence lands on a local midnight",
     CHECK(next > after);
     const auto as_time_t = std::chrono::system_clock::to_time_t(next);
     std::tm local{};
-    localtime_r(&as_time_t, &local);
+    ores::platform::time::time_utils::localtime_safe(&as_time_t, &local);
     CHECK(local.tm_hour == 0);
     CHECK(local.tm_min == 0);
 }
@@ -144,7 +145,7 @@ TEST_CASE("cron_expression::next_occurrence matches either restricted day field"
 
     const auto as_time_t = std::chrono::system_clock::to_time_t(sut->next_occurrence(after));
     std::tm local{};
-    localtime_r(&as_time_t, &local);
+    ores::platform::time::time_utils::localtime_safe(&as_time_t, &local);
     CHECK(local.tm_year == 2026 - 1900);
     CHECK(local.tm_mon == 9);
     CHECK(local.tm_mday == 12);
@@ -165,7 +166,8 @@ TEST_CASE("cron_expression equality operator", "[domain][cron_expression]") {
     CHECK_FALSE(*a == *c);
 }
 
-TEST_CASE("cron_expression round-trips through rfl as its string", "[domain][cron_expression]") {
+TEST_CASE("cron_expression round-trips through the codec as its string",
+          "[domain][cron_expression]") {
     const auto parsed = cron_expression::from_string("*/5 * * * *");
     REQUIRE(parsed.has_value());
 
@@ -177,7 +179,7 @@ TEST_CASE("cron_expression round-trips through rfl as its string", "[domain][cro
     CHECK(*read == *parsed);
 }
 
-TEST_CASE("rfl read refuses a string that is not a cron expression", "[domain][cron_expression]") {
+TEST_CASE("a read refuses a string that is not a cron expression", "[domain][cron_expression]") {
     const auto read = ores::utility::codec::json::read_expected<cron_expression>(R"("not a cron")");
     CHECK_FALSE(read.has_value());
 }

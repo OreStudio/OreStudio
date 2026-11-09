@@ -72,16 +72,16 @@ TEST_CASE("gmm_component_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("gmm_components ");
     for (const auto& verb : {
-             std::string{"gmm_components list"},
-             std::string{"gmm_components get"},
-             std::string{"gmm_components get-many"},
-             std::string{"gmm_components add"},
-             std::string{"gmm_components set"},
-             std::string{"gmm_components put-many"},
-             std::string{"gmm_components delete"},
-             std::string{"gmm_components delete-many"},
-             std::string{"gmm_components versions"},
-             std::string{"gmm_components version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

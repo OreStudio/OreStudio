@@ -72,16 +72,16 @@ TEST_CASE("local_jurisdiction_commands_registers_every_derived_verb", "[commands
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("local_jurisdictions ");
     for (const auto& verb : {
-             std::string{"local_jurisdictions list"},
-             std::string{"local_jurisdictions get"},
-             std::string{"local_jurisdictions get-many"},
-             std::string{"local_jurisdictions add"},
-             std::string{"local_jurisdictions set"},
-             std::string{"local_jurisdictions put-many"},
-             std::string{"local_jurisdictions delete"},
-             std::string{"local_jurisdictions delete-many"},
-             std::string{"local_jurisdictions versions"},
-             std::string{"local_jurisdictions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

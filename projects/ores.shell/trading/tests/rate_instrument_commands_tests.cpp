@@ -72,16 +72,16 @@ TEST_CASE("rate_instrument_commands_registers_every_derived_verb", "[commands]")
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("rate_instruments ");
     for (const auto& verb : {
-             std::string{"rate_instruments list"},
-             std::string{"rate_instruments get"},
-             std::string{"rate_instruments get-many"},
-             std::string{"rate_instruments add"},
-             std::string{"rate_instruments set"},
-             std::string{"rate_instruments put-many"},
-             std::string{"rate_instruments delete"},
-             std::string{"rate_instruments delete-many"},
-             std::string{"rate_instruments versions"},
-             std::string{"rate_instruments version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

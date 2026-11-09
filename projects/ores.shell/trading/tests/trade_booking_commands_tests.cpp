@@ -72,16 +72,16 @@ TEST_CASE("trade_booking_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("trade_bookings ");
     for (const auto& verb : {
-             std::string{"trade_bookings list"},
-             std::string{"trade_bookings get"},
-             std::string{"trade_bookings get-many"},
-             std::string{"trade_bookings add"},
-             std::string{"trade_bookings set"},
-             std::string{"trade_bookings put-many"},
-             std::string{"trade_bookings delete"},
-             std::string{"trade_bookings delete-many"},
-             std::string{"trade_bookings versions"},
-             std::string{"trade_bookings version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

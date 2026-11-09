@@ -72,16 +72,16 @@ TEST_CASE("origin_dimension_commands_registers_every_derived_verb", "[commands]"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("origin_dimensions ");
     for (const auto& verb : {
-             std::string{"origin_dimensions list"},
-             std::string{"origin_dimensions get"},
-             std::string{"origin_dimensions get-many"},
-             std::string{"origin_dimensions add"},
-             std::string{"origin_dimensions set"},
-             std::string{"origin_dimensions put-many"},
-             std::string{"origin_dimensions delete"},
-             std::string{"origin_dimensions delete-many"},
-             std::string{"origin_dimensions versions"},
-             std::string{"origin_dimensions version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -104,6 +104,15 @@ export interface PublishBusinessUnitsFromDqRequest {}
 export interface PublishCalendarEventsFromDqRequest {}
 
 /**
+ * @brief The workflow step that publishes the DQ-cleared calendar exceptions.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_calendar_exceptions_from_dq_fn.
+ */
+export interface PublishCalendarExceptionsFromDqRequest {}
+
+/**
  * @brief The workflow step that publishes the DQ-cleared calendar types.
  *
  * A trigger rather than a request: the DQ publisher sends it and reads no
@@ -480,6 +489,8 @@ export const subjects = {
     publish_business_processes_from_dq_request: 'refdata.v1.ops.publish_business_processes_from_dq',
     publish_business_units_from_dq_request: 'refdata.v1.ops.publish_business_units_from_dq',
     publish_calendar_events_from_dq_request: 'refdata.v1.ops.publish_calendar_events_from_dq',
+    publish_calendar_exceptions_from_dq_request:
+        'refdata.v1.ops.publish_calendar_exceptions_from_dq',
     publish_calendar_types_from_dq_request: 'refdata.v1.ops.publish_calendar_types_from_dq',
     publish_calendars_from_dq_request: 'refdata.v1.ops.publish_calendars_from_dq',
     publish_cashflow_types_from_dq_request: 'refdata.v1.ops.publish_cashflow_types_from_dq',
@@ -551,6 +562,7 @@ export const requiresSession = {
     publish_business_processes_from_dq_request: true,
     publish_business_units_from_dq_request: true,
     publish_calendar_events_from_dq_request: true,
+    publish_calendar_exceptions_from_dq_request: true,
     publish_calendar_types_from_dq_request: true,
     publish_calendars_from_dq_request: true,
     publish_cashflow_types_from_dq_request: true,

@@ -72,17 +72,17 @@ TEST_CASE("counterparty_identifier_commands_registers_every_derived_verb", "[com
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("counterparty_identifiers ");
     for (const auto& verb : {
-             std::string{"counterparty_identifiers list"},
-             std::string{"counterparty_identifiers get"},
-             std::string{"counterparty_identifiers get-many"},
-             std::string{"counterparty_identifiers add"},
-             std::string{"counterparty_identifiers set"},
-             std::string{"counterparty_identifiers put-many"},
-             std::string{"counterparty_identifiers delete"},
-             std::string{"counterparty_identifiers delete-many"},
-             std::string{"counterparty_identifiers by-counterparty-id"},
-             std::string{"counterparty_identifiers versions"},
-             std::string{"counterparty_identifiers version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-counterparty-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

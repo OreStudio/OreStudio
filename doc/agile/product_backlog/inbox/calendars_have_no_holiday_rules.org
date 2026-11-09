@@ -1,0 +1,29 @@
+:PROPERTIES:
+:ID: E95199BA-2B52-49FD-BEC2-9594B012DC6D
+:END:
+#+title: QuantLib's lunar holiday lists stop, so later years miss holidays
+#+description: The holidays are generated from QuantLib, whose hard-coded lunar lists end, so China, Taiwan, Singapore and Turkey lose holidays in later years.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The calendars are generated from QuantLib. Its lists of lunar holidays are hard-coded and stop at a year. Closed days fall from 19 in 2026 to 1 in 2035 for China.SSE, from 15 to 4 for Taiwan, and from 11 to 5 for Singapore and Turkey. Extend those lists, from an official source, as data on our side.
+
+* Why
+
+A long-dated value date in those currencies can fall on a holiday. ORE prices with the same lists, so the two stay consistent until we extend them.
+
+* References
+
+- =projects/ores.refdata/core/src/service/calendar_materialisation_service.cpp=
+- =projects/ores.marketdata/service/src/app/fx_forward_ladder_service.cpp=
+
+* See also
+
+- [[id:0CEB75D7-3227-4FDD-A95C-0AD426DB5D26][Build the FX forward ladder screen]]

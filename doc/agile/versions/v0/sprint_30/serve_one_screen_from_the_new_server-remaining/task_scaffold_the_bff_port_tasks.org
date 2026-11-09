@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 65EDEBB1-0A24-46C3-85C1-2A51780EB659
+:END:
+#+title: Task: Scaffold the tasks of the BFF port
+#+description: Task scaffolding rides this task: the task documents, the two recorded decisions, the design amendment and the scaffold PR.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/scaffold-the-bff-port-tasks
+#+pr: 4530
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Split the remaining BFF port into tasks from the route inventory, record the decisions on the routes ores.web needs and on the switch, and amend the design to match.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- The story has one task per area of the route inventory, a task per composed view owner and a switch-over task.
+- The story and the design state both decisions.
+- The local gate is green.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4530][#4530]] | [agile] Split the BFF port into tasks from the route inventory |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The section 12 introduction still allowed a cutover per prefix. | doc/plans/2026-10-28-single-http-server-design.org | Accept | Fixed: the sentence names the flag only. |
+| 2 | Section 11.1 still says the generic routers die, against the rule that the C++ server answers every route ores.web calls. | doc/plans/2026-10-28-single-http-server-design.org | Defer | The task for the routes outside the published API shows which routes this affects, and amends the section. |
+| 3 | Three lines of the design still named the per-prefix cutover and the order by traffic. | doc/plans/2026-10-28-single-http-server-design.org | Accept | Fixed: the risk rows and the migration approval state the one switch and the order by area. |
+
+* Result
+
+The story now has 27 port tasks: 16 from the route inventory's areas, 10 composed view tasks and the switch-over task. The story and section 12.4 of the design state the two decisions. The design's section 11.1 still says that the generic routers die; the task for the routes outside the published API settles this.

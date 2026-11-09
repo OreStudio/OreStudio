@@ -49,7 +49,7 @@ ORE market data files for risk runs.
 * Dependencies
 
 - =ores.marketdata.api= — shared domain types and NATS protocol schemas.
-- =ores.dq=, =ores.iam.core=, =rfl=, =soci=, =nats.c=.
+- =ores.dq=, =ores.iam.core=, =soci=, =nats.c=.
 
 * Build dependencies
 

@@ -72,16 +72,16 @@ TEST_CASE("pricing_pair_setting_commands_registers_every_derived_verb", "[comman
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("pricing_pair_settings ");
     for (const auto& verb : {
-             std::string{"pricing_pair_settings list"},
-             std::string{"pricing_pair_settings get"},
-             std::string{"pricing_pair_settings get-many"},
-             std::string{"pricing_pair_settings add"},
-             std::string{"pricing_pair_settings set"},
-             std::string{"pricing_pair_settings put-many"},
-             std::string{"pricing_pair_settings delete"},
-             std::string{"pricing_pair_settings delete-many"},
-             std::string{"pricing_pair_settings versions"},
-             std::string{"pricing_pair_settings version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

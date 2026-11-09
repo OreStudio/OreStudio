@@ -72,16 +72,16 @@ TEST_CASE("entity_classification_commands_registers_every_derived_verb", "[comma
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("entity_classifications ");
     for (const auto& verb : {
-             std::string{"entity_classifications list"},
-             std::string{"entity_classifications get"},
-             std::string{"entity_classifications get-many"},
-             std::string{"entity_classifications add"},
-             std::string{"entity_classifications set"},
-             std::string{"entity_classifications put-many"},
-             std::string{"entity_classifications delete"},
-             std::string{"entity_classifications delete-many"},
-             std::string{"entity_classifications versions"},
-             std::string{"entity_classifications version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

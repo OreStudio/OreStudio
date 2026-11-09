@@ -72,16 +72,16 @@ TEST_CASE("system_setting_commands_registers_every_derived_verb", "[commands]") 
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("system_settings ");
     for (const auto& verb : {
-             std::string{"system_settings list"},
-             std::string{"system_settings get"},
-             std::string{"system_settings get-many"},
-             std::string{"system_settings add"},
-             std::string{"system_settings set"},
-             std::string{"system_settings put-many"},
-             std::string{"system_settings delete"},
-             std::string{"system_settings delete-many"},
-             std::string{"system_settings versions"},
-             std::string{"system_settings version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

@@ -62,6 +62,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
@@ -906,6 +907,9 @@ private:
             case provision_step_action::publish_bundle:
                 publish_bundle_step(wf, command, resolve_step_actor(command));
                 return;
+            case provision_step_action::build_calendars:
+                build_calendars_step(wf, command, resolve_step_actor(command));
+                return;
             case provision_step_action::import_lei_hierarchy:
                 import_lei_hierarchy_step(wf, command, resolve_step_actor(command));
                 return;
@@ -1171,6 +1175,31 @@ private:
             wf.complete(ores::utility::codec::json::write(result), step_log);
         else
             wf.warn(ores::utility::codec::json::write(result), step_log);
+    }
+
+    /// The last year generate_calendar_exceptions writes. Later days would be
+    /// built as weekdays with no holidays.
+    static constexpr int last_generated_holiday_year = 2060;
+
+    /// Each calendar builds about 13,000 days, one row at a time, so the
+    /// operation outlives the client's default patience.
+    void build_calendars_step(const ores::service::messaging::workflow_step_context& wf,
+                              const ores::iam::workflow::provision_tenant_step_command& command,
+                              const step_actor& actor) {
+        auto client =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        ores::refdata::messaging::regenerate_calendar_dates_request request;
+        request.in_use_only = true;
+        request.end_year = last_generated_holiday_year;
+        const auto response = client.request(request, std::chrono::seconds{600});
+        if (!response.success)
+            throw std::runtime_error("The calendars were not built: " + response.message);
+
+        BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+            << "build_calendars: wrote " << response.rows_written << " day(s)";
+        provision_step_result result;
+        result.kind = command.kind;
+        wf.complete(ores::utility::codec::json::write(result));
     }
 
     /// Publishes each bundle the step names, one nested run each, and reports

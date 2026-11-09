@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-06-28
-#+updated: 2026-06-28
+#+updated: 2026-11-09
 
 This is the hub note for the FX cross-rates matrix. Each linked note is a single
 focused concept; start here and follow the links.
@@ -68,6 +68,7 @@ driver/derived/proxy relationship is the typed-variant case described in
 
 * See also
 
+- [[id:47E963BF-2299-5565-BAE7-4F8C9BBA421C][The US dollar is the natural hub for FX forward curves]] — completes: the same hub for forwards.
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — where the CRM sits in the producer/authority model.
 - [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][Market data identifiers]] — ORE keys for the pairs the CRM holds.
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]] — driver/derived/proxy as typed variants.

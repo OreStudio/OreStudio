@@ -93,9 +93,7 @@ TEST_CASE("extend_menu_adds_verbs_to_the_menu_another_unit_owns", "[shell_root_m
     root.apply_extensions();
 
     const auto completions = root.GetCompletions("accounts ");
-    for (const auto& verb : {std::string{"accounts list"},
-                             std::string{"accounts login"},
-                             std::string{"accounts lock"}})
+    for (const auto& verb : {std::string{"list"}, std::string{"login"}, std::string{"lock"}})
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
     BOOST_LOG_SEV(lg, debug) << "One menu answers both units' verbs.";
@@ -149,6 +147,6 @@ TEST_CASE("extend_menu_on_a_plain_root_gives_the_verbs_their_own_menu", "[shell_
     });
 
     const auto completions = root.GetCompletions("accounts ");
-    CHECK(std::find(completions.begin(), completions.end(), std::string{"accounts login"}) !=
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"login"}) !=
           completions.end());
 }

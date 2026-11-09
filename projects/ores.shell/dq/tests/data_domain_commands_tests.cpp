@@ -72,16 +72,16 @@ TEST_CASE("data_domain_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("data_domains ");
     for (const auto& verb : {
-             std::string{"data_domains list"},
-             std::string{"data_domains get"},
-             std::string{"data_domains get-many"},
-             std::string{"data_domains add"},
-             std::string{"data_domains set"},
-             std::string{"data_domains put-many"},
-             std::string{"data_domains delete"},
-             std::string{"data_domains delete-many"},
-             std::string{"data_domains versions"},
-             std::string{"data_domains version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

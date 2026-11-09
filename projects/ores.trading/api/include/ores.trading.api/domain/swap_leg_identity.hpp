@@ -35,7 +35,7 @@ namespace ores::trading::domain {
 /**
  * @brief Identity fields of a rates swap leg.
  *
- * Extracted as a plain nested sub-struct to keep each rfl-reflected literal
+ * Extracted as a plain nested sub-struct to keep each generated codec
  * under the MSVC C1202 ceiling. A leg carries its own surrogate key, the trade
  * it belongs to and its ordinal within that instrument, so the leg identity is
  * not the instrument identity: it is the trade's key plus the leg's own two

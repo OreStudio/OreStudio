@@ -121,7 +121,18 @@ via its "Verifies task" field.
 | 11 | Squash or split the PR | PR history | Decline | PR 4498 is merged. Keep staged history; use a separate fixes branch. |
 | 12 | Generated baseline purpose | evaluation.md | Clarify | Reviewed historical aggregates; full private reports are comparison inputs. |
 | 13 | CPU CI cost | agent workflows | Accept | User requests daily jobs only: 03:17 and 03:47 UTC, plus manual dispatch. No push or PR trigger. |
+| 15 | Current upstream compatibility | backend-contract.json, codec probe | Validate | Check all 23 wire operations and 45 contract cases against f19210e781. Add source drift gate; keep live-server evidence separate. |
 | 14 | Windows CI format check | .gitattributes | Fix | First CI run passed Linux Node 22/24; Windows checkout used CRLF. Force LF for agent source on every platform. |
+
+Current-contract validation (2026-11-09): merged upstream =f19210e781= into
+the fixes branch. Current strict C++ request readers and reply writers pass
+23 operations and 45 contract cases. The source fingerprint prevents a stale
+probe from recording new evidence. Contract-only fixture copies replace the
+historical invalid booking enum and empty instrument array; frozen files and
+scores are unchanged. The new source gate rejects altered subjects, stale
+references and source drift. Windows passes 124 Node tests and all three
+original replay gates. Existing services and data are unchanged; no full
+current-server deployment or live model evaluation is claimed.
 
 Review validation (2026-11-09): Windows passes 122 Node tests, five installer
 tests and replay handling 26/26, 8/8 and 11/11. Actionlint passes for both

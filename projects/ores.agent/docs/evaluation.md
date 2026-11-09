@@ -113,7 +113,8 @@ npm run eval:doctor -- --profile model --config <PRIVATE_CONFIG>
 npm run eval:doctor -- --profile live --config <PRIVATE_CONFIG> --credentials <PRIVATE_CREDENTIALS> --party <PARTY_UUID>
 ```
 
-`verify` checks source format, runs tests and runs all three replay corpora. Every handling check must pass
+`verify` checks source format and backend contract sources, runs tests and runs
+all three replay corpora. Every handling check must pass
 without execution errors; blocked business outcomes remain blocked. Reports use
 new `build/output/agent-checks/` paths. After tests, use
 `node evals/check.mjs --out <NEW_DIRECTORY>` to select a report directory.

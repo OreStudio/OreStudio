@@ -1,0 +1,35 @@
+:PROPERTIES:
+:ID: 6A121626-8B14-580C-B356-A6A9FAEC41B1
+:END:
+#+title: An outright settles before, on or after the spot date
+#+description: Value today, value tomorrow, spot and forward delivery, and where the regulatory line falls.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+An outright is a single exchange of currencies at an agreed rate on one future value date. The value date places it before spot, on spot or after spot.
+
+* Detail
+
+1. *Before spot*: value today or value tomorrow, where tomorrow is not the spot date.
+2. *Spot*: T+2 for most pairs and T+1 for pairs such as USD/CAD.
+3. *Forward*: any date after spot.
+
+The line between spot and forward has regulatory weight. In the EU a contract delivered within the spot window is excluded from the financial instruments of MiFID II.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:47598B8D-0121-4989-9661-79A8E6D1A070][FX Forward]] — completes: the third case as a product.
+- [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date and settlement]] — completes: the date that separates the cases.
+- [[id:1EB3B50C-36D4-5FE4-A44C-153EA48280E9][The regulatory treatment of an FX forward turns on settlement and purpose]] — completes: what the case changes.
+
+* Sources
+
+- [[https://www.oreilly.com/library/view/key-financial-market/9780273750123/html/chapter-038.html][Short Dates, Key Financial Market Concepts]]
+- [[https://en.wikipedia.org/wiki/Foreign_exchange_date_conventions][Foreign exchange date conventions, Wikipedia]]
+- [[https://www.mfsa.mt/wp-content/uploads/2018/12/20180813_MiFID_FowardContracts.pdf][MiFID forward contracts circular, MFSA]]

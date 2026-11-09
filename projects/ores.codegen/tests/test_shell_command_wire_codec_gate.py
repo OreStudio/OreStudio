@@ -60,18 +60,7 @@ def test_a_real_opted_in_model_reaches_the_template_opted_in():
         assert render_data(model, template)[section]["has_generated_wire_codec"], model
 
 
-def test_an_opted_in_command_names_no_reflector():
+def test_an_opted_in_command_uses_its_codec():
     for model, template, section in CASES:
         text = render(model, template, section, True)
-        assert "rfl::" not in text, model
-        assert "<rfl" not in text, model
-        assert "rfl/reflectors" not in text, model
         assert "::write_json(" in text, model
-
-
-def test_a_command_without_the_flag_names_no_reflector_either():
-    """Every model has a generated codec, so every branch encodes through it."""
-    for model, template, section in CASES:
-        text = render(model, template, section, False)
-        assert "rfl::" not in text, model
-        assert "<rfl" not in text, model

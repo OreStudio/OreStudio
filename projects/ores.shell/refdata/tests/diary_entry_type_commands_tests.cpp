@@ -72,16 +72,16 @@ TEST_CASE("diary_entry_type_commands_registers_every_derived_verb", "[commands]"
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("diary_entry_types ");
     for (const auto& verb : {
-             std::string{"diary_entry_types list"},
-             std::string{"diary_entry_types get"},
-             std::string{"diary_entry_types get-many"},
-             std::string{"diary_entry_types add"},
-             std::string{"diary_entry_types set"},
-             std::string{"diary_entry_types put-many"},
-             std::string{"diary_entry_types delete"},
-             std::string{"diary_entry_types delete-many"},
-             std::string{"diary_entry_types versions"},
-             std::string{"diary_entry_types version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

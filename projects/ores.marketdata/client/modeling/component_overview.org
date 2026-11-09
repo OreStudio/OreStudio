@@ -24,7 +24,7 @@
 =ores.marketdata.client= is the typed, authenticated facade non-UI
 consumers use to reach the market-data service. =market_data_client=
 centralises the request/response round trip and the service authentication,
-so a caller states what it wants rather than hand-rolling a subject, an rfl
+so a caller states what it wants rather than hand-rolling a subject, a codec
 payload and an auth header. =fx_spot_subscription= is the streaming half: it
 translates an ORE key plus the consuming (tenant, party) context
 into the per-party tick subject and delivers decoded ticks to a callback.

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :domain:finance:currency:trading:book:
 #+created: 2026-07-14
-#+updated: 2026-07-14
+#+updated: 2026-11-09
 
 * Summary
 
@@ -70,6 +70,7 @@ manual reclassification at the moment settlement actually occurs.
 
 * See also
 
+- [[id:DA0C1F28-2F5A-54B5-BFD0-583362415D34][A spot position is rolled forward with a tom-next swap]] — completes: how a spot position carries.
 - [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] -- hub note.
 - [[id:2E4294F1-41BD-4680-AB0A-C02706CD31CE][Ledger Sweep]] -- the daily process these three revaluation types
   are the accounting detail of.

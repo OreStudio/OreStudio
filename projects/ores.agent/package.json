@@ -13,11 +13,12 @@
     "package": "npm run build && node scripts/package.mjs",
     "deploy": "node scripts/deploy.mjs",
     "eval": "npm run build && node evals/run.mjs",
-    "verify": "npm run format:check && npm test && node evals/check.mjs",
+    "verify": "npm run format:check && npm test && npm run check:backend-contract && node evals/check.mjs",
     "eval:compare": "node evals/compare.mjs",
     "eval:doctor": "npm run build && node evals/preflight.mjs",
     "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\""
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "check:backend-contract": "node scripts/check-backend-contracts.mjs check"
   },
   "devDependencies": {
     "@types/markdown-it": "14.2.0",

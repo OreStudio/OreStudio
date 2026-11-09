@@ -433,6 +433,7 @@ TEST_CASE("every kind the catalogue declares has a runner in this build", "[work
         CHECK(is_executed_step_kind(kind));
 
     CHECK(is_executed_step_kind("publish_bundle"));
+    CHECK(is_executed_step_kind("build_calendars"));
     CHECK(is_executed_step_kind("import_lei_hierarchy"));
     CHECK(is_executed_step_kind("provision_party"));
     CHECK(is_executed_step_kind("load_staff"));

@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 68DF46F9-B1BC-41AD-B382-2B6B2B421469
+:END:
+#+title: Story: Hotfix: nightly CI failures
+#+description: The Linux, macOS, Windows and valgrind nightlies fail on shell completion tests, compile errors, test defects and memcheck reports.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:sprint_30:v0:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The nightly builds on Linux, macOS and Windows and the valgrind run are red.
+The causes are separate: the =cli= 2.3.0 completion change, one GCC error, one
+Windows compile error, a missing valgrind suppression, an uninitialised send,
+and three macOS test failures. This story fixes each cause, so that the nightly
+runs show only real defects.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Fixes raised in one PR.                |
+| Waiting on    | Nothing.                               |
+| Next          | Confirm the fixes in the nightly run.  |
+| Last touched  | 2026-11-09                               |
+
+* Acceptance
+
+- The 16 =ores.shell.*= suites pass with =cli= 2.3.0.
+- The GCC and Windows jobs compile past their reported errors.
+- The valgrind run reports no NATS still-reachable defect, and the uninitialised
+  send is fixed or classified.
+- The macOS change-stream and next-fire tests pass, and the HTTP client timeout
+  names the test that hangs.
+- The nightly runs on =main= confirm each item.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ECC490AD-D0D8-4B8F-9F03-1E69A3109D54][Scaffold story: Hotfix: nightly CI failures]] | DONE | 2026-11-09 | 2026-11-09 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D37CDA80-087B-481C-A79F-A8B1273E7B1C][Implement Hotfix: nightly CI failures]] | DONE | 2026-11-09 | 2026-11-09 | Initial task for: Hotfix: nightly CI failures |
+
+* Decisions
+
+- Test the bare verb that =cli= 2.3.0 returns, and do not patch the overlay.
+  =ores.shell= runs on =CliFileSession=, which has no tab completion, so no
+  user sees the completion output.
+- Carry every fix in one PR with one commit per fix. The nightly runs on =main=
+  are the final proof, because no local environment reproduces macOS or Windows.
+
+* Out of scope
+
+-

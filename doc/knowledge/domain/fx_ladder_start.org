@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 3CDBAF1A-452C-5B0A-AFF2-BFF18FBD5D4E
+:END:
+#+title: A forward ladder can start from today, tomorrow or spot
+#+description: Choosing the near date of a ladder's rows, and how forward-forward quotes generalise it.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx:fx_forward:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+* Summary
+
+Each row of a ladder is a pair of dates, a near date and a value date. Choosing today, tomorrow or spot as the start sets the near date of the rows.
+
+* Detail
+
+The standard ladder starts from spot. A forward-forward quote, such as 3M against 6M, is the general case. Its points are the difference between the two outrights. The rates on a ladder from another start are the same curve read between other dates. This is the design ORE Studio adopts.
+
+* See also
+
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — the structure note.
+- [[id:CE15D83D-6400-4596-8878-3A78D8298A85][Forward Ladder]] — completes: the surface this acts on.
+- [[id:2BF0E688-D053-5FC4-B4A3-10A5B685789D][Short-date swap points run between their own two value dates]] — completes: the near date of each short tenor.
+- [[id:68F2B84F-1A50-502B-A5AE-92786949A724][A forward ladder shows each pair's tenors as outrights and points]] — completes: the display.
+
+* Sources
+
+- [[https://www.lseg.com/en/insights/fx/the-case-for-turn-impact-adjusted-fx-forward-curves][The case for turn-impact-adjusted FX forward curves, LSEG]]
+- [[https://www.oreilly.com/library/view/key-financial-market/9780273750123/html/chapter-038.html][Short Dates, Key Financial Market Concepts]]

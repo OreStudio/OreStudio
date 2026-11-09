@@ -57,9 +57,8 @@ TEST_CASE("notification_operations_commands_registers_raise_notification", "[com
     notification_operations_commands::register_commands(root_menu, session);
 
     const auto completions = root_menu.GetCompletions("notification_operations ");
-    CHECK(std::find(completions.begin(),
-                    completions.end(),
-                    "notification_operations raise-notification") != completions.end());
+    CHECK(std::find(completions.begin(), completions.end(), "raise-notification") !=
+          completions.end());
 
     BOOST_LOG_SEV(lg, debug) << "Registered 1 command(s).";
 }

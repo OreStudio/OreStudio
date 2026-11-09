@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:fx:crm:domain:
 #+created: 2026-07-04
-#+updated: 2026-07-04
+#+updated: 2026-11-09
 
 This is the hub note for currency pairs as reference data. Each linked
 note is a single focused concept; start here and follow the links.
@@ -50,4 +50,5 @@ graph structure rather than the pair entity itself.
 
 * See also
 
+- [[id:9FB155A4-54FD-57D5-93A1-1FECB3A05F95][FX forwards]] — completes: the companion cluster on forwards.
 - [[id:48F6FD8D-56C7-4FF7-A369-CD13D08A6057][Cross-rates matrix (CRM)]] — the companion hub for spot-rate derivation.

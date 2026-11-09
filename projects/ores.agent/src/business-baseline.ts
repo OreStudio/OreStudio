@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Operator inspection only. No new agent/MCP tools or mutation operations.
 import { z } from 'zod';
-import { AppError, backendRevision, subjects, type Backend } from './backend.js';
+import { AppError, backendContractRevision, subjects, type Backend } from './backend.js';
 import type { Session } from './auth.js';
 import { marketId, marketSeries, observationTime } from './market.js';
 const page = {
@@ -277,7 +277,7 @@ export async function inspectBusiness(backend: Backend, session: Session) {
     const complete = Object.values(findings).every((f) => f.status === 'ok');
     return {
         inspectedAt: new Date().toISOString(),
-        backendContractRevision: backendRevision,
+        backendContractRevision,
         tenantId: session.tenantId,
         partyId: session.partyId,
         mode: 'read_only',

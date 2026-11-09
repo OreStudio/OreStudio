@@ -72,16 +72,16 @@ TEST_CASE("approval_part_commands_registers_every_derived_verb", "[commands]") {
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("approval_parts ");
     for (const auto& verb : {
-             std::string{"approval_parts list"},
-             std::string{"approval_parts get"},
-             std::string{"approval_parts get-many"},
-             std::string{"approval_parts add"},
-             std::string{"approval_parts set"},
-             std::string{"approval_parts put-many"},
-             std::string{"approval_parts delete"},
-             std::string{"approval_parts delete-many"},
-             std::string{"approval_parts versions"},
-             std::string{"approval_parts version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

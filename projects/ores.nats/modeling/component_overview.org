@@ -59,7 +59,6 @@ dependency of every domain service.
 * Dependencies
 
 - =nats.c= — C NATS client library.
-- =rfl= — JSON and msgpack serialisation for message payloads.
 - =ores.logging= — structured logging.
 
 * See also

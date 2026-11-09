@@ -129,7 +129,7 @@ the check. See the criteria provenance notes at the end of this section.
 
 | Item | Description | Domain | Aux | What to look for |
 |------+-------------+--------+-----+------------------|
-| JSON struct | rfl-based serialisation struct | Always | Always | =ores.refdata.api/include/.../domain/<entity>_json.hpp= |
+| JSON struct | codec-based serialisation struct | Always | Always | =ores.refdata.api/include/.../domain/<entity>_json.hpp= |
 | IO handler | domain ↔ JSON conversion | Always | Always | =domain/<entity>_json_io.hpp= |
 | Protocol header | NATS message type definitions | Always | Always | =messaging/<entity>_protocol.hpp= |
 | Mutation message types | Save/delete request + saved/deleted event | Always | Always | =save_<entity>=, =delete_<entity>=, =<entity>_saved=, =<entity>_deleted= in protocol header |

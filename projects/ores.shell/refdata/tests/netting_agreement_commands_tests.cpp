@@ -72,17 +72,17 @@ TEST_CASE("netting_agreement_commands_registers_every_derived_verb", "[commands]
     // a verb that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("netting_agreements ");
     for (const auto& verb : {
-             std::string{"netting_agreements list"},
-             std::string{"netting_agreements get"},
-             std::string{"netting_agreements get-many"},
-             std::string{"netting_agreements add"},
-             std::string{"netting_agreements set"},
-             std::string{"netting_agreements put-many"},
-             std::string{"netting_agreements delete"},
-             std::string{"netting_agreements delete-many"},
-             std::string{"netting_agreements by-counterparty-id"},
-             std::string{"netting_agreements versions"},
-             std::string{"netting_agreements version"},
+             std::string{"list"},
+             std::string{"get"},
+             std::string{"get-many"},
+             std::string{"add"},
+             std::string{"set"},
+             std::string{"put-many"},
+             std::string{"delete"},
+             std::string{"delete-many"},
+             std::string{"by-counterparty-id"},
+             std::string{"versions"},
+             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 

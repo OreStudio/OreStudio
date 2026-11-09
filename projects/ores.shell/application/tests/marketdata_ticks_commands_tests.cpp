@@ -63,7 +63,7 @@ TEST_CASE("marketdata_commands registers the ticks verb", "[commands][marketdata
     marketdata_commands::register_commands(root_menu, session);
 
     const auto completions = root_menu.GetCompletions("marketdata ");
-    CHECK(std::find(completions.begin(), completions.end(), std::string{"marketdata ticks"}) !=
+    CHECK(std::find(completions.begin(), completions.end(), std::string{"ticks"}) !=
           completions.end());
 }
 

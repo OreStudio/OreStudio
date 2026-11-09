@@ -7,7 +7,8 @@ import { gunzipSync } from 'node:zlib';
 import { randomUUID } from 'node:crypto';
 import type { Config } from './config.js';
 
-export const backendRevision = 'fc4f559dfb187a368bf2a8cd4053d8e833348835';
+// Audit reference, not a server version lock. CI checks backend-contract.json for drift.
+export const backendContractRevision = 'f19210e781dd508c1019f499a74ecd40d59912e3';
 export const subjects = {
     login: 'iam.v1.ops.login',
     logout: 'iam.v1.ops.logout',

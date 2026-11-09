@@ -73,7 +73,7 @@ expresses the conversation, which is the workflow component's P04.
 - =ores.nats= -- NATS transport for service calls.
 - =ores.workflow.api= -- the domain types and protocol messages the units send.
 - =ores.platform= -- ISO 8601 instant parsing for token conversion.
-- =ores.utility= -- the rfl reflectors a response is printed with.
+- =ores.utility= -- the codecs a response is printed with.
 - =ores.logging= -- logger factory.
 - =cli= -- the menu and handler types the units register against.
 

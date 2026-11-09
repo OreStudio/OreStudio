@@ -90,11 +90,10 @@ something that breaks a header this project includes.
   =WinSock.h=, which conflicts with the =WinSock2.h= that Boost.Asio
   pulls in.
 - =NOMINMAX= keeps =<windows.h>= from defining =min= and =max= as
-  function-like macros. A unity unit that includes =<windows.h>= before
-  reflect-cpp otherwise expands =std::numeric_limits<T>::max()= as a
-  macro call with no arguments. The build then fails inside rfl's own
-  headers -- =rfl/Literal.hpp=, =rfl/Variant.hpp= and =rfl/Generic.hpp= --
-  with =too few arguments provided to function-like macro invocation=.
+  function-like macros. A unity unit that includes =<windows.h>= otherwise expands
+  =std::numeric_limits<T>::max()= as a macro call with no arguments, and
+  the build fails with =too few arguments provided to function-like macro
+  invocation=.
 
 Both are compile definitions, so they hold for every header in the
 translation unit and no include order can undo them.

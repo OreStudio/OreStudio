@@ -87,6 +87,10 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | A second run of the seed is refused by the insert trigger before =on conflict= applies | seeds | Fixed | Each insert is guarded by =where not exists=. Rerun twice in a transaction with no change. |
+| 2 | =on commit drop= needs a transaction | =refdata_fx_vol_surface_blueprint_populate.sql= | Declined | The populate runs in one transaction, and the derived catalogue seed uses the same pattern. |
+| 3 | Positional =column1= and =column2= in the series seed | =marketdata_market_series_fx_vol_surface_populate.sql= | Fixed | The columns are named. |
+| 4 | Assert the derivation config id exists | =marketdata_market_series_fx_vol_surface_populate.sql= | Declined | It is a soft reference to a constant in =derived_fx_vol.cpp=, with no table row. |
+| 5 | Run the full pgTAP suite | =projects/ores.sql/test= | Done | 87 of 88 suites pass. The failure is the existing =MXN-TIIE= seed, captured in the inbox. |
 
 * Result
 

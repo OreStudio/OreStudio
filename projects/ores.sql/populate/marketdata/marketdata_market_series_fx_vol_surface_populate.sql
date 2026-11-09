@@ -66,10 +66,14 @@ from (values
         current_user, current_user, 'system.initial_load',
         'The calibrated EUR/USD surface: claimed by the calibration on its first run'
     )
-) as v
+) as v (
+    id, tenant_id, version, party_id, series_subclass, oresmd_uri,
+    provider_code, derivation_kind, derivation_config_id, derivation_config_version,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
 where not exists (
     select 1 from ores_marketdata_market_series_tbl s
-    where s.tenant_id = v.column2 and s.id = v.column1
+    where s.tenant_id = v.tenant_id and s.id = v.id
       and s.valid_to = ores_utility_infinity_timestamp_fn()
 );
 

@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/make-fx-forwards-available
-#+pr:
+#+pr: 4522
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -151,7 +151,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4522][#4522]] | [analytics] Compute FX forwards and points from two discount curves |
 
 * Review
 

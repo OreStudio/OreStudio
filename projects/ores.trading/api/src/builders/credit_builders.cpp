@@ -307,7 +307,9 @@ credit_linked_swap_builder::build() const {
     out.credit_linked_swap_instruments.push_back(std::move(fact));
 
     // ORE takes the trade's currency from its independent payments, so the
-    // note's funding at the start is one.
+    // note's funding at the start is one. The funding flows the other way to
+    // the coupons and the redemption: the protection seller pays it and
+    // receives them.
     const bool payer = terms_.side.get() == protection::buy;
     out.legs.push_back(leg_of(1, "independent", !payer, "Cashflow", terms_.currency.get()));
     out.leg_amounts.push_back(amount_of(1, terms_.notional.get(), terms_.start.get()));

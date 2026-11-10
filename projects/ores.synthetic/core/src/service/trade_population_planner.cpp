@@ -1978,7 +1978,7 @@ build_credit_trade(const domain::trade_generation_scope& scope,
                            .fixed_rate =
                                money(std::round((0.02 + 0.02 * draw(name, 3)) * 10000.0) / 10000.0),
                            .index = underlying_index_of(scope),
-                           .fixed_side = entry.slot % 2 == 0 ? tb::side::pay : tb::side::receive},
+                           .fixed_side = draw(name, 4) < 0.5 ? tb::side::pay : tb::side::receive},
             .participation_rate = 0.5,
             .reference_entity = reference_entity,
             .credit_curve = credit_curve_of(reference_entity, entry.currency),

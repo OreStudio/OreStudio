@@ -8,7 +8,7 @@
 #+filetags: :rework-the-market-data-feeds-remaining-2:sprint_30:v0:
 #+owner: marco
 #+branch: feature/store-one-tick-for-each-source
-#+pr: 4509
+#+pr: 4544
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
@@ -117,6 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4544][#4544]] | [agile] Close Store one tick for each source in sprint 30 |
 | [[https://github.com/OreStudio/OreStudio/pull/3769][#3769]] | [codegen] Model the tick table under codegen |
 | [[https://github.com/OreStudio/OreStudio/pull/4509][#4509]] | [marketdata] Store one tick for each source |
 

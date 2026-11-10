@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
 #+branch: feature/catalogue-the-interest-rate-items
-#+pr:
+#+pr: 4545
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4545][#4545]] | [marketdata] Catalogue the overnight rate items |
 
 * Review
 

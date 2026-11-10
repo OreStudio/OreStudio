@@ -123,6 +123,11 @@ values
      'ecb', 'ecb_portal', 'production', 'https://data-api.ecb.europa.eu', '',
      '{"url":"https://data-api.ecb.europa.eu","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the ECB Data Portal.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('boe-database', ores_utility_system_tenant_id_fn(), 0, 'Bank of England database',
+     'boe', 'boe_iadb', 'production', 'https://www.bankofengland.co.uk', '',
+     '{"url":"https://www.bankofengland.co.uk","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Bank of England statistical database.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -140,6 +145,10 @@ values
     ('52a9af16-42ac-5fa6-85f1-dfe87ab35d84', ores_utility_system_tenant_id_fn(), 0,
      'ecb-estr', 'ecb', 'ecb-data-portal', 'end_of_day', 'EST.B.EU000A2X2A25.WT', false,
      '€STR as the ECB publishes it, read from the ECB Data Portal by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('93de0868-9ab8-5a1e-a16a-66941e6b0acc', ores_utility_system_tenant_id_fn(), 0,
+     'boe-sonia', 'boe', 'boe-database', 'end_of_day', 'IUDSOIA', true,
+     'SONIA as the Bank of England publishes it, read from its statistical database by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -154,7 +163,8 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, f.id, 'interest
        current_user, current_user, 'system.initial_load',
        'Initial population of the overnight rates scopes'
 from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
-             ('ecb-estr', 'ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT'))
+             ('ecb-estr', 'ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT'),
+             ('boe-sonia', 'boe', 'boe_iadb', 'IUDSOIA'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -215,5 +225,23 @@ begin
         '52a9af16-42ac-5fa6-85f1-dfe87ab35d84',
         current_user, current_user, 'system.initial_load',
         'The system party reads €STR from the ECB Data Portal'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '06aa6000-964d-5e8d-9c93-2af82eb9714e', ores_utility_system_tenant_id_fn(), 0, v_party, 'boe',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes SONIA of the Bank of England for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'efb38371-2756-583c-9f34-33f15ff47dc4', ores_utility_system_tenant_id_fn(), 0, v_party, 'boe', 'interest_rates',
+        '93de0868-9ab8-5a1e-a16a-66941e6b0acc',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads SONIA from the Bank of England'
     ) on conflict do nothing;
 end $$;

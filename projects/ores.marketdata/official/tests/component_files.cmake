@@ -22,6 +22,7 @@
 set(files
     "app_official_adapter_tests.cpp"
     "config_options_tests.cpp"
+    "domain_boe_tests.cpp"
     "domain_ecb_tests.cpp"
     "domain_frankfurter_tests.cpp"
     "domain_nyfed_tests.cpp"

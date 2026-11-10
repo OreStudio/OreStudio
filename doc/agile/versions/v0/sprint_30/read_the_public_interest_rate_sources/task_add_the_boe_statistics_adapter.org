@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-boe-statistics-adapter
+#+pr: 4548
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-11-09
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ SONIA is stored as fixings in the system tenant, with its history, read from the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] and [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]]. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09 |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-10 |
 
 * Acceptance
 
@@ -45,9 +45,11 @@ SONIA is stored as fixings in the system tenant, with its history, read from the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =boe_fetcher= implements =fetcher=: adapter =boe_iadb=, scheme =boe_iadb=, field =value=. A source's key is a series code, =IUDSOIA= for SONIA, checked as capitals and digits before it enters a URL.
+- A read is one GET of =_iadb-fromshowcolumns.asp= with =csv.x=yes= over the window, whose dates the database names as =29/Oct/2026=. The answer's header must be =DATE,<code>=, and each row is a date such as =29 Oct 2026= and the value in percent, stored as its decimal.
+- Probed on 2026-11-10: a window with no business day answers its header alone, which holds no fixing; an unknown series answers a 302 to the database's error page, which is an error.
+- The seeds add the =boe= supplier, the =boe_iadb= adapter, the =boe-database= session, and the =boe-sonia= feed, the Bank's default, scoped to the SONIA item. The system party gains a subscription to =boe= and an =interest_rates= route to the feed.
+- The Bank's terms allow SONIA for our own calibration and curves; a direct licence is needed to redistribute it to clients. Only the system tenant routes to =boe-sonia=: a provisioned tenant has no route to it.
 
 * Measurements
 
@@ -61,7 +63,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| SONIA history the route serves | 7,542 rates, 1997-01-02 to 2026-11-05 | =curl .../_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=01/Jan/1990&Dateto=10/Nov/2026&SeriesCodes=IUDSOIA&...= | c5f59bff0c |
+| SONIA fixings a fresh environment stored | 276, 2025-10-06 to 2026-11-05, last =0.039824= | =compass check= (=ticks-smoke=), then a count of the fixings of the SONIA item | c5f59bff0c |
+| Routes to =boe=, by tenant | the system tenant only | a query of the routes of the publishers =nyfed=, =boe=, =ecb= and =boc= after =ticks-smoke= | c5f59bff0c |
+| Cases of =ores.marketdata.official.tests= | 40 pass | =ores.marketdata.official.tests= | c5f59bff0c |
 
 * Notes
 
@@ -82,12 +87,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4548][#4548]] | [marketdata] Add the Bank of England statistics adapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4548: confirm with a test that a 302 gives an error | =boe.cpp= | No change | =an_unknown_boe_series_is_an_error_and_not_an_empty_read= already sends a 302 through the transport, and =read_body= refuses any status but 200. |
+| 2 | PR #4548: say the month table must not follow the locale | =boe.cpp= | Accepted | A comment says it. |
+| 3 | PR #4548: strip a UTF-8 byte order mark before the header check | =boe.cpp= | Accepted | Stripped, and a case covers it. |
+| 4 | PR #4548: a row without a value names an index, not the row | =boe.cpp= | Accepted | The error quotes the row. |
+| 5 | PR #4548: org markup in the C++ doc comments | headers | No change | It matches the other headers, as the reviewer noted. |
+| 6 | PR #4548: track the checks that fail on main | PR body | Declined | They come from other merges on main and belong to their owners, not to this story. |
 
 * Result
+
+SONIA is stored as fixings in the system tenant, read from the Bank of England's statistical database by a specialised fetcher that the official adapter hosts beside Frankfurter, the New York Fed and the ECB. A fresh environment accepted the Bank's terms at setup and stored 276 fixings, the last 400 days, with the log line "Sent 276 fixing(s) of 'boe-sonia'". The values are the decimals of the published percents, such as =0.039824= for 3.9824, and the provider =boe= carries the SONIA credit line of the Open Government Licence. Only the system tenant routes to the feed, as the Bank's terms need a direct licence to pass SONIA to clients. The calibration sources note records the 7,542 rates the database serves since 1997-01-02.
+
+Unit tests parse a recorded answer, Windows line ends and a header alone, refuse seven malformed answers, check the URL of a read, treat the database's redirect as an error, and refuse a key that is not a series code.

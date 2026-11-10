@@ -18,7 +18,7 @@
  *
  */
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
-#include <array>
+#include "ores.trading.api/builders/cadence.hpp"
 #include <optional>
 #include <string_view>
 #include <utility>
@@ -29,25 +29,6 @@ namespace ores::trading::builders {
 namespace {
 
 using marketdata::conventions::lookup_error;
-
-struct cadence final {
-    std::string_view frequency;
-    std::string_view tenor;
-};
-
-/// A convention states a frequency and an index name a tenor; a schedule takes only a tenor.
-constexpr std::array cadences{cadence{"Annual", "1Y"},
-                              cadence{"Semiannual", "6M"},
-                              cadence{"Quarterly", "3M"},
-                              cadence{"Bimonthly", "2M"},
-                              cadence{"Monthly", "1M"}};
-
-std::optional<cadence> cadence_of(std::string_view stated) {
-    for (const auto& known : cadences)
-        if (stated == known.frequency || stated == known.tenor)
-            return known;
-    return std::nullopt;
-}
 
 struct leg_conventions final {
     cadence period;

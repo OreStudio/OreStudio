@@ -29,6 +29,7 @@
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
+#include "ore_example_conventions.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
@@ -122,6 +123,7 @@ domain::trade_generation_scope scope_of(const std::string& asset_class_code) {
     scope.inflation_index_codes = {"UKRPIX", "USCPIA", "BECPIHL"};
     scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
     scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
+    scope.conventions = ores::synthetic::tests::ore_example_conventions();
     return scope;
 }
 

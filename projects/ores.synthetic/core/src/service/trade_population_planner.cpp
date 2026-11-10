@@ -18,12 +18,15 @@
  *
  */
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
+#include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.trading.api/builders/credit_builders.hpp"
 #include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
-#include "ores.trading.api/domain/credit_instruments.hpp"
 #include "ores.trading.api/domain/equity_instruments.hpp"
 #include "ores.trading.api/domain/fx_instruments.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/domain/rate_instruments.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -1851,37 +1854,143 @@ std::size_t credit_trade_planner::code_count() const {
     return credit_type_count;
 }
 
-/*
- * The credit family states its own row. The mapping from what the planner draws
- * to each product's constructor lives here, beside the drawing, and not in the
- * writer: the plan carries the row and the writer persists it.
- */
-ores::trading::domain::credit_instrument construct_credit_row(const domain::credit_terms& drawn,
-                                                              const std::string& trade_type_code) {
-    namespace tdom = ores::trading::domain;
-    tdom::credit_common_terms terms;
-    terms.trade_type_code = trade_type_code;
-    terms.reference_entity_id_type = drawn.reference_entity_id_type;
-    terms.reference_entity_id = drawn.reference_entity_id;
-    terms.start_date = drawn.start_date;
-    terms.maturity_date = drawn.maturity_date;
+namespace {
 
-    const auto& type = trade_type_code;
-    auto row = [&] {
-        if (type == "CreditDefaultSwap")
-            return tdom::construct_credit_default_swap(terms);
-        if (type == "IndexCreditDefaultSwap")
-            return tdom::construct_index_credit_default_swap(terms);
-        if (type == "IndexCreditDefaultSwapOption")
-            return tdom::construct_index_credit_default_swap_option(terms);
-        if (type == "CreditLinkedSwap")
-            return tdom::construct_credit_linked_swap(terms);
-        if (type == "RiskParticipationAgreement")
-            return tdom::construct_risk_participation_agreement(terms);
-        return tdom::construct_synthetic_cdo(terms);
-    }();
-    row.description = "Generated credit trade.";
-    return row;
+/// The CDS convention ORE's examples and the seeded conventions give standard contracts.
+constexpr std::string_view cds_convention_id = "CDS-STANDARD-CONVENTIONS";
+
+/*
+ * A generated credit trade names its curve by its reference entity: the senior
+ * unsecured credit spread series of the LEI, in the trade currency. The market
+ * data task gives each entity its curve; until then ORE fails the trade only
+ * because the curve is missing.
+ */
+ores::marketdata::datum::market_reference credit_curve_of(const std::string& lei,
+                                                          const std::string& currency) {
+    namespace md = ores::marketdata::datum;
+    const auto key = std::format("CDS/CREDIT_SPREAD/{}/SNRFOR/{}/5Y", lei, currency);
+    const auto quote = md::ore_key_codec::read(key);
+    if (!quote)
+        throw trade_population_error("The credit curve of " + lei + " has no address: " +
+                                     quote.error());
+    auto series = md::market_reference::of(md::series_of(*quote));
+    if (!series)
+        throw trade_population_error("The credit curve of " + lei + " has no address: " +
+                                     series.error());
+    return std::move(*series);
+}
+
+/*
+ * The index an RPA's underlying swap floats on: that of the first swap
+ * convention whose index is in the trade currency, so the underlying is one the
+ * tenant's conventions can build.
+ */
+ores::marketdata::datum::market_reference
+underlying_index_of(const domain::trade_generation_scope& scope) {
+    namespace md = ores::marketdata::datum;
+    for (const auto& swap : scope.conventions.swaps) {
+        if (!swap.oresmd_uri)
+            continue;
+        auto index = md::market_reference::parse(*swap.oresmd_uri);
+        if (index && index->index() != nullptr &&
+            index->index()->subject() == scope.currency_code)
+            return std::move(*index);
+    }
+    throw trade_population_error("No swap convention of the tenant floats on an index in " +
+                                 scope.currency_code +
+                                 ", so no risk participation agreement can state its "
+                                 "underlying swap.");
+}
+
+ores::trading::domain::instrument_batch
+batch_of(std::expected<ores::trading::domain::credit_instrument_data,
+                       ores::trading::builders::build_error> built,
+         const std::string& trade_type_code) {
+    if (!built)
+        throw trade_population_error("The " + trade_type_code + " builder refuses the drawn " +
+                                     built.error().term + ": " + built.error().message);
+    built->instrument.description = "Generated credit trade.";
+    ores::trading::domain::instrument_batch batch;
+    ores::trading::domain::append_instrument(batch,
+                                             ores::trading::domain::trade_instrument{*built});
+    return batch;
+}
+
+/*
+ * The credit family builds each trade through its builder, from what the
+ * planner draws. The standard running coupons are 100 and 500 basis points.
+ */
+ores::trading::domain::instrument_batch
+build_credit_trade(const domain::trade_generation_scope& scope,
+                   const ores::marketdata::conventions::convention_lookup& conventions,
+                   const domain::trade_population_slot& entry,
+                   const std::string& reference_entity,
+                   std::uint32_t years) {
+    namespace tb = ores::trading::builders;
+    using ores::utility::decimal::decimal;
+    const auto money = [](double value) { return decimal::from_double(value).value(); };
+
+    const auto& type = entry.trade_type_code;
+    const auto name = slot_name(scope, entry.slot);
+    const auto side = entry.slot % 2 == 0 ? tb::protection::buy : tb::protection::sell;
+    const auto start = add_months(scope.as_of_date, -static_cast<int>(entry.slot % 6));
+    const auto protection = [&](year_month_day from) {
+        return tb::credit_protection_terms{
+            .notional = money(entry.notional),
+            .currency = entry.currency,
+            .start = from,
+            .maturity = add_years(from, static_cast<int>(years)),
+            .running_spread = money(draw(name, 2) < 0.5 ? 0.01 : 0.05),
+            .reference_entity = reference_entity,
+            .credit_curve = credit_curve_of(reference_entity, entry.currency),
+            .side = side,
+            .convention = std::string(cds_convention_id)};
+    };
+
+    if (type == "CreditDefaultSwap")
+        return batch_of(tb::credit_default_swap_builder(conventions, protection(start)).build(),
+                        type);
+    if (type == "IndexCreditDefaultSwap")
+        return batch_of(
+            tb::index_credit_default_swap_builder(conventions, protection(start)).build(), type);
+    if (type == "CreditLinkedSwap")
+        return batch_of(tb::credit_linked_swap_builder(conventions, protection(start)).build(),
+                        type);
+    if (type == "IndexCreditDefaultSwapOption") {
+        const auto expiry = add_months(scope.as_of_date, 3);
+        const tb::index_credit_default_swap_option_terms terms{
+            .swap = protection(year_month_day{sys_days{expiry} + days{1}}),
+            .expiry = expiry,
+            .strike = money(1.0),
+            .index_term = std::format("{}Y", years),
+            .position = entry.slot % 2 == 0 ? tb::option_position::long_option
+                                            : tb::option_position::short_option};
+        return batch_of(tb::index_credit_default_swap_option_builder(conventions, terms).build(),
+                        type);
+    }
+    if (type == "RiskParticipationAgreement") {
+        const tb::risk_participation_agreement_terms terms{
+            .underlying = {.notional = money(entry.notional),
+                           .currency = entry.currency,
+                           .start = start,
+                           .maturity = add_years(start, static_cast<int>(years)),
+                           .fixed_rate = money(std::round((0.02 + 0.02 * draw(name, 3)) * 10000.0) /
+                                               10000.0),
+                           .index = underlying_index_of(scope),
+                           .fixed_side = entry.slot % 2 == 0 ? tb::side::pay : tb::side::receive},
+            .participation_rate = 0.5,
+            .reference_entity = reference_entity,
+            .credit_curve = credit_curve_of(reference_entity, entry.currency),
+            .side = side,
+            .fee = money(std::round(entry.notional * 0.001 * 100.0) / 100.0),
+            .convention = std::string(cds_convention_id)};
+        return batch_of(tb::risk_participation_agreement_builder(conventions, terms).build(),
+                        type);
+    }
+    throw trade_population_error("The credit trade type " + type +
+                                 " states no builder this planner knows.");
+}
+
 }
 
 domain::trade_population_plan
@@ -1901,6 +2010,7 @@ credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const ores::marketdata::conventions::convention_lookup conventions(scope.conventions);
     const auto types = booked_types(credit_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
@@ -1909,23 +2019,15 @@ credit_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         const auto drawn =
             min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
 
-        domain::credit_terms terms;
-        terms.reference_entity_id_type = "LEI";
-        terms.reference_entity_id =
-            scope.credit_reference_entities[slot % scope.credit_reference_entities.size()];
-        terms.start_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
-        terms.maturity_date =
-            add_years(terms.start_date, static_cast<int>(std::clamp(drawn, min_years, max_years)));
-
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(*types[slot % types.size()]);
         entry.notional = notional_from(scope, draw(name, 1));
-        /*
-         * The credit family states its row here, where it draws it, and the
-         * plan carries no bag for it.
-         */
-        entry.instruments.credit_instruments.push_back(
-            construct_credit_row(terms, entry.trade_type_code));
+        entry.instruments = build_credit_trade(
+            scope,
+            conventions,
+            entry,
+            scope.credit_reference_entities[slot % scope.credit_reference_entities.size()],
+            std::clamp(drawn, min_years, max_years));
 
         plan.slots.push_back(std::move(entry));
     }

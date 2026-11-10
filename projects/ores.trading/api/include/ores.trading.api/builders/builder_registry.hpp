@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 #define ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 
+#include "ores.trading.api/builders/credit_builders.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include <set>
 #include <string_view>
@@ -28,7 +29,12 @@
 namespace ores::trading::builders {
 
 /// Every trade builder; each states the trade type it builds.
-using all_builders = std::tuple<vanilla_swap_builder>;
+using all_builders = std::tuple<vanilla_swap_builder,
+                                credit_default_swap_builder,
+                                index_credit_default_swap_builder,
+                                index_credit_default_swap_option_builder,
+                                credit_linked_swap_builder,
+                                risk_participation_agreement_builder>;
 
 namespace detail {
 

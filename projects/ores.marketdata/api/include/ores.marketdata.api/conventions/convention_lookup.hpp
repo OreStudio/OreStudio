@@ -21,6 +21,7 @@
 
 #include "ores.marketdata.api/datum/market_reference.hpp"
 #include "ores.marketdata.api/export.hpp"
+#include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
@@ -29,6 +30,7 @@
 #include <expected>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
@@ -46,6 +48,7 @@ struct convention_set final {
     std::vector<refdata::domain::overnight_index_convention> overnight_indices;
     std::vector<refdata::domain::swap_convention> swaps;
     std::vector<refdata::domain::ois_convention> ois_swaps;
+    std::vector<refdata::domain::cds_convention> cds;
 };
 
 /// Why the lookup could not answer, kept apart because each is a different
@@ -161,11 +164,22 @@ public:
     [[nodiscard]] std::expected<refdata::domain::ois_convention, lookup_error>
     ois_convention_of(const datum::market_reference& index) const;
 
+    /**
+     * @brief The CDS convention ORE names @p id.
+     *
+     * A CDS convention defines no index, and the address it states leaves the
+     * reference entity open, so it cannot be found by a trade's curve. ORE
+     * names it by id, and a trade states the id, so the lookup does too.
+     */
+    [[nodiscard]] std::expected<refdata::domain::cds_convention, lookup_error>
+    cds_convention_of(std::string_view id) const;
+
 private:
     detail::answerable<refdata::domain::ibor_index_convention> ibor_indices_;
     detail::answerable<refdata::domain::overnight_index_convention> overnight_indices_;
     detail::answerable<refdata::domain::swap_convention> swaps_;
     detail::answerable<refdata::domain::ois_convention> ois_swaps_;
+    std::vector<refdata::domain::cds_convention> cds_;
 };
 
 }

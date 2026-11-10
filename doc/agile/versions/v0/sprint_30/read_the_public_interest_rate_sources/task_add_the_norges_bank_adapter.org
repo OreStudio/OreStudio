@@ -64,7 +64,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | NOWA history the route serves | 3,801 rates, 2011-09-30 to 2026-11-06 | =curl -s 'https://data.norges-bank.no/api/data/SHORT_RATES/B.NOWA.ON.R?format=csv&startPeriod=2011-01-01&locale=en'=, rows with a value counted | 7b7abcd219 |
 | NOWA fixings a fresh environment stored | 275, 2025-10-06 to 2026-11-06, last =0.045= | =compass check= (=ticks-smoke=), then a count of the fixings of source =norgesbank-nowa= | 7b7abcd219 |
-| Cases of =ores.marketdata.official.tests= | 66 pass, 8 of them of Norges Bank | =ores.marketdata.official.tests= | 7b7abcd219 |
+| Cases of =ores.marketdata.official.tests= | 67 pass, 9 of them of Norges Bank | =ores.marketdata.official.tests= | 7b7abcd219 |
 
 * Notes
 
@@ -91,7 +91,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4553: a byte-order mark would hide the first column | =published_text.cpp= | Accepted | =lines_of= strips a leading UTF-8 byte-order mark, and a case covers it. |
+| 2 | PR #4553: =cells_of= ignores quoting | =published_text.hpp= | Declined | The declaration of =cells_of= states that a cell holds no quoted separator. The SDMX CSV holds codes, dates and numbers. |
+| 3 | PR #4553: the window comment | =norges_bank.cpp= | Declined | The reviewer found it follows the comment rules; nothing to change. |
+| 4 | PR #4553: an empty window costs a second request | =published_text.cpp= | Declined | Only an empty window, such as a weekend, makes the second request, and it is one small GET. |
+| 5 | PR #4553: test =read_window= after a 404 | =domain_norges_bank_tests.cpp= | Declined | Both cases exist: an empty window of a known series, and an unknown series. |
+| 6 | PR #4553: a follow-up for the NOK curve | backlog | Accepted | Capture "Bootstrap the NOK and BRL overnight curves" in the inbox. |
 
 * Result
 

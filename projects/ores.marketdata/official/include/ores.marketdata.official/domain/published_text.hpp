@@ -68,7 +68,7 @@ read_window(http::client::net::transport& transport,
             const std::string& window_url,
             const std::string& latest_url);
 
-/// The lines of @p text that are not empty, without their line ends.
+/// The lines of @p text that are not empty, without their line ends or a leading byte-order mark.
 [[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::vector<std::string_view>
 lines_of(std::string_view text);
 

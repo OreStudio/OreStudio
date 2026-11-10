@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: F493BDDA-C4B5-4E48-A115-6650F224E0F6
+:END:
+#+title: Bootstrap the NOK and BRL overnight curves
+#+description: The curve bootstrap does not implement ACT/ACT.ISMA (NOK-NOWA) or BUS/252 (BRL-CDI), so neither currency has an overnight curve config, and the stored NOWA fixings are read by no curve.
+#+type: capture
+#+level: cross
+#+filetags: :ir:curves:bootstrap:marketdata:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Seed an overnight curve config for NOK and for BRL. The bootstrap engine must first implement the day count that each index convention states: ACT/ACT.ISMA for =NOK-NOWA= and BUS/252 for =BRL-CDI=.
+
+* Why
+
+The synthetic feed quotes both currencies, but the overnight curve configs skip them, because the bootstrap engine does not implement these two day counts. Norges Bank's NOWA is now stored as fixings in the system tenant, so its fixings wait only on the curve. BRL waits also on the terms of the CDI.
+
+* References
+
+- [[id:86EA85AC-87C0-40AB-B102-0BAE47329890][Add the Norges Bank adapter]], which stores NOWA.
+- [[id:F305CDA3-C48F-45B5-B43F-5B220D744528][Add the Banco Central do Brasil adapter]], blocked on the CDI's terms.
+- =projects/ores.sql/populate/refdata/refdata_ir_curve_overnight_configs_populate.sql=, whose header states the gap.
+
+* See also
+
+-

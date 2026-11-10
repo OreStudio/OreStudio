@@ -150,6 +150,8 @@ std::vector<std::string_view> cells_of(std::string_view line, char separator) {
 }
 
 std::vector<std::string_view> lines_of(std::string_view text) {
+    if (text.starts_with("\xEF\xBB\xBF"))
+        text.remove_prefix(3);
     std::vector<std::string_view> out;
     for (auto line : cells_of(text, '\n')) {
         if (!line.empty() && line.back() == '\r')

@@ -164,3 +164,13 @@ TEST_CASE("the_norges_bank_fetcher_refuses_a_key_that_is_not_a_series_key",
                     .has_value());
     CHECK(transport.asked.empty());
 }
+
+TEST_CASE("a_nowa_answer_that_starts_with_a_byte_order_mark_reads_as_fixings",
+          "[domain][norges_bank]") {
+    const auto fixings =
+        parse_norges_bank_csv("\xEF\xBB\xBFTIME_PERIOD;OBS_VALUE\n2026-11-06;4.5\n", nowa_key);
+
+    REQUIRE(fixings.has_value());
+    REQUIRE(fixings->size() == 1);
+    CHECK((*fixings)[0].value == "0.045");
+}

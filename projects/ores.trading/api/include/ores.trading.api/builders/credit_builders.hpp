@@ -123,11 +123,12 @@ private:
 };
 
 /**
- * @brief A note's coupons and redemption, paid while the reference entity
- * survives.
+ * @brief A funded note on the reference entity.
  *
- * The protection seller receives the running spread as a coupon on the premium
- * schedule and the notional at maturity; the buyer pays them.
+ * The protection seller pays the notional at the start, whatever happens. It
+ * then receives the running spread as a coupon on the premium schedule and the
+ * notional at maturity, while the entity survives. The buyer takes the other
+ * side of each payment.
  */
 class ORES_TRADING_API_EXPORT credit_linked_swap_builder final {
 public:

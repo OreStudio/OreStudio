@@ -462,12 +462,7 @@ const std::set<std::string>& known_passthroughs() {
         "CommodityTaRF",
         "CommodityWindowBarrierOption",
         "CommodityWorstOfBasketSwap",
-        "CreditDefaultSwap",
-        "CreditLinkedSwap",
-        "IndexCreditDefaultSwap",
-        "IndexCreditDefaultSwapOption",
         "IntradayPowerForward",
-        "RiskParticipationAgreement",
     };
     return known;
 }

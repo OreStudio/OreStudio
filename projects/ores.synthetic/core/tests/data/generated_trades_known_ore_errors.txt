@@ -33,8 +33,10 @@ CommodityTaRF	Error parsing Trade XML	CommodityTaRFData node not found
 CommodityWindowBarrierOption	Error parsing Trade XML	CommodityWindowBarrierOptionData node not found
 CommodityWorstOfBasketSwap	Error parsing Trade XML	WorstOfBasketSwapData node not found
 ConvertibleBond	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
-CreditDefaultSwap	Error parsing Trade XML	No CreditDefaultSwapData Node
-CreditLinkedSwap	Error parsing Trade XML	XMLNode is NULL (was looking for child CreditCurveId)
+CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
+CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
+CreditLinkedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
+CreditLinkedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 DoubleDigitalOption	Error parsing Trade XML	XMLUtils::getNodeName(): XML Node is NULL
 EquityAccumulator	Error building trade for context 'analytic/PRICING'	invalid payoff type, expected Accumulator or Decumulator
 EquityAsianOption	Error parsing Trade XML	ScheduleData::fromXML(): no node given
@@ -66,12 +68,15 @@ FxSwap	Error building trade for context 'analytic/PRICING'	null date SimpleCashF
 FxTaRF	Error parsing Trade XML	either RangeBounds or RangeBoundSet nodes required
 FxTouchOption	Error parsing Trade XML	Barrier type "KnockOut" not recognized
 FxVarianceSwap	Error building trade for context 'analytic/PRICING'	four tokens required in FX-EUR/USD: FX-TAG-CCY1-CCY2
-IndexCreditDefaultSwap	Error parsing Trade XML	No IndexCreditDefaultSwapData Node
-IndexCreditDefaultSwapOption	Error parsing Trade XML	Expected IndexCreditDefaultSwapOptionData node on trade .
+IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
+IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
+IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'	No CreditIndex constituents data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
+IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'	No CreditIndex constituents data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 InflationSwap	Error parsing Trade XML	Error: No XML Node Rates found.
 IntradayPowerForward	Error parsing Trade XML	XMLNode is NULL (was looking for child Position)
 PerformanceOption_01	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
-RiskParticipationAgreement	Error parsing Trade XML	RiskParticipationAgreement::fromXML(): RiskParticipationAgreementData not found
+RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
+RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 ScriptedTrade	Error building trade for context 'analytic/PRICING'	Could not build index info for '.SPX', expected a valid COMM, FX, EQ, GENERIC, Ibor, Swap, Inflation index identifier.
 ScriptedTrade	Error building trade for context 'analytic/PRICING'	Could not build index info for 'GB0005405286', expected a valid COMM, FX, EQ, GENERIC, Ibor, Swap, Inflation index identifier.
 Swaption	Error building trade for context 'analytic/PRICING'	Settlement type "" not recognized

@@ -205,8 +205,13 @@ credit_default_swap_builder::build() const {
     domain::credit_instrument_data out;
     out.instrument = header_of(
         trade_type, terms_.reference_entity.get(), terms_.start.get(), terms_.maturity.get());
-    out.credit_default_swap_instruments.push_back(
-        protection_fact_of<domain::credit_default_swap_instrument>(terms_, premium->convention));
+    auto fact =
+        protection_fact_of<domain::credit_default_swap_instrument>(terms_, premium->convention);
+    fact.issuer_id = terms_.reference_entity.get();
+    fact.protection_start_date = terms_.start.get();
+    fact.upfront_date = terms_.start.get();
+    fact.upfront_fee = decimal{};
+    out.credit_default_swap_instruments.push_back(std::move(fact));
     add_coupon_leg(out, 1, "premium", terms_.side.get() == protection::buy, terms_, *premium);
     return out;
 }
@@ -242,6 +247,8 @@ index_credit_default_swap_option_builder::build() const {
     // The swap's fact row is the wrapped swap's; the option states its own.
     out->wrapped_index_swap = out->index_credit_default_swap_instruments.front();
     out->index_credit_default_swap_instruments.clear();
+    out->wrapped_index_swap->protection_start_date = terms_.swap.start.get();
+    out->wrapped_index_swap->upfront_fee = decimal{};
 
     domain::index_credit_default_swap_option_instrument fact;
     fact.knock_out = false;
@@ -260,6 +267,7 @@ index_credit_default_swap_option_builder::build() const {
         terms_.position.get() == option_position::long_option ? "Long" : "Short";
     option.style = "European";
     option.settlement = "Cash";
+    option.pay_off_at_expiry = "false";
     out->options.push_back(std::move(option));
 
     domain::instrument_schedule exercise;
@@ -303,10 +311,14 @@ credit_linked_swap_builder::build() const {
     fact.default_payment_time = protection_payment_time_of(premium->convention);
     out.credit_linked_swap_instruments.push_back(std::move(fact));
 
+    // ORE takes the trade's currency from its independent payments, so the
+    // note's funding at the start is one.
     const bool payer = terms_.side.get() == protection::buy;
-    add_coupon_leg(out, 1, "contingent", payer, terms_, *premium);
-    out.legs.push_back(leg_of(2, "contingent", payer, "Cashflow", terms_.currency.get()));
-    out.leg_amounts.push_back(amount_of(2, terms_.notional.get(), terms_.maturity.get()));
+    out.legs.push_back(leg_of(1, "independent", !payer, "Cashflow", terms_.currency.get()));
+    out.leg_amounts.push_back(amount_of(1, terms_.notional.get(), terms_.start.get()));
+    add_coupon_leg(out, 2, "contingent", payer, terms_, *premium);
+    out.legs.push_back(leg_of(3, "contingent", payer, "Cashflow", terms_.currency.get()));
+    out.leg_amounts.push_back(amount_of(3, terms_.notional.get(), terms_.maturity.get()));
     return out;
 }
 
@@ -343,6 +355,7 @@ risk_participation_agreement_builder::build() const {
     domain::risk_participation_agreement_instrument fact;
     fact.credit_curve_id = terms_.credit_curve.get().uri();
     fact.participation_rate = rate;
+    fact.issuer_id = terms_.reference_entity.get();
     fact.settles_accrual = premium->convention.settles_accrual;
     out.risk_participation_agreement_instruments.push_back(std::move(fact));
 

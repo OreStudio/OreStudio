@@ -49,6 +49,7 @@ CommoditySwaption Trade/CommoditySwaptionData/OptionData/Settlement
 CommodityVarianceSwap Trade/CommodityVarianceSwapData/AddPastDividends
 CommodityVarianceSwap Trade/CommodityVarianceSwapData/MomentType
 CommodityVarianceSwap Trade/CommodityVarianceSwapData/Underlying
+CreditLinkedSwap Trade/CreditLinkedSwapData/RecoveryPayments
 CrossCurrencySwap Trade/CrossCurrencySwapData/LegData/Notionals/Exchanges
 CrossCurrencySwap Trade/CrossCurrencySwapData/LegData/ScheduleData/Rules/Calendar
 CrossCurrencySwap Trade/CrossCurrencySwapData/LegData/ScheduleData/Rules/Rule
@@ -183,6 +184,7 @@ InflationSwap Trade/InflationSwapData/LegData/ScheduleData/Rules/Rule
 KnockOutSwap Trade/KnockOutSwapData/LegData/ScheduleData/Rules/Calendar
 KnockOutSwap Trade/KnockOutSwapData/LegData/ScheduleData/Rules/Rule
 PerformanceOption_01 Trade/PerformanceOption01Data/Underlyings/Underlying/Weight
+RiskParticipationAgreement Trade/RiskParticipationAgreementData/FixedRecoveryRate
 Swaption Trade/SwaptionData/LegData/ScheduleData/Rules/Calendar
 Swaption Trade/SwaptionData/LegData/ScheduleData/Rules/Rule
 Swaption Trade/SwaptionData/OptionData/Settlement

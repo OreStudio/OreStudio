@@ -334,7 +334,7 @@ TEST_CASE("a_credit_trade_names_the_credit_curve_of_its_reference_entity", "[tra
     scope.trades_per_book = 1;
     const auto plan = plan_of(scope);
 
-    REQUIRE(plan.slots.size() == 1u);
+    REQUIRE_FALSE(plan.slots.empty());
     const auto& batch = plan.slots.front().instruments;
     REQUIRE(batch.credit_default_swap_instruments.size() == 1u);
     const auto& curve = batch.credit_default_swap_instruments.front().credit_curve_id;

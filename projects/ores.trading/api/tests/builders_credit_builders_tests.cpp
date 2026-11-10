@@ -211,20 +211,25 @@ TEST_CASE("an_index_option_that_expires_after_the_swap_starts_fails", credit_tag
     CHECK(option.error().term == "expiry");
 }
 
-TEST_CASE("a_credit_linked_swap_pays_coupons_and_redemption_while_the_entity_survives", credit_tags) {
+TEST_CASE("a_credit_linked_swap_is_funded_at_the_start_and_repaid_while_the_entity_survives", credit_tags) {
     conv::convention_lookup lookup(credit_conventions());
     const auto swap =
         credit_linked_swap_builder(lookup, protection_terms(protection::sell)).build();
     REQUIRE(swap.has_value());
-    REQUIRE(swap->legs.size() == 2);
-    for (const auto& leg : swap->legs) {
-        CHECK(leg.leg_group == "contingent");
-        CHECK(leg.payer == false);
-    }
-    CHECK(swap->legs[0].leg_type_code == "Fixed");
-    CHECK(swap->legs[1].leg_type_code == "Cashflow");
-    REQUIRE(swap->leg_amounts.size() == 2);
-    CHECK(swap->leg_amounts[1].start_date == 2031y / 1 / 5);
+    REQUIRE(swap->legs.size() == 3);
+    const auto& funding = swap->legs[0];
+    CHECK(funding.leg_group == "independent");
+    CHECK(funding.payer == true);
+    CHECK(funding.currency == "EUR");
+    CHECK(swap->legs[1].leg_group == "contingent");
+    CHECK(swap->legs[1].leg_type_code == "Fixed");
+    CHECK(swap->legs[1].payer == false);
+    CHECK(swap->legs[2].leg_group == "contingent");
+    CHECK(swap->legs[2].leg_type_code == "Cashflow");
+    CHECK(swap->legs[2].payer == false);
+    REQUIRE(swap->leg_amounts.size() == 3);
+    CHECK(swap->leg_amounts[0].start_date == 2026y / 1 / 5);
+    CHECK(swap->leg_amounts[2].start_date == 2031y / 1 / 5);
     REQUIRE(swap->credit_linked_swap_instruments.size() == 1);
     CHECK(swap->credit_linked_swap_instruments.front().default_payment_time == "atDefault");
 }

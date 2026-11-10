@@ -104,7 +104,8 @@ spot_reading read_spot(context ctx,
     return *spot;
 }
 
-/// A currency's spot against USD, in whichever direction the market quotes it.
+/// A currency's spot against USD, in whichever direction the market quotes it. The market quotes
+/// one direction per currency, so CCY/USD is tried first and USD/CCY only when it is absent.
 std::pair<usd_leg, spot_reading> read_usd_leg(context ctx,
                                               const std::string& currency,
                                               time_point as_of,
@@ -233,8 +234,10 @@ answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_req
                                   .series_id = quote_spot.series_id,
                                   .observed_at = quote_spot.observed_at,
                                   .value = quote_spot.value});
+        // The cross has no series of its own: the legs name theirs. It is as fresh as its older
+        // leg, so a reader never takes it for fresher than it is.
         spot.value = cross_rate(base_leg, quote_leg);
-        spot.observed_at = std::max(base_spot.observed_at, quote_spot.observed_at);
+        spot.observed_at = std::min(base_spot.observed_at, quote_spot.observed_at);
     }
     auto base = read_funding_curve(ctx, pair->base, request.party_id, request.as_of);
     auto quote = read_funding_curve(ctx, pair->quote, request.party_id, request.as_of);

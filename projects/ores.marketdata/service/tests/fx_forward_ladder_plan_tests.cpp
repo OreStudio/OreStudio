@@ -18,15 +18,15 @@
  *
  */
 #include "../src/fx_forward_ladder_plan.hpp"
+#include "ores.analytics.quant/service/fx_forward_calculator.hpp"
 #include "ores.marketdata.service/app/fx_forward_ladder_service.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <algorithm>
-#include "ores.analytics.quant/service/fx_forward_calculator.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <cmath>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
+#include <cmath>
 #include <string>
 #include <vector>
 

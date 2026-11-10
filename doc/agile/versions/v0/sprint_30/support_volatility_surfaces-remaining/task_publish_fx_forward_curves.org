@@ -120,6 +120,12 @@ via its "Verifies task" field.
 | 6 | Includes out of order | =application.cpp= | Fixed | Sorted. |
 | 7 | Every exception reads as a missing request | =fx_forward_publish_service.cpp= | Fixed | The exception is logged. |
 | 8 | No service-level test of the publish | tests | Declined | The paths need curves, spots and conventions in a database. The live evidence covers each one, and the next task's screen tests read the operation. |
+| 9 | #4541: a cross's observed time takes the newer leg | =fx_forward_ladder_service.cpp= | Fixed | It takes the older leg, so a cross never reads fresher than it is. |
+| 10 | #4541: the USD leg direction is ambiguous | =fx_forward_ladder_service.cpp= | Fixed | A comment says the market quotes one direction per currency. |
+| 11 | #4541: a cross's spot reading has no series id | =fx_forward_ladder_service.cpp= | Fixed | A comment says the legs name their series; nothing reads the cross's own. |
+| 12 | #4541: no database test of a cross with a missing leg | tests | Declined | The test tenant is not known to hold cross conventions, so the test would meet the convention refusal first. The live run refused EUR crosses on a missing curve, not a missing leg; the leg refusal is not exercised. |
+| 13 | #4541: include order in the tests | =fx_forward_ladder_plan_tests.cpp= | Fixed | Grouped as the file does. |
+| 14 | #4541: generate.sh hard-codes the compiler | =generate.sh= | Fixed | CXX overrides clang++, and a usage line says how to run it. |
 
 * Result
 

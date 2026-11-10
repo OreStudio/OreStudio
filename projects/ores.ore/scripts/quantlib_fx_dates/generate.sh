@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Prints the cross ladder dates QuantLib gives the cases the forward ladder tests pin.
 # Needs ORE_ENGINE, a built checkout of the ORE engine whose QuantLib the build vendors.
+# Usage: ORE_ENGINE=/path/to/ORE/Engine projects/ores.ore/scripts/quantlib_fx_dates/generate.sh
+# CXX picks the compiler; clang++ by default.
 set -euo pipefail
 
 root="$(git rev-parse --show-toplevel)"
@@ -13,7 +15,7 @@ trap 'rm -rf "$work"' EXIT
 
 tar xzf "$output/publish/vendor-packages/ore-$ore_version-x64-linux.tar.gz" -C "$work" ./lib/
 
-clang++ -std=c++20 -O1 -Wno-deprecated-declarations \
+"${CXX:-clang++}" -std=c++20 -O1 -Wno-deprecated-declarations \
     -I"$engine/build/linux-clang-ninja-release/QuantLib" \
     -I"$engine/QuantLib" \
     -I"$output/vcpkg_installed/x64-linux/include" \

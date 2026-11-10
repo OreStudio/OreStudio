@@ -262,7 +262,7 @@ bool adapter_supervisor::send_demand(const std::string& adapter_id) {
         registry_.demand_replied(adapter_id, request.ids.size(), *response);
         {
             std::lock_guard lock(mu_);
-            served_[adapter_id] = served_now;
+            served_[adapter_id] = served_after(served_now, response->rejected);
         }
         BOOST_LOG_SEV(lg(), info) << "Adapter '" << adapter_id << "' accepted "
                                   << response->accepted.size() << " and rejected "

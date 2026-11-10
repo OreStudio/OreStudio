@@ -43,9 +43,10 @@ struct adapter_limits {
      * @brief The age beyond which a quote of an end-of-day source is stale.
      *
      * Such a source sends one value each business day, stamped at its close. The value stays
-     * current until the next one replaces it, which a weekend and a holiday can push four days out.
+     * current until the next one replaces it. A Thursday close before Good Friday and Easter
+     * Monday is still current on the Tuesday morning, nearly five days later.
      */
-    static constexpr std::chrono::milliseconds max_end_of_day_age = std::chrono::days{4};
+    static constexpr std::chrono::milliseconds max_end_of_day_age = std::chrono::days{5};
 
     /// The age beyond which a quote of a source that offers @p service is stale.
     static constexpr std::chrono::milliseconds max_quote_age(std::string_view service) {

@@ -325,3 +325,24 @@ TEST_CASE("a_party_that_newly_needs_an_id_puts_it_in_the_image_once",
     REQUIRE(image.size() == 2);
     CHECK(image[0].external_id != image[1].external_id);
 }
+
+TEST_CASE("an_id_the_adapter_rejected_is_in_the_next_image_again", "[app][demand_calculator]") {
+    using ores::marketdata::service::app::image_of;
+    using ores::marketdata::service::app::served_after;
+    app_demand_calculator_world w;
+    w.party_routed_to(w.sim);
+    const auto demanded = compute_demand(w.c, w.now).served_by_adapter.at("bloomberg-sim");
+    REQUIRE(demanded.size() == 2);
+
+    ores::marketdata::messaging::rejected_id refused;
+    const auto& first = *demanded.begin();
+    refused.id = {first.id_scheme, first.external_id, first.field};
+    refused.reason = "unknown";
+    const auto served = served_after(demanded, {refused});
+
+    CHECK(served.size() == 1);
+    CHECK_FALSE(served.contains(first));
+    const auto image = image_of(served, demanded);
+    REQUIRE(image.size() == 1);
+    CHECK(image[0].external_id == first.external_id);
+}

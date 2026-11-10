@@ -106,7 +106,7 @@ rules.
 
 - The ingest drops a quote whose vendor time is older than its age limit, twice:
   in the translator and again in the worker that drains the quotes' queue. The
-  limit comes from the service of the source: 4 days for =end_of_day=, 5 seconds
+  limit comes from the service of the source: 5 days for =end_of_day=, 5 seconds
   for the rest. A fixing skips the age check, and never enters that queue.
 - A fixing takes a path of its own: a queue that never sheds and one thread that
   stores what it holds. A daily volume is small, and a backfill waits in the

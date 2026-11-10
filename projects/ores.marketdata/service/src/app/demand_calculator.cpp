@@ -174,4 +174,15 @@ std::vector<messaging::vendor_id> image_of(const std::set<served_id>& before,
     return out;
 }
 
+std::set<served_id> served_after(std::set<served_id> demanded,
+                                 const std::vector<messaging::rejected_id>& rejected) {
+    std::erase_if(demanded, [&](const served_id& s) {
+        return std::ranges::any_of(rejected, [&](const messaging::rejected_id& r) {
+            return r.id.id_scheme == s.id_scheme && r.id.external_id == s.external_id &&
+                   r.id.field == s.field;
+        });
+    });
+    return demanded;
+}
+
 }

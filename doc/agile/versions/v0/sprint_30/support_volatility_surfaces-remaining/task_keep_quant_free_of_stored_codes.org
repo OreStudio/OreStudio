@@ -8,7 +8,7 @@
 #+filetags: :analytics:refdata:architecture:support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/keep-quant-free-of-stored-codes
-#+pr:
+#+pr: 4562
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-10
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4562][#4562]] | [analytics] Keep quant free of stored codes |
 
 * Review
 

@@ -66,6 +66,10 @@ struct options final {
      */
     std::string boc_url;
     /**
+     * @brief The address of the Bank of Japan's time-series statistics site, which serves its API.
+     */
+    std::string boj_url;
+    /**
      * @brief The sources the adapter hosts.
      */
     std::vector<domain::hosted_source> sources;
@@ -88,6 +92,7 @@ struct options final {
         ::ores::utility::codec::field{"ecb_url", &options::ecb_url},
         ::ores::utility::codec::field{"boe_url", &options::boe_url},
         ::ores::utility::codec::field{"boc_url", &options::boc_url},
+        ::ores::utility::codec::field{"boj_url", &options::boj_url},
         ::ores::utility::codec::field{"sources", &options::sources},
         ::ores::utility::codec::field{"backfill_days", &options::backfill_days},
         ::ores::utility::codec::field{"poll_minutes", &options::poll_minutes},

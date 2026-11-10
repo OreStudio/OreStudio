@@ -1,0 +1,19 @@
+# Publishes two crosses for ACCOUS under the tenant's auto-approval and reads
+# one back. A cross's spot derives from the party's own USD legs, and the set
+# names both. ACCOUS's EUR curve was withdrawn earlier, so its EUR crosses
+# refuse; these two have no EUR leg. Run with AS_OF set.
+connect $ORES_NATS_URL
+
+login tenant_admin@acme_corporation Secure-Password-123
+approval_operations set-approvals-mode "Checking cross forward publishes" --auto_approved true
+logout
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_forward_operation publish-fx-forward GBP/JPY ${AS_OF} --reason "GBP/JPY forwards from the two USD legs"
+fx_forward_operation publish-fx-forward AUD/NZD ${AS_OF} --reason "AUD/NZD forwards from the two USD legs"
+fx_forward_operation get-published-fx-forward GBP/JPY ${AS_OF}
+logout
+
+login tenant_admin@acme_corporation Secure-Password-123
+approval_operations set-approvals-mode "Back to people deciding" --auto_approved false
+logout

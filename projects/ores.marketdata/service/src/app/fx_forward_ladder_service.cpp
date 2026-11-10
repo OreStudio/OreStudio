@@ -68,10 +68,11 @@ std::chrono::year_month_day date_of(time_point t) {
     return std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(t)};
 }
 
-spot_reading read_spot(context ctx,
-                       const fx_pair_codes& pair,
-                       time_point as_of,
-                       const std::optional<boost::uuids::uuid>& party_id) {
+/// The latest spot of a pair at or before the as-of, or nothing when no series holds one.
+std::optional<spot_reading> find_spot(context ctx,
+                                      const fx_pair_codes& pair,
+                                      time_point as_of,
+                                      const std::optional<boost::uuids::uuid>& party_id) {
     const auto uri =
         "oresmd://fx/" + pair.base + "?type=series&instrument=fx_spot&quote=rate&ccy=" + pair.quote;
     repository::market_series_repository series_repo;
@@ -86,11 +87,34 @@ spot_reading read_spot(context ctx,
                 latest = std::move(observation);
     }
     if (!latest)
+        return std::nullopt;
+    return spot_reading{observation_value(*latest),
+                        latest->observation_datetime,
+                        boost::uuids::to_string(latest->series_id)};
+}
+
+spot_reading read_spot(context ctx,
+                       const fx_pair_codes& pair,
+                       time_point as_of,
+                       const std::optional<boost::uuids::uuid>& party_id) {
+    auto spot = find_spot(ctx, pair, as_of, party_id);
+    if (!spot)
         throw refused("No spot of " + pair.base + "/" + pair.quote +
                       " was observed at or before the as-of.");
-    return {observation_value(*latest),
-            latest->observation_datetime,
-            boost::uuids::to_string(latest->series_id)};
+    return *spot;
+}
+
+/// A currency's spot against USD, in whichever direction the market quotes it.
+std::pair<usd_leg, spot_reading> read_usd_leg(context ctx,
+                                              const std::string& currency,
+                                              time_point as_of,
+                                              const std::optional<boost::uuids::uuid>& party_id) {
+    if (auto spot = find_spot(ctx, {currency, "USD"}, as_of, party_id))
+        return {usd_leg{.currency = currency, .value = spot->value, .usd_is_base = false}, *spot};
+    if (auto spot = find_spot(ctx, {"USD", currency}, as_of, party_id))
+        return {usd_leg{.currency = currency, .value = spot->value, .usd_is_base = true}, *spot};
+    throw refused("No spot of " + currency + " against USD was observed at or before the as-of, "
+                  "so the cross has no USD leg for " + currency + ".");
 }
 
 funding_curve read_funding_curve(context ctx,
@@ -168,7 +192,7 @@ read_calendar(context ctx, const std::string& pair_code, std::string& codes) {
 
 computed_fx_forward_set
 answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_request& request) {
-    const auto pair = parse_usd_pair(request.pair_code);
+    const auto pair = parse_pair(request.pair_code);
     if (!pair)
         throw refused(pair.error());
 
@@ -185,8 +209,33 @@ answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_req
     std::optional<boost::uuids::uuid> party;
     if (!request.party_id.empty())
         party = boost::lexical_cast<boost::uuids::uuid>(request.party_id);
-    const auto spot = read_spot(ctx, *pair, request.as_of, party);
-    computed.spot_series_id = spot.series_id;
+    spot_reading spot;
+    if (!is_cross(*pair)) {
+        spot = read_spot(ctx, *pair, request.as_of, party);
+        computed.spots.push_back({.leg_code = "direct",
+                                  .pair_code = request.pair_code,
+                                  .series_id = spot.series_id,
+                                  .observed_at = spot.observed_at,
+                                  .value = spot.value});
+    } else {
+        const auto [base_leg, base_spot] = read_usd_leg(ctx, pair->base, request.as_of, party);
+        const auto [quote_leg, quote_spot] = read_usd_leg(ctx, pair->quote, request.as_of, party);
+        const auto leg_pair = [](const usd_leg& l) {
+            return l.usd_is_base ? "USD/" + l.currency : l.currency + "/USD";
+        };
+        computed.spots.push_back({.leg_code = "base_leg",
+                                  .pair_code = leg_pair(base_leg),
+                                  .series_id = base_spot.series_id,
+                                  .observed_at = base_spot.observed_at,
+                                  .value = base_spot.value});
+        computed.spots.push_back({.leg_code = "quote_leg",
+                                  .pair_code = leg_pair(quote_leg),
+                                  .series_id = quote_spot.series_id,
+                                  .observed_at = quote_spot.observed_at,
+                                  .value = quote_spot.value});
+        spot.value = cross_rate(base_leg, quote_leg);
+        spot.observed_at = std::max(base_spot.observed_at, quote_spot.observed_at);
+    }
     auto base = read_funding_curve(ctx, pair->base, request.party_id, request.as_of);
     auto quote = read_funding_curve(ctx, pair->quote, request.party_id, request.as_of);
     if (base.interpolation != quote.interpolation)

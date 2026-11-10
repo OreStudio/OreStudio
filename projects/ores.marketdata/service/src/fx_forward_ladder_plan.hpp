@@ -41,9 +41,37 @@ struct fx_pair_codes final {
     std::string quote;
 };
 
-/// Splits a pair code such as EUR/USD, and refuses a malformed code or a cross with no USD leg.
+/// Splits a pair code such as EUR/USD or EUR/GBP, and refuses a malformed code.
 ORES_MARKETDATA_SERVICE_EXPORT std::expected<fx_pair_codes, std::string>
-parse_usd_pair(const std::string& pair_code);
+parse_pair(const std::string& pair_code);
+
+/// A cross is a pair with no USD leg. Its spot derives from the USD leg of each currency.
+[[nodiscard]] inline bool is_cross(const fx_pair_codes& pair) {
+    return pair.base != "USD" && pair.quote != "USD";
+}
+
+/// One currency's spot against USD, as the market quotes it: CCY/USD, or USD/CCY.
+struct usd_leg final {
+    std::string currency;
+    double value = 0.0;
+    /// True when the leg is quoted USD/CCY, so the value is units of the currency per USD.
+    bool usd_is_base = false;
+};
+
+/// USD per one unit of the leg's currency.
+[[nodiscard]] inline double usd_per_unit(const usd_leg& leg) {
+    return leg.usd_is_base ? 1.0 / leg.value : leg.value;
+}
+
+/**
+ * @brief The cross rate, quote currency per one unit of base, from the two USD legs.
+ *
+ * EUR/GBP is EUR/USD divided by GBP/USD, and EUR/JPY is EUR/USD times USD/JPY: each leg is first
+ * turned into USD per unit of its own currency.
+ */
+[[nodiscard]] inline double cross_rate(const usd_leg& base, const usd_leg& quote) {
+    return usd_per_unit(base) / usd_per_unit(quote);
+}
 
 /**
  * @brief The set a reader at @p as_of should use: the applied set with the latest as-of at or

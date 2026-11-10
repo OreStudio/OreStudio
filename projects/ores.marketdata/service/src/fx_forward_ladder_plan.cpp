@@ -57,15 +57,12 @@ const ladder_tenor standard_tenors[] = {
 
 }
 
-std::expected<fx_pair_codes, std::string> parse_usd_pair(const std::string& pair_code) {
+std::expected<fx_pair_codes, std::string> parse_pair(const std::string& pair_code) {
     const auto slash = pair_code.find('/');
     if (slash == std::string::npos || slash == 0 || slash + 1 == pair_code.size() ||
         pair_code.find('/', slash + 1) != std::string::npos)
         return std::unexpected("'" + pair_code + "' is not a currency pair such as EUR/USD.");
     fx_pair_codes codes{pair_code.substr(0, slash), pair_code.substr(slash + 1)};
-    if (codes.base != "USD" && codes.quote != "USD")
-        return std::unexpected(pair_code +
-                               " has no USD leg, and only USD pairs are answered for now.");
     if (codes.base == codes.quote)
         return std::unexpected(pair_code + " names one currency twice.");
     return codes;

@@ -21,6 +21,7 @@
 #define ORES_ANALYTICS_QUANT_DOMAIN_DATE_CONVENTION_HPP
 
 #include "ores.analytics.quant/export.hpp"
+#include <compare>
 #include <string>
 #include <string_view>
 
@@ -91,26 +92,16 @@ struct date_period final {
     friend bool operator==(const date_period&, const date_period&) = default;
 };
 
-/// Parses an @c ores_refdata_business_day_convention_types_tbl code. The one
-/// place the persisted spellings meet this component's enum; every caller
-/// beyond it passes the enum.
-///
-/// @throws std::invalid_argument if @p code names no convention.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT business_day_convention
-parse_business_day_convention_code(std::string_view code);
-
-/// The persisted code a convention was parsed from, for messages that must
-/// name a value the way the database does.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::string_view
-to_business_day_convention_code(business_day_convention convention);
-
-/// Parses an @c ores_refdata_tenor_units_tbl code.
-///
-/// @throws std::invalid_argument if @p code names no unit.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT period_unit parse_period_unit_code(std::string_view code);
-
-/// The persisted code a unit was parsed from.
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::string_view to_period_unit_code(period_unit unit);
+/**
+ * @brief Orders two periods as QuantLib orders them.
+ *
+ * Days and weeks compare exactly, and so do months and years. A period counted in months against
+ * one counted in days is ordered only when a month's 28 to 31 days and a year's 365 or 366 settle
+ * it: 1M is after 3W and before 5W, while 1M against 4W is unordered. An empty period is unordered
+ * against anything but another empty period.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::partial_ordering compare_periods(date_period a,
+                                                                              date_period b) noexcept;
 
 } // namespace ores::analytics::quant::domain
 

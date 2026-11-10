@@ -18,6 +18,7 @@
  *
  */
 #include "curve_republish_resolver.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.api/domain/tenor_resolution.hpp"
 #include <algorithm>
 #include <stdexcept>
@@ -27,7 +28,7 @@ namespace ores::marketdata::service {
 namespace {
 
 using ores::analytics::quant::service::bootstrap_pillar;
-using ores::analytics::quant::service::parse_bootstrap_curve_role_code;
+using ores::refdata::mapping::parse_bootstrap_curve_role_code;
 using ores::refdata::domain::resolve_end_date;
 using ores::refdata::domain::tenor;
 using ores::refdata::domain::tenor_convention_resolution;

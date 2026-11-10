@@ -176,38 +176,6 @@ TEST_CASE("a_cross_returns_the_change_of_the_ratio_of_its_legs_on_the_days_both_
     CHECK_FALSE(pair_log_returns(std::nullopt, std::nullopt));
 }
 
-TEST_CASE("an_expiry_at_the_switch_tenor_takes_the_long_term_convention", derived_tags) {
-    const auto c = derived_convention("PaSpot", "PaFwd");
-    const auto short_term = quote_convention_at(c, 1.0);
-    const auto long_term = quote_convention_at(c, 2.0);
-    REQUIRE(short_term);
-    REQUIRE(long_term);
-    CHECK(short_term->delta == qm::fx_delta_type::premium_adjusted_spot);
-    CHECK(long_term->delta == qm::fx_delta_type::premium_adjusted_forward);
-    CHECK(long_term->atm == qm::fx_atm_type::delta_neutral);
-    CHECK(long_term->favour == qm::fx_risk_reversal_favour::call);
-    CHECK(long_term->butterfly == qm::fx_butterfly_style::broker);
-
-    auto no_switch = c;
-    no_switch.switch_tenor = "0D";
-    CHECK(quote_convention_at(no_switch, 2.0)->delta == qm::fx_delta_type::premium_adjusted_spot);
-}
-
-TEST_CASE("a_convention_the_derivation_cannot_quote_is_refused_naming_its_type", derived_tags) {
-    auto c = derived_convention("Spot", "Fwd");
-    c.atm_type = "AtmPutCall50";
-    const auto refused = quote_convention_at(c, 1.0);
-    REQUIRE_FALSE(refused);
-    CHECK(refused.error().find("AtmPutCall50") != std::string::npos);
-    auto unstated = derived_convention("Spot", "Fwd");
-    unstated.risk_reversal_in_favor_of.reset();
-    unstated.butterfly_style.reset();
-    const auto defaults = quote_convention_at(unstated, 1.0);
-    REQUIRE(defaults);
-    CHECK(defaults->favour == qm::fx_risk_reversal_favour::call);
-    CHECK(defaults->butterfly == qm::fx_butterfly_style::smile);
-}
-
 TEST_CASE("a_derivation_becomes_one_tick_per_label_of_each_quoted_expiry", derived_tags) {
     const auto fixings = derived_fixings(400, 3);
     const auto returns = pair_log_returns(fixings.at(ecb_fixing_item("USD")), std::nullopt);
@@ -217,7 +185,7 @@ TEST_CASE("a_derivation_becomes_one_tick_per_label_of_each_quoted_expiry", deriv
         expiries.push_back(
             {.label = std::string(e.label),
              .years = e.years,
-             .convention = *quote_convention_at(derived_convention("Spot", "Fwd"), e.years)});
+             .convention = *convention_at(derived_convention("Spot", "Fwd"), e.label)});
     const auto d = qm::derive_fx_quotes(returns->returns, expiries, {});
     REQUIRE(d);
     REQUIRE(d->expiries[7].has_value() == false);
@@ -418,7 +386,7 @@ TEST_CASE("a_missing_day_is_derived_from_the_returns_up_to_it_and_no_later", der
     const std::vector<qm::fx_expiry> month{
         {.label = "1M",
          .years = 1.0 / 12.0,
-         .convention = *quote_convention_at(convention, 1.0 / 12.0)}};
+         .convention = *convention_at(convention, "1M")}};
     const auto direct =
         qm::derive_fx_quotes(std::span<const double>(returns->returns.data(), k + 1), month, {});
     REQUIRE(direct);

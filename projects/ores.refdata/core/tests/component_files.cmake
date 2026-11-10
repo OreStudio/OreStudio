@@ -148,6 +148,8 @@ set(files
     "legal_entity_eventing_integration_tests.cpp"
     "local_jurisdiction_eventing_integration_tests.cpp"
     "main.cpp"
+    "mapping_fx_option_convention_mapping_tests.cpp"
+    "mapping_quant_codes_tests.cpp"
     "message_codec_tests.cpp"
     "messaging_book_proposal_mapping_tests.cpp"
     "messaging_counterparty_proposal_mapping_tests.cpp"

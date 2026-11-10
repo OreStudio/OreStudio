@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D23751BD-E030-4275-B1D2-7378F2760118
+:END:
+#+title: Quant's process factory takes a string process type
+#+description: process_factory::make_process takes process_type as a string and falls back to geometric for an unknown value; quant should take its own enum, with the mapping in the calling component.
+#+type: capture
+#+level: cross
+#+filetags: :analytics:architecture:tech-debt:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=service::process_factory::make_process= and =domain::validate_process_parameters= take the process type as a string, such as "geometric" or "ornstein_uhlenbeck", and an unknown value falls back to the geometric process. Quant should take its own enum, and the component that stores the process type should read its code into that enum, as reference data does for its conventions.
+
+* Why
+
+Quant holds its own types and knows no stored spelling, so its engines are tested alone and a bad code is refused where a row is read. A silent fallback turns a typo in a stored feed into a different process. Found while moving the stored codes out of quant in the task Keep quant free of stored codes.
+
+* References
+
+- =projects/ores.analytics/quant/modeling/component_overview.org=, section Boundary.
+
+* See also
+
+- =projects/ores.refdata/core/include/ores.refdata.core/mapping/quant_codes.hpp=

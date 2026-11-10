@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata.core/service/calendar_materialisation_service.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.analytics.quant/domain/calendar_rule.hpp"
 #include "ores.analytics.quant/domain/calendar_ruleset.hpp"
 #include "ores.analytics.quant/service/calendar_rule_engine.hpp"
@@ -70,12 +71,12 @@ quant_domain::calendar_rule_kind parse_kind(const std::string& s) {
     throw std::runtime_error("Unknown calendar_rule kind: " + s);
 }
 
-// The shift codes are quant's, spelled once in parse_observance_shift_code.
+// The shift codes are spelled once, in the quant_codes mapping.
 // This wrapper only restates a bad code in the exception type the rest of
 // this service throws, so the two never drift apart.
 quant_domain::observance_shift parse_shift(const std::string& s) {
     try {
-        return quant_domain::parse_observance_shift_code(s);
+        return mapping::parse_observance_shift_code(s);
     } catch (const std::invalid_argument&) {
         throw std::runtime_error("Unknown observance_shift: " + s);
     }

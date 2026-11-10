@@ -37,26 +37,11 @@ namespace ores::analytics::quant::service {
  * modelled), and THIRTY_360 (day_count_fraction_type.code "30/360" --
  * renamed since "/" is not a valid enumerator character) is the bond-basis
  * approximation, not the ISDA/ISMA/AFB Actual/Actual variants or 30E/360.
- * Every other day_count_fraction_type.code has no enumerator and is
- * rejected by parse_day_count_convention_code() rather than silently
- * mapped to the nearest implemented one -- a genuine follow-on, not
- * something to fake with a wrong convention. Enumerator names otherwise
- * match their refdata code string exactly so
- * parse_day_count_convention_code() can delegate to magic_enum::enum_cast.
+ * Every other day_count_fraction_type.code has no enumerator, and
+ * ores.refdata.core's quant_codes mapping refuses it rather than mapping
+ * it to the nearest implemented one.
  */
 enum class day_count_convention_code { A360, A365, A365F, THIRTY_360 };
-
-/**
- * @brief Parses a day_count_fraction_type.code string into its strongly
- * typed enumerator.
- *
- * @throws std::invalid_argument if @p code is not one of A360, A365,
- * A365F, 30/360 -- the single mapping point between refdata's persisted
- * string codes and this engine's enum, so an unsupported or malformed
- * code fails at the boundary rather than deep inside the bootstrap loop.
- */
-ORES_ANALYTICS_QUANT_EXPORT day_count_convention_code
-parse_day_count_convention_code(const std::string& code);
 
 /**
  * @brief Converts a date interval into a year fraction under a

@@ -143,6 +143,8 @@ private:
     std::set<std::string> unknown_reported_;
     /// The adapters reported as up with routes that name them and no demand, reported once.
     std::set<std::string> no_demand_warned_;
+    /// Which party each adapter served which id at its last accepted demand.
+    std::map<std::string, std::set<served_id>> served_;
     std::function<void(const demand_catalogue&, std::chrono::system_clock::time_point)> listener_;
     std::atomic<bool> stop_{false};
     std::optional<ores::nats::service::subscription> announce_sub_;

@@ -55,6 +55,7 @@ enum class provision_step_action {
     end_auto_approval,
     subscribe_market_data,
     publish_party_curves,
+    give_party_surface_blueprints,
     generate_trades,
     schedule_reports,
     complete_provisioning,
@@ -106,6 +107,8 @@ enum class provision_step_action {
         return provision_step_action::subscribe_market_data;
     if (kind == publish_party_curves_step_kind)
         return provision_step_action::publish_party_curves;
+    if (kind == give_party_surface_blueprints_step_kind)
+        return provision_step_action::give_party_surface_blueprints;
     if (kind == "generate_trades")
         return provision_step_action::generate_trades;
     if (kind == schedule_reports_step_kind)

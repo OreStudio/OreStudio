@@ -114,11 +114,31 @@ TEST_CASE("a_tick_older_than_the_limit_is_removed_and_the_others_keep_their_orde
     ticks.push_back(tick_at(seconds(6), "also_old"));
     ticks.push_back(tick_at(seconds(5), "at_the_limit"));
 
-    CHECK(erase_stale(ticks, now, seconds(5)) == 2);
+    CHECK(erase_stale(ticks, now, [](const market_tick&) { return seconds(5); }) == 2);
     REQUIRE(ticks.size() == 3);
     CHECK(ticks[0].value == "recent");
     CHECK(ticks[1].value == "future");
     CHECK(ticks[2].value == "at_the_limit");
+}
+
+TEST_CASE("an_old_tick_of_a_source_with_a_long_age_limit_is_kept", "[app][tick_batch]") {
+    using namespace std::chrono;
+    const auto now = system_clock::now();
+    const auto tick_of = [&](std::string source, hours age) {
+        market_tick t;
+        t.source = std::move(source);
+        t.observation_time = now - age;
+        return t;
+    };
+
+    std::vector<market_tick> ticks{tick_of("live", hours(20)), tick_of("daily", hours(20))};
+    const auto limit = [](const market_tick& t) -> milliseconds {
+        return t.source == "daily" ? days(4) : seconds(5);
+    };
+
+    CHECK(erase_stale(ticks, now, limit) == 1);
+    REQUIRE(ticks.size() == 1);
+    CHECK(ticks[0].source == "daily");
 }
 
 TEST_CASE("a_store_that_is_up_may_be_tried_at_any_time", "[app][tick_batch]") {

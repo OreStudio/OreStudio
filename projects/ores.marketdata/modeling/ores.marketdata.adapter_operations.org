@@ -206,6 +206,17 @@ The full set of ids the parties routed to an adapter need.
 
 Every id that a party routed to this adapter needs.
 
+*** image
+:PROPERTIES:
+:cpp_type: std::vector<vendor_id>
+:END:
+
+The ids of =ids= that a party needs for the first time since the last demand: the
+initial image a vendor sends a new subscriber. An adapter that publishes an id only
+when its value changes, such as a daily source, sends these at once, so a party that
+subscribes after the day's value went out is not left without it until the next day.
+An adapter that publishes continuously can ignore them.
+
 ** adapter_demand_response
 
 What an adapter answers to a demand.

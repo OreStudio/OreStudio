@@ -222,11 +222,23 @@ cross join (values
         {"party": "ACME Corporation UK plc", "provider": "bloomberg", "source": "bloomberg-a"},
         {"party": "ACME Corporation US Inc", "provider": "lseg", "source": "lseg-a"},
         {"party": "ACME Corporation US Inc", "provider": "bloomberg", "source": "bloomberg-a"},
-        {"party": "ACME Corporation HK Ltd", "provider": "bloomberg", "source": "bloomberg-a"}
+        {"party": "ACME Corporation HK Ltd", "provider": "bloomberg", "source": "bloomberg-a"},
+        {"party": "Acme Corporation Plc", "provider": "derived", "source": "derived-fx-vol"},
+        {"party": "ACME Corporation UK plc", "provider": "derived", "source": "derived-fx-vol"},
+        {"party": "ACME Corporation US Inc", "provider": "derived", "source": "derived-fx-vol"},
+        {"party": "ACME Corporation HK Ltd", "provider": "derived", "source": "derived-fx-vol"}
     ]}'::jsonb),
     -- A curve is derived data, so each legal entity bootstraps its own funding curves from the
     -- quotes its subscriptions deliver, and publishes them under the run's auto-approval. The
     -- curves are the system's blueprints, copied into each party.
+    -- A surface is derived data too: each legal entity gets its own copy of the system's surface
+    -- blueprints, reading the volatility quotes its subscription to the derived source delivers.
+    ('acme_demo', 'give_party_surface_blueprints', 66, '{"parties": [
+        "Acme Corporation Plc",
+        "ACME Corporation UK plc",
+        "ACME Corporation US Inc",
+        "ACME Corporation HK Ltd"
+    ]}'::jsonb),
     ('acme_demo', 'publish_party_curves', 65, '{"parties": [
         "Acme Corporation Plc",
         "ACME Corporation UK plc",

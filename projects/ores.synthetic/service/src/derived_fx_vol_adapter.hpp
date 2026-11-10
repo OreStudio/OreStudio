@@ -95,6 +95,7 @@ private:
     void demand_message(const ores::nats::message& msg);
     void serve(std::chrono::steady_clock::time_point now);
     void loop();
+    void heartbeat_loop();
 
     ores::nats::service::client& nats_;
     ores::nats::service::nats_client& svc_nats_;
@@ -111,14 +112,18 @@ private:
     std::optional<std::string> system_party_;
     std::atomic<bool> stop_{false};
     std::atomic<bool> ready_{false};
-    bool announced_ = false;
+    /// Read by the heartbeat thread, which beats only while the source is announced.
+    std::atomic<bool> announced_{false};
     std::uint64_t beats_ = 0;
     std::chrono::steady_clock::time_point next_universe_{};
     std::chrono::steady_clock::time_point next_announce_{};
-    std::chrono::steady_clock::time_point next_heartbeat_{};
     std::chrono::steady_clock::time_point next_refresh_{};
     std::optional<ores::nats::service::subscription> demand_sub_;
     std::thread thread_;
+    /// The heartbeats run on their own thread: a refresh derives every pair from years of
+    /// fixings, and a heartbeat that waited for it would let the service mark the source stale
+    /// and drop the quotes the refresh sends.
+    std::thread heartbeat_thread_;
 };
 
 }

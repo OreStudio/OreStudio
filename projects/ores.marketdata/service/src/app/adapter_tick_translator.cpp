@@ -110,7 +110,8 @@ adapter_tick_translator::check(std::string_view adapter_id,
 
     const auto kind =
         fixing_items_.contains(held->oresmd_uri) ? tick_class::fixing : tick_class::quote;
-    if (kind == tick_class::quote && now - tick.vendor_time > max_tick_age)
+    if (kind == tick_class::quote &&
+        now - tick.vendor_time > domain::adapter_limits::max_quote_age(source->second.service))
         return std::unexpected(adapter_tick_drop::stale);
 
     if (kind == tick_class::quote) {
@@ -130,6 +131,13 @@ adapter_tick_translator::check(std::string_view adapter_id,
     out.provider_code = source->second.publisher_code;
     out.feed_id = source->second.id;
     return out;
+}
+
+std::chrono::milliseconds
+adapter_tick_translator::max_quote_age(std::string_view source_name) const {
+    const auto source = sources_.find(std::string(source_name));
+    return domain::adapter_limits::max_quote_age(
+        source == sources_.end() ? std::string_view{} : std::string_view{source->second.service});
 }
 
 void adapter_tick_translator::count(std::string_view adapter_id, adapter_tick_drop reason) {

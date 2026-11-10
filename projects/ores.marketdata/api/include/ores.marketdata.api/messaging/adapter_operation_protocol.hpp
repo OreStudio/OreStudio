@@ -105,6 +105,7 @@ struct adapter_announce_response {
  */
 struct adapter_demand_request {
     std::vector<vendor_id> ids;
+    std::vector<vendor_id> image;
 
     friend bool operator==(const adapter_demand_request&, const adapter_demand_request&) = default;
 };
@@ -285,6 +286,7 @@ struct list_adapter_status_response {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<adapter_demand_request>) {
     return std::tuple{
         ::ores::utility::codec::field{"ids", &adapter_demand_request::ids},
+        ::ores::utility::codec::field{"image", &adapter_demand_request::image},
     };
 }
 

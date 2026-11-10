@@ -36,6 +36,7 @@
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.core/messaging/population_knobs.hpp"
 #include "ores.iam.core/messaging/party_curve_blueprints.hpp"
+#include "ores.iam.core/messaging/party_surface_blueprints.hpp"
 #include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include "ores.iam.core/messaging/report_schedule_selection.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
@@ -68,6 +69,9 @@
 #include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
+#include "ores.refdata.api/messaging/fx_vol_surface_blueprint_protocol.hpp"
+#include "ores.refdata.api/messaging/fx_vol_surface_pillar_protocol.hpp"
+#include "ores.refdata.api/messaging/fx_vol_surface_pillar_source_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
@@ -949,6 +953,9 @@ private:
             case provision_step_action::publish_party_curves:
                 publish_party_curves_step(wf, command, resolve_step_actor(command));
                 return;
+            case provision_step_action::give_party_surface_blueprints:
+                give_party_surface_blueprints_step(wf, command, resolve_step_actor(command));
+                return;
             case provision_step_action::generate_trades:
                 generate_trades_step(wf, command, resolve_step_actor(command));
                 return;
@@ -1459,6 +1466,230 @@ private:
                                  " party curve(s) were not published. A rerun is safe: it "
                                  "writes no row twice and publishes only the missing curves:";
             for (const auto& line : result.curves_not_published)
+                reason += " " + line + ";";
+            wf.fail(reason);
+            return;
+        }
+        wf.complete(ores::utility::codec::json::write(result), step_log);
+    }
+
+    /// The system tenant's surface blueprints, with every series they name.
+    system_surface_blueprints read_system_surface_blueprints(internal_request_client& system_client) {
+        system_surface_blueprints system;
+        ores::refdata::messaging::list_fx_vol_surface_blueprints_request blueprints;
+        blueprints.limit = 1000;
+        system.blueprints = system_client.request(blueprints).blueprints;
+        if (system.blueprints.empty())
+            return system;
+
+        std::vector<boost::uuids::uuid> ids;
+        std::vector<boost::uuids::uuid> series_ids;
+        for (const auto& b : system.blueprints) {
+            ids.push_back(b.id);
+            series_ids.push_back(b.output_series_id);
+        }
+        ores::refdata::messaging::list_fx_vol_surface_pillars_request pillars;
+        pillars.limit = 5000;
+        pillars.filter = ores::refdata::messaging::fx_vol_surface_pillars_filter{
+            .blueprint_id = std::nullopt, .id_one_of = std::nullopt, .blueprint_id_one_of = ids};
+        system.pillars = system_client.request(pillars).pillars;
+
+        std::vector<boost::uuids::uuid> pillar_ids;
+        for (const auto& p : system.pillars)
+            pillar_ids.push_back(p.id);
+        for (std::size_t from = 0; from < pillar_ids.size(); from += 1000) {
+            ores::refdata::messaging::list_fx_vol_surface_pillar_sources_request sources;
+            sources.limit = 5000;
+            sources.filter = ores::refdata::messaging::fx_vol_surface_pillar_sources_filter{
+                .pillar_id = std::nullopt,
+                .id_one_of = std::nullopt,
+                .pillar_id_one_of = std::vector<boost::uuids::uuid>(
+                    pillar_ids.begin() + static_cast<std::ptrdiff_t>(from),
+                    pillar_ids.begin() +
+                        static_cast<std::ptrdiff_t>(std::min(from + 1000, pillar_ids.size())))};
+            for (auto& s : system_client.request(sources).pillar_sources)
+                system.sources.push_back(std::move(s));
+        }
+        for (const auto& s : system.sources)
+            series_ids.push_back(s.market_series_id);
+        std::ranges::sort(series_ids);
+        series_ids.erase(std::unique(series_ids.begin(), series_ids.end()), series_ids.end());
+
+        ores::marketdata::messaging::list_market_series_request series;
+        series.limit = 5000;
+        series.filter = ores::marketdata::messaging::market_series_filter{
+            .provider_code = std::nullopt, .id_one_of = series_ids, .provider_code_one_of = std::nullopt};
+        system.series = system_client.request(series).market_series;
+        return system;
+    }
+
+    /// The series and surface blueprints one party holds.
+    party_surface_holdings read_party_surface_holdings(internal_request_client& party_client,
+                                                       const boost::uuids::uuid& party_id) {
+        party_surface_holdings holdings;
+        holdings.party_id = party_id;
+        ores::marketdata::messaging::list_market_series_request series;
+        series.limit = 10000;
+        holdings.series = party_client.request(series).market_series;
+        ores::refdata::messaging::list_fx_vol_surface_blueprints_request blueprints;
+        blueprints.limit = 1000;
+        for (const auto& b : party_client.request(blueprints).blueprints)
+            if (b.party_id == party_id)
+                holdings.blueprint_ids.insert(b.id);
+        return holdings;
+    }
+
+    /// Writes the rows a surface plan names: the output series, then the blueprints, their
+    /// pillars and the pillars' sources, each of which names the row before it.
+    static void write_party_surface_plan(internal_request_client& party_client,
+                                         const party_surface_plan& plan,
+                                         const std::string& party_name) {
+        constexpr std::string_view commentary =
+            "Created by provisioning: the party's own copy of the system's surface blueprint";
+        const auto check = [&](const auto& saved, std::string_view what) {
+            if (saved.result.outcome != ores::utility::domain::outcome::ok)
+                throw std::runtime_error("The surface " + std::string(what) + " of '" + party_name +
+                                         "' were not saved: " + saved.result.message);
+        };
+        const ores::utility::domain::precondition any{
+            .kind = ores::utility::domain::precondition_kind::any};
+        if (!plan.series_to_write.empty()) {
+            ores::marketdata::messaging::put_many_market_series_request put;
+            for (const auto& s : plan.series_to_write)
+                put.changes.push_back({.write = {.id = s.id,
+                                                 .party_id = s.party_id,
+                                                 .oresmd_uri = s.oresmd_uri,
+                                                 .provider_code = s.provider_code,
+                                                 .series_subclass = s.series_subclass,
+                                                 .derivation_kind = s.derivation_kind,
+                                                 .derivation_config_id = s.derivation_config_id,
+                                                 .derivation_config_version =
+                                                     s.derivation_config_version},
+                                       .precondition = any});
+            put.intent.reason_code = "system.new_record";
+            put.intent.commentary = std::string(commentary);
+            check(party_client.request(put), "output series");
+        }
+        if (!plan.blueprints_to_write.empty()) {
+            ores::refdata::messaging::put_many_fx_vol_surface_blueprints_request put;
+            for (const auto& b : plan.blueprints_to_write)
+                put.changes.push_back({.write = {.id = b.id,
+                                                 .output_series_id = b.output_series_id,
+                                                 .name = b.name,
+                                                 .base_currency_code = b.base_currency_code,
+                                                 .quote_currency_code = b.quote_currency_code,
+                                                 .fx_option_convention_id = b.fx_option_convention_id,
+                                                 .smile_model = b.smile_model,
+                                                 .expiry_interpolation = b.expiry_interpolation,
+                                                 .output_expiries = b.output_expiries,
+                                                 .output_strikes = b.output_strikes},
+                                       .precondition = any});
+            put.intent.reason_code = "system.new_record";
+            put.intent.commentary = std::string(commentary);
+            check(party_client.request(put), "blueprints");
+        }
+        if (!plan.pillars_to_write.empty()) {
+            ores::refdata::messaging::put_many_fx_vol_surface_pillars_request put;
+            for (const auto& p : plan.pillars_to_write)
+                put.changes.push_back({.write = {.id = p.id,
+                                                 .party_id = p.party_id,
+                                                 .blueprint_id = p.blueprint_id,
+                                                 .expiry_code = p.expiry_code,
+                                                 .strike_label = p.strike_label},
+                                       .precondition = any});
+            put.intent.reason_code = "system.new_record";
+            put.intent.commentary = std::string(commentary);
+            check(party_client.request(put), "pillars");
+        }
+        if (!plan.sources_to_write.empty()) {
+            ores::refdata::messaging::put_many_fx_vol_surface_pillar_sources_request put;
+            for (const auto& s : plan.sources_to_write)
+                put.changes.push_back({.write = {.id = s.id,
+                                                 .party_id = s.party_id,
+                                                 .pillar_id = s.pillar_id,
+                                                 .market_series_id = s.market_series_id,
+                                                 .contributor_code = s.contributor_code,
+                                                 .weight = s.weight},
+                                       .precondition = any});
+            put.intent.reason_code = "system.new_record";
+            put.intent.commentary = std::string(commentary);
+            check(party_client.request(put), "pillar sources");
+        }
+    }
+
+    /**
+     * @brief Gives each party the step names its own FX volatility surface blueprints.
+     *
+     * A surface is derived data, so it belongs to the party that calibrates it. The party copies
+     * every blueprint the system tenant holds, and each pillar source reads the party's own series
+     * of the same item from the same provider, which its subscription to the derived source fills.
+     * The step waits up to three minutes for those series, writes the rows, and fails naming each
+     * blueprint still waiting. A second run writes no row twice.
+     */
+    void
+    give_party_surface_blueprints_step(const ores::service::messaging::workflow_step_context& wf,
+                                       const ores::iam::workflow::provision_tenant_step_command& command,
+                                       const step_actor& actor) {
+        constexpr auto quote_patience = std::chrono::minutes{3};
+        constexpr auto retry_interval = std::chrono::seconds{10};
+
+        const auto parties = parse_party_curves_arguments(command.arguments_json);
+        const auto admin = system_administrator();
+        if (!admin) {
+            wf.fail("The system tenant holds no administrator to read the surface blueprints as.");
+            return;
+        }
+        auto system_client = make_step_client(
+            tenant_context::system_tenant_id, admin->account_id, admin->party_id, admin->username);
+        const auto system = read_system_surface_blueprints(system_client);
+        if (system.blueprints.empty()) {
+            wf.fail("The system tenant holds no surface blueprint to copy.");
+            return;
+        }
+
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+        provision_step_result result;
+        result.kind = command.kind;
+        std::vector<ores::workflow::messaging::step_log_entry> step_log;
+        std::vector<std::string> waiting;
+        for (const auto& party_name : parties) {
+            const auto party = find_party(discover, party_name);
+            if (!party)
+                throw std::runtime_error("The tenant holds no party named '" + party_name + "'.");
+            auto party_client =
+                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+
+            const auto started = std::chrono::steady_clock::now();
+            auto plan =
+                plan_party_surfaces(system, read_party_surface_holdings(party_client, party->id));
+            while (!plan.waiting.empty() &&
+                   std::chrono::steady_clock::now() < started + quote_patience) {
+                const auto line = party_name + ": " + std::to_string(plan.waiting.size()) +
+                                  " surface blueprint(s) wait for their quotes, asking again in " +
+                                  std::to_string(retry_interval.count()) + "s";
+                BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                    << "give_party_surface_blueprints: " << line;
+                step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                    .message = line,
+                                    .context = {}});
+                std::this_thread::sleep_for(retry_interval);
+                plan = plan_party_surfaces(system,
+                                           read_party_surface_holdings(party_client, party->id));
+            }
+            write_party_surface_plan(party_client, plan, party_name);
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "give_party_surface_blueprints: " << party_name << ": "
+                << plan.blueprints_to_write.size() << " written, " << plan.ready.size()
+                << " held, " << plan.waiting.size() << " waiting";
+            for (const auto& w : plan.waiting)
+                waiting.push_back(party_name + ": " + w);
+            result.parties.push_back(boost::uuids::to_string(party->id));
+        }
+        if (!waiting.empty()) {
+            std::string reason = std::to_string(waiting.size()) +
+                                 " surface blueprint(s) were not given. A rerun is safe:";
+            for (const auto& line : waiting)
                 reason += " " + line + ";";
             wf.fail(reason);
             return;

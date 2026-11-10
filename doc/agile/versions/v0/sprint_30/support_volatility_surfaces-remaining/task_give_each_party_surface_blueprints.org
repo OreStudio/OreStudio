@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-each-party-surface-blueprints
+#+pr: 4551
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -20,31 +20,36 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A surface is derived data, so each party owns its blueprints. Provisioning gives every operational party its surface blueprints. Their pillars read volatility quotes that the system owns as raw data and the party reaches through its subscriptions. This replaces the blueprint that belongs to the system party.
+A surface is derived data, so each party owns its blueprints. Provisioning gives every operational party its own copy of the system's FX volatility surface blueprints. Their pillar sources read volatility quotes that the system's derived source publishes, delivered into the party's own series through its subscription, as the IR quotes and spots are. Before this task no party received a volatility quote: the derived source sends each day's quotes once, so a party that subscribed after the day's send waited for the next day.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-10                               |
 
 * Acceptance
 
 - After provisioning, ACMCOR, ACCOUK, ACCOUS and ACCOHK each hold their own blueprints, starting with EUR/USD.
-- Each pillar source names a raw series the party subscribes to.
-- Volatility quotes have one owner, the system, and no party holds a copy.
-- No blueprint remains owned by the system party, unless the task records what needs it.
+- Each pillar source names a series of the party's own, which its subscription to the derived source fills.
+- A party that subscribes after the day's quotes went out receives them at once, as a vendor sends a new subscriber its last value.
+- The ingest stores and delivers a quote of an end-of-day source for 5 days after its close, and still drops a live quote after 5 seconds.
+- The system party keeps its blueprint as the template the parties copy, and the task says so.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two parts.
+
+*Delivery.* The derived source already announces as an adapter, takes demand and publishes through the ingest, which writes into each routed party's series. But it sends each day once, and its demand names ids, not parties, so it cannot tell that a new party needs today's value. The demand gains an =image=: the ids some party needs for the first time since the last demand, which the supervisor works out from which party it served each id. The derived source sends those again that day. A continuous adapter can ignore the image. Every Acme party subscribes to =derived= through =derived-fx-vol=. Two faults stopped the quotes before this task, and the task fixes both. The derived source sent its heartbeats on the thread that derives the quotes, so a long derivation marked it stale; heartbeats now run on their own thread. The ingest dropped every quote older than 5 seconds, and a derived quote is stamped at its day's close; the age limit now comes from the service of the source, 5 days for =end_of_day=.
+
+*Blueprints.* A new step, =give_party_surface_blueprints=, after the subscriptions, copies every system blueprint into each named party, as =publish_party_curves= does for curves: =plan_party_surfaces= is a pure function, ids derive from the party and the system row, each pillar source reads the party's own series of the same item and provider, and each blueprint writes its own output series. It waits up to three minutes for the party's quotes.
+
+The system party keeps its EUR/USD blueprint: it is the template the parties copy. Nothing else reads it yet.
 
 * Measurements
 
@@ -77,12 +82,22 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4551][#4551]] | [marketdata] Give each party its surface blueprints |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The translator may be null in the worker loop | =feed_ingest_loop.cpp= | Declined | =translator_= starts as an empty translator and =refresh()= only replaces it, so it is never null. =accept_adapter_tick= relies on the same. |
+| 2 | 4 days is short over Easter | =adapter_limits.hpp= | Fixed | The limit is 5 days: a Thursday close before Good Friday and Easter Monday is about 4.6 days old on the Tuesday morning. Docs follow. |
+| 3 | The doc comment of =demand_result= sits above =served_id= | =demand_calculator.hpp= | Fixed | Moved back. |
+| 4 | The step fails after a partial write, and waits 3 minutes per party | =tenant_provisioning_handler.hpp= | Declined | A rerun is safe because ids are stable and written rows are skipped. The worst case, 12 minutes, fits the 20-minute orchestrating timeout. |
+| 5 | A rejected id counts as served and never gets its image | =adapter_supervisor.cpp= | Fixed | =served_after= drops rejected ids, so the next demand that names one puts it in the image again. Tested. The restart behaviour is stated on =image_of=. |
+| 6 | Heartbeat thread | =derived_fx_vol_adapter.cpp= | No change | The review confirmed it is safe. |
+| 7 | =erase_stale= lambda parameter style | =feed_ingest_loop.cpp= | Declined | Style only. =const auto&= is already what the call site uses. |
 
 * Result
+
+Done on 2026-11-10. A fresh Acme provisioning completed all 15 steps. ACMCOR, ACCOUK, ACCOUS and ACCOHK each hold EURUSD_SSVI with 40 pillars, and all 40 pillar sources read the party's own series. Each party holds 10 derived volatility series, and the store holds 350 derived ticks stamped at the previous day's 17:00 close. The market data log shows no stale mark and no dropped tick for =derived-fx-vol=. The queries are in =evidence/party_surface_blueprints.sql=.
+
+The ingest now takes the age limit of a quote from the service of its source: 5 days for =end_of_day=, 5 seconds for the rest. The derived source sends heartbeats on a thread of their own, and a party that subscribes mid-day receives the day's last value through the demand's =image=.

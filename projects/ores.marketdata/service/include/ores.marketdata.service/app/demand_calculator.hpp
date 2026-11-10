@@ -40,6 +40,7 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <tuple>
 #include <string>
 #include <vector>
 
@@ -105,6 +106,21 @@ struct party_demand {
     std::map<std::string, std::vector<messaging::vendor_id>> items;
 };
 
+/// One party's need of one id: a vendor sends an initial image when the pair is new.
+struct served_id {
+    std::string tenant_id;
+    boost::uuids::uuid party_id;
+    std::string id_scheme;
+    std::string external_id;
+    std::string field;
+
+    friend bool operator<(const served_id& a, const served_id& b) {
+        return std::tie(a.tenant_id, a.party_id, a.id_scheme, a.external_id, a.field) <
+               std::tie(b.tenant_id, b.party_id, b.id_scheme, b.external_id, b.field);
+    }
+    friend bool operator==(const served_id&, const served_id&) = default;
+};
+
 /**
  * @brief The demand set of each adapter, and the parties refused.
  */
@@ -113,7 +129,26 @@ struct demand_result {
     /// empty set, so it still receives a demand that replaces its last one.
     std::map<std::string, std::vector<messaging::vendor_id>> by_adapter;
     std::vector<refused_demand> refused;
+    /// For each adapter, which party needs which id, so a new need can be told apart.
+    std::map<std::string, std::set<served_id>> served_by_adapter;
 };
+
+/**
+ * @brief The ids a party needs now and did not need at the last demand: the initial image.
+ *
+ * Each id appears once, however many parties gained it. The supervisor keeps no served set over a
+ * restart, so its first demand after one is all image, and an adapter sends its last values once.
+ */
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::vector<messaging::vendor_id>
+image_of(const std::set<served_id>& before, const std::set<served_id>& now);
+
+/**
+ * @brief What an adapter serves after it answers a demand: @p demanded less the ids it rejected.
+ *
+ * A rejected id stays out, so the next demand that names it puts it in the image again.
+ */
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::set<served_id>
+served_after(std::set<served_id> demanded, const std::vector<messaging::rejected_id>& rejected);
 
 /**
  * @brief Computes what each route demands, one entry for each route whose source the catalogue

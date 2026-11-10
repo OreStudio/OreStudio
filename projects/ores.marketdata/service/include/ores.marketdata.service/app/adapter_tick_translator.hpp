@@ -94,7 +94,9 @@ struct translated_tick {
  * and the source says the provider. @c translate() finds the vendor instrument of the tick,
  * the mapping that holds at the time of the call, and then applies the checks in this order:
  * mapping, number, range, age and order. A fixing skips the age and order checks: it is a
- * fact of a date, which a backfill may send in any order and a correction may send again. It counts
+ * fact of a date, which a backfill may send in any order and a correction may send again. The age
+ * limit of a quote comes from the service its source offers, so the value an end-of-day source
+ * sent at its last close is still current. It counts
  * each drop for each adapter and reason.
  *
  * The translator reads the kind of a source nowhere. A live source and a simulated source of
@@ -105,9 +107,6 @@ struct translated_tick {
  */
 class ORES_MARKETDATA_SERVICE_EXPORT adapter_tick_translator {
 public:
-    /// The age beyond which a tick is stale.
-    static constexpr std::chrono::milliseconds max_tick_age = domain::adapter_limits::max_tick_age;
-
     /// The largest absolute value a tick may carry.
     static constexpr double max_abs_value = domain::adapter_limits::max_abs_value;
 
@@ -123,6 +122,12 @@ public:
 
     /// How many ticks of @p adapter_id were dropped for @p reason.
     [[nodiscard]] std::uint64_t drops(std::string_view adapter_id, adapter_tick_drop reason) const;
+
+    /**
+     * @brief The age beyond which a quote of @p source_name is stale, from the service the source
+     * offers. A source the translator does not know gets the live limit.
+     */
+    [[nodiscard]] std::chrono::milliseconds max_quote_age(std::string_view source_name) const;
 
     /// The sources by name that the translator knows.
     [[nodiscard]] std::size_t source_count() const {

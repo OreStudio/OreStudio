@@ -69,6 +69,8 @@ TEST_CASE("the executor classifies each kind it executes into its own action", "
           provision_step_action::subscribe_market_data);
     CHECK(classify_step_kind("publish_party_curves") ==
           provision_step_action::publish_party_curves);
+    CHECK(classify_step_kind("give_party_surface_blueprints") ==
+          provision_step_action::give_party_surface_blueprints);
     CHECK(classify_step_kind("generate_trades") == provision_step_action::generate_trades);
     CHECK(classify_step_kind("schedule_reports") == provision_step_action::schedule_reports);
     CHECK(classify_step_kind("complete_provisioning") ==

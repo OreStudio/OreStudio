@@ -29,6 +29,7 @@ set(files
     "messaging_auth_refresh_tests.cpp"
     "messaging_auth_registration_gate_tests.cpp"
     "messaging_party_curve_blueprints_tests.cpp"
+    "messaging_party_surface_blueprints_tests.cpp"
     "messaging_provision_step_arguments_tests.cpp"
     "provision_acme_passwords_tests.cpp"
     "provision_schedule_reports_tests.cpp"

@@ -96,6 +96,10 @@ mm::adapter_demand_response derived_fx_vol_feed::demand(const mm::adapter_demand
     demanded_.clear();
     for (const auto& id : response.accepted)
         demanded_.insert(id.external_id);
+    // An id a party needs for the first time is sent again with the day it already went out,
+    // as a vendor sends a new subscriber its last value.
+    for (const auto& id : request.image)
+        last_sent_.erase(id.external_id);
     return response;
 }
 

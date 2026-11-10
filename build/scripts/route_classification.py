@@ -633,6 +633,11 @@ RULES = (
          ("exact", "POST /api/requests/:id/decision"),
          BFF, RESOURCE, "workflow",
          "Approves, refuses, holds or resumes one request against the version read."),
+    Rule("the approvals mode",
+         ("exact", "GET /api/approvals-mode"),
+         BFF, RESOURCE, "workflow",
+         "Whether auto-approval is on, its scope, and who set it, when and why, read from"
+         " the one subject the inbox answers it on."),
     Rule("the principal's requests",
          ("regex", r"^(GET|POST|DELETE) /api/me/requests"),
          BFF, RESOURCE, "workflow",

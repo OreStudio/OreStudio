@@ -448,6 +448,13 @@ RLS_002 ores_dq_*_artefact_tbl
 # ores.marketdata.curve_publish.
 RLS_002 ores_marketdata_curve_publishes_tbl
 
+# FX forward publishes, their points and their spots -- the same rule as curve
+# publishes: the decider is a tenant function, and the subject names its party.
+# See the model ores.marketdata.fx_forward_publish.
+RLS_002 ores_marketdata_fx_forward_publishes_tbl
+RLS_002 ores_marketdata_fx_forward_publish_points_tbl
+RLS_002 ores_marketdata_fx_forward_publish_spots_tbl
+
 # Cut approval details -- the same rule as curve publishes: the decider of a cut
 # is a tenant function, Finance for the close and Market Risk for the
 # verification, so a party policy would hide the request's subject from the

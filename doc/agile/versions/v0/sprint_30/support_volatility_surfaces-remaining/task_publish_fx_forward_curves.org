@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/publish-fx-forward-curves
+#+pr: 4540
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,7 +26,7 @@ An FX forward curve is a party's published record. A publish computes one pair a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -49,9 +49,15 @@ An FX forward curve is a party's published record. A publish computes one pair a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two PRs. The first publishes USD pairs, with the record, the approval kind, the publish and the read. The second adds crosses.
+
+The record follows the IR curve publish. =fx_forward_publish= is the detail row of a =marketdata.fx_forward_publish= request. It holds the subject (party, pair, as-of) and the provenance: the spot date and rate, both funding curve publishes, the convention version, the calendars and the method. Its tenors are =fx_forward_publish_point= rows, and the spots it read are =fx_forward_publish_spot= rows, one for a USD pair and two for a cross. All three are tenant-scoped, as an IR curve publish is, because the decider is a tenant function. The read filters by the session's party.
+
+The set is computed at the raise, from the party's own spot and published funding curves, and stored as the candidate. The decider sees the numbers they approve, and the apply stamps that row. Nothing is recomputed. A missing input refuses the raise before anything is written. A curve publish is named and not copied, so a withdrawn curve shows on every set built from it at read time.
+
+The compute is the existing ladder service, which now also names the spot series, the convention version and the calendars. The maker's permission is =marketdata::curve_bootstrap:publish=, the one the IR curve publish uses, because a forward set is a curve.
+
+The child rows name their publish by a plain id, not a database foreign key. They are written with it in one transaction, and the generated tests would otherwise have to build an approval request per row.
 
 * Measurements
 
@@ -65,7 +71,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Maker-checker publish of ACCOUS EUR/USD | Raised waiting, approved by mark.reid, applied by henry.jones | =evidence/fx_forward_publish_{raise,decide,apply}.ores= | Working tree on 9d9e523ce8 |
+| A pair without a funding curve | USD/BRL refused: "No funding curve is configured for BRL." No row written | =evidence/fx_forward_publish_raise.ores=, =evidence/fx_forward_publishes.sql= | Working tree on 9d9e523ce8 |
+| Auto-approval on | GBP/USD published at once, request closed by the tenant rule | =evidence/fx_forward_publish_auto.ores= | Working tree on 9d9e523ce8 |
+| Read after the market moved | Same 15 tenors and spot 1.1586409; the live spot was 1.1531972 | =evidence/fx_forward_publish_read.ores=, =evidence/fx_forward_publishes.sql= | Working tree on 9d9e523ce8 |
+| Another party reads | ACMCOR reads no EUR/USD set | =evidence/fx_forward_publish_read.ores= | Working tree on 9d9e523ce8 |
+| EUR funding curve withdrawn | The set reads the same numbers and names EUR-ESTR as withdrawn | =evidence/fx_forward_publish_after_withdrawal.ores= | Working tree on 9d9e523ce8 |
+| Tests | Codec 71 cases, eventing 3, shell commands 39 | =ores.marketdata.api.tests=, =ores.marketdata.core.tests=, =ores.shell.marketdata.tests= with =*fx_forward*= | Working tree on 9d9e523ce8 |
 
 * Notes
 
@@ -84,12 +96,19 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4540][#4540]] | [marketdata] Publish FX forward sets with their provenance |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A raise can leave a request with no set if the candidate write fails | =fx_forward_publish_service.cpp= | Declined | The IR curve gate raises then writes the same way. One transaction would block: the auto-approval close opens its own and waits on the uncommitted request. The inbox has no way to withdraw a waiting request; a write failure after a good compute leaves one the apply refuses. |
+| 2 | The apply does not re-check the curves | =fx_forward_publish_service.cpp= | Fixed | Intended: the decider approved those numbers. The model now says so, and the read names a withdrawn curve. |
+| 3 | The spot party filter could change the ladder read | =fx_forward_ladder_service.cpp= | Declined | The web route sends an empty party (#4528), so the filter does not apply to it. |
+| 4 | Ties on as-of have no order | =ores.marketdata.fx_forward_publish.org= | Fixed | Between two sets of one as-of, the one published last wins. |
+| 5 | The store precision check is redundant, and seconds against microseconds needs a word | =fx_forward_publish_service.cpp= | Fixed | The stored as-of is compared as is, and a comment says why published_at keeps seconds. |
+| 6 | Includes out of order | =application.cpp= | Fixed | Sorted. |
+| 7 | Every exception reads as a missing request | =fx_forward_publish_service.cpp= | Fixed | The exception is logged. |
+| 8 | No service-level test of the publish | tests | Declined | The paths need curves, spots and conventions in a database. The live evidence covers each one, and the next task's screen tests read the operation. |
 
 * Result

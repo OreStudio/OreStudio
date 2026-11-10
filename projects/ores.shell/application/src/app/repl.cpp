@@ -63,6 +63,7 @@
 #include "ores.shell/app/commands/inbox/notification_recipient_commands.hpp"
 #include "ores.shell/app/commands/lei_commands.hpp"
 #include "ores.shell/app/commands/marketdata/curve_publish_operations_operations_commands.hpp"
+#include "ores.shell/app/commands/marketdata/fx_forward_operation_operations_commands.hpp"
 #include "ores.shell/app/commands/marketdata/provider_terms_operations_operations_commands.hpp"
 #include "ores.shell/app/commands/marketdata/public_terms_commands.hpp"
 #include "ores.shell/app/commands/marketdata_commands.hpp"
@@ -263,6 +264,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     workunit_commands::register_commands(*root, session_);
     marketdata_commands::register_commands(*root, session_);
     curve_publish_operations_operations_commands::register_commands(*root, session_);
+    fx_forward_operation_operations_commands::register_commands(*root, session_);
     provider_terms_operations_operations_commands::register_commands(*root, session_);
     public_terms_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);

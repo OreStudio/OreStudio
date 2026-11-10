@@ -1,0 +1,455 @@
+:PROPERTIES:
+:ID: E8B8D507-2113-476B-B6C2-BAECF35CCD79
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.fx_forward_publish
+#+description: The subject a marketdata.fx_forward_publish approval request names, its provenance, and the publisher and time the apply records.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: 
+#+entity_singular: fx_forward_publish
+#+entity_plural: fx_forward_publishes
+#+entity_title: Fx Forward Publish
+#+brief: The subject and provenance of one FX forward set publish.
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+The detail row of one =marketdata.fx_forward_publish= approval request: the FX
+forward set the request authorises, where each of its numbers came from, and the
+record of the act once the set is published.
+
+A forward set is derived data, so it belongs to a party, as a funding curve does.
+The subject is the party, the pair and the as-of instant. The set is computed
+when the request is raised, so the person who decides reads the numbers they
+approve, and the apply publishes exactly those numbers. The tenors are the
+=fx_forward_publish_point= rows of the publish, and the spot observations it read
+are its =fx_forward_publish_spot= rows: one for a USD pair, two for a cross.
+
+The provenance is on this row: the publish of each funding curve the set
+discounts with, the version of the pair's convention, the calendars its dates
+roll on, and the method that combined them. Each names its own record, so a
+reader follows a number back to the market and to the curves. A curve
+publish is named and not copied, so the withdrawal of a curve shows on every set
+built from it without a write here. The apply does not check the curves again: the
+decider approved those numbers, and a curve withdrawn after the raise shows on the
+set as withdrawn rather than stopping it.
+
+=published_at= and =published_by= are the publication record, empty while the
+request waits and written in one act when the approved set is published.
+=request_id= is the natural key, so a request authorises one publish.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:profile:       uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID identifying this row.
+
+** request_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+The approval request this record is the subject of.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:filterable: true
+:END:
+
+The party the set belongs to. Two parties that publish the same pair at the same instant publish two sets, each from its own curves.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** pair_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:filterable: true
+:END:
+
+The currency pair, in the form of its convention, such as =EUR/USD=.
+
+#+begin_src cpp :name generator
+std::string("EUR/USD")
+#+end_src
+
+** as_of
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:sortable: true
+:END:
+
+The instant the set reads the market at: the latest spot at or before it, and the funding curves published at or before it.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** spot_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:END:
+
+The spot date the forwards are measured from, rolled on the pair's calendars.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{11}}
+#+end_src
+
+** spot_rate
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The spot rate of the pair the set used. For a cross it is derived from the two USD legs its spot rows name.
+
+#+begin_src cpp :name generator
+1.1
+#+end_src
+
+** base_curve_publish_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The =curve_publish= of the base currency's funding curve the set discounts with.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** quote_curve_publish_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The =curve_publish= of the quote currency's funding curve the set discounts with.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** convention_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The version of the pair's =currency_pair_convention= the set read its spot lag, roll and pip factor from.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** calendar_codes
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The calendars the dates roll on, comma separated, in the order the convention names them.
+
+#+begin_src cpp :name generator
+std::string("TARGET,US")
+#+end_src
+
+** method_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the set combined its inputs. =covered_interest_parity= is F = S x DF_base / DF_quote, each discount factor measured from the spot date.
+
+#+begin_src cpp :name generator
+std::string("covered_interest_parity")
+#+end_src
+
+** published_by
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable:      false
+:default_value: ""
+:END:
+
+The username of the account that applied the request, or empty while it waits.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** published_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the set was published, or null while the request waits.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_marketdata_fx_forward_publishes_tbl
+:rls_tenant_isolation: true
+:END:
+
+The record is tenant-scoped, as an IR curve publish is: the decider of a publish
+is a tenant function, so the subject names its party instead of hiding behind it.
+
+** Checks
+
+| expression                                       |
+|--------------------------------------------------|
+| ("published_at" is null) = ("published_by" = '') |
+| "as_of" > '1970-01-01 00:00:00+00'::timestamp with time zone |
+| "spot_rate" > 0                                  |
+| "pair_code" <> ''                                |
+
+** Indexes
+
+| name                            | columns                                     | unique | current_only |
+|---------------------------------+---------------------------------------------+--------+--------------|
+| fx_forward_publishes_party_pair | tenant_id, party_id, pair_code, as_of desc  | false  | true         |
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:list_by:       true
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+The request the record is the subject of. Its own id is the one the publish call
+names, so a record that names a request the store does not hold authorises
+nothing.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.api/generators/approval_request_generator.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_state_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto asker = ores::iam::generators::generate_synthetic_account(ctx);
+        asker.account_type = "service";
+        asker.change_reason_code = "system.test";
+        ores::iam::repository::account_repository asker_repo;
+        asker_repo.write(party_ctx, asker);
+
+        auto request = ores::inbox::generators::generate_synthetic_approval_request(ctx);
+        request.change_reason_code = "system.test";
+        request.requested_by = asker.id;
+
+        const auto system_ctx =
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+        const auto kinds =
+            ores::inbox::repository::approval_kind_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(kinds.empty());
+        request.kind_code = kinds.front().code;
+        const auto states =
+            ores::inbox::repository::approval_request_state_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(states.empty());
+        request.state_code = states.front().code;
+
+        ores::inbox::repository::approval_request_repository request_repo;
+        request_repo.write(party_ctx, request);
+        v.request_id = request.id;
+    }
+#+end_src
+
+** party_id
+:PROPERTIES:
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: publish
+:entity_plural_short:   publishes
+:entity_singular_words: FX forward publish
+:entity_plural_words:   FX forward publishes
+:END:
+
+*** read_latest_by_request
+:PROPERTIES:
+:ID: A418BC27-D756-4B28-8D71-D81DCD1F797E
+:END:
+
+Reads the record of one request, if the store holds one. The gate asks here.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::fx_forward_publish>
+read_latest_by_request(context ctx, const std::string& request_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <optional>
+#include <string>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::fx_forward_publish>
+fx_forward_publish_repository::read_latest_by_request(context ctx, const std::string& request_id) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<fx_forward_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
+                                            "valid_to"_c == max);
+    auto rows = query_builder::execute_read_query<fx_forward_publish_entity, domain::fx_forward_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return fx_forward_publish_mapper::map(entities); },
+        lg(),
+        "Reading the FX forward publish of a request.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+#+end_src
+
+*** read_published_for_pair
+:PROPERTIES:
+:ID: 72981789-1F58-4250-BE2F-88CB644EDD44
+:END:
+
+Every published set of one party and pair, newest as-of first. A reader at an as-of takes the first one at or before it.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::fx_forward_publish>
+read_published_for_pair(context ctx, const boost::uuids::uuid& party_id,
+                        const std::string& pair_code);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <boost/uuid/uuid_io.hpp>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::fx_forward_publish>
+fx_forward_publish_repository::read_published_for_pair(context ctx,
+                                                       const boost::uuids::uuid& party_id,
+                                                       const std::string& pair_code) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto pid = boost::uuids::to_string(party_id);
+    const auto query = query_builder::read<std::vector<fx_forward_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "party_id"_c == pid &&
+                                            "pair_code"_c == pair_code && "valid_to"_c == max);
+    auto rows = query_builder::execute_read_query<fx_forward_publish_entity, domain::fx_forward_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return fx_forward_publish_mapper::map(entities); },
+        lg(),
+        "Reading the published FX forward sets of a pair.");
+    std::erase_if(rows, [](const auto& r) { return !r.published_at.has_value(); });
+    // Newest as-of first; between two sets of one as-of, the one published last.
+    std::ranges::sort(rows, [](const auto& a, const auto& b) {
+        if (a.as_of != b.as_of)
+            return a.as_of > b.as_of;
+        return *a.published_at > *b.published_at;
+    });
+    return rows;
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| pair_code    | Pair         |
+| as_of        | As Of        |
+| published_by | Published By |
+| published_at | Published At |
+
+* See also
+
+- [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] -- the IR curve publish this record follows, and whose publishes it names.

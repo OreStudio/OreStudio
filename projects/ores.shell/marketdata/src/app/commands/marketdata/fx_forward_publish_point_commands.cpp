@@ -1,0 +1,402 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_shell_command_impl.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.shell/app/commands/marketdata/fx_forward_publish_point_commands.hpp"
+#include "ores.marketdata.api/messaging/fx_forward_publish_point_protocol.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.shell/app/command_args.hpp"
+#include "ores.shell/app/command_feedback.hpp"
+#include "ores.shell/app/command_token.hpp"
+#include "ores.shell/app/request_helpers.hpp"
+#include "ores.shell/app/shell_root_menu.hpp"
+#include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <boost/asio/ip/address.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <chrono>
+#include <cli/cli.h>
+#include <cstddef>
+#include <functional>
+#include <optional>
+#include <ostream>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+namespace ores::shell::app::commands {
+
+using namespace logging;
+using ores::nats::service::nats_client;
+namespace messaging = ores::marketdata::messaging;
+
+namespace {
+
+/**
+ * @brief Fill one request member from one token.
+ *
+ * A member's own type decides how its token reads, so the caller states the
+ * token and the name it answers to and nothing else. The four cases are the
+ * four shapes a token has: a word, a flag, a comma-separated list and
+ * everything from_token already converts.
+ */
+template <typename T>
+void fx_forward_publish_point_read_token(T& target,
+                                         const std::string& raw,
+                                         const std::string& name) {
+    if constexpr (std::is_same_v<T, std::string>) {
+        target = raw;
+    } else if constexpr (std::is_same_v<T, bool>) {
+        if (raw.empty() || raw == "false") {
+            target = false;
+        } else if (raw == "true") {
+            target = true;
+        } else {
+            throw std::invalid_argument(name + " must be 'true' or 'false'");
+        }
+    } else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>) {
+        target = ores::platform::time::datetime::from_iso8601_utc(raw);
+    } else if constexpr (std::is_same_v<T, boost::asio::ip::address>) {
+        target = boost::asio::ip::make_address(raw);
+    } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+        target.clear();
+        std::string current;
+        for (const char c : raw) {
+            if (c == ',') {
+                target.push_back(current);
+                current.clear();
+            } else {
+                current.push_back(c);
+            }
+        }
+        target.push_back(current);
+    } else {
+        target = ores::shell::app::from_token<T>(raw, name);
+    }
+}
+
+/// Apply the page and the order a caller stated, leaving the defaults alone.
+template <typename Request>
+void fx_forward_publish_point_apply_page(Request& req, const parsed_args& parsed) {
+    if (const auto& raw = parsed.flag("offset"); !raw.empty()) {
+        req.offset = ores::shell::app::from_token<std::uint32_t>(raw, "offset");
+    }
+    if (const auto& raw = parsed.flag("limit"); !raw.empty()) {
+        req.limit = ores::shell::app::from_token<std::uint32_t>(raw, "limit");
+    }
+    if (const auto& raw = parsed.flag("order"); !raw.empty()) {
+        req.order.field = raw;
+    }
+    req.order.descending = parsed.flag_set("desc");
+}
+
+}
+
+void fx_forward_publish_point_commands::register_commands(cli::Menu& root_menu,
+                                                          nats_client& session) {
+    auto menu = std::make_unique<cli::Menu>("fx_forward_publish_points");
+
+    menu->Insert(
+        "list",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_list(std::ref(out), std::ref(session), std::move(args));
+        },
+        "list [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+
+    menu->Insert(
+        "get",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get <id>");
+
+    menu->Insert(
+        "get-many",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_many(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-many <id>");
+
+    menu->Insert(
+        "versions",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_versions(std::ref(out), std::ref(session), std::move(args));
+        },
+        "versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]");
+
+    menu->Insert(
+        "version",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_version(std::ref(out), std::ref(session), std::move(args));
+        },
+        "version <id> --version <n>");
+
+    ores::shell::app::insert_menu(root_menu, std::move(menu));
+}
+
+void fx_forward_publish_point_commands::process_list(std::ostream& out,
+                                                     nats_client& session,
+                                                     const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list request.";
+
+    using request_type = messaging::list_fx_forward_publish_points_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run list." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        fx_forward_publish_point_apply_page(req, *parsed);
+        if (!parsed->positionals.empty()) {
+            fail(out) << "Expected no arguments, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::list_fx_forward_publish_points_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void fx_forward_publish_point_commands::process_get(std::ostream& out,
+                                                    nats_client& session,
+                                                    const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get request.";
+
+    using request_type = messaging::get_fx_forward_publish_point_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        fx_forward_publish_point_read_token(req.key.id, parsed->positionals[next++], "id");
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::get_fx_forward_publish_point_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void fx_forward_publish_point_commands::process_get_many(std::ostream& out,
+                                                         nats_client& session,
+                                                         const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-many request.";
+
+    using request_type = messaging::get_many_fx_forward_publish_points_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-many." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.empty() || parsed->positionals.size() % 1 != 0) {
+            fail(out) << "Expected a multiple of 1 arguments, got " << parsed->positionals.size()
+                      << "." << std::endl;
+            return;
+        }
+        for (std::size_t i = 0; i < parsed->positionals.size(); i += 1) {
+            messaging::fx_forward_publish_point_key key;
+            fx_forward_publish_point_read_token(key.id, parsed->positionals[i + 0], "id");
+            req.keys.push_back(std::move(key));
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::get_many_fx_forward_publish_points_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void fx_forward_publish_point_commands::process_versions(std::ostream& out,
+                                                         nats_client& session,
+                                                         const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating versions request.";
+
+    using request_type = messaging::list_fx_forward_publish_point_versions_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run versions." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        fx_forward_publish_point_read_token(req.key.id, parsed->positionals[next++], "id");
+        fx_forward_publish_point_apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::list_fx_forward_publish_point_versions_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void fx_forward_publish_point_commands::process_version(std::ostream& out,
+                                                        nats_client& session,
+                                                        const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating version request.";
+
+    using request_type = messaging::get_fx_forward_publish_point_version_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run version." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "version", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 arguments, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        fx_forward_publish_point_read_token(
+            req.key.fx_forward_publish_point.id, parsed->positionals[next++], "id");
+        req.key.version =
+            ores::shell::app::from_token<std::uint32_t>(parsed->flag("version"), "version");
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::get_fx_forward_publish_point_version_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+}

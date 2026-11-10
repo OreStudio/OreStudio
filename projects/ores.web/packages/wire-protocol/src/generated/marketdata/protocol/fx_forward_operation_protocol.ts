@@ -32,6 +32,10 @@ export interface FxForwardCurveSource {
     publish_id: string;
     as_of: string;
     published_by: string;
+    /**
+     * @brief The curve publish's state now: published, withdrawn or superseded. A set built from a withdrawn curve says so.
+     */
+    state_code: string;
 }
 
 /**
@@ -77,8 +81,87 @@ export interface GetFxForwardLadderResponse {
     rows: FxForwardLadderRow[];
 }
 
+/**
+ * @brief One spot observation a published set read: its own for a USD pair, or one USD leg of a cross.
+ */
+export interface FxForwardSpotSource {
+    leg_code: string;
+    pair_code: string;
+    series_id: string;
+    observed_at: string;
+    value: number;
+}
+
+/**
+ * @brief Raises, or applies, the publish of one pair's forward set for the caller's party. A call that names no approved request computes the set from the party's spot and published funding curves, raises a marketdata.fx_forward_publish request and stores the set as its candidate. A call that names the approved request publishes that candidate, unchanged. A set whose spot or curve is missing is refused, naming the input, and nothing is written.
+ */
+export interface PublishFxForwardRequest {
+    /**
+     * @brief The pair, such as EUR/USD.
+     */
+    pair_code: string;
+    /**
+     * @brief The instant the set reads the market at.
+     */
+    as_of: string;
+    /**
+     * @brief The approved request this call applies, or empty to raise one.
+     */
+    approval_request_id: string;
+    /**
+     * @brief Why the set should be published, for the decider to read.
+     */
+    reason: string;
+}
+
+/**
+ * @brief What the call did: raised a request, published a set, or refused and why.
+ */
+export interface PublishFxForwardResponse {
+    success: boolean;
+    message: string;
+    approval_request_id: string;
+    state_code: string;
+    published_at: string | null;
+    published_by: string;
+}
+
+/**
+ * @brief Reads the caller's party's published forward set of a pair: the newest one at or before the as-of, exactly as it was published, with where each number came from.
+ */
+export interface GetPublishedFxForwardRequest {
+    pair_code: string;
+    as_of: string;
+}
+
+/**
+ * @brief One published forward set and its provenance, or why there is none.
+ */
+export interface GetPublishedFxForwardResponse {
+    success: boolean;
+    message: string;
+    publish_id: string;
+    request_id: string;
+    party_id: string;
+    pair_code: string;
+    as_of: string;
+    spot_date: string;
+    spot_rate: number;
+    published_by: string;
+    published_at: string | null;
+    convention_version: number;
+    calendar_codes: string;
+    method_code: string;
+    base_curve: FxForwardCurveSource;
+    quote_curve: FxForwardCurveSource;
+    spots: FxForwardSpotSource[];
+    rows: FxForwardLadderRow[];
+}
+
 export const subjects = {
     get_fx_forward_ladder_request: 'marketdata.v1.ops.get_fx_forward_ladder',
+    publish_fx_forward_request: 'marketdata.v1.ops.publish_fx_forward',
+    get_published_fx_forward_request: 'marketdata.v1.ops.get_published_fx_forward',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -87,4 +170,6 @@ export const subjects = {
  */
 export const requiresSession = {
     get_fx_forward_ladder_request: true,
+    publish_fx_forward_request: true,
+    get_published_fx_forward_request: true,
 } as const;

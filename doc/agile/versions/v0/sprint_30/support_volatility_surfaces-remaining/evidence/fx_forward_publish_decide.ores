@@ -1,0 +1,7 @@
+# Step 2: the Market Risk decider, who did not raise it, approves the request.
+# Run with REQUEST set to the id step 1 printed.
+connect $ORES_NATS_URL
+
+login mark.reid@acme_corporation Secure-Password-123
+approval_operations decide-approval ${REQUEST} approve "The EUR/USD forwards match the curves" none --version 1
+logout

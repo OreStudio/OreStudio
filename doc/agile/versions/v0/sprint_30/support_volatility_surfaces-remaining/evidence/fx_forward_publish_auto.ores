@@ -1,0 +1,16 @@
+# With the tenant's auto-approval on, a raise publishes at once and its request
+# reads as auto-approved. Run with AS_OF set.
+connect $ORES_NATS_URL
+
+login tenant_admin@acme_corporation Secure-Password-123
+approval_operations set-approvals-mode "Checking a forward publish under auto-approval" --auto_approved true
+logout
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_forward_operation publish-fx-forward GBP/USD ${AS_OF} --reason "Raised while auto-approval is on"
+approval_operations list-my-approval-requests
+logout
+
+login tenant_admin@acme_corporation Secure-Password-123
+approval_operations set-approvals-mode "Back to people deciding" --auto_approved false
+logout

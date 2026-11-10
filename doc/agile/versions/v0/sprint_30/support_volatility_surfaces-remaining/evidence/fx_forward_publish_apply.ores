@@ -1,0 +1,8 @@
+# Step 3: the trader applies the approved request, then reads the published
+# set. Run with AS_OF and REQUEST set.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_forward_operation publish-fx-forward EUR/USD ${AS_OF} --approval_request_id ${REQUEST}
+fx_forward_operation get-published-fx-forward EUR/USD ${AS_OF}
+logout

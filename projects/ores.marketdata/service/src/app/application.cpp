@@ -49,6 +49,10 @@
 #include "ores.marketdata.service/messaging/feed_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/feed_scope_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/fx_forward_ladder_handler.hpp"
+#include "ores.marketdata.service/messaging/fx_forward_publish_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/fx_forward_publish_operations_handler.hpp"
+#include "ores.marketdata.service/messaging/fx_forward_publish_point_event_registrar.hpp"
+#include "ores.marketdata.service/messaging/fx_forward_publish_spot_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_mapping_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_data_vendor_instrument_event_registrar.hpp"
 #include "ores.marketdata.service/messaging/market_fixing_event_registrar.hpp"
@@ -204,6 +208,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         mdsm::register_series_classification_rule_event_mapping(event_source, event_bus, nats);
     auto curve_publish_sub =
         mdsm::register_curve_publish_event_mapping(event_source, event_bus, nats);
+    auto fx_forward_publish_sub =
+        mdsm::register_fx_forward_publish_event_mapping(event_source, event_bus, nats);
+    auto fx_forward_publish_point_sub =
+        mdsm::register_fx_forward_publish_point_event_mapping(event_source, event_bus, nats);
+    auto fx_forward_publish_spot_sub =
+        mdsm::register_fx_forward_publish_spot_event_mapping(event_source, event_bus, nats);
 
     // A route, a subscription, a source, a vendor instrument or a mapping changes what the loop
     // maps and to whom it stores, and what each adapter is asked to publish. Each of them
@@ -324,6 +334,20 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                   queue,
                                   [&n, c, v](ores::nats::message msg) mutable {
                                       mm::fx_forward_ladder_handler h(n, c, v);
+                                      h.read(std::move(msg));
+                                  }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::publish_fx_forward_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::fx_forward_publish_operations_handler h(n, c, v);
+                                      h.publish(std::move(msg));
+                                  }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::get_published_fx_forward_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::fx_forward_publish_operations_handler h(n, c, v);
                                       h.read(std::move(msg));
                                   }));
             subs.push_back(n.queue_subscribe(std::string(mm::publish_curve_request::nats_subject),

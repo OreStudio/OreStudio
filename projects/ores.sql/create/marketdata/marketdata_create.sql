@@ -51,6 +51,12 @@
 -- runs at write time).
 \ir ./marketdata_curve_publishes_create.sql
 \ir ./marketdata_curve_publishes_notify_trigger_create.sql
+\ir ./marketdata_fx_forward_publishes_create.sql
+\ir ./marketdata_fx_forward_publishes_notify_trigger_create.sql
+\ir ./marketdata_fx_forward_publish_points_create.sql
+\ir ./marketdata_fx_forward_publish_points_notify_trigger_create.sql
+\ir ./marketdata_fx_forward_publish_spots_create.sql
+\ir ./marketdata_fx_forward_publish_spots_notify_trigger_create.sql
 \ir ./marketdata_market_fixings_create.sql
 \ir ./marketdata_market_fixings_notify_trigger_create.sql
 \ir ./marketdata_series_classification_rules_create.sql

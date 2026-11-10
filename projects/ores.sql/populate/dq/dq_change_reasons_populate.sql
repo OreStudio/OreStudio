@@ -237,6 +237,17 @@ BEGIN
     );
 
     PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.fx_forward_published',
+        'An FX forward publish applied the approved set: the record stamps who published it and when',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (the stamp is a new version of the subject row)
+        false,  -- not for delete
+        false,  -- no commentary required
+        67      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.curve_withdrawn',
         'A published curve was taken out of use: the record stamps the account, the instant and the reason',
         'system',

@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 4109B65F-E110-5469-93F3-1D11AEBFAEB2
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_forward_publishes commands from the shell?
+#+description: Every command the fx_forward_publishes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_forward_publishes:
+
+This file documents the fx_forward_publishes resource at the shell, one section per command. Every command is a subcommand of =fx_forward_publishes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: CC5B17D6-F73B-5D81-90EE-F77B468A25C3
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publishes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publishes.list=.
+
+#+name: fx_forward_publishes-list
+#+begin_src ores-shell :tangle fx_forward_publishes-list.ores :exports none
+fx_forward_publishes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B90146DA-3533-58ED-9742-79BD124C2C44
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publishes get <id>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publishes.get=.
+
+#+name: fx_forward_publishes-get
+#+begin_src ores-shell :tangle fx_forward_publishes-get.ores :exports none
+fx_forward_publishes get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: B5F95F02-2FB9-53F3-8450-B73479C88B85
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publishes get-many <id>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publishes.get_many=.
+
+#+name: fx_forward_publishes-get-many
+#+begin_src ores-shell :tangle fx_forward_publishes-get-many.ores :exports none
+fx_forward_publishes get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =by-request-id=
+:PROPERTIES:
+:ID: 3AAD986D-9431-5CD8-AC74-1006F838FC5F
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publishes by-request-id <request_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publishes.list_by_request_id=.
+
+#+name: fx_forward_publishes-by-request-id
+#+begin_src ores-shell :tangle fx_forward_publishes-by-request-id.ores :exports none
+fx_forward_publishes by-request-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 4FC353E8-B19D-5567-99DB-DD3B8EC6DEED
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publishes versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publishes_versions.list=.
+
+#+name: fx_forward_publishes-versions
+#+begin_src ores-shell :tangle fx_forward_publishes-versions.ores :exports none
+fx_forward_publishes versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 843670E0-3571-5557-B465-E1364C64BEC1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publishes version <id> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publishes_versions.get=.
+
+#+name: fx_forward_publishes-version
+#+begin_src ores-shell :tangle fx_forward_publishes-version.ores :exports none
+fx_forward_publishes version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

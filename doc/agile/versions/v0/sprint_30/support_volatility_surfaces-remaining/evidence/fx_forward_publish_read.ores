@@ -1,0 +1,12 @@
+# Reads ACCOUS's published EUR/USD set, as ACCOUS and then as the group, whose
+# session party is ACMCOR. The group has no set of its own, so it reads none.
+# Run with AS_OF set to any instant after the publish.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_forward_operation get-published-fx-forward EUR/USD ${AS_OF}
+logout
+
+login tenant_admin@acme_corporation Secure-Password-123
+fx_forward_operation get-published-fx-forward EUR/USD ${AS_OF}
+logout

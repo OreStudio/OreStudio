@@ -21,12 +21,14 @@
 #define ORES_SYNTHETIC_CORE_TESTS_ORE_EXAMPLE_CONVENTIONS_HPP
 
 #include "ores.marketdata.api/conventions/convention_lookup.hpp"
+#include <string>
 
 namespace ores::synthetic::tests {
 
 /**
  * @brief The conventions of ORE's Products example the generated trades build
- * from: the standard CDS convention and the EUR six month Euribor swap.
+ * from: the standard CDS convention, the EUR six month Euribor and USD three
+ * month Libor swaps, and the seed's inflation swaps of the indices the tests draw.
  */
 inline marketdata::conventions::convention_set ore_example_conventions() {
     refdata::domain::cds_convention cds;
@@ -55,7 +57,40 @@ inline marketdata::conventions::convention_set ore_example_conventions() {
     swap.fixed_day_count_fraction = "30/360";
     swap.index = "EUR-EURIBOR-6M";
     swap.oresmd_uri = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=6M";
-    return {.ibor_indices = {index}, .swaps = {swap}, .cds = {cds}};
+    auto libor = index;
+    libor.id = "USD-LIBOR";
+    libor.fixing_calendar = "US,UK";
+    libor.oresmd_uri = "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR";
+
+    auto usd_swap = swap;
+    usd_swap.id = "USD-LIBOR-3M-SWAP";
+    usd_swap.fixed_calendar = "US,UK";
+    usd_swap.fixed_frequency = "Semiannual";
+    usd_swap.index = "USD-LIBOR-3M";
+    usd_swap.oresmd_uri = "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M";
+
+    // The seed's inflation swap conventions of the indices the tests draw.
+    const auto inflation = [](std::string index, std::string calendar, std::string lag,
+                              bool interpolated) {
+        refdata::domain::inflation_swap_convention row;
+        row.id = index + "_INFLATIONSWAP";
+        row.fix_calendar = calendar;
+        row.fix_convention = "ModifiedFollowing";
+        row.day_count_fraction = "30/360";
+        row.index = index;
+        row.interpolated = interpolated;
+        row.observation_lag = std::move(lag);
+        row.inflation_calendar = std::move(calendar);
+        row.inflation_convention = "ModifiedFollowing";
+        row.oresmd_uri = "oresmd://inflation/" + index + "?type=fixing&index=inflation";
+        return row;
+    };
+    return {.ibor_indices = {index, libor},
+            .swaps = {swap, usd_swap},
+            .cds = {cds},
+            .inflation_swaps = {inflation("UKRPIX", "UK", "2M", false),
+                                inflation("USCPIA", "US", "3M", true),
+                                inflation("BECPIHL", "TARGET", "3M", false)}};
 }
 
 }

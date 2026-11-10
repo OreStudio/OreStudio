@@ -259,7 +259,7 @@ index_credit_default_swap_option_builder::build() const {
     out->strikes.push_back(std::move(strike));
 
     domain::instrument_option option;
-    option.long_short = terms_.position.get() == option_position::long_option ? "Long" : "Short";
+    option.long_short = long_short_of(terms_.position.get());
     option.style = "European";
     option.settlement = "Cash";
     option.pay_off_at_expiry = "false";

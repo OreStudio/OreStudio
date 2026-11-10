@@ -32,6 +32,7 @@
 #include "ores.refdata.api/messaging/equity_underlying_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/inflation_swap_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/legal_entity_protocol.hpp"
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
@@ -354,6 +355,9 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     ores::refdata::messaging::list_cds_conventions_request cds_req;
     cds_req.limit = page;
     scope.conventions.cds = read(cds_req).cds_conventions;
+    ores::refdata::messaging::list_inflation_swap_conventions_request inflation_req;
+    inflation_req.limit = page;
+    scope.conventions.inflation_swaps = read(inflation_req).inflation_swap_conventions;
 
     ores::refdata::messaging::list_counterparties_request cp_req;
     cp_req.limit = page;

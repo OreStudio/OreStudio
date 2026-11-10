@@ -271,3 +271,21 @@ TEST_CASE("two_cds_conventions_with_one_id_are_refused", "[conventions][conventi
     REQUIRE_FALSE(found);
     CHECK(found.error().kind == lookup_refusal_kind::more_than_one_match);
 }
+
+TEST_CASE("an_inflation_swap_convention_is_found_by_its_index", "[conventions][convention_lookup]") {
+    constexpr auto ukrpi = "oresmd://inflation/UKRPI?type=fixing&index=inflation";
+    convention_set set;
+    auto convention = convention_at<rd::inflation_swap_convention>("UKRPI_INFLATIONSWAP", ukrpi);
+    convention.observation_lag = "2M";
+    set.inflation_swaps.push_back(convention);
+    const convention_lookup lookup(set);
+
+    const auto found = lookup.inflation_swap_convention_of(identifier(ukrpi));
+    REQUIRE(found);
+    CHECK(found->observation_lag == "2M");
+
+    const auto missing = lookup.inflation_swap_convention_of(
+        identifier("oresmd://inflation/UKRPIX?type=fixing&index=inflation"));
+    REQUIRE_FALSE(missing);
+    CHECK(missing.error().kind == lookup_refusal_kind::no_match);
+}

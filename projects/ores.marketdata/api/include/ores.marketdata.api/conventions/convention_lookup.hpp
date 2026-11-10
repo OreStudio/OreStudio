@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/export.hpp"
 #include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/ibor_index_convention.hpp"
+#include "ores.refdata.api/domain/inflation_swap_convention.hpp"
 #include "ores.refdata.api/domain/ois_convention.hpp"
 #include "ores.refdata.api/domain/overnight_index_convention.hpp"
 #include "ores.refdata.api/domain/swap_convention.hpp"
@@ -49,6 +50,7 @@ struct convention_set final {
     std::vector<refdata::domain::swap_convention> swaps;
     std::vector<refdata::domain::ois_convention> ois_swaps;
     std::vector<refdata::domain::cds_convention> cds;
+    std::vector<refdata::domain::inflation_swap_convention> inflation_swaps;
 };
 
 /// Why the lookup could not answer, kept apart because each is a different
@@ -174,12 +176,17 @@ public:
     [[nodiscard]] std::expected<refdata::domain::cds_convention, lookup_error>
     cds_convention_of(std::string_view id) const;
 
+    /// The inflation swap convention whose index is @p index.
+    [[nodiscard]] std::expected<refdata::domain::inflation_swap_convention, lookup_error>
+    inflation_swap_convention_of(const datum::market_reference& index) const;
+
 private:
     detail::answerable<refdata::domain::ibor_index_convention> ibor_indices_;
     detail::answerable<refdata::domain::overnight_index_convention> overnight_indices_;
     detail::answerable<refdata::domain::swap_convention> swaps_;
     detail::answerable<refdata::domain::ois_convention> ois_swaps_;
     std::vector<refdata::domain::cds_convention> cds_;
+    detail::answerable<refdata::domain::inflation_swap_convention> inflation_swaps_;
 };
 
 }

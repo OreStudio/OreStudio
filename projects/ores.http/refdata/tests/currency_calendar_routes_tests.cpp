@@ -22,20 +22,32 @@
  * Template: cpp_http_route_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http/routes/refdata/currency_calendar_routes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <initializer_list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 using namespace ores::logging;
 using ores::http::domain::http_method;
+using ores::http::domain::http_request;
+using ores::http::domain::http_response;
+using ores::http::domain::http_status;
 using ores::http::net::router;
 using ores::http::openapi::endpoint_registry;
 using ores::http::routes::refdata::currency_calendar_routes;
@@ -59,6 +71,30 @@ std::shared_ptr<router> currency_calendar_registered_routes(nats_client& session
     auto registry = std::make_shared<endpoint_registry>();
     currency_calendar_routes::register_routes(table, registry, session);
     return table;
+}
+
+/// Runs a handler to completion. The handler never reaches a socket, so the
+/// context has no I/O to wait on.
+[[maybe_unused]] http_response currency_calendar_run(boost::asio::awaitable<http_response> work) {
+    boost::asio::io_context io;
+    std::optional<http_response> answer;
+    boost::asio::co_spawn(
+        io,
+        [&answer, work = std::move(work)]() mutable -> boost::asio::awaitable<void> {
+            answer = co_await std::move(work);
+        },
+        boost::asio::detached);
+    io.run();
+    return answer.value_or(http_response{});
+}
+
+/// A GET request that carries only these query parameters.
+[[maybe_unused]] http_request
+currency_calendar_query(std::initializer_list<std::pair<const std::string, std::string>> params) {
+    http_request req;
+    req.method = http_method::get;
+    req.query_params = params;
+    return req;
 }
 
 }
@@ -174,4 +210,48 @@ TEST_CASE("currency_calendar_routes_requires_a_session_where_the_operation_does"
     }
 
     BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of 9 route(s).";
+}
+
+// The client below is not connected. A request the route accepts therefore
+// fails at the forward step with a server error, and only a request the route
+// refuses is a bad request. That difference is what each case reads.
+TEST_CASE("currency_calendar_routes_list_accepts_a_page_and_an_order", "[routes]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    const auto response = currency_calendar_run(currency_calendar_routes::handle_list(
+        currency_calendar_query(
+            {{"offset", "10"}, {"limit", "5"}, {"sort", "version"}, {"descending", "true"}}),
+        session));
+
+    CHECK(response.status == http_status::internal_server_error);
+    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+}
+
+TEST_CASE("currency_calendar_routes_list_accepts_every_filter_it_declares", "[routes]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    // Each name is the one its reader reads. An empty value narrows nothing,
+    // so the case isolates the declaration from the reading of a value.
+    const std::vector<std::string> names{};
+    for (const auto& name : names) {
+        const auto response = currency_calendar_run(
+            currency_calendar_routes::handle_list(currency_calendar_query({{name, ""}}), session));
+        INFO(name);
+        CHECK(response.status == http_status::internal_server_error);
+    }
+    BOOST_LOG_SEV(lg, debug) << "Checked " << names.size() << " declared filter(s).";
+}
+
+TEST_CASE("currency_calendar_routes_list_refuses_an_undeclared_filter", "[routes]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    const auto response = currency_calendar_run(currency_calendar_routes::handle_list(
+        currency_calendar_query({{"f.no_such_column", "x"}}), session));
+
+    CHECK(response.status == http_status::bad_request);
+    CHECK(response.body.find("no_such_column") != std::string::npos);
+    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
 }

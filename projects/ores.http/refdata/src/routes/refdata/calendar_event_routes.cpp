@@ -31,8 +31,10 @@
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <exception>
+#include <initializer_list>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -40,6 +42,7 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace ores::http::routes::refdata {
 
@@ -159,10 +162,50 @@ void calendar_event_apply_page(Request& msg, const http_request& req) {
     if (const auto raw = req.get_query_param("limit"); !raw.empty()) {
         msg.limit = calendar_event_read_param<std::uint32_t>(raw, "limit");
     }
-    if (const auto raw = req.get_query_param("order"); !raw.empty()) {
+    if (const auto raw = req.get_query_param("sort"); !raw.empty()) {
         msg.order.field = raw;
     }
-    msg.order.descending = req.get_query_param("desc") == "true";
+    msg.order.descending = req.get_query_param("descending") == "true";
+}
+
+/**
+ * @brief Read a comma-separated parameter as a list of the member's own type.
+ *
+ * An empty item is refused, because it would otherwise match the empty value.
+ */
+template <typename T>
+std::vector<T> calendar_event_read_list(const std::string& raw, const std::string& name) {
+    std::vector<T> values;
+    std::string::size_type begin = 0;
+    while (true) {
+        const auto end = raw.find(',', begin);
+        const auto item = raw.substr(begin, end == std::string::npos ? end : end - begin);
+        if (item.empty()) {
+            throw std::runtime_error("Invalid value for " + name + ": " + raw);
+        }
+        values.push_back(calendar_event_read_param<T>(item, name));
+        if (end == std::string::npos) {
+            return values;
+        }
+        begin = end + 1;
+    }
+}
+
+/**
+ * @brief Refuse a filter this route does not declare.
+ *
+ * A filter that narrowed nothing would read as an answer, so the route names it
+ * rather than ignoring it.
+ */
+[[maybe_unused]] void
+calendar_event_refuse_undeclared_filters(const http_request& req,
+                                         std::initializer_list<std::string_view> declared) {
+    for (const auto& [name, value] : req.query_params) {
+        if (name.starts_with("f.") &&
+            std::find(declared.begin(), declared.end(), name) == declared.end()) {
+            throw std::runtime_error("This list cannot be filtered by " + name.substr(2) + ".");
+        }
+    }
 }
 
 }
@@ -172,6 +215,14 @@ boost::asio::awaitable<http_response> calendar_event_routes::handle_list(const h
     using request_type = messaging::list_calendar_events_request;
     try {
         request_type msg;
+        calendar_event_refuse_undeclared_filters(req,
+                                                 {
+                                                     "f.calendar_code",
+                                                     "f.diary_entry_type",
+                                                     "f.id_one_of",
+                                                     "f.calendar_code_one_of",
+                                                     "f.diary_entry_type_one_of",
+                                                 });
         calendar_event_apply_page(msg, req);
         if (const auto raw = req.get_query_param("f.calendar_code"); !raw.empty()) {
             if (!msg.filter)
@@ -184,6 +235,24 @@ boost::asio::awaitable<http_response> calendar_event_routes::handle_list(const h
                 msg.filter = messaging::calendar_events_filter{};
             msg.filter->diary_entry_type =
                 calendar_event_read_param<std::string>(raw, "f.diary_entry_type");
+        }
+        if (const auto raw = req.get_query_param("f.id_one_of"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::calendar_events_filter{};
+            msg.filter->id_one_of =
+                calendar_event_read_list<boost::uuids::uuid>(raw, "f.id_one_of");
+        }
+        if (const auto raw = req.get_query_param("f.calendar_code_one_of"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::calendar_events_filter{};
+            msg.filter->calendar_code_one_of =
+                calendar_event_read_list<std::string>(raw, "f.calendar_code_one_of");
+        }
+        if (const auto raw = req.get_query_param("f.diary_entry_type_one_of"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::calendar_events_filter{};
+            msg.filter->diary_entry_type_one_of =
+                calendar_event_read_list<std::string>(raw, "f.diary_entry_type_one_of");
         }
         co_return co_await calendar_event_forward(req, session, msg);
     } catch (const std::exception& e) {
@@ -389,8 +458,8 @@ void calendar_event_routes::register_routes(
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
-            .query_param("order", "string", "", false, "Column to order")
-            .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("sort", "string", "", false, "Column to order")
+            .query_param("descending", "boolean", "", false, "Descending")
             .query_param(
                 "f.calendar_code", "string", "", false, "Rows whose calendar_code is this value")
             .query_param("f.diary_entry_type",
@@ -398,6 +467,21 @@ void calendar_event_routes::register_routes(
                          "",
                          false,
                          "Rows whose diary_entry_type is this value")
+            .query_param("f.id_one_of",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose id is one of these comma-separated values")
+            .query_param("f.calendar_code_one_of",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose calendar_code is one of these comma-separated values")
+            .query_param("f.diary_entry_type_one_of",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose diary_entry_type is one of these comma-separated values")
             .response<messaging::list_calendar_events_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -507,8 +591,8 @@ void calendar_event_routes::register_routes(
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
-            .query_param("order", "string", "", false, "Column to order")
-            .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("sort", "string", "", false, "Column to order")
+            .query_param("descending", "boolean", "", false, "Descending")
             .query_param("scope", "string", "", false, "direct or subtree")
             .response<messaging::list_by_calendar_code_calendar_events_response>()
             .handler([&session](const http_request& req) {
@@ -527,8 +611,8 @@ void calendar_event_routes::register_routes(
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
-            .query_param("order", "string", "", false, "Column to order")
-            .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("sort", "string", "", false, "Column to order")
+            .query_param("descending", "boolean", "", false, "Descending")
             .query_param("scope", "string", "", false, "direct or subtree")
             .response<messaging::list_by_diary_entry_type_calendar_events_response>()
             .handler([&session](const http_request& req) {
@@ -546,8 +630,8 @@ void calendar_event_routes::register_routes(
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
-            .query_param("order", "string", "", false, "Column to order")
-            .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("sort", "string", "", false, "Column to order")
+            .query_param("descending", "boolean", "", false, "Descending")
             .response<messaging::list_calendar_event_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
     const auto versions_built = versions_route.build();

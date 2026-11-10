@@ -31,8 +31,10 @@
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <exception>
+#include <initializer_list>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -40,6 +42,7 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace ores::http::routes::refdata {
 
@@ -160,10 +163,50 @@ void ir_curve_bootstrap_config_apply_page(Request& msg, const http_request& req)
     if (const auto raw = req.get_query_param("limit"); !raw.empty()) {
         msg.limit = ir_curve_bootstrap_config_read_param<std::uint32_t>(raw, "limit");
     }
-    if (const auto raw = req.get_query_param("order"); !raw.empty()) {
+    if (const auto raw = req.get_query_param("sort"); !raw.empty()) {
         msg.order.field = raw;
     }
-    msg.order.descending = req.get_query_param("desc") == "true";
+    msg.order.descending = req.get_query_param("descending") == "true";
+}
+
+/**
+ * @brief Read a comma-separated parameter as a list of the member's own type.
+ *
+ * An empty item is refused, because it would otherwise match the empty value.
+ */
+template <typename T>
+std::vector<T> ir_curve_bootstrap_config_read_list(const std::string& raw,
+                                                   const std::string& name) {
+    std::vector<T> values;
+    std::string::size_type begin = 0;
+    while (true) {
+        const auto end = raw.find(',', begin);
+        const auto item = raw.substr(begin, end == std::string::npos ? end : end - begin);
+        if (item.empty()) {
+            throw std::runtime_error("Invalid value for " + name + ": " + raw);
+        }
+        values.push_back(ir_curve_bootstrap_config_read_param<T>(item, name));
+        if (end == std::string::npos) {
+            return values;
+        }
+        begin = end + 1;
+    }
+}
+
+/**
+ * @brief Refuse a filter this route does not declare.
+ *
+ * A filter that narrowed nothing would read as an answer, so the route names it
+ * rather than ignoring it.
+ */
+[[maybe_unused]] void ir_curve_bootstrap_config_refuse_undeclared_filters(
+    const http_request& req, std::initializer_list<std::string_view> declared) {
+    for (const auto& [name, value] : req.query_params) {
+        if (name.starts_with("f.") &&
+            std::find(declared.begin(), declared.end(), name) == declared.end()) {
+            throw std::runtime_error("This list cannot be filtered by " + name.substr(2) + ".");
+        }
+    }
 }
 
 }
@@ -173,6 +216,16 @@ ir_curve_bootstrap_config_routes::handle_list(const http_request& req, nats_clie
     using request_type = messaging::list_ir_curve_bootstrap_configs_request;
     try {
         request_type msg;
+        ir_curve_bootstrap_config_refuse_undeclared_filters(req,
+                                                            {
+                                                                "f.currency_code",
+                                                                "f.curve_family_role",
+                                                                "f.discount_curve_config_id",
+                                                                "f.id_one_of",
+                                                                "f.currency_code_one_of",
+                                                                "f.curve_family_role_one_of",
+                                                                "f.discount_curve_config_id_one_of",
+                                                            });
         ir_curve_bootstrap_config_apply_page(msg, req);
         if (const auto raw = req.get_query_param("search"); !raw.empty()) {
             msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
@@ -196,6 +249,32 @@ ir_curve_bootstrap_config_routes::handle_list(const http_request& req, nats_clie
             msg.filter->discount_curve_config_id =
                 ir_curve_bootstrap_config_read_param<boost::uuids::uuid>(
                     raw, "f.discount_curve_config_id");
+        }
+        if (const auto raw = req.get_query_param("f.id_one_of"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->id_one_of =
+                ir_curve_bootstrap_config_read_list<boost::uuids::uuid>(raw, "f.id_one_of");
+        }
+        if (const auto raw = req.get_query_param("f.currency_code_one_of"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->currency_code_one_of =
+                ir_curve_bootstrap_config_read_list<std::string>(raw, "f.currency_code_one_of");
+        }
+        if (const auto raw = req.get_query_param("f.curve_family_role_one_of"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->curve_family_role_one_of =
+                ir_curve_bootstrap_config_read_list<std::string>(raw, "f.curve_family_role_one_of");
+        }
+        if (const auto raw = req.get_query_param("f.discount_curve_config_id_one_of");
+            !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->discount_curve_config_id_one_of =
+                ir_curve_bootstrap_config_read_list<boost::uuids::uuid>(
+                    raw, "f.discount_curve_config_id_one_of");
         }
         co_return co_await ir_curve_bootstrap_config_forward(req, session, msg);
     } catch (const std::exception& e) {
@@ -369,8 +448,8 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
-            .query_param("order", "string", "", false, "Column to order")
-            .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("sort", "string", "", false, "Column to order")
+            .query_param("descending", "boolean", "", false, "Descending")
             .query_param("search", "string", "", false, "Free text the rows must match")
             .query_param(
                 "f.currency_code", "string", "", false, "Rows whose currency_code is this value")
@@ -384,6 +463,27 @@ void ir_curve_bootstrap_config_routes::register_routes(
                          "",
                          false,
                          "Rows whose discount_curve_config_id is this value")
+            .query_param("f.id_one_of",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose id is one of these comma-separated values")
+            .query_param("f.currency_code_one_of",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose currency_code is one of these comma-separated values")
+            .query_param("f.curve_family_role_one_of",
+                         "string",
+                         "",
+                         false,
+                         "Rows whose curve_family_role is one of these comma-separated values")
+            .query_param(
+                "f.discount_curve_config_id_one_of",
+                "string",
+                "",
+                false,
+                "Rows whose discount_curve_config_id is one of these comma-separated values")
             .response<messaging::list_ir_curve_bootstrap_configs_response>()
             .handler([&session](const http_request& req) { return handle_list(req, session); });
     const auto list_built = list_route.build();
@@ -496,8 +596,8 @@ void ir_curve_bootstrap_config_routes::register_routes(
             .auth_required()
             .query_param("offset", "integer", "", false, "Rows to skip")
             .query_param("limit", "integer", "", false, "Rows to return")
-            .query_param("order", "string", "", false, "Column to order")
-            .query_param("desc", "boolean", "", false, "Descending")
+            .query_param("sort", "string", "", false, "Column to order")
+            .query_param("descending", "boolean", "", false, "Descending")
             .response<messaging::list_ir_curve_bootstrap_config_versions_response>()
             .handler([&session](const http_request& req) { return handle_versions(req, session); });
     const auto versions_built = versions_route.build();

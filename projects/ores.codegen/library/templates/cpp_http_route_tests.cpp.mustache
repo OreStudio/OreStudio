@@ -2,19 +2,31 @@
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.http/routes/{{component}}/{{entity_singular}}_routes.hpp"
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
 #include <algorithm>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <initializer_list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 using namespace ores::logging;
 using ores::http::domain::http_method;
+using ores::http::domain::http_request;
+using ores::http::domain::http_response;
+using ores::http::domain::http_status;
 using ores::http::net::router;
 using ores::http::openapi::endpoint_registry;
 using ores::http::routes::{{component}}::{{entity_singular}}_routes;
@@ -38,6 +50,30 @@ std::shared_ptr<router> {{entity_singular}}{{^entity_singular}}{{name_singular}}
     auto registry = std::make_shared<endpoint_registry>();
     {{entity_singular}}_routes::register_routes(table, registry, session);
     return table;
+}
+
+/// Runs a handler to completion. The handler never reaches a socket, so the
+/// context has no I/O to wait on.
+[[maybe_unused]] http_response {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_run(boost::asio::awaitable<http_response> work) {
+    boost::asio::io_context io;
+    std::optional<http_response> answer;
+    boost::asio::co_spawn(
+        io,
+        [&answer, work = std::move(work)]() mutable -> boost::asio::awaitable<void> {
+            answer = co_await std::move(work);
+        },
+        boost::asio::detached);
+    io.run();
+    return answer.value_or(http_response{});
+}
+
+/// A GET request that carries only these query parameters.
+[[maybe_unused]] http_request {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_query(
+    std::initializer_list<std::pair<const std::string, std::string>> params) {
+    http_request req;
+    req.method = http_method::get;
+    req.query_params = params;
+    return req;
 }
 
 }
@@ -110,4 +146,66 @@ TEST_CASE("{{entity_singular}}_routes_requires_a_session_where_the_operation_doe
 
     BOOST_LOG_SEV(lg, debug) << "Checked the auth flag of {{http_route.route_count}} route(s).";
 }
+{{#http_route.routes}}
+{{#is_paged}}
+
+// The client below is not connected. A request the route accepts therefore
+// fails at the forward step with a server error, and only a request the route
+// refuses is a bad request. That difference is what each case reads.
+TEST_CASE("{{entity_singular}}_routes_{{identifier}}_accepts_a_page_and_an_order", "[routes]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    const auto response = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_run({{entity_singular}}_routes::handle_{{identifier}}(
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_query({ {"offset", "10"}, {"limit", "5"}, {"sort", "version"}, {"descending", "true"} }), session));
+
+    CHECK(response.status == http_status::internal_server_error);
+    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+}
+
+TEST_CASE("{{entity_singular}}_routes_{{identifier}}_accepts_every_filter_it_declares", "[routes]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    // Each name is the one its reader reads. An empty value narrows nothing,
+    // so the case isolates the declaration from the reading of a value.
+    const std::vector<std::string> names{ {{#domain_entity.filter_members}}{{#is_equals}}"f.{{column}}", {{/is_equals}}{{#is_one_of}}"f.{{member}}", {{/is_one_of}}{{#is_range}}"f.{{member}}", {{/is_range}}{{/domain_entity.filter_members}}};
+    for (const auto& name : names) {
+        const auto response = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_run({{entity_singular}}_routes::handle_{{identifier}}(
+            {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_query({ {name, ""} }), session));
+        INFO(name);
+        CHECK(response.status == http_status::internal_server_error);
+    }
+    BOOST_LOG_SEV(lg, debug) << "Checked " << names.size() << " declared filter(s).";
+}
+
+TEST_CASE("{{entity_singular}}_routes_{{identifier}}_refuses_an_undeclared_filter", "[routes]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    const auto response = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_run({{entity_singular}}_routes::handle_{{identifier}}(
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_query({ {"f.no_such_column", "x"} }), session));
+
+    CHECK(response.status == http_status::bad_request);
+    CHECK(response.body.find("no_such_column") != std::string::npos);
+    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+}
+{{#domain_entity.filter_members}}
+{{#is_one_of}}
+
+TEST_CASE("{{entity_singular}}_routes_{{identifier}}_refuses_an_empty_item_in_f_{{member}}", "[routes]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    const auto response = {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_run({{entity_singular}}_routes::handle_{{identifier}}(
+        {{entity_singular}}{{^entity_singular}}{{name_singular}}{{/entity_singular}}_query({ {"f.{{member}}", ","} }), session));
+
+    CHECK(response.status == http_status::bad_request);
+    CHECK(response.body.find("f.{{member}}") != std::string::npos);
+    BOOST_LOG_SEV(lg, debug) << "Response: " << response.body;
+}
+{{/is_one_of}}
+{{/domain_entity.filter_members}}
+{{/is_paged}}
+{{/http_route.routes}}
 {{/domain_entity}}

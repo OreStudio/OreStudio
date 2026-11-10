@@ -3587,6 +3587,7 @@ def filter_members(entity: dict[str, Any]) -> dict[str, Any]:
             # relation between rows. A service reads it to tell a listing, which
             # a default may narrow, from a lookup, which it must not.
             "is_key": len(key_columns) == 1 and name == key_columns[0],
+            "read_type": _strip_optional(_column_cpp_type(entity, name)),
             "cpp_type": f"std::vector<{_strip_optional(_column_cpp_type(entity, name))}>"})
     for name in filterable:
         kind = _temporal_kind(entity, name)

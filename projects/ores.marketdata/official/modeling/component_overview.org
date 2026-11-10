@@ -53,6 +53,9 @@ service maps and stores what it sends.
   its publisher.
 - =frankfurter_fetcher=, the fetcher that reads one Frankfurter provider's universe and
   rates.
+- =nyfed_fetcher=, the fetcher that reads a reference rate of the New York Fed, such as
+  SOFR, and stores the decimal of its published percent.
+- =published_text=, the date, number and HTTP helpers that every fetcher shares.
 - =source_feed=, which serves one source through its fetcher.
 - =official_adapter=, which hosts every source and gives each the fetcher of its adapter.
 

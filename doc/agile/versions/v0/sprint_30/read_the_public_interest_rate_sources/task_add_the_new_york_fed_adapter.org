@@ -26,12 +26,12 @@ SOFR is stored as fixings in the system tenant, with its history, read from the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] and [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]]. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09 |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-10 |
 
 * Acceptance
 
@@ -45,9 +45,12 @@ SOFR is stored as fixings in the system tenant, with its history, read from the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =nyfed_fetcher= implements =fetcher=: adapter =nyfed=, scheme =nyfed_rate_type=, field =percentRate=. A source's key is a rate type, and a table maps each type to its path under =/api/rates=; only =SOFR= is in it. A read is one GET of =search.json= over the window, which the API answers unpaged.
+- The value is stored as a decimal, because the rates of the system are decimals and ORE reads a fixing as one. =decimal_of_percent= moves the point two places in the published text, so no digit changes and no binary rounding enters. The calibration sources note states the change of unit, as the New York Fed's terms ask for a label on modified data.
+- The date, number and HTTP helpers move from the Frankfurter fetcher to =published_text=, which each fetcher of the story uses.
+- The process hosts both fetchers, and a =--nyfed-url= option names the API.
+- The seeds add the =nyfed= supplier and adapter artefacts, the =nyfed-markets= session, the =nyfed-sofr= feed scoped to the SOFR item, and the system party's subscription and route. The service registry hosts =nyfed-sofr:nyfed:nyfed:SOFR=.
+- The terms of a provider that states them are accepted at setup by the bootstrap. A route whose provider's terms are not accepted is refused with =terms_not_accepted= in the demand, which =app_demand_calculator_tests= covers, and provisioning does not fail.
 
 * Measurements
 
@@ -61,7 +64,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| SOFR history the route serves | 2,149 rates, 2018-04-02 to 2026-11-06 | =curl .../api/rates/secured/sofr/search.json?startDate=2018-01-01&endDate=2026-11-09= | 7ce2992156 |
+| SOFR fixings a fresh environment stored | 272, 2025-10-06 to 2026-11-06, last =0.0389= | =compass check= (=ticks-smoke=), then a count of the fixings of the SOFR item | 7ce2992156 |
+| Cases of =ores.marketdata.official.tests= | 22 pass | =ores.marketdata.official.tests= | 7ce2992156 |
 
 * Notes
 
@@ -91,3 +96,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+SOFR is stored as fixings in the system tenant, read from the New York Fed markets API by a specialised fetcher that the official adapter hosts beside Frankfurter. A fresh environment accepted the New York Fed's terms at setup and, minutes after provisioning, stored 272 fixings, the last 400 days, with the log line "Sent 272 fixing(s) of 'nyfed-sofr'". The values are the decimals of the published percents, such as =0.0389= for 3.89, and the provider =nyfed= carries the credit "Source: Federal Reserve Bank of New York". The calibration sources note records the change of unit and the 2,149 rates the route serves since 2018-04-02.
+
+Unit tests parse a recorded response and an empty window, refuse four malformed answers, check the URL of a read, and check the decimal of a percent over ten texts.

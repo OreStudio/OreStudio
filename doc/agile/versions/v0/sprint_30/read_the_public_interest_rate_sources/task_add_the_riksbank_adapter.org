@@ -26,11 +26,11 @@ SWESTR is stored as fixings in the system tenant, with its history, read from th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-10                               |
 
 * Acceptance
@@ -62,7 +62,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| SWESTR history the route serves | 1,305 rates, 2021-09-01 to 2026-11-06 | =curl -s 'https://api.riksbank.se/swestr/v1/all/SWESTR?fromDate=2016-01-01'=, rates counted | eeebf32d7d |
+| SWESTR fixings a fresh environment stored | 274, 2025-10-06 to 2026-11-06, last =0.01656= | =compass check= (=ticks-smoke=), then a count of the fixings of source =riksbank-swestr= | eeebf32d7d |
+| Alias conventions that state their index's item | =EUR-ESTR=, =JPY-TONA= and =SEK-SWESTR=, each with the item its fixings are stored under | a query of the system tenant's overnight conventions after =compass check= | eeebf32d7d |
+| Cases of =ores.marketdata.official.tests= | 74 pass, 7 of them of the Riksbank | =ores.marketdata.official.tests= | eeebf32d7d |
 
 * Notes
 
@@ -92,3 +95,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+SWESTR is stored as fixings in the system tenant, read from the Riksbank's SWESTR API by a specialised fetcher that the official adapter hosts beside the others. A fresh environment accepted the Riksbank's terms at setup and stored 274 fixings, the last 400 days, with the log line "Sent 274 fixing(s) of 'riksbank-swestr'". The values are the decimals of the published percents, such as =0.01656= for 1.656, and the provider =riksbank= carries the credit "Source: Sveriges Riksbank".
+
+The SEK item is the one the =SEK-SWESTR= convention now states, the convention the SEK overnight curve names. The work found the same gap for EUR and JPY: their curves name =EUR-ESTR= and =JPY-TONA=, which stated no item, while the fixings were stored under the items of =EUR-ESTER= and =JPY-TONAR=. Each alias now states the item of its index, so the calibration can find the fixings of EUR, JPY and SEK through the conventions their curves name. The catalogue's pgTAP test checks each series against both conventions.
+
+The calibration sources note records the 1,305 rates the route serves from 2021-09-01, and how the alias conventions state their items.
+
+Unit tests parse a recorded answer and a null rate, refuse six malformed answers, check the URL of a read, an empty window of a known series, an unknown series, and names that are not series names.

@@ -51,56 +51,56 @@
 \echo '--- Overnight Index Conventions ---'
 
 insert into ores_refdata_overnight_index_conventions_tbl (
-    tenant_id, id, version, fixing_calendar, day_count_fraction, settlement_days,
+    tenant_id, id, version, fixing_calendar, day_count_fraction, settlement_days, oresmd_uri,
     modified_by, performed_by, change_reason_code, change_commentary
 )
 values
     -- Source: QuantLib::Estr (ql/indexes/ibor/estr.hpp/.cpp).
-    (ores_utility_system_tenant_id_fn(), 'EUR-ESTR', 0, 'TARGET', 'ACT/360', 0,
+    (ores_utility_system_tenant_id_fn(), 'EUR-ESTR', 0, 'TARGET', 'ACT/360', 0, 'oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER',
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantLib::Tonar (ql/indexes/ibor/tonar.hpp), aka Tona.
-    (ores_utility_system_tenant_id_fn(), 'JPY-TONA', 0, 'Japan', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'JPY-TONA', 0, 'Japan', 'ACT/365.FIXED', 0, 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR',
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantLib::Swestr (ql/indexes/ibor/swestr.hpp).
-    (ores_utility_system_tenant_id_fn(), 'SEK-SWESTR', 0, 'Sweden', 'ACT/360', 0,
+    (ores_utility_system_tenant_id_fn(), 'SEK-SWESTR', 0, 'Sweden', 'ACT/360', 0, 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR',
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantLib::Kofr (ql/indexes/ibor/kofr.hpp).
-    (ores_utility_system_tenant_id_fn(), 'KRW-KOFR', 0, 'SouthKorea.Settlement', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'KRW-KOFR', 0, 'SouthKorea.Settlement', 'ACT/365.FIXED', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantExt::INRMiborOis (qle/indexes/ibor/inrmiborois.hpp).
-    (ores_utility_system_tenant_id_fn(), 'INR-MIBOR', 0, 'India', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'INR-MIBOR', 0, 'India', 'ACT/365.FIXED', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- Source: QuantLib::Destr (ql/indexes/ibor/destr.hpp).
-    (ores_utility_system_tenant_id_fn(), 'DKK-DESTR', 0, 'Denmark', 'ACT/360', 0,
+    (ores_utility_system_tenant_id_fn(), 'DKK-DESTR', 0, 'Denmark', 'ACT/360', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- No ORE index class -- corroborated from SARB market-convention publications
     -- (Act/365, South Africa calendar; see task C80D94BB's Notes for sources).
-    (ores_utility_system_tenant_id_fn(), 'ZAR-ZARONIA', 0, 'SouthAfrica', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'ZAR-ZARONIA', 0, 'SouthAfrica', 'ACT/365.FIXED', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- No ORE index class -- corroborated from RBNZ/domestic NZ money-market convention
     -- (Act/365 Fixed, New Zealand calendar; see task C80D94BB's Notes for sources). Real
     -- benchmark name is NZONIA, not the "NZIONA" the seed data originally (incorrectly) used.
-    (ores_utility_system_tenant_id_fn(), 'NZD-NZONIA', 0, 'NewZealand', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'NZD-NZONIA', 0, 'NewZealand', 'ACT/365.FIXED', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- The eight benchmarks below carry the curves the ACME books need beyond
     -- the ones above. Each id and day count is the one ORE's own conventions
     -- use for the benchmark (refdata_conventions_seed_populate.sql), so a
     -- curve the synthetic feeds tick names an index an ORE run can resolve.
     -- CZK CZEONIA: the Czech National Bank's overnight rate.
-    (ores_utility_system_tenant_id_fn(), 'CZK-CZEONIA', 0, 'CzechRepublic', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'CZK-CZEONIA', 0, 'CzechRepublic', 'ACT/365.FIXED', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- HUF BUBORON: the Budapest interbank overnight rate.
-    (ores_utility_system_tenant_id_fn(), 'HUF-BUBORON', 0, 'Hungary', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'HUF-BUBORON', 0, 'Hungary', 'ACT/365.FIXED', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- ILS TELBORON: the Tel Aviv interbank overnight rate.
-    (ores_utility_system_tenant_id_fn(), 'ILS-TELBORON', 0, 'Israel.Settlement', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'ILS-TELBORON', 0, 'Israel.Settlement', 'ACT/365.FIXED', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- TRY TLREF: Borsa Istanbul's Turkish lira overnight reference rate.
-    (ores_utility_system_tenant_id_fn(), 'TRY-TLREF', 0, 'Turkey', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'TRY-TLREF', 0, 'Turkey', 'ACT/365.FIXED', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data'),
     -- COP IBR: the Colombian overnight interbank reference rate. The calendar
     -- CNH HIBOR: the offshore renminbi overnight fixing in Hong Kong.
-    (ores_utility_system_tenant_id_fn(), 'CNH-HIBOR', 0, 'HongKong', 'ACT/365.FIXED', 0,
+    (ores_utility_system_tenant_id_fn(), 'CNH-HIBOR', 0, 'HongKong', 'ACT/365.FIXED', 0, null,
      current_user, current_user, 'system.initial_load', 'Overnight index convention reference data')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -108,6 +108,8 @@ do update set
     fixing_calendar = excluded.fixing_calendar,
     day_count_fraction = excluded.day_count_fraction,
     settlement_days = excluded.settlement_days,
+    oresmd_uri = coalesce(excluded.oresmd_uri,
+                          ores_refdata_overnight_index_conventions_tbl.oresmd_uri),
     modified_by = current_user,
     performed_by = current_user,
     change_reason_code = 'system.initial_load',

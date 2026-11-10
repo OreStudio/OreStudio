@@ -51,6 +51,7 @@ The items exist already. Each built-in overnight index convention in =ores_refda
   | =ecb= | =ecb_sdmx= | =EST.B.EU000A2X2A25.WT= | =OBS_VALUE= | =EUR-ESTER= |
   | =boe= | =boe_iadb= | =IUDSOIA= | =value= | =GBP-SONIA= |
   | =boc= | =boc_valet= | =AVG.INTWO= | =v= | =CAD-CORRA= |
+- The demand reads the feed scopes. The ECB and the Bank of Canada now have two access routes each: Frankfurter for their FX rates and their own API for their overnight rate. The demand gave every vendor id of a publisher to every feed of that publisher, so the first check gate failed. The ticks smoke test saw =ecb-frankfurter= and =boc-frankfurter= reject the €STR and CORRA ids, 987 of 989 ids accepted. The feed scope already states what a feed fetches, and the official catalogue scopes each Frankfurter feed to its FX items, but the demand did not read it. Now a feed with scope rows is asked only for the items they name, and a feed with none is asked for every item of its publisher, as before.
 - The refdata seed runs after the marketdata seed, so the seed states the four addresses. A pgTAP test joins each mapping to its index convention, so a change on either side fails the test.
 
 * Measurements
@@ -101,3 +102,5 @@ Four publisher series map to the fixing items of their indices: SOFR of the New 
 The synthetic IR feeds quote swap and deposit rates, not fixings. A synthetic feed's curve names its index, such as =USD-SOFR=, and that index's convention names the item that the public fixings of the index are stored under. No synthetic feed stores a fixing of its own, so the two cannot name different items.
 
 A pgTAP test holds the mappings to the conventions and the terms of the publishers.
+
+The demand now reads the feed scopes, so a publisher with two access routes asks each feed only for what its adapter reads. The Frankfurter feeds of the ECB and the Bank of Canada are not asked for €STR or CORRA. Each adapter task scopes its own feed to its overnight item.

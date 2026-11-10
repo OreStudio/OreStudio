@@ -68,6 +68,13 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
             {instrument->id_scheme, instrument->external_id, instrument->field});
     }
 
+    // The items of each scoped feed. A publisher with two access routes, such as Frankfurter
+    // for its FX rates and its own portal for its overnight rate, scopes each feed to the items
+    // its adapter reads.
+    std::map<boost::uuids::uuid, std::set<std::string>> scoped;
+    for (const auto& scope : catalogue.scopes)
+        scoped[scope.feed_id].insert(scope.item);
+
     std::vector<party_demand> out;
     for (const auto& route : catalogue.routes) {
         const auto source = std::ranges::find(catalogue.feeds, route.feed_id, &domain::feed::id);
@@ -110,9 +117,13 @@ std::vector<party_demand> compute_party_demand(const demand_catalogue& catalogue
                                 wanted.insert(input);
                     }
                 }
+                const auto scope = scoped.find(route.feed_id);
                 for (const auto& [uri, ids] : items->second) {
-                    if (!restricted || wanted.contains(uri))
-                        demand.items.emplace(uri, ids);
+                    if (restricted && !wanted.contains(uri))
+                        continue;
+                    if (scope != scoped.end() && !scope->second.contains(uri))
+                        continue;
+                    demand.items.emplace(uri, ids);
                 }
             }
         }

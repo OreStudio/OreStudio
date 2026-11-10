@@ -30,6 +30,7 @@ set(files
     "http_server_options_tests.cpp"
     "http_streamed_body_tests.cpp"
     "main.cpp"
+    "record_routes_tests.cpp"
     "route_tests.cpp"
     "router_tests.cpp"
     "session_bytes_accumulator_tests.cpp"

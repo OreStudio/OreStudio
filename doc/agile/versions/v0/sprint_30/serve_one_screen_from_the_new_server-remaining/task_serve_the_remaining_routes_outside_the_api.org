@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-10
 #+updated: 2026-11-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Serve, from the C++ server, the routes outside the published API that ores.web c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

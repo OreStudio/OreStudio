@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: E3936A08-AB8E-4DC4-B95E-7C6775DA2BB4
+:END:
+#+title: Task: Fix the five checks that main fails
+#+description: Initial task for: Hotfix: recent changes on main fail five local checks
+#+type: task
+#+level: s1
+#+filetags: :main_gate_failures_after_fx_forward:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/main-gate-failures-after-fx-forward
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:34C502F0-6EA5-4C13-9C7E-5748B52A0391][Hotfix: recent changes on main fail five local checks]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Declare =Boost::process= in the synthetic core test model and generate the =fx_forward_operation= shell recipe. Classify =GET /api/approvals-mode= and rewrite the route inventory. Seed the three FX forward publish read permissions. Regenerate the list request table. Translate the two new provisioning steps in en, fr and pt.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:34C502F0-6EA5-4C13-9C7E-5748B52A0391][Hotfix: recent changes on main fail five local checks]] |
+| Now          | Fix the five checks.                   |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the hotfix PR.                   |
+| Last touched | 2026-11-10                               |
+
+* Acceptance
+
+- The five checks pass on this branch.
+
+* Plan
+
+Fix each failure at its source, so the next regeneration keeps the fix. The test link goes in the model, not only in the generated CMake file. The recipe and the list request table come from their generators. The route gets a classification rule, and =route_inventory.py --write= rewrites the table. The permissions are seeded beside =curve_publishes:read=, with descriptions taken from each model. The catalogue entries go after =Subscribe to market data=, in the order the step table declares them.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

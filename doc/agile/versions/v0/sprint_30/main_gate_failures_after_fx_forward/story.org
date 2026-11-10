@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 34C502F0-6EA5-4C13-9C7E-5748B52A0391
+:END:
+#+title: Story: Hotfix: recent changes on main fail five local checks
+#+description: Changes on main fail component-drift, route-inventory, handler-permissions, bff-list-requests and codegen-tests.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:sprint_30:v0:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make the local gate pass on main again. Five checks fail on a clean checkout of main at [[https://github.com/OreStudio/OreStudio/commit/8fe5cf1c76][8fe5cf1c76]]:
+
+- =component-drift=: the synthetic core test target links =Boost::process=, which its model does not declare ([[https://github.com/OreStudio/OreStudio/commit/21809dff42][21809dff42]]), and the =fx_forward_operation= shell recipe was never generated.
+- =route-inventory=: the BFF route =GET /api/approvals-mode= has no inventory row and no classification rule.
+- =handler-permissions=: the three FX forward publish handlers check read permissions that no seed creates.
+- =bff-list-requests=: the generated list request table is stale.
+- =codegen-tests=: two provisioning steps have no entry in the en, fr and pt word catalogues, and the handler permission tests fail for the same reason as the check.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Fix the five checks.                   |
+| Waiting on    | Nothing.                               |
+| Next          | Raise the hotfix PR.                   |
+| Last touched  | 2026-11-10                               |
+
+* Acceptance
+
+- =component-drift=, =route-inventory=, =handler-permissions=, =bff-list-requests= and =codegen-tests= pass.
+- The =web= check passes on the three catalogues.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:6CB365A5-1BC7-46DB-A939-D97A59ADF1D4][Scaffold story: Hotfix: recent changes on main fail five local checks]] | STARTED | 2026-11-10 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E3936A08-AB8E-4DC4-B95E-7C6775DA2BB4][Fix the five checks that main fails]] | STARTED | 2026-11-10 | | Initial task for: Hotfix: recent changes on main fail five local checks |
+
+* Decisions
+
+* Out of scope
+
+- Giving the FX forward publish read permissions to a role. Only the tenant administrator's wildcard holds them until the feature's owners decide who reads.

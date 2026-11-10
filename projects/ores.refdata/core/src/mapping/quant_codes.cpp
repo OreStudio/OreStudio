@@ -133,7 +133,7 @@ unit parse_period_unit_code(std::string_view code) {
 }
 
 std::string_view to_period_unit_code(unit value) {
-    return spell(period_units, value, "period unit");
+    return spell(period_units, value, "tenor unit");
 }
 
 kind parse_tenor_kind_code(std::string_view code) {

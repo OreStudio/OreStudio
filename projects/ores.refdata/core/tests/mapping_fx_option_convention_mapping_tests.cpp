@@ -86,8 +86,18 @@ TEST_CASE("an expiry the switch tenor cannot be ordered against is refused",
     const auto refused = to_quote_convention(c, tenor("4W"));
     REQUIRE_FALSE(refused);
     CHECK(refused.error().find("1M") != std::string::npos);
+    CHECK_FALSE(to_quote_convention(c, qd::date_period{}));
     c.switch_tenor = "two years";
     CHECK_FALSE(to_quote_convention(c, tenor("1Y")));
+}
+
+TEST_CASE("a convention with no switch tenor keeps its short-term types at every expiry",
+          "[fx_option_convention_mapping]") {
+    auto c = eur_usd("Spot", "Fwd");
+    c.switch_tenor.reset();
+    const auto long_dated = to_quote_convention(c, tenor("10Y"));
+    REQUIRE(long_dated);
+    CHECK(long_dated->delta == qm::fx_delta_type::spot);
 }
 
 TEST_CASE("a tenor reads as a period", "[fx_option_convention_mapping]") {

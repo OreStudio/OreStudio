@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
 #+branch: feature/add-the-norges-bank-adapter
-#+pr:
+#+pr: 4553
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-10
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4553][#4553]] | [marketdata] Add the Norges Bank adapter |
 
 * Review
 

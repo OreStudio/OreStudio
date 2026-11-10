@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 22778208-7084-44B1-913F-5B794A928D88
+:END:
+#+title: ores.cpp.http-route.web_records_header
+#+description: Record route unit header: the routes a screen reads and writes one resource through, by the key the screens name it with.
+#+type: archetype
+#+output: projects/ores.http/{component}/include/ores.http/routes/{component}/{web_entity}_routes.hpp
+#+facet: ores.cpp.http-route
+#+model_types: domain_entity junction
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+
+The header of one resource's record routes. The screens name a reference data
+resource by a key in the address, such as =/api/refdata/currency-memberships=,
+and read it in the shapes the BFF answered with. This unit answers those
+addresses on the C++ server, so the screens keep working when the BFF goes.
+
+The unit renders only for a model that states =#+web_resource:=. The output
+path names ={web_entity}=, which resolves only for such a model, so every
+other entity renders nothing here.
+
+* Mustache incantations
+
+The template reads ={{web_records}}=, which =entity_web_records_plan= builds
+from the model. ={{unit}}= is the class stem, =<entity>_web=. ={{base}}= is the
+resource's address, and ={{single_key}}= and ={{list_by}}= say whether the
+resource is read by one key and by a parent, so the header declares only the
+handlers the unit has.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_http_route_web_records.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_http_route_web_records.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.http-route.web_records_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+{{#web_records}}
+#ifndef ORES_HTTP_ROUTES_{{entity_singular_upper}}_WEB_ROUTES_HPP
+#define ORES_HTTP_ROUTES_{{entity_singular_upper}}_WEB_ROUTES_HPP
+
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include <boost/asio/awaitable.hpp>
+#include <memory>
+#include <string_view>
+
+namespace ores::http::routes::{{component}} {
+
+/**
+ * @brief The record routes the screens read and write {{key}} through.
+ *
+ * The screens name the resource by its key in the address and read it in the
+ * shapes the BFF answered with: rows and a total on a page, every row on a
+ * whole read, one row on a key read, and no body on a write. Each route
+ * forwards the caller's own token, so the service's permission check governs.
+ */
+class {{unit}}_routes {
+private:
+    inline static std::string_view logger_name = "ores.http.routes.{{component}}.{{unit}}_routes";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    /**
+     * @brief Register the {{key}} record routes.
+     */
+    static void register_routes(std::shared_ptr<ores::http::net::router> router,
+                                std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+                                ores::nats::service::nats_client& session);
+
+    /**
+     * @brief The resource as the catalogue of resources describes it, as JSON.
+     */
+    static std::string_view catalogue_entry();
+
+    /**
+     * @brief GET {{base}} — one page with its total, or every row.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_list(const ores::http::domain::http_request& req,
+                ores::nats::service::nats_client& session);
+{{#single_key}}
+
+    /**
+     * @brief GET {{base}}/key/{key} — one row, named by its key.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_key(const ores::http::domain::http_request& req,
+               ores::nats::service::nats_client& session);
+{{/single_key}}
+{{#list_by}}
+
+    /**
+     * @brief GET {{base}}/by/{parent} — every row of one parent.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_by(const ores::http::domain::http_request& req,
+              ores::nats::service::nats_client& session);
+{{/list_by}}
+
+    /**
+     * @brief PUT {{base}} — writes one row.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_put(const ores::http::domain::http_request& req,
+               ores::nats::service::nats_client& session);
+
+    /**
+     * @brief DELETE {{base}} — removes one row, named by its key fields.
+     */
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_delete(const ores::http::domain::http_request& req,
+                  ores::nats::service::nats_client& session);
+};
+
+}
+
+#endif
+{{/web_records}}
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]].
+- Sibling archetypes: [[id:EC1C7FB0-E08C-47FD-AB18-46DD1C749ABF][ores.cpp.http-route.web_records_implementation]] and [[id:2D478510-AE20-4A33-B612-EE96AC4B51EF][ores.cpp.http-route.web_records_tests]].

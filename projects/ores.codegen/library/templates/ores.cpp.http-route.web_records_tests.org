@@ -1,0 +1,202 @@
+:PROPERTIES:
+:ID: 2D478510-AE20-4A33-B612-EE96AC4B51EF
+:END:
+#+title: ores.cpp.http-route.web_records_tests
+#+description: Record route unit tests: the routes a resource registers for the screens, the refusals each states before it forwards, and its catalogue entry.
+#+type: archetype
+#+output: projects/ores.http/{component}/tests/{web_entity}_routes_tests.cpp
+#+facet: ores.cpp.http-route
+#+model_types: domain_entity junction
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+
+The tests of one resource's record routes. Each case runs a handler against a
+client that is not connected, so it needs no server, no NATS and no database.
+A request the route refuses comes back with the BFF's status and its
+={code, message}= body. A request the route accepts fails at the forward step,
+which the route answers as 502 =internal=, so a case can tell the two apart.
+
+Each case name starts with the unit's stem, because a component's test files
+link into one binary and Catch2 refuses a duplicate name.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_http_route_web_records_tests.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_http_route_web_records_tests.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.http-route.web_records_tests.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+{{#web_records}}
+#include "ores.http/routes/{{component}}/{{unit}}_routes.hpp"
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "test_suite.hpp"
+#include <algorithm>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/io_context.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <initializer_list>
+#include <memory>
+#include <optional>
+#include <string>
+#include <utility>
+
+using namespace ores::logging;
+using ores::http::domain::http_method;
+using ores::http::domain::http_request;
+using ores::http::domain::http_response;
+using ores::http::domain::http_status;
+using ores::http::net::router;
+using ores::http::openapi::endpoint_registry;
+using ores::http::routes::{{component}}::{{unit}}_routes;
+using ores::nats::service::nats_client;
+
+namespace {
+
+/// Runs a handler to completion. The handler never reaches a socket.
+http_response {{unit}}_run(boost::asio::awaitable<http_response> work) {
+    boost::asio::io_context io;
+    std::optional<http_response> answer;
+    boost::asio::co_spawn(
+        io,
+        [&answer, work = std::move(work)]() mutable -> boost::asio::awaitable<void> {
+            answer = co_await std::move(work);
+        },
+        boost::asio::detached);
+    io.run();
+    return answer.value_or(http_response{});
+}
+
+/// A request with these query parameters and this body.
+http_request {{unit}}_request(std::initializer_list<std::pair<const std::string, std::string>> params,
+                              std::string body = {}) {
+    http_request req;
+    req.query_params = params;
+    req.body = std::move(body);
+    return req;
+}
+
+bool {{unit}}_says(const http_response& response, const std::string& code) {
+    return response.body.find("\"code\":\"" + code + "\"") != std::string::npos;
+}
+
+}
+
+TEST_CASE("{{unit}}_routes_registers_the_screen_addresses", "[routes][web]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    auto table = std::make_shared<router>();
+    {{unit}}_routes::register_routes(table, std::make_shared<endpoint_registry>(), session);
+    const auto& routes = table->routes();
+
+    const auto has = [&](http_method method, const std::string& pattern) {
+        return std::any_of(routes.begin(), routes.end(), [&](const auto& route) {
+            return route.method == method && route.pattern == pattern && route.requires_auth;
+        });
+    };
+    CHECK(has(http_method::get, "{{base}}"));
+    CHECK(has(http_method::put, "{{base}}"));
+    CHECK(has(http_method::delete_, "{{base}}"));
+{{#single_key}}
+    CHECK(has(http_method::get, "{{base}}/key/{key}"));
+{{/single_key}}
+{{#list_by}}
+    CHECK(has(http_method::get, "{{base}}/by/{parent}"));
+{{/list_by}}
+    BOOST_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
+}
+
+TEST_CASE("{{unit}}_routes_names_the_resource_in_its_catalogue_entry", "[routes][web]") {
+    const std::string entry{ {{unit}}_routes::catalogue_entry() };
+    CHECK(entry.find("\"key\":\"{{key}}\"") != std::string::npos);
+    CHECK(entry.find("\"entityType\":\"{{entity_type}}\"") != std::string::npos);
+    CHECK(entry.find("\"writePermission\":\"{{write_permission}}\"") != std::string::npos);
+}
+
+TEST_CASE("{{unit}}_routes_refuses_a_page_it_cannot_read", "[routes][web]") {
+    nats_client session;
+    for (const auto& limit : {"0", "1001", "ten"}) {
+        const auto response = {{unit}}_run(
+            {{unit}}_routes::handle_list({{unit}}_request({ {"limit", limit} }), session));
+        INFO(limit);
+        CHECK(response.status == http_status::bad_request);
+        CHECK({{unit}}_says(response, "invalid-request"));
+    }
+}
+
+TEST_CASE("{{unit}}_routes_refuses_an_order_a_search_or_a_filter_it_does_not_declare", "[routes][web]") {
+    nats_client session;
+    const auto sorted = {{unit}}_run({{unit}}_routes::handle_list(
+        {{unit}}_request({ {"limit", "10"}, {"sort", "no_such_column"} }), session));
+    CHECK(sorted.status == http_status::bad_request);
+    CHECK(sorted.body.find("no_such_column") != std::string::npos);
+
+    const auto filtered = {{unit}}_run({{unit}}_routes::handle_list(
+        {{unit}}_request({ {"limit", "10"}, {"f.no_such_column", "x"} }), session));
+    CHECK(filtered.status == http_status::bad_request);
+    CHECK(filtered.body.find("no_such_column") != std::string::npos);
+{{^search}}
+
+    const auto searched = {{unit}}_run({{unit}}_routes::handle_list(
+        {{unit}}_request({ {"limit", "10"}, {"search", "x"} }), session));
+    CHECK(searched.status == http_status::bad_request);
+{{/search}}
+}
+
+TEST_CASE("{{unit}}_routes_accepts_every_order_and_filter_it_declares", "[routes][web]") {
+    nats_client session;
+    // An accepted page fails at the forward step, which is a 502 and not a 400.
+    for (const auto& sort : { {{#sortable}}"{{name}}", {{/sortable}}"" }) {
+        const auto response = {{unit}}_run({{unit}}_routes::handle_list(
+            {{unit}}_request({ {"limit", "10"}, {"sort", sort}, {"descending", "true"} }), session));
+        INFO(sort);
+        CHECK(response.status == http_status::bad_gateway);
+    }
+{{#filters}}
+    {
+        const auto response = {{unit}}_run({{unit}}_routes::handle_list(
+            {{unit}}_request({ {"limit", "10"}, {"f.{{member}}", ""} }), session));
+        INFO("f.{{member}}");
+        CHECK(response.status == http_status::bad_gateway);
+    }
+{{/filters}}
+}
+
+TEST_CASE("{{unit}}_routes_refuses_a_write_that_states_no_reason", "[routes][web]") {
+    nats_client session;
+    const auto put = {{unit}}_run({{unit}}_routes::handle_put({{unit}}_request({}, "{}"), session));
+    CHECK(put.status == {{#writable}}http_status::bad_request{{/writable}}{{^writable}}http_status::forbidden{{/writable}});
+
+    const auto removal = {{unit}}_run({{unit}}_routes::handle_delete({{unit}}_request({}, "{}"), session));
+    CHECK(removal.status == {{#writable}}http_status::bad_request{{/writable}}{{^writable}}http_status::forbidden{{/writable}});
+}
+{{#single_key}}
+
+TEST_CASE("{{unit}}_routes_refuses_a_key_that_names_nothing", "[routes][web]") {
+    nats_client session;
+    auto req = {{unit}}_request({});
+    req.path_params["key"] = "   ";
+    const auto response = {{unit}}_run({{unit}}_routes::handle_key(req, session));
+    CHECK(response.status == http_status::bad_request);
+    CHECK({{unit}}_says(response, "invalid-request"));
+}
+{{/single_key}}
+{{/web_records}}
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:1EBDA080-07F6-496D-AA4A-72899E65641C][ores.cpp.http-route]].
+- Sibling archetypes: [[id:22778208-7084-44B1-913F-5B794A928D88][ores.cpp.http-route.web_records_header]] and [[id:EC1C7FB0-E08C-47FD-AB18-46DD1C749ABF][ores.cpp.http-route.web_records_implementation]].

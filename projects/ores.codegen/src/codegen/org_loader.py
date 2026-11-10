@@ -1409,14 +1409,14 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     fm = doc.frontmatter
     for k in (
         "brief", "entity_singular", "entity_plural", "entity_title",
-        "http_area",
+        "http_area", "web_resource", "web_list_by",
     ):
         if k in fm:
             de[k] = fm[k]
 
     # Boolean + string scalars carried in the frontmatter of unified entity
     # org files (these keys come from the table pathway during Step 5 migration).
-    for k in ("has_tenant_id", "image_id", "has_artefact_insert_fn"):
+    for k in ("has_tenant_id", "image_id", "has_artefact_insert_fn", "web_read_only"):
         if k in fm:
             de[k] = _parse_typed(fm[k])
     if "coding_scheme" in fm:
@@ -2287,11 +2287,13 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
 
     j: dict[str, Any] = {}
     for key in ("product", "schema", "component", "name", "name_singular",
-                "name_title", "name_singular_words", "brief", "http_area"):
+                "name_title", "name_singular_words", "brief", "http_area",
+                "web_resource", "web_list_by"):
         if key in fm:
             j[key] = fm[key]
-    if "has_tenant_id" in fm:
-        j["has_tenant_id"] = _parse_typed(fm["has_tenant_id"])
+    for key in ("has_tenant_id", "web_read_only"):
+        if key in fm:
+            j[key] = _parse_typed(fm[key])
     # Top-level * Flags section -- the single canonical binding point for
     # :profile: (and any other root-level flags), mirroring
     # org_document_to_model's domain_entity handling.
@@ -3984,6 +3986,9 @@ def junction_entity_shape(junction: dict[str, Any]) -> dict[str, Any]:
         # The published area is the model's declaration, as it is for an entity:
         # a junction answers under the same contract as the rows it links.
         **({"http_area": junction["http_area"]} if junction.get("http_area") else {}),
+        **({"web_resource": junction["web_resource"]} if junction.get("web_resource") else {}),
+        **({"web_list_by": junction["web_list_by"]} if junction.get("web_list_by") else {}),
+        **({"web_read_only": junction["web_read_only"]} if "web_read_only" in junction else {}),
         "entity_singular": junction.get("name_singular", ""),
         "entity_plural": name,
         "entity_plural_short": name,
@@ -5767,6 +5772,119 @@ def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
         # answers with nothing to say so. The plan names them instead.
         "uncovered_verbs": plan["uncovered_verbs"],
         "has_page": any(route["has_page"] for route in routes),
+    }
+
+
+def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
+    """The record routes a screen reads one resource through, or None.
+
+    The browser names a reference data resource by a key in the address, such
+    as ``/api/refdata/currency-memberships``, and reads it in the shapes the
+    BFF answered with: ``rows`` and ``total`` on a page, ``row`` on a key read.
+    An entity joins that registry by stating its key with ``#+web_resource:``,
+    because three keys differ from the entity's plural and so cannot be
+    derived. Everything else the registry said is read from the model: the key
+    fields, the search, the sortable columns, the filters, the parent a
+    junction is read by and the as-of read. A resource the screen reads but
+    does not write states ``#+web_read_only: true``.
+
+    Raises:
+        ValueError: if the entity has more than one parent relation and does
+            not name the one the screen reads it by with ``#+web_list_by:``,
+            or names one it does not have.
+    """
+    key = (entity.get("web_resource") or "").strip()
+    if not key:
+        return None
+    component = entity.get("component", "")
+    singular = entity.get("entity_singular", "")
+    plural = entity.get("entity_plural", singular + "s")
+    commands = entity_shell_plan(entity)["commands"]
+
+    def _command(kind: str, precondition: str | None = None) -> dict[str, Any] | None:
+        for command in commands:
+            if command["kind"] != kind:
+                continue
+            if precondition is not None and command["precondition"] != precondition:
+                continue
+            return command
+        return None
+
+    paged = _command("paged")
+    put = _command("put")
+    delete = _command("delete")
+    if paged is None or put is None or delete is None:
+        raise ValueError(
+            f"{singular}: #+web_resource: needs a paged list, a put and a delete")
+
+    list_by_commands = [c for c in commands if c["kind"] == "list_by"]
+    wanted = (entity.get("web_list_by") or "").strip()
+    list_by = None
+    if wanted:
+        list_by = next((c for c in list_by_commands
+                        if c["relation"].get("name") == wanted), None)
+        if list_by is None:
+            raise ValueError(
+                f"{singular}: #+web_list_by: names '{wanted}', which is not a "
+                "relation the entity is listed by")
+    elif len(list_by_commands) == 1:
+        list_by = list_by_commands[0]
+    elif len(list_by_commands) > 1:
+        raise ValueError(
+            f"{singular}: the entity is listed by more than one relation, so "
+            "#+web_list_by: names the one the screen reads it by")
+
+    members = filter_members(entity)["members"]
+    key_fields = [_column_name(c)
+                  for c in (entity.get("primary_key") or {}).get("columns") or []]
+    single_key = None
+    if len(key_fields) == 1:
+        single_key = next((m for m in members
+                           if m.get("is_one_of") and m.get("is_key")), None)
+    filters = [{"member": m["member"], "read_type": m["read_type"]}
+               for m in members if m.get("is_equals")]
+    sortable = [f["name"] for f in entity.get("sortable_fields") or []]
+    subject_parts = put["subject"].split(".")
+    if len(subject_parts) < 4:
+        raise ValueError(
+            f"{singular}: the put subject '{put['subject']}' does not name its resource "
+            "as <component>.v<n>.<resource>.<action>, so the permissions cannot be named")
+    resource_name = subject_parts[2]
+    unit = f"{singular}_web"
+
+    def _quoted(names: list[str]) -> list[dict[str, Any]]:
+        return [{"name": name, "last": index == len(names) - 1}
+                for index, name in enumerate(names)]
+
+    return {
+        "key": key,
+        "unit": unit,
+        "base": f"/api/{component}/{key}",
+        "entity_type": f"ores.{component}.{singular}",
+        "rows_member": entity.get("entity_plural_short") or plural,
+        "row_type": f"ores::{component}::domain::{singular}",
+        "versioned": not bool((entity.get("sql") or {}).get("current_state")
+                              or entity.get("current_state")),
+        "writable": entity.get("web_read_only") is not True,
+        "search": bool(entity.get("has_search")),
+        "key_fields": _quoted(key_fields),
+        "sortable": _quoted(sortable),
+        "filters": filters,
+        "has_filters": bool(filters),
+        "single_key": single_key,
+        "list_request": paged["request"],
+        "put_request": put["request"],
+        "delete_request": delete["request"],
+        "list_by": None if list_by is None else {
+            "member": list_by["relation"]["name"],
+            "request": list_by["request"],
+            "read_type": _strip_optional(
+                list_by["relation"].get("cpp_type") or "std::string"),
+        },
+        "events_component": put["subject"].split(".")[0],
+        "resource_name": resource_name,
+        "write_permission": f"{component}::{resource_name}:write",
+        "delete_permission": f"{component}::{resource_name}:delete",
     }
 
 

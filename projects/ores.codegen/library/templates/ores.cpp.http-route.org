@@ -135,6 +135,9 @@ arrive as query parameters.
 | [[id:182DD2AF-9543-4722-B8CA-1A98FABFDF85][ores.cpp.http-route.route_header]] | HTTP route unit header: the unit class, its registration entry point and one handler per derived verb. |
 | [[id:9946AA4E-5C08-4DF4-9D0F-D544D977B264][ores.cpp.http-route.route_implementation]] | HTTP route unit implementation: the route table, the parameter readers and the handler bodies for one entity. |
 | [[id:A1A5750C-705A-43DD-B333-BA545EB3216A][ores.cpp.http-route.route_tests]] | HTTP route unit tests: the registered method and pattern of every derived route, and the auth flag each operation states. |
+| [[id:22778208-7084-44B1-913F-5B794A928D88][ores.cpp.http-route.web_records_header]] | Record route unit header: the routes a screen reads and writes one resource through, by the key the screens name it with. |
+| [[id:EC1C7FB0-E08C-47FD-AB18-46DD1C749ABF][ores.cpp.http-route.web_records_implementation]] | Record route unit implementation: the screens' record routes for one resource, in the shapes and refusals the BFF answered with. |
+| [[id:2D478510-AE20-4A33-B612-EE96AC4B51EF][ores.cpp.http-route.web_records_tests]] | Record route unit tests: the routes a resource registers for the screens, the refusals each states before it forwards, and its catalogue entry. |
 
 * The operation archetypes
 

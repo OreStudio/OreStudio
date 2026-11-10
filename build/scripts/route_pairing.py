@@ -75,5 +75,6 @@ PAIRS = {
     ("GET", "/api/parties"): ("GET", f"{REFDATA}/parties"),
 
     # reference data
+    ("GET", "/api/refdata"): ("GET", "/api/refdata"),
     ("GET", "/api/counterparties"): ("GET", f"{REFDATA}/counterparties"),
 }

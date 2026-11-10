@@ -19,7 +19,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.generate import resolve_targets  # noqa: E402
-from codegen.org_loader import entity_http_route_plan  # noqa: E402
+from codegen.org_loader import entity_http_route_plan, entity_web_records_plan  # noqa: E402
 
 CODEGEN_BASE = REPO_ROOT / "projects" / "ores.codegen"
 TEMPLATES = CODEGEN_BASE / "library" / "templates"
@@ -508,3 +508,102 @@ class TestTheListHandlerTests:
         text = _rendered_tests(_entity(operations=get_only))
         assert "handle_list" not in text
         assert "refuses_an_undeclared_filter" not in text
+
+
+def _web(entity=None, **declared):
+    """An entity in the screens' registry, as the loader hands it over."""
+    entity = dict(entity or _entity())
+    entity["web_resource"] = "widgets"
+    entity.update(declared)
+    return entity
+
+
+def _rendered_web(entity, template="cpp_http_route_web_records.cpp.mustache"):
+    entity = dict(entity)
+    entity["web_records"] = entity_web_records_plan(entity)
+    text = (TEMPLATES / template).read_text()
+    return pystache.render(text, {"cpp_license": "", "domain_entity": entity})
+
+
+class TestTheWebRecordRoutes:
+    """A model that names a screen resource gets the BFF's record routes."""
+
+    def test_a_model_that_names_no_resource_has_no_record_routes(self):
+        assert entity_web_records_plan(_entity()) is None
+        assert _rendered_web(_entity()).strip() == ""
+
+    def test_the_resource_is_addressed_under_its_component_by_its_key(self):
+        plan = entity_web_records_plan(_web())
+        assert plan["base"] == "/api/demo/widgets"
+        assert plan["unit"] == "widget_web"
+        assert plan["write_permission"] == "demo::widgets:write"
+        assert plan["rows_member"] == "widgets"
+
+    def test_a_one_field_key_is_read_through_the_key_one_of_filter(self):
+        text = _rendered_web(_web())
+        assert 'router->get("/api/demo/widgets/key/{key}")' in text
+        assert "msg.filter->type_one_of = std::vector<std::string>" in text
+
+    def test_the_routes_keep_the_bff_shapes(self):
+        text = _rendered_web(_web())
+        assert '"{\\"rows\\":" + widget_web_rows(rows) + "}"' in text
+        assert '",\\"total\\":" + std::to_string(reply.total)' in text
+        assert '"{\\"row\\":" + widget_web_row(' in text
+
+    def test_a_read_only_resource_refuses_every_write(self):
+        text = _rendered_web(_web(web_read_only=True))
+        assert text.count('"widgets is read only here."') == 2
+        assert '"writable":false' in text
+
+    def test_a_writable_resource_states_no_refusal_of_its_own(self):
+        text = _rendered_web(_web())
+        assert "read only here" not in text
+        assert '"writable":true' in text
+
+    def test_a_row_without_versions_carries_version_zero(self):
+        # The screens read a version on every row, and a junction keeps none.
+        junction = _web(current_state=True)
+        assert '"\\"version\\":0,"' in _rendered_web(junction)
+        assert '"\\"version\\":0,"' not in _rendered_web(_web())
+
+    def test_a_resource_with_no_parent_relation_has_no_by_route(self):
+        assert "/by/{parent}" not in _rendered_web(_web())
+
+    def test_a_named_parent_the_entity_is_not_listed_by_is_refused(self):
+        import pytest
+        with pytest.raises(ValueError, match="web_list_by"):
+            entity_web_records_plan(_web(web_list_by="nothing"))
+
+    def test_the_tests_try_a_refused_and_an_accepted_page(self):
+        text = _rendered_web(_web(), "cpp_http_route_web_records_tests.cpp.mustache")
+        assert 'TEST_CASE("widget_web_routes_refuses_a_page_it_cannot_read"' in text
+        assert "http_status::bad_gateway" in text
+
+    def test_a_model_without_a_resource_skips_the_record_archetype(self):
+        # The generator skips an archetype whose output does not resolve, which is
+        # how only the registry's models get a record unit.
+        import pytest
+        from codegen.core import resolve_output_path
+        pattern = "projects/ores.http/{component}/src/routes/{component}/{web_entity}_routes.cpp"
+        with pytest.raises(KeyError):
+            resolve_output_path(pattern, {"domain_entity": _entity()}, "domain_entity")
+        resolved = resolve_output_path(pattern, {"domain_entity": _web()}, "domain_entity")
+        assert resolved == "projects/ores.http/demo/src/routes/demo/widget_web_routes.cpp"
+
+    def test_the_catalogue_entry_is_json_naming_the_resource(self):
+        import json
+        import re
+        text = _rendered_web(_web())
+        entry = re.search(r'R"json\((.*)\)json"', text).group(1)
+        parsed = json.loads(entry)
+        assert parsed["key"] == "widgets"
+        assert parsed["keyFields"] == ["type"]
+        assert parsed["writePermission"] == "demo::widgets:write"
+
+    def test_a_put_subject_that_names_no_resource_is_refused(self):
+        import pytest
+        entity = _web()
+        entity["operations"] = [dict(op, subject="widgets.put") if op["verb"] == "put" else op
+                                for op in entity["operations"]]
+        with pytest.raises(ValueError, match="does not name its resource"):
+            entity_web_records_plan(entity)

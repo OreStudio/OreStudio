@@ -8,6 +8,8 @@
 #+description: Codegen junction model for party_countries.
 #+type: ores.codegen.junction
 #+http_area: reference-data
+#+web_resource: party-countries
+#+web_list_by: party_id
 #+component: refdata
 #+filetags: :model:junction:refdata:
 #+name: party_countries

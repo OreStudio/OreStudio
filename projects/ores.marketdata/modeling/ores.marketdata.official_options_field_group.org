@@ -85,6 +85,13 @@ The address of the Bank of Canada's site, which serves its Valet API.
 
 The address of the Bank of Japan's time-series statistics site, which serves its API.
 
+** norges_bank_url
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The address of Norges Bank's open data site, which serves its SDMX API.
+
 ** sources
 :PROPERTIES:
 :cpp_type: std::vector<domain::hosted_source>

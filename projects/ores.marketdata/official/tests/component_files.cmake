@@ -27,6 +27,7 @@ set(files
     "domain_boj_tests.cpp"
     "domain_ecb_tests.cpp"
     "domain_frankfurter_tests.cpp"
+    "domain_norges_bank_tests.cpp"
     "domain_nyfed_tests.cpp"
     "main.cpp"
 )

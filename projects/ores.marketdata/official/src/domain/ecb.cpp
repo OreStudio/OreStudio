@@ -33,39 +33,6 @@ constexpr int attempts = 3;
 /// Longer than the thirty seconds after which the portal's gateway answers 504.
 const http::client::net::request_limits limits{std::chrono::seconds(60)};
 
-// The answer of detail=dataonly holds codes, dates and numbers, never quoted text, so a comma
-// always separates two cells.
-std::vector<std::string_view> split(std::string_view line, char separator) {
-    std::vector<std::string_view> out;
-    std::size_t start = 0;
-    for (auto end = line.find(separator); end != std::string_view::npos;
-         end = line.find(separator, start)) {
-        out.push_back(line.substr(start, end - start));
-        start = end + 1;
-    }
-    out.push_back(line.substr(start));
-    return out;
-}
-
-std::vector<std::string_view> lines_of(std::string_view text) {
-    std::vector<std::string_view> out;
-    for (auto line : split(text, '\n')) {
-        if (!line.empty() && line.back() == '\r')
-            line.remove_suffix(1);
-        if (!line.empty())
-            out.push_back(line);
-    }
-    return out;
-}
-
-std::optional<std::size_t> column(const std::vector<std::string_view>& header,
-                                  std::string_view name) {
-    const auto found = std::ranges::find(header, name);
-    if (found == header.end())
-        return std::nullopt;
-    return static_cast<std::size_t>(found - header.begin());
-}
-
 }
 
 std::expected<std::vector<published_fixing>, std::string> parse_ecb_csv(std::string_view csv,
@@ -73,17 +40,19 @@ std::expected<std::vector<published_fixing>, std::string> parse_ecb_csv(std::str
     const auto lines = lines_of(csv);
     if (lines.empty())
         return std::vector<published_fixing>{};
-    const auto header = split(lines.front(), ',');
-    const auto key_at = column(header, "KEY");
-    const auto date_at = column(header, "TIME_PERIOD");
-    const auto value_at = column(header, "OBS_VALUE");
+    // The answer of detail=dataonly holds codes, dates and numbers, never quoted text, so a comma
+    // always separates two cells.
+    const auto header = cells_of(lines.front(), ',');
+    const auto key_at = column_of(header, "KEY");
+    const auto date_at = column_of(header, "TIME_PERIOD");
+    const auto value_at = column_of(header, "OBS_VALUE");
     if (!key_at || !date_at || !value_at)
         return std::unexpected("the answer is not the CSV of a series: it names no KEY, "
                                "TIME_PERIOD or OBS_VALUE column");
     const auto width = std::max({*key_at, *date_at, *value_at}) + 1;
     std::vector<published_fixing> out;
     for (std::size_t i = 1; i < lines.size(); ++i) {
-        const auto cells = split(lines[i], ',');
+        const auto cells = cells_of(lines[i], ',');
         if (cells.size() < width)
             return std::unexpected(std::format(
                 "row {} has {} cells, fewer than the {} its header needs", i, cells.size(), width));

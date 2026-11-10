@@ -24,8 +24,10 @@
 #include "ores.marketdata.official/export.hpp"
 #include <chrono>
 #include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace ores::marketdata::official::domain {
 
@@ -52,6 +54,31 @@ decimal_of_percent(std::string_view text);
 /// The body of a GET of @p url, or why there is none. An answer other than 200 is an error.
 [[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::expected<std::string, std::string>
 read_body(http::client::net::transport& transport, const std::string& url);
+
+/**
+ * @brief The body of a GET of @p window_url, or none when the window holds no observation.
+ *
+ * Some publishers answer both a window with no observation and an unknown series with a 404.
+ * After a 404, a GET of @p latest_url, which asks for the series' latest observation, tells
+ * them apart: a 200 means that the series exists and the window is empty. Any other answer is
+ * an error.
+ */
+[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::expected<std::optional<std::string>, std::string>
+read_window(http::client::net::transport& transport,
+            const std::string& window_url,
+            const std::string& latest_url);
+
+/// The lines of @p text that are not empty, without their line ends.
+[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::vector<std::string_view>
+lines_of(std::string_view text);
+
+/// The cells of @p line between each @p separator. A cell holds no quoted separator.
+[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::vector<std::string_view>
+cells_of(std::string_view line, char separator);
+
+/// The position of the cell @p name in @p header, if it holds one.
+[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::optional<std::size_t>
+column_of(const std::vector<std::string_view>& header, std::string_view name);
 
 }
 

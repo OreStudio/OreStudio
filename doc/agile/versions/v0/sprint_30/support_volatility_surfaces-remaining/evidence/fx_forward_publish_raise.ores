@@ -1,0 +1,10 @@
+# Step 1: a trader of ACCOUS raises the publish of the party's EUR/USD forward
+# set. The set is computed from ACCOUS's own spot and funding curves and waits
+# for a decision. A pair whose quote currency has no funding curve is refused,
+# naming the missing input, and writes nothing. Run with AS_OF set.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_forward_operation publish-fx-forward EUR/USD ${AS_OF} --reason "Month-end forwards for the EUR book"
+fx_forward_operation publish-fx-forward USD/BRL ${AS_OF} --reason "BRL has no funding curve"
+logout

@@ -57,6 +57,12 @@
 \ir ./marketdata_adapters_drop.sql
 \ir ./marketdata_market_fixings_notify_trigger_drop.sql
 \ir ./marketdata_market_fixings_drop.sql
+\ir ./marketdata_fx_forward_publish_spots_notify_trigger_drop.sql
+\ir ./marketdata_fx_forward_publish_spots_drop.sql
+\ir ./marketdata_fx_forward_publish_points_notify_trigger_drop.sql
+\ir ./marketdata_fx_forward_publish_points_drop.sql
+\ir ./marketdata_fx_forward_publishes_notify_trigger_drop.sql
+\ir ./marketdata_fx_forward_publishes_drop.sql
 \ir ./marketdata_curve_publishes_notify_trigger_drop.sql
 \ir ./marketdata_curve_publishes_drop.sql
 \ir ./marketdata_observation_lineages_notify_trigger_drop.sql

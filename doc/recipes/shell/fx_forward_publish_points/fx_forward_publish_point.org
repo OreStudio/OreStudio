@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 1802384F-179F-52EF-A5ED-2169987386E0
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_forward_publish_points commands from the shell?
+#+description: Every command the fx_forward_publish_points submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_forward_publish_points:
+
+This file documents the fx_forward_publish_points resource at the shell, one section per command. Every command is a subcommand of =fx_forward_publish_points=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 0882097E-8023-5470-9A3B-0BD5EBEF101C
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publish_points list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publish_points.list=.
+
+#+name: fx_forward_publish_points-list
+#+begin_src ores-shell :tangle fx_forward_publish_points-list.ores :exports none
+fx_forward_publish_points list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 140346F9-371C-5CB1-B220-47C9385EC3EE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publish_points get <id>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publish_points.get=.
+
+#+name: fx_forward_publish_points-get
+#+begin_src ores-shell :tangle fx_forward_publish_points-get.ores :exports none
+fx_forward_publish_points get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 3ABE1589-5E27-5E30-9364-16BB85AA7E19
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publish_points get-many <id>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publish_points.get_many=.
+
+#+name: fx_forward_publish_points-get-many
+#+begin_src ores-shell :tangle fx_forward_publish_points-get-many.ores :exports none
+fx_forward_publish_points get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 33430DFE-39E2-570B-9EBE-840D1C0708A4
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publish_points versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publish_points_versions.list=.
+
+#+name: fx_forward_publish_points-versions
+#+begin_src ores-shell :tangle fx_forward_publish_points-versions.ores :exports none
+fx_forward_publish_points versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 51C14580-DF71-5FC6-A440-AB3E13C26D09
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_forward_publish_points version <id> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_forward_publish_points_versions.get=.
+
+#+name: fx_forward_publish_points-version
+#+begin_src ores-shell :tangle fx_forward_publish_points-version.ores :exports none
+fx_forward_publish_points version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

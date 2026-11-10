@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
+#include <string>
 
 namespace ores::marketdata::service::app {
 
@@ -32,8 +33,27 @@ namespace ores::marketdata::service::app {
  *
  * Reads only. A missing input is a reply with success false and a message that names it.
  */
+/// A ladder with where each input came from, as a publish records it.
+struct computed_fx_forward_set final {
+    ores::marketdata::messaging::get_fx_forward_ladder_response ladder;
+    /// The party's own series the spot was read from.
+    std::string spot_series_id;
+    int convention_version = 0;
+    /// The calendars the dates roll on, comma separated, in the convention's order.
+    std::string calendar_codes;
+};
+
 class ORES_MARKETDATA_SERVICE_EXPORT fx_forward_ladder_service final {
 public:
+    /**
+     * @brief Computes a pair's ladder and names its inputs, or throws the input that is missing.
+     *
+     * A request that names a party reads that party's spot and funding curves only.
+     */
+    [[nodiscard]] static computed_fx_forward_set
+    compute(ores::database::context ctx,
+            const ores::marketdata::messaging::get_fx_forward_ladder_request& request);
+
     [[nodiscard]] static ores::marketdata::messaging::get_fx_forward_ladder_response
     read(ores::database::context ctx,
          const ores::marketdata::messaging::get_fx_forward_ladder_request& request);

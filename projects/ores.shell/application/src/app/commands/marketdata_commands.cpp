@@ -31,6 +31,9 @@
 #include "ores.shell/app/commands/marketdata/adapter_commands.hpp"
 #include "ores.shell/app/commands/marketdata/adapter_status_commands.hpp"
 #include "ores.shell/app/commands/marketdata/curve_publish_commands.hpp"
+#include "ores.shell/app/commands/marketdata/fx_forward_publish_commands.hpp"
+#include "ores.shell/app/commands/marketdata/fx_forward_publish_point_commands.hpp"
+#include "ores.shell/app/commands/marketdata/fx_forward_publish_spot_commands.hpp"
 #include "ores.shell/app/commands/marketdata/feed_commands.hpp"
 #include "ores.shell/app/commands/marketdata/feed_scope_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_fixing_commands.hpp"
@@ -163,6 +166,9 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
     // entity onto the REPL as a top-level menu of its own, so the commands a
     // user can type cannot drift from the operations the service offers.
     curve_publish_commands::register_commands(root_menu, session);
+    fx_forward_publish_commands::register_commands(root_menu, session);
+    fx_forward_publish_point_commands::register_commands(root_menu, session);
+    fx_forward_publish_spot_commands::register_commands(root_menu, session);
     feed_commands::register_commands(root_menu, session);
     feed_scope_commands::register_commands(root_menu, session);
     adapter_commands::register_commands(root_menu, session);

@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 8E2F4A17-6C3B-4D90-A5E1-7B9C2D4F6A13
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.marketdata.fx_forward_operations
 #+description: Codegen operation model for the read of a currency pair's FX forward ladder at an as-of.
@@ -24,6 +25,7 @@ to go and fix.
 
 #+begin_src cpp :name includes
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 #+end_src
@@ -67,6 +69,18 @@ to go and fix.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+*** state_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The curve publish's state now: published, withdrawn or superseded. A set built from a withdrawn curve says so.
+ */
+#+end_src
 
 ** fx_forward_ladder_row
 
@@ -225,6 +239,261 @@ tenant holds per currency, and is refused when it holds more than one.
 *** quote_curve
 :PROPERTIES:
 :cpp_type: fx_forward_curve_source
+:END:
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<fx_forward_ladder_row>
+:END:
+
+** fx_forward_spot_source
+
+#+begin_src cpp :name comment
+/**
+ * @brief One spot observation a published set read: its own for a USD pair, or one USD leg of a cross.
+ */
+#+end_src
+
+*** leg_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** pair_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** observed_at
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** value
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** publish_fx_forward_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.publish_fx_forward
+:response: publish_fx_forward_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Raises, or applies, the publish of one pair's forward set for the caller's party. A call that names no approved request computes the set from the party's spot and published funding curves, raises a marketdata.fx_forward_publish request and stores the set as its candidate. A call that names the approved request publishes that candidate, unchanged. A set whose spot or curve is missing is refused, naming the input, and nothing is written.
+ */
+#+end_src
+
+*** pair_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The pair, such as EUR/USD.
+ */
+#+end_src
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the set reads the market at.
+ */
+#+end_src
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The approved request this call applies, or empty to raise one.
+ */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the set should be published, for the decider to read.
+ */
+#+end_src
+
+** publish_fx_forward_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the call did: raised a request, published a set, or refused and why.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** state_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_published_fx_forward_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_published_fx_forward
+:response: get_published_fx_forward_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the caller's party's published forward set of a pair: the newest one at or before the as-of, exactly as it was published, with where each number came from.
+ */
+#+end_src
+
+*** pair_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+** get_published_fx_forward_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief One published forward set and its provenance, or why there is none.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** publish_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** pair_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** spot_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:default: {}
+:END:
+
+*** spot_rate
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** convention_version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** calendar_codes
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** method_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** base_curve
+:PROPERTIES:
+:cpp_type: fx_forward_curve_source
+:END:
+
+*** quote_curve
+:PROPERTIES:
+:cpp_type: fx_forward_curve_source
+:END:
+
+*** spots
+:PROPERTIES:
+:cpp_type: std::vector<fx_forward_spot_source>
 :END:
 
 *** rows

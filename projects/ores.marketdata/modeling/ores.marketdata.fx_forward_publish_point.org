@@ -1,0 +1,258 @@
+:PROPERTIES:
+:ID: 52B8006E-71A8-411B-9449-6D79204B247E
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.fx_forward_publish_point
+#+description: One tenor of a published FX forward set: its dates, discount factors, forward and points.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: 
+#+entity_singular: fx_forward_publish_point
+#+entity_plural: fx_forward_publish_points
+#+entity_title: Fx Forward Publish Point
+#+brief: One tenor of a published FX forward set.
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+One tenor of a published FX forward set. The row holds every number the ladder
+shows for the tenor, as the set computed them, so a reader gets the published
+numbers back after the spot and the curves have moved.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:profile:       uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID identifying this row.
+
+** publish_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:filterable: true
+:END:
+
+The =fx_forward_publish= this row belongs to. The rows of a set are written with its publish row, in one act, and never change.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** sequence_index
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The tenor's place in the ladder, from the nearest.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** tenor_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The tenor, such as =ON=, =SPOT= or =1M=.
+
+#+begin_src cpp :name generator
+std::string("1M")
+#+end_src
+
+** near_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:END:
+
+The start of the tenor's period.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{11}}
+#+end_src
+
+** value_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::chrono::year_month_day
+:nullable: false
+:END:
+
+The date the forward settles on.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2026}, std::chrono::month{12}, std::chrono::day{11}}
+#+end_src
+
+** base_discount
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The base currency's discount factor from the spot date to the value date.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+** quote_discount
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The quote currency's discount factor from the spot date to the value date.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+** forward_rate
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The outright forward rate.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+** forward_points
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The forward less the spot, in pips.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+** swap_points
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The forward less the forward of the tenor before it, in pips.
+
+#+begin_src cpp :name generator
+1.0
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_marketdata_fx_forward_publish_points_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Indexes
+
+| name                            | columns                                  | unique | current_only |
+|---------------------------------+------------------------------------------+--------+--------------|
+| fx_forward_publish_points_order | tenant_id, publish_id, sequence_index    | true   | true         |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: point
+:entity_plural_short:   points
+:entity_singular_words: FX forward publish point
+:entity_plural_words:   FX forward publish points
+:END:
+
+*** read_latest_by_publish
+:PROPERTIES:
+:ID: 394A136D-E2E8-49A7-AFA0-DEB1856262CE
+:END:
+
+Reads every points of one publish. A set is written once and never changes, so its rows are read by the publish they belong to.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::fx_forward_publish_point>
+read_latest_by_publish(context ctx, const boost::uuids::uuid& publish_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <string>
+#include <vector>
+#include <boost/uuid/uuid_io.hpp>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::fx_forward_publish_point>
+fx_forward_publish_point_repository::read_latest_by_publish(context ctx, const boost::uuids::uuid& publish_id) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto pid = boost::uuids::to_string(publish_id);
+    const auto query = query_builder::read<std::vector<fx_forward_publish_point_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "publish_id"_c == pid &&
+                                            "valid_to"_c == max);
+    return query_builder::execute_read_query<fx_forward_publish_point_entity, domain::fx_forward_publish_point>(
+        ctx,
+        query,
+        [](const auto& entities) { return fx_forward_publish_point_mapper::map(entities); },
+        lg(),
+        "Reading the rows of one FX forward publish.");
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+* See also
+
+- [[id:E8B8D507-2113-476B-B6C2-BAECF35CCD79][ores.marketdata.fx_forward_publish]] -- the publish this tenor belongs to.

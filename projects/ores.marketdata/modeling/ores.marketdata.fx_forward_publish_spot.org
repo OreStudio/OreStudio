@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ID: C208659C-6CE5-4AF3-AEF8-974C64EB26EC
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.fx_forward_publish_spot
+#+description: One spot observation a published FX forward set read: one for a USD pair, two for a cross.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags: 
+#+entity_singular: fx_forward_publish_spot
+#+entity_plural: fx_forward_publish_spots
+#+entity_title: Fx Forward Publish Spot
+#+brief: One spot observation a published FX forward set read.
+#+created: 2026-11-09
+#+updated: 2026-11-09
+
+One spot observation a published FX forward set read. A USD pair reads one, its
+own. A cross reads two, the USD leg of each currency, and derives its spot from
+them, so the set names both.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:profile:       uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID identifying this row.
+
+** publish_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:filterable: true
+:END:
+
+The =fx_forward_publish= this row belongs to. The rows of a set are written with its publish row, in one act, and never change.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** leg_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Which spot this is: =direct= for a USD pair, or =base_leg= and =quote_leg= for the two USD legs of a cross.
+
+#+begin_src cpp :name generator
+std::string("direct")
+#+end_src
+
+** pair_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The pair the observation quotes.
+
+#+begin_src cpp :name generator
+std::string("EUR/USD")
+#+end_src
+
+** series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The party's own series the observation belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** observed_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+When the observation was made: the latest at or before the as-of.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** value
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The observed rate.
+
+#+begin_src cpp :name generator
+1.1
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_marketdata_fx_forward_publish_spots_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression                                                   |
+|--------------------------------------------------------------|
+| "leg_code" in ('direct', 'base_leg', 'quote_leg')            |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: spot
+:entity_plural_short:   spots
+:entity_singular_words: FX forward publish spot
+:entity_plural_words:   FX forward publish spots
+:END:
+
+*** read_latest_by_publish
+:PROPERTIES:
+:ID: BAF3345C-5592-4FB5-B8DB-EBD1162C0E19
+:END:
+
+Reads every spots of one publish. A set is written once and never changes, so its rows are read by the publish they belong to.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::fx_forward_publish_spot>
+read_latest_by_publish(context ctx, const boost::uuids::uuid& publish_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <string>
+#include <vector>
+#include <boost/uuid/uuid_io.hpp>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::fx_forward_publish_spot>
+fx_forward_publish_spot_repository::read_latest_by_publish(context ctx, const boost::uuids::uuid& publish_id) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto pid = boost::uuids::to_string(publish_id);
+    const auto query = query_builder::read<std::vector<fx_forward_publish_spot_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "publish_id"_c == pid &&
+                                            "valid_to"_c == max);
+    return query_builder::execute_read_query<fx_forward_publish_spot_entity, domain::fx_forward_publish_spot>(
+        ctx,
+        query,
+        [](const auto& entities) { return fx_forward_publish_spot_mapper::map(entities); },
+        lg(),
+        "Reading the rows of one FX forward publish.");
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: s
+:END:
+
+* See also
+
+- [[id:E8B8D507-2113-476B-B6C2-BAECF35CCD79][ores.marketdata.fx_forward_publish]] -- the publish that read this spot.

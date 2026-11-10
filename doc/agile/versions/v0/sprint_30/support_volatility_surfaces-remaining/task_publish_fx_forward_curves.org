@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/publish-fx-forward-curves
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ An FX forward curve is a party's published record. A publish computes one pair a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -49,9 +49,15 @@ An FX forward curve is a party's published record. A publish computes one pair a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two PRs. The first publishes USD pairs, with the record, the approval kind, the publish and the read. The second adds crosses.
+
+The record follows the IR curve publish. =fx_forward_publish= is the detail row of a =marketdata.fx_forward_publish= request. It holds the subject (party, pair, as-of) and the provenance: the spot date and rate, both funding curve publishes, the convention version, the calendars and the method. Its tenors are =fx_forward_publish_point= rows, and the spots it read are =fx_forward_publish_spot= rows, one for a USD pair and two for a cross. All three are tenant-scoped, as an IR curve publish is, because the decider is a tenant function. The read filters by the session's party.
+
+The set is computed at the raise, from the party's own spot and published funding curves, and stored as the candidate. The decider sees the numbers they approve, and the apply stamps that row. Nothing is recomputed. A missing input refuses the raise before anything is written. A curve publish is named and not copied, so a withdrawn curve shows on every set built from it at read time.
+
+The compute is the existing ladder service, which now also names the spot series, the convention version and the calendars. The maker's permission is =marketdata::curve_bootstrap:publish=, the one the IR curve publish uses, because a forward set is a curve.
+
+The child rows name their publish by a plain id, not a database foreign key. They are written with it in one transaction, and the generated tests would otherwise have to build an approval request per row.
 
 * Measurements
 
@@ -65,7 +71,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Maker-checker publish of ACCOUS EUR/USD | Raised waiting, approved by mark.reid, applied by henry.jones | =evidence/fx_forward_publish_{raise,decide,apply}.ores= | Working tree on 9d9e523ce8 |
+| A pair without a funding curve | USD/BRL refused: "No funding curve is configured for BRL." No row written | =evidence/fx_forward_publish_raise.ores=, =evidence/fx_forward_publishes.sql= | Working tree on 9d9e523ce8 |
+| Auto-approval on | GBP/USD published at once, request closed by the tenant rule | =evidence/fx_forward_publish_auto.ores= | Working tree on 9d9e523ce8 |
+| Read after the market moved | Same 15 tenors and spot 1.1586409; the live spot was 1.1531972 | =evidence/fx_forward_publish_read.ores=, =evidence/fx_forward_publishes.sql= | Working tree on 9d9e523ce8 |
+| Another party reads | ACMCOR reads no EUR/USD set | =evidence/fx_forward_publish_read.ores= | Working tree on 9d9e523ce8 |
+| EUR funding curve withdrawn | The set reads the same numbers and names EUR-ESTR as withdrawn | =evidence/fx_forward_publish_after_withdrawal.ores= | Working tree on 9d9e523ce8 |
+| Tests | Codec 71 cases, eventing 3, shell commands 39 | =ores.marketdata.api.tests=, =ores.marketdata.core.tests=, =ores.shell.marketdata.tests= with =*fx_forward*= | Working tree on 9d9e523ce8 |
 
 * Notes
 

@@ -29,6 +29,7 @@
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <chrono>
@@ -54,6 +55,7 @@ struct refused final : std::runtime_error {
 struct spot_reading final {
     double value = 0.0;
     time_point observed_at{};
+    std::string series_id;
 };
 
 struct funding_curve final {
@@ -66,21 +68,29 @@ std::chrono::year_month_day date_of(time_point t) {
     return std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(t)};
 }
 
-spot_reading read_spot(context ctx, const fx_pair_codes& pair, time_point as_of) {
+spot_reading read_spot(context ctx,
+                       const fx_pair_codes& pair,
+                       time_point as_of,
+                       const std::optional<boost::uuids::uuid>& party_id) {
     const auto uri =
         "oresmd://fx/" + pair.base + "?type=series&instrument=fx_spot&quote=rate&ccy=" + pair.quote;
     repository::market_series_repository series_repo;
     repository::market_observation_repository observation_repo;
 
     std::optional<domain::market_observation> latest;
-    for (const auto& series : series_repo.read_latest_by_uri(ctx, uri))
+    for (const auto& series : series_repo.read_latest_by_uri(ctx, uri)) {
+        if (party_id && series.party_id != *party_id)
+            continue;
         for (auto& observation : observation_repo.read_as_of(ctx, series.id, as_of))
             if (!latest || observation.observation_datetime > latest->observation_datetime)
                 latest = std::move(observation);
+    }
     if (!latest)
         throw refused("No spot of " + pair.base + "/" + pair.quote +
                       " was observed at or before the as-of.");
-    return {observation_value(*latest), latest->observation_datetime};
+    return {observation_value(*latest),
+            latest->observation_datetime,
+            boost::uuids::to_string(latest->series_id)};
 }
 
 funding_curve read_funding_curve(context ctx,
@@ -118,7 +128,10 @@ funding_curve read_funding_curve(context ctx,
                   .output_series_id = boost::uuids::to_string(config.output_series_id),
                   .publish_id = boost::uuids::to_string(set->id),
                   .as_of = set->as_of,
-                  .published_by = set->published_by};
+                  .published_by = set->published_by,
+                  .state_code = set->withdrawn_at    ? "withdrawn"
+                                : set->superseded_at ? "superseded"
+                                                     : "published"};
     return out;
 }
 
@@ -136,11 +149,13 @@ int read_spot_days(context ctx, const fx_pair_codes& pair) {
     return days;
 }
 
-quant::domain::business_day_calendar_set read_calendar(context ctx, const std::string& pair_code) {
+quant::domain::business_day_calendar_set
+read_calendar(context ctx, const std::string& pair_code, std::string& codes) {
     refdata_repo::currency_pair_convention_calendar_repository links{ctx};
     refdata_repo::calendar_date_repository dates{ctx};
     std::vector<std::vector<ores::refdata::domain::calendar_date>> calendars;
     for (const auto& link : links.read_latest_by_pair(pair_code)) {
+        codes += (codes.empty() ? "" : ",") + link.calendar_code;
         calendars.push_back(dates.read_latest_by_calendar(link.calendar_code));
         if (calendars.back().empty())
             throw refused("Calendar " + link.calendar_code + " of " + pair_code +
@@ -151,7 +166,7 @@ quant::domain::business_day_calendar_set read_calendar(context ctx, const std::s
     return joint_calendar(calendars);
 }
 
-messaging::get_fx_forward_ladder_response
+computed_fx_forward_set
 answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_request& request) {
     const auto pair = parse_usd_pair(request.pair_code);
     if (!pair)
@@ -163,9 +178,15 @@ answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_req
         throw refused("No convention is published for " + request.pair_code + ".");
     const auto& convention = conventions.front();
 
-    const auto calendar = read_calendar(ctx, request.pair_code);
+    computed_fx_forward_set computed;
+    computed.convention_version = convention.version;
+    const auto calendar = read_calendar(ctx, request.pair_code, computed.calendar_codes);
     const int spot_days = read_spot_days(ctx, *pair);
-    const auto spot = read_spot(ctx, *pair, request.as_of);
+    std::optional<boost::uuids::uuid> party;
+    if (!request.party_id.empty())
+        party = boost::lexical_cast<boost::uuids::uuid>(request.party_id);
+    const auto spot = read_spot(ctx, *pair, request.as_of, party);
+    computed.spot_series_id = spot.series_id;
     auto base = read_funding_curve(ctx, pair->base, request.party_id, request.as_of);
     auto quote = read_funding_curve(ctx, pair->quote, request.party_id, request.as_of);
     if (base.interpolation != quote.interpolation)
@@ -190,7 +211,7 @@ answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_req
     if (!rows)
         throw refused(rows.error());
 
-    ores::marketdata::messaging::get_fx_forward_ladder_response out;
+    auto& out = computed.ladder;
     out.success = true;
     out.pair_code = request.pair_code;
     out.as_of = request.as_of;
@@ -212,7 +233,7 @@ answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_req
                             .forward_rate = r.forward_rate,
                             .forward_points = r.forward_points,
                             .swap_points = r.swap_points});
-    return out;
+    return computed;
 }
 
 }
@@ -220,7 +241,7 @@ answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_req
 messaging::get_fx_forward_ladder_response fx_forward_ladder_service::read(
     context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_request& request) {
     try {
-        return answer(ctx, request);
+        return answer(ctx, request).ladder;
     } catch (const std::exception& e) {
         ores::marketdata::messaging::get_fx_forward_ladder_response out;
         out.pair_code = request.pair_code;
@@ -228,6 +249,11 @@ messaging::get_fx_forward_ladder_response fx_forward_ladder_service::read(
         out.message = e.what();
         return out;
     }
+}
+
+computed_fx_forward_set fx_forward_ladder_service::compute(
+    context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_request& request) {
+    return answer(ctx, request);
 }
 
 }

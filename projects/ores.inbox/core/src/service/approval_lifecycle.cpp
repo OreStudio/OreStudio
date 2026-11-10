@@ -219,8 +219,8 @@ approvals_mode_state approval_lifecycle::approvals_mode() const {
     if (!row || row->value.empty()) {
         // No person is signed in to the installation from here, so the read
         // names the service, which is who asks.
-        row = read_mode(
-            ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account()));
+        row =
+            read_mode(ctx_.with_tenant(utility::uuid::tenant_id::system(), ctx_.service_account()));
     }
 
     approvals_mode_state state;

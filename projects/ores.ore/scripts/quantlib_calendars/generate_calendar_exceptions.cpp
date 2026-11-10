@@ -106,8 +106,12 @@ bool is_plain_weekday(const Date& d) {
 
 std::string iso(const Date& d) {
     char text[11];
-    std::snprintf(text, sizeof text, "%04d-%02d-%02d", static_cast<int>(d.year()),
-                  static_cast<int>(d.month()), d.dayOfMonth());
+    std::snprintf(text,
+                  sizeof text,
+                  "%04d-%02d-%02d",
+                  static_cast<int>(d.year()),
+                  static_cast<int>(d.month()),
+                  d.dayOfMonth());
     return text;
 }
 
@@ -154,7 +158,8 @@ insert into ores_refdata_calendar_exceptions_tbl (
     modified_by, performed_by, change_reason_code, change_commentary
 )
 select md5(v.code || v.day)::uuid, ores_utility_system_tenant_id_fn(), v.code, 0, v.day::date,
-       v.open, 'QuantLib )" << QL_VERSION << R"(',
+       v.open, 'QuantLib )"
+        << QL_VERSION << R"(',
        current_user, current_user, 'system.initial_load', 'Generated from QuantLib'
 from (values
 )";

@@ -44,8 +44,10 @@ const auto eur_quotes = id("00000000-0000-4000-8000-0000000000e1");
 const std::string eur_quotes_uri =
     "oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D";
 
-market_series series(const boost::uuids::uuid& series_id, const boost::uuids::uuid& party,
-                     std::string uri, std::string provider) {
+market_series series(const boost::uuids::uuid& series_id,
+                     const boost::uuids::uuid& party,
+                     std::string uri,
+                     std::string provider) {
     market_series s;
     s.id = series_id;
     s.party_id = party;
@@ -74,9 +76,11 @@ system_curve_blueprints eur_estr() {
         p.market_series_id = eur_quotes;
         system.pillars.push_back(p);
     }
-    auto output = series(eur_output, system_party,
-                         "oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR",
-                         "ore");
+    auto output =
+        series(eur_output,
+               system_party,
+               "oresmd://ir/EUR?type=series&instrument=discount&quote=rate&curve_id=EUR-ESTR",
+               "ore");
     output.derivation_kind = "IR_CURVE_BOOTSTRAP";
     output.derivation_config_id = eur_config;
     output.derivation_config_version = 1;
@@ -92,9 +96,9 @@ TEST_CASE("a party's copy of a curve reads its own series of the same item and p
     const auto own_quotes = id("00000000-0000-4000-8000-0000000000b1");
     party_curve_holdings acme;
     acme.party_id = acme_us;
-    acme.series = {series(own_quotes, acme_us, eur_quotes_uri, "lseg"),
-                   series(id("00000000-0000-4000-8000-0000000000b2"), acme_us, eur_quotes_uri,
-                          "bloomberg")};
+    acme.series = {
+        series(own_quotes, acme_us, eur_quotes_uri, "lseg"),
+        series(id("00000000-0000-4000-8000-0000000000b2"), acme_us, eur_quotes_uri, "bloomberg")};
 
     const auto plan = plan_party_curves(eur_estr(), acme);
 
@@ -125,10 +129,10 @@ TEST_CASE("a curve whose quotes have not reached the party waits and writes noth
           "[party_curves]") {
     party_curve_holdings acme;
     acme.party_id = acme_us;
-    acme.series = {series(id("00000000-0000-4000-8000-0000000000b1"), acme_us, eur_quotes_uri,
-                          "lseg"),
-                   series(id("00000000-0000-4000-8000-0000000000b3"), system_party,
-                          eur_quotes_uri, "bloomberg")};
+    acme.series = {
+        series(id("00000000-0000-4000-8000-0000000000b1"), acme_us, eur_quotes_uri, "lseg"),
+        series(
+            id("00000000-0000-4000-8000-0000000000b3"), system_party, eur_quotes_uri, "bloomberg")};
 
     const auto plan = plan_party_curves(eur_estr(), acme);
 
@@ -143,8 +147,8 @@ TEST_CASE("a curve whose quotes have not reached the party waits and writes noth
 TEST_CASE("a party that already holds its copy is planned no row twice", "[party_curves]") {
     party_curve_holdings acme;
     acme.party_id = acme_us;
-    acme.series = {series(id("00000000-0000-4000-8000-0000000000b2"), acme_us, eur_quotes_uri,
-                          "bloomberg")};
+    acme.series = {
+        series(id("00000000-0000-4000-8000-0000000000b2"), acme_us, eur_quotes_uri, "bloomberg")};
     const auto first = plan_party_curves(eur_estr(), acme);
     REQUIRE(first.configs_to_write.size() == 1);
 
@@ -180,7 +184,8 @@ TEST_CASE("a curve whose discount curve waits waits too, and writes nothing", "[
     pillar.bootstrap_config_id = projection_config;
     pillar.market_series_id = projection_quotes;
     system.pillars.push_back(pillar);
-    system.series.push_back(series(projection_output, system_party,
+    system.series.push_back(series(projection_output,
+                                   system_party,
                                    "oresmd://ir/EUR?type=series&instrument=discount&quote=rate"
                                    "&curve_id=EUR-EURIBOR-6M",
                                    "ore"));
@@ -188,8 +193,8 @@ TEST_CASE("a curve whose discount curve waits waits too, and writes nothing", "[
 
     party_curve_holdings acme;
     acme.party_id = acme_us;
-    acme.series = {series(id("00000000-0000-4000-8000-0000000000b4"), acme_us, projection_uri,
-                          "bloomberg")};
+    acme.series = {
+        series(id("00000000-0000-4000-8000-0000000000b4"), acme_us, projection_uri, "bloomberg")};
 
     const auto plan = plan_party_curves(system, acme);
 

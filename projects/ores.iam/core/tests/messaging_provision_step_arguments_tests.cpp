@@ -319,18 +319,18 @@ TEST_CASE("a party named twice takes both providers, and the others take the ste
             {"party": "ACME Corporation HK Ltd", "source": "bloomberg-b"}
         ]})");
 
-    CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-0000000000ff",
-                         "ACME Corporation US Inc") ==
+    CHECK(feeds_of_party(
+              arguments, "6f1c0b8e-0000-0000-0000-0000000000ff", "ACME Corporation US Inc") ==
           std::vector<market_data_feed>{{.provider = "lseg", .source = "lseg-a"},
                                         {.provider = "bloomberg", .source = "bloomberg-a"}});
     CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000001", "Some Name") ==
           std::vector<market_data_feed>{{.provider = "demo", .source = "bloomberg-a"}});
-    CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000003",
-                         "ACME Corporation HK Ltd") ==
+    CHECK(feeds_of_party(
+              arguments, "6f1c0b8e-0000-0000-0000-000000000003", "ACME Corporation HK Ltd") ==
           std::vector<market_data_feed>{{.provider = "bloomberg", .source = "bloomberg-b"}});
-    CHECK(feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000002",
-                         "Acme Corporation Plc") ==
-          std::vector<market_data_feed>{{.provider = "bloomberg", .source = "bloomberg-a"}});
+    CHECK(
+        feeds_of_party(arguments, "6f1c0b8e-0000-0000-0000-000000000002", "Acme Corporation Plc") ==
+        std::vector<market_data_feed>{{.provider = "bloomberg", .source = "bloomberg-a"}});
 }
 
 TEST_CASE("a market data step refuses a party entry that names no party", "[provision_step]") {

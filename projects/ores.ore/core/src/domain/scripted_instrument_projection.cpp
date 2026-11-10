@@ -188,8 +188,8 @@ auto own_text(const xml::record_reader& record, std::string_view name) -> std::s
     return child->own_text().value_or("");
 }
 
-auto vector_values(const xml::record_reader& record, std::string_view name)
-    -> std::vector<std::string> {
+auto vector_values(const xml::record_reader& record,
+                   std::string_view name) -> std::vector<std::string> {
     const auto child = record.child(name);
     if (!child)
         return {};
@@ -333,7 +333,7 @@ void append_leaf(xml::record_writer& w, std::string_view name, const std::string
 /// The terms of a derived schedule, each kept on its own column.
 struct derived_term {
     std::string_view element;
-    std::optional<std::string> scripted_parameter::* column;
+    std::optional<std::string> scripted_parameter::*column;
 };
 
 constexpr derived_term derived_terms[] = {
@@ -369,8 +369,9 @@ auto addresses_of(std::vector<std::string> names) -> std::vector<std::string> {
     return names;
 }
 
-auto make_parameter(scripted_instrument_data& data, std::string name, std::string type)
-    -> scripted_parameter& {
+auto make_parameter(scripted_instrument_data& data,
+                    std::string name,
+                    std::string type) -> scripted_parameter& {
     scripted_parameter row;
     row.sequence_number = static_cast<int>(data.parameters.size()) + 1;
     row.name = std::move(name);
@@ -482,8 +483,8 @@ void read_named_parameters(scripted_instrument_data& data, const xml::record_rea
     }
 }
 
-auto values_of(const scripted_instrument_data& data, int parameter_sequence_number)
-    -> std::vector<std::string> {
+auto values_of(const scripted_instrument_data& data,
+               int parameter_sequence_number) -> std::vector<std::string> {
     std::vector<const scripted_parameter_value*> rows;
     for (const auto& row : data.parameter_values)
         if (row.parameter_sequence_number == parameter_sequence_number)
@@ -563,8 +564,8 @@ void write_named_parameters(xml::record_writer& product, const scripted_instrume
 
 namespace {
 
-auto read_scripted_row(xml::record_reader trade, std::string_view trade_type)
-    -> std::optional<scripted_instrument> {
+auto read_scripted_row(xml::record_reader trade,
+                       std::string_view trade_type) -> std::optional<scripted_instrument> {
     if (trade_type == "ScriptedTrade") {
         auto r = scripted_instrument_projection_make_base(trade_type);
         if (const auto named = trade.child("AsianBasketOptionData")) {

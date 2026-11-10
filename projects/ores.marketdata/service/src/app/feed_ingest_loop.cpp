@@ -359,9 +359,9 @@ void feed_ingest_loop::worker_loop() {
         // A tick that has aged out is dropped and not worked through, so the worker
         // that has fallen behind reaches the newest ticks at once.
         const auto ages = translator();
-        const auto stale =
-            erase_stale(batch, std::chrono::system_clock::now(),
-                        [&](const auto& t) { return ages->max_quote_age(t.source); });
+        const auto stale = erase_stale(batch, std::chrono::system_clock::now(), [&](const auto& t) {
+            return ages->max_quote_age(t.source);
+        });
         if (stale > 0) {
             stale_dropped_.fetch_add(stale, std::memory_order_relaxed);
             const auto now = std::chrono::steady_clock::now();

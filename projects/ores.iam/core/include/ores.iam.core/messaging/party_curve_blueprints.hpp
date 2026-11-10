@@ -109,14 +109,16 @@ struct party_curve_plan {
         own_ids.insert(s.id);
     }
 
-    std::map<boost::uuids::uuid, std::vector<const ores::refdata::domain::ir_curve_bootstrap_pillar*>>
+    std::map<boost::uuids::uuid,
+             std::vector<const ores::refdata::domain::ir_curve_bootstrap_pillar*>>
         pillars_of;
     for (const auto& p : system.pillars)
         pillars_of[p.bootstrap_config_id].push_back(&p);
 
     party_curve_plan plan;
     for (const auto& config : system.configs) {
-        const auto config_id = party_copy_id(party.party_id, "ir_curve_bootstrap_config", config.id);
+        const auto config_id =
+            party_copy_id(party.party_id, "ir_curve_bootstrap_config", config.id);
         if (party.config_ids.contains(config_id)) {
             plan.ready.push_back({config_id, config.name});
             continue;
@@ -137,11 +139,10 @@ struct party_curve_plan {
                 lacking.push_back("system series " + boost::uuids::to_string(p->market_series_id));
                 continue;
             }
-            const auto own = own_series.find(
-                {quotes->second->oresmd_uri, quotes->second->provider_code});
+            const auto own =
+                own_series.find({quotes->second->oresmd_uri, quotes->second->provider_code});
             if (own == own_series.end()) {
-                lacking.push_back(quotes->second->provider_code + " " +
-                                  quotes->second->oresmd_uri);
+                lacking.push_back(quotes->second->provider_code + " " + quotes->second->oresmd_uri);
                 continue;
             }
             auto copy = *p;
@@ -175,11 +176,11 @@ struct party_curve_plan {
         copy.version = 0;
         copy.id = config_id;
         copy.party_id = party.party_id;
-        copy.output_series_id = party_copy_id(party.party_id, "market_series", config.output_series_id);
+        copy.output_series_id =
+            party_copy_id(party.party_id, "market_series", config.output_series_id);
         if (config.discount_curve_config_id)
-            copy.discount_curve_config_id =
-                party_copy_id(party.party_id, "ir_curve_bootstrap_config",
-                              *config.discount_curve_config_id);
+            copy.discount_curve_config_id = party_copy_id(
+                party.party_id, "ir_curve_bootstrap_config", *config.discount_curve_config_id);
         plan.configs_to_write.push_back(std::move(copy));
         for (auto& p : pillars)
             plan.pillars_to_write.push_back(std::move(p));

@@ -568,15 +568,14 @@ struct market_data_feed {
  * identifier and by its name both count. A party that no entry names takes the step's own
  * provider and source.
  */
-[[nodiscard]] inline std::vector<market_data_feed>
-feeds_of_party(const market_data_step_arguments& arguments, std::string_view id,
-               std::string_view full_name) {
+[[nodiscard]] inline std::vector<market_data_feed> feeds_of_party(
+    const market_data_step_arguments& arguments, std::string_view id, std::string_view full_name) {
     std::vector<market_data_feed> out;
     for (const auto& entry : arguments.parties) {
         if (entry.party != id && entry.party != full_name)
             continue;
-        market_data_feed feed{.provider = entry.provider.empty() ? arguments.provider
-                                                                 : entry.provider,
+        market_data_feed feed{.provider =
+                                  entry.provider.empty() ? arguments.provider : entry.provider,
                               .source = entry.source.empty() ? arguments.source : entry.source};
         if (std::ranges::find(out, feed) == out.end())
             out.push_back(std::move(feed));

@@ -29,7 +29,7 @@ The overnight TIIE de Fondeo is stored as fixings in the system tenant, with its
 | State        | BACKLOG                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
+| Waiting on   | A person registers a Banco de Mexico SIE API token; the key goes to the credential store. |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-10                               |
 

@@ -61,10 +61,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Currencies usable | 13 of 28: USD, EUR, GBP, CAD stored; AUD, JPY, BRL, NOK, SEK with open routes; MXN, CLP, SGD, CZK with a free key | the probes and terms reads of 2026-11-10, recorded in the calibration sources note | this branch |
-| Adapter tasks added | 9 | =compass add task= for each usable source not yet stored | this branch |
-| RBA F1 route | 200 three times, 4,014 days from 2011-01-04 | =curl .../statistics/tables/csv/f1-data.csv= | this branch |
-| BoJ call rate route | 13,483 dates from 1990-01-01 in one answer | =curl .../api/v1/getDataCode?...&code=STRDCLUCON&startDate=199001= | this branch |
+| Currencies usable | 13 of 28: USD, EUR, GBP, CAD stored; AUD, JPY (on the owner's judgement that the use is not commercial), BRL, NOK, SEK with open routes; MXN, CLP, SGD, CZK with a free key | the probes and terms reads of 2026-11-10, recorded in the calibration sources note | 4fa2ca076d |
+| Adapter tasks added | 9 | =compass add task --parent-dir doc/agile/versions/v0/sprint_30/read_the_public_interest_rate_sources= for each usable source not yet stored | 4fa2ca076d |
+| RBA F1 route | 200 three times, 4,014 days from 2011-01-04 | =curl -s https://www.rba.gov.au/statistics/tables/csv/f1-data.csv= | 4fa2ca076d |
+| BoJ call rate route | 13,483 dates from 1990-01-01 in one answer | =curl -s 'https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=FM01&code=STRDCLUCON&startDate=199001&endDate=202611'= | 4fa2ca076d |
 
 * Notes
 
@@ -91,7 +91,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4550: JPY is counted usable on the owner's judgement; say so wherever the count is quoted | note, task | Accepted | The note's summary and the Measurements row say it. |
+| 2 | PR #4550: CHF is in neither the usable list nor the leftovers | note | Accepted | One sentence accounts for CHF, so all 28 are named. |
+| 3 | PR #4550: confirm the ODbL covers the SGS series, not only the portal datasets | note | Accepted | The portal lists the SGS series as ODbL datasets; the row says so. |
+| 4 | PR #4550: the keyed tasks wait on nothing | adapter tasks | Accepted | MXN, CLP, SGD and CZK wait on a person registering their key. |
+| 5 | PR #4550: elided commands and no commit in the Measurements | task | Accepted | Full commands and the commit of the survey. |
+| 6 | PR #4550: the Status table lost its padding | task | No change | =compass task= writes that table. |
 
 * Result
 

@@ -47,7 +47,9 @@ namespace ores::marketdata::official::domain {
  *
  * A source's key is the full series key, such as =EST.B.EU000A2X2A25.WT=: the dataflow, then
  * the key within it. The portal answers a query it has not cached with a 504 after thirty
- * seconds, and the same query again from its cache, so a read tries up to three times.
+ * seconds, and the same query again from its cache, so a read tries up to three times, each
+ * with a limit of sixty seconds. A transport failure is tried again too, so a read that cannot
+ * reach the portal gives up after about three minutes.
  */
 class ORES_MARKETDATA_OFFICIAL_EXPORT ecb_fetcher final : public fetcher {
 public:

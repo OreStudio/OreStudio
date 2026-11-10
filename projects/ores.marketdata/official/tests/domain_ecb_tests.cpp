@@ -154,3 +154,14 @@ TEST_CASE("the_ecb_fetcher_refuses_a_key_with_no_dataflow", "[domain][ecb]") {
     CHECK_FALSE(fetcher.fixings("ESTR", ecb_day(2026, 11, 3), ecb_day(2026, 11, 4)).has_value());
     CHECK(transport.asked.empty());
 }
+
+TEST_CASE("an_ecb_series_that_does_not_exist_is_an_error_and_not_an_empty_read", "[domain][ecb]") {
+    ecb_transport transport;
+    transport.answers.push_back({404, "application/json", R"({"title":"Not Found","status":404})"});
+    ecb_fetcher fetcher(transport, "https://data-api.ecb.europa.eu");
+
+    const auto fixings = fetcher.fixings(estr_key, ecb_day(2026, 11, 3), ecb_day(2026, 11, 4));
+
+    CHECK_FALSE(fixings.has_value());
+    CHECK(transport.asked.size() == 1);
+}

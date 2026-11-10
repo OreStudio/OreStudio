@@ -65,7 +65,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | €STR history the route serves | 1,820 rates, 2019-10-01 to 2026-11-06 | =curl .../service/data/EST/B.EU000A2X2A25.WT?format=csvdata&detail=dataonly= | 679df52184 |
 | €STR fixings a fresh environment stored | 279, 2025-10-06 to 2026-11-06, last =0.02443= | =compass check= (=ticks-smoke=), then a count of the fixings of the €STR item | 679df52184 |
-| Cases of =ores.marketdata.official.tests= | 31 pass | =ores.marketdata.official.tests= | 679df52184 |
+| Cases of =ores.marketdata.official.tests= | 32 pass | =ores.marketdata.official.tests= | 679df52184 |
 
 * Notes
 
@@ -92,7 +92,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4547: an empty range may answer 404, which would fail a catch-up read | =ecb.cpp= | Declined | Probed on 2026-11-10: a weekend and a holiday window answer 200 with an empty body, and only a series that does not exist answers 404. A 404 stays an error, so a wrong key is never read as "no data". The code states this, and a new case covers the 404. |
+| 2 | PR #4547: the CSV split ignores quotes | =ecb.cpp= | Accepted | A comment states that a =dataonly= answer holds no quoted text. |
+| 3 | PR #4547: the row width error names the header's width, not the width checked | =ecb.cpp= | Accepted | The message names the width the header needs. |
+| 4 | PR #4547: the retry has no pause, retries transport errors, and loses the attempt count | =ecb.cpp= | Accepted in part | The error names the attempts, and the header states the worst case of about three minutes. No pause: the cached answer is ready when the 504 arrives. |
+| 5 | PR #4547: say why the window filter stays | =ecb.cpp= | Accepted | A comment says it. |
+| 6 | PR #4547: =universe()= checks only the key's format | =ecb.cpp= | No change | The reviewer agreed the portal's 404 catches a made-up key. |
 
 * Result
 

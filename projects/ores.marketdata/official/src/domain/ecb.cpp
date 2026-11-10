@@ -33,6 +33,8 @@ constexpr int attempts = 3;
 /// Longer than the thirty seconds after which the portal's gateway answers 504.
 const http::client::net::request_limits limits{std::chrono::seconds(60)};
 
+// The answer of detail=dataonly holds codes, dates and numbers, never quoted text, so a comma
+// always separates two cells.
 std::vector<std::string_view> split(std::string_view line, char separator) {
     std::vector<std::string_view> out;
     std::size_t start = 0;
@@ -83,8 +85,8 @@ std::expected<std::vector<published_fixing>, std::string> parse_ecb_csv(std::str
     for (std::size_t i = 1; i < lines.size(); ++i) {
         const auto cells = split(lines[i], ',');
         if (cells.size() < width)
-            return std::unexpected(
-                std::format("row {} has {} cells, not {}", i, cells.size(), header.size()));
+            return std::unexpected(std::format(
+                "row {} has {} cells, fewer than the {} its header needs", i, cells.size(), width));
         if (cells[*key_at] != key || cells[*value_at].empty())
             continue;
         auto date = date_of(cells[*date_at]);
@@ -136,16 +138,19 @@ std::expected<std::vector<published_fixing>, std::string> ecb_fetcher::fixings(
             last_error = std::format("{} answered {}", url, answer->status);
             continue;
         }
+        // A window with no observation is a 200 with an empty body; a 404 names a series that
+        // does not exist, so it is an error.
         if (answer->status != 200)
             return std::unexpected(std::format("{} answered {}", url, answer->status));
         auto read = parse_ecb_csv(answer->body, key);
         if (!read)
             return std::unexpected(read.error());
+        // The portal honours the window; the filter keeps the fetcher's contract if it does not.
         std::erase_if(*read,
                       [&](const published_fixing& f) { return f.date < from || f.date > to; });
         return read;
     }
-    return std::unexpected(last_error);
+    return std::unexpected(std::format("{} (after {} attempts)", last_error, attempts));
 }
 
 }

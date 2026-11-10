@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-rba-adapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ AONIA, the RBA's interbank overnight cash rate, is stored as fixings in the syst
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
+| Now          | Done. A fresh environment stored 280 AONIA fixings. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-11-10                               |
 
 * Acceptance
@@ -43,9 +43,11 @@ AONIA, the RBA's interbank overnight cash rate, is stored as fixings in the syst
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =rba_fetcher= reads a series of an RBA statistical table. Its key is =<table>.<series>=, such as =f1.FIRMMCRID=, and it gets =/statistics/tables/csv/<table>-data.csv=.
+- The RBA publishes each table as one file with its whole history, so each read gets the file and keeps the days of the window. The file of F1 is about 300 KB.
+- =parse_rba_table= finds the =Series ID= row, takes the column of the series, and reads each later row. A row can stop before the last columns, so a missing cell is skipped as an empty one.
+- The BoE fetcher and this one both write dates with an English month name. The parser moves into =published_text= as =date_of_month_name=, with the separator as an argument.
+- The HTTP client's user agent becomes =OREStudio (+https://github.com/OreStudio/OreStudio)=. The RBA refuses =ORE Studio= and =OREStudio= with a 403, and accepts this one. The agent has no version, so a release does not change it.
 
 * Measurements
 
@@ -59,9 +61,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| AONIA fixings stored by a fresh environment | 280, from 2025-10-06 to 2026-11-10, last =0.0485= | =compass sql -- -c "select source, count(*), min(fixing_date), max(fixing_date) from ores_marketdata_market_fixings_tbl group by source"= | this branch, before the PR |
+| Unit test cases of =ores.marketdata.official.tests= | 80, all passing | =ores.marketdata.official.tests= | this branch, before the PR |
+| Days of AONIA in table F1 | 4,014, from 2011-01-04 | the F1 file, read with =curl= | not a tree measurement |
 
 * Notes
+
+- The user agent change was checked against each publisher with one request each. All answered 200 except the Riksbank, which answered =403 Out of call volume quota= to both the old and the new agent. [[id:931A6249-B689-496F-B666-A3CACB0A0494][Register a Riksbank API key]] records it.
+- The RBA writes a row for a day before it publishes the day's rate, with the rate cell missing. The parser skips such a row, so the next poll stores the rate.
 
 * Test Scenarios
 
@@ -87,3 +94,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+AONIA is read from RBA table F1 by =rba_fetcher= and stored as fixings in the system tenant: a fresh environment sent and stored 280 fixings, the last =0.0485= for 2026-11-10. The HTTP client's user agent is now =OREStudio (+https://github.com/OreStudio/OreStudio)=, which the RBA accepts. The date parser of the BoE and the RBA is shared in =published_text=.

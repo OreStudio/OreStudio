@@ -18,10 +18,10 @@
  *
  */
 #include "ores.marketdata.official/domain/frankfurter.hpp"
+#include "ores.marketdata.official/domain/published_text.hpp"
 #include <boost/json/parse.hpp>
 #include <boost/json/value.hpp>
 #include <algorithm>
-#include <charconv>
 #include <format>
 #include <utility>
 
@@ -35,32 +35,6 @@ std::string lower(std::string_view s) {
         return static_cast<char>(c >= 'A' && c <= 'Z' ? c - 'A' + 'a' : c);
     });
     return out;
-}
-
-std::string text_of(double value) {
-    char buffer[32];
-    const auto [end, ec] = std::to_chars(std::begin(buffer), std::end(buffer), value);
-    return ec == std::errc{} ? std::string(buffer, end) : std::format("{}", value);
-}
-
-std::expected<std::chrono::year_month_day, std::string> date_of(std::string_view text) {
-    int y = 0;
-    unsigned m = 0;
-    unsigned d = 0;
-    if (text.size() != 10 || text[4] != '-' || text[7] != '-' ||
-        std::from_chars(text.data(), text.data() + 4, y).ec != std::errc{} ||
-        std::from_chars(text.data() + 5, text.data() + 7, m).ec != std::errc{} ||
-        std::from_chars(text.data() + 8, text.data() + 10, d).ec != std::errc{})
-        return std::unexpected("'" + std::string(text) + "' is not a date");
-    const std::chrono::year_month_day date{
-        std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
-    if (!date.ok())
-        return std::unexpected("'" + std::string(text) + "' is not a date");
-    return date;
-}
-
-std::string iso(std::chrono::year_month_day date) {
-    return std::format("{:%F}", std::chrono::sys_days{date});
 }
 
 }
@@ -137,12 +111,7 @@ frankfurter_fetcher::frankfurter_fetcher(http::client::net::transport& transport
 }
 
 std::expected<std::string, std::string> frankfurter_fetcher::read(const std::string& url) {
-    auto answer = transport_.get(url);
-    if (!answer)
-        return std::unexpected(answer.error().message);
-    if (answer->status != 200)
-        return std::unexpected(std::format("{} answered {}", url, answer->status));
-    return std::move(answer->body);
+    return read_body(transport_, url);
 }
 
 std::expected<provider_universe, std::string> frankfurter_fetcher::provider(std::string_view key) {

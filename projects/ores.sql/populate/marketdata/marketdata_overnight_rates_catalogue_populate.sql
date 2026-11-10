@@ -27,6 +27,11 @@
  * public fixing and a synthetic feed of one index name the same item. The terms
  * of each publisher are in doc/knowledge/domain/synthetic_calibration_sources.org.
  * The ECB and the Bank of Canada are seeded by the official rates catalogue.
+ *
+ * Each publisher's adapter reads its series through a session and a feed, and the
+ * feed's scope names the one item it fetches, so the demand never asks the feed
+ * for the items of the publisher's other feeds. The system party subscribes to
+ * each publisher and routes to its feed.
  */
 
 \echo '--- Overnight Rates Providers ---'
@@ -101,3 +106,92 @@ where not exists (
       and m.vendor_instrument_id = v.id
       and m.valid_to = ores_utility_infinity_timestamp_fn()
 );
+
+\echo '--- Overnight Rates Sessions, Feeds and Scopes ---'
+insert into ores_marketdata_sessions_tbl (
+    code, tenant_id, version, name, supplier_code, adapter_code, environment,
+    endpoint, credential_ref, settings, enabled, description,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+values
+    ('nyfed-markets', ores_utility_system_tenant_id_fn(), 0, 'New York Fed markets API',
+     'nyfed', 'nyfed', 'production', 'https://markets.newyorkfed.org', '',
+     '{"url":"https://markets.newyorkfed.org","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the reference rates of the New York Fed.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
+on conflict (tenant_id, code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+insert into ores_marketdata_feeds_tbl (
+    id, tenant_id, version, name, publisher_code, session_code, service, provider_key,
+    is_default, description, modified_by, performed_by, change_reason_code, change_commentary
+)
+values
+    ('491b9101-f1e7-5020-a960-9799f3a78c2a', ores_utility_system_tenant_id_fn(), 0,
+     'nyfed-sofr', 'nyfed', 'nyfed-markets', 'end_of_day', 'SOFR', true,
+     'SOFR as the New York Fed publishes it, read by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
+on conflict (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
+insert into ores_marketdata_feed_scopes_tbl (
+    id, tenant_id, version, feed_id, asset_class, item, vendor_instrument_id,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, f.id, 'interest_rates',
+       m.oresmd_uri, v.id,
+       current_user, current_user, 'system.initial_load',
+       'Initial population of the overnight rates scopes'
+from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR')) as s(feed, provider, scheme, external_id)
+join ores_marketdata_feeds_tbl f
+  on f.tenant_id = ores_utility_system_tenant_id_fn()
+ and f.name = s.feed
+ and f.valid_to = ores_utility_infinity_timestamp_fn()
+join ores_marketdata_market_data_vendor_instruments_tbl v
+  on v.tenant_id = ores_utility_system_tenant_id_fn()
+ and v.provider_code = s.provider
+ and v.id_scheme = s.scheme
+ and v.external_id = s.external_id
+ and v.valid_to = ores_utility_infinity_timestamp_fn()
+join ores_marketdata_market_data_mappings_tbl m
+  on m.vendor_instrument_id = v.id
+ and m.tenant_id = ores_utility_system_tenant_id_fn()
+ and m.valid_to = ores_utility_infinity_timestamp_fn()
+where not exists (
+    select 1 from ores_marketdata_feed_scopes_tbl x
+    where x.tenant_id = ores_utility_system_tenant_id_fn()
+      and x.feed_id = f.id
+      and x.item = m.oresmd_uri
+      and x.valid_to = ores_utility_infinity_timestamp_fn()
+);
+
+\echo '--- Overnight Rates Subscriptions and Routes of the System Party ---'
+do $$
+declare
+    v_party uuid := ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn());
+begin
+    if v_party is null then
+        raise notice 'No system party yet: the overnight rates subscriptions wait for it';
+        return;
+    end if;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '42432343-3299-5a96-b6bb-3906468b7a94', ores_utility_system_tenant_id_fn(), 0, v_party, 'nyfed',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes SOFR of the New York Fed for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '2f1f4cde-543d-5d41-97ff-0ba1531bb130', ores_utility_system_tenant_id_fn(), 0, v_party, 'nyfed', 'interest_rates',
+        '491b9101-f1e7-5020-a960-9799f3a78c2a',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads SOFR from the New York Fed'
+    ) on conflict do nothing;
+end $$;

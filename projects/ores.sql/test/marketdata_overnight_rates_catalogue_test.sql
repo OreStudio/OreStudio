@@ -26,13 +26,15 @@
  *   item.
  * - Each publisher of an overnight series states its terms and its credit, so
  *   the terms can be accepted at setup.
+ * - The feed of each overnight adapter is scoped to its one item, so the demand
+ *   asks it for nothing else.
  *
  * Run as ORES_TEST_DB_USER: pg_prove -d <database> test/marketdata_overnight_rates_catalogue_test.sql
  */
 
 begin;
 
-select plan(2);
+select plan(3);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -63,6 +65,21 @@ select is_empty(
         and valid_to = ores_utility_infinity_timestamp_fn()
         and (terms_url = '' or terms_credit = '' or not allows_storage)$$,
     'each publisher of an overnight series states its terms and its credit'
+);
+
+select results_eq(
+    $$select f.name || ' ' || s.asset_class || ' ' || s.item
+      from ores_marketdata_feed_scopes_tbl s
+      join ores_marketdata_feeds_tbl f
+        on f.id = s.feed_id
+       and f.tenant_id = s.tenant_id
+       and f.valid_to = ores_utility_infinity_timestamp_fn()
+      where s.tenant_id = ores_utility_system_tenant_id_fn()
+        and f.name in ('nyfed-sofr')
+        and s.valid_to = ores_utility_infinity_timestamp_fn()
+      order by 1$$,
+    $$values ('nyfed-sofr interest_rates oresmd://ir/USD?type=fixing&index=ibor&name=SOFR')$$,
+    'each overnight feed is scoped to the item of its series'
 );
 
 select * from finish();

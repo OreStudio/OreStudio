@@ -23,5 +23,6 @@ set(files
     "app_official_adapter_tests.cpp"
     "config_options_tests.cpp"
     "domain_frankfurter_tests.cpp"
+    "domain_nyfed_tests.cpp"
     "main.cpp"
 )

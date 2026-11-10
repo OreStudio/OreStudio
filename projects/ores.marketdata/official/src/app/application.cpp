@@ -21,6 +21,7 @@
 #include "ores.http.client/net/transport.hpp"
 #include "ores.marketdata.official/app/official_adapter.hpp"
 #include "ores.marketdata.official/domain/frankfurter.hpp"
+#include "ores.marketdata.official/domain/nyfed.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -45,6 +46,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         std::string(service_name), 0, 1);
     BOOST_LOG_SEV(lg(), info) << "Frankfurter : " << cfg.frankfurter_url;
+    BOOST_LOG_SEV(lg(), info) << "New York Fed: " << cfg.nyfed_url;
     BOOST_LOG_SEV(lg(), info) << "Sources     : " << cfg.sources.size();
     BOOST_LOG_SEV(lg(), info) << "Backfill    : " << cfg.backfill_days << " days";
     BOOST_LOG_SEV(lg(), info) << "Poll        : every " << cfg.poll_minutes << " minutes";
@@ -53,11 +55,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     nats.connect();
 
     http::client::net::beast_transport transport;
-    domain::frankfurter_fetcher fetcher(transport, cfg.frankfurter_url);
+    domain::frankfurter_fetcher frankfurter(transport, cfg.frankfurter_url);
+    domain::nyfed_fetcher nyfed(transport, cfg.nyfed_url);
     adapter_timing timing;
     timing.poll_interval = std::chrono::minutes(cfg.poll_minutes);
     official_adapter adapter(
-        nats, cfg.sources, {&fetcher}, static_cast<int>(cfg.backfill_days), timing);
+        nats, cfg.sources, {&frankfurter, &nyfed}, static_cast<int>(cfg.backfill_days), timing);
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

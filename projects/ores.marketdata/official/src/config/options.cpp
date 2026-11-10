@@ -26,8 +26,9 @@
 namespace ores::marketdata::official::config {
 
 std::ostream& operator<<(std::ostream& s, const options& v) {
-    s << "{ frankfurter_url: " << v.frankfurter_url << ", sources: " << v.sources.size()
-      << ", backfill_days: " << v.backfill_days << ", poll_minutes: " << v.poll_minutes << " }";
+    s << "{ frankfurter_url: " << v.frankfurter_url << ", nyfed_url: " << v.nyfed_url
+      << ", sources: " << v.sources.size() << ", backfill_days: " << v.backfill_days
+      << ", poll_minutes: " << v.poll_minutes << " }";
     return s;
 }
 

@@ -34,6 +34,7 @@ const source = (currency: string, name: string) => ({
     publish_id: '',
     as_of: '2026-11-09 16:00:00Z',
     published_by: 'a.silva',
+    state_code: 'published',
 });
 
 const row = (tenor: string, near: string, value: string, rate: number, swap: number) => ({
@@ -56,6 +57,28 @@ const ladder: FxForwardLadder = {
     spot_days: 2,
     pip_factor: 0.0001,
     decimal_places: 4,
+    publish_id: 'aaf8ac93-630f-41bc-814d-fb8639e07941',
+    request_id: '01a1c2f9-0929-7792-83b2-668856c67b19',
+    spot_rate: 1.085,
+    published_by: 'henry.jones',
+    published_at: '2026-11-09 16:01:38Z',
+    convention_version: 1,
+    calendar_codes: 'TARGET,UnitedStates.Settlement',
+    method_code: 'covered_interest_parity',
+    requested_by: 'henry.jones',
+    approval_state_code: 'approved',
+    auto_approval_code: '',
+    decided_by: 'mark.reid',
+    decision_comment: 'The EUR/USD forwards match the curves',
+    spots: [
+        {
+            leg_code: 'direct',
+            pair_code: 'EUR/USD',
+            series_id: 'ab2c2d4a-90ca-4a20-bdbb-cf0092917815',
+            observed_at: '2026-11-09 16:00:02Z',
+            value: 1.085,
+        },
+    ],
     base_curve: source('EUR', 'EUR-ESTR'),
     quote_curve: source('USD', 'USD-SOFR-FOMC'),
     rows: [
@@ -64,10 +87,10 @@ const ladder: FxForwardLadder = {
     ],
 };
 
-function draw(address: string): string {
+function draw(address: string, set: FxForwardLadder = ladder): string {
     const client = new QueryClient();
-    client.setQueryData(['currency-pairs', 'usd'], ['EUR/USD']);
-    client.setQueryData(['fx-forward-ladder', 'EUR/USD', '2026-11-09'], ladder);
+    client.setQueryData(['currency-pair-conventions', 'pairs'], ['EUR/GBP', 'EUR/USD']);
+    client.setQueryData(['fx-forward-ladder', 'EUR/USD', '2026-11-09'], set);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -105,5 +128,37 @@ describe('the FX forward ladder page', () => {
     it('marks no row from spot', () => {
         const page = draw('/market-data/fx-forwards?pair=EUR/USD&asof=2026-11-09');
         expect(page).not.toContain('from today');
+    });
+
+    it('links each input to its own record and says who decided the set', () => {
+        const page = draw('/market-data/fx-forwards?pair=EUR/USD&asof=2026-11-09');
+        expect(page).toContain('href="/requests/01a1c2f9-0929-7792-83b2-668856c67b19"');
+        expect(page).toContain('EUR/USD, version 1');
+        expect(page).toContain('Covered interest parity');
+        expect(page).toContain('mark.reid');
+        expect(page).toContain('The EUR/USD forwards match the curves');
+        expect(page).not.toContain('Closed by auto-approval');
+    });
+
+    it('says when auto-approval closed the set, and names the rule', () => {
+        const page = draw('/market-data/fx-forwards?pair=EUR/USD&asof=2026-11-09', {
+            ...ladder,
+            auto_approval_code: 'tenant',
+            decided_by: 'henry.jones',
+        });
+        expect(page).toContain('Closed by auto-approval, under the tenant rule');
+    });
+
+    it('marks a funding curve withdrawn since the set was published', () => {
+        const page = draw('/market-data/fx-forwards?pair=EUR/USD&asof=2026-11-09', {
+            ...ladder,
+            base_curve: { ...ladder.base_curve, state_code: 'withdrawn' },
+        });
+        expect(page).toContain('Withdrawn since');
+    });
+
+    it('offers crosses beside USD pairs', () => {
+        const page = draw('/market-data/fx-forwards?pair=EUR/USD&asof=2026-11-09');
+        expect(page).toContain('EUR/GBP');
     });
 });

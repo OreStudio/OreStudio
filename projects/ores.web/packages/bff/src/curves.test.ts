@@ -628,9 +628,9 @@ describe('the published curve routes', () => {
         });
     });
 
-    it("reads a pair's forward ladder and returns it without the outcome fields", async () => {
+    it("reads the party's published forward set and returns it without the outcome fields", async () => {
         const { server, sessionId, calls } = buildTestServer({
-            'marketdata.v1.ops.get_fx_forward_ladder': {
+            'marketdata.v1.ops.get_published_fx_forward': {
                 success: true,
                 message: '',
                 pair_code: 'EUR/USD',
@@ -647,13 +647,12 @@ describe('the published curve routes', () => {
         expect(calls[0]?.body).toEqual({
             pair_code: 'EUR/USD',
             as_of: '2026-11-09 23:59:59Z',
-            party_id: '',
         });
     });
 
     it('carries the refusal of a forward ladder to the screen', async () => {
         const { server, sessionId } = buildTestServer({
-            'marketdata.v1.ops.get_fx_forward_ladder': {
+            'marketdata.v1.ops.get_published_fx_forward': {
                 success: false,
                 message: 'No spot of EUR/USD was observed at or before the as-of.',
             },

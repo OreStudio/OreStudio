@@ -80,46 +80,6 @@ struct fx_forward_ladder_row {
 };
 
 /**
- * @brief The forward ladder of one USD pair at one as-of.
- */
-struct get_fx_forward_ladder_request {
-    using response_type = struct get_fx_forward_ladder_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_fx_forward_ladder";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::string pair_code;
-    std::chrono::system_clock::time_point as_of;
-    std::string party_id;
-
-    friend bool operator==(const get_fx_forward_ladder_request&,
-                           const get_fx_forward_ladder_request&) = default;
-};
-
-struct get_fx_forward_ladder_response {
-    bool success = false;
-    std::string message;
-    std::string pair_code;
-    std::chrono::system_clock::time_point as_of;
-    double spot = 0.0;
-    std::chrono::system_clock::time_point spot_observed_at;
-    std::chrono::year_month_day spot_date = {};
-    int spot_days = 0;
-    double pip_factor = 0.0;
-    int decimal_places = 0;
-    fx_forward_curve_source base_curve;
-    fx_forward_curve_source quote_curve;
-    std::vector<fx_forward_ladder_row> rows;
-
-    friend bool operator==(const get_fx_forward_ladder_response&,
-                           const get_fx_forward_ladder_response&) = default;
-};
-
-/**
  * @brief One spot observation a published set read: its own for a USD pair, or one USD leg of a
  * cross.
  */
@@ -227,6 +187,38 @@ struct get_published_fx_forward_response {
     std::string method_code;
     fx_forward_curve_source base_curve;
     fx_forward_curve_source quote_curve;
+    /**
+     * @brief Business days from the trade date to spot, from the convention.
+     */
+    int spot_days = 0;
+    /**
+     * @brief The size of one pip of the pair, from the convention.
+     */
+    double pip_factor = 0.0;
+    /**
+     * @brief The decimal places the pair is quoted to, from the convention.
+     */
+    int decimal_places = 0;
+    /**
+     * @brief Who raised the publish.
+     */
+    std::string requested_by = "";
+    /**
+     * @brief The state of the request that authorised the publish.
+     */
+    std::string approval_state_code = "";
+    /**
+     * @brief The rule that closed the request without a person, or empty when a person decided it.
+     */
+    std::string auto_approval_code = "";
+    /**
+     * @brief Who decided the request: a person, or the account that closed it under the rule.
+     */
+    std::string decided_by = "";
+    /**
+     * @brief The decision's comment. Under auto-approval it names the rule and who turned it on.
+     */
+    std::string decision_comment = "";
     std::vector<fx_forward_spot_source> spots;
     std::vector<fx_forward_ladder_row> rows;
 
@@ -273,50 +265,6 @@ struct get_published_fx_forward_response {
         ::ores::utility::codec::field{"forward_rate", &fx_forward_ladder_row::forward_rate},
         ::ores::utility::codec::field{"forward_points", &fx_forward_ladder_row::forward_points},
         ::ores::utility::codec::field{"swap_points", &fx_forward_ladder_row::swap_points},
-    };
-}
-
-/**
- * @brief The members of get_fx_forward_ladder_request, named as the wire names them and in the
- * order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_forward_ladder_request>) {
-    return std::tuple{
-        ::ores::utility::codec::field{"pair_code", &get_fx_forward_ladder_request::pair_code},
-        ::ores::utility::codec::field{"as_of", &get_fx_forward_ladder_request::as_of},
-        ::ores::utility::codec::field{"party_id", &get_fx_forward_ladder_request::party_id},
-    };
-}
-
-/**
- * @brief The members of get_fx_forward_ladder_response, named as the wire names them and in the
- * order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fx_forward_ladder_response>) {
-    return std::tuple{
-        ::ores::utility::codec::field{"success", &get_fx_forward_ladder_response::success},
-        ::ores::utility::codec::field{"message", &get_fx_forward_ladder_response::message},
-        ::ores::utility::codec::field{"pair_code", &get_fx_forward_ladder_response::pair_code},
-        ::ores::utility::codec::field{"as_of", &get_fx_forward_ladder_response::as_of},
-        ::ores::utility::codec::field{"spot", &get_fx_forward_ladder_response::spot},
-        ::ores::utility::codec::field{"spot_observed_at",
-                                      &get_fx_forward_ladder_response::spot_observed_at},
-        ::ores::utility::codec::field{"spot_date", &get_fx_forward_ladder_response::spot_date},
-        ::ores::utility::codec::field{"spot_days", &get_fx_forward_ladder_response::spot_days},
-        ::ores::utility::codec::field{"pip_factor", &get_fx_forward_ladder_response::pip_factor},
-        ::ores::utility::codec::field{"decimal_places",
-                                      &get_fx_forward_ladder_response::decimal_places},
-        ::ores::utility::codec::field{"base_curve", &get_fx_forward_ladder_response::base_curve},
-        ::ores::utility::codec::field{"quote_curve", &get_fx_forward_ladder_response::quote_curve},
-        ::ores::utility::codec::field{"rows", &get_fx_forward_ladder_response::rows},
     };
 }
 
@@ -423,6 +371,19 @@ struct get_published_fx_forward_response {
         ::ores::utility::codec::field{"base_curve", &get_published_fx_forward_response::base_curve},
         ::ores::utility::codec::field{"quote_curve",
                                       &get_published_fx_forward_response::quote_curve},
+        ::ores::utility::codec::field{"spot_days", &get_published_fx_forward_response::spot_days},
+        ::ores::utility::codec::field{"pip_factor", &get_published_fx_forward_response::pip_factor},
+        ::ores::utility::codec::field{"decimal_places",
+                                      &get_published_fx_forward_response::decimal_places},
+        ::ores::utility::codec::field{"requested_by",
+                                      &get_published_fx_forward_response::requested_by},
+        ::ores::utility::codec::field{"approval_state_code",
+                                      &get_published_fx_forward_response::approval_state_code},
+        ::ores::utility::codec::field{"auto_approval_code",
+                                      &get_published_fx_forward_response::auto_approval_code},
+        ::ores::utility::codec::field{"decided_by", &get_published_fx_forward_response::decided_by},
+        ::ores::utility::codec::field{"decision_comment",
+                                      &get_published_fx_forward_response::decision_comment},
         ::ores::utility::codec::field{"spots", &get_published_fx_forward_response::spots},
         ::ores::utility::codec::field{"rows", &get_published_fx_forward_response::rows},
     };
@@ -450,34 +411,6 @@ struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::fx_fo
     static ores::marketdata::messaging::fx_forward_ladder_row read_json(std::string_view text);
     static std::string write_msgpack(const ores::marketdata::messaging::fx_forward_ladder_row& v);
     static ores::marketdata::messaging::fx_forward_ladder_row
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_MARKETDATA_API_EXPORT
-    wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::marketdata::messaging::get_fx_forward_ladder_request& v);
-    static ores::marketdata::messaging::get_fx_forward_ladder_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::marketdata::messaging::get_fx_forward_ladder_request& v);
-    static ores::marketdata::messaging::get_fx_forward_ladder_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_MARKETDATA_API_EXPORT
-    wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::marketdata::messaging::get_fx_forward_ladder_response& v);
-    static ores::marketdata::messaging::get_fx_forward_ladder_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::marketdata::messaging::get_fx_forward_ladder_response& v);
-    static ores::marketdata::messaging::get_fx_forward_ladder_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

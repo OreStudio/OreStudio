@@ -294,6 +294,15 @@ const fxForwardCurveSourceSchema = z.object({
     publish_id: z.string(),
     as_of: z.string(),
     published_by: z.string(),
+    state_code: z.string().default(''),
+});
+
+const fxForwardSpotSourceSchema = z.object({
+    leg_code: z.string(),
+    pair_code: z.string(),
+    series_id: z.string(),
+    observed_at: z.string(),
+    value: z.number(),
 });
 
 const fxForwardLadderRowSchema = z.object({
@@ -307,21 +316,46 @@ const fxForwardLadderRowSchema = z.object({
     swap_points: z.number(),
 });
 
-const fxForwardLadderSchema = z.object({
-    pair_code: z.string(),
-    as_of: z.string(),
-    spot: z.number(),
-    spot_observed_at: z.string(),
-    spot_date: z.string(),
-    spot_days: z.number(),
-    pip_factor: z.number(),
-    decimal_places: z.number(),
-    base_curve: fxForwardCurveSourceSchema,
-    quote_curve: fxForwardCurveSourceSchema,
-    rows: z.array(fxForwardLadderRowSchema),
-});
+/**
+ * The session party's published forward set of a pair, and where each number came from.
+ *
+ * The set's spot is spot; a cross's two USD legs are its spots. The set reads as fresh as its
+ * oldest spot.
+ */
+const fxForwardLadderSchema = z
+    .object({
+        publish_id: z.string(),
+        request_id: z.string(),
+        pair_code: z.string(),
+        as_of: z.string(),
+        spot_rate: z.number(),
+        spot_date: z.string(),
+        spot_days: z.number(),
+        pip_factor: z.number(),
+        decimal_places: z.number(),
+        published_by: z.string(),
+        published_at: nullableWireTimestampSchema,
+        convention_version: z.number(),
+        calendar_codes: z.string(),
+        method_code: z.string(),
+        requested_by: z.string().default(''),
+        approval_state_code: z.string().default(''),
+        auto_approval_code: z.string().default(''),
+        decided_by: z.string().default(''),
+        decision_comment: z.string().default(''),
+        base_curve: fxForwardCurveSourceSchema,
+        quote_curve: fxForwardCurveSourceSchema,
+        spots: z.array(fxForwardSpotSourceSchema),
+        rows: z.array(fxForwardLadderRowSchema),
+    })
+    .transform((set) => ({
+        ...set,
+        spot: set.spot_rate,
+        spot_observed_at: set.spots.map((s) => s.observed_at).sort()[0] ?? set.as_of,
+    }));
 
 export type FxForwardCurveSource = z.infer<typeof fxForwardCurveSourceSchema>;
+export type FxForwardSpotSource = z.infer<typeof fxForwardSpotSourceSchema>;
 export type FxForwardLadderRow = z.infer<typeof fxForwardLadderRowSchema>;
 export type FxForwardLadder = z.infer<typeof fxForwardLadderSchema>;
 
@@ -3335,7 +3369,10 @@ export const api = {
         return { sets: answer.sets, total: answer.total };
     },
 
-    /** One pair's forward ladder at one as-of. The server names what a refusal lacks. */
+    /**
+     * The session party's published forward set of a pair, at or before an as-of. The server
+     * names what a refusal lacks, including a pair the party has not published.
+     */
     async fxForwardLadder(query: {
         readonly pairCode: string;
         readonly asOf: string;

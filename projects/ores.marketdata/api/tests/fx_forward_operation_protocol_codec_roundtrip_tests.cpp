@@ -35,18 +35,6 @@ TEST_CASE("ores::marketdata::messaging::fx_forward_ladder_row", "[codec][roundtr
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::fx_forward_ladder_row>();
 }
 
-TEST_CASE("ores::marketdata::messaging::get_fx_forward_ladder_request",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::marketdata::messaging::get_fx_forward_ladder_request>();
-}
-
-TEST_CASE("ores::marketdata::messaging::get_fx_forward_ladder_response",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::marketdata::messaging::get_fx_forward_ladder_response>();
-}
-
 TEST_CASE("ores::marketdata::messaging::fx_forward_spot_source", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::fx_forward_spot_source>();
 }

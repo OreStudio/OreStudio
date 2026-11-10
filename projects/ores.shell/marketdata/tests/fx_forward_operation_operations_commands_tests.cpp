@@ -59,83 +59,12 @@ TEST_CASE("fx_forward_operation_operations_registers_every_declared_command", "[
     // command that is missing from it was never registered.
     const auto completions = root_menu.GetCompletions("fx_forward_operation ");
     for (const auto& verb : {
-             std::string{"get-fx-forward-ladder"},
              std::string{"publish-fx-forward"},
              std::string{"get-published-fx-forward"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 3 command(s).";
-}
-
-TEST_CASE("fx_forward_operation_operations_process_get_fx_forward_ladder_requires_a_session",
-          "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    fx_forward_operation_operations_commands::process_get_fx_forward_ladder(
-        out,
-        session,
-        std::vector<std::string>{
-            "sample",
-            "2026-01-01T00:00:00Z",
-            "sample",
-        });
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE(
-    "fx_forward_operation_operations_process_get_fx_forward_ladder_reports_the_expected_count",
-    "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    nats_client::login_info info;
-    info.username = "tester";
-    info.jwt = "token";
-    session.set_auth(std::move(info));
-    std::ostringstream out;
-
-    command_feedback::reset();
-    fx_forward_operation_operations_commands::process_get_fx_forward_ladder(out, session, {});
-
-    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    CHECK(out.str().find("Expected 3 arguments, got 0.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("fx_forward_operation_operations_process_get_fx_forward_ladder_reaches_the_transport",
-          "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    nats_client::login_info info;
-    info.username = "tester";
-    info.jwt = "token";
-    session.set_auth(std::move(info));
-    std::ostringstream out;
-
-    command_feedback::reset();
-    fx_forward_operation_operations_commands::process_get_fx_forward_ladder(
-        out,
-        session,
-        std::vector<std::string>{
-            "sample",
-            "2026-01-01T00:00:00Z",
-            "sample",
-        });
-
-    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
-    // Whether the command carries a token or not, everything ahead of the
-    // transport is satisfied, which is what the absence of a connection proves.
-    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
-    CHECK(command_feedback::failed());
+    BOOST_LOG_SEV(lg, debug) << "Registered 2 command(s).";
 }
 
 TEST_CASE("fx_forward_operation_operations_process_publish_fx_forward_requires_a_session",

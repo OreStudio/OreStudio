@@ -129,7 +129,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/demand_interval_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/feed_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/feed_scope_event_registrar.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/fx_forward_ladder_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/fx_forward_publish_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/fx_forward_publish_operations_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/messaging/fx_forward_publish_point_event_registrar.hpp"

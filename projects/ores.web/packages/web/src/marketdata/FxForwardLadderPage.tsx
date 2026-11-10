@@ -21,10 +21,16 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { api, type FxForwardCurveSource, type FxForwardLadder } from '../api/client.js';
+import {
+    api,
+    type FxForwardCurveSource,
+    type FxForwardLadder,
+    type FxForwardSpotSource,
+} from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { publishedCurvePath } from '../shell/paths.js';
+import { publishedCurvePath, requestPath } from '../shell/paths.js';
+import { pairPath } from '../refdata/currencyPairs.js';
 import {
     Button,
     Fact,
@@ -47,7 +53,7 @@ import {
     forwardForwardTenors,
     rowsFromStart,
     todayIso,
-    usdPairs,
+    sortedPairs,
     type LadderMeasure,
     type LadderRow,
     type LadderStart,
@@ -57,9 +63,11 @@ import { LineChart, SERIES_COLOURS, type ChartSeries } from './LineChart.js';
 /**
  * The FX forward ladder, from doc/prototypes/market_data/fx-forward-ladder.org.
  *
- * One read answers a pair at an as-of, and the rows hold every measure. The
- * start, the measure and the forward-forward change nothing on the server, so
- * they read nothing. The address holds them all.
+ * The ladder is the session party's published set of a pair at or before the
+ * as-of, so every number on it is one a person approved. One read answers it,
+ * with each input and how its request was decided. The start, the measure and
+ * the forward-forward change nothing on the server, so they read nothing. The
+ * address holds them all.
  */
 
 const LADDER_KEY = 'fx-forward-ladder';
@@ -122,7 +130,12 @@ function Curve({ source }: { readonly source: FxForwardCurveSource }): ReactNode
         <Fact label={t('marketdata.fxForwards.fundingCurve', { currency: source.currency })}>
             <Link className="text-accent" to={publishedCurvePath(source.curve_name)}>
                 {source.curve_name}
-            </Link>
+            </Link>{' '}
+            {source.state_code !== '' && source.state_code !== 'published' && (
+                <Tag tone="warn" small>
+                    {t(`marketdata.fxForwards.curveState.${source.state_code}`)}
+                </Tag>
+            )}
             <div className="text-xs text-ink-faint">
                 {t('marketdata.fxForwards.publishedSet', {
                     asOf: formatDateTime(source.as_of, language),
@@ -133,31 +146,108 @@ function Curve({ source }: { readonly source: FxForwardCurveSource }): ReactNode
     );
 }
 
+function Spot({
+    spot,
+    places,
+}: {
+    readonly spot: FxForwardSpotSource;
+    readonly places: number;
+}): ReactNode {
+    const { t, language } = useTranslation();
+    return (
+        <Fact label={t(`marketdata.fxForwards.leg.${spot.leg_code}`, { pair: spot.pair_code })}>
+            <Link className="font-mono text-accent" to={pairPath(spot.pair_code)}>
+                {fixed(spot.value, places, language)}
+            </Link>
+            <div className="text-xs text-ink-faint">
+                {t('marketdata.fxForwards.observedAt', {
+                    at: formatDateTime(spot.observed_at, language),
+                })}
+            </div>
+        </Fact>
+    );
+}
+
+function Approval({ ladder }: { readonly ladder: FxForwardLadder }): ReactNode {
+    const { t, language } = useTranslation();
+    return (
+        <section className="space-y-3 rounded-md border border-line p-4">
+            <h2 className="text-sm font-semibold">{t('marketdata.fxForwards.approval')}</h2>
+            {ladder.auto_approval_code !== '' && (
+                <Notice tone="warn">
+                    {t('marketdata.fxForwards.autoApproved', { rule: ladder.auto_approval_code })}
+                </Notice>
+            )}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <Fact label={t('marketdata.fxForwards.request')}>
+                    <Link className="text-accent" to={requestPath(ladder.request_id)}>
+                        {ladder.approval_state_code === ''
+                            ? ladder.request_id
+                            : t(`marketdata.fxForwards.requestState.${ladder.approval_state_code}`)}
+                    </Link>
+                </Fact>
+                <Fact label={t('marketdata.fxForwards.raisedBy')}>{ladder.requested_by}</Fact>
+                <Fact label={t('marketdata.fxForwards.decidedBy')}>
+                    {ladder.decided_by}
+                    {ladder.decision_comment !== '' && (
+                        <div className="text-xs text-ink-faint">{ladder.decision_comment}</div>
+                    )}
+                </Fact>
+                <Fact label={t('marketdata.fxForwards.publishedBy')}>
+                    {ladder.published_by}
+                    {ladder.published_at !== null && (
+                        <div className="text-xs text-ink-faint">
+                            {formatDateTime(ladder.published_at, language)}
+                        </div>
+                    )}
+                </Fact>
+            </div>
+        </section>
+    );
+}
+
 function Inputs({ ladder }: { readonly ladder: FxForwardLadder }): ReactNode {
     const { t, language } = useTranslation();
     return (
         <section className="space-y-3 rounded-md border border-line p-4">
             <h2 className="text-sm font-semibold">{t('marketdata.fxForwards.builtFrom')}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Fact label={t('marketdata.fxForwards.spot')}>
                     <span className="font-mono">
                         {fixed(ladder.spot, ladder.decimal_places + 1, language)}
                     </span>
                     <div className="text-xs text-ink-faint">
-                        {t('marketdata.fxForwards.observedAt', {
-                            at: formatDateTime(ladder.spot_observed_at, language),
+                        {t('marketdata.fxForwards.asOfSet', {
+                            at: formatDateTime(ladder.as_of, language),
                         })}
                     </div>
                 </Fact>
+                {ladder.spots.map((spot) => (
+                    <Spot key={spot.leg_code} spot={spot} places={ladder.decimal_places + 1} />
+                ))}
                 <Fact label={t('marketdata.fxForwards.spotDate')}>
                     <span className="font-mono">{ladder.spot_date}</span>
                     <div className="text-xs text-ink-faint">T+{ladder.spot_days}</div>
                 </Fact>
-                <Fact label={t('marketdata.fxForwards.pipFactor')}>
-                    <span className="font-mono">{ladder.pip_factor}</span>
-                </Fact>
                 <Curve source={ladder.base_curve} />
                 <Curve source={ladder.quote_curve} />
+                <Fact label={t('marketdata.fxForwards.convention')}>
+                    <Link className="text-accent" to={pairPath(ladder.pair_code)}>
+                        {t('marketdata.fxForwards.conventionVersion', {
+                            pair: ladder.pair_code,
+                            version: ladder.convention_version,
+                        })}
+                    </Link>
+                    <div className="text-xs text-ink-faint">
+                        {t('marketdata.fxForwards.pipAndCalendars', {
+                            pip: ladder.pip_factor,
+                            calendars: ladder.calendar_codes.split(',').join(', '),
+                        })}
+                    </div>
+                </Fact>
+                <Fact label={t('marketdata.fxForwards.method')}>
+                    {t(`marketdata.fxForwards.methods.${ladder.method_code}`)}
+                </Fact>
             </div>
             <Notice tone="info">{t('marketdata.fxForwards.noBasis')}</Notice>
         </section>
@@ -402,9 +492,13 @@ export function FxForwardLadderPage(): ReactNode {
     };
 
     const pairs = useQuery({
-        queryKey: ['currency-pairs', 'usd'],
+        queryKey: ['currency-pair-conventions', 'pairs'],
         queryFn: async () =>
-            usdPairs((await api.records('currency-pairs')).map((row) => String(row['pair_code']))),
+            sortedPairs(
+                (await api.records('currency-pair-conventions')).map((row) =>
+                    String(row['pair_code']),
+                ),
+            ),
     });
     const options = pairs.data ?? [];
     const pair =
@@ -480,6 +574,7 @@ export function FxForwardLadderPage(): ReactNode {
             {ladder.data !== undefined && (
                 <>
                     <Inputs ladder={ladder.data} />
+                    <Approval ladder={ladder.data} />
                     <Chart ladder={ladder.data} rows={rows} measure={measure} />
                     <Ladder ladder={ladder.data} rows={rows} measure={measure} start={start} />
                     <ForwardForward

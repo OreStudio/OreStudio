@@ -192,7 +192,7 @@ read_calendar(context ctx, const std::string& pair_code, std::string& codes) {
 }
 
 computed_fx_forward_set
-answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_request& request) {
+answer(context ctx, const fx_forward_inputs& request) {
     const auto pair = parse_pair(request.pair_code);
     if (!pair)
         throw refused(pair.error());
@@ -264,7 +264,6 @@ answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_req
         throw refused(rows.error());
 
     auto& out = computed.ladder;
-    out.success = true;
     out.pair_code = request.pair_code;
     out.as_of = request.as_of;
     out.spot = spot.value;
@@ -290,22 +289,9 @@ answer(context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_req
 
 }
 
-messaging::get_fx_forward_ladder_response fx_forward_ladder_service::read(
-    context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_request& request) {
-    try {
-        return answer(ctx, request).ladder;
-    } catch (const std::exception& e) {
-        ores::marketdata::messaging::get_fx_forward_ladder_response out;
-        out.pair_code = request.pair_code;
-        out.as_of = request.as_of;
-        out.message = e.what();
-        return out;
-    }
-}
-
-computed_fx_forward_set fx_forward_ladder_service::compute(
-    context ctx, const ores::marketdata::messaging::get_fx_forward_ladder_request& request) {
-    return answer(ctx, request);
+computed_fx_forward_set fx_forward_ladder_service::compute(context ctx,
+                                                          const fx_forward_inputs& inputs) {
+    return answer(ctx, inputs);
 }
 
 }

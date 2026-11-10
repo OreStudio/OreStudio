@@ -71,50 +71,6 @@ wire_traits<ores::marketdata::messaging::fx_forward_ladder_row>::read_msgpack(
     return object::read_msgpack<ores::marketdata::messaging::fx_forward_ladder_row>(data);
 }
 
-std::string wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_request>::write_json(
-    const ores::marketdata::messaging::get_fx_forward_ladder_request& v) {
-    return object::write_json(v);
-}
-
-ores::marketdata::messaging::get_fx_forward_ladder_request
-wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_request>::read_json(
-    std::string_view text) {
-    return object::read_json<ores::marketdata::messaging::get_fx_forward_ladder_request>(text);
-}
-
-std::string wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_request>::write_msgpack(
-    const ores::marketdata::messaging::get_fx_forward_ladder_request& v) {
-    return object::write_msgpack(v);
-}
-
-ores::marketdata::messaging::get_fx_forward_ladder_request
-wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_request>::read_msgpack(
-    std::span<const std::byte> data) {
-    return object::read_msgpack<ores::marketdata::messaging::get_fx_forward_ladder_request>(data);
-}
-
-std::string wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_response>::write_json(
-    const ores::marketdata::messaging::get_fx_forward_ladder_response& v) {
-    return object::write_json(v);
-}
-
-ores::marketdata::messaging::get_fx_forward_ladder_response
-wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_response>::read_json(
-    std::string_view text) {
-    return object::read_json<ores::marketdata::messaging::get_fx_forward_ladder_response>(text);
-}
-
-std::string wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_response>::write_msgpack(
-    const ores::marketdata::messaging::get_fx_forward_ladder_response& v) {
-    return object::write_msgpack(v);
-}
-
-ores::marketdata::messaging::get_fx_forward_ladder_response
-wire_traits<ores::marketdata::messaging::get_fx_forward_ladder_response>::read_msgpack(
-    std::span<const std::byte> data) {
-    return object::read_msgpack<ores::marketdata::messaging::get_fx_forward_ladder_response>(data);
-}
-
 std::string wire_traits<ores::marketdata::messaging::fx_forward_spot_source>::write_json(
     const ores::marketdata::messaging::fx_forward_spot_source& v) {
     return object::write_json(v);

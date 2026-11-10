@@ -405,11 +405,12 @@ export function registerCurveRoutes(
         return call(session, publishedCurves.get_published_curve_sets_request, body);
     });
 
-    // One pair's forward ladder at one as-of. A refusal names the missing input.
+    // The session party's published forward set of one pair, at or before one as-of, with
+    // where each number came from. The party is the session's, so the body names none.
     server.post('/api/curves/fx-forward-ladder', async (request) => {
         const session = requireSession(request);
         const body = input(fxForwardLadderBody, request.body);
-        return call(session, fxForwards.get_fx_forward_ladder_request, { ...body, party_id: '' });
+        return call(session, fxForwards.get_published_fx_forward_request, body);
     });
 
     // Takes a published set out of use. The server decides who may, so the route

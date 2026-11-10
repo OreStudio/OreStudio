@@ -26,7 +26,7 @@ import {
     forwardForwardPoints,
     forwardForwardTenors,
     rowsFromStart,
-    usdPairs,
+    sortedPairs,
 } from './fxForwardLadder.js';
 
 const row = (tenor: string, near: string, value: string, rate: number, swap: number) => ({
@@ -47,6 +47,7 @@ const source = {
     publish_id: '',
     as_of: '',
     published_by: '',
+    state_code: 'published',
 };
 
 const ladder: FxForwardLadder = {
@@ -58,6 +59,28 @@ const ladder: FxForwardLadder = {
     spot_days: 2,
     pip_factor: 0.0001,
     decimal_places: 4,
+    publish_id: 'aaf8ac93-630f-41bc-814d-fb8639e07941',
+    request_id: '01a1c2f9-0929-7792-83b2-668856c67b19',
+    spot_rate: 1.085,
+    published_by: 'henry.jones',
+    published_at: '2026-11-09 16:01:38Z',
+    convention_version: 1,
+    calendar_codes: 'TARGET,UnitedStates.Settlement',
+    method_code: 'covered_interest_parity',
+    requested_by: 'henry.jones',
+    approval_state_code: 'approved',
+    auto_approval_code: '',
+    decided_by: 'mark.reid',
+    decision_comment: 'The EUR/USD forwards match the curves',
+    spots: [
+        {
+            leg_code: 'direct',
+            pair_code: 'EUR/USD',
+            series_id: 'ab2c2d4a-90ca-4a20-bdbb-cf0092917815',
+            observed_at: '2026-11-09 16:00:02Z',
+            value: 1.085,
+        },
+    ],
     base_curve: source,
     quote_curve: source,
     rows: [
@@ -109,8 +132,12 @@ describe('the forward-forward', () => {
 });
 
 describe('the helpers', () => {
-    it('keeps only USD pairs, in order', () => {
-        expect(usdPairs(['USD/JPY', 'EUR/GBP', 'EUR/USD'])).toEqual(['EUR/USD', 'USD/JPY']);
+    it('offers every pair with a convention, crosses included, once each and in order', () => {
+        expect(sortedPairs(['USD/JPY', 'EUR/GBP', 'EUR/USD', 'EUR/GBP'])).toEqual([
+            'EUR/GBP',
+            'EUR/USD',
+            'USD/JPY',
+        ]);
     });
 
     it('reads an as-of to the end of its day', () => {

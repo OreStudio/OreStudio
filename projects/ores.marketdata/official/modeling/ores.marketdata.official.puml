@@ -64,6 +64,11 @@ namespace ores #F2F2F2 {
                     +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
                 }
 
+                class ecb_fetcher {
+                    +universe(string_view key) : expected<vector<string>, string>
+                    +fixings(string_view key, year_month_day from, year_month_day to) : expected<vector<published_fixing>, string>
+                }
+
                 class published_text <<functions>> {
                     +text_of(double) : string
                     +date_of(string_view) : expected<year_month_day, string>
@@ -86,6 +91,8 @@ namespace ores #F2F2F2 {
                 fetcher <|-- nyfed_fetcher
                 frankfurter_fetcher ..> published_text
                 nyfed_fetcher ..> published_text
+                fetcher <|-- ecb_fetcher
+                ecb_fetcher ..> published_text
                 source_feed --> hosted_source
                 source_feed --> fetcher
                 fetcher ..> published_fixing

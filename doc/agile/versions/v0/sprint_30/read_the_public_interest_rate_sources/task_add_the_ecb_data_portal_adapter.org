@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-ecb-data-portal-adapter
+#+pr: 4547
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
 #+updated: 2026-11-09
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] and [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]]. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09 |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-10 |
 
 * Acceptance
 
@@ -45,9 +45,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =ecb_fetcher= implements =fetcher=: adapter =ecb_portal=, scheme =ecb_sdmx=, field =OBS_VALUE=. A source's key is the full series key, =EST.B.EU000A2X2A25.WT=, split at its first dot into the dataflow and the key within it. A read is one GET of =format=csvdata&detail=dataonly= over the window.
+- The CSV is read by its header: =KEY=, =TIME_PERIOD= and =OBS_VALUE=. A row of another series is skipped, and an empty answer or a header alone holds no fixing. The value is the decimal of the published percent, as for SOFR.
+- The portal answers a query it has not cached with a 504 after thirty seconds, and the same query again from its cache in under a second (probed 2026-11-10). A read tries three times, each with a sixty-second limit, and fails with the last error.
+- The seeds add the =ecb= supplier, the =ecb_portal= adapter, the =ecb-data-portal= session, and the =ecb-estr= feed scoped to the €STR item. The ECB's default feed stays =ecb-frankfurter=, because a publisher has one default. The system party already subscribes to the ECB, so it gains only an =interest_rates= route to =ecb-estr=.
+- The pgTAP test of the feeds asserted that every feed of the ECB and the Bank of Canada reads through Frankfurter. It now asserts that of the four Frankfurter feeds.
 
 * Measurements
 
@@ -61,7 +63,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| €STR history the route serves | 1,820 rates, 2019-10-01 to 2026-11-06 | =curl .../service/data/EST/B.EU000A2X2A25.WT?format=csvdata&detail=dataonly= | 679df52184 |
+| €STR fixings a fresh environment stored | 279, 2025-10-06 to 2026-11-06, last =0.02443= | =compass check= (=ticks-smoke=), then a count of the fixings of the €STR item | 679df52184 |
+| Cases of =ores.marketdata.official.tests= | 32 pass | =ores.marketdata.official.tests= | 679df52184 |
 
 * Notes
 
@@ -82,12 +86,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4547][#4547]] | [marketdata] Add the ECB Data Portal adapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4547: an empty range may answer 404, which would fail a catch-up read | =ecb.cpp= | Declined | Probed on 2026-11-10: a weekend and a holiday window answer 200 with an empty body, and only a series that does not exist answers 404. A 404 stays an error, so a wrong key is never read as "no data". The code states this, and a new case covers the 404. |
+| 2 | PR #4547: the CSV split ignores quotes | =ecb.cpp= | Accepted | A comment states that a =dataonly= answer holds no quoted text. |
+| 3 | PR #4547: the row width error names the header's width, not the width checked | =ecb.cpp= | Accepted | The message names the width the header needs. |
+| 4 | PR #4547: the retry has no pause, retries transport errors, and loses the attempt count | =ecb.cpp= | Accepted in part | The error names the attempts, and the header states the worst case of about three minutes. No pause: the cached answer is ready when the 504 arrives. |
+| 5 | PR #4547: say why the window filter stays | =ecb.cpp= | Accepted | A comment says it. |
+| 6 | PR #4547: =universe()= checks only the key's format | =ecb.cpp= | No change | The reviewer agreed the portal's 404 catches a made-up key. |
 
 * Result
+
+€STR is stored as fixings in the system tenant, read from the ECB Data Portal by a specialised fetcher that the official adapter hosts beside Frankfurter and the New York Fed. A fresh environment stored 279 fixings, the last 400 days, with the log line "Sent 279 fixing(s) of 'ecb-estr'". The values are the decimals of the published percents, such as =0.02443= for 2.443, and the provider =ecb= carries the credit "Source: ECB statistics". The calibration sources note records the change of unit, the 1,820 rates the portal serves since 2019-10-01, and the portal's 504 on an uncached query.
+
+Unit tests parse a recorded answer and a negative rate, read an empty answer as no fixing, refuse four malformed answers, check the URL of a read, ask again after a 504, give up after three, and refuse a key with no dataflow.

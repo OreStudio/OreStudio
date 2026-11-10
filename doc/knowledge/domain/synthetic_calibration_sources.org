@@ -133,6 +133,9 @@ Each publisher's adapter reads one series through its own feed. A first demand s
 | Series | Publisher | History the route serves | Measured |
 |--------+-----------+--------------------------+----------|
 | SOFR | New York Fed | 2,149 rates, from 2018-04-02 to 2026-11-06, in one response of =search.json= | 2026-11-10 |
+| €STR | ECB | 1,820 rates, from 2019-10-01 to 2026-11-06, in one CSV answer of the Data Portal | 2026-11-10 |
+
+The ECB Data Portal answers a query it has not cached with a 504 after thirty seconds, and the same query again from its cache in under a second. The adapter asks up to three times before it reports the read as failed. A window with no observation is a 200 with an empty body.
 
 ** How a generator uses a source
 

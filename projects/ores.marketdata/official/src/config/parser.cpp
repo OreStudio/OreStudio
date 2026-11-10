@@ -39,6 +39,7 @@ const std::string help_arg("help");
 const std::string version_arg("version");
 const std::string frankfurter_url_arg("frankfurter-url");
 const std::string nyfed_url_arg("nyfed-url");
+const std::string ecb_url_arg("ecb-url");
 const std::string source_arg("source");
 const std::string backfill_days_arg("backfill-days");
 const std::string poll_minutes_arg("poll-minutes");
@@ -68,6 +69,9 @@ options_description make_options_description() {
         nyfed_url_arg.c_str(),
         value<std::string>()->default_value("https://markets.newyorkfed.org"),
         "Address of the New York Fed markets API")(
+        ecb_url_arg.c_str(),
+        value<std::string>()->default_value("https://data-api.ecb.europa.eu"),
+        "Address of the ECB Data Portal API")(
         source_arg.c_str(),
         value<std::vector<std::string>>()->composing(),
         "A source to host, as <source name>:<provider code>:<adapter code>:<key>, such as "
@@ -131,6 +135,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.nats = nats_configuration::read_options(vm);
     r.frankfurter_url = vm[frankfurter_url_arg].as<std::string>();
     r.nyfed_url = vm[nyfed_url_arg].as<std::string>();
+    r.ecb_url = vm[ecb_url_arg].as<std::string>();
     r.backfill_days = vm[backfill_days_arg].as<std::uint32_t>();
     if (r.backfill_days < 1 || r.backfill_days > 3650)
         BOOST_THROW_EXCEPTION(parser_exception("--backfill-days is from 1 to 3650."));

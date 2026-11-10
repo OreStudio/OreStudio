@@ -57,6 +57,13 @@ The address of Frankfurter: the hosted service, or a team's own.
 
 The address of the New York Fed markets API.
 
+** ecb_url
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The address of the ECB Data Portal API.
+
 ** sources
 :PROPERTIES:
 :cpp_type: std::vector<domain::hosted_source>

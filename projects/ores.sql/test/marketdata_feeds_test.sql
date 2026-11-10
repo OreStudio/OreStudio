@@ -78,13 +78,13 @@ select is(
 select is(
     (select count(*)::int from ores_marketdata_feeds_tbl f
      where f.tenant_id = ores_utility_system_tenant_id_fn()
-       and f.publisher_code in ('ecb', 'boc', 'imf', 'tcmb')
+       and f.name in ('ecb-frankfurter', 'boc-frankfurter', 'imf-frankfurter', 'tcmb-frankfurter')
        and f.valid_to = ores_utility_infinity_timestamp_fn()
        and (f.session_code <> 'frankfurter-eu'
             or f.service <> 'end_of_day'
             or f.provider_key = '')),
     0,
-    'every public publisher reads through the Frankfurter session at end of day'
+    'every Frankfurter feed reads through the Frankfurter session at end of day'
 );
 
 select is(

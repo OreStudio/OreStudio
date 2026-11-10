@@ -54,6 +54,10 @@ struct options final {
      */
     std::string nyfed_url;
     /**
+     * @brief The address of the ECB Data Portal API.
+     */
+    std::string ecb_url;
+    /**
      * @brief The sources the adapter hosts.
      */
     std::vector<domain::hosted_source> sources;
@@ -73,6 +77,7 @@ struct options final {
         ::ores::utility::codec::field{"nats", &options::nats},
         ::ores::utility::codec::field{"frankfurter_url", &options::frankfurter_url},
         ::ores::utility::codec::field{"nyfed_url", &options::nyfed_url},
+        ::ores::utility::codec::field{"ecb_url", &options::ecb_url},
         ::ores::utility::codec::field{"sources", &options::sources},
         ::ores::utility::codec::field{"backfill_days", &options::backfill_days},
         ::ores::utility::codec::field{"poll_minutes", &options::poll_minutes},

@@ -26,11 +26,11 @@ Every credit trade type the generator books is built by its trade builder, and t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -99,3 +99,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Each booked credit type has a builder in =credit_builders.hpp=:
+=credit_default_swap_builder=, =index_credit_default_swap_builder=,
+=index_credit_default_swap_option_builder=, =credit_linked_swap_builder= and
+=risk_participation_agreement_builder=. Each takes its premium terms from the
+CDS convention, which =convention_lookup= now finds by its ORE id. The RPA
+builds its underlying with =vanilla_swap_builder=. The credit planner calls the
+builders. The population writer reads the tenant's conventions into the scope.
+The old credit constructors and the plan's =credit_terms= are deleted.
+
+ORE now reads every booked credit type. Each one fails only on data the
+Products example lacks for the generated entities. CDS, credit linked swap and
+RPA trades lack the default curve of their LEI. The index trades lack
+CreditIndex reference data for it. Those ten lines replace the five read errors
+in the known list. They belong to the market data task.
+
+A credit linked swap is a funded note. ORE takes its currency only from the
+independent payments, so the funding at the start is one. The builders state
+the elements every ORE sample states. Two stay in the known missing paths
+because they change the economics. They are the credit linked swap's
+=RecoveryPayments= and the RPA's =FixedRecoveryRate=.
+
+The credit corpus roundtrip tests already read every ORE credit sample and
+write it back to the same rows, and still pass.

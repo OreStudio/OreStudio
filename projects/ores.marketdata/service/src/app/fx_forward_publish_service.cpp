@@ -28,10 +28,15 @@
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/fx_forward_ladder_service.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.inbox.core/repository/approval_decision_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <optional>
 #include <stdexcept>
@@ -254,6 +259,48 @@ msg::fx_forward_curve_source curve_source(const context& ctx, const boost::uuids
     return out;
 }
 
+/// The figures the pair is quoted with: its pip and decimals from its convention, and its spot
+/// lag, which is the longer of its two currencies' lags, the rule the ladder compute settles on.
+void quote_figures(const context& ctx, msg::get_published_fx_forward_response& out) {
+    const auto conventions =
+        ores::refdata::repository::currency_pair_convention_repository{}.read_latest(
+            ctx, out.pair_code);
+    if (!conventions.empty()) {
+        out.pip_factor = conventions.front().pip_factor;
+        out.decimal_places = conventions.front().decimal_places;
+    }
+    const auto slash = out.pair_code.find('/');
+    if (slash == std::string::npos)
+        return;
+    ores::refdata::repository::currency_repository currencies;
+    for (const auto& code : {out.pair_code.substr(0, slash), out.pair_code.substr(slash + 1)})
+        for (const auto& c : currencies.read_latest(ctx, code))
+            out.spot_days = std::max(out.spot_days, c.spot_days);
+}
+
+/// Who raised the publish, and how its request was decided. The raise writes version 1 of the
+/// request as the person raising it, and the newest decision is the one that closed it.
+void approval_of(const context& ctx, msg::get_published_fx_forward_response& out) {
+    const auto versions =
+        ores::inbox::repository::approval_request_repository{}.read_all(ctx, out.request_id);
+    if (versions.empty())
+        return;
+    const auto first = std::ranges::min_element(versions, {}, &ores::inbox::domain::approval_request::version);
+    const auto last = std::ranges::max_element(versions, {}, &ores::inbox::domain::approval_request::version);
+    out.requested_by = first->modified_by;
+    out.approval_state_code = last->state_code;
+    out.auto_approval_code = last->auto_approval_code;
+    const auto decisions =
+        ores::inbox::repository::approval_decision_repository{}.read_latest_by_request_id(
+            ctx, out.request_id, 0, 100);
+    const auto decision = std::ranges::max_element(
+        decisions, {}, &ores::inbox::domain::approval_decision::decided_at);
+    if (decision != decisions.end()) {
+        out.decided_by = decision->modified_by;
+        out.decision_comment = decision->comment;
+    }
+}
+
 }
 
 msg::publish_fx_forward_response
@@ -279,9 +326,9 @@ fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_r
         // publish and writes nothing.
         const auto computed =
             fx_forward_ladder_service::compute(ctx,
-                                               {.pair_code = req.pair_code,
-                                                .as_of = as_of,
-                                                .party_id = boost::uuids::to_string(party)});
+                                               fx_forward_inputs{.pair_code = req.pair_code,
+                                                                 .as_of = as_of,
+                                                                 .party_id = boost::uuids::to_string(party)});
 
         ores::inbox::service::approval_lifecycle lifecycle(ctx);
         const auto kind = lifecycle.kind(std::string(fx_forward_publish_kind_code));
@@ -338,6 +385,8 @@ fx_forward_publish_service::read(context ctx, const msg::get_published_fx_forwar
         out.convention_version = set.convention_version;
         out.calendar_codes = set.calendar_codes;
         out.method_code = set.method_code;
+        quote_figures(ctx, out);
+        approval_of(ctx, out);
         out.base_curve = curve_source(ctx, set.base_curve_publish_id);
         out.quote_curve = curve_source(ctx, set.quote_curve_publish_id);
 

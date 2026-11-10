@@ -107,7 +107,7 @@ export function asOfInstant(date: string): string {
     return `${date} 23:59:59Z`;
 }
 
-/** The pairs the read answers: those with a USD leg. */
-export function usdPairs(codes: readonly string[]): readonly string[] {
-    return codes.filter((code) => code.split('/').includes('USD')).sort();
+/** The pairs a party can publish: every pair with a convention, USD pairs and crosses, once each. */
+export function sortedPairs(codes: readonly string[]): readonly string[] {
+    return [...new Set(codes)].sort();
 }

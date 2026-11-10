@@ -50,13 +50,6 @@ void fx_forward_operation_operations_commands::register_commands(cli::Menu& root
     auto menu = std::make_unique<cli::Menu>("fx_forward_operation");
 
     menu->Insert(
-        "get-fx-forward-ladder",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_get_fx_forward_ladder(std::ref(out), std::ref(session), std::move(args));
-        },
-        "get-fx-forward-ladder <pair_code> <as_of> <party_id>");
-
-    menu->Insert(
         "publish-fx-forward",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_publish_fx_forward(std::ref(out), std::ref(session), std::move(args));
@@ -71,63 +64,6 @@ void fx_forward_operation_operations_commands::register_commands(cli::Menu& root
         "get-published-fx-forward <pair_code> <as_of>");
 
     ores::shell::app::insert_menu(root_menu, std::move(menu));
-}
-
-void fx_forward_operation_operations_commands::process_get_fx_forward_ladder(
-    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get-fx-forward-ladder request.";
-
-    using request_type = ores::marketdata::messaging::get_fx_forward_ladder_request;
-
-    // Whether the command presents a token is the protocol's own statement, so
-    // a message that establishes the session is never asked for one.
-    if constexpr (request_type::requires_session) {
-        if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run get-fx-forward-ladder." << std::endl;
-            return;
-        }
-    }
-
-    const std::vector<flag_spec> specs{};
-    const auto parsed = parse_args(args, specs);
-    if (!parsed) {
-        fail(out) << parsed.error() << std::endl;
-        return;
-    }
-
-    constexpr std::size_t positional_count = 3;
-    if (parsed->positionals.size() != positional_count) {
-        fail(out) << "Expected " << positional_count << " arguments, got "
-                  << parsed->positionals.size() << "." << std::endl;
-        return;
-    }
-
-    request_type req;
-    std::size_t next = 0;
-    try {
-        req.pair_code = parsed->positionals[next++];
-        req.as_of = ores::shell::app::from_token<std::chrono::system_clock::time_point>(
-            parsed->positionals[next++], "as_of");
-        req.party_id = parsed->positionals[next++];
-    } catch (const std::exception& e) {
-        fail(out) << e.what() << std::endl;
-        return;
-    }
-
-    std::optional<ores::marketdata::messaging::get_fx_forward_ladder_response> result;
-    if constexpr (request_type::requires_session) {
-        result = do_auth_request<ores::marketdata::messaging::get_fx_forward_ladder_response>(
-            out, session, std::string(req.nats_subject), req);
-    } else {
-        result = do_request<ores::marketdata::messaging::get_fx_forward_ladder_response>(
-            out, session, std::string(req.nats_subject), req);
-    }
-    if (!result)
-        return;
-
-    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
-               *result)
-        << std::endl;
 }
 
 void fx_forward_operation_operations_commands::process_publish_fx_forward(

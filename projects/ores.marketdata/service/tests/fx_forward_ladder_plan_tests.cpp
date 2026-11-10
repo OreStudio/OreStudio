@@ -205,12 +205,11 @@ TEST_CASE("an as-of on a weekend counts from the next business day", "[fx_forwar
     CHECK(l.spot_date == 2026y / November / 11d);
 }
 
-TEST_CASE("the read names a pair with no convention", "[fx_forward_ladder][db]") {
+TEST_CASE("the compute names a pair with no convention", "[fx_forward_ladder][db]") {
     ores::testing::database_helper h;
-    const auto reply = ores::marketdata::service::app::fx_forward_ladder_service::read(
-        h.context(), {.pair_code = "ZZZ/USD", .as_of = at(monday)});
-    CHECK_FALSE(reply.success);
-    CHECK_THAT(reply.message, ContainsSubstring("No convention is published for ZZZ/USD"));
+    CHECK_THROWS_WITH(ores::marketdata::service::app::fx_forward_ladder_service::compute(
+                          h.context(), {.pair_code = "ZZZ/USD", .as_of = at(monday)}),
+                      ContainsSubstring("No convention is published for ZZZ/USD"));
 }
 
 TEST_CASE("a cross rate divides the USD legs in either direction", "[fx_forward_ladder]") {

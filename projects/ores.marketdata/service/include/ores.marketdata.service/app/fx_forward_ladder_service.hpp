@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -34,9 +35,32 @@ namespace ores::marketdata::service::app {
  *
  * Reads only. A missing input is a reply with success false and a message that names it.
  */
+/// What a forward set is computed for: a pair, the instant it reads the market at, and the
+/// party whose spot and curves it reads.
+struct fx_forward_inputs final {
+    std::string pair_code;
+    std::chrono::system_clock::time_point as_of;
+    std::string party_id;
+};
+
+/// A pair's forward ladder and the convention figures it was quoted with.
+struct fx_forward_ladder final {
+    std::string pair_code;
+    std::chrono::system_clock::time_point as_of;
+    double spot = 0.0;
+    std::chrono::system_clock::time_point spot_observed_at;
+    std::chrono::year_month_day spot_date{};
+    int spot_days = 0;
+    double pip_factor = 0.0;
+    int decimal_places = 0;
+    ores::marketdata::messaging::fx_forward_curve_source base_curve;
+    ores::marketdata::messaging::fx_forward_curve_source quote_curve;
+    std::vector<ores::marketdata::messaging::fx_forward_ladder_row> rows;
+};
+
 /// A ladder with where each input came from, as a publish records it.
 struct computed_fx_forward_set final {
-    ores::marketdata::messaging::get_fx_forward_ladder_response ladder;
+    fx_forward_ladder ladder;
     /// The spots read: one, its own, for a USD pair; the two USD legs for a cross.
     std::vector<ores::marketdata::messaging::fx_forward_spot_source> spots;
     int convention_version = 0;
@@ -44,20 +68,21 @@ struct computed_fx_forward_set final {
     std::string calendar_codes;
 };
 
+/**
+ * @brief Computes a pair's forward ladder for a publish.
+ *
+ * No screen reads this: a forward is shown from a published set, so a number on a screen is
+ * always one a person approved.
+ */
 class ORES_MARKETDATA_SERVICE_EXPORT fx_forward_ladder_service final {
 public:
     /**
      * @brief Computes a pair's ladder and names its inputs, or throws the input that is missing.
      *
-     * A request that names a party reads that party's spot and funding curves only.
+     * Inputs that name a party read that party's spot and funding curves only.
      */
-    [[nodiscard]] static computed_fx_forward_set
-    compute(ores::database::context ctx,
-            const ores::marketdata::messaging::get_fx_forward_ladder_request& request);
-
-    [[nodiscard]] static ores::marketdata::messaging::get_fx_forward_ladder_response
-    read(ores::database::context ctx,
-         const ores::marketdata::messaging::get_fx_forward_ladder_request& request);
+    [[nodiscard]] static computed_fx_forward_set compute(ores::database::context ctx,
+                                                         const fx_forward_inputs& inputs);
 };
 
 }

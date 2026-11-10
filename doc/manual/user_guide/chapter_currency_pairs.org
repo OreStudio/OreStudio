@@ -291,6 +291,42 @@ the history icon or right-click and choose *History*, select a
 version, review the *Changes* tab, and use *Revert* to reinstate an
 earlier version as a new one.
 
+** A pair's FX forward ladder
+
+A party publishes its own forward set of a pair, as it publishes a
+funding curve. The set is computed from the party's spot and its two
+published funding curves, and a second person approves it. Under the
+tenant's auto-approval it publishes at once. A cross, such as EUR/GBP,
+takes its spot from the party's two USD legs.
+
+Open *Market data / FX forward ladder* in the web client and choose a
+pair and an as-of. The pairs offered are every pair with a convention,
+USD pairs and crosses. The page shows the party's newest published set
+at or before the as-of. It never computes a forward of its own, so
+every number on it is one somebody approved.
+
+The *What this is built from* panel names each input, and each links
+to its own record: the spot observation, or the two USD legs of a
+cross; the spot date; the convention version with its pip and
+calendars; the method; and each funding curve with the set it came
+from. A funding curve withdrawn since the set was published is marked
+*Withdrawn since*, and the numbers do not change.
+
+The *How it was approved* panel names who raised the set, who decided
+it with the decision's comment, and who published it, and links the
+request. A set closed by auto-approval says so and names the rule. The
+decision's comment names who turned the rule on.
+
+A pair the party has not published shows no numbers and says so. To
+publish one from the shell, sign in as a person of the party and run:
+
+#+begin_src text
+fx_forward_operation publish-fx-forward EUR/USD 2026-11-10T01:00:00Z --reason "Month-end forwards"
+#+end_src
+
+[SCREENSHOT NEEDED: The FX forward ladder for a published EUR/USD set,
+showing the inputs panel, the approval panel and the ladder.]
+
 ** Conclusion
 
 The chapter set out to treat the currency pair as a relational entity

@@ -2,15 +2,15 @@
 :ID: EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD
 :END:
 #+title: User Journey: Read a pair's FX forward ladder
-#+description: A trader or quant reads a USD pair's forward ladder at an as-of: outrights, discount factors, forward points and swap points, implied by the published IR curves.
+#+description: A trader or quant reads their party's published forward set of a pair at an as-of: outrights, discount factors, forward points and swap points, with the inputs and the approval behind them.
 #+type: user_journey
 #+level: cross
 #+filetags: :user_journey:marketdata:
 #+created: 2026-11-09
-#+updated: 2026-11-09
+#+updated: 2026-11-10
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant reads a USD pair's forward ladder at an as-of: outrights, discount factors, forward points and swap points, implied by the published IR curves.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A trader or quant reads their party's published forward set of a pair at an as-of: outrights, discount factors, forward points and swap points, with the inputs and the approval behind them.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -19,25 +19,26 @@ each step needs.
 
 * Goal
 
-"I want this pair's forward curve at this as-of, in whatever measure I need: forward rate, discount factors, forward points or swap points. I want to know what it was built from." The journey is done when the person has read the ladder in the measure they need and can name the spot and the two curves behind it.
+"I want my party's forward curve of this pair at this as-of, in whatever measure I need: forward rate, discount factors, forward points or swap points. I want to know what it was built from and who approved it." The journey is done when the person has read the ladder in the measure they need and can name the spot, the two curves and the approval behind it.
 
 * Actor and trigger
 
 The actor is the trader or the quant, and it can be anyone who reads market data for the party. The trigger is a price to check, a hedge to size, an FX option's forward to confirm, or a published curve that has just changed. The journey starts at *Market data / FX forward ladder* and ends when the person leaves the page.
 
-The journey reads and changes nothing. A forward here is not a published object: it is computed from published curves and one spot, so it needs no approver.
+The journey reads and changes nothing. A forward set is a published record of the session's party: a person raised it, another approved it, or the tenant's auto-approval closed it. So every number on the page is one somebody approved, and it reads the same after the market moves.
 
 * Steps
 
 1. *Open the ladder.* The person opens *Market data / FX forward ladder*. The system lists the pairs the party can read and opens the last pair the person read, as the address states.
-2. *Choose the pair and the as-of.* The person picks a USD pair and an as-of. The system reads the pair's spot, spot date and pip factor, and the published funding curve of each currency at or before the as-of, and answers the ladder.
-3. *Read what it is built from.* The system states the spot with its observation time, the spot date, the pip factor and each curve with the set it came from. A statement says the rates hold no cross-currency basis. The person can open a curve in *Published curves*.
-4. *Read the ladder.* The system shows one row per tenor: near date, value date, forward rate, forward points, swap points and both discount factors. The short dates come first, and each states its own two dates.
-5. *Choose the measure.* The person picks forward rate, discount factors, forward points or swap points. The chart draws that measure by tenor, and the matching column is highlighted. No new read is needed.
-6. *Change the start.* The person starts the ladder from spot, today or tomorrow. The system sets the near date of the tenors after S/N, recomputes their swap points and marks those rows. The short dates keep their own dates.
-7. *Read a forward-forward.* The person picks a near and a far tenor. The system states both forward rates, the swap points between them and the days. The ladder does not change.
-8. *Meet a refusal.* If a spot, a curve or a convention is missing, or the pair is a cross, the system shows no numbers and names what is missing.
-9. *Leave.* The address holds the pair, the as-of, the start, the measure and the forward-forward tenors, so the person can send this exact view to someone else.
+2. *Choose the pair and the as-of.* The person picks a USD pair or a cross with a convention, and an as-of. The system answers the party's newest published set of that pair at or before the as-of.
+3. *Read what it is built from.* The system states the spot, each spot observation it read (one for a USD pair, the two USD legs for a cross), the spot date, the convention version with its pip and calendars, the method, and each funding curve with the set it came from. A curve withdrawn since says so. A statement says the rates hold no cross-currency basis. Each input links to its own record.
+4. *Read how it was approved.* The system states who raised the set, who decided it, the decision's comment and who published it, and links the request. A set closed by auto-approval says so and names the rule; the decision's comment names who turned the rule on.
+5. *Read the ladder.* The system shows one row per tenor: near date, value date, forward rate, forward points, swap points and both discount factors. The short dates come first, and each states its own two dates.
+6. *Choose the measure.* The person picks forward rate, discount factors, forward points or swap points. The chart draws that measure by tenor, and the matching column is highlighted. No new read is needed.
+7. *Change the start.* The person starts the ladder from spot, today or tomorrow. The system sets the near date of the tenors after S/N, recomputes their swap points and marks those rows. The short dates keep their own dates.
+8. *Read a forward-forward.* The person picks a near and a far tenor. The system states both forward rates, the swap points between them and the days. The ladder does not change.
+9. *Meet a refusal.* If the party has published no set of the pair at or before the as-of, the system shows no numbers and says so.
+10. *Leave.* The address holds the pair, the as-of, the start, the measure and the forward-forward tenors, so the person can send this exact view to someone else.
 
 * Screens and wireframes
 
@@ -51,12 +52,13 @@ One read-only page. Controls come first, then what the numbers rest on, then the
 |------+---------------------+-----------|
 | Open the ladder | Breadcrumb, title, one sentence, Refresh | The standard draws it, RS-LIST-01 to RS-LIST-03 |
 | Choose the pair and the as-of | Two pickers | A view no rule draws yet: it is one derived read and not a list of records |
-| Read what it is built from | Labelled values | The standard draws it, RS-PAGE-05 |
+| Read what it is built from | Labelled values, each a link | The standard draws it, RS-PAGE-05 |
+| Read how it was approved | Labelled values, a notice under auto-approval | The standard draws it, RS-PAGE-05 |
 | Read the ladder | Table with fixed rows | A view no rule draws yet: rows are tenors, not records, so no search, sort or pager applies |
 | Choose the measure | Segmented control over a chart | A view no rule draws yet; the client holds all four measures |
 | Change the start | Segmented control, marked rows | A view no rule draws yet; the client recomputes from the rates it holds |
 | Read a forward-forward | Two pickers and four values | A view no rule draws yet |
-| Meet a refusal | Alert that names the gap | A missing server operation until the read exists |
+| Meet a refusal | Alert that says no set is published | The standard draws it |
 | Leave | Address holds the state | The standard draws it, RS-LIST-20 |
 
 The steps keep no state across a reply, so no workflow is needed.
@@ -66,7 +68,7 @@ The owner signed off this journey and its prototype on 2026-11-09.
 Placements the prototype decides:
 
 - The page is under *Market data*, at =/market-data/fx-forwards=, beside *Published curves*.
-- A curve name links to its page in *Published curves*.
+- A curve name links to its page in *Published curves*, a spot and the convention to the pair's page, and the request to its own page.
 - The chart spaces the tenors evenly and not by time.
 
 * Prototype
@@ -83,32 +85,32 @@ A static page at =doc/prototypes/market_data/fx-forward-ladder/index.html=: mock
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =currency_pair= | The pairs offered, and which is base and quote | [[id:E1EE950D-FC22-4DAB-A93F-8B2A15196031][ores.refdata.currency_pair]] |
-| =currency_pair_convention= | The pip factor and the decimal places | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
+| =fx_forward_publish= | The published set: its subject, its provenance and its publication | [[id:E8B8D507-2113-476B-B6C2-BAECF35CCD79][ores.marketdata.fx_forward_publish]] |
+| =fx_forward_publish_point=, =fx_forward_publish_spot= | The tenors as published, and the spots the set read | the same model |
+| =approval_request=, =approval_decision= | Who raised and decided the set, and the rule that closed it | the inbox models |
+| =currency_pair_convention= | The pairs offered, the pip factor and the decimal places | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
 | =currency= | The spot days of each currency | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
-| =market_observation= | The spot, and each curve's discount factors | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
 | =curve_publish= | The published set of each currency, its as-of and its publisher | [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] |
-| =ir_curve_bootstrap_config= | Which curve is the funding curve of a currency, and its interpolation | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =ir_curve_bootstrap_config= | The name and currency of each funding curve | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
 
-A forward has no entity. It is computed on read; see [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]].
+A forward is read from its published set and never computed for display; see [[id:AB7A0BE5-7EB8-5B44-B98D-05E0CD58E51D][ORE Studio publishes FX forwards derived from published curves]].
 
 * Operations and messages
 
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open the ladder | List the currency pairs | =refdata.v1.currency_pairs.list= | exists |
-| Choose the pair and the as-of | Read the ladder of one pair at one as-of | =marketdata.v1.ops.get_fx_forward_ladder= | exists |
-| Read what it is built from | Part of the ladder reply | =marketdata.v1.ops.get_fx_forward_ladder= | exists |
+| Open the ladder | List the pair conventions | =refdata.v1.currency_pair_conventions.list= | exists |
+| Choose the pair and the as-of | Read the party's published set of one pair at or before one as-of | =marketdata.v1.ops.get_published_fx_forward= | exists |
+| Read what it is built from, and how it was approved | Part of the same reply | =marketdata.v1.ops.get_published_fx_forward= | exists |
 | Open a curve | Read the published sets of one curve | =marketdata.v1.ops.get_published_curve_sets= | exists |
 
 The start, the measure and the forward-forward need no read. The reply states each tenor's dates and forward rate, so the client computes the rest.
 
 * What is missing
 
-1. *A fresh database has nothing to answer from.* It holds no spot series, no published curve and no published pair convention. A demonstration needs a feed run, a publish of both curves and a publish of the conventions.
-2. *A cross is refused.* [[id:3551924D-AD9E-43D3-B5A1-1A522AAC317D][FX forwards for cross pairs]] records the work.
-3. *A forward has no end-of-day record.* The read recomputes it, so no verified set of forwards can be kept. [[id:C2364358-A46F-4FA5-B434-6464F8AAEAD5][FX forwards have no end-of-day record]] records the work.
+1. *A party has no set until one is published.* Provisioning will publish a set of every pair each party can build; [[id:30A638A1-D5EF-4DDF-BAB9-4121CDC1B488][Publish FX forward curves in provisioning]] records the work.
+2. *The screen does not raise a publish.* A person publishes from the shell, with =fx_forward_operation publish-fx-forward=.
 
 * Related journeys
 
@@ -125,4 +127,5 @@ The start, the measure and the forward-forward need no read. The reply states ea
 
 * See also
 
-- [[id:4CAB1BEA-C47C-4F7E-B453-5C149047C025][Read FX forwards for a pair]] — the operation this page needs.
+- [[id:4CAB1BEA-C47C-4F7E-B453-5C149047C025][Read FX forwards for a pair]] — the compute the publish uses.
+- [[id:40ABEA42-CA3D-4E46-A24B-4106A16F45C5][Publish FX forward curves with their provenance]] — the record this page reads.

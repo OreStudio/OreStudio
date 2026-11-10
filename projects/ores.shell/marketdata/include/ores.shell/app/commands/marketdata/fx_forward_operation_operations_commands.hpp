@@ -63,13 +63,6 @@ public:
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
     /**
-     * @brief get-fx-forward-ladder <pair_code> <as_of> <party_id>
-     */
-    static void process_get_fx_forward_ladder(std::ostream& out,
-                                              ores::nats::service::nats_client& session,
-                                              const std::vector<std::string>& args);
-
-    /**
      * @brief publish-fx-forward <pair_code> <as_of> [--approval_request_id <v>] [--reason <v>]
      */
     static void process_publish_fx_forward(std::ostream& out,

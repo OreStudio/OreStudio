@@ -57,31 +57,6 @@ export interface FxForwardLadderRow {
 }
 
 /**
- * @brief The forward ladder of one USD pair at one as-of.
- */
-export interface GetFxForwardLadderRequest {
-    pair_code: string;
-    as_of: string;
-    party_id: string;
-}
-
-export interface GetFxForwardLadderResponse {
-    success: boolean;
-    message: string;
-    pair_code: string;
-    as_of: string;
-    spot: number;
-    spot_observed_at: string;
-    spot_date: string;
-    spot_days: number;
-    pip_factor: number;
-    decimal_places: number;
-    base_curve: FxForwardCurveSource;
-    quote_curve: FxForwardCurveSource;
-    rows: FxForwardLadderRow[];
-}
-
-/**
  * @brief One spot observation a published set read: its own for a USD pair, or one USD leg of a cross.
  */
 export interface FxForwardSpotSource {
@@ -154,12 +129,43 @@ export interface GetPublishedFxForwardResponse {
     method_code: string;
     base_curve: FxForwardCurveSource;
     quote_curve: FxForwardCurveSource;
+    /**
+     * @brief Business days from the trade date to spot, from the convention.
+     */
+    spot_days: number;
+    /**
+     * @brief The size of one pip of the pair, from the convention.
+     */
+    pip_factor: number;
+    /**
+     * @brief The decimal places the pair is quoted to, from the convention.
+     */
+    decimal_places: number;
+    /**
+     * @brief Who raised the publish.
+     */
+    requested_by: string;
+    /**
+     * @brief The state of the request that authorised the publish.
+     */
+    approval_state_code: string;
+    /**
+     * @brief The rule that closed the request without a person, or empty when a person decided it.
+     */
+    auto_approval_code: string;
+    /**
+     * @brief Who decided the request: a person, or the account that closed it under the rule.
+     */
+    decided_by: string;
+    /**
+     * @brief The decision's comment. Under auto-approval it names the rule and who turned it on.
+     */
+    decision_comment: string;
     spots: FxForwardSpotSource[];
     rows: FxForwardLadderRow[];
 }
 
 export const subjects = {
-    get_fx_forward_ladder_request: 'marketdata.v1.ops.get_fx_forward_ladder',
     publish_fx_forward_request: 'marketdata.v1.ops.publish_fx_forward',
     get_published_fx_forward_request: 'marketdata.v1.ops.get_published_fx_forward',
 } as const;
@@ -169,7 +175,6 @@ export const subjects = {
  * assuming every call carries a token.
  */
 export const requiresSession = {
-    get_fx_forward_ladder_request: true,
     publish_fx_forward_request: true,
     get_published_fx_forward_request: true,
 } as const;

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-published-fx-forward-curves
+#+pr: 4543
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ The FX forward ladder shows what the session's party published and explains it. 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -44,9 +44,12 @@ The FX forward ladder shows what the session's party published and explains it. 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The screen keeps its shape and changes its source. The BFF route serves =marketdata.v1.ops.get_published_fx_forward= for the session's party, and the client parses the published set into the ladder the page already draws, so the chart, the table, the start and the forward-forward are unchanged.
+
+- The published read gains what the screen needs: the spot lag, the pip and the decimals from the convention, and the approval from the inbox (who raised, its state, the auto-approval rule, who decided and the decision's comment, which names who turned the rule on).
+- The page adds the spot legs, the convention version, the method and a *How it was approved* panel. Each input links to its own record: the curve to *Published curves*, a spot and the convention to the pair's page, the request to its own page.
+- The pair list is every pair with a convention, crosses included.
+- =get_fx_forward_ladder= goes: its messages, its handler, its subscription and its shell command. The compute stays internal to the publish, behind its own input and output types.
 
 * Measurements
 
@@ -60,7 +63,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The BFF route, as henry.jones (ACCOUS), GBP/JPY | The published set: spot 200.0693, both USD legs, 15 tenors, closed by the tenant rule, comment naming tenant_admin and version 8 of the approvals mode | =curl /api/curves/fx-forward-ladder= | Working tree on 14a921c400 |
+| A pair with no set | USD/CAD: "Your party has no published forward set of USD/CAD at or before the as-of." | the same | Working tree on 14a921c400 |
+| Web | Ladder tests 15, BFF curve tests 44, typecheck clean | =npx vitest run=, =npx tsc --noEmit= | Working tree on 14a921c400 |
+| C++ | Ladder 18 cases, codec 69, shell commands 36 | =[fx_forward_ladder]=, =*fx_forward*= | Working tree on 14a921c400 |
 
 * Notes
 
@@ -79,12 +85,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4543][#4543]] | [marketdata] Show published FX forward sets and their provenance |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | <algorithm> is reached through another header | =fx_forward_publish_service.cpp= | Fixed | Included. |
+| 2 | The requester is version 1's writer, and the decision cap is 100 | =fx_forward_publish_service.cpp= | Fixed | A comment states both: the raise writes version 1 as the asker, and the newest decision closed it. |
+| 3 | The spot lag is not the convention's | =fx_forward_publish_service.cpp= | Fixed | The comment states the rule: the longer of the two currencies' lags, as the compute uses. The convention has no lag of its own. |
+| 4 | A missing convention shows a pip of 0 | =fx_forward_publish_service.cpp= | Declined | A set exists only for a pair whose convention it read, and a convention is versioned, never deleted. |
+| 5 | The oldest spot comes from a string sort | =client.ts= | Fixed | Sorted by parsed instant. |
+| 6 | A new state falls through to a missing key | =FxForwardLadderPage.tsx= | Declined | The translation shows the key, which names the state; the states are a closed list the inbox owns. |
+| 7 | Empty calendar codes render a dangling label | =FxForwardLadderPage.tsx= | Fixed | Empty codes are dropped. |
+| 8 | Decided by can read as a contradiction under auto-approval | =FxForwardLadderPage.tsx= | Declined | Under auto-approval the decider is the account the rule acted for, and the notice above says no person decided. |
+| 9 | No C++ test of the new read logic | tests | Declined | It needs approval requests and conventions in a database; the live BFF check covers it. |
+| 10 | The manual's screenshot placeholder | =chapter_currency_pairs.org= | Declined | The manual's screenshot workflow replaces placeholders before a release. |
+| 11 | Dropping get_fx_forward_ladder breaks the wire | protocol | Declined | No client in the repository sends it: the web, shell and services were moved in this PR. |
 
 * Result
+
+The FX forward ladder now shows the session party's published set of a pair, USD pair or cross, and explains it: every input with a link to its record, and how its request was decided. A set closed by auto-approval says so, names the rule and, in the decision's comment, who turned it on. No code path computes a forward for display: the compute-on-read operation is gone.
+
+The page was checked by rendering it in tests and by reading the live BFF route, not in a browser. The manual gained a section under currency pairs, with a screenshot placeholder for the screenshot workflow.
+
+Vol surface calibration reads its forwards from a published set in the calibration task.

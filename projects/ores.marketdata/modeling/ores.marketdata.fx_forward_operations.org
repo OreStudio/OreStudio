@@ -4,22 +4,24 @@
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.marketdata.fx_forward_operations
-#+description: Codegen operation model for the read of a currency pair's FX forward ladder at an as-of.
+#+description: Codegen operation model for the approval-gated publish of a party's FX forward set and the read of a published one.
 #+type: ores.codegen.operation
 #+component: marketdata
 #+subcomponent: api
 #+entity_singular: fx_forward_operation
 #+namespace: ores::marketdata::messaging
-#+brief: The read of a pair's FX forward ladder.
+#+brief: The publish and read of a party's FX forward sets.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-11-09
 #+updated: 2026-11-09
 
-The read behind the FX forward ladder screen. A forward is computed from one spot
-and the published funding curve of each currency, and is not stored, so the reply
-names those inputs beside the rows. A refusal is a reply with =success= false and
-a message that names what is missing, because a reader needs to know which input
-to go and fix.
+The publish and the read behind the FX forward ladder screen. A forward set is a
+party's published record: the publish computes it from the party's own spot and
+published funding curves, and a person approves it as they would an IR curve. The
+read returns the published set and names every input beside the rows, with how its
+request was decided. No operation computes a forward for display. A refusal is a
+reply with =success= false and a message that names what is missing, because a
+reader needs to know which input to go and fix.
 
 * Includes
 
@@ -139,111 +141,6 @@ to go and fix.
 :PROPERTIES:
 :cpp_type: double
 :default: 0.0
-:END:
-
-** get_fx_forward_ladder_request
-:PROPERTIES:
-:subject:  marketdata.v1.ops.get_fx_forward_ladder
-:response: get_fx_forward_ladder_response
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief The forward ladder of one USD pair at one as-of.
- */
-#+end_src
-
-*** pair_code
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-The pair, such as =EUR/USD=.
-
-*** as_of
-:PROPERTIES:
-:cpp_type: std::chrono::system_clock::time_point
-:END:
-
-*** party_id
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-The party whose funding curves to read. Empty reads the one funding curve the
-tenant holds per currency, and is refused when it holds more than one.
-
-** get_fx_forward_ladder_response
-
-*** success
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-
-*** message
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-*** pair_code
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-*** as_of
-:PROPERTIES:
-:cpp_type: std::chrono::system_clock::time_point
-:END:
-
-*** spot
-:PROPERTIES:
-:cpp_type: double
-:default: 0.0
-:END:
-
-*** spot_observed_at
-:PROPERTIES:
-:cpp_type: std::chrono::system_clock::time_point
-:END:
-
-*** spot_date
-:PROPERTIES:
-:cpp_type: std::chrono::year_month_day
-:default: {}
-:END:
-
-*** spot_days
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
-
-*** pip_factor
-:PROPERTIES:
-:cpp_type: double
-:default: 0.0
-:END:
-
-*** decimal_places
-:PROPERTIES:
-:cpp_type: int
-:default: 0
-:END:
-
-*** base_curve
-:PROPERTIES:
-:cpp_type: fx_forward_curve_source
-:END:
-
-*** quote_curve
-:PROPERTIES:
-:cpp_type: fx_forward_curve_source
-:END:
-
-*** rows
-:PROPERTIES:
-:cpp_type: std::vector<fx_forward_ladder_row>
 :END:
 
 ** fx_forward_spot_source
@@ -490,6 +387,102 @@ tenant holds per currency, and is refused when it holds more than one.
 :PROPERTIES:
 :cpp_type: fx_forward_curve_source
 :END:
+
+*** spot_days
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Business days from the trade date to spot, from the convention.
+ */
+#+end_src
+
+*** pip_factor
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The size of one pip of the pair, from the convention.
+ */
+#+end_src
+
+*** decimal_places
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The decimal places the pair is quoted to, from the convention.
+ */
+#+end_src
+
+*** requested_by
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Who raised the publish.
+ */
+#+end_src
+
+*** approval_state_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The state of the request that authorised the publish.
+ */
+#+end_src
+
+*** auto_approval_code
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The rule that closed the request without a person, or empty when a person decided it.
+ */
+#+end_src
+
+*** decided_by
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Who decided the request: a person, or the account that closed it under the rule.
+ */
+#+end_src
+
+*** decision_comment
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The decision's comment. Under auto-approval it names the rule and who turned it on.
+ */
+#+end_src
 
 *** spots
 :PROPERTIES:

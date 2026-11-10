@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :marketdata:synthetic:calibration:
 #+created: 2026-10-23
-#+updated: 2026-11-06
+#+updated: 2026-11-10
 
 * Summary
 
@@ -123,6 +123,16 @@ A source is usable when its terms allow storing its history and computing from i
 Four of the eight are usable now: USD, EUR, GBP and CAD. AUD has usable terms but no open route, because the RBA's server refused a script. JPY waits on the Bank of Japan's view of commercial use, CHF cannot give a curve without a SIX licence, and NZD needs both its terms and a route.
 
 Four feeds quote the wrong index, and one is unresolved. The ILS feed quotes TELBOR, which ceased; the CNH feed quotes HIBOR, a term rate; the HUF feed quotes the BUBOR overnight quote rather than HUFONIA, the overnight average; and the TWD feed quotes TAIBOR, a term rate. The PLN feed is the unresolved one, because the sources conflict on its index.
+
+** How the overnight rates are stored
+
+Each overnight rate is stored as a decimal, because the rates of the system are decimals and ORE reads a fixing as one. The publishers state their rates in percent, so the adapter moves the decimal point two places in the published text: a SOFR of 3.97 percent is stored as =0.0397=. No digit changes and no binary rounding enters. This is a change of unit. The New York Fed asks for a label on modified data and the ECB asks that a change be stated, so this page states it, and the vendor field of each series, such as =percentRate=, names the published unit. The provider of each fixing keeps its credit.
+
+Each publisher's adapter reads one series through its own feed. A first demand stores the last =backfill_days= of history, 400 by default, and each later read fetches only the days after the latest stored fixing.
+
+| Series | Publisher | History the route serves | Measured |
+|--------+-----------+--------------------------+----------|
+| SOFR | New York Fed | 2,149 rates, from 2018-04-02 to 2026-11-06, in one response of =search.json= | 2026-11-10 |
 
 ** How a generator uses a source
 

@@ -26,6 +26,8 @@ set(files
     "config/options.cpp"
     "config/parser.cpp"
     "domain/frankfurter.cpp"
+    "domain/nyfed.cpp"
+    "domain/published_text.cpp"
     "domain/source_feed.cpp"
     "main.cpp"
 )
@@ -40,6 +42,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/fetcher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/frankfurter.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/nyfed.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/published_text.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/source_feed.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/ores.marketdata.official.hpp"

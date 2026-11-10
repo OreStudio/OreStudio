@@ -632,10 +632,13 @@ hold the permission.
 :depends_on:  ores.marketdata.service
 :END:
 
-It carries no =account_var=: it reaches nothing but the bus and Frankfurter, and
-the market data service maps and stores what it sends. Each =--source= is a
-source of the official rates catalogue, named with the adapter that reads it,
-=projects/ores.sql/populate/marketdata/marketdata_official_catalogue_populate.sql=.
+It carries no =account_var=: it reaches nothing but the bus and the public
+publishers, and the market data service maps and stores what it sends. Each
+=--source= is a feed of the official rates catalogue,
+=projects/ores.sql/populate/marketdata/marketdata_official_catalogue_populate.sql=,
+or of the overnight rates catalogue,
+=projects/ores.sql/populate/marketdata/marketdata_overnight_rates_catalogue_populate.sql=,
+named with the adapter that reads it.
 
 ** Extra args
 
@@ -643,6 +646,7 @@ source of the official rates catalogue, named with the adapter that reads it,
 - --source imf-frankfurter:imf:frankfurter:IMF
 - --source boc-frankfurter:boc:frankfurter:BOC
 - --source tcmb-frankfurter:tcmb:frankfurter:TCMB
+- --source nyfed-sofr:nyfed:nyfed:SOFR
 
 * ores.compute.wrapper
 :PROPERTIES:

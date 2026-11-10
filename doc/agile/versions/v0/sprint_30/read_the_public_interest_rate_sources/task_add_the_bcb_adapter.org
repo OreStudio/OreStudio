@@ -9,8 +9,8 @@
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: the terms of the CDI, which B3 computes
+#+blocked_since: 2026-11-10
 #+created: 2026-11-10
 #+updated: 2026-11-10
 #+environment: clever_dijkstra
@@ -26,11 +26,11 @@ The annualised CDI is stored as fixings in the system tenant, with its history, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Held before implementation.            |
+| Waiting on   | The terms of the CDI. B3 computes it and the BCB republishes it. The BCB's open data portal lists its own series, such as the Selic, under the ODbL, but on 2026-11-10 it listed neither CDI series, =12= nor =4389=. B3's terms for the CDI are not read. |
+| Next         | Read B3's terms for the CDI, or ask the BCB whether the ODbL covers series =4389=. Then implement, or abandon the task. |
 | Last touched | 2026-11-10                               |
 
 * Acceptance

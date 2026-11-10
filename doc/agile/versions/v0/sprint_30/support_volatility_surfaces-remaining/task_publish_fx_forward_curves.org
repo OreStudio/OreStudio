@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/publish-fx-forward-curves
-#+pr: 4540
+#+pr: 4541
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ An FX forward curve is a party's published record. A publish computes one pair a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -77,9 +77,18 @@ task and name that file in the Command column.
 | Read after the market moved | Same 15 tenors and spot 1.1586409; the live spot was 1.1531972 | =evidence/fx_forward_publish_read.ores=, =evidence/fx_forward_publishes.sql= | Working tree on 9d9e523ce8 |
 | Another party reads | ACMCOR reads no EUR/USD set | =evidence/fx_forward_publish_read.ores= | Working tree on 9d9e523ce8 |
 | EUR funding curve withdrawn | The set reads the same numbers and names EUR-ESTR as withdrawn | =evidence/fx_forward_publish_after_withdrawal.ores= | Working tree on 9d9e523ce8 |
+| Crosses published for ACCOUS under auto-approval | GBP/JPY spot 200.0693 from GBP/USD 1.3749193 and USD/JPY 145.5134; AUD/NZD published | =evidence/fx_forward_publish_cross.ores= | Working tree on 2faea13b32 |
+| A cross whose leg has no published curve | EUR/GBP and EUR/JPY refused: "No curve of EUR is published at or before the as-of." | =evidence/fx_forward_publish_cross.ores=, first run | Working tree on 2faea13b32 |
+| Cross dates against QuantLib | EUR/GBP twice, EUR/JPY and AUD/NZD: spot, SN, 1W, 1M, 3M and 1Y all match | =projects/ores.ore/scripts/quantlib_fx_dates/generate.sh=, =[fx_forward_ladder]= | Working tree on 2faea13b32 |
+| Cross parity | A cross forward equals the ratio of its USD-leg forwards on the same dates, within 1e-12 relative | =[fx_forward_ladder]= | Working tree on 2faea13b32 |
+| Ladder tests | 18 cases, 121 assertions | =ores.marketdata.service.tests "[fx_forward_ladder]"= | Working tree on 2faea13b32 |
 | Tests | Codec 71 cases, eventing 3, shell commands 39 | =ores.marketdata.api.tests=, =ores.marketdata.core.tests=, =ores.shell.marketdata.tests= with =*fx_forward*= | Working tree on 9d9e523ce8 |
 
 * Notes
+
+*A USD holiday does not move a cross's spot date.* A cross advances on its two currencies' calendars only. That is ORE's own convention: =EUR-GBP-FX-CONVENTIONS= in =Examples/Input/conventions.xml= of ORE 1.8.17.0 advances on =TARGET,UK=, and ORE's FX convention has no separate settlement calendar. The 26 seeded cross conventions name their two calendars and no US one. So EUR/GBP as of 24 November 2026 settles spot on 26 November, US Thanksgiving, and QuantLib agrees.
+
+*A cross's spot derives from its two USD legs*, as the story decided, even where the party also receives a direct cross quote. Each leg is read in the direction the market quotes it, so EUR/JPY is EUR/USD times USD/JPY.
 
 * Test Scenarios
 
@@ -96,6 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4541][#4541]] | [marketdata] Publish FX forward sets of crosses |
 | [[https://github.com/OreStudio/OreStudio/pull/4540][#4540]] | [marketdata] Publish FX forward sets with their provenance |
 
 * Review
@@ -110,5 +120,17 @@ via its "Verifies task" field.
 | 6 | Includes out of order | =application.cpp= | Fixed | Sorted. |
 | 7 | Every exception reads as a missing request | =fx_forward_publish_service.cpp= | Fixed | The exception is logged. |
 | 8 | No service-level test of the publish | tests | Declined | The paths need curves, spots and conventions in a database. The live evidence covers each one, and the next task's screen tests read the operation. |
+| 9 | #4541: a cross's observed time takes the newer leg | =fx_forward_ladder_service.cpp= | Fixed | It takes the older leg, so a cross never reads fresher than it is. |
+| 10 | #4541: the USD leg direction is ambiguous | =fx_forward_ladder_service.cpp= | Fixed | A comment says the market quotes one direction per currency. |
+| 11 | #4541: a cross's spot reading has no series id | =fx_forward_ladder_service.cpp= | Fixed | A comment says the legs name their series; nothing reads the cross's own. |
+| 12 | #4541: no database test of a cross with a missing leg | tests | Declined | The test tenant is not known to hold cross conventions, so the test would meet the convention refusal first. The live run refused EUR crosses on a missing curve, not a missing leg; the leg refusal is not exercised. |
+| 13 | #4541: include order in the tests | =fx_forward_ladder_plan_tests.cpp= | Fixed | Grouped as the file does. |
+| 14 | #4541: generate.sh hard-codes the compiler | =generate.sh= | Fixed | CXX overrides clang++, and a usage line says how to run it. |
 
 * Result
+
+An FX forward set is now a party's published record. A publish computes the set from the party's own spot and published funding curves, for a USD pair or a cross, and goes through maker-checker like an IR curve. The record names every input: the spot observations, both curve publishes, the convention version, the calendars and the method. A read returns the published numbers after the market moves, and names a funding curve withdrawn since.
+
+Two PRs: #4540 for USD pairs, and a second for crosses. The screen still computes on read; the next task moves it to the published sets.
+
+Not covered by a service-level test: the publish paths need curves, spots and conventions in a database, so the live evidence covers them.

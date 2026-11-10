@@ -18,12 +18,15 @@
  *
  */
 #include "../src/fx_forward_ladder_plan.hpp"
+#include "ores.analytics.quant/service/fx_forward_calculator.hpp"
 #include "ores.marketdata.service/app/fx_forward_ladder_service.hpp"
 #include "ores.testing/database_helper.hpp"
 #include <algorithm>
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <chrono>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -83,19 +86,26 @@ const auto& row(const fx_ladder_dates& l, const std::string& id) {
 }
 
 TEST_CASE("a USD pair splits into base and quote", "[fx_forward_ladder]") {
-    const auto eur = parse_usd_pair("EUR/USD");
+    const auto eur = parse_pair("EUR/USD");
     REQUIRE(eur.has_value());
     CHECK(eur->base == "EUR");
     CHECK(eur->quote == "USD");
-    CHECK(parse_usd_pair("USD/JPY").has_value());
+    CHECK(parse_pair("USD/JPY").has_value());
 }
 
-TEST_CASE("a cross and a malformed pair are refused", "[fx_forward_ladder]") {
-    CHECK_THAT(parse_usd_pair("EUR/GBP").error(), ContainsSubstring("no USD leg"));
-    CHECK_THAT(parse_usd_pair("EURUSD").error(), ContainsSubstring("not a currency pair"));
-    CHECK_THAT(parse_usd_pair("/USD").error(), ContainsSubstring("not a currency pair"));
-    CHECK_THAT(parse_usd_pair("EUR/USD/GBP").error(), ContainsSubstring("not a currency pair"));
-    CHECK_THAT(parse_usd_pair("USD/USD").error(), ContainsSubstring("twice"));
+TEST_CASE("a cross is a pair with no USD leg", "[fx_forward_ladder]") {
+    const auto eur_gbp = parse_pair("EUR/GBP");
+    REQUIRE(eur_gbp.has_value());
+    CHECK(is_cross(*eur_gbp));
+    CHECK_FALSE(is_cross(*parse_pair("EUR/USD")));
+    CHECK_FALSE(is_cross(*parse_pair("USD/JPY")));
+}
+
+TEST_CASE("a malformed pair is refused", "[fx_forward_ladder]") {
+    CHECK_THAT(parse_pair("EURUSD").error(), ContainsSubstring("not a currency pair"));
+    CHECK_THAT(parse_pair("/USD").error(), ContainsSubstring("not a currency pair"));
+    CHECK_THAT(parse_pair("EUR/USD/GBP").error(), ContainsSubstring("not a currency pair"));
+    CHECK_THAT(parse_pair("USD/USD").error(), ContainsSubstring("twice"));
 }
 
 TEST_CASE("a reader takes the latest set at or before its as-of", "[fx_forward_ladder]") {
@@ -195,19 +205,120 @@ TEST_CASE("an as-of on a weekend counts from the next business day", "[fx_forwar
     CHECK(l.spot_date == 2026y / November / 11d);
 }
 
-TEST_CASE("the read refuses a cross through the service", "[fx_forward_ladder][db]") {
-    ores::testing::database_helper h;
-    const auto reply = ores::marketdata::service::app::fx_forward_ladder_service::read(
-        h.context(), {.pair_code = "EUR/GBP", .as_of = at(monday)});
-    CHECK_FALSE(reply.success);
-    CHECK(reply.rows.empty());
-    CHECK_THAT(reply.message, ContainsSubstring("no USD leg"));
-}
-
 TEST_CASE("the read names a pair with no convention", "[fx_forward_ladder][db]") {
     ores::testing::database_helper h;
     const auto reply = ores::marketdata::service::app::fx_forward_ladder_service::read(
         h.context(), {.pair_code = "ZZZ/USD", .as_of = at(monday)});
     CHECK_FALSE(reply.success);
     CHECK_THAT(reply.message, ContainsSubstring("No convention is published for ZZZ/USD"));
+}
+
+TEST_CASE("a cross rate divides the USD legs in either direction", "[fx_forward_ladder]") {
+    const usd_leg eur{.currency = "EUR", .value = 1.10, .usd_is_base = false};
+    const usd_leg gbp{.currency = "GBP", .value = 1.25, .usd_is_base = false};
+    const usd_leg jpy{.currency = "JPY", .value = 150.0, .usd_is_base = true};
+    CHECK(cross_rate(eur, gbp) == Catch::Approx(0.88).epsilon(1e-12));
+    CHECK(cross_rate(eur, jpy) == Catch::Approx(165.0).epsilon(1e-12));
+    CHECK(cross_rate(gbp, eur) == Catch::Approx(1.0 / 0.88).epsilon(1e-12));
+}
+
+TEST_CASE("a cross forward equals the ratio of its USD-leg forwards on the same dates",
+          "[fx_forward_ladder]") {
+    namespace quant = ores::analytics::quant::service;
+    const auto flat = [](double rate) {
+        const auto far = year_month_day{sys_days(monday) + days{4000}};
+        return std::vector<quant::bootstrapped_point>{
+            {"", monday, 1.0}, {"LONG", far, std::exp(-rate * 4000 / 365.0)}};
+    };
+    const auto dates = ladder(2);
+    const auto forwards = [&](double spot, double base_rate, double quote_rate) {
+        const auto rows = quant::calculate_fx_forwards({.base_currency = "B",
+                                                        .quote_currency = "Q",
+                                                        .spot = spot,
+                                                        .spot_date = dates.spot_date,
+                                                        .pip_factor = 0.0001,
+                                                        .base_curve = flat(base_rate),
+                                                        .quote_curve = flat(quote_rate),
+                                                        .tenors = dates.tenors});
+        REQUIRE(rows.has_value());
+        return *rows;
+    };
+    const usd_leg eur{.currency = "EUR", .value = 1.10, .usd_is_base = false};
+    const usd_leg gbp{.currency = "GBP", .value = 1.25, .usd_is_base = false};
+    const auto eur_usd = forwards(1.10, 0.020, 0.045);
+    const auto gbp_usd = forwards(1.25, 0.038, 0.045);
+    const auto eur_gbp = forwards(cross_rate(eur, gbp), 0.020, 0.038);
+
+    REQUIRE(eur_gbp.size() == eur_usd.size());
+    for (std::size_t i = 0; i < eur_gbp.size(); ++i)
+        CHECK(eur_gbp[i].forward_rate ==
+              Catch::Approx(eur_usd[i].forward_rate / gbp_usd[i].forward_rate).epsilon(1e-12));
+}
+
+namespace {
+
+struct quantlib_cross_case {
+    year_month_day as_of;
+    std::vector<year_month_day> first_holidays;
+    std::vector<year_month_day> second_holidays;
+    year_month_day spot, sn, one_week, one_month, three_months, one_year;
+};
+
+}
+
+// The dates QuantLib gives each case, from projects/ores.ore/scripts/quantlib_fx_dates
+// (generate.sh, QuantLib in ORE 1.8.17.0). A cross advances on its two currencies' calendars
+// only, as ORE's EUR-GBP-FX-CONVENTIONS does on TARGET,UK, so the first EUR/GBP spot falls on
+// US Thanksgiving, 26 November 2026, and stays there.
+TEST_CASE("a cross's spot and value dates match QuantLib's", "[fx_forward_ladder]") {
+    const std::vector<quantlib_cross_case> cases{
+        // EUR/GBP on TARGET and UnitedKingdom.Settlement.
+        {2026y / 11 / 24d,
+         {2026y / 12 / 25d, 2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d},
+         {2026y / 12 / 25d, 2026y / 12 / 28d, 2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d,
+          2027y / 5 / 3d, 2027y / 5 / 31d, 2027y / 8 / 30d},
+         2026y / 11 / 26d, 2026y / 11 / 27d, 2026y / 12 / 3d, 2026y / 12 / 29d, 2027y / 2 / 26d,
+         2027y / 11 / 26d},
+        {2026y / 12 / 23d,
+         {2026y / 12 / 25d, 2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d},
+         {2026y / 12 / 25d, 2026y / 12 / 28d, 2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d,
+          2027y / 5 / 3d, 2027y / 5 / 31d, 2027y / 8 / 30d, 2027y / 12 / 27d, 2027y / 12 / 28d,
+          2028y / 1 / 3d},
+         2026y / 12 / 29d, 2026y / 12 / 30d, 2027y / 1 / 5d, 2027y / 1 / 29d, 2027y / 3 / 30d,
+         2027y / 12 / 29d},
+        // EUR/JPY on TARGET and Japan.
+        {2026y / 12 / 29d,
+         {2027y / 1 / 1d, 2027y / 3 / 26d, 2027y / 3 / 29d},
+         {2026y / 12 / 31d, 2027y / 1 / 1d, 2027y / 1 / 11d, 2027y / 2 / 11d, 2027y / 2 / 23d,
+          2027y / 3 / 22d, 2027y / 4 / 29d, 2027y / 5 / 3d, 2027y / 5 / 4d, 2027y / 5 / 5d,
+          2027y / 7 / 19d, 2027y / 8 / 11d, 2027y / 9 / 20d, 2027y / 9 / 23d, 2027y / 10 / 11d,
+          2027y / 11 / 3d, 2027y / 11 / 23d, 2027y / 12 / 31d, 2028y / 1 / 3d, 2028y / 1 / 10d},
+         2027y / 1 / 4d, 2027y / 1 / 5d, 2027y / 1 / 12d, 2027y / 2 / 4d, 2027y / 4 / 5d,
+         2028y / 1 / 4d},
+        // AUD/NZD on Australia and NewZealand.
+        {2027y / 1 / 22d,
+         {2027y / 1 / 26d, 2027y / 3 / 26d, 2027y / 3 / 29d, 2027y / 6 / 14d, 2027y / 8 / 2d,
+          2027y / 10 / 4d, 2027y / 12 / 27d, 2027y / 12 / 28d, 2028y / 1 / 3d, 2028y / 1 / 26d},
+         {2027y / 1 / 25d, 2027y / 2 / 8d, 2027y / 3 / 26d, 2027y / 3 / 29d, 2027y / 4 / 26d,
+          2027y / 6 / 7d, 2027y / 6 / 25d, 2027y / 10 / 25d, 2027y / 12 / 27d, 2027y / 12 / 28d,
+          2028y / 1 / 3d, 2028y / 1 / 4d, 2028y / 1 / 24d, 2028y / 2 / 7d},
+         2027y / 1 / 28d, 2027y / 1 / 29d, 2027y / 2 / 4d, 2027y / 2 / 26d, 2027y / 4 / 28d,
+         2028y / 1 / 28d},
+    };
+    for (const auto& c : cases) {
+        const std::vector calendars{calendar_closed_on(c.first_holidays),
+                                    calendar_closed_on(c.second_holidays)};
+        const auto l = build_ladder_dates(
+            c.as_of, 2, business_day_convention::modified_following, false,
+            joint_calendar(calendars));
+        INFO("as of " << static_cast<int>(c.as_of.year()) << "-"
+                      << static_cast<unsigned>(c.as_of.month()) << "-"
+                      << static_cast<unsigned>(c.as_of.day()));
+        CHECK(l.spot_date == c.spot);
+        CHECK(row(l, "SN").value_date == c.sn);
+        CHECK(row(l, "1W").value_date == c.one_week);
+        CHECK(row(l, "1M").value_date == c.one_month);
+        CHECK(row(l, "3M").value_date == c.three_months);
+        CHECK(row(l, "1Y").value_date == c.one_year);
+    }
 }

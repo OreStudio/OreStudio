@@ -127,19 +127,23 @@ void write_candidate(const context& ctx,
         points.push_back(std::move(p));
     }
 
-    domain::fx_forward_publish_spot spot;
-    spot.id = gen();
-    spot.tenant_id = ctx.tenant_id();
-    spot.publish_id = record.id;
-    spot.leg_code = "direct";
-    spot.pair_code = ladder.pair_code;
-    spot.series_id = boost::lexical_cast<boost::uuids::uuid>(computed.spot_series_id);
-    spot.observed_at = ladder.spot_observed_at;
-    spot.value = ladder.spot;
-    spot.modified_by = record.modified_by;
-    spot.performed_by = record.performed_by;
-    spot.change_reason_code = record.change_reason_code;
-    spot.change_commentary = commentary;
+    std::vector<domain::fx_forward_publish_spot> spots;
+    for (const auto& leg : computed.spots) {
+        domain::fx_forward_publish_spot spot;
+        spot.id = gen();
+        spot.tenant_id = ctx.tenant_id();
+        spot.publish_id = record.id;
+        spot.leg_code = leg.leg_code;
+        spot.pair_code = leg.pair_code;
+        spot.series_id = boost::lexical_cast<boost::uuids::uuid>(leg.series_id);
+        spot.observed_at = leg.observed_at;
+        spot.value = leg.value;
+        spot.modified_by = record.modified_by;
+        spot.performed_by = record.performed_by;
+        spot.change_reason_code = record.change_reason_code;
+        spot.change_commentary = commentary;
+        spots.push_back(std::move(spot));
+    }
 
     // The subject and its numbers are one act: a request whose set was half written would
     // authorise numbers nobody computed.
@@ -147,7 +151,7 @@ void write_candidate(const context& ctx,
     const auto& tx = uow.ctx();
     repository::fx_forward_publish_repository{}.write(tx, record);
     repository::fx_forward_publish_point_repository{}.write(tx, points);
-    repository::fx_forward_publish_spot_repository{}.write(tx, spot);
+    repository::fx_forward_publish_spot_repository{}.write(tx, spots);
     uow.commit();
 }
 

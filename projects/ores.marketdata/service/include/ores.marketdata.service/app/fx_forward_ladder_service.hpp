@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <string>
+#include <vector>
 
 namespace ores::marketdata::service::app {
 
@@ -36,8 +37,8 @@ namespace ores::marketdata::service::app {
 /// A ladder with where each input came from, as a publish records it.
 struct computed_fx_forward_set final {
     ores::marketdata::messaging::get_fx_forward_ladder_response ladder;
-    /// The party's own series the spot was read from.
-    std::string spot_series_id;
+    /// The spots read: one, its own, for a USD pair; the two USD legs for a cross.
+    std::vector<ores::marketdata::messaging::fx_forward_spot_source> spots;
     int convention_version = 0;
     /// The calendars the dates roll on, comma separated, in the convention's order.
     std::string calendar_codes;

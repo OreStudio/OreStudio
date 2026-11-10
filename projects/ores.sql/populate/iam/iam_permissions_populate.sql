@@ -1931,6 +1931,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_bootstrap:republish',          'Bootstrap a curve and store its output series');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_bootstrap:publish',            'Ask for a curve publish, and publish an approved one');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::curve_publishes:read',                'View the subject a curve publish request names, and the record of its publication');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_forward_publishes:read',           'View the subject an FX forward publish request names, and the record of its publication');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_forward_publish_points:read',      'View the tenors of a published FX forward set: dates, discount factors, forwards and points');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_forward_publish_spots:read',       'View the spot observations a published FX forward set read');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::*', 'Full access to all market data operations');
 
     -- =============================================================================

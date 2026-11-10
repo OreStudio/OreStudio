@@ -3793,6 +3793,12 @@ export const en: SourceCatalogue = {
         'Subscribe to market data': 'Subscribe to market data',
         "Gives each party of the tenant a subscription to a provider and a route to the provider's source.":
             "Gives each party of the tenant a subscription to a provider and a route to the provider's source.",
+        "Publish each party's curves": "Publish each party's curves",
+        "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, and the step fails.":
+            "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, and the step fails.",
+        'Give each party its surface blueprints': 'Give each party its surface blueprints',
+        "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.":
+            "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.",
         'Generate the trades': 'Generate the trades',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.",
@@ -5571,8 +5577,7 @@ export const en: SourceCatalogue = {
         },
         fxForwards: {
             title: 'FX forward ladder',
-            lead:
-                "One party's published forward set of a pair, as approved, with where each number came from.",
+            lead: "One party's published forward set of a pair, as approved, with where each number came from.",
             pair: 'Pair',
             asOf: 'As of',
             startsFrom: 'Ladder starts from',
@@ -5614,7 +5619,8 @@ export const en: SourceCatalogue = {
             pipAndCalendars: 'Pip {pip}, calendars {calendars}',
             method: 'Method',
             methods: {
-                covered_interest_parity: 'Covered interest parity: spot times the base discount factor over the quote discount factor, from the spot date',
+                covered_interest_parity:
+                    'Covered interest parity: spot times the base discount factor over the quote discount factor, from the spot date',
             },
             curveState: {
                 withdrawn: 'Withdrawn since',
@@ -5622,7 +5628,8 @@ export const en: SourceCatalogue = {
                 missing: 'Not found',
             },
             approval: 'How it was approved',
-            autoApproved: 'Closed by auto-approval, under the {rule} rule. No person decided this set; the decision says who turned the rule on.',
+            autoApproved:
+                'Closed by auto-approval, under the {rule} rule. No person decided this set; the decision says who turned the rule on.',
             request: 'Request',
             requestState: {
                 approved: 'Approved',

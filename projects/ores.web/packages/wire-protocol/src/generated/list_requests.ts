@@ -1409,6 +1409,57 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'marketdata.v1.fx_forward_publish_points.list': {
+        asOf: true,
+        filter: ['publish_id', 'id_one_of', 'publish_id_one_of'],
+        rows: ['points'],
+    },
+    'marketdata.v1.fx_forward_publish_points_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'marketdata.v1.fx_forward_publish_spots.list': {
+        asOf: true,
+        filter: ['publish_id', 'id_one_of', 'publish_id_one_of'],
+        rows: ['spots'],
+    },
+    'marketdata.v1.fx_forward_publish_spots_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'marketdata.v1.fx_forward_publishes.list': {
+        asOf: true,
+        filter: [
+            'request_id',
+            'party_id',
+            'pair_code',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'pair_code_one_of',
+        ],
+        rows: ['publishes'],
+    },
+    'marketdata.v1.fx_forward_publishes.list_by_request_id': {
+        asOf: false,
+        filter: [
+            'request_id',
+            'party_id',
+            'pair_code',
+            'id_one_of',
+            'request_id_one_of',
+            'party_id_one_of',
+            'pair_code_one_of',
+        ],
+        rows: [],
+    },
+    'marketdata.v1.fx_forward_publishes_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'marketdata.v1.market_calibration_values.list': {
         asOf: true,
         filter: [

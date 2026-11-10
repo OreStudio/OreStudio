@@ -3822,6 +3822,12 @@ const pt: SourceCatalogue = {
         'Subscribe to market data': 'Subscrever os dados de mercado',
         "Gives each party of the tenant a subscription to a provider and a route to the provider's source.":
             'Dá a cada entidade do inquilino uma subscrição de um fornecedor e uma rota para a fonte do fornecedor.',
+        "Publish each party's curves": 'Publicar as curvas de cada parte',
+        "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, and the step fails.":
+            'Dá a cada parte que nomeia a sua própria cópia dos modelos de curvas do sistema, constrói cada curva a partir das cotações que as subscrições da parte entregam, e publica-a. Uma curva que não é publicada é nomeada com a sua parte e a sua razão, e o passo falha.',
+        'Give each party its surface blueprints': 'Dar a cada parte os seus modelos de superfícies',
+        "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.":
+            'Dá a cada parte que nomeia a sua própria cópia dos modelos de superfícies de volatilidade FX do sistema, lendo as cotações de volatilidade que as subscrições da parte entregam. Um modelo cujas cotações não chegam a tempo é nomeado com a sua parte, e o passo falha.',
         'Generate the trades': 'Gerar as transações',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',
@@ -5610,8 +5616,7 @@ const pt: SourceCatalogue = {
         },
         fxForwards: {
             title: 'Escada de câmbio a prazo',
-            lead:
-                'O conjunto a prazo publicado de uma parte para um par, tal como aprovado, com a origem de cada número.',
+            lead: 'O conjunto a prazo publicado de uma parte para um par, tal como aprovado, com a origem de cada número.',
             pair: 'Par',
             asOf: 'Data de referência',
             startsFrom: 'A escada começa em',
@@ -5653,7 +5658,8 @@ const pt: SourceCatalogue = {
             pipAndCalendars: 'Pip {pip}, calendários {calendars}',
             method: 'Método',
             methods: {
-                covered_interest_parity: 'Paridade coberta de juros: o câmbio à vista vezes o fator de desconto base sobre o de cotação, a partir da data à vista',
+                covered_interest_parity:
+                    'Paridade coberta de juros: o câmbio à vista vezes o fator de desconto base sobre o de cotação, a partir da data à vista',
             },
             curveState: {
                 withdrawn: 'Retirada desde',
@@ -5661,7 +5667,8 @@ const pt: SourceCatalogue = {
                 missing: 'Não encontrada',
             },
             approval: 'Como foi aprovado',
-            autoApproved: 'Fechado pela aprovação automática, pela regra {rule}. Nenhuma pessoa decidiu este conjunto; a decisão indica quem ativou a regra.',
+            autoApproved:
+                'Fechado pela aprovação automática, pela regra {rule}. Nenhuma pessoa decidiu este conjunto; a decisão indica quem ativou a regra.',
             request: 'Pedido',
             requestState: {
                 approved: 'Aprovado',

@@ -3837,6 +3837,12 @@ const fr: SourceCatalogue = {
         'Subscribe to market data': "S'abonner aux données de marché",
         "Gives each party of the tenant a subscription to a provider and a route to the provider's source.":
             'Donne à chaque entité du locataire un abonnement à un fournisseur et une route vers la source du fournisseur.',
+        "Publish each party's curves": 'Publier les courbes de chaque partie',
+        "Gives each party it names its own copy of the system's curve blueprints, bootstraps each curve from the quotes the party's subscriptions deliver, and publishes it. A curve that does not publish is named with its party and its reason, and the step fails.":
+            "Donne à chaque partie qu'elle nomme sa propre copie des modèles de courbes du système, construit chaque courbe à partir des cotations que les abonnements de la partie fournissent, et la publie. Une courbe qui ne se publie pas est nommée avec sa partie et sa raison, et l'étape échoue.",
+        'Give each party its surface blueprints': 'Donner à chaque partie ses modèles de nappes',
+        "Gives each party it names its own copy of the system's FX volatility surface blueprints, reading the volatility quotes the party's subscriptions deliver. A blueprint whose quotes do not arrive in time is named with its party, and the step fails.":
+            "Donne à chaque partie qu'elle nomme sa propre copie des modèles de nappes de volatilité FX du système, en lisant les cotations de volatilité que les abonnements de la partie fournissent. Un modèle dont les cotations n'arrivent pas à temps est nommé avec sa partie, et l'étape échoue.",
         'Generate the trades': 'Générer les transactions',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
             "Enregistre une configuration de génération de transactions pour chaque partie que le point de départ nomme, et écrit la population qu'il indique dans les livres propres de cette partie.",
@@ -5651,8 +5657,7 @@ const fr: SourceCatalogue = {
         },
         fxForwards: {
             title: 'Échelle des changes à terme',
-            lead:
-                "L'ensemble de terme publié d'une partie pour une paire, tel qu'approuvé, avec l'origine de chaque nombre.",
+            lead: "L'ensemble de terme publié d'une partie pour une paire, tel qu'approuvé, avec l'origine de chaque nombre.",
             pair: 'Paire',
             asOf: "Date d'arrêté",
             startsFrom: "L'échelle part de",
@@ -5694,7 +5699,8 @@ const fr: SourceCatalogue = {
             pipAndCalendars: 'Pip {pip}, calendriers {calendars}',
             method: 'Méthode',
             methods: {
-                covered_interest_parity: "Parité couverte des taux d'intérêt : le comptant multiplié par le facteur d'actualisation de base sur celui de cotation, depuis la date comptant",
+                covered_interest_parity:
+                    "Parité couverte des taux d'intérêt : le comptant multiplié par le facteur d'actualisation de base sur celui de cotation, depuis la date comptant",
             },
             curveState: {
                 withdrawn: 'Retirée depuis',
@@ -5702,7 +5708,8 @@ const fr: SourceCatalogue = {
                 missing: 'Introuvable',
             },
             approval: 'Comment il a été approuvé',
-            autoApproved: "Clos par l'approbation automatique, selon la règle {rule}. Aucune personne n'a décidé cet ensemble ; la décision indique qui a activé la règle.",
+            autoApproved:
+                "Clos par l'approbation automatique, selon la règle {rule}. Aucune personne n'a décidé cet ensemble ; la décision indique qui a activé la règle.",
             request: 'Demande',
             requestState: {
                 approved: 'Approuvée',

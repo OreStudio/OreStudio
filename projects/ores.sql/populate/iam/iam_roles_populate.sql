@@ -449,6 +449,11 @@ BEGIN
     -- The subject the request authorises, which the maker reads back under
     -- *My requests* and the published record read shows once it moved.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::curve_publishes:read');
+    -- The FX forward set a publish request names, with its tenors and the spots
+    -- it read, which the maker reads back as for a curve publish.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::fx_forward_publishes:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::fx_forward_publish_points:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'marketdata::fx_forward_publish_spots:read');
     -- The people the published screens name. A set carries the account that
     -- published it, and the list, the points, the comparison and the blueprint's
     -- *Published sets* tab draw that account with its picture and its full name,
@@ -868,6 +873,11 @@ BEGIN
     -- which party. The queue row carries no subject, so the decider reads the
     -- kind's own record, and this is the code that read takes.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::curve_publishes:read');
+    -- A decider decides an FX forward publish from the set it names: its
+    -- tenors and the spots it read, as for a curve publish.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::fx_forward_publishes:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::fx_forward_publish_points:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::fx_forward_publish_spots:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Operations', 'marketdata::market_series:read');
     -- The operations decision the other three kinds carry: an operational
     -- authorisation, a book change and a counterparty change all name this

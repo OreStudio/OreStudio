@@ -26,12 +26,12 @@ CORRA is stored as fixings in the system tenant, with its history, read from the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] and [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]]. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09 |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-10 |
 
 * Acceptance
 
@@ -45,9 +45,10 @@ CORRA is stored as fixings in the system tenant, with its history, read from the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =boc_fetcher= implements =fetcher=: adapter =boc_valet=, scheme =boc_valet=, field =v=. A source's key is a series name, =AVG.INTWO= for CORRA, checked as capitals, digits, dots and underscores before it enters a URL.
+- A read is one GET of =/valet/observations/<series>/json= over the window. Each observation holds its date in =d= and the value as text in =<series>.v=, so the decimal is read from the published text with no number in between. An observation without the series or its value is skipped.
+- Probed on 2026-11-10: a window with no business day answers an empty =observations= list; an unknown series answers 404, which is an error.
+- The seeds add the =boc= supplier, the =boc_valet= adapter, the =boc-valet= session, and the =boc-corra= feed scoped to the CORRA item. The Bank's default feed stays =boc-frankfurter=. The system party already subscribes to =boc=, so it gains only an =interest_rates= route to the feed.
 
 * Measurements
 
@@ -61,7 +62,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| CORRA history the route serves | 7,305 rates, 1997-08-12 to 2026-11-06 | =curl .../valet/observations/AVG.INTWO/json?start_date=1990-01-01&end_date=2026-11-10= | 49445b9208 |
+| CORRA fixings a fresh environment stored | 272, 2025-10-06 to 2026-11-06, last =0.0252= | =compass check= (=ticks-smoke=), then a count of the fixings of the CORRA item | 49445b9208 |
+| Cases of =ores.marketdata.official.tests= | 47 pass | =ores.marketdata.official.tests= | 49445b9208 |
 
 * Notes
 
@@ -91,3 +94,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+CORRA is stored as fixings in the system tenant, read from the Bank of Canada's Valet API by a specialised fetcher that the official adapter hosts beside Frankfurter, the New York Fed, the ECB and the Bank of England. A fresh environment stored 272 fixings, the last 400 days, with the log line "Sent 272 fixing(s) of 'boc-corra'". The values are the decimals of the published percents, such as =0.0252= for 2.5200, and the provider =boc= carries the credit "Source: Bank of Canada". The calibration sources note records the 7,305 rates the API serves since 1997-08-12.
+
+Unit tests parse a recorded answer and an empty list, skip an observation without its value, refuse six malformed answers, check the URL of a read, treat a 404 as an error, and refuse a name that is not a series name.
+
+With this task, the four usable overnight rates of the survey are stored: SOFR, €STR, SONIA and CORRA.

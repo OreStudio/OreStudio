@@ -66,22 +66,23 @@ bool has_reason(const std::string& reason) {
 void require_ok(const ores::utility::domain::result& result) {
     using ores::utility::domain::outcome;
     switch (result.outcome) {
-    case outcome::ok:
-        return;
-    case outcome::conflict:
-        refuse(http_status::conflict, "conflict",
-               result.message.empty()
-                   ? "This record changed since it was read, or it already exists. "
-                     "Reload and try again."
-                   : result.message);
-    case outcome::invalid:
-        invalid(result.message);
-    case outcome::denied:
-        refuse(http_status::forbidden, "forbidden", result.message);
-    case outcome::missing:
-        refuse(http_status::not_found, "not-found", result.message);
-    default:
-        refuse(http_status::bad_gateway, "upstream-unavailable", result.message);
+        case outcome::ok:
+            return;
+        case outcome::conflict:
+            refuse(http_status::conflict,
+                   "conflict",
+                   result.message.empty() ?
+                       "This record changed since it was read, or it already exists. "
+                       "Reload and try again." :
+                       result.message);
+        case outcome::invalid:
+            invalid(result.message);
+        case outcome::denied:
+            refuse(http_status::forbidden, "forbidden", result.message);
+        case outcome::missing:
+            refuse(http_status::not_found, "not-found", result.message);
+        default:
+            refuse(http_status::bad_gateway, "upstream-unavailable", result.message);
     }
 }
 

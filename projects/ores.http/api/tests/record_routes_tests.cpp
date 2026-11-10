@@ -57,8 +57,7 @@ TEST_CASE("record_routes_maps_each_refused_outcome_to_its_status", "[record_rout
     CHECK(status_of(outcome::failed)->code == "upstream-unavailable");
 }
 
-TEST_CASE("record_routes_says_what_a_conflict_means_when_the_service_does_not",
-          "[record_routes]") {
+TEST_CASE("record_routes_says_what_a_conflict_means_when_the_service_does_not", "[record_routes]") {
     const auto refused =
         record_routes_refusal_of([] { rr::require_ok(result{outcome::conflict, "", "", {}}); });
     REQUIRE(refused.has_value());
@@ -84,8 +83,7 @@ TEST_CASE("record_routes_refuses_a_code_that_names_nothing_or_too_much", "[recor
     CHECK(record_routes_refusal_of([] { rr::code(std::string(101, 'a'), "long"); }).has_value());
 }
 
-TEST_CASE("record_routes_reads_a_parameter_as_its_type_or_refuses_it_by_name",
-          "[record_routes]") {
+TEST_CASE("record_routes_reads_a_parameter_as_its_type_or_refuses_it_by_name", "[record_routes]") {
     CHECK(rr::read<std::uint32_t>("42", "limit") == 42u);
     CHECK(rr::read<bool>("true", "flag"));
     const auto refused = record_routes_refusal_of([] { rr::read<std::uint32_t>("ten", "limit"); });
@@ -101,4 +99,24 @@ TEST_CASE("record_routes_answers_a_refusal_with_the_code_and_message_body", "[re
     CHECK(response.body == R"({"code":"forbidden","message":"Read only here."})");
     CHECK(rr::no_content().status == http_status::no_content);
     CHECK(rr::no_content().body.empty());
+}
+
+TEST_CASE("record_routes_refuses_with_the_status_code_and_message_it_is_given", "[record_routes]") {
+    const auto refused = record_routes_refusal_of(
+        [] { rr::refuse(http_status::forbidden, "forbidden", "Read only here."); });
+    REQUIRE(refused.has_value());
+    CHECK(refused->status == http_status::forbidden);
+    CHECK(refused->code == "forbidden");
+    CHECK(refused->message == "Read only here.");
+
+    const auto invalid = record_routes_refusal_of([] { rr::invalid("Bad page."); });
+    REQUIRE(invalid.has_value());
+    CHECK(invalid->status == http_status::bad_request);
+    CHECK(invalid->code == "invalid-request");
+    CHECK(invalid->message == "Bad page.");
+}
+
+TEST_CASE("record_routes_reads_text_verbatim_and_false_as_false", "[record_routes]") {
+    CHECK(rr::read<std::string>(" as given ", "name") == " as given ");
+    CHECK_FALSE(rr::read<bool>("false", "flag"));
 }

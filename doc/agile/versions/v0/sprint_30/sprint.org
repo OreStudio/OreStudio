@@ -135,7 +135,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 |-------+-------+-------+-----+-------------|
 | [[id:68DF46F9-B1BC-41AD-B382-2B6B2B421469][Hotfix: nightly CI failures]] | STARTED | 2026-11-09 | | The Linux, macOS, Windows and valgrind nightlies fail on shell completion tests, compile errors, test defects and memcheck reports. |
 | [[id:66CF6B10-92F7-4DA3-A310-AFAD381CC372][Hotfix: two changes on main fail four local checks]] | DONE | 2026-11-09 | 2026-11-09 | The holiday calendar and auto-approval changes on main fail four local checks: entity table writers, step translations, catalogue formatting and a generated shell recipe. |
-| [[id:34C502F0-6EA5-4C13-9C7E-5748B52A0391][Hotfix: recent changes on main fail five local checks]] | STARTED | 2026-11-10 | | Changes on main fail component-drift, route-inventory, handler-permissions, bff-list-requests and codegen-tests. |
+| [[id:34C502F0-6EA5-4C13-9C7E-5748B52A0391][Hotfix: recent changes on main fail five local checks]] | DONE | 2026-11-10 | 2026-11-10 | Changes on main fail component-drift, route-inventory, handler-permissions, bff-list-requests and codegen-tests. |
 
 * Achievements
 

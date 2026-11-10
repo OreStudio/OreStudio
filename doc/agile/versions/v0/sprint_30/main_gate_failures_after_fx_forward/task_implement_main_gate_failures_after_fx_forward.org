@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Declare =Boost::process= in the synthetic core test model and generate the =fx_forward_operation= shell recipe. Classify =GET /api/approvals-mode= and rewrite the route inventory. Seed the three FX forward publish read permissions. Regenerate the list request table. Translate the two new provisioning steps in en, fr and pt.
+Declare =Boost::process= in the synthetic core test model and generate the =fx_forward_operation= shell recipe. Classify =GET /api/approvals-mode= and rewrite the route inventory. Seed the three FX forward publish read permissions and give them to Trading and Operations. Regenerate the list request table. Translate the two new provisioning steps in en, fr and pt.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:34C502F0-6EA5-4C13-9C7E-5748B52A0391][Hotfix: recent changes on main fail five local checks]] |
-| Now          | Fix the five checks.                   |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the hotfix PR.                   |
+| Next         | Nothing. |
 | Last touched | 2026-11-10                               |
 
 * Acceptance
@@ -81,3 +81,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The five checks pass on this branch. The FX forward publish reads are seeded and assigned to Trading and Operations. The fr and pt step text is a machine translation.

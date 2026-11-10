@@ -130,7 +130,21 @@ TEST_CASE("a_percent_becomes_its_decimal_with_every_digit_kept", "[domain][publi
     CHECK(decimal_of_percent("1e-05") == "0.0000001");
     CHECK(decimal_of_percent("2.5e3") == "25");
     CHECK(decimal_of_percent("0") == "0");
+    CHECK(decimal_of_percent("-0") == "0");
     CHECK(decimal_of_percent("3.7352") == "0.037352");
     CHECK_FALSE(decimal_of_percent("").has_value());
     CHECK_FALSE(decimal_of_percent("n/a").has_value());
+}
+
+TEST_CASE("the_nyfed_fetcher_keeps_only_the_rates_inside_its_window", "[domain][nyfed]") {
+    nyfed_transport transport;
+    transport.bodies["https://markets.newyorkfed.org/api/rates/secured/sofr/"
+                     "search.json?startDate=2026-11-03&endDate=2026-11-03"] = sofr_rates;
+    nyfed_fetcher fetcher(transport, "https://markets.newyorkfed.org");
+
+    const auto fixings = fetcher.fixings("SOFR", nyfed_day(11, 3), nyfed_day(11, 3));
+
+    REQUIRE(fixings.has_value());
+    REQUIRE(fixings->size() == 1);
+    CHECK((*fixings)[0].date == nyfed_day(11, 3));
 }

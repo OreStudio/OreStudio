@@ -96,7 +96,9 @@ std::expected<std::vector<published_fixing>, std::string> nyfed_fetcher::fixings
     auto rates = parse_nyfed_rates(*body);
     if (!rates)
         return std::unexpected(rates.error());
-    std::erase_if(*rates, [&](const published_fixing& f) { return f.external_id != key; });
+    std::erase_if(*rates, [&](const published_fixing& f) {
+        return f.external_id != key || f.date < from || f.date > to;
+    });
     return rates;
 }
 

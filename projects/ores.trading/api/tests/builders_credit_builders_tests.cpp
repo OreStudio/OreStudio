@@ -75,7 +75,8 @@ md::market_reference credit_reference(const char* uri) {
 
 /// The credit spread series of the entity, as ORE keys its quotes.
 md::market_reference credit_curve() {
-    const auto quote = md::ore_key_codec::read("CDS/CREDIT_SPREAD/529900T8BM49AURSDO55/SNRFOR/EUR/5Y");
+    const auto quote =
+        md::ore_key_codec::read("CDS/CREDIT_SPREAD/529900T8BM49AURSDO55/SNRFOR/EUR/5Y");
     REQUIRE(quote);
     auto series = md::market_reference::of(md::series_of(*quote));
     REQUIRE(series);
@@ -171,7 +172,8 @@ TEST_CASE("an_index_cds_states_its_fact_on_the_index_row", credit_tags) {
     const auto index = index_credit_default_swap_builder(lookup, protection_terms()).build();
     REQUIRE(index.has_value());
     REQUIRE(index->index_credit_default_swap_instruments.size() == 1);
-    CHECK(index->index_credit_default_swap_instruments.front().credit_curve_id == credit_curve().uri());
+    CHECK(index->index_credit_default_swap_instruments.front().credit_curve_id ==
+          credit_curve().uri());
     CHECK(index->credit_default_swap_instruments.empty());
     CHECK(index->legs.size() == 1);
 }
@@ -211,7 +213,8 @@ TEST_CASE("an_index_option_that_expires_after_the_swap_starts_fails", credit_tag
     CHECK(option.error().term == "expiry");
 }
 
-TEST_CASE("a_credit_linked_swap_is_funded_at_the_start_and_repaid_while_the_entity_survives", credit_tags) {
+TEST_CASE("a_credit_linked_swap_is_funded_at_the_start_and_repaid_while_the_entity_survives",
+          credit_tags) {
     conv::convention_lookup lookup(credit_conventions());
     const auto swap =
         credit_linked_swap_builder(lookup, protection_terms(protection::sell)).build();

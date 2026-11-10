@@ -62,8 +62,8 @@ struct premium_conventions final {
     std::string tenor;
 };
 
-std::expected<premium_conventions, build_error> premium_conventions_of(
-    const convention_lookup& conventions, const std::string& id) {
+std::expected<premium_conventions, build_error>
+premium_conventions_of(const convention_lookup& conventions, const std::string& id) {
     auto found = conventions.cds_convention_of(id);
     if (!found)
         return std::unexpected(
@@ -92,11 +92,8 @@ domain::credit_instrument header_of(std::string_view trade_type,
     return row;
 }
 
-domain::swap_leg leg_of(int leg_number,
-                        std::string group,
-                        bool payer,
-                        std::string type,
-                        const std::string& currency) {
+domain::swap_leg leg_of(
+    int leg_number, std::string group, bool payer, std::string type, const std::string& currency) {
     domain::swap_leg row;
     row.identity.leg_number = leg_number;
     row.leg_group = std::move(group);
@@ -106,9 +103,8 @@ domain::swap_leg leg_of(int leg_number,
     return row;
 }
 
-domain::swap_leg_amount amount_of(int leg_number,
-                                  decimal amount,
-                                  std::optional<std::chrono::year_month_day> date = {}) {
+domain::swap_leg_amount
+amount_of(int leg_number, decimal amount, std::optional<std::chrono::year_month_day> date = {}) {
     domain::swap_leg_amount row;
     row.leg_number = leg_number;
     row.sequence_number = 1;
@@ -263,8 +259,7 @@ index_credit_default_swap_option_builder::build() const {
     out->strikes.push_back(std::move(strike));
 
     domain::instrument_option option;
-    option.long_short =
-        terms_.position.get() == option_position::long_option ? "Long" : "Short";
+    option.long_short = terms_.position.get() == option_position::long_option ? "Long" : "Short";
     option.style = "European";
     option.settlement = "Cash";
     option.pay_off_at_expiry = "false";
@@ -343,8 +338,8 @@ risk_participation_agreement_builder::build() const {
 
     auto swap = vanilla_swap_builder(conventions_, terms_.underlying).build();
     if (!swap)
-        return std::unexpected(build_error{"underlying." + swap.error().term,
-                                           std::move(swap.error().message)});
+        return std::unexpected(
+            build_error{"underlying." + swap.error().term, std::move(swap.error().message)});
 
     const auto& underlying = terms_.underlying;
     domain::credit_instrument_data out;

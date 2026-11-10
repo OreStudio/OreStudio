@@ -1871,12 +1871,12 @@ ores::marketdata::datum::market_reference credit_curve_of(const std::string& lei
     const auto key = std::format("CDS/CREDIT_SPREAD/{}/SNRFOR/{}/5Y", lei, currency);
     const auto quote = md::ore_key_codec::read(key);
     if (!quote)
-        throw trade_population_error("The credit curve of " + lei + " has no address: " +
-                                     quote.error());
+        throw trade_population_error("The credit curve of " + lei +
+                                     " has no address: " + quote.error());
     auto series = md::market_reference::of(md::series_of(*quote));
     if (!series)
-        throw trade_population_error("The credit curve of " + lei + " has no address: " +
-                                     series.error());
+        throw trade_population_error("The credit curve of " + lei +
+                                     " has no address: " + series.error());
     return std::move(*series);
 }
 
@@ -1892,8 +1892,7 @@ underlying_index_of(const domain::trade_generation_scope& scope) {
         if (!swap.oresmd_uri)
             continue;
         auto index = md::market_reference::parse(*swap.oresmd_uri);
-        if (index && index->index() != nullptr &&
-            index->index()->subject() == scope.currency_code)
+        if (index && index->index() != nullptr && index->index()->subject() == scope.currency_code)
             return std::move(*index);
     }
     throw trade_population_error("No swap convention of the tenant floats on an index in " +
@@ -1928,7 +1927,9 @@ build_credit_trade(const domain::trade_generation_scope& scope,
                    std::uint32_t years) {
     namespace tb = ores::trading::builders;
     using ores::utility::decimal::decimal;
-    const auto money = [](double value) { return decimal::from_double(value).value(); };
+    const auto money = [](double value) {
+        return decimal::from_double(value).value();
+    };
 
     const auto& type = entry.trade_type_code;
     const auto name = slot_name(scope, entry.slot);
@@ -1963,8 +1964,8 @@ build_credit_trade(const domain::trade_generation_scope& scope,
             .expiry = expiry,
             .strike = money(1.0),
             .index_term = std::format("{}Y", years),
-            .position = entry.slot % 2 == 0 ? tb::option_position::long_option
-                                            : tb::option_position::short_option};
+            .position = entry.slot % 2 == 0 ? tb::option_position::long_option :
+                                              tb::option_position::short_option};
         return batch_of(tb::index_credit_default_swap_option_builder(conventions, terms).build(),
                         type);
     }
@@ -1974,8 +1975,8 @@ build_credit_trade(const domain::trade_generation_scope& scope,
                            .currency = entry.currency,
                            .start = start,
                            .maturity = add_years(start, static_cast<int>(years)),
-                           .fixed_rate = money(std::round((0.02 + 0.02 * draw(name, 3)) * 10000.0) /
-                                               10000.0),
+                           .fixed_rate =
+                               money(std::round((0.02 + 0.02 * draw(name, 3)) * 10000.0) / 10000.0),
                            .index = underlying_index_of(scope),
                            .fixed_side = entry.slot % 2 == 0 ? tb::side::pay : tb::side::receive},
             .participation_rate = 0.5,
@@ -1984,8 +1985,7 @@ build_credit_trade(const domain::trade_generation_scope& scope,
             .side = side,
             .fee = money(std::round(entry.notional * 0.001 * 100.0) / 100.0),
             .convention = std::string(cds_convention_id)};
-        return batch_of(tb::risk_participation_agreement_builder(conventions, terms).build(),
-                        type);
+        return batch_of(tb::risk_participation_agreement_builder(conventions, terms).build(), type);
     }
     throw trade_population_error("The credit trade type " + type +
                                  " states no builder this planner knows.");

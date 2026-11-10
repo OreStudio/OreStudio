@@ -60,6 +60,11 @@ values
      'The open data of Norges Bank, among them NOWA, published each Norwegian business day.',
      33, 'https://www.norges-bank.no/en/about/terms-of-use/',
      'Source: Norges Bank', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'riksbank', 0, 'Sveriges Riksbank', 'reference',
+     'The Swedish krona short-term rate, SWESTR, published by the Riksbank each Swedish business day.',
+     34, 'https://www.riksbank.se/en-gb/statistics/swestr/conditions-for-use-and-re-publishing/',
+     'Source: Sveriges Riksbank', true, '',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -76,7 +81,8 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('boe', 'boe_iadb', 'IUDSOIA', 'value', 'oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA'),
     ('boc', 'boc_valet', 'AVG.INTWO', 'v', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
     ('boj', 'boj_stat', 'FM01.STRDCLUCON', 'VALUES', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
-    ('norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R', 'OBS_VALUE', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA');
+    ('norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R', 'OBS_VALUE', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA'),
+    ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
@@ -155,6 +161,11 @@ values
      'norgesbank', 'nb_sdmx', 'production', 'https://data.norges-bank.no', '',
      '{"url":"https://data.norges-bank.no","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the Norges Bank SDMX API.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('riksbank-api', ores_utility_system_tenant_id_fn(), 0, 'Riksbank API',
+     'riksbank', 'riksbank_swestr', 'production', 'https://api.riksbank.se', '',
+     '{"url":"https://api.riksbank.se","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Riksbank SWESTR API.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -188,6 +199,10 @@ values
     ('4cb8961a-a60d-54bf-ac82-6a43752d42cd', ores_utility_system_tenant_id_fn(), 0,
      'norgesbank-nowa', 'norgesbank', 'norgesbank-data', 'end_of_day', 'SHORT_RATES.B.NOWA.ON.R', true,
      'NOWA as Norges Bank publishes it, read from its SDMX API by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('0e59f2e7-48d8-5ba2-8433-2ea7726f912c', ores_utility_system_tenant_id_fn(), 0,
+     'riksbank-swestr', 'riksbank', 'riksbank-api', 'end_of_day', 'SWESTR', true,
+     'SWESTR as the Riksbank publishes it, read from its SWESTR API by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -206,7 +221,8 @@ from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('boe-sonia', 'boe', 'boe_iadb', 'IUDSOIA'),
              ('boc-corra', 'boc', 'boc_valet', 'AVG.INTWO'),
              ('boj-tona', 'boj', 'boj_stat', 'FM01.STRDCLUCON'),
-             ('norgesbank-nowa', 'norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R'))
+             ('norgesbank-nowa', 'norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R'),
+             ('riksbank-swestr', 'riksbank', 'riksbank_swestr', 'SWESTR'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -332,5 +348,23 @@ begin
         '4cb8961a-a60d-54bf-ac82-6a43752d42cd',
         current_user, current_user, 'system.initial_load',
         'The system party reads NOWA from Norges Bank'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '07e59440-5204-529d-9e8b-b1424d8daafb', ores_utility_system_tenant_id_fn(), 0, v_party, 'riksbank',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes SWESTR of Sveriges Riksbank for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'c02e2f49-1d33-5c10-96e0-30aa7afe0f3d', ores_utility_system_tenant_id_fn(), 0, v_party, 'riksbank', 'interest_rates',
+        '0e59f2e7-48d8-5ba2-8433-2ea7726f912c',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads SWESTR from Sveriges Riksbank'
     ) on conflict do nothing;
 end $$;

@@ -74,6 +74,10 @@ struct options final {
      */
     std::string norges_bank_url;
     /**
+     * @brief The address of the Riksbank's API site, which serves its SWESTR API.
+     */
+    std::string riksbank_url;
+    /**
      * @brief The sources the adapter hosts.
      */
     std::vector<domain::hosted_source> sources;
@@ -98,6 +102,7 @@ struct options final {
         ::ores::utility::codec::field{"boc_url", &options::boc_url},
         ::ores::utility::codec::field{"boj_url", &options::boj_url},
         ::ores::utility::codec::field{"norges_bank_url", &options::norges_bank_url},
+        ::ores::utility::codec::field{"riksbank_url", &options::riksbank_url},
         ::ores::utility::codec::field{"sources", &options::sources},
         ::ores::utility::codec::field{"backfill_days", &options::backfill_days},
         ::ores::utility::codec::field{"poll_minutes", &options::poll_minutes},

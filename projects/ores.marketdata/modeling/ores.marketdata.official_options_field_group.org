@@ -92,6 +92,13 @@ The address of the Bank of Japan's time-series statistics site, which serves its
 
 The address of Norges Bank's open data site, which serves its SDMX API.
 
+** riksbank_url
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The address of the Riksbank's API site, which serves its SWESTR API.
+
 ** sources
 :PROPERTIES:
 :cpp_type: std::vector<domain::hosted_source>

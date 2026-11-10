@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: C9186AEB-2B2F-4379-9856-78397DB417B8
+:END:
+#+title: Task: Add the Banco de Mexico adapter
+#+description: A specialised adapter reads the overnight TIIE de Fondeo from Banco de Mexico and stores its history as fixings in the system tenant.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The overnight TIIE de Fondeo is stored as fixings in the system tenant, with its history, read from Banco de Mexico through the SIE API, =www.banxico.org.mx/SieAPIRest/service/v1/series/SF331451=, in JSON, with a free token. The adapter is specialised: it reads Banco de Mexico alone, and it supplies only its fetcher to the shared half of the official adapter.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-10                               |
+
+* Acceptance
+
+- The adapter reads Banco de Mexico alone, and it does not copy the announce, the demand, the backfill or the publish code.
+- Banco de Mexico is a supplier in the catalogue, its series maps to the MXN overnight item that this task catalogues, and a session and a feed scoped to that item are seeded in the system tenant.
+- A fresh environment stores the history as fixings within minutes of provisioning, and the log names the source and the count it stored.
+- Each fixing is the decimal of the published percent, with the credit the source and Banco de Mexico's URL.
+- The depth of the history is measured and written into the calibration sources note.
+- Unit tests parse a recorded response, and a malformed response gives an error, not a fixing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The API needs a token, which a free registration gives; keep it in the credential store, not in the seed. The catalogue's =MXN-TIIE= item is the 28-day TIIE, so decide the item of the TIIE de Fondeo first.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

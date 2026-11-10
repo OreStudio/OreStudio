@@ -46,10 +46,19 @@ The public overnight rate of as many currencies as their publishers allow is sto
 | [[id:319D1167-5429-404D-A212-D2E616CEB13A][Add the ECB Data Portal adapter]] | DONE | 2026-11-10 | 2026-11-10 | A specialised adapter reads €STR from the ECB Data Portal and stores its history as fixings in the system tenant. |
 | [[id:17698965-09A3-4E0F-AE39-F5E694BF1D7F][Add the BoE statistics adapter]] | DONE | 2026-11-10 | 2026-11-10 | A specialised adapter reads SONIA from the Bank of England statistical database and stores its history as fixings in the system tenant. |
 | [[id:4C154A06-298A-4E1F-9F40-89EFF7B2C1A9][Add the Bank of Canada adapter]] | DONE | 2026-11-10 | 2026-11-10 | A specialised adapter reads CORRA from the Bank of Canada Valet API and stores its history as fixings in the system tenant. |
-| [[id:E5A66CAD-EABC-4916-B8BC-5EF2A5DD4BDA][Find a route to the overnight rate of each remaining currency]] | BACKLOG |  | | For each currency without a usable source, read the publisher's route and terms, and add an adapter task for each source that is usable. |
+| [[id:E5A66CAD-EABC-4916-B8BC-5EF2A5DD4BDA][Find a route to the overnight rate of each remaining currency]] | DONE | 2026-11-10 | 2026-11-10 | For each currency without a usable source, read the publisher's route and terms, and add an adapter task for each source that is usable. |
 | [[id:C884743B-8461-4B8F-9312-B370E978A891][Add the FRED adapter]] | ABANDONED |  | | Replaced by the New York Fed adapter, because the survey chose the publisher's own API for SOFR. |
 | [[id:BF7F804E-5F6D-4FD8-B57E-212DC754E43E][Add the US Treasury adapter]] | ABANDONED |  | | Government bond curves moved to a capture, because the overnight-index bootstrap does not read them. |
 | [[id:E3C078D3-FFE5-4C40-9C09-83058FD3040F][Seed the IR feeds]] | ABANDONED |  | | Each adapter task now seeds its own supplier, session and feed. |
+| [[id:5E8ECB17-43BA-49D8-8CD1-876BC9051364][Add the RBA adapter]] | BACKLOG | | | A specialised adapter reads AONIA from the RBA statistical table F1 and stores its history as fixings in the system tenant. |
+| [[id:C6FFB201-A94E-4492-B33C-36E115BB37E0][Add the Bank of Japan adapter]] | BACKLOG | | | A specialised adapter reads the uncollateralised overnight call rate (TONA) from the Bank of Japan and stores its history as fixings in the system tenant. |
+| [[id:F305CDA3-C48F-45B5-B43F-5B220D744528][Add the Banco Central do Brasil adapter]] | BACKLOG | | | A specialised adapter reads the annualised CDI from the Banco Central do Brasil and stores its history as fixings in the system tenant. |
+| [[id:86EA85AC-87C0-40AB-B102-0BAE47329890][Add the Norges Bank adapter]] | BACKLOG | | | A specialised adapter reads NOWA from Norges Bank and stores its history as fixings in the system tenant. |
+| [[id:A29DAAA9-E4AA-446F-AF67-4379BC7AFAA5][Add the Riksbank adapter]] | BACKLOG | | | A specialised adapter reads SWESTR from the Riksbank and stores its history as fixings in the system tenant. |
+| [[id:C9186AEB-2B2F-4379-9856-78397DB417B8][Add the Banco de Mexico adapter]] | BACKLOG | | | A specialised adapter reads the overnight TIIE de Fondeo from Banco de Mexico and stores its history as fixings in the system tenant. |
+| [[id:37AD5218-D38E-4FF3-964A-3088ACD7D3B7][Add the Banco Central de Chile adapter]] | BACKLOG | | | A specialised adapter reads the Indice Camara Promedio from the Banco Central de Chile and stores its history as fixings in the system tenant. |
+| [[id:8CCD7E45-5BC3-4688-BD59-5E760DC1DF5A][Add the MAS adapter]] | BACKLOG | | | A specialised adapter reads SORA from the Monetary Authority of Singapore and stores its history as fixings in the system tenant. |
+| [[id:E42764BE-BE8E-4BE4-A904-C9DEC77FACF5][Add the Czech National Bank adapter]] | BACKLOG | | | A specialised adapter reads CZEONIA from the Czech National Bank and stores its history as fixings in the system tenant. |
 
 * Decisions
 

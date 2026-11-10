@@ -26,7 +26,7 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Published FX forward sets for each party. |
@@ -44,6 +44,7 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 - A repeat over the same blueprint and as-of converges on the same points.
 - A candidate is not readable as a published surface.
 - The forwards come from the party's published forward set, and the lineage names that set.
+- The output series declares its expiry and strike axes, so the Evolution page reads the grid as a surface. Today no ingest-made series declares an axis, and the snapshot refuses one without.
 
 * Plan
 

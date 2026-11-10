@@ -38,6 +38,7 @@ A person can calibrate a surface, see the candidate and its errors, send it to p
 - A person starts a calibrate from a blueprint and an as-of, and sees each pillar's error and the arbitrage results.
 - A person raises the publish of a candidate from that screen.
 - A published surface shows as a heatmap and as slices through =SurfacePanel=.
+- The Evolution page shows a party's published surface, and how it moved over a range, through =SurfacePanel=. A surface is a party's derived data, so it shows there; the raw market vols show on the synthetic screen.
 - A candidate is always labelled as a candidate.
 
 * Plan

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-rates-trades-through-builders
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Every interest rate trade type the generator books is built by its trade builder
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -38,14 +38,25 @@ Every interest rate trade type the generator books is built by its trade builder
 - convention_lookup answers what each interest rate builder asks.
 - The interest rate planner draws values and calls the builders; its construct_* functions and *_terms structs are deleted.
 - The interest rate entries leave the recorded trades' known lists, and the recorded files change in the same commit.
-- The ORE engine test reads and builds every booked interest rate type.
+- The ORE engine test reads every booked interest rate type, and builds each one or fails only on market data or engine configuration the Products example lacks.
 - The roundtrip tests read every ORE sample trade of each booked interest rate type and write back every element ORE needs.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Every booked rate type wraps a vanilla swap or its floating leg, so each
+  builder starts from =vanilla_swap_builder= and adds its own rows: the cross
+  currency swap's foreign leg and notional exchanges, the FRA's fact, the cap or
+  floor's strike, the swaption's and the callable swap's option and exercise
+  dates, the knock out swap's barrier, the flexi swap's option side, and the
+  balance guaranteed swap's tranche.
+- The inflation swap is booked from the same constructors, so it moves here
+  too. =convention_lookup= answers an inflation swap convention by the index
+  address, and the CPI leg takes its calendar, day count and lag from it.
+- The planner draws the index from the tenant's swap conventions in the scope,
+  as the RPA does, rather than from the FpML catalogue by name. A forward rate
+  agreement and a cap need an Ibor index, which a swap convention names.
+- The =construct_rate_*= functions and the =rate_*_terms= structs are deleted,
+  with the plan's =rate_terms=.
 
 * Measurements
 

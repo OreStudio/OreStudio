@@ -89,7 +89,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =write(rows, claims)= does not check that the vectors have the same size | =calendar_date_repository.cpp= | Accepted as a capture | The repository is generated, so the check belongs to [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Resolve the claims of a batch write in one read]], which now records it. The sizes match here by construction. |
+| 2 | No test asserts that no day is read | =service_calendar_materialisation_service_tests.cpp= | Declined | =regenerate_is_extend_only_and_does_not_rewrite_existing_watermark= asserts that a second pass writes 0 rows. A count of reads is not observable without instrumenting the repository; =pg_stat_statements= measured it. |
+| 3 | The trigger cannot refuse a =must_not_exist= claim | =refdata_calendar_date_create.sql= | Accepted as a capture | The same capture now records that version 0 means both "no claim" and "must not exist" to the generated trigger. |
 
 * Result
 

@@ -7,6 +7,8 @@
 #+description: One indefinite recurring rule for a calendar template (fixed-date, nth/last-weekday-of-month, or Easter-offset), with an optional observance shift and effective year range.
 #+type: ores.codegen.entity
 #+http_area: reference-data
+#+web_resource: calendar-rules
+#+web_list_by: calendar_code
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: calendar_rule

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-routes-ores-web-calls-outside-the-api
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Find which of the 28 routes ores.web calls, from the client code. Serve each of 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | PR 1 of 5: the reference data record routes. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | PR 2: the synthetic record routes. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -42,9 +42,38 @@ Find which of the 28 routes ores.web calls, from the client code. Serve each of 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Decided on 2026-11-10: the C++ server answers each generic router with
+generated per-resource routes, not with a hand-written generic router. A route
+such as =/api/refdata/currencies= is registered for each resource in the
+registry, so each resource gets typed C++ and its own tests, and a model change
+reaches the route through the generator.
+
+The work lands in five PRs, one for each family:
+
+1. The reference data records: the six generic routes and the catalogue.
+2. The synthetic records: the same routes under =/api/synthetic=.
+3. Classifications and labels.
+4. History.
+5. Pick lists and choices.
+
+For the record routes:
+
+- An entity joins the registry when its model names its resource key with
+  =#+web_resource:=. Three keys differ from the v1 path segment
+  (=currency-memberships=, =pair-calendars=, =party-contacts=), so the key is
+  declared and not derived. =#+web_read_only: true= marks a resource that the
+  screen reads but does not write, such as countries.
+- The generator derives the rest of the registry from the model: the key
+  fields, the search, the sortable columns, the filter members, the list-by
+  member and the as-of read.
+- Each route keeps the BFF's address and shapes: =rows= and =total= on a page,
+  =rows= on a whole read, =row= on a key read, and 204 on a write.
+- A refusal carries the BFF's error body, ={code, message}=, with the BFF's
+  status for each outcome: 409 for a conflict, 400 for an invalid write, 403
+  for a refused one and 404 for a missing one.
+- The checks that the BFF makes before a write move with the routes: the
+  key fields of a removal, the read-only resources and the calendar that is
+  not editable.
 
 * Measurements
 
@@ -61,6 +90,59 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Which of the 28 routes ores.web calls
+
+ores.web calls 27 of the 28 routes, all from =packages/web/src/api/client.ts=.
+It does not call =GET /api/reporting/pricing-engines/vocabulary=, so that route
+needs no C++ equivalent.
+
+| Family | Routes | Called | BFF source |
+|--------+--------+--------+------------|
+| Generic reference data records | =GET /api/refdata=, =GET=, =PUT= and =DELETE /api/refdata/:resource=, =GET .../by/:parent=, =GET .../key/:key= | all 6 | =bff/src/records.ts=, registry =REFDATA_RECORDS= in =wire-protocol/src/records.ts= |
+| Generic synthetic records | the same 6 under =/api/synthetic= | all 6 | =bff/src/synthetic.ts= |
+| Classifications | =GET /api/classifications=, =GET /api/classifications/:list=, the row =POST=, =PUT=, =DELETE=, the =order= =PUT= and the =label= =PUT= | all 7 | =bff/src/classifications.ts= |
+| Labels | =GET /api/labels= | yes | =bff/src/classifications.ts= |
+| History | =GET /api/history= | yes | |
+| Pick lists | books, conventions, counterparties, tenors | all 4 | one file per area |
+| Choices | sensitivity templates, reporting | both | =sensitivity-templates.ts=, =reporting.ts= |
+| Vocabulary | =GET /api/reporting/pricing-engines/vocabulary= | no | =reporting.ts= |
+
+The generic routers name a resource by a string in the address and dispatch
+on a registry that maps the string to an entity's subjects, key fields, search,
+sort and filter members. The =PUT= route also checks each resource's write
+against a schema of its own, and refuses a rule or an exception on a calendar
+that is not editable.
+
+** The reference data record routes (PR 1)
+
+The 26 resources of =REFDATA_RECORDS= each get a generated unit,
+=<entity>_web_routes=, and the hand-written =refdata_routes= registers them and
+answers the catalogue. What differs from the BFF:
+
+- The sortable columns and the filters come from the model. The model allows
+  more than the BFF's table named for some resources, so the C++ route accepts
+  an order or a filter the BFF refused. The service checks each one.
+- The BFF checked each write against a schema of its own, with rules such as
+  the format of a pair code and the fields of a calendar rule kind. The C++
+  route reads the write as the protocol's write record, so a malformed type is
+  refused, but those rules are not. The service's own checks govern.
+- The BFF refused a rule or an exception on a calendar that is not editable,
+  and its comment says the service's own check is the real fix. The C++ route
+  does not make this check.
+- The five generic BFF routes are not in =route_pairing.py=. A pair is one
+  route to one route, and each generic route now has one C++ route per
+  resource. The catalogue is paired.
+
+** A finding for the switch-over
+
+The C++ server writes an error body as ={"error": "..."}=. ores.web reads an
+error body as ={code, message}= (=apiErrorSchema= in =web/src/api/transport.ts=).
+So on every C++ error, ores.web shows "Request failed with status N" and not the
+server's sentence. It also loses the =session-expired= and =not-authenticated=
+codes, which it uses to send the person back to sign in. The routes of this
+task send ={code, message}=. The other C++ routes need the same fix before the
+switch-over.
 
 * Test Scenarios
 
@@ -83,6 +165,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR 1 local review: junction rows had no JSON codec in scope. | =web_records_implementation.org= | Accepted | The unit includes the domain codec header. |
+| 2 | PR 1 local review: =unity-collisions= saw the 26 =wire_fields= overloads as one name. | =web_records_implementation.org= | Accepted | The body structs live in a namespace of the unit's own. |
+| 3 | PR 1 local review: =route-auth= tied a registration to the handler's =key= variable. | =web_records_implementation.org= | Accepted | The builders are named =<route>_route=, as the typed template names them. |
+| 4 | PR 1 local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
 
 * Result

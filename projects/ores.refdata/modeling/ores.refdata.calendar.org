@@ -8,6 +8,7 @@
 #+description: ORE/QuantLib calendar reference data: a validated enumeration of business-day/holiday calendars, central-bank meeting calendars, and other named date collections.
 #+type: ores.codegen.entity
 #+http_area: reference-data
+#+web_resource: calendars
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+brief: ORE/QuantLib calendar reference data.

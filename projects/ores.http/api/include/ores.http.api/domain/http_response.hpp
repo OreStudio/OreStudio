@@ -85,6 +85,15 @@ struct ORES_HTTP_API_EXPORT http_response final {
     static http_response error(http_status status, const std::string& message);
 
     /**
+     * @brief Creates an error response whose body names a code and a message.
+     *
+     * The browser reads a refusal as a code it can act on and a sentence it can
+     * show, so a route the browser calls answers in this shape.
+     */
+    static http_response
+    api_error(http_status status, const std::string& code, const std::string& message);
+
+    /**
      * @brief Creates a 404 Not Found response.
      */
     static http_response not_found(const std::string& message = "Not Found");

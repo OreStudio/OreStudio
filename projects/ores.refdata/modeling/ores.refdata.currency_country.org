@@ -8,6 +8,8 @@
 #+description: Codegen junction model for currency_countries.
 #+type: ores.codegen.junction
 #+http_area: reference-data
+#+web_resource: currency-countries
+#+web_list_by: currency_iso_code
 #+component: refdata
 #+filetags: :model:junction:refdata:
 #+name: currency_countries

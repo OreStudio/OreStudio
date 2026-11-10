@@ -7,6 +7,7 @@
 #+description: Codegen entity model for the refdata ir_curve_bootstrap_pillar table; one (tenor, curve-role, named series) pillar of an IR curve bootstrap config's recipe.
 #+type: ores.codegen.entity
 #+http_area: reference-data
+#+web_resource: ir-curve-bootstrap-pillars
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: ir_curve_bootstrap_pillar

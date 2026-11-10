@@ -1,0 +1,531 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_http_route_web_records.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.http/routes/refdata/ir_curve_bootstrap_config_web_routes.hpp"
+#include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/session_expired_error.hpp"
+#include "ores.nats/service/timeouts.hpp"
+#include "ores.refdata.api/domain/ir_curve_bootstrap_config_codec.hpp"
+#include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <cstdint>
+#include <exception>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+namespace ores::http::routes::refdata {
+
+using namespace logging;
+using ores::http::domain::http_request;
+using ores::http::domain::http_response;
+using ores::http::domain::http_status;
+using ores::nats::service::nats_client;
+namespace messaging = ores::refdata::messaging;
+
+namespace {
+
+/// How many rows a whole read asks for at a time.
+constexpr std::uint32_t ir_curve_bootstrap_config_web_page_size = 1000;
+
+/// A refusal a route states, with the status and the code the browser reads.
+struct ir_curve_bootstrap_config_web_refusal final {
+    http_status status;
+    std::string code;
+    std::string message;
+};
+
+[[noreturn]] void
+ir_curve_bootstrap_config_web_refuse(http_status status, std::string code, std::string message) {
+    throw ir_curve_bootstrap_config_web_refusal{status, std::move(code), std::move(message)};
+}
+
+[[noreturn]] void ir_curve_bootstrap_config_web_invalid(std::string message) {
+    ir_curve_bootstrap_config_web_refuse(
+        http_status::bad_request, "invalid-request", std::move(message));
+}
+
+http_response
+ir_curve_bootstrap_config_web_answer(const ir_curve_bootstrap_config_web_refusal& refusal) {
+    return http_response::api_error(refusal.status, refusal.code, refusal.message);
+}
+
+http_response ir_curve_bootstrap_config_web_no_content() {
+    http_response response;
+    response.status = http_status::no_content;
+    return response;
+}
+
+/// One parameter read as the member's own type, refused by name when malformed.
+template <typename T>
+T ir_curve_bootstrap_config_web_read(const std::string& raw, const std::string& name) {
+    try {
+        if constexpr (std::is_same_v<T, std::string>) {
+            return raw;
+        } else if constexpr (std::is_same_v<T, bool>) {
+            if (raw == "true")
+                return true;
+            if (raw == "false")
+                return false;
+            throw std::invalid_argument(raw);
+        } else {
+            return boost::lexical_cast<T>(raw);
+        }
+    } catch (const std::exception&) {
+        ir_curve_bootstrap_config_web_invalid("Invalid value for " + name + ": " + raw);
+    }
+}
+
+/// A code named in the address: 1 to 100 characters once trimmed.
+std::string ir_curve_bootstrap_config_web_code(const std::string& raw,
+                                               const std::string& sentence) {
+    const auto first = raw.find_first_not_of(" \t");
+    const auto last = raw.find_last_not_of(" \t");
+    const auto trimmed =
+        first == std::string::npos ? std::string{} : raw.substr(first, last - first + 1);
+    if (trimmed.empty() || trimmed.size() > 100)
+        ir_curve_bootstrap_config_web_invalid(sentence);
+    return trimmed;
+}
+
+/**
+ * @brief Forward one canonical request with the caller's token, and decode the reply.
+ *
+ * A refusal the service states in its reply header becomes the status it
+ * names. An expired session is the caller's to renew.
+ */
+template <typename Request>
+typename Request::response_type ir_curve_bootstrap_config_web_call(const http_request& req,
+                                                                   nats_client& session,
+                                                                   const Request& msg) {
+    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
+    try {
+        const auto reply =
+            delegated.authenticated_request(msg.nats_subject,
+                                            ores::nats::default_wire_codec().encode(msg),
+                                            ores::nats::service::default_request_timeout);
+        if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
+            it != reply.headers.end()) {
+            if (it->second == "forbidden")
+                ir_curve_bootstrap_config_web_refuse(
+                    http_status::forbidden, "forbidden", it->second);
+            if (it->second == "bad_request")
+                ir_curve_bootstrap_config_web_invalid(it->second);
+            ir_curve_bootstrap_config_web_refuse(
+                http_status::unauthorized, "not-authenticated", it->second);
+        }
+        auto decoded =
+            ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
+        if (!decoded)
+            ir_curve_bootstrap_config_web_refuse(http_status::bad_gateway,
+                                                 "internal",
+                                                 std::string("Failed to decode response: ") +
+                                                     decoded.error().what());
+        return std::move(*decoded);
+    } catch (const ores::nats::service::session_expired_error& e) {
+        ir_curve_bootstrap_config_web_refuse(
+            http_status::unauthorized, "session-expired", e.what());
+    }
+}
+
+/// The status a refused outcome names. A conflict the service states no words for says what it
+/// means.
+void ir_curve_bootstrap_config_web_require_ok(const ores::utility::domain::result& result) {
+    using ores::utility::domain::outcome;
+    switch (result.outcome) {
+        case outcome::ok:
+            return;
+        case outcome::conflict:
+            ir_curve_bootstrap_config_web_refuse(
+                http_status::conflict,
+                "conflict",
+                result.message.empty() ?
+                    "This record changed since it was read, or it already exists. "
+                    "Reload and try again." :
+                    result.message);
+        case outcome::invalid:
+            ir_curve_bootstrap_config_web_invalid(result.message);
+        case outcome::denied:
+            ir_curve_bootstrap_config_web_refuse(
+                http_status::forbidden, "forbidden", result.message);
+        case outcome::missing:
+            ir_curve_bootstrap_config_web_refuse(
+                http_status::not_found, "not-found", result.message);
+        default:
+            ir_curve_bootstrap_config_web_refuse(
+                http_status::bad_gateway, "upstream-unavailable", result.message);
+    }
+}
+
+/// One row as the service sends it, with the version the screens read on every row.
+std::string
+ir_curve_bootstrap_config_web_row(const ores::refdata::domain::ir_curve_bootstrap_config& row) {
+    auto text = ores::utility::codec::json::write(row);
+    return text;
+}
+
+std::string ir_curve_bootstrap_config_web_rows(
+    const std::vector<ores::refdata::domain::ir_curve_bootstrap_config>& rows) {
+    std::string out = "[";
+    for (std::size_t i = 0; i < rows.size(); ++i) {
+        if (i != 0)
+            out += ",";
+        out += ir_curve_bootstrap_config_web_row(rows[i]);
+    }
+    return out + "]";
+}
+
+/// A page request that states no order and no filter.
+messaging::list_ir_curve_bootstrap_configs_request
+ir_curve_bootstrap_config_web_page(std::uint32_t offset, std::uint32_t limit) {
+    messaging::list_ir_curve_bootstrap_configs_request msg;
+    msg.offset = offset;
+    msg.limit = limit;
+    msg.order.field = "";
+    msg.order.descending = false;
+    return msg;
+}
+
+}
+
+/**
+ * @brief The bodies the screens send, with their wire fields.
+ *
+ * They live in a namespace of the unit's own, so the wire_fields overloads of two
+ * units in one unity build carry different qualified names.
+ */
+namespace ir_curve_bootstrap_config_web_bodies {
+
+/// What a write states: the row, the version it was read at, and why.
+struct ir_curve_bootstrap_config_web_write_body final {
+    messaging::ir_curve_bootstrap_config_write write;
+    std::optional<std::uint32_t> version;
+    std::string reasonCode;
+    std::string commentary;
+};
+
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<ir_curve_bootstrap_config_web_write_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"write", &ir_curve_bootstrap_config_web_write_body::write},
+                      field{"version", &ir_curve_bootstrap_config_web_write_body::version},
+                      field{"reasonCode", &ir_curve_bootstrap_config_web_write_body::reasonCode},
+                      field{"commentary", &ir_curve_bootstrap_config_web_write_body::commentary}};
+}
+static_assert(ores::utility::codec::names_every_member<ir_curve_bootstrap_config_web_write_body>());
+
+/// What a removal states: the row's key, the version it was read at, and why.
+struct ir_curve_bootstrap_config_web_removal_body final {
+    messaging::ir_curve_bootstrap_config_key key;
+    std::optional<std::uint32_t> version;
+    std::string reasonCode;
+    std::string commentary;
+};
+
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<ir_curve_bootstrap_config_web_removal_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"key", &ir_curve_bootstrap_config_web_removal_body::key},
+                      field{"version", &ir_curve_bootstrap_config_web_removal_body::version},
+                      field{"reasonCode", &ir_curve_bootstrap_config_web_removal_body::reasonCode},
+                      field{"commentary", &ir_curve_bootstrap_config_web_removal_body::commentary}};
+}
+static_assert(
+    ores::utility::codec::names_every_member<ir_curve_bootstrap_config_web_removal_body>());
+
+}
+
+namespace {
+
+using ir_curve_bootstrap_config_web_bodies::ir_curve_bootstrap_config_web_removal_body;
+using ir_curve_bootstrap_config_web_bodies::ir_curve_bootstrap_config_web_write_body;
+
+/// A body read as its own shape, or nothing when it states another. An optional member may be left
+/// out.
+template <typename T>
+std::optional<T> ir_curve_bootstrap_config_web_body(std::string_view text) {
+    auto value = ores::utility::codec::json::read_expected<T>(text);
+    if (!value)
+        return std::nullopt;
+    return std::move(*value);
+}
+
+/// A reason is 1 to 200 characters once trimmed.
+bool ir_curve_bootstrap_config_web_has_reason(const std::string& reason) {
+    const auto first = reason.find_first_not_of(" \t");
+    return first != std::string::npos && reason.size() <= 200;
+}
+
+}
+
+std::string_view ir_curve_bootstrap_config_web_routes::catalogue_entry() {
+    return R"json({"key":"ir-curve-bootstrap-configs","entityType":"ores.refdata.ir_curve_bootstrap_config","keyFields":["id"],"versioned":true,"writable":true,"search":true,"sortable":["name","currency_code","index_tenor","curve_family_role","interpolation_method","day_count_convention"],"events":{"component":"refdata","entity":"ir_curve_bootstrap_configs"},"writePermission":"refdata::ir_curve_bootstrap_configs:write","deletePermission":"refdata::ir_curve_bootstrap_configs:delete"})json";
+}
+
+boost::asio::awaitable<http_response>
+ir_curve_bootstrap_config_web_routes::handle_list(const http_request& req, nats_client& session) {
+    try {
+        if (req.query_params.find("limit") == req.query_params.end()) {
+            std::vector<ores::refdata::domain::ir_curve_bootstrap_config> rows;
+            for (std::uint32_t offset = 0;; offset += ir_curve_bootstrap_config_web_page_size) {
+                const auto reply = ir_curve_bootstrap_config_web_call(
+                    req,
+                    session,
+                    ir_curve_bootstrap_config_web_page(offset,
+                                                       ir_curve_bootstrap_config_web_page_size));
+                ir_curve_bootstrap_config_web_require_ok(reply.result);
+                rows.insert(
+                    rows.end(), reply.bootstrap_configs.begin(), reply.bootstrap_configs.end());
+                if (reply.bootstrap_configs.size() < ir_curve_bootstrap_config_web_page_size)
+                    break;
+            }
+            co_return http_response::json("{\"rows\":" + ir_curve_bootstrap_config_web_rows(rows) +
+                                          "}");
+        }
+
+        const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+        const auto raw_offset = req.get_query_param("offset");
+        std::uint32_t offset = 0;
+        std::uint32_t limit = 0;
+        try {
+            offset = raw_offset.empty() ? 0 : boost::lexical_cast<std::uint32_t>(raw_offset);
+            limit = boost::lexical_cast<std::uint32_t>(req.get_query_param("limit"));
+        } catch (const std::exception&) {
+            ir_curve_bootstrap_config_web_invalid(page_sentence);
+        }
+        if (limit < 1 || limit > 1000)
+            ir_curve_bootstrap_config_web_invalid(page_sentence);
+
+        auto msg = ir_curve_bootstrap_config_web_page(offset, limit);
+        const auto sort = req.get_query_param("sort");
+        if (!sort.empty()) {
+            constexpr std::string_view sortable[] = {"name",
+                                                     "currency_code",
+                                                     "index_tenor",
+                                                     "curve_family_role",
+                                                     "interpolation_method",
+                                                     "day_count_convention",
+                                                     ""};
+            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
+                std::end(sortable) - 1)
+                ir_curve_bootstrap_config_web_invalid(
+                    "ir-curve-bootstrap-configs cannot be ordered by " + sort + ".");
+            msg.order.field = sort;
+        }
+        const auto descending = req.get_query_param("descending");
+        if (!descending.empty() && descending != "true" && descending != "false")
+            ir_curve_bootstrap_config_web_invalid(page_sentence);
+        msg.order.descending = descending == "true";
+
+        const auto search = req.get_query_param("search");
+        if (!search.empty()) {
+            msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->search = search;
+        }
+
+        for (const auto& [name, value] : req.query_params) {
+            if (!name.starts_with("f."))
+                continue;
+            const auto member = name.substr(2);
+            constexpr std::string_view filters[] = {
+                "currency_code", "curve_family_role", "discount_curve_config_id", ""};
+            if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
+                std::end(filters) - 1)
+                ir_curve_bootstrap_config_web_invalid(
+                    "ir-curve-bootstrap-configs cannot be filtered by " + member + ".");
+        }
+        if (const auto raw = req.get_query_param("f.currency_code"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->currency_code =
+                ir_curve_bootstrap_config_web_read<std::string>(raw, "f.currency_code");
+        }
+        if (const auto raw = req.get_query_param("f.curve_family_role"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->curve_family_role =
+                ir_curve_bootstrap_config_web_read<std::string>(raw, "f.curve_family_role");
+        }
+        if (const auto raw = req.get_query_param("f.discount_curve_config_id"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+            msg.filter->discount_curve_config_id =
+                ir_curve_bootstrap_config_web_read<boost::uuids::uuid>(
+                    raw, "f.discount_curve_config_id");
+        }
+
+        const auto reply = ir_curve_bootstrap_config_web_call(req, session, msg);
+        ir_curve_bootstrap_config_web_require_ok(reply.result);
+        co_return http_response::json(
+            "{\"rows\":" + ir_curve_bootstrap_config_web_rows(reply.bootstrap_configs) +
+            ",\"total\":" + std::to_string(reply.total) + "}");
+    } catch (const ir_curve_bootstrap_config_web_refusal& refusal) {
+        co_return ir_curve_bootstrap_config_web_answer(refusal);
+    } catch (const std::exception& e) {
+        co_return http_response::api_error(http_status::bad_gateway, "internal", e.what());
+    }
+}
+
+boost::asio::awaitable<http_response>
+ir_curve_bootstrap_config_web_routes::handle_key(const http_request& req, nats_client& session) {
+    try {
+        const auto key = ir_curve_bootstrap_config_web_code(
+            req.get_path_param("key"), "A record is named by a code of 1 to 100 characters.");
+        auto msg = ir_curve_bootstrap_config_web_page(0, 1);
+        msg.filter = messaging::ir_curve_bootstrap_configs_filter{};
+        msg.filter->id_one_of = std::vector<boost::uuids::uuid>{
+            ir_curve_bootstrap_config_web_read<boost::uuids::uuid>(key, "key")};
+        const auto reply = ir_curve_bootstrap_config_web_call(req, session, msg);
+        ir_curve_bootstrap_config_web_require_ok(reply.result);
+        if (reply.bootstrap_configs.empty())
+            ir_curve_bootstrap_config_web_refuse(http_status::not_found,
+                                                 "not-found",
+                                                 "There is no ir-curve-bootstrap-configs record " +
+                                                     key + ".");
+        co_return http_response::json(
+            "{\"row\":" + ir_curve_bootstrap_config_web_row(reply.bootstrap_configs.front()) + "}");
+    } catch (const ir_curve_bootstrap_config_web_refusal& refusal) {
+        co_return ir_curve_bootstrap_config_web_answer(refusal);
+    } catch (const std::exception& e) {
+        co_return http_response::api_error(http_status::bad_gateway, "internal", e.what());
+    }
+}
+
+boost::asio::awaitable<http_response>
+ir_curve_bootstrap_config_web_routes::handle_put(const http_request& req, nats_client& session) {
+    try {
+        const auto body =
+            ir_curve_bootstrap_config_web_body<ir_curve_bootstrap_config_web_write_body>(req.body);
+        if (!body || !ir_curve_bootstrap_config_web_has_reason(body->reasonCode) ||
+            body->commentary.size() > 2000)
+            ir_curve_bootstrap_config_web_invalid(
+                "A write needs the row, the version it was read at, and a reason.");
+        messaging::put_ir_curve_bootstrap_config_request msg;
+        msg.change.write = body->write;
+        msg.change.precondition.kind =
+            body->version ? ores::utility::domain::precondition_kind::must_match_version :
+                            ores::utility::domain::precondition_kind::must_not_exist;
+        msg.change.precondition.version = body->version;
+        msg.intent.reason_code = body->reasonCode;
+        msg.intent.commentary = body->commentary;
+        const auto reply = ir_curve_bootstrap_config_web_call(req, session, msg);
+        ir_curve_bootstrap_config_web_require_ok(reply.result);
+        co_return ir_curve_bootstrap_config_web_no_content();
+    } catch (const ir_curve_bootstrap_config_web_refusal& refusal) {
+        co_return ir_curve_bootstrap_config_web_answer(refusal);
+    } catch (const std::exception& e) {
+        co_return http_response::api_error(http_status::bad_gateway, "internal", e.what());
+    }
+}
+
+boost::asio::awaitable<http_response>
+ir_curve_bootstrap_config_web_routes::handle_delete(const http_request& req, nats_client& session) {
+    try {
+        const auto body =
+            ir_curve_bootstrap_config_web_body<ir_curve_bootstrap_config_web_removal_body>(
+                req.body);
+        if (!body || !ir_curve_bootstrap_config_web_has_reason(body->reasonCode) ||
+            body->commentary.size() > 2000)
+            ir_curve_bootstrap_config_web_invalid("A removal names the row by id, and a reason.");
+        messaging::delete_ir_curve_bootstrap_config_request msg;
+        msg.removal.key = body->key;
+        msg.removal.precondition.kind =
+            body->version ? ores::utility::domain::precondition_kind::must_match_version :
+                            ores::utility::domain::precondition_kind::any;
+        msg.removal.precondition.version = body->version;
+        msg.intent.reason_code = body->reasonCode;
+        msg.intent.commentary = body->commentary;
+        const auto reply = ir_curve_bootstrap_config_web_call(req, session, msg);
+        ir_curve_bootstrap_config_web_require_ok(reply.result);
+        co_return ir_curve_bootstrap_config_web_no_content();
+    } catch (const ir_curve_bootstrap_config_web_refusal& refusal) {
+        co_return ir_curve_bootstrap_config_web_answer(refusal);
+    } catch (const std::exception& e) {
+        co_return http_response::api_error(http_status::bad_gateway, "internal", e.what());
+    }
+}
+
+void ir_curve_bootstrap_config_web_routes::register_routes(
+    std::shared_ptr<ores::http::net::router> router,
+    std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+    nats_client& session) {
+    BOOST_LOG_SEV(lg(), info) << "Registering ir-curve-bootstrap-configs record routes";
+
+    auto list_route =
+        router->get("/api/refdata/ir-curve-bootstrap-configs")
+            .summary("List ir-curve-bootstrap-configs for a screen")
+            .description("One page with its total, or every row when no limit is named.")
+            .tags({"refdata"})
+            .auth_required()
+            .handler([&session](const http_request& req) { return handle_list(req, session); });
+    const auto list_built = list_route.build();
+    router->add_route(list_built);
+    registry->register_route(list_built);
+
+    auto key_route =
+        router->get("/api/refdata/ir-curve-bootstrap-configs/key/{key}")
+            .summary("Read one ir-curve-bootstrap-configs record for a screen")
+            .description("One row, named by its key.")
+            .tags({"refdata"})
+            .auth_required()
+            .handler([&session](const http_request& req) { return handle_key(req, session); });
+    const auto key_built = key_route.build();
+    router->add_route(key_built);
+    registry->register_route(key_built);
+
+    auto put_route =
+        router->put("/api/refdata/ir-curve-bootstrap-configs")
+            .summary("Write one ir-curve-bootstrap-configs record for a screen")
+            .description("A new row with no version, else a correction of the version read.")
+            .tags({"refdata"})
+            .auth_required()
+            .handler([&session](const http_request& req) { return handle_put(req, session); });
+    const auto put_built = put_route.build();
+    router->add_route(put_built);
+    registry->register_route(put_built);
+
+    auto remove_route =
+        router->delete_("/api/refdata/ir-curve-bootstrap-configs")
+            .summary("Remove one ir-curve-bootstrap-configs record for a screen")
+            .description("Removes the row the body's key names.")
+            .tags({"refdata"})
+            .auth_required()
+            .handler([&session](const http_request& req) { return handle_delete(req, session); });
+    const auto remove_built = remove_route.build();
+    router->add_route(remove_built);
+    registry->register_route(remove_built);
+}
+
+}

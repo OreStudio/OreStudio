@@ -36,9 +36,11 @@ enum class http_status : std::uint16_t {
     forbidden = 403,
     not_found = 404,
     method_not_allowed = 405,
+    conflict = 409,
     payload_too_large = 413,
     internal_server_error = 500,
     not_implemented = 501,
+    bad_gateway = 502,
     service_unavailable = 503
 };
 

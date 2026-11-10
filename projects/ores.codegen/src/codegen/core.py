@@ -856,6 +856,20 @@ def _component_include_root(component):
     return full_name
 
 
+def _resolve_web_entity(pattern, model, singular):
+    """Fill ``{web_entity}``, which only a model in the screens' registry has.
+
+    A model that names no ``#+web_resource:`` has no record routes, so the
+    placeholder does not resolve and the generator skips the archetype rather
+    than writing an empty unit.
+    """
+    if '{web_entity}' not in pattern:
+        return pattern
+    if not (model.get('web_resource') or '').strip():
+        raise KeyError('web_entity')
+    return pattern.replace('{web_entity}', f'{singular}_web')
+
+
 def resolve_output_path(output_pattern, model_data, model_type):
     """
     Resolve placeholders in an output path pattern.
@@ -888,6 +902,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{EntityPascal}', entity_pascal)
         result = result.replace('{shell_menu}',
                                 shell_menu_name('domain_entity', model_data))
+        result = _resolve_web_entity(result, entity, entity_singular)
 
     elif model_type == 'junction' and 'junction' in model_data:
         junction = model_data['junction']
@@ -904,6 +919,7 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{entity_plural}', junction_name)
         result = result.replace('{shell_menu}',
                                 shell_menu_name('junction', model_data))
+        result = _resolve_web_entity(result, junction, name_singular)
 
     elif model_type == 'family' and 'family' in model_data:
         family = model_data['family']
@@ -6494,6 +6510,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             _column_name,
             entity_shell_plan,
             entity_http_route_plan,
+            entity_web_records_plan,
             http_recipe_document,
             open_reads_of,
             operations_by_verb,
@@ -6697,6 +6714,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # operation, derived from the shell's command set so the two surfaces
         # answer the same verbs rather than being kept in step by hand.
         domain_entity['http_route'] = entity_http_route_plan(domain_entity)
+        # The record routes a screen reads the entity through, when its model
+        # names the screen's resource key; None renders nothing.
+        domain_entity['web_records'] = entity_web_records_plan(domain_entity)
         # A recipe is a view of the unit the model renders, so it is built from
         # that same plan rather than from a second reading of the model: a
         # command the unit gains arrives in the document that documents it.
@@ -6888,6 +6908,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             entity_events,
             entity_http_route_plan,
             entity_shell_plan,
+            entity_web_records_plan,
             http_recipe_document,
             junction_entity_shape,
             junction_protocol_messages,
@@ -6970,6 +6991,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 _shape[f'{_verb}_operations'] = _verb_ops
             _shape['shell'] = entity_shell_plan(_shape)
             _shape['http_route'] = entity_http_route_plan(_shape)
+            _shape['web_records'] = entity_web_records_plan(_shape)
             if target_template == _SHELL_RECIPE_TEMPLATE:
                 data['shell_recipe'] = shell_recipe_document(
                     _shape.get('component', ''),

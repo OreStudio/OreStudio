@@ -8,7 +8,7 @@
 #+filetags: :marketdata:adapter:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
 #+branch: feature/read-the-public-overnight-rates
-#+pr:
+#+pr: 4542
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4542][#4542]] | [marketdata] Separate the official adapter's plumbing from its fetching |
 
 * Review
 

@@ -59,7 +59,7 @@ with a =Z= suffix; local time is used for display only.
 - =net/= — machine identity: the hostname, the primary non-loopback
   hardware address in both colon-separated and raw-byte form, and the
   stable machine identifier derived from the two.
-- =process/= — the current process id, the path and build time of the
+- =process/= — the current process id, its peak resident memory, the path and build time of the
   running binary, and the signal set a service treats as a request for
   a graceful shutdown.
 - =time/= — the time conversion and formatting surface. =datetime=
@@ -101,7 +101,7 @@ with a =Z= suffix; local time is used for display only.
 - =include/ores.platform/net/= — =get_hostname=,
   =get_primary_mac_address=, =get_primary_mac_address_bytes=,
   =derive_machine_id=, =derive_machine_id_hash=.
-- =include/ores.platform/process/= — =current_pid=,
+- =include/ores.platform/process/= — =current_pid=, =peak_resident_bytes=,
   =executable_path=, =executable_build_time=, =shutdown_signals=.
 - =include/ores.platform/time/= — =datetime=, =time_utils=,
   =relative_time_formatter=, =k_timestamp_format=.

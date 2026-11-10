@@ -29,6 +29,7 @@ set(files
     "net_network_info_tests.cpp"
     "numeric_floating_point_tests.cpp"
     "process_executable_tests.cpp"
+    "process_memory_tests.cpp"
     "process_pid_tests.cpp"
     "system_system_info_tests.cpp"
     "time_datetime_tests.cpp"

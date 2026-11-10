@@ -237,6 +237,13 @@ note top of "ores::platform::process::executable"
 Free functions: the running binary's own path, and the linker-set modification time used as its build time.
 end note
 
+class ores::platform::process::memory {
+    {static} +peak_resident_bytes() : std::int64_t
+}
+note top of "ores::platform::process::memory"
+Free function: the peak resident memory of the current process, in bytes, on every platform.
+end note
+
 class ores::platform::process::pid {
     {static} +current_pid() : std::int64_t
 }

@@ -8,11 +8,11 @@
 #+filetags: :rework-the-market-data-feeds-remaining-2:sprint_30:v0:
 #+owner: marco
 #+branch: feature/store-one-tick-for-each-source
-#+pr: 3769
+#+pr: 4509
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-25
-#+updated: 2026-11-08
+#+updated: 2026-11-10
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The tick store holds one row for each tick of a source, not one for each routed 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:36D992FD-0E21-4C21-915E-17D8717A0E23][Rework the market data feeds into a market data service with adapters — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-10                               |
 
 * Acceptance
 
@@ -97,7 +97,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Ticks a provisioned tenant stored on a fresh database | 16742 | =./compass.sh smoke ticks --fresh=, run by =./compass.sh check= | 81b6066284 |
+| ctest suites that pass on a recreated database | 99 of 99 | =./compass.sh check --only db --only ctest --jobs 1= | 7cc2b36544 |
 
 * Notes
 
@@ -117,11 +118,53 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/3769][#3769]] | [codegen] Model the tick table under codegen |
+| [[https://github.com/OreStudio/OreStudio/pull/4509][#4509]] | [marketdata] Store one tick for each source |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Enforce the subscription check on every tick read | tick_repository.hpp | Part | The contract now says every caller must check. The wrapper type and the coverage test stay open. |
+| 2 | Derived-only party gets no ticks on compute paths | tick_entitlement.cpp | Accept | Compute reads accept the derived right. Raw reads stay strict, and a snapshot refuses. |
+| 3 | Stream id omits the feed | series_stream.cpp | Decline | Owner decision: the id stays. The unique key makes the first value of a key win. |
+| 4 | No unique point key | marketdata_ticks_create.sql | Accept | Unique index, and a staged write that skips stored keys. |
+| 5 | Burst cleanup deletes all ticks | app_feed_ingest_loop_tests.cpp | Accept | The delete names the streams of the run. |
+| 6 | Smoke joins the removed tenant column | compass_smoke.py | Accept | Counts ticks of the feeds the tenant routes. |
+| 7 | Marketdata schema SVG is stale | ores_schema.marketdata.svg | Accept | Regenerated from the puml. |
+| 8 | Full subscription read for each check | tick_entitlement.cpp | Accept | may_read_ticks reads by provider. readable_providers still serves bulk reads. |
+| 9 | Overlapping party checks | series_tick_reader.cpp | Decline | Different conditions, and both return party_required. |
+| 10 | Writer role grants on the dictionary | feed_ingest_loop.cpp | Decline | resolve_all runs as the service role through ctx_, not the writer role. |
+| 11 | Coordinate cache scan | feed_ingest_loop.cpp | Decline | The scan covers the streams of one URI, one for each provider, so it stays short. |
+| 12 | Stream namespace must not change | series_stream.hpp | Accept | Added the note. |
+| 13 | Suites: a party with no right lost its own observation rows | market_observation_repository.cpp | Accept | Found by the service suite. The read now hides only the ticks. Regression test added. |
+| 14 | Suites: the snapshot refused every party with no display right | series_snapshot_reader.cpp | Accept | It now refuses only a party with a derived right alone. |
+| 15 | Suites: tests assumed an empty shared store | tick_test_support.hpp | Accept | A fixed export tick is written only when absent, and the ingest test URIs draw more random characters. |
 
 * Result
+
+The tick store holds one row for each tick of a stream. The stream id is a
+name UUID of the provider code and the series URI. The tick row and the
+coordinate dictionary carry no tenant and no party. A unique key on stream,
+coordinate and time keeps one value for each point, and the writer skips a
+key that it already stored, so the first value wins. Reads check the party's
+subscription. A raw read needs display or non-display. A compute read also
+accepts derived. A party with no right reads its own observation rows and no
+tick.
+
+Acceptance:
+
+- One row for each tick, with no routes read for the store: met. The ingest
+  test of two consumers of one source stores one row.
+- A routed party reads the shared stream, and the tick read tests pass: met.
+  On a recreated database the marketdata suites pass: api 943 test cases,
+  core 381, service 208.
+- A provisioned tenant ticks end to end, proved by the smoke check: met. The
+  ticks-smoke check of compass check provisioned a tenant on a fresh database,
+  and the tenant's routed feeds stored 16742 ticks. See Measurements.
+- The pages describe the shared store: met by
+  [[id:D71F9446-C62E-48A6-A87B-136EF598A59E][A source tick is stored once and entitled when it is read]]
+  and [[id:E4736D88-03B2-4A40-B7F4-01B06B9B9FD7][A quote series is keyed by item, provider and party]].
+
+Open: the entitled-stream wrapper type and its coverage test (review item 1).
+A party with a derived right alone cannot read a snapshot of its own
+published curve. The write cost of the staged insert is not measured.

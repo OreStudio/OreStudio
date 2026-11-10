@@ -23,7 +23,7 @@
       </ProtectionFee>
       <Underlying>
         <LegData>
-          <Payer>true</Payer>
+          <Payer>false</Payer>
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>MF</PaymentConvention>
@@ -49,7 +49,7 @@
           </FixedLegData>
         </LegData>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Floating</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>MF</PaymentConvention>
@@ -101,7 +101,7 @@
       </ProtectionFee>
       <Underlying>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Fixed</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>MF</PaymentConvention>
@@ -127,7 +127,7 @@
           </FixedLegData>
         </LegData>
         <LegData>
-          <Payer>true</Payer>
+          <Payer>false</Payer>
           <LegType>Floating</LegType>
           <Currency>EUR</Currency>
           <PaymentConvention>MF</PaymentConvention>

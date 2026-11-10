@@ -343,8 +343,7 @@ TEST_CASE("a_credit_trade_names_the_credit_curve_of_its_reference_entity", "[tra
                              batch.credit_instruments.front().reference_entity_id + "?"));
 }
 
-TEST_CASE("an_rpa_in_a_currency_no_swap_convention_floats_in_is_refused",
-          "[trade_population]") {
+TEST_CASE("an_rpa_in_a_currency_no_swap_convention_floats_in_is_refused", "[trade_population]") {
     auto scope = credit_scope();
     scope.trade_type_codes = {"RiskParticipationAgreement"};
     scope.currency_code = "JPY";

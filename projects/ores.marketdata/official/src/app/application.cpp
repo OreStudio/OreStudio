@@ -20,6 +20,7 @@
 #include "ores.marketdata.official/app/application.hpp"
 #include "ores.http.client/net/transport.hpp"
 #include "ores.marketdata.official/app/official_adapter.hpp"
+#include "ores.marketdata.official/domain/boc.hpp"
 #include "ores.marketdata.official/domain/boe.hpp"
 #include "ores.marketdata.official/domain/ecb.hpp"
 #include "ores.marketdata.official/domain/frankfurter.hpp"
@@ -51,6 +52,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << "New York Fed: " << cfg.nyfed_url;
     BOOST_LOG_SEV(lg(), info) << "ECB         : " << cfg.ecb_url;
     BOOST_LOG_SEV(lg(), info) << "BoE         : " << cfg.boe_url;
+    BOOST_LOG_SEV(lg(), info) << "BoC         : " << cfg.boc_url;
     BOOST_LOG_SEV(lg(), info) << "Sources     : " << cfg.sources.size();
     BOOST_LOG_SEV(lg(), info) << "Backfill    : " << cfg.backfill_days << " days";
     BOOST_LOG_SEV(lg(), info) << "Poll        : every " << cfg.poll_minutes << " minutes";
@@ -63,11 +65,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     domain::nyfed_fetcher nyfed(transport, cfg.nyfed_url);
     domain::ecb_fetcher ecb(transport, cfg.ecb_url);
     domain::boe_fetcher boe(transport, cfg.boe_url);
+    domain::boc_fetcher boc(transport, cfg.boc_url);
     adapter_timing timing;
     timing.poll_interval = std::chrono::minutes(cfg.poll_minutes);
     official_adapter adapter(nats,
                              cfg.sources,
-                             {&frankfurter, &nyfed, &ecb, &boe},
+                             {&frankfurter, &nyfed, &ecb, &boe, &boc},
                              static_cast<int>(cfg.backfill_days),
                              timing);
 

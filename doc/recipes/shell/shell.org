@@ -2140,3 +2140,7 @@ tangled into the runnable script library
 * Fx Forward Publishes
 
 - [[id:4109B65F-E110-5469-93F3-1D11AEBFAEB2][How do I run the fx_forward_publishes commands from the shell?]]
+
+* Fx Forward Operation
+
+- [[id:864F0727-3C95-587E-B4AE-3E9149E9C9FC][How do I run the fx_forward_operation commands from the shell?]]

@@ -64,7 +64,7 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | CORRA history the route serves | 7,305 rates, 1997-08-12 to 2026-11-06 | =curl .../valet/observations/AVG.INTWO/json?start_date=1990-01-01&end_date=2026-11-10= | 49445b9208 |
 | CORRA fixings a fresh environment stored | 272, 2025-10-06 to 2026-11-06, last =0.0252= | =compass check= (=ticks-smoke=), then a count of the fixings of the CORRA item | 49445b9208 |
-| Cases of =ores.marketdata.official.tests= | 47 pass | =ores.marketdata.official.tests= | 49445b9208 |
+| Cases of =ores.marketdata.official.tests= | 48 pass | =ores.marketdata.official.tests= | 49445b9208 |
 
 * Notes
 
@@ -91,7 +91,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4549: a renamed series reads as an empty list with no error | =boc.cpp= | Accepted | Observations of which none names the series are an error, and a case covers it. |
+| 2 | PR #4549: log the rows the window filter removes | =boc.cpp= | Declined | Every fetcher filters the same way, as a guard; the comment states why. |
+| 3 | PR #4549: comment style | =boc.cpp= | No change | The reviewer found it fine. |
+| 4 | PR #4549: test a row without the series and a value that is not text | =domain_boc_tests.cpp= | No change | =an_observation_without_the_series_or_its_value_is_skipped= and =a_malformed_valet_answer_is_an_error_and_not_a_fixing= cover both. |
+| 5 | PR #4549: checks that fail on main | PR body | No change | Out of scope, as the reviewer agreed. |
 
 * Result
 

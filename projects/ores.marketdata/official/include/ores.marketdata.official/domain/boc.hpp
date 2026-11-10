@@ -36,7 +36,9 @@ namespace ores::marketdata::official::domain {
  * API.
  *
  * Each item of =observations= holds its date in =d= and the series' value as text in
- * =<series>.v=, which the Bank publishes in percent. An item with no value is skipped.
+ * =<series>.v=, which the Bank publishes in percent. An item without the series or with an
+ * empty value is skipped, but observations of which none names the series are an error, so a
+ * renamed series is not read as an empty one.
  */
 [[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT
     std::expected<std::vector<published_fixing>, std::string>

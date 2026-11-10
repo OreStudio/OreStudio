@@ -143,3 +143,10 @@ TEST_CASE("the_boc_fetcher_refuses_a_name_that_is_not_a_series_name", "[domain][
     CHECK_FALSE(fetcher.fixings("", boc_day(2026, 11, 5), boc_day(2026, 11, 6)).has_value());
     CHECK(transport.asked.empty());
 }
+
+TEST_CASE("observations_of_which_none_names_the_series_are_an_error", "[domain][boc]") {
+    CHECK_FALSE(
+        parse_valet_observations(
+            R"({"observations":[{"d":"2026-11-05","AVG.INTWO2":{"v":"2.51"}}]})", "AVG.INTWO")
+            .has_value());
+}

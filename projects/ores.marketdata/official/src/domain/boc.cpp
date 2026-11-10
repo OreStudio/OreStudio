@@ -38,6 +38,7 @@ parse_valet_observations(std::string_view json, std::string_view series) {
     if (rows == nullptr || !rows->is_array())
         return std::unexpected("the answer holds no list of observations");
     std::vector<published_fixing> out;
+    bool names_the_series = false;
     for (const auto& item : rows->as_array()) {
         const auto* row = item.if_object();
         if (row == nullptr)
@@ -48,6 +49,7 @@ parse_valet_observations(std::string_view json, std::string_view series) {
         const auto* cell = row->if_contains(series);
         if (cell == nullptr)
             continue;
+        names_the_series = true;
         const auto* value = cell->is_object() ? cell->as_object().if_contains("v") : nullptr;
         if (value == nullptr || !value->is_string())
             return std::unexpected("the observation of " + std::string(date->as_string()) +
@@ -62,6 +64,8 @@ parse_valet_observations(std::string_view json, std::string_view series) {
             return std::unexpected(decimal.error());
         out.push_back({*parsed, std::string(series), std::move(*decimal)});
     }
+    if (!rows->as_array().empty() && !names_the_series)
+        return std::unexpected("no observation names the series '" + std::string(series) + "'");
     return out;
 }
 

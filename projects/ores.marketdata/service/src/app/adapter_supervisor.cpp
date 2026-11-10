@@ -238,9 +238,9 @@ bool adapter_supervisor::send_demand(const std::string& adapter_id) {
     const auto found = result.by_adapter.find(adapter_id);
     if (found != result.by_adapter.end())
         request.ids = found->second;
-    const auto served_now = result.served_by_adapter.contains(adapter_id)
-                                ? result.served_by_adapter.at(adapter_id)
-                                : std::set<served_id>{};
+    const auto served_now = result.served_by_adapter.contains(adapter_id) ?
+                                result.served_by_adapter.at(adapter_id) :
+                                std::set<served_id>{};
     {
         std::lock_guard lock(mu_);
         request.image = image_of(served_[adapter_id], served_now);

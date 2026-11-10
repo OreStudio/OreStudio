@@ -20,8 +20,8 @@
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -502,13 +502,13 @@ TEST_CASE("the schedule step is a kind of the catalogue this build executes", "[
 
 TEST_CASE("auto-approval brackets every other step of a run", "[workflow]") {
     const auto def = setup_definition();
-    const auto steps = def.build_steps(
-        request_json({declared("start_auto_approval"),
-                      declared("publish_bundle", R"({"bundles":["base"]})"),
-                      declared("build_calendars"),
-                      declared("end_auto_approval")}),
-        tenant_id,
-        correlation_id);
+    const auto steps =
+        def.build_steps(request_json({declared("start_auto_approval"),
+                                      declared("publish_bundle", R"({"bundles":["base"]})"),
+                                      declared("build_calendars"),
+                                      declared("end_auto_approval")}),
+                        tenant_id,
+                        correlation_id);
 
     const auto reads = [&](const std::string& reader, const std::string& name) {
         for (const auto& step : steps)

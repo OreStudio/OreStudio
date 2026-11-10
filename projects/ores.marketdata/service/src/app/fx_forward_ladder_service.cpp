@@ -114,8 +114,10 @@ std::pair<usd_leg, spot_reading> read_usd_leg(context ctx,
         return {usd_leg{.currency = currency, .value = spot->value, .usd_is_base = false}, *spot};
     if (auto spot = find_spot(ctx, {"USD", currency}, as_of, party_id))
         return {usd_leg{.currency = currency, .value = spot->value, .usd_is_base = true}, *spot};
-    throw refused("No spot of " + currency + " against USD was observed at or before the as-of, "
-                  "so the cross has no USD leg for " + currency + ".");
+    throw refused("No spot of " + currency +
+                  " against USD was observed at or before the as-of, "
+                  "so the cross has no USD leg for " +
+                  currency + ".");
 }
 
 funding_curve read_funding_curve(context ctx,
@@ -154,9 +156,9 @@ funding_curve read_funding_curve(context ctx,
                   .publish_id = boost::uuids::to_string(set->id),
                   .as_of = set->as_of,
                   .published_by = set->published_by,
-                  .state_code = set->withdrawn_at    ? "withdrawn"
-                                : set->superseded_at ? "superseded"
-                                                     : "published"};
+                  .state_code = set->withdrawn_at  ? "withdrawn" :
+                                set->superseded_at ? "superseded" :
+                                                     "published"};
     return out;
 }
 
@@ -191,8 +193,7 @@ read_calendar(context ctx, const std::string& pair_code, std::string& codes) {
     return joint_calendar(calendars);
 }
 
-computed_fx_forward_set
-answer(context ctx, const fx_forward_inputs& request) {
+computed_fx_forward_set answer(context ctx, const fx_forward_inputs& request) {
     const auto pair = parse_pair(request.pair_code);
     if (!pair)
         throw refused(pair.error());
@@ -290,7 +291,7 @@ answer(context ctx, const fx_forward_inputs& request) {
 }
 
 computed_fx_forward_set fx_forward_ladder_service::compute(context ctx,
-                                                          const fx_forward_inputs& inputs) {
+                                                           const fx_forward_inputs& inputs) {
     return answer(ctx, inputs);
 }
 

@@ -692,9 +692,8 @@ public:
             reply(nats_,
                   msg,
                   set_approvals_mode_response{
-                      .result = approval_result(outcome::denied,
-                                                "forbidden",
-                                                "You may not change the approvals mode.")});
+                      .result = approval_result(
+                          outcome::denied, "forbidden", "You may not change the approvals mode.")});
             return;
         }
         auto req = decode<set_approvals_mode_request>(msg);

@@ -44,8 +44,10 @@ const auto quotes_id = surface_id("00000000-0000-4000-8000-0000000000e1");
 const std::string quotes_uri =
     "oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD";
 
-market_series surface_series(const boost::uuids::uuid& series_id, const boost::uuids::uuid& party,
-                     std::string uri, std::string provider) {
+market_series surface_series(const boost::uuids::uuid& series_id,
+                             const boost::uuids::uuid& party,
+                             std::string uri,
+                             std::string provider) {
     market_series s;
     s.id = series_id;
     s.party_id = party;
@@ -79,10 +81,11 @@ system_surface_blueprints eurusd() {
         s.contributor_code = "derived";
         system.sources.push_back(s);
     }
-    system.series.push_back(surface_series(output_id, surface_system_party,
-                                   "oresmd://fx/EUR?type=series&instrument=fx_vol_surface"
-                                   "&quote=rate_lnvol&ccy=USD&surface_id=EURUSD_SSVI",
-                                   "derived"));
+    system.series.push_back(surface_series(output_id,
+                                           surface_system_party,
+                                           "oresmd://fx/EUR?type=series&instrument=fx_vol_surface"
+                                           "&quote=rate_lnvol&ccy=USD&surface_id=EURUSD_SSVI",
+                                           "derived"));
     system.series.push_back(surface_series(quotes_id, surface_system_party, quotes_uri, "derived"));
     return system;
 }
@@ -137,8 +140,8 @@ TEST_CASE("a party that already holds its surface blueprint is planned no row tw
           "[party_surfaces]") {
     party_surface_holdings acme;
     acme.party_id = acme_uk;
-    acme.series = {surface_series(surface_id("00000000-0000-4000-8000-0000000000a9"), acme_uk, quotes_uri,
-                          "derived")};
+    acme.series = {surface_series(
+        surface_id("00000000-0000-4000-8000-0000000000a9"), acme_uk, quotes_uri, "derived")};
     const auto first = plan_party_surfaces(eurusd(), acme);
     REQUIRE(first.blueprints_to_write.size() == 1);
 

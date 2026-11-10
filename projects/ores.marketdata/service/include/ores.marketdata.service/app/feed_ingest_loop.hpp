@@ -93,9 +93,9 @@ namespace ores::marketdata::service::app {
  * stored the tick, on core NATS with no wait for an acknowledgement. A tick is perishable, because
  * an old tick that waits while a newer one arrives is worse than a tick that is lost. So the queue
  * is bounded and a full queue drops its oldest tick, and the worker drops a tick that has aged past
- * the age limit of its source when it takes the tick. A batch takes about one second, so a tick does not wait long
- * inside a slow batch, and a tick that has aged past the limit by the time its batch commits is
- * stored and not republished.
+ * the age limit of its source when it takes the tick. A batch takes about one second, so a tick
+ * does not wait long inside a slow batch, and a tick that has aged past the limit by the time its
+ * batch commits is stored and not republished.
  *
  * A store that does not answer does not stop the live path. The loop leaves the
  * store alone for a growing wait, and it still republishes the ticks it could not

@@ -86,8 +86,8 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto resp = ores::marketdata::service::app::fx_forward_publish_service::publish(
-            *req_ctx, *req);
+        const auto resp =
+            ores::marketdata::service::app::fx_forward_publish_service::publish(*req_ctx, *req);
         BOOST_LOG_SEV(fx_forward_publish_operations_handler_lg(), info)
             << "FX forward publish of " << req->pair_code << ": "
             << (resp.success ? resp.state_code : "refused: " + resp.message);

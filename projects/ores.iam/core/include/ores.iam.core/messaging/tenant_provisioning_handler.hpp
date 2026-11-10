@@ -34,9 +34,9 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
-#include "ores.iam.core/messaging/population_knobs.hpp"
 #include "ores.iam.core/messaging/party_curve_blueprints.hpp"
 #include "ores.iam.core/messaging/party_surface_blueprints.hpp"
+#include "ores.iam.core/messaging/population_knobs.hpp"
 #include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include "ores.iam.core/messaging/report_schedule_selection.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
@@ -49,6 +49,7 @@
 #include "ores.iam.core/service/seed_profile_service.hpp"
 #include "ores.iam.core/service/seed_profile_step_service.hpp"
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
+#include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
@@ -64,14 +65,13 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.inbox.api/messaging/approval_operations_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/calendar_materialisation_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_blueprint_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_pillar_protocol.hpp"
 #include "ores.refdata.api/messaging/fx_vol_surface_pillar_source_protocol.hpp"
+#include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.refdata.api/messaging/ir_curve_bootstrap_pillar_protocol.hpp"
 #include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
@@ -1110,13 +1110,13 @@ private:
                         << ores::platform::time::datetime::to_iso8601_utc(*published.published_at)
                         << " by " << published.published_by << ", " << computed.points.size()
                         << " point(s)";
-                    outcome.published.push_back(names.at(it->first) + " as of " +
-                                                ores::platform::time::datetime::to_iso8601_utc(as_of));
+                    outcome.published.push_back(
+                        names.at(it->first) + " as of " +
+                        ores::platform::time::datetime::to_iso8601_utc(as_of));
                 } else if (published.success) {
                     BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
-                        << label << ": " << names.at(it->first)
-                        << " waits for approval: request " << published.approval_request_id
-                        << " is " << published.state_code;
+                        << label << ": " << names.at(it->first) << " waits for approval: request "
+                        << published.approval_request_id << " is " << published.state_code;
                     outcome.not_published.push_back(
                         names.at(it->first) + ": the request " + published.approval_request_id +
                         " is " + published.state_code + " and no person has answered it");
@@ -1261,10 +1261,10 @@ private:
 
         ores::marketdata::messaging::list_market_series_request series;
         series.limit = 5000;
-        series.filter = ores::marketdata::messaging::market_series_filter{
-            .provider_code = std::nullopt,
-            .id_one_of = series_ids,
-            .provider_code_one_of = std::nullopt};
+        series.filter =
+            ores::marketdata::messaging::market_series_filter{.provider_code = std::nullopt,
+                                                              .id_one_of = series_ids,
+                                                              .provider_code_one_of = std::nullopt};
         system.series = system_client.request(series).market_series;
         return system;
     }
@@ -1382,9 +1382,10 @@ private:
      * A curve that does not publish fails the step, named with its party. A second run writes no
      * row twice and publishes only the curves that are still missing.
      */
-    void publish_party_curves_step(const ores::service::messaging::workflow_step_context& wf,
-                                   const ores::iam::workflow::provision_tenant_step_command& command,
-                                   const step_actor& actor) {
+    void
+    publish_party_curves_step(const ores::service::messaging::workflow_step_context& wf,
+                              const ores::iam::workflow::provision_tenant_step_command& command,
+                              const step_actor& actor) {
         constexpr auto quote_patience = std::chrono::minutes{3};
         constexpr auto retry_interval = std::chrono::seconds{10};
         constexpr std::string_view publish_reason =
@@ -1418,7 +1419,8 @@ private:
                 make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
 
             const auto started = std::chrono::steady_clock::now();
-            auto plan = plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
+            auto plan =
+                plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
             while (!plan.waiting.empty() &&
                    std::chrono::steady_clock::now() < started + quote_patience) {
                 const auto line = party_name + ": " + std::to_string(plan.waiting.size()) +
@@ -1430,7 +1432,8 @@ private:
                                     .message = line,
                                     .context = {}});
                 std::this_thread::sleep_for(retry_interval);
-                plan = plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
+                plan =
+                    plan_party_curves(system, read_party_curve_holdings(party_client, party->id));
             }
             write_party_curve_plan(party_client, plan, party_name);
             for (const auto& waiting : plan.waiting)
@@ -1443,8 +1446,11 @@ private:
                 if (!published.contains(id))
                     curves.emplace_back(id, curve.name);
             }
-            auto outcome = publish_curves(party_client, curves, publish_reason,
-                                          "publish_party_curves " + party_name, step_log);
+            auto outcome = publish_curves(party_client,
+                                          curves,
+                                          publish_reason,
+                                          "publish_party_curves " + party_name,
+                                          step_log);
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "publish_party_curves: " << party_name << ": published "
                 << outcome.published.size() << ", already published "
@@ -1474,7 +1480,8 @@ private:
     }
 
     /// The system tenant's surface blueprints, with every series they name.
-    system_surface_blueprints read_system_surface_blueprints(internal_request_client& system_client) {
+    system_surface_blueprints
+    read_system_surface_blueprints(internal_request_client& system_client) {
         system_surface_blueprints system;
         ores::refdata::messaging::list_fx_vol_surface_blueprints_request blueprints;
         blueprints.limit = 1000;
@@ -1517,8 +1524,10 @@ private:
 
         ores::marketdata::messaging::list_market_series_request series;
         series.limit = 5000;
-        series.filter = ores::marketdata::messaging::market_series_filter{
-            .provider_code = std::nullopt, .id_one_of = series_ids, .provider_code_one_of = std::nullopt};
+        series.filter =
+            ores::marketdata::messaging::market_series_filter{.provider_code = std::nullopt,
+                                                              .id_one_of = series_ids,
+                                                              .provider_code_one_of = std::nullopt};
         system.series = system_client.request(series).market_series;
         return system;
     }
@@ -1556,16 +1565,16 @@ private:
         if (!plan.series_to_write.empty()) {
             ores::marketdata::messaging::put_many_market_series_request put;
             for (const auto& s : plan.series_to_write)
-                put.changes.push_back({.write = {.id = s.id,
-                                                 .party_id = s.party_id,
-                                                 .oresmd_uri = s.oresmd_uri,
-                                                 .provider_code = s.provider_code,
-                                                 .series_subclass = s.series_subclass,
-                                                 .derivation_kind = s.derivation_kind,
-                                                 .derivation_config_id = s.derivation_config_id,
-                                                 .derivation_config_version =
-                                                     s.derivation_config_version},
-                                       .precondition = any});
+                put.changes.push_back(
+                    {.write = {.id = s.id,
+                               .party_id = s.party_id,
+                               .oresmd_uri = s.oresmd_uri,
+                               .provider_code = s.provider_code,
+                               .series_subclass = s.series_subclass,
+                               .derivation_kind = s.derivation_kind,
+                               .derivation_config_id = s.derivation_config_id,
+                               .derivation_config_version = s.derivation_config_version},
+                     .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
             check(party_client.request(put), "output series");
@@ -1573,17 +1582,18 @@ private:
         if (!plan.blueprints_to_write.empty()) {
             ores::refdata::messaging::put_many_fx_vol_surface_blueprints_request put;
             for (const auto& b : plan.blueprints_to_write)
-                put.changes.push_back({.write = {.id = b.id,
-                                                 .output_series_id = b.output_series_id,
-                                                 .name = b.name,
-                                                 .base_currency_code = b.base_currency_code,
-                                                 .quote_currency_code = b.quote_currency_code,
-                                                 .fx_option_convention_id = b.fx_option_convention_id,
-                                                 .smile_model = b.smile_model,
-                                                 .expiry_interpolation = b.expiry_interpolation,
-                                                 .output_expiries = b.output_expiries,
-                                                 .output_strikes = b.output_strikes},
-                                       .precondition = any});
+                put.changes.push_back(
+                    {.write = {.id = b.id,
+                               .output_series_id = b.output_series_id,
+                               .name = b.name,
+                               .base_currency_code = b.base_currency_code,
+                               .quote_currency_code = b.quote_currency_code,
+                               .fx_option_convention_id = b.fx_option_convention_id,
+                               .smile_model = b.smile_model,
+                               .expiry_interpolation = b.expiry_interpolation,
+                               .output_expiries = b.output_expiries,
+                               .output_strikes = b.output_strikes},
+                     .precondition = any});
             put.intent.reason_code = "system.new_record";
             put.intent.commentary = std::string(commentary);
             check(party_client.request(put), "blueprints");
@@ -1626,10 +1636,10 @@ private:
      * The step waits up to three minutes for those series, writes the rows, and fails naming each
      * blueprint still waiting. A second run writes no row twice.
      */
-    void
-    give_party_surface_blueprints_step(const ores::service::messaging::workflow_step_context& wf,
-                                       const ores::iam::workflow::provision_tenant_step_command& command,
-                                       const step_actor& actor) {
+    void give_party_surface_blueprints_step(
+        const ores::service::messaging::workflow_step_context& wf,
+        const ores::iam::workflow::provision_tenant_step_command& command,
+        const step_actor& actor) {
         constexpr auto quote_patience = std::chrono::minutes{3};
         constexpr auto retry_interval = std::chrono::seconds{10};
 
@@ -1680,8 +1690,8 @@ private:
             write_party_surface_plan(party_client, plan, party_name);
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "give_party_surface_blueprints: " << party_name << ": "
-                << plan.blueprints_to_write.size() << " written, " << plan.ready.size()
-                << " held, " << plan.waiting.size() << " waiting";
+                << plan.blueprints_to_write.size() << " written, " << plan.ready.size() << " held, "
+                << plan.waiting.size() << " waiting";
             for (const auto& w : plan.waiting)
                 waiting.push_back(party_name + ": " + w);
             result.parties.push_back(boost::uuids::to_string(party->id));
@@ -2075,7 +2085,9 @@ private:
                 auto party_client =
                     make_step_client(command.tenant_id, actor.account_id, party.id, actor.username);
                 for (const auto& feed : feeds_of_party(arguments, id_text, party.full_name))
-                    subscribe_party(party_client, party.id, feed.provider,
+                    subscribe_party(party_client,
+                                    party.id,
+                                    feed.provider,
                                     source_of(feed.provider, feed.source));
                 subscribed.push_back(id_text);
             }

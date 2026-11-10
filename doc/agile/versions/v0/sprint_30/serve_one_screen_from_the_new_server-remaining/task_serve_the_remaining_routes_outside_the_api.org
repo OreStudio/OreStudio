@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-remaining-routes-outside-the-api
-#+pr:
+#+pr: 4563
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-10
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4563][#4563]] | [http] Share the record routes' helpers in one unit |
 
 * Review
 

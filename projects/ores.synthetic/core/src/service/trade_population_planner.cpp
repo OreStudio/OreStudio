@@ -1240,8 +1240,8 @@ build_rate_trade(const domain::trade_generation_scope& scope,
     const auto slot = entry.slot;
     const auto& type = entry.trade_type_code;
     const auto name = slot_name(scope, slot);
-    const auto position = slot % 2 == 0 ? tb::option_position::long_option
-                                        : tb::option_position::short_option;
+    const auto position =
+        slot % 2 == 0 ? tb::option_position::long_option : tb::option_position::short_option;
     /*
      * A rate is a decimal in the store, not a percentage: one per cent to six
      * per cent, quantised to a ten-thousandth so a decimal column holds it
@@ -1255,8 +1255,8 @@ build_rate_trade(const domain::trade_generation_scope& scope,
                                       .maturity = maturity,
                                       .fixed_rate = fixed_rate,
                                       .index = domestic[slot % domestic.size()],
-                                      .fixed_side = slot % 2 == 0 ? tb::side::pay
-                                                                  : tb::side::receive};
+                                      .fixed_side =
+                                          slot % 2 == 0 ? tb::side::pay : tb::side::receive};
     };
     const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
     const auto swap = swap_from(start, add_years(start, static_cast<int>(years)));
@@ -1274,12 +1274,11 @@ build_rate_trade(const domain::trade_generation_scope& scope,
                                          scope.currency_code +
                                          ", so no cross currency swap can state its foreign leg.");
         const auto& index = foreign[slot % foreign.size()];
-        return built(tb::cross_currency_swap_builder(
-                         conventions,
-                         {.domestic = swap,
-                          .foreign_notional = money(entry.notional),
-                          .foreign_currency = index.index()->subject(),
-                          .foreign_index = index})
+        return built(tb::cross_currency_swap_builder(conventions,
+                                                     {.domestic = swap,
+                                                      .foreign_notional = money(entry.notional),
+                                                      .foreign_currency = index.index()->subject(),
+                                                      .foreign_index = index})
                          .build());
     }
     if (type == "ForwardRateAgreement") {
@@ -1288,16 +1287,16 @@ build_rate_trade(const domain::trade_generation_scope& scope,
          * future: it starts in three months and runs for six.
          */
         const auto from = add_months(scope.as_of_date, 3);
-        return built(tb::forward_rate_agreement_builder(
-                         conventions,
-                         {.period = swap_from(from, add_months(from, 6)), .position = position})
-                         .build());
+        return built(
+            tb::forward_rate_agreement_builder(
+                conventions, {.period = swap_from(from, add_months(from, 6)), .position = position})
+                .build());
     }
     if (type == "CapFloor")
         return built(tb::cap_floor_builder(conventions,
                                            {.swap = swap,
-                                            .kind = slot % 2 == 0 ? tb::cap_floor_kind::cap
-                                                                  : tb::cap_floor_kind::floor,
+                                            .kind = slot % 2 == 0 ? tb::cap_floor_kind::cap :
+                                                                    tb::cap_floor_kind::floor,
                                             .position = position})
                          .build());
     if (type == "Swaption") {
@@ -1307,20 +1306,19 @@ build_rate_trade(const domain::trade_generation_scope& scope,
          */
         const auto expiry = add_years(scope.as_of_date, 1);
         const auto swap_start = year_month_day{sys_days{expiry} + days{2}};
-        return built(tb::swaption_builder(
-                         conventions,
-                         {.swap = swap_from(swap_start,
-                                            add_years(swap_start, static_cast<int>(years))),
-                          .expiry = expiry,
-                          .position = position,
-                          .settles = tb::settlement::cash})
-                         .build());
+        return built(
+            tb::swaption_builder(
+                conventions,
+                {.swap = swap_from(swap_start, add_years(swap_start, static_cast<int>(years))),
+                 .expiry = expiry,
+                 .position = position,
+                 .settles = tb::settlement::cash})
+                .build());
     }
     if (type == "CallableSwap")
-        return built(tb::callable_swap_builder(conventions,
-                                               {.swap = swap,
-                                                .first_call = add_months(start, 6),
-                                                .position = position})
+        return built(tb::callable_swap_builder(
+                         conventions,
+                         {.swap = swap, .first_call = add_months(start, 6), .position = position})
                          .build());
     if (type == "KnockOutSwap")
         return built(tb::knock_out_swap_builder(conventions,
@@ -1333,9 +1331,10 @@ build_rate_trade(const domain::trade_generation_scope& scope,
         return built(
             tb::flexi_swap_builder(conventions, {.swap = swap, .position = position}).build());
     if (type == "BalanceGuaranteedSwap")
-        return built(tb::balance_guaranteed_swap_builder(
-                         conventions, {.swap = swap, .reference_security = entry.internal_identifier})
-                         .build());
+        return built(
+            tb::balance_guaranteed_swap_builder(
+                conventions, {.swap = swap, .reference_security = entry.internal_identifier})
+                .build());
     throw trade_population_error("The rate trade type " + type +
                                  " states no builder this planner knows.");
 }
@@ -2204,15 +2203,14 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
             .notional = ores::utility::decimal::decimal::from_double(entry.notional).value(),
             .currency = scope.currency_code,
             .start = start,
-            .maturity =
-                add_years(start, static_cast<int>(std::clamp(drawn, min_years, max_years))),
+            .maturity = add_years(start, static_cast<int>(std::clamp(drawn, min_years, max_years))),
             .fixed_rate = ores::utility::decimal::decimal::from_double(
                               std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0)
                               .value(),
             .index = *index,
             .base_cpi = base_cpi_from(name),
-            .fixed_side = slot % 2 == 0 ? ores::trading::builders::side::pay
-                                        : ores::trading::builders::side::receive};
+            .fixed_side = slot % 2 == 0 ? ores::trading::builders::side::pay :
+                                          ores::trading::builders::side::receive};
         entry.instruments = swap_batch_of(
             ores::trading::builders::inflation_swap_builder(conventions, terms).build(),
             entry.trade_type_code,

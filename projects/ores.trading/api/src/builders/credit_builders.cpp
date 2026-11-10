@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "leg_rows.hpp"
 #include "ores.trading.api/builders/cadence.hpp"
 #include <algorithm>
 #include <optional>
@@ -92,24 +93,11 @@ domain::credit_instrument header_of(std::string_view trade_type,
     return row;
 }
 
-domain::swap_leg leg_of(
+/// A credit leg belongs to one of its product's groups of payments.
+domain::swap_leg grouped_leg(
     int leg_number, std::string group, bool payer, std::string type, const std::string& currency) {
-    domain::swap_leg row;
-    row.identity.leg_number = leg_number;
+    auto row = rows::swap_leg(leg_number, payer, std::move(type), currency);
     row.leg_group = std::move(group);
-    row.payer = payer;
-    row.leg_type_code = std::move(type);
-    row.currency = currency;
-    return row;
-}
-
-domain::swap_leg_amount
-amount_of(int leg_number, decimal amount, std::optional<std::chrono::year_month_day> date = {}) {
-    domain::swap_leg_amount row;
-    row.leg_number = leg_number;
-    row.sequence_number = 1;
-    row.amount = amount;
-    row.start_date = date;
     return row;
 }
 
@@ -124,19 +112,14 @@ void add_coupon_leg(domain::credit_instrument_data& out,
                     const credit_protection_terms& terms,
                     const premium_conventions& premium) {
     const auto& convention = premium.convention;
-    auto leg = leg_of(leg_number, std::move(group), payer, "Fixed", terms.currency.get());
+    auto leg = grouped_leg(leg_number, std::move(group), payer, "Fixed", terms.currency.get());
     leg.day_count_fraction_code = convention.day_count_fraction;
     leg.business_day_convention_code = convention.payment_convention;
     leg.payment_frequency_code = convention.frequency;
     out.legs.push_back(std::move(leg));
-    out.leg_amounts.push_back(amount_of(leg_number, terms.notional.get()));
+    out.leg_amounts.push_back(rows::leg_amount(leg_number, terms.notional.get()));
 
-    domain::swap_leg_rate rate;
-    rate.leg_number = leg_number;
-    rate.rate_role = "fixed";
-    rate.sequence_number = 1;
-    rate.value = terms.running_spread.get();
-    out.leg_rates.push_back(rate);
+    out.leg_rates.push_back(rows::leg_rate(leg_number, "fixed", terms.running_spread.get()));
 
     domain::instrument_schedule schedule;
     schedule.owner_role = "swap";
@@ -311,11 +294,11 @@ credit_linked_swap_builder::build() const {
     // the coupons and the redemption: the protection seller pays it and
     // receives them.
     const bool payer = terms_.side.get() == protection::buy;
-    out.legs.push_back(leg_of(1, "independent", !payer, "Cashflow", terms_.currency.get()));
-    out.leg_amounts.push_back(amount_of(1, terms_.notional.get(), terms_.start.get()));
+    out.legs.push_back(grouped_leg(1, "independent", !payer, "Cashflow", terms_.currency.get()));
+    out.leg_amounts.push_back(rows::leg_amount(1, terms_.notional.get(), terms_.start.get()));
     add_coupon_leg(out, 2, "contingent", payer, terms_, *premium);
-    out.legs.push_back(leg_of(3, "contingent", payer, "Cashflow", terms_.currency.get()));
-    out.leg_amounts.push_back(amount_of(3, terms_.notional.get(), terms_.maturity.get()));
+    out.legs.push_back(grouped_leg(3, "contingent", payer, "Cashflow", terms_.currency.get()));
+    out.leg_amounts.push_back(rows::leg_amount(3, terms_.notional.get(), terms_.maturity.get()));
     return out;
 }
 
@@ -365,12 +348,12 @@ risk_participation_agreement_builder::build() const {
     out.schedules = std::move(swap->schedules);
 
     const int fee_leg = static_cast<int>(out.legs.size()) + 1;
-    out.legs.push_back(leg_of(fee_leg,
-                              "protection_fee",
-                              terms_.side.get() == protection::buy,
-                              "Cashflow",
-                              underlying.currency.get()));
-    out.leg_amounts.push_back(amount_of(fee_leg, terms_.fee.get(), underlying.start.get()));
+    out.legs.push_back(grouped_leg(fee_leg,
+                                   "protection_fee",
+                                   terms_.side.get() == protection::buy,
+                                   "Cashflow",
+                                   underlying.currency.get()));
+    out.leg_amounts.push_back(rows::leg_amount(fee_leg, terms_.fee.get(), underlying.start.get()));
     return out;
 }
 

@@ -70,21 +70,21 @@ inline marketdata::conventions::convention_set ore_example_conventions() {
     usd_swap.oresmd_uri = "oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M";
 
     // The seed's inflation swap conventions of the indices the tests draw.
-    const auto inflation = [](std::string index, std::string calendar, std::string lag,
-                              bool interpolated) {
-        refdata::domain::inflation_swap_convention row;
-        row.id = index + "_INFLATIONSWAP";
-        row.fix_calendar = calendar;
-        row.fix_convention = "ModifiedFollowing";
-        row.day_count_fraction = "30/360";
-        row.index = index;
-        row.interpolated = interpolated;
-        row.observation_lag = std::move(lag);
-        row.inflation_calendar = std::move(calendar);
-        row.inflation_convention = "ModifiedFollowing";
-        row.oresmd_uri = "oresmd://inflation/" + index + "?type=fixing&index=inflation";
-        return row;
-    };
+    const auto inflation =
+        [](std::string index, std::string calendar, std::string lag, bool interpolated) {
+            refdata::domain::inflation_swap_convention row;
+            row.id = index + "_INFLATIONSWAP";
+            row.fix_calendar = calendar;
+            row.fix_convention = "ModifiedFollowing";
+            row.day_count_fraction = "30/360";
+            row.index = index;
+            row.interpolated = interpolated;
+            row.observation_lag = std::move(lag);
+            row.inflation_calendar = std::move(calendar);
+            row.inflation_convention = "ModifiedFollowing";
+            row.oresmd_uri = "oresmd://inflation/" + index + "?type=fixing&index=inflation";
+            return row;
+        };
     return {.ibor_indices = {index, libor},
             .swaps = {swap, usd_swap},
             .cds = {cds},

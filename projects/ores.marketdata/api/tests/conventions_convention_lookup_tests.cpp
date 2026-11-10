@@ -272,7 +272,8 @@ TEST_CASE("two_cds_conventions_with_one_id_are_refused", "[conventions][conventi
     CHECK(found.error().kind == lookup_refusal_kind::more_than_one_match);
 }
 
-TEST_CASE("an_inflation_swap_convention_is_found_by_its_index", "[conventions][convention_lookup]") {
+TEST_CASE("an_inflation_swap_convention_is_found_by_its_index",
+          "[conventions][convention_lookup]") {
     constexpr auto ukrpi = "oresmd://inflation/UKRPI?type=fixing&index=inflation";
     convention_set set;
     auto convention = convention_at<rd::inflation_swap_convention>("UKRPI_INFLATIONSWAP", ukrpi);

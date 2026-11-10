@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.api/builders/rate_builders.hpp"
+#include "leg_rows.hpp"
 #include <algorithm>
 #include <array>
 #include <utility>
@@ -157,10 +158,11 @@ swap_result forward_rate_agreement_builder::build() const {
     const auto& period = terms_.period;
     const auto definition = conventions_.index_definition_of(period.index.get());
     if (!definition)
-        return std::unexpected(build_error{
-            "index", definition.error().reference + ": " + definition.error().reason});
+        return std::unexpected(
+            build_error{"index", definition.error().reference + ": " + definition.error().reason});
     if (!std::holds_alternative<refdata::domain::ibor_index_convention>(*definition))
-        return std::unexpected(build_error{"index", "a forward rate agreement needs an Ibor index"});
+        return std::unexpected(
+            build_error{"index", "a forward rate agreement needs an Ibor index"});
 
     auto out = swap_of(conventions_, period);
     if (!out)
@@ -220,12 +222,13 @@ swap_result swaption_builder::build() const {
     fact.settlement_type = cash ? "Cash" : "Physical";
     fact.long_short = long_short_of(terms_.position.get());
     out->facts = std::move(fact);
-    // A cash settled swaption states how the cash is computed; ORE's samples use the par yield curve.
-    out->options.push_back(option_of(terms_.position.get(),
-                                     "European",
-                                     cash ? "Cash" : "Physical",
-                                     cash ? std::optional<std::string>("ParYieldCurve")
-                                          : std::nullopt));
+    // A cash settled swaption states how the cash is computed; ORE's samples use the par yield
+    // curve.
+    out->options.push_back(
+        option_of(terms_.position.get(),
+                  "European",
+                  cash ? "Cash" : "Physical",
+                  cash ? std::optional<std::string>("ParYieldCurve") : std::nullopt));
     add_exercise_dates(*out, {terms_.expiry.get()});
     return out;
 }
@@ -246,8 +249,7 @@ swap_result callable_swap_builder::build() const {
     out->facts = domain::callable_swap_instrument{};
     out->options.push_back(option_of(terms_.position.get(), "Bermudan", "Physical"));
     int number = 0;
-    for (auto call = first; call < terms_.swap.maturity.get();
-         call = call.year() + std::chrono::years{1} / call.month() / call.day()) {
+    for (auto call = first; call < terms_.swap.maturity.get(); call += std::chrono::years{1}) {
         domain::callable_swap_call_date row;
         row.sequence_number = ++number;
         row.call_date = call;
@@ -269,8 +271,7 @@ swap_result knock_out_swap_builder::build() const {
         return std::unexpected(build_error{"barrier_level", "must be positive"});
     const auto barrier_start = terms_.barrier_start.get();
     if (barrier_start < terms_.swap.start.get() || barrier_start >= terms_.swap.maturity.get())
-        return std::unexpected(
-            build_error{"barrier_start", "must be within the swap's life"});
+        return std::unexpected(build_error{"barrier_start", "must be within the swap's life"});
     auto out = swap_of(conventions_, terms_.swap);
     if (!out)
         return out;
@@ -348,36 +349,17 @@ swap_result inflation_swap_builder::build() const {
         return std::unexpected(build_error{"base_cpi", "must be positive"});
     const auto convention = conventions_.inflation_swap_convention_of(terms_.index.get());
     if (!convention)
-        return std::unexpected(build_error{
-            "index", convention.error().reference + ": " + convention.error().reason});
+        return std::unexpected(
+            build_error{"index", convention.error().reference + ": " + convention.error().reason});
 
     const auto start = terms_.start.get();
     const auto maturity = terms_.maturity.get();
     const bool fixed_pays = terms_.fixed_side.get() == side::pay;
     const auto leg_of = [&](int number, bool payer, std::string type) {
-        domain::swap_leg row;
-        row.identity.leg_number = number;
-        row.payer = payer;
-        row.leg_type_code = std::move(type);
-        row.currency = terms_.currency.get();
+        auto row = rows::swap_leg(number, payer, std::move(type), terms_.currency.get());
         row.day_count_fraction_code = convention->day_count_fraction;
         row.business_day_convention_code = convention->fix_convention;
         row.payment_frequency_code = "Once";
-        return row;
-    };
-    const auto amount_of = [&](int number) {
-        domain::swap_leg_amount row;
-        row.leg_number = number;
-        row.sequence_number = 1;
-        row.amount = terms_.notional.get();
-        return row;
-    };
-    const auto rate_of = [&](int number, decimal value) {
-        domain::swap_leg_rate row;
-        row.leg_number = number;
-        row.rate_role = "fixed";
-        row.sequence_number = 1;
-        row.value = value;
         return row;
     };
     const auto schedule_of = [&](int number, std::string kind) {
@@ -405,8 +387,8 @@ swap_result inflation_swap_builder::build() const {
     auto fixed = leg_of(1, fixed_pays, "ZeroCouponFixed");
     fixed.zero_coupon_compounding = "Compounded";
     out.legs.push_back(std::move(fixed));
-    out.leg_amounts.push_back(amount_of(1));
-    out.leg_rates.push_back(rate_of(1, terms_.fixed_rate.get()));
+    out.leg_amounts.push_back(rows::leg_amount(1, terms_.notional.get()));
+    out.leg_rates.push_back(rows::leg_rate(1, "fixed", terms_.fixed_rate.get()));
     auto fixed_schedule = schedule_of(1, "rules");
     fixed_schedule.start_date = start;
     fixed_schedule.end_date = maturity;
@@ -424,8 +406,8 @@ swap_result inflation_swap_builder::build() const {
     cpi.subtract_inflation_notional = true;
     cpi.notional_final_exchange = true;
     out.legs.push_back(std::move(cpi));
-    out.leg_amounts.push_back(amount_of(2));
-    out.leg_rates.push_back(rate_of(2, decimal{}));
+    out.leg_amounts.push_back(rows::leg_amount(2, terms_.notional.get()));
+    out.leg_rates.push_back(rows::leg_rate(2, "fixed", decimal{}));
     out.schedules.push_back(schedule_of(2, "dates"));
     domain::instrument_schedule_date payment;
     payment.owner_role = "swap";

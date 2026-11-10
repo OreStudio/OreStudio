@@ -219,10 +219,10 @@ TEST_CASE("a_knock_out_swap_with_a_barrier_type_ore_lacks_fails", rate_tags) {
 
 TEST_CASE("a_balance_guaranteed_swap_states_one_tranche_of_its_security", rate_tags) {
     const conv::convention_lookup lookup(rate_conventions());
-    const auto swap = balance_guaranteed_swap_builder(
-                          lookup,
-                          {.swap = swap_terms(), .reference_security = std::string("SEC-1")})
-                          .build();
+    const auto swap =
+        balance_guaranteed_swap_builder(
+            lookup, {.swap = swap_terms(), .reference_security = std::string("SEC-1")})
+            .build();
     REQUIRE(swap.has_value());
     REQUIRE(swap->tranches.size() == 1);
     CHECK(swap->tranches[0].security_id == "SEC-1");

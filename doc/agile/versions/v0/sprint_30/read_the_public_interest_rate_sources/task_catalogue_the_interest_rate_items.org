@@ -93,7 +93,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4545: a scope matches its item by the exact URI string | =demand_calculator.cpp= | Declined | The demand matches items by their URI string everywhere: the items of a provider and a party's restriction do too, and the mappings and scopes store the canonical URI. A scope that names its item in another spelling fails in those paths as well. |
+| 2 | PR #4545: a scoped feed with no items is asked for nothing without a log line | =demand_calculator.cpp= | Declined | The supervisor logs each adapter's demand as "accepted N and rejected M of K id(s)", so an empty demand shows as 0 of 0. A party's restriction can also empty a feed's demand for a valid reason. |
 
 * Result
 

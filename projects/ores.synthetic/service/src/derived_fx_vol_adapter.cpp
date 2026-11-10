@@ -288,6 +288,7 @@ void derived_fx_vol_adapter::start() {
     demand_sub_ =
         nats_.subscribe(subject, [this](ores::nats::message msg) { demand_message(msg); });
     thread_ = std::thread(&derived_fx_vol_adapter::loop, this);
+    heartbeat_thread_ = std::thread(&derived_fx_vol_adapter::heartbeat_loop, this);
 }
 
 void derived_fx_vol_adapter::stop() {
@@ -295,6 +296,8 @@ void derived_fx_vol_adapter::stop() {
     demand_sub_.reset();
     if (thread_.joinable())
         thread_.join();
+    if (heartbeat_thread_.joinable())
+        heartbeat_thread_.join();
 }
 
 bool derived_fx_vol_adapter::load_universe() {
@@ -382,25 +385,12 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
         ready_.store(true, std::memory_order_release);
     }
     if (now >= next_announce_) {
-        announced_ = announce();
-        next_announce_ = now + (announced_ ? timing_.reannounce_interval : timing_.retry_interval);
+        const bool announced = announce();
+        announced_.store(announced, std::memory_order_release);
+        next_announce_ = now + (announced ? timing_.reannounce_interval : timing_.retry_interval);
     }
-    if (!announced_)
+    if (!announced_.load(std::memory_order_acquire))
         return;
-
-    if (now >= next_heartbeat_) {
-        try {
-            mm::adapter_heartbeat beat;
-            beat.adapter_id = source_name_;
-            beat.counter = ++beats_;
-            nats_.publish(subjects::adapter_heartbeat_subject(source_name_),
-                          ores::nats::default_wire_codec().encode(beat));
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to send the heartbeat of '" << source_name_ << "': " << e.what();
-        }
-        next_heartbeat_ = now + timing_.heartbeat_interval;
-    }
 
     std::optional<mm::adapter_demand_request> taken;
     {
@@ -436,6 +426,28 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << source_name_ << "': " << e.what();
         next_refresh_ = now + timing_.retry_interval;
+    }
+}
+
+void derived_fx_vol_adapter::heartbeat_loop() {
+    constexpr auto slice = std::chrono::milliseconds(50);
+    auto next = clock::now();
+    while (!stop_.load(std::memory_order_relaxed)) {
+        const auto now = clock::now();
+        if (now >= next && announced_.load(std::memory_order_acquire)) {
+            try {
+                mm::adapter_heartbeat beat;
+                beat.adapter_id = source_name_;
+                beat.counter = ++beats_;
+                nats_.publish(subjects::adapter_heartbeat_subject(source_name_),
+                              ores::nats::default_wire_codec().encode(beat));
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Failed to send the heartbeat of '" << source_name_ << "': " << e.what();
+            }
+            next = now + timing_.heartbeat_interval;
+        }
+        std::this_thread::sleep_for(slice);
     }
 }
 

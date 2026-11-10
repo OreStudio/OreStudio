@@ -78,6 +78,7 @@ export interface AdapterAnnounceResponse {
  */
 export interface AdapterDemandRequest {
     ids: VendorId[];
+    image: VendorId[];
 }
 
 /**

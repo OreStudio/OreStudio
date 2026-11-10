@@ -142,8 +142,16 @@ demand_result compute_demand(const demand_catalogue& catalogue,
             result.refused.push_back({demand.adapter_id, demand.party_id, demand.refusal});
             continue;
         }
-        for (const auto& [uri, ids] : demand.items)
+        auto& served = result.served_by_adapter[demand.adapter_id];
+        for (const auto& [uri, ids] : demand.items) {
             demanded.insert(demanded.end(), ids.begin(), ids.end());
+            for (const auto& id : ids)
+                served.insert({.tenant_id = demand.tenant_id.to_string(),
+                               .party_id = demand.party_id,
+                               .id_scheme = id.id_scheme,
+                               .external_id = id.external_id,
+                               .field = id.field});
+        }
     }
 
     for (auto& [adapter, ids] : result.by_adapter) {
@@ -151,6 +159,19 @@ demand_result compute_demand(const demand_catalogue& catalogue,
         ids.erase(std::unique(ids.begin(), ids.end(), same), ids.end());
     }
     return result;
+}
+
+std::vector<messaging::vendor_id> image_of(const std::set<served_id>& before,
+                                           const std::set<served_id>& now) {
+    std::set<std::tuple<std::string, std::string, std::string>> seen;
+    std::vector<messaging::vendor_id> out;
+    for (const auto& s : now) {
+        if (before.contains(s))
+            continue;
+        if (seen.insert({s.id_scheme, s.external_id, s.field}).second)
+            out.push_back({s.id_scheme, s.external_id, s.field});
+    }
+    return out;
 }
 
 }

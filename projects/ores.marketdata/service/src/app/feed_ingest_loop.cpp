@@ -358,15 +358,19 @@ void feed_ingest_loop::worker_loop() {
 
         // A tick that has aged out is dropped and not worked through, so the worker
         // that has fallen behind reaches the newest ticks at once.
-        const auto stale = erase_stale(batch, std::chrono::system_clock::now(), max_tick_age);
+        const auto ages = translator();
+        const auto stale =
+            erase_stale(batch, std::chrono::system_clock::now(),
+                        [&](const auto& t) { return ages->max_quote_age(t.source); });
         if (stale > 0) {
             stale_dropped_.fetch_add(stale, std::memory_order_relaxed);
             const auto now = std::chrono::steady_clock::now();
             if (now - last_stale_log > std::chrono::seconds(10)) {
                 last_stale_log = now;
                 BOOST_LOG_SEV(lg(), warn)
-                    << "Dropped " << stale << " tick(s) older than " << max_tick_age.count()
-                    << " ms: the ingest is behind the feeds";
+                    << "Dropped " << stale
+                    << " tick(s) older than the age limit of their source: the ingest is behind "
+                       "the feeds";
             }
         }
         if (batch.empty())
@@ -587,6 +591,7 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
     // After the commit, or without it when the store did not answer: stats, the CRM
     // bridge, and the republish.
     const auto now = std::chrono::system_clock::now();
+    const auto ages = translator();
 
     // The counters of each consumer, found once for each target and not for each tick.
     std::unordered_map<const tick_target*, std::shared_ptr<feed_stats>> stats_of;
@@ -629,7 +634,7 @@ void feed_ingest_loop::announce(prepared_batch& batch) {
 
         // The live path never carries a tick that has aged out while its batch was
         // written. The tick stays in the store as history.
-        if (now - tick.observation_time > max_tick_age) {
+        if (now - tick.observation_time > ages->max_quote_age(tick.source)) {
             late_unpublished_.fetch_add(1, std::memory_order_relaxed);
             continue;
         }

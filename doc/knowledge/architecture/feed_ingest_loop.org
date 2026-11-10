@@ -62,7 +62,10 @@ The stages, in order:
   The point key is unique, so a redelivered tick is skipped. A batch that fails
   is split in two until the failing row is alone, and the loop logs that row
   and goes on.
-- The worker drops a tick older than 5 seconds and counts the drop.
+- The worker drops a tick older than the age limit of its source and counts the
+  drop. The limit is 5 seconds. A quote of an =end_of_day= source has a limit of
+  4 days: the source sends one value each business day, stamped at its close, and
+  that value stays current until the next one replaces it.
 - The loop delivers a tick before its batch commits, with no wait for an
   acknowledgement or for the store. A slow store delays the history, never the
   live tick. A store that is down does not stop delivery: the lane keeps the

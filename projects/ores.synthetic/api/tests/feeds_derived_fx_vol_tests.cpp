@@ -328,6 +328,30 @@ TEST_CASE("an_id_demanded_after_its_pair_was_sent_is_sent_at_once_and_alone", de
     CHECK(feed.refresh(day, collect) == 0);
 }
 
+TEST_CASE("an_id_a_party_needs_for_the_first_time_is_sent_again_the_same_day", derived_tags) {
+    const auto fixings = derived_fixings(1300, 13);
+    derived_fx_vol_feed feed("derived-fx-vol", "derived", derived_readers_of(fixings));
+    feed.set_universe(derived_ids_of({.base = "EUR", .quote = "USD"}));
+    const auto day = fixings.at(ecb_fixing_item("USD")).dates[1250];
+    std::vector<std::string> sent;
+    const auto collect = [&](const mm::adapter_tick& t) {
+        sent.push_back(t.external_id);
+    };
+
+    feed.demand(derived_demand_of({"EURUSD/1M/ATM", "EURUSD/3M/ATM"}));
+    CHECK(feed.refresh(day, collect) == 2);
+
+    auto again = derived_demand_of({"EURUSD/1M/ATM", "EURUSD/3M/ATM"});
+    again.image = {again.ids.front()};
+    feed.demand(again);
+    sent.clear();
+    CHECK(feed.refresh(day, collect) == 1);
+    CHECK(sent == std::vector<std::string>{again.ids.front().external_id});
+
+    sent.clear();
+    CHECK(feed.refresh(day, collect) == 0);
+}
+
 TEST_CASE("a_quote_that_is_not_finite_is_left_out_of_the_ticks", derived_tags) {
     qm::fx_derivation d;
     d.expiries.emplace_back(qm::derived_fx_expiry{

@@ -93,7 +93,7 @@ namespace ores::marketdata::service::app {
  * stored the tick, on core NATS with no wait for an acknowledgement. A tick is perishable, because
  * an old tick that waits while a newer one arrives is worse than a tick that is lost. So the queue
  * is bounded and a full queue drops its oldest tick, and the worker drops a tick that has aged past
- * max_tick_age when it takes the tick. A batch takes about one second, so a tick does not wait long
+ * the age limit of its source when it takes the tick. A batch takes about one second, so a tick does not wait long
  * inside a slow batch, and a tick that has aged past the limit by the time its batch commits is
  * stored and not republished.
  *
@@ -374,8 +374,6 @@ private:
     static constexpr std::size_t initial_batch_ticks = 500;
     static constexpr std::size_t min_batch_ticks = 50;
     static constexpr std::int64_t target_batch_ms = 1000;
-    /// A live tick older than this is dropped when the worker takes it.
-    static constexpr std::chrono::milliseconds max_tick_age{5000};
     /// How long a shutdown works through the queued ticks.
     static constexpr std::chrono::milliseconds shutdown_drain{2000};
     static constexpr std::chrono::minutes status_interval_{1};

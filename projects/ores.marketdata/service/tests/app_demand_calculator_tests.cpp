@@ -306,3 +306,22 @@ TEST_CASE("a_scoped_feed_is_asked_only_for_the_items_of_its_scope", "[app][deman
     CHECK(live[0].external_id == "EURUSD Curncy");
     CHECK(result.by_adapter.at("bloomberg-sim").size() == 2);
 }
+
+TEST_CASE("a_party_that_newly_needs_an_id_puts_it_in_the_image_once",
+          "[app][demand_calculator]") {
+    using ores::marketdata::service::app::image_of;
+    app_demand_calculator_world w;
+    w.party_routed_to(w.sim);
+    const auto first = compute_demand(w.c, w.now);
+    const auto& before = first.served_by_adapter.at("bloomberg-sim");
+
+    CHECK(image_of({}, before).size() == 2);
+    CHECK(image_of(before, before).empty());
+
+    w.party_routed_to(w.sim);
+    w.party_routed_to(w.sim);
+    const auto second = compute_demand(w.c, w.now);
+    const auto image = image_of(before, second.served_by_adapter.at("bloomberg-sim"));
+    REQUIRE(image.size() == 2);
+    CHECK(image[0].external_id != image[1].external_id);
+}

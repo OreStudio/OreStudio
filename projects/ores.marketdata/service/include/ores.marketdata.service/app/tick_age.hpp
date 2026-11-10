@@ -29,20 +29,22 @@
 namespace ores::marketdata::service::app {
 
 /**
- * @brief Removes the ticks of @p ticks that are older than @p max_age at @p now.
+ * @brief Removes the ticks of @p ticks that are older at @p now than @p max_age gives for them.
  *
  * A tick is perishable. A tick that waits while a newer one arrives is worse than a
  * tick that is lost, so a worker that has fallen behind drops what has aged out and
  * does not work through it. The age is @p now minus the observation time of the
- * tick. A tick stamped in the future is kept. The ticks that stay keep their order.
+ * tick. The limit comes from the source, as an end-of-day value stays current for days.
+ * A tick stamped in the future is kept. The ticks that stay keep their order.
  *
  * @return The number of ticks removed.
  */
-inline std::size_t erase_stale(std::vector<messaging::market_tick>& ticks,
-                               std::chrono::system_clock::time_point now,
-                               std::chrono::milliseconds max_age) {
+template <typename MaxAge>
+std::size_t erase_stale(std::vector<messaging::market_tick>& ticks,
+                        std::chrono::system_clock::time_point now,
+                        MaxAge&& max_age) {
     const auto stale = [&](const messaging::market_tick& t) {
-        return now - t.observation_time > max_age;
+        return now - t.observation_time > max_age(t);
     };
     const auto removed = std::erase_if(ticks, stale);
     return removed;

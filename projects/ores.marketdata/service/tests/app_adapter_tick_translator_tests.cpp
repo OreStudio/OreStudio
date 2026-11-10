@@ -273,6 +273,36 @@ TEST_CASE("the_limits_an_adapter_reads_are_the_limits_the_service_applies",
     CHECK(beyond_age.error() == adapter_tick_drop::stale);
 }
 
+TEST_CASE("an_end_of_day_quote_stays_current_until_its_source_would_send_the_next",
+          "[app][adapter_tick_translator]") {
+    using ores::marketdata::domain::adapter_limits;
+    catalogue c;
+    c.simulated.service = "end_of_day";
+    auto sut = c.translator();
+
+    auto last_close = c.tick();
+    last_close.vendor_time = c.now - 64h;
+    const auto out = sut.translate("bloomberg-sim", last_close, c.now);
+    REQUIRE(out.has_value());
+    CHECK(out->tick.observation_time == c.now - 64h);
+
+    auto long_gone = c.tick();
+    long_gone.vendor_time = c.now - adapter_limits::max_end_of_day_age - 1ms;
+    const auto dropped = sut.translate("bloomberg-sim", long_gone, c.now);
+    REQUIRE_FALSE(dropped.has_value());
+    CHECK(dropped.error() == adapter_tick_drop::stale);
+
+    auto live = c.tick();
+    live.vendor_time = c.now - 64h;
+    const auto live_out = sut.translate("bloomberg-live", live, c.now);
+    REQUIRE_FALSE(live_out.has_value());
+    CHECK(live_out.error() == adapter_tick_drop::stale);
+
+    CHECK(sut.max_quote_age("bloomberg-sim") == adapter_limits::max_end_of_day_age);
+    CHECK(sut.max_quote_age("bloomberg-live") == adapter_limits::max_tick_age);
+    CHECK(sut.max_quote_age("unknown") == adapter_limits::max_tick_age);
+}
+
 TEST_CASE("a_tick_before_the_newest_stored_one_is_out_of_order", "[app][adapter_tick_translator]") {
     catalogue c;
     auto sut = c.translator();

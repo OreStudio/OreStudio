@@ -52,7 +52,7 @@ ores.marketdata owns the catalogue, the mapping, the ingest path, routing and me
 | [[id:4512DD80-5A5D-42DC-996B-9C62DC88E16B][Repair the baseline drift the gate reports]] | DONE | | 2026-11-08 | Commodity, workflow and reporting merges left generated artefacts, seeded permissions and pgTAP expectations stale. |
 | [[id:9814C1C5-E599-4405-B79F-3525C0314A7C][Rework the shell commands for the market data service]] | BACKLOG | | | Add shell commands for the catalogue, subscriptions, routes, sources and usage, and move the simulator commands. |
 | [[id:AF826E35-6ED4-411D-B1E3-79D3B2103778][Split trade generation into ores.trading.synthetic]] | BACKLOG | | | Move the trade generators out of ores.synthetic into ores.trading.synthetic. |
-| [[id:A8FFF8B9-0240-472E-929E-E0E37641DB87][Store one tick for each source]] | BACKLOG | | | Write each tick once under the system tenant, point the per-party series at it, and remove the ingest's routes read. |
+| [[id:A8FFF8B9-0240-472E-929E-E0E37641DB87][Store one tick for each source]] | DONE | 2026-10-25 | 2026-11-10 | Write each tick once under the system tenant, point the per-party series at it, and remove the ingest's routes read. |
 | [[id:5CCD3099-EC5D-4F43-A106-33E3F235115B][Write the vendor tickers of the curve pillars]] | BACKLOG | | | Give each rate curve pillar of Bloomberg and LSEG a vendor id, so the native simulator can serve curves. |
 
 * Decisions

@@ -476,7 +476,12 @@ std::vector<domain::fx_forward_publish> fx_forward_publish_repository::read_publ
             lg(),
             "Reading the published FX forward sets of a pair.");
     std::erase_if(rows, [](const auto& r) { return !r.published_at.has_value(); });
-    std::ranges::sort(rows, [](const auto& a, const auto& b) { return a.as_of > b.as_of; });
+    // Newest as-of first; between two sets of one as-of, the one published last.
+    std::ranges::sort(rows, [](const auto& a, const auto& b) {
+        if (a.as_of != b.as_of)
+            return a.as_of > b.as_of;
+        return *a.published_at > *b.published_at;
+    });
     return rows;
 }
 

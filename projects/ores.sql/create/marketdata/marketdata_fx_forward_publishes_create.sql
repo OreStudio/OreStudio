@@ -40,7 +40,9 @@
  * roll on, and the method that combined them. Each names its own record, so a
  * reader follows a number back to the market and to the curves. A curve
  * publish is named and not copied, so the withdrawal of a curve shows on every set
- * built from it without a write here.
+ * built from it without a write here. The apply does not check the curves again: the
+ * decider approved those numbers, and a curve withdrawn after the raise shows on the
+ * set as withdrawn rather than stopping it.
  *
  * published_at and published_by are the publication record, empty while the
  * request waits and written in one act when the approved set is published.

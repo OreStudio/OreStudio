@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_point_repository.hpp"
@@ -39,6 +40,12 @@
 namespace ores::marketdata::service::app {
 
 namespace {
+
+auto& lg() {
+    static auto instance =
+        ores::logging::make_logger("ores.marketdata.service.app.fx_forward_publish_service");
+    return instance;
+}
 
 using ores::database::context;
 using ores::platform::time::datetime;
@@ -155,7 +162,10 @@ void apply(const context& ctx,
     std::optional<ores::inbox::domain::approval_request> request;
     try {
         request = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        // An id that is not a uuid is not a request; anything else is logged so a store failure
+        // is not read as a missing request.
+        BOOST_LOG_SEV(lg(), ores::logging::warn) << "Reading approval request " << request_id << ": " << e.what();
         request = std::nullopt;
     }
     if (!request) {
@@ -177,7 +187,7 @@ void apply(const context& ctx,
         return;
     }
     if (record->party_id != party || record->pair_code != pair_code ||
-        at_store_precision(record->as_of) != as_of) {
+        record->as_of != as_of) {
         resp.message = "The request authorises " + record->pair_code + " as of " +
                        datetime::to_iso8601_utc(record->as_of) + " for party " +
                        boost::uuids::to_string(record->party_id) + ", and this publish is " +
@@ -198,6 +208,8 @@ void apply(const context& ctx,
     }
 
     const auto publisher = writer_of(ctx);
+    // Whole seconds, the precision every nullable timestamp of this schema keeps, so the
+    // instant returned is the one a reader holds.
     record->published_at = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     record->published_by = publisher;
     record->modified_by = publisher;

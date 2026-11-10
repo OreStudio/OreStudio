@@ -30,7 +30,9 @@ discounts with, the version of the pair's convention, the calendars its dates
 roll on, and the method that combined them. Each names its own record, so a
 reader follows a number back to the market and to the curves. A curve
 publish is named and not copied, so the withdrawal of a curve shows on every set
-built from it without a write here.
+built from it without a write here. The apply does not check the curves again: the
+decider approved those numbers, and a curve withdrawn after the raise shows on the
+set as withdrawn rather than stopping it.
 
 =published_at= and =published_by= are the publication record, empty while the
 request waits and written in one act when the approved set is published.
@@ -408,7 +410,12 @@ fx_forward_publish_repository::read_published_for_pair(context ctx,
         lg(),
         "Reading the published FX forward sets of a pair.");
     std::erase_if(rows, [](const auto& r) { return !r.published_at.has_value(); });
-    std::ranges::sort(rows, [](const auto& a, const auto& b) { return a.as_of > b.as_of; });
+    // Newest as-of first; between two sets of one as-of, the one published last.
+    std::ranges::sort(rows, [](const auto& a, const auto& b) {
+        if (a.as_of != b.as_of)
+            return a.as_of > b.as_of;
+        return *a.published_at > *b.published_at;
+    });
     return rows;
 }
 #+end_src

@@ -29,6 +29,7 @@ namespace ores::marketdata::official::domain {
 
 namespace {
 
+// The database writes its months in English whatever the locale, so the table is fixed.
 constexpr std::array<std::string_view, 12> month_names{
     "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
@@ -76,6 +77,9 @@ std::string boe_query_date(std::chrono::year_month_day date) {
 
 std::expected<std::vector<published_fixing>, std::string> parse_boe_csv(std::string_view csv,
                                                                         std::string_view code) {
+    constexpr std::string_view byte_order_mark = "\xEF\xBB\xBF";
+    if (csv.starts_with(byte_order_mark))
+        csv.remove_prefix(byte_order_mark.size());
     std::vector<std::string_view> lines;
     std::size_t start = 0;
     while (start < csv.size()) {
@@ -98,7 +102,7 @@ std::expected<std::vector<published_fixing>, std::string> parse_boe_csv(std::str
     for (std::size_t i = 1; i < lines.size(); ++i) {
         const auto comma = lines[i].find(',');
         if (comma == std::string_view::npos)
-            return std::unexpected(std::format("row {} has no value", i));
+            return std::unexpected("the row '" + std::string(lines[i]) + "' has no value");
         auto date = boe_date_of(trim(lines[i].substr(0, comma)));
         if (!date)
             return std::unexpected(date.error());

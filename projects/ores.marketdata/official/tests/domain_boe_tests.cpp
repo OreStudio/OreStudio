@@ -137,3 +137,10 @@ TEST_CASE("the_boe_fetcher_refuses_a_code_that_is_not_a_series_code", "[domain][
     CHECK_FALSE(fetcher.fixings("", boe_day(2026, 11, 4), boe_day(2026, 11, 5)).has_value());
     CHECK(transport.asked.empty());
 }
+
+TEST_CASE("a_sonia_answer_with_a_byte_order_mark_reads_the_same", "[domain][boe]") {
+    const auto fixings = parse_boe_csv("\xEF\xBB\xBF" + sonia_csv, "IUDSOIA");
+
+    REQUIRE(fixings.has_value());
+    CHECK(fixings->size() == 2);
+}

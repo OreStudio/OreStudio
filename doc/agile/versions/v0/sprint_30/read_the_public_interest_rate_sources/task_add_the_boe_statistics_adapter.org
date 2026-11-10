@@ -66,7 +66,7 @@ task and name that file in the Command column.
 | SONIA history the route serves | 7,542 rates, 1997-01-02 to 2026-11-05 | =curl .../_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=01/Jan/1990&Dateto=10/Nov/2026&SeriesCodes=IUDSOIA&...= | c5f59bff0c |
 | SONIA fixings a fresh environment stored | 276, 2025-10-06 to 2026-11-05, last =0.039824= | =compass check= (=ticks-smoke=), then a count of the fixings of the SONIA item | c5f59bff0c |
 | Routes to =boe=, by tenant | the system tenant only | a query of the routes of the publishers =nyfed=, =boe=, =ecb= and =boc= after =ticks-smoke= | c5f59bff0c |
-| Cases of =ores.marketdata.official.tests= | 39 pass | =ores.marketdata.official.tests= | c5f59bff0c |
+| Cases of =ores.marketdata.official.tests= | 40 pass | =ores.marketdata.official.tests= | c5f59bff0c |
 
 * Notes
 
@@ -93,7 +93,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4548: confirm with a test that a 302 gives an error | =boe.cpp= | No change | =an_unknown_boe_series_is_an_error_and_not_an_empty_read= already sends a 302 through the transport, and =read_body= refuses any status but 200. |
+| 2 | PR #4548: say the month table must not follow the locale | =boe.cpp= | Accepted | A comment says it. |
+| 3 | PR #4548: strip a UTF-8 byte order mark before the header check | =boe.cpp= | Accepted | Stripped, and a case covers it. |
+| 4 | PR #4548: a row without a value names an index, not the row | =boe.cpp= | Accepted | The error quotes the row. |
+| 5 | PR #4548: org markup in the C++ doc comments | headers | No change | It matches the other headers, as the reviewer noted. |
+| 6 | PR #4548: track the checks that fail on main | PR body | Declined | They come from other merges on main and belong to their owners, not to this story. |
 
 * Result
 

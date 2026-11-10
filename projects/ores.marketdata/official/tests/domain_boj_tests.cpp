@@ -175,3 +175,25 @@ TEST_CASE("the_boj_fetcher_refuses_a_key_that_is_not_a_series_key", "[domain][bo
         fetcher.fixings("fm01.strdclucon", boj_day(2026, 11, 5), boj_day(2026, 11, 6)).has_value());
     CHECK(transport.asked.empty());
 }
+
+TEST_CASE("a_published_value_keeps_its_digits_when_it_has_no_exact_binary_form", "[domain][boj]") {
+    const auto fixings = parse_boj_series(
+        series_with("[20261102,20261104,20261105,20261106]", "[0.1,0.07,1.005,0.003]"),
+        "FM01.STRDCLUCON");
+
+    REQUIRE(fixings.has_value());
+    REQUIRE(fixings->size() == 4);
+    CHECK((*fixings)[0].value == "0.001");
+    CHECK((*fixings)[1].value == "0.0007");
+    CHECK((*fixings)[2].value == "0.01005");
+    CHECK((*fixings)[3].value == "0.00003");
+}
+
+TEST_CASE("two_entries_that_name_the_series_are_an_error", "[domain][boj]") {
+    const std::string twice =
+        R"({"STATUS":200,"NEXTPOSITION":null,"RESULTSET":[)"
+        R"({"SERIES_CODE":"STRDCLUCON","VALUES":{"SURVEY_DATES":[20261105],"VALUES":[1.227]}},)"
+        R"({"SERIES_CODE":"STRDCLUCON","VALUES":{"SURVEY_DATES":[20261105],"VALUES":[9.9]}}]})";
+
+    CHECK_FALSE(parse_boj_series(twice, "FM01.STRDCLUCON").has_value());
+}

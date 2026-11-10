@@ -37,12 +37,15 @@ bool is_code(std::string_view text) {
 }
 
 std::expected<std::chrono::year_month_day, std::string> date_of_number(std::int64_t number) {
+    const auto refused = std::unexpected(std::format("'{}' is not a date", number));
+    if (number < 10000101 || number > 99991231)
+        return refused;
     const std::chrono::year_month_day date{
         std::chrono::year{static_cast<int>(number / 10000)},
         std::chrono::month{static_cast<unsigned>(number / 100 % 100)},
         std::chrono::day{static_cast<unsigned>(number % 100)}};
-    if (number < 10000101 || number > 99991231 || !date.ok())
-        return std::unexpected(std::format("'{}' is not a date", number));
+    if (!date.ok())
+        return refused;
     return date;
 }
 
@@ -82,8 +85,12 @@ std::expected<std::vector<published_fixing>, std::string> parse_boj_series(std::
     for (const auto& item : results->as_array()) {
         const auto* entry = item.if_object();
         const auto* name = entry == nullptr ? nullptr : entry->if_contains("SERIES_CODE");
-        if (name != nullptr && name->is_string() && name->as_string() == code)
-            series = entry;
+        if (name == nullptr || !name->is_string() || name->as_string() != code)
+            continue;
+        if (series != nullptr)
+            return std::unexpected("two entries of the answer name the series '" +
+                                   std::string(code) + "'");
+        series = entry;
     }
     if (series == nullptr)
         return std::unexpected("no entry of the answer names the series '" + std::string(code) +

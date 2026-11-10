@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 37AD5218-D38E-4FF3-964A-3088ACD7D3B7
+:END:
+#+title: Task: Add the Banco Central de Chile adapter
+#+description: A specialised adapter reads the Indice Camara Promedio from the Banco Central de Chile and stores its history as fixings in the system tenant.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Indice Camara Promedio is stored as fixings in the system tenant, with its history, read from the Banco Central de Chile through the BDE web service, =si3.bcentral.cl/SieteRestWS=, with a registered user. The adapter is specialised: it reads the Banco Central de Chile alone, and it supplies only its fetcher to the shared half of the official adapter.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
+| Now          | Not yet started.                       |
+| Waiting on   | A person registers a Banco Central de Chile BDE user; the key goes to the credential store. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-10                               |
+
+* Acceptance
+
+- The adapter reads the Banco Central de Chile alone, and it does not copy the announce, the demand, the backfill or the publish code.
+- The Banco Central de Chile is a supplier in the catalogue, its series maps to the CLP-CAMARA item, and a session and a feed scoped to that item are seeded in the system tenant.
+- A fresh environment stores the history as fixings within minutes of provisioning, and the log names the source and the count it stored.
+- Each fixing is the decimal of the published percent, with the credit the Banco Central de Chile named as owner.
+- The depth of the history is measured and written into the calibration sources note.
+- Unit tests parse a recorded response, and a malformed response gives an error, not a fixing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The API needs a registered user and password; keep them in the credential store. Find the series code of the Indice Camara Promedio.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :marketdata:ir:research:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/find-routes-to-the-remaining-overnight-rates
+#+pr: 4550
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,12 +26,12 @@ The system reads the public overnight rate of as many of the 28 currencies as th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-10 |
 
 * Acceptance
 
@@ -44,9 +44,10 @@ The system reads the public overnight rate of as many of the 28 currencies as th
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Probe one candidate route for each currency with a script, and keep the status, the size and the first bytes as evidence.
+- Read each publisher's terms: its own page where a script can read it, a search where the page is rendered by script. A term that a search reports from a third party is recorded as not read.
+- Fill the Route, Terms and Usable columns of the survey in the calibration sources note, with the date read.
+- Add one adapter task for each usable source. The routes differ in API and format, so none reuses an existing fetcher.
 
 * Measurements
 
@@ -60,7 +61,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Currencies usable | 13 of 28: USD, EUR, GBP, CAD stored; AUD, JPY (on the owner's judgement that the use is not commercial), BRL, NOK, SEK with open routes; MXN, CLP, SGD, CZK with a free key | the probes and terms reads of 2026-11-10, recorded in the calibration sources note | 4fa2ca076d |
+| Adapter tasks added | 9 | =compass add task --parent-dir doc/agile/versions/v0/sprint_30/read_the_public_interest_rate_sources= for each usable source not yet stored | 4fa2ca076d |
+| RBA F1 route | 200 three times, 4,014 days from 2011-01-04 | =curl -s https://www.rba.gov.au/statistics/tables/csv/f1-data.csv= | 4fa2ca076d |
+| BoJ call rate route | 13,483 dates from 1990-01-01 in one answer | =curl -s 'https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=FM01&code=STRDCLUCON&startDate=199001&endDate=202611'= | 4fa2ca076d |
 
 * Notes
 
@@ -81,12 +85,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4550][#4550]] | [agile] Find a route to the overnight rate of each remaining currency |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4550: JPY is counted usable on the owner's judgement; say so wherever the count is quoted | note, task | Accepted | The note's summary and the Measurements row say it. |
+| 2 | PR #4550: CHF is in neither the usable list nor the leftovers | note | Accepted | One sentence accounts for CHF, so all 28 are named. |
+| 3 | PR #4550: confirm the ODbL covers the SGS series, not only the portal datasets | note | Accepted | The portal lists the SGS series as ODbL datasets; the row says so. |
+| 4 | PR #4550: the keyed tasks wait on nothing | adapter tasks | Accepted | MXN, CLP, SGD and CZK wait on a person registering their key. |
+| 5 | PR #4550: elided commands and no commit in the Measurements | task | Accepted | Full commands and the commit of the survey. |
+| 6 | PR #4550: the Status table lost its padding | task | No change | =compass task= writes that table. |
 
 * Result
+
+The survey in the calibration sources note now records the route, the terms and whether each currency is usable, read and probed on 2026-11-10.
+
+- AUD: the RBA's table F1 answered a script three times; the RBA's terms allow commercial use with "Source: RBA [year]". Usable.
+- NZD: the RBNZ still refused a script with 403, on the table and on the copyright page. Open.
+- JPY: the owner judged on 2026-11-09 that this use is not commercial, and the note records that decision and that the Bank was not asked. The BoJ API serves the call rate from 1990. Usable.
+- The other twenty: BRL, NOK and SEK are usable with open routes; MXN, CLP, SGD and CZK with a free registered key. CNY and HKD need a licence from CFETS and the TMA. DKK has usable terms and no route found. COP, INR, KRW, TRY and ZAR are open.
+- PLN and TWD, with CNH, HUF and ILS, are passed to [[id:4B5701D6-16C6-445B-BDD4-C60050FED95C][Replace the synthetic feeds of ceased or misnamed indices]], which already names them.
+
+Nine adapter tasks are added to the story: the RBA, the Bank of Japan, the Banco Central do Brasil, Norges Bank, the Riksbank, Banco de Mexico, the Banco Central de Chile, the MAS and the Czech National Bank. Each names its route, its credit, and what it must settle first: a key, a series code, or an item that the catalogue lacks, as for SWESTR and the TIIE de Fondeo.

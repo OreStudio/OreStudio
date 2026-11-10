@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 8CCD7E45-5BC3-4688-BD59-5E760DC1DF5A
+:END:
+#+title: Task: Add the MAS adapter
+#+description: A specialised adapter reads SORA from the Monetary Authority of Singapore and stores its history as fixings in the system tenant.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+SORA is stored as fixings in the system tenant, with its history, read from the Monetary Authority of Singapore through the MAS API, with a free key. The adapter is specialised: it reads the Monetary Authority of Singapore alone, and it supplies only its fetcher to the shared half of the official adapter.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
+| Now          | Not yet started.                       |
+| Waiting on   | A person registers a MAS API key; the key goes to the credential store. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-10                               |
+
+* Acceptance
+
+- The adapter reads the Monetary Authority of Singapore alone, and it does not copy the announce, the demand, the backfill or the publish code.
+- The Monetary Authority of Singapore is a supplier in the catalogue, its series maps to the SGD-SORA item, and a session and a feed scoped to that item are seeded in the system tenant.
+- A fresh environment stores the history as fixings within minutes of provisioning, and the log names the source and the count it stored.
+- Each fixing is the decimal of the published percent, with the credit the notice of the MAS Terms of Use of Datasets, with the dataset and its date of access.
+- The depth of the history is measured and written into the calibration sources note.
+- Unit tests parse a recorded response, and a malformed response gives an error, not a fixing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The old =eservices.mas.gov.sg= datastore answered with a maintenance page on 2026-11-10; register for the MAS API key and find the SORA dataset.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

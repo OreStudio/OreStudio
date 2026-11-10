@@ -22,23 +22,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Find which of the 28 routes ores.web calls, from the client code. Serve each of those routes from the C++ server, so that ores.web functions after the switch. A route that ores.web does not call needs no equivalent, and the inventory records that. This task depends on the pairing task.
 
+On 2026-11-10 the task was split at its first PR. This task keeps the census and the reference data record routes. [[id:EE068B42-7300-4D72-832E-3B74B59B7F04][Serve the remaining routes outside the published API]] takes the synthetic record routes, the classifications and labels, the history, and the pick lists and choices.
+
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | PR 1 of 5: the reference data record routes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | PR 2: the synthetic record routes. |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
 
 - Each of the 28 routes is recorded as called by ores.web or not called.
-- The C++ server answers each route that ores.web calls.
-- A test proves each new route against the answer the BFF gives.
-- The local gate is green.
+- The C++ server answers the six reference data record routes that ores.web calls.
+- A test proves each new route against the refusals and shapes the BFF gives.
+- The local checks that the change needs are green.
 
 * Plan
 
@@ -183,3 +185,12 @@ via its "Verifies task" field.
 | 16 | PR #4560 review: test that the catalogue entry is valid JSON. | =test_http_routes.py= | Accepted | A test parses the rendered entry. |
 
 * Result
+
+ores.web calls 27 of the 28 routes outside the published API; the vocabulary
+route is the one it does not call. The C++ server now answers the six
+reference data record routes for the 26 resources the BFF's registry names,
+through one generated unit per resource, and the catalogue of resources. Each
+unit's tests run its handlers against an unconnected client and check the
+BFF's refusals and the pages it accepts: 175 cases pass. The routes send the
+={code, message}= error body the browser reads. The remaining 21 routes moved
+to the follow-on task.

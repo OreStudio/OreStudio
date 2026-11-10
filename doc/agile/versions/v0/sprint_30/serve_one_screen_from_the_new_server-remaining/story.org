@@ -50,7 +50,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 |------+-------+-------+-----+-------------|
 | [[id:B1A5D908-44E2-4938-85BA-E90D61084173][Pair each BFF route with its C++ equivalent]] | DONE | 2026-11-09 | 2026-11-09 | The inventory lists both servers but does not link a BFF route to its C++ equivalent, so coverage cannot be counted. |
 | [[id:F00281C4-24C4-4793-982F-C0FC3E92C0ED][Finish the generated list route]] | DONE | 2026-11-09 | 2026-11-10 | A generated list route must carry the page, the order, the search and the filter's own members. Single-valued filters and search are done. |
-| [[id:D775A775-3D29-48D0-AADD-FB31D5C1B99A][Serve the routes outside the published API that ores.web calls]] | STARTED | 2026-11-10 | | The inventory classifies 28 BFF routes as not an API: the generic routers, pick lists, classifications, labels and history. The C++ server must answer each one that ores.web calls. |
+| [[id:D775A775-3D29-48D0-AADD-FB31D5C1B99A][Serve the routes outside the published API that ores.web calls]] | DONE | 2026-11-10 | 2026-11-10 | The inventory classifies 28 BFF routes as not an API: the generic routers, pick lists, classifications, labels and history. The C++ server must answer each one that ores.web calls. |
 | [[id:5A7F2BF9-5AA7-4C19-B146-E73AC2999D27][Serve the transport routes]] | BACKLOG | | | Ten BFF routes are transport capabilities with no visible C++ equivalent: the event watch, the client log, the health and site routes and the ORE URI codec. |
 | [[id:D04FA84F-E3CA-4BB7-8C0E-F73AF7238FCB][Serve the remaining access routes]] | BACKLOG | | | The access area has generated collections, but the me aliases and several account operations have no visible equivalent. |
 | [[id:6D768350-9B83-4B5A-B4B4-74CFDAB52A11][Serve the remaining auth and session routes]] | BACKLOG | | | The auth area lacks party selection on the session, the password policy and other reads. |
@@ -76,6 +76,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:068865A5-2C31-4735-873E-2CB04A134EF2][Serve the tenor catalogue composed view]] | BACKLOG | | | The tenor catalogue view is answered only by the BFF. |
 | [[id:AFEBA9C6-F105-490A-AD80-34AACB4CC9BB][Switch ores.web to the C++ server and test it]] | BACKLOG | | | When the C++ server answers every route ores.web calls, move the switch and test ores.web. If ores.web breaks, move the switch back and keep the BFF until the fault is fixed. |
 | [[id:65EDEBB1-0A24-46C3-85C1-2A51780EB659][Scaffold the tasks of the BFF port]] | DONE | 2026-11-09 | 2026-11-09 | Task scaffolding rides this task: the task documents, the two recorded decisions, the design amendment and the scaffold PR. |
+| [[id:EE068B42-7300-4D72-832E-3B74B59B7F04][Serve the remaining routes outside the published API]] | BACKLOG | | | ores.web calls the synthetic record routes, classifications and labels, history, pick lists and choices outside the published API. The C++ server must answer each one. |
 
 * Decisions
 

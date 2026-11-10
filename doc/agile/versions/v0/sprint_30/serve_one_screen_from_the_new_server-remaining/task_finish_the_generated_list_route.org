@@ -106,6 +106,11 @@ via its "Verifies task" field.
 | 2 | The route forwards a range bound as text and does not check it as a date. | =ores.cpp.http-route.route_implementation.org= | Declined | The route only translates the parameter. The service decides what a bound means. This task did not check how the service treats a malformed bound. |
 | 3 | A filter with an empty value is ignored and not refused. | =ores.cpp.http-route.route_implementation.org= | Declined | An empty value narrows nothing, and the test for each declared filter relies on that. |
 | 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR review: the =order= and =desc= rename can leave a stale caller. | =ores.cpp.http-route.route_implementation.org= | Declined | ores.web sends =sort= and =descending= (=client.ts=). The one =desc=1= in =records.test.tsx= is a browser page URL, not an API call. |
+| 6 | PR review: a range bound is not checked at this layer. | =ores.cpp.http-route.route_implementation.org= | Declined | Same as item 2. The switch-over task checks it against a running server. |
+| 7 | PR review: the declared-filter case sends an empty value, so it does not prove that a value is read. | =ores.cpp.http-route.route_tests.org= | Declined | A typed value needs a sample for each column type. Follow-up work. |
+| 8 | PR review: =<initializer_list>= is out of order in the template includes. | =ores.cpp.http-route.route_implementation.org= | Accepted | Moved. clang-format already sorted the generated files, so no route unit changes. |
+| 9 | PR review: a repeated query key keeps one value. | =ores.http.api= | Declined | This behaviour existed before this PR and is outside it. |
 
 * Result
 

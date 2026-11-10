@@ -222,7 +222,7 @@ TEST_CASE("each strike label resolves through the forward and the conventions",
 TEST_CASE("the grid interpolates between expiries in total variance", "[ssvi_calibration_engine]") {
     auto request = request_of(spot_smile);
     request.grid_expiries = {{"9M", 0.75}};
-    request.grid_strikes = {{"ATMF", 0.0}};
+    request.grid_strikes = {{"ATMF", ssvi_log_moneyness_strike{0.0}}};
     const auto fit = calibrate_ssvi(request);
     REQUIRE(fit.has_value());
     REQUIRE(fit->grid.size() == 1);
@@ -231,10 +231,57 @@ TEST_CASE("the grid interpolates between expiries in total variance", "[ssvi_cal
     CHECK(fit->grid[0].volatility == Catch::Approx(std::sqrt(midpoint / 0.75)).epsilon(1e-3));
 }
 
+TEST_CASE("a delta grid strike sits where the fitted surface gives that delta",
+          "[ssvi_calibration_engine]") {
+    const auto convention =
+        convention_of(fx_atm_type::delta_neutral, fx_delta_type::spot, fx_butterfly_style::smile);
+    auto request = request_of(convention);
+    request.grid_expiries = {{.expiry_id = "1Y", .years = 1.0, .market = market, .convention = convention}};
+    request.grid_strikes = {
+        {"DEL/Spot/Put/25",
+         ssvi_delta_strike{.type = fx_delta_type::spot, .side = option_side::put, .delta = 0.25}},
+        {"ATM", ssvi_atm_strike{}},
+        {"DEL/Fwd/Call/10",
+         ssvi_delta_strike{.type = fx_delta_type::forward, .side = option_side::call, .delta = 0.10}}};
+    const auto fit = calibrate_ssvi(request);
+    REQUIRE(fit.has_value());
+    REQUIRE(fit->grid.size() == 3);
+
+    const double forward = market.forward();
+    const auto delta_at = [&](const ssvi_grid_point& p, fx_delta_type type, option_side side) {
+        return fx_delta(type, side, market, std::sqrt(p.total_variance), forward * std::exp(p.log_moneyness));
+    };
+    CHECK(delta_at(fit->grid[0], fx_delta_type::spot, option_side::put) ==
+          Catch::Approx(-0.25).margin(1e-8));
+    CHECK(delta_at(fit->grid[2], fx_delta_type::forward, option_side::call) ==
+          Catch::Approx(0.10).margin(1e-8));
+    CHECK(fit->grid[0].log_moneyness < fit->grid[1].log_moneyness);
+    CHECK(fit->grid[1].log_moneyness < fit->grid[2].log_moneyness);
+
+    const auto atm_fit = std::ranges::find(fit->pillars, std::string("1Y/ATM"), &ssvi_pillar_fit::point_id);
+    REQUIRE(atm_fit != fit->pillars.end());
+    CHECK(fit->grid[1].volatility == Catch::Approx(atm_fit->fitted).margin(1e-10));
+    CHECK(forward * std::exp(fit->grid[1].log_moneyness) ==
+          Catch::Approx(atm_fit->strikes.front()).epsilon(1e-10));
+}
+
+TEST_CASE("a delta grid strike at a grid expiry with no market is refused",
+          "[ssvi_calibration_engine]") {
+    auto request = request_of(spot_smile);
+    request.grid_expiries = {{"1Y", 1.0}};
+    request.grid_strikes = {
+        {"DEL/Spot/Put/25",
+         ssvi_delta_strike{.type = fx_delta_type::spot, .side = option_side::put, .delta = 0.25}}};
+    const auto fit = calibrate_ssvi(request);
+    REQUIRE_FALSE(fit.has_value());
+    CHECK(fit.error().find("DEL/Spot/Put/25") != std::string::npos);
+    CHECK(fit.error().find("no market") != std::string::npos);
+}
+
 TEST_CASE("a grid expiry outside the quotes is refused", "[ssvi_calibration_engine]") {
     auto request = request_of(spot_smile);
     request.grid_expiries = {{"5Y", 5.0}};
-    request.grid_strikes = {{"ATMF", 0.0}};
+    request.grid_strikes = {{"ATMF", ssvi_log_moneyness_strike{0.0}}};
     const auto fit = calibrate_ssvi(request);
     REQUIRE_FALSE(fit.has_value());
     CHECK(fit.error().find("5Y") != std::string::npos);
@@ -272,7 +319,7 @@ TEST_CASE("a theta held at its search bound does not count as converged",
 TEST_CASE("a grid expiry with no time is refused", "[ssvi_calibration_engine]") {
     auto request = request_of(spot_smile);
     request.grid_expiries = {{"NaN", std::numeric_limits<double>::quiet_NaN()}};
-    request.grid_strikes = {{"ATMF", 0.0}};
+    request.grid_strikes = {{"ATMF", ssvi_log_moneyness_strike{0.0}}};
     const auto fit = calibrate_ssvi(request);
     REQUIRE_FALSE(fit.has_value());
     CHECK(fit.error().find("NaN") != std::string::npos);

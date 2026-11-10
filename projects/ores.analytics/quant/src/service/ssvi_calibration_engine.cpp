@@ -296,6 +296,41 @@ std::expected<double, std::string> interpolate_theta(const ssvi_parameters& para
            share * (upper->atm_total_variance - lower->atm_total_variance);
 }
 
+std::expected<double, std::string> grid_log_moneyness(const ssvi_grid_expiry& expiry,
+                                                      const ssvi_grid_strike& strike,
+                                                      double theta,
+                                                      double rho,
+                                                      double phi) {
+    if (const auto* fixed = std::get_if<ssvi_log_moneyness_strike>(&strike.at))
+        return fixed->value;
+    if (!(expiry.market.spot > 0.0))
+        return std::unexpected("grid expiry " + expiry.expiry_id + " has no market to resolve strike " +
+                               strike.strike_id);
+    const auto smile = [&](double k) {
+        return std::sqrt(ssvi_total_variance(k, theta, rho, phi) / expiry.years);
+    };
+    const double level = std::sqrt(theta / expiry.years);
+    const auto resolved =
+        std::holds_alternative<ssvi_atm_strike>(strike.at)
+            ? math::smile_atm_log_moneyness(smile,
+                                            level,
+                                            expiry.years,
+                                            expiry.market,
+                                            expiry.convention.atm,
+                                            expiry.convention.delta)
+            : math::smile_delta_log_moneyness(smile,
+                                              level,
+                                              expiry.years,
+                                              expiry.market,
+                                              std::get<ssvi_delta_strike>(strike.at).type,
+                                              std::get<ssvi_delta_strike>(strike.at).side,
+                                              std::get<ssvi_delta_strike>(strike.at).delta);
+    if (!resolved)
+        return std::unexpected("strike " + strike.strike_id + " at grid expiry " +
+                               expiry.expiry_id + ": " + resolved.error());
+    return *resolved;
+}
+
 std::vector<double> strikes_of(const fit_pillar& pillar,
                                double forward,
                                const fx_atm_reading& atm,
@@ -397,11 +432,15 @@ std::expected<ssvi_calibration, std::string> calibrate_ssvi(const ssvi_request& 
         const auto theta = interpolate_theta(out.parameters, grid_expiry);
         if (!theta)
             return std::unexpected(theta.error());
+        const double phi = ssvi_phi(*theta, shape.eta, shape.gamma);
         for (const auto& strike : request.grid_strikes) {
-            const double w = ssvi_total_variance(
-                strike.log_moneyness, *theta, shape.rho, ssvi_phi(*theta, shape.eta, shape.gamma));
+            const auto k = grid_log_moneyness(grid_expiry, strike, *theta, shape.rho, phi);
+            if (!k)
+                return std::unexpected(k.error());
+            const double w = ssvi_total_variance(*k, *theta, shape.rho, phi);
             out.grid.push_back({.expiry_id = grid_expiry.expiry_id,
                                 .strike_id = strike.strike_id,
+                                .log_moneyness = *k,
                                 .total_variance = w,
                                 .volatility = std::sqrt(w / grid_expiry.years)});
         }

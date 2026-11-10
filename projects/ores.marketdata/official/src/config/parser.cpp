@@ -44,6 +44,7 @@ const std::string boe_url_arg("boe-url");
 const std::string boc_url_arg("boc-url");
 const std::string boj_url_arg("boj-url");
 const std::string norges_bank_url_arg("norges-bank-url");
+const std::string riksbank_url_arg("riksbank-url");
 const std::string source_arg("source");
 const std::string backfill_days_arg("backfill-days");
 const std::string poll_minutes_arg("poll-minutes");
@@ -88,6 +89,9 @@ options_description make_options_description() {
         norges_bank_url_arg.c_str(),
         value<std::string>()->default_value("https://data.norges-bank.no"),
         "Address of Norges Bank's open data site, which serves its SDMX API")(
+        riksbank_url_arg.c_str(),
+        value<std::string>()->default_value("https://api.riksbank.se"),
+        "Address of the Riksbank's API site, which serves its SWESTR API")(
         source_arg.c_str(),
         value<std::vector<std::string>>()->composing(),
         "A source to host, as <source name>:<provider code>:<adapter code>:<key>, such as "
@@ -156,6 +160,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.boc_url = vm[boc_url_arg].as<std::string>();
     r.boj_url = vm[boj_url_arg].as<std::string>();
     r.norges_bank_url = vm[norges_bank_url_arg].as<std::string>();
+    r.riksbank_url = vm[riksbank_url_arg].as<std::string>();
     r.backfill_days = vm[backfill_days_arg].as<std::uint32_t>();
     if (r.backfill_days < 1 || r.backfill_days > 3650)
         BOOST_THROW_EXCEPTION(parser_exception("--backfill-days is from 1 to 3650."));

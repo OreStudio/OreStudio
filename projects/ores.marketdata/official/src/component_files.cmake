@@ -33,6 +33,7 @@ set(files
     "domain/norges_bank.cpp"
     "domain/nyfed.cpp"
     "domain/published_text.cpp"
+    "domain/riksbank.cpp"
     "domain/source_feed.cpp"
     "main.cpp"
 )
@@ -54,6 +55,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/norges_bank.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/nyfed.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/published_text.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/riksbank.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/source_feed.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/ores.marketdata.official.hpp"

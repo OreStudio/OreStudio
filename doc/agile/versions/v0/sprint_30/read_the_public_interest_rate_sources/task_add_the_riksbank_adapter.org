@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-riksbank-adapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ SWESTR is stored as fixings in the system tenant, with its history, read from th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -44,9 +44,11 @@ SWESTR is stored as fixings in the system tenant, with its history, read from th
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =riksbank_fetcher= implements =fetcher=: adapter =riksbank_swestr=, scheme =riksbank_swestr=, field =rate=. A source's key is a series name, =SWESTR=. A read is one GET of =/swestr/v1/all/<key>= over the window, in JSON; the rates are numbers, read as their shortest text, as the New York Fed and Bank of Japan fetchers do.
+- The API answers both a window with no observation and an unknown series with a 404, so the fetcher uses =read_window= with =/swestr/v1/latest/<key>=, as the Norges Bank fetcher does with its latest observation.
+- The SEK item: the built-in SEK indices are SIOR and STINA, and the =SEK-SWESTR= convention, which the SEK overnight curve names, stated no fixing item. The convention now states =oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR=, and the series maps to it.
+- The same gap held for EUR and JPY. Their curves name the alias conventions =EUR-ESTR= and =JPY-TONA=, which stated no item, while the stored fixings sit under the items of =EUR-ESTER= and =JPY-TONAR=. Each alias now states the item of its built-in twin, so the calibration finds the fixings through the convention a curve names. The seed keeps an item already set when it gives none.
+- Option =--riksbank-url=. The seeds add the =riksbank= supplier and provider, with the conditions page and the credit "Source: Sveriges Riksbank", the =riksbank_swestr= adapter, the =riksbank-api= session, the =riksbank-swestr= feed scoped to the SWESTR item, and the system party's subscription and route.
 
 * Measurements
 

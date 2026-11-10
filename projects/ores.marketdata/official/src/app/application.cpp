@@ -27,6 +27,7 @@
 #include "ores.marketdata.official/domain/frankfurter.hpp"
 #include "ores.marketdata.official/domain/norges_bank.hpp"
 #include "ores.marketdata.official/domain/nyfed.hpp"
+#include "ores.marketdata.official/domain/riksbank.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -57,6 +58,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << "BoC         : " << cfg.boc_url;
     BOOST_LOG_SEV(lg(), info) << "BoJ         : " << cfg.boj_url;
     BOOST_LOG_SEV(lg(), info) << "Norges Bank : " << cfg.norges_bank_url;
+    BOOST_LOG_SEV(lg(), info) << "Riksbank    : " << cfg.riksbank_url;
     BOOST_LOG_SEV(lg(), info) << "Sources     : " << cfg.sources.size();
     BOOST_LOG_SEV(lg(), info) << "Backfill    : " << cfg.backfill_days << " days";
     BOOST_LOG_SEV(lg(), info) << "Poll        : every " << cfg.poll_minutes << " minutes";
@@ -72,13 +74,15 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     domain::boc_fetcher boc(transport, cfg.boc_url);
     domain::boj_fetcher boj(transport, cfg.boj_url);
     domain::norges_bank_fetcher norges_bank(transport, cfg.norges_bank_url);
+    domain::riksbank_fetcher riksbank(transport, cfg.riksbank_url);
     adapter_timing timing;
     timing.poll_interval = std::chrono::minutes(cfg.poll_minutes);
-    official_adapter adapter(nats,
-                             cfg.sources,
-                             {&frankfurter, &nyfed, &ecb, &boe, &boc, &boj, &norges_bank},
-                             static_cast<int>(cfg.backfill_days),
-                             timing);
+    official_adapter adapter(
+        nats,
+        cfg.sources,
+        {&frankfurter, &nyfed, &ecb, &boe, &boc, &boj, &norges_bank, &riksbank},
+        static_cast<int>(cfg.backfill_days),
+        timing);
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/domain/provider.hpp"
 #include "ores.marketdata.core/repository/adapter_repository.hpp"
 #include "ores.marketdata.core/repository/feed_repository.hpp"
+#include "ores.marketdata.core/repository/feed_scope_repository.hpp"
 #include "ores.marketdata.core/repository/live_tenant_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
@@ -96,6 +97,7 @@ void adapter_supervisor::refresh() {
     for (const auto& provider : next->catalogue.providers)
         next->providers.insert(provider.code);
     next->catalogue.feeds = repository::feed_repository{}.read_latest(system_ctx);
+    next->catalogue.scopes = repository::feed_scope_repository{}.read_latest(system_ctx);
     next->catalogue.instruments =
         repository::market_data_vendor_instrument_repository{}.read_latest(system_ctx);
     next->catalogue.mappings = repository::market_data_mapping_repository{}.read_latest(system_ctx);

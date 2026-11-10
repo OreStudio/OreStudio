@@ -25,6 +25,7 @@
 #endif
 
 #include "ores.marketdata.api/domain/feed.hpp"
+#include "ores.marketdata.api/domain/feed_scope.hpp"
 #include "ores.marketdata.api/domain/market_data_mapping.hpp"
 #include "ores.marketdata.api/domain/market_data_vendor_instrument.hpp"
 #include "ores.marketdata.api/domain/provider.hpp"
@@ -51,6 +52,9 @@ struct demand_catalogue {
     /// The providers, whose terms decide whether their sources are asked for anything.
     std::vector<domain::provider> providers;
     std::vector<domain::feed> feeds;
+    /// What each feed fetches. A feed with scope rows is asked only for the items they name;
+    /// a feed with none is asked for every item of its publisher.
+    std::vector<domain::feed_scope> scopes;
     std::vector<domain::market_data_vendor_instrument> instruments;
     std::vector<domain::market_data_mapping> mappings;
     std::vector<domain::route> routes;

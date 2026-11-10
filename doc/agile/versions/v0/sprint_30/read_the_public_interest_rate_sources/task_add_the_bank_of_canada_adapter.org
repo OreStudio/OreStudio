@@ -65,6 +65,8 @@ task and name that file in the Command column.
 
 * Notes
 
+Seed a feed scope row that names the overnight item, so the demand asks the feed for that item alone. The ECB and the Bank of Canada also have a Frankfurter feed, which is scoped to their FX items. The vendor instrument and its mapping are seeded by [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

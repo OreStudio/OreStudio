@@ -2,18 +2,18 @@
 :ID: 0D8B2280-F6E1-4198-8372-6712D1E8DFD8
 :END:
 #+title: Task: Catalogue the overnight rate items
-#+description: Each overnight index that the synthetic IR feeds quote is one rate item, and each publisher's series maps to it as a vendor instrument of that publisher.
+#+description: SOFR, €STR, SONIA and CORRA map, as vendor instruments of their publishers, to the fixing item that the index convention of each states.
 #+type: task
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/catalogue-the-interest-rate-items
+#+pr: 4545
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-11-09
-#+environment:
+#+updated: 2026-11-10
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A public fixing and a synthetic feed of one overnight index name the same item, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09 |
+| Next         | Nothing. |
+| Last touched | 2026-11-10 |
 
 * Acceptance
 
@@ -41,9 +41,18 @@ A public fixing and a synthetic feed of one overnight index name the same item, 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The items exist already. Each built-in overnight index convention in =ores_refdata_overnight_index_conventions_tbl= states the oresmd address of its fixing, such as =oresmd://ir/USD?type=fixing&index=ibor&name=SOFR= for =USD-SOFR=. The task adds no item. It maps each publisher's series to that address.
+
+- Add =marketdata_overnight_rates_catalogue_populate.sql=, after the official rates catalogue. The ECB and the Bank of Canada are providers of that catalogue already. The seed adds the New York Fed (=nyfed=) and the Bank of England (=boe=) with their terms and their credit.
+- Each series is a vendor instrument in its publisher's own notation, which the adapter of each publisher will announce:
+  | Provider | Scheme | Id | Field | Index |
+  |----------+--------+----+-------+-------|
+  | =nyfed= | =nyfed_rate_type= | =SOFR= | =percentRate= | =USD-SOFR= |
+  | =ecb= | =ecb_sdmx= | =EST.B.EU000A2X2A25.WT= | =OBS_VALUE= | =EUR-ESTER= |
+  | =boe= | =boe_iadb= | =IUDSOIA= | =value= | =GBP-SONIA= |
+  | =boc= | =boc_valet= | =AVG.INTWO= | =v= | =CAD-CORRA= |
+- The demand reads the feed scopes. The ECB and the Bank of Canada now have two access routes each: Frankfurter for their FX rates and their own API for their overnight rate. The demand gave every vendor id of a publisher to every feed of that publisher, so the first check gate failed. The ticks smoke test saw =ecb-frankfurter= and =boc-frankfurter= reject the €STR and CORRA ids, 987 of 989 ids accepted. The feed scope already states what a feed fetches, and the official catalogue scopes each Frankfurter feed to its FX items, but the demand did not read it. Now a feed with scope rows is asked only for the items they name, and a feed with none is asked for every item of its publisher, as before.
+- The refdata seed runs after the marketdata seed, so the seed states the four addresses. A pgTAP test joins each mapping to its index convention, so a change on either side fails the test.
 
 * Measurements
 
@@ -57,7 +66,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Overnight series mapped to the item of an index convention | 4 of 4 | the seed and a join to the conventions, in a rolled-back transaction on the environment's database | 3ae940fe4e |
 
 * Notes
 
@@ -78,12 +87,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4545][#4545]] | [marketdata] Catalogue the overnight rate items |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4545: a scope matches its item by the exact URI string | =demand_calculator.cpp= | Declined | The demand matches items by their URI string everywhere: the items of a provider and a party's restriction do too, and the mappings and scopes store the canonical URI. A scope that names its item in another spelling fails in those paths as well. |
+| 2 | PR #4545: a scoped feed with no items is asked for nothing without a log line | =demand_calculator.cpp= | Declined | The supervisor logs each adapter's demand as "accepted N and rejected M of K id(s)", so an empty demand shows as 0 of 0. A party's restriction can also empty a feed's demand for a valid reason. |
 
 * Result
+
+Four publisher series map to the fixing items of their indices: SOFR of the New York Fed, €STR of the ECB, SONIA of the Bank of England and CORRA of the Bank of Canada. Each item is the address that the index's built-in convention states, so the calibration finds the fixings of an index through its convention. The four publishers are also the administrators of their indices, so the provider of each vendor instrument names the administrator. The New York Fed and the Bank of England are new providers, with their terms and their credit, so the terms are accepted at setup with the others.
+
+The synthetic IR feeds quote swap and deposit rates, not fixings. A synthetic feed's curve names its index, such as =USD-SOFR=, and that index's convention names the item that the public fixings of the index are stored under. No synthetic feed stores a fixing of its own, so the two cannot name different items.
+
+A pgTAP test holds the mappings to the conventions and the terms of the publishers.
+
+The demand now reads the feed scopes, so a publisher with two access routes asks each feed only for what its adapter reads. The Frankfurter feeds of the ECB and the Bank of Canada are not asked for €STR or CORRA. Each adapter task scopes its own feed to its overnight item.

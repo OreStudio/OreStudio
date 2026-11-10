@@ -287,3 +287,22 @@ TEST_CASE("a_route_to_a_source_the_catalogue_lacks_adds_nothing", "[app][demand_
 
     CHECK(result.by_adapter.empty());
 }
+
+TEST_CASE("a_scoped_feed_is_asked_only_for_the_items_of_its_scope", "[app][demand_calculator]") {
+    app_demand_calculator_world w;
+    ores::marketdata::domain::feed_scope scope;
+    scope.id = w.gen();
+    scope.feed_id = w.live.id;
+    scope.asset_class = "fx";
+    scope.item = eur_usd;
+    w.c.scopes.push_back(scope);
+    w.party_routed_to(w.live);
+    w.party_routed_to(w.sim);
+
+    const auto result = compute_demand(w.c, w.now);
+
+    const auto& live = result.by_adapter.at("bloomberg-live");
+    REQUIRE(live.size() == 1);
+    CHECK(live[0].external_id == "EURUSD Curncy");
+    CHECK(result.by_adapter.at("bloomberg-sim").size() == 2);
+}

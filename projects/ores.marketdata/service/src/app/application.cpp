@@ -24,6 +24,7 @@
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/eventing/feed_event.hpp"
+#include "ores.marketdata.api/eventing/feed_scope_event.hpp"
 #include "ores.marketdata.api/eventing/market_data_mapping_event.hpp"
 #include "ores.marketdata.api/eventing/market_data_vendor_instrument_event.hpp"
 #include "ores.marketdata.api/eventing/route_event.hpp"
@@ -242,6 +243,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 ingest->refresh();
                 supervisor->refresh();
             });
+    auto feed_scope_refresh_sub =
+        event_bus.subscribe<mdm::feed_scope_event>([supervisor](const mdm::feed_scope_event&) {
+            BOOST_LOG_SEV(lg(), info) << "Feed scope changed — refreshing demand.";
+            supervisor->refresh();
+        });
     auto mapping_refresh_sub = event_bus.subscribe<mdm::market_data_mapping_event>(
         [ingest, supervisor](const mdm::market_data_mapping_event&) {
             BOOST_LOG_SEV(lg(), info) << "Mapping changed — refreshing ingest loop and demand.";

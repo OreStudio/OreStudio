@@ -36,6 +36,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <chrono>
 #include <optional>
 #include <stdexcept>
@@ -258,7 +259,8 @@ msg::fx_forward_curve_source curve_source(const context& ctx, const boost::uuids
     return out;
 }
 
-/// The figures the pair is quoted with: its pip, its decimals and its spot lag.
+/// The figures the pair is quoted with: its pip and decimals from its convention, and its spot
+/// lag, which is the longer of its two currencies' lags, the rule the ladder compute settles on.
 void quote_figures(const context& ctx, msg::get_published_fx_forward_response& out) {
     const auto conventions =
         ores::refdata::repository::currency_pair_convention_repository{}.read_latest(
@@ -276,7 +278,8 @@ void quote_figures(const context& ctx, msg::get_published_fx_forward_response& o
             out.spot_days = std::max(out.spot_days, c.spot_days);
 }
 
-/// Who raised the publish, and how its request was decided.
+/// Who raised the publish, and how its request was decided. The raise writes version 1 of the
+/// request as the person raising it, and the newest decision is the one that closed it.
 void approval_of(const context& ctx, msg::get_published_fx_forward_response& out) {
     const auto versions =
         ores::inbox::repository::approval_request_repository{}.read_all(ctx, out.request_id);

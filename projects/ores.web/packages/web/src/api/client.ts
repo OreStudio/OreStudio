@@ -351,7 +351,9 @@ const fxForwardLadderSchema = z
     .transform((set) => ({
         ...set,
         spot: set.spot_rate,
-        spot_observed_at: set.spots.map((s) => s.observed_at).sort()[0] ?? set.as_of,
+        spot_observed_at:
+            [...set.spots].sort((a, b) => Date.parse(a.observed_at) - Date.parse(b.observed_at))[0]
+                ?.observed_at ?? set.as_of,
     }));
 
 export type FxForwardCurveSource = z.infer<typeof fxForwardCurveSourceSchema>;

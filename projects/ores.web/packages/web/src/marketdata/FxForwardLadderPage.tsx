@@ -241,7 +241,10 @@ function Inputs({ ladder }: { readonly ladder: FxForwardLadder }): ReactNode {
                     <div className="text-xs text-ink-faint">
                         {t('marketdata.fxForwards.pipAndCalendars', {
                             pip: ladder.pip_factor,
-                            calendars: ladder.calendar_codes.split(',').join(', '),
+                            calendars: ladder.calendar_codes
+                                .split(',')
+                                .filter((code) => code !== '')
+                                .join(', '),
                         })}
                     </div>
                 </Fact>

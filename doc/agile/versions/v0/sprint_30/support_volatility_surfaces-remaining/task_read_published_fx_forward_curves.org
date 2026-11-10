@@ -91,7 +91,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | <algorithm> is reached through another header | =fx_forward_publish_service.cpp= | Fixed | Included. |
+| 2 | The requester is version 1's writer, and the decision cap is 100 | =fx_forward_publish_service.cpp= | Fixed | A comment states both: the raise writes version 1 as the asker, and the newest decision closed it. |
+| 3 | The spot lag is not the convention's | =fx_forward_publish_service.cpp= | Fixed | The comment states the rule: the longer of the two currencies' lags, as the compute uses. The convention has no lag of its own. |
+| 4 | A missing convention shows a pip of 0 | =fx_forward_publish_service.cpp= | Declined | A set exists only for a pair whose convention it read, and a convention is versioned, never deleted. |
+| 5 | The oldest spot comes from a string sort | =client.ts= | Fixed | Sorted by parsed instant. |
+| 6 | A new state falls through to a missing key | =FxForwardLadderPage.tsx= | Declined | The translation shows the key, which names the state; the states are a closed list the inbox owns. |
+| 7 | Empty calendar codes render a dangling label | =FxForwardLadderPage.tsx= | Fixed | Empty codes are dropped. |
+| 8 | Decided by can read as a contradiction under auto-approval | =FxForwardLadderPage.tsx= | Declined | Under auto-approval the decider is the account the rule acted for, and the notice above says no person decided. |
+| 9 | No C++ test of the new read logic | tests | Declined | It needs approval requests and conventions in a database; the live BFF check covers it. |
+| 10 | The manual's screenshot placeholder | =chapter_currency_pairs.org= | Declined | The manual's screenshot workflow replaces placeholders before a release. |
+| 11 | Dropping get_fx_forward_ladder breaks the wire | protocol | Declined | No client in the repository sends it: the web, shell and services were moved in this PR. |
 
 * Result
 

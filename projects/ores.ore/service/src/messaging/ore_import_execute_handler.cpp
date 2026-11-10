@@ -134,6 +134,7 @@
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 namespace ores::ore::service::messaging {
 
@@ -1568,7 +1569,9 @@ std::string save_option_block(Nats& nats,
         req.change.write.has_payment_data = block.payment_data.has_value();
         if (block.payment_data && block.payment_data->rules) {
             const auto& rules = *block.payment_data->rules;
-            req.change.write.payment_lag = static_cast<std::int64_t>(rules.lag);
+            if (!std::in_range<int>(rules.lag))
+                return "Option payment lag exceeds the supported integer range";
+            req.change.write.payment_lag = static_cast<int>(rules.lag);
             req.change.write.payment_calendar = rules.calendar;
             req.change.write.payment_convention = rules.convention;
             req.change.write.payment_relative_to = rules.relative_to;

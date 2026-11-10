@@ -653,6 +653,7 @@ named with the adapter that reads it.
 - --source boj-tona:boj:boj_stat:FM01.STRDCLUCON
 - --source norgesbank-nowa:norgesbank:nb_sdmx:SHORT_RATES.B.NOWA.ON.R
 - --source riksbank-swestr:riksbank:riksbank_swestr:SWESTR
+- --source rba-aonia:rba:rba_table:f1.FIRMMCRID
 
 * ores.compute.wrapper
 :PROPERTIES:

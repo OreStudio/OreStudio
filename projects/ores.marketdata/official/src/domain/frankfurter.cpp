@@ -171,12 +171,19 @@ std::expected<std::vector<published_fixing>, std::string> frankfurter_fetcher::f
         return std::unexpected(read_rates.error());
     std::vector<published_fixing> out;
     out.reserve(read_rates->size());
+    std::uint64_t refused = 0;
     for (auto& rate : *read_rates) {
         if (rate.base != pivot->second) {
-            ++misbased_;
+            ++refused;
             continue;
         }
         out.push_back({rate.date, std::move(rate.quote), std::move(rate.rate)});
+    }
+    if (refused > 0) {
+        misbased_ += refused;
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "Refused " << refused << " rates of '" << key << "' whose base is not the pivot '"
+            << pivot->second << "'";
     }
     return out;
 }

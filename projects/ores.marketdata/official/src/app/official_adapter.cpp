@@ -41,6 +41,14 @@ official_adapter::official_adapter(ores::nats::service::client& nats,
                                    adapter_timing timing)
     : nats_(nats)
     , timing_(timing) {
+    for (auto it = fetchers.begin(); it != fetchers.end(); ++it) {
+        const auto code = (*it)->adapter_code();
+        if (std::ranges::any_of(it + 1, fetchers.end(), [&](const domain::fetcher* f) {
+                return f->adapter_code() == code;
+            }))
+            throw std::invalid_argument("Two fetchers serve the adapter '" + std::string(code) +
+                                        "'");
+    }
     for (auto& source : sources) {
         const auto found = std::ranges::find_if(fetchers, [&](const domain::fetcher* f) {
             return f->adapter_code() == source.adapter_code;

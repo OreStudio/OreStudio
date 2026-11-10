@@ -89,12 +89,19 @@ via its "Verifies task" field.
 | 1 | =<stdexcept>= is included by the header, but only the source throws | =official_adapter.hpp= | Accepted | Moved to the source file. |
 | 2 | The adapter takes the fetchers as raw pointers | =official_adapter.hpp= | Declined | The pointers own nothing: the fetchers are locals of =application::run= and outlive the adapter. The ownership rule is about owners. |
 | 3 | The overview's diagram link named =ores.marketdata.public.png=, which does not exist | =component_overview.org= | Accepted | Points at =ores.marketdata.official.png=, re-rendered. |
+| 4 | PR #4542: an unhosted adapter throws at startup; it must reach the user as a clear error | =official_adapter.cpp= | Declined | =main.cpp= catches =std::exception= and prints "Error: The source ... names the adapter ..." with a failure exit. The parser does not know which fetchers the process hosts, so the check stays where the fetchers are. |
+| 5 | PR #4542: state the fetcher lifetime, the single-thread use and the call order | =fetcher.hpp= | Accepted | The class comment states the three rules, and the adapter constructor states the lifetime. |
+| 6 | PR #4542: two fetchers of one adapter code are silently resolved to the first | =official_adapter.cpp= | Accepted | The constructor refuses them with =std::invalid_argument=. |
+| 7 | PR #4542: the misbased count is never read | =frankfurter.cpp= | Accepted | A read that refuses rows logs a warning with the count, the key and the pivot. |
+| 8 | PR #4542: say in the help that no part of a source holds a colon | =parser.cpp= | Accepted | The help text says so. Three parts, five parts and an empty part were already tested. |
+| 9 | PR #4542: no test of the adapter refusing an unhosted adapter, nor of a source feed with a fake fetcher | =tests= | Partly accepted | Three new cases cover the unhosted adapter, the hosted one and the duplicate code. =a_source_speaks_the_notation_of_its_fetcher= already drives a source feed with a fake fetcher. |
+| 10 | PR #4542: the failures on main must be red on main too | PR body | Declined | They come from main commits after the hotfix #4538 (FX forward recipe, party curves step words, handler permissions, ER diagrams). This branch touches none of their files. |
 
 * Result
 
 The official adapter is now a host of specialised adapters. =domain::fetcher= is the specialised half, which names its adapter code and the notation of its ids, and reads its publisher's universe and its fixings over a window. =frankfurter_fetcher= is the first fetcher, and the pivot and the refusal of a rate in another base stay inside it. =source_feed= and =official_adapter= are the shared half and name no publisher. A =--source= names its adapter, =<source name>:<provider code>:<adapter code>:<key>=, and the process refuses a source whose adapter it does not host.
 
-The behaviour of the Frankfurter sources did not change. The nine existing cases pass with only their construction changed. A restart of the running service with the new binary announced the four sources with no unknown id and sent their backfill, and the store added nothing, as it skips what it holds. Four new cases cover a fetcher in another notation, a read of fixings before the universe, and the source format.
+The behaviour of the Frankfurter sources did not change. The nine existing cases pass with only their construction changed. A restart of the running service with the new binary announced the four sources with no unknown id and sent their backfill, and the store added nothing, as it skips what it holds. Seven new cases cover a fetcher in another notation, a read of fixings before the universe, the source format, a source whose adapter is not hosted, and two fetchers of one adapter.
 
 The component overview, its diagram and the architecture note now describe one adapter for each access route.
 

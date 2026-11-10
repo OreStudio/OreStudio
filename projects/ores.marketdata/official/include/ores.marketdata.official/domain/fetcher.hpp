@@ -45,6 +45,11 @@ struct published_fixing final {
  * Each adapter reads one access route, with its own API, format and terms. The source
  * feed and the adapter loop do the rest, which is the same for every publisher: the
  * announce, the demand, the backfill and the publish.
+ *
+ * The contract that the adapter keeps:
+ * - A fetcher lives longer than the adapter that hosts it, which keeps a reference to it.
+ * - One thread calls a fetcher, so a fetcher may keep state without a lock.
+ * - The adapter reads the universe of a key before it reads the fixings of that key.
  */
 class fetcher {
 public:

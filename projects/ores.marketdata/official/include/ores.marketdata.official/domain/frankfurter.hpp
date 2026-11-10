@@ -21,6 +21,7 @@
 #define ORES_MARKETDATA_OFFICIAL_DOMAIN_FRANKFURTER_HPP
 
 #include "ores.http.client/net/transport.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.official/domain/fetcher.hpp"
 #include "ores.marketdata.official/export.hpp"
 #include <chrono>
@@ -130,6 +131,12 @@ public:
     }
 
 private:
+    [[nodiscard]] static auto& lg() {
+        static auto instance =
+            ores::logging::make_logger("ores.marketdata.official.domain.frankfurter");
+        return instance;
+    }
+
     std::expected<std::string, std::string> read(const std::string& url);
 
     http::client::net::transport& transport_;

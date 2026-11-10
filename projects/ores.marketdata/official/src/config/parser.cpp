@@ -67,7 +67,7 @@ options_description make_options_description() {
         source_arg.c_str(),
         value<std::vector<std::string>>()->composing(),
         "A source to host, as <source name>:<provider code>:<adapter code>:<key>, such as "
-        "ecb-frankfurter:ecb:frankfurter:ECB (repeatable)")(
+        "ecb-frankfurter:ecb:frankfurter:ECB. No part holds a colon (repeatable)")(
         backfill_days_arg.c_str(),
         value<std::uint32_t>()->default_value(400),
         "Days a source sends when an id is first demanded")(

@@ -74,7 +74,10 @@ public:
      * @brief Hosts @p sources, each read by the one of @p fetchers whose adapter code it
      * names.
      *
-     * @throws std::invalid_argument when a source names an adapter no fetcher serves.
+     * Each fetcher must live longer than the adapter, which keeps a reference to it.
+     *
+     * @throws std::invalid_argument when a source names an adapter no fetcher serves, or
+     * when two fetchers serve the same adapter code.
      */
     official_adapter(ores::nats::service::client& nats,
                      std::vector<domain::hosted_source> sources,

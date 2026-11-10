@@ -78,6 +78,13 @@ The address of the Bank of England's site, which serves its statistical database
 
 The address of the Bank of Canada's site, which serves its Valet API.
 
+** boj_url
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The address of the Bank of Japan's time-series statistics site, which serves its API.
+
 ** sources
 :PROPERTIES:
 :cpp_type: std::vector<domain::hosted_source>

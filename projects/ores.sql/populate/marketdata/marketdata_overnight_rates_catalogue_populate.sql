@@ -50,6 +50,11 @@ values
      'The statistical database of the Bank of England, among them SONIA, published each London business day.',
      31, 'https://www.bankofengland.co.uk/legal',
      'SONIA and/or SONIA Compounded Index data licensed under the Open Government Licence v3.0 and copyright the Governor and Company of the Bank of England', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'boj', 0, 'Bank of Japan', 'reference',
+     'The time-series statistics of the Bank of Japan, among them the uncollateralised overnight call rate (TONA), published each Tokyo business day.',
+     32, 'https://www.boj.or.jp/en/about/copyright.htm',
+     'Source: Bank of Japan', true, '',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -64,7 +69,8 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('nyfed', 'nyfed_rate_type', 'SOFR', 'percentRate', 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR'),
     ('ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT', 'OBS_VALUE', 'oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER'),
     ('boe', 'boe_iadb', 'IUDSOIA', 'value', 'oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA'),
-    ('boc', 'boc_valet', 'AVG.INTWO', 'v', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA');
+    ('boc', 'boc_valet', 'AVG.INTWO', 'v', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
+    ('boj', 'boj_stat', 'FM01.STRDCLUCON', 'VALUES', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
@@ -133,6 +139,11 @@ values
      'boc', 'boc_valet', 'production', 'https://www.bankofcanada.ca', '',
      '{"url":"https://www.bankofcanada.ca","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the Bank of Canada Valet API.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('boj-stat', ores_utility_system_tenant_id_fn(), 0, 'Bank of Japan time-series statistics',
+     'boj', 'boj_stat', 'production', 'https://www.stat-search.boj.or.jp', '',
+     '{"url":"https://www.stat-search.boj.or.jp","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Bank of Japan time-series API.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -158,6 +169,10 @@ values
     ('ef613368-bf4b-5367-ae33-b5df192549ac', ores_utility_system_tenant_id_fn(), 0,
      'boc-corra', 'boc', 'boc-valet', 'end_of_day', 'AVG.INTWO', false,
      'CORRA as the Bank of Canada publishes it, read from its Valet API by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('25fb75e6-8f2f-5fe1-9672-9a018b25d061', ores_utility_system_tenant_id_fn(), 0,
+     'boj-tona', 'boj', 'boj-stat', 'end_of_day', 'FM01.STRDCLUCON', true,
+     'The uncollateralised overnight call rate (TONA) as the Bank of Japan publishes it, read from its time-series API by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -174,7 +189,8 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, f.id, 'interest
 from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('ecb-estr', 'ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT'),
              ('boe-sonia', 'boe', 'boe_iadb', 'IUDSOIA'),
-             ('boc-corra', 'boc', 'boc_valet', 'AVG.INTWO'))
+             ('boc-corra', 'boc', 'boc_valet', 'AVG.INTWO'),
+             ('boj-tona', 'boj', 'boj_stat', 'FM01.STRDCLUCON'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -264,5 +280,23 @@ begin
         'ef613368-bf4b-5367-ae33-b5df192549ac',
         current_user, current_user, 'system.initial_load',
         'The system party reads CORRA from the Bank of Canada'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '9dd0357d-2bb9-55fd-b2d1-cd9bebbbbc5d', ores_utility_system_tenant_id_fn(), 0, v_party, 'boj',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes the call rate of the Bank of Japan for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'e691c083-89af-54cb-a33c-bf28913ebfb9', ores_utility_system_tenant_id_fn(), 0, v_party, 'boj', 'interest_rates',
+        '25fb75e6-8f2f-5fe1-9672-9a018b25d061',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads the call rate from the Bank of Japan'
     ) on conflict do nothing;
 end $$;

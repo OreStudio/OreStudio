@@ -650,6 +650,7 @@ named with the adapter that reads it.
 - --source ecb-estr:ecb:ecb_portal:EST.B.EU000A2X2A25.WT
 - --source boe-sonia:boe:boe_iadb:IUDSOIA
 - --source boc-corra:boc:boc_valet:AVG.INTWO
+- --source boj-tona:boj:boj_stat:FM01.STRDCLUCON
 
 * ores.compute.wrapper
 :PROPERTIES:

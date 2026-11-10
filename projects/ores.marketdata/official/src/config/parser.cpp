@@ -42,6 +42,7 @@ const std::string nyfed_url_arg("nyfed-url");
 const std::string ecb_url_arg("ecb-url");
 const std::string boe_url_arg("boe-url");
 const std::string boc_url_arg("boc-url");
+const std::string boj_url_arg("boj-url");
 const std::string source_arg("source");
 const std::string backfill_days_arg("backfill-days");
 const std::string poll_minutes_arg("poll-minutes");
@@ -80,6 +81,9 @@ options_description make_options_description() {
         boc_url_arg.c_str(),
         value<std::string>()->default_value("https://www.bankofcanada.ca"),
         "Address of the Bank of Canada's site, which serves its Valet API")(
+        boj_url_arg.c_str(),
+        value<std::string>()->default_value("https://www.stat-search.boj.or.jp"),
+        "Address of the Bank of Japan's time-series statistics site, which serves its API")(
         source_arg.c_str(),
         value<std::vector<std::string>>()->composing(),
         "A source to host, as <source name>:<provider code>:<adapter code>:<key>, such as "
@@ -146,6 +150,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.ecb_url = vm[ecb_url_arg].as<std::string>();
     r.boe_url = vm[boe_url_arg].as<std::string>();
     r.boc_url = vm[boc_url_arg].as<std::string>();
+    r.boj_url = vm[boj_url_arg].as<std::string>();
     r.backfill_days = vm[backfill_days_arg].as<std::uint32_t>();
     if (r.backfill_days < 1 || r.backfill_days > 3650)
         BOOST_THROW_EXCEPTION(parser_exception("--backfill-days is from 1 to 3650."));

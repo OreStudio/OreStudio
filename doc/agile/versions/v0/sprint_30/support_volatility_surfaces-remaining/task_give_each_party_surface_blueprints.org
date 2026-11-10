@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/give-each-party-surface-blueprints
-#+pr:
+#+pr: 4551
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4551][#4551]] | [marketdata] Give each party its surface blueprints |
 
 * Review
 

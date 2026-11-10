@@ -37,6 +37,7 @@
 \echo '--- Market Data Vendor Instruments and Mappings ---'
 \ir ./marketdata_vendor_instruments_populate.sql
 \ir ./marketdata_official_catalogue_populate.sql
+\ir ./marketdata_overnight_rates_catalogue_populate.sql
 \ir ./marketdata_derived_catalogue_populate.sql
 \ir ./marketdata_market_series_fx_vol_surface_populate.sql
 

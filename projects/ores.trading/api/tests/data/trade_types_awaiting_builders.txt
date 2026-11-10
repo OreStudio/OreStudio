@@ -40,9 +40,7 @@ CommodityWorstOfBasketSwap
 CompositeTrade
 ContractForDifference
 ConvertibleBond
-CreditDefaultSwap
 CreditDefaultSwapOption
-CreditLinkedSwap
 CrossCurrencySwap
 DoubleDigitalOption
 EquityAccumulator
@@ -105,14 +103,11 @@ FxTouchOption
 FxVarianceSwap
 FxWindowBarrierOption
 FxWorstOfBasketSwap
-IndexCreditDefaultSwap
-IndexCreditDefaultSwapOption
 InflationSwap
 IntradayPowerForward
 KnockOutSwap
 PerformanceOption_01
 RateDigitalOption
-RiskParticipationAgreement
 ScriptedTrade
 Swaption
 SwaptionStraddle

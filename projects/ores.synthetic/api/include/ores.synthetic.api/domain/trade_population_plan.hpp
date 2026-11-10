@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_API_DOMAIN_TRADE_POPULATION_PLAN_HPP
 #define ORES_SYNTHETIC_API_DOMAIN_TRADE_POPULATION_PLAN_HPP
 
+#include "ores.marketdata.api/conventions/convention_lookup.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
@@ -179,6 +180,11 @@ struct trade_generation_scope final {
     std::vector<std::string> inflation_index_codes;
     /// The LEIs the credit family draws its reference entities from.
     std::vector<std::string> credit_reference_entities;
+    /**
+     * @brief The tenant's conventions, which a trade builder reads the terms
+     * it does not draw from.
+     */
+    ores::marketdata::conventions::convention_set conventions;
     std::vector<boost::uuids::uuid> book_ids;
     std::vector<boost::uuids::uuid> counterparty_ids;
     /**
@@ -282,19 +288,6 @@ struct inflation_terms final {
     double fixed_rate = 0.0;
     std::string inflation_index_code;
     double base_cpi = 0.0;
-};
-
-/**
- * @brief The facts a credit trade states.
- *
- * The reference is typed, so a plan states whether it names a legal entity or
- * an identifier of the system's own data.
- */
-struct credit_terms final {
-    std::string reference_entity_id_type;
-    std::string reference_entity_id;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
 };
 
 /**

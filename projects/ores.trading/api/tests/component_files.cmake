@@ -102,6 +102,7 @@ set(files
     "bond_trs_protocol_codec_roundtrip_tests.cpp"
     "booking_nature_type_codec_roundtrip_tests.cpp"
     "booking_nature_type_protocol_codec_roundtrip_tests.cpp"
+    "builders_credit_builders_tests.cpp"
     "builders_vanilla_swap_builder_tests.cpp"
     "callable_swap_call_date_codec_roundtrip_tests.cpp"
     "callable_swap_call_date_protocol_codec_roundtrip_tests.cpp"

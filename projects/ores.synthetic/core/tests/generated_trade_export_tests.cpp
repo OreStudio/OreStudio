@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ore_example_conventions.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
@@ -122,6 +123,7 @@ domain::trade_generation_scope scope_of(const std::string& asset_class_code) {
     scope.inflation_index_codes = {"UKRPIX", "USCPIA", "BECPIHL"};
     scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
     scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
+    scope.conventions = ores::synthetic::tests::ore_example_conventions();
     return scope;
 }
 
@@ -460,12 +462,7 @@ const std::set<std::string>& known_passthroughs() {
         "CommodityTaRF",
         "CommodityWindowBarrierOption",
         "CommodityWorstOfBasketSwap",
-        "CreditDefaultSwap",
-        "CreditLinkedSwap",
-        "IndexCreditDefaultSwap",
-        "IndexCreditDefaultSwapOption",
         "IntradayPowerForward",
-        "RiskParticipationAgreement",
     };
     return known;
 }

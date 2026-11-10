@@ -115,7 +115,8 @@ convention_lookup::convention_lookup(convention_set conventions)
     : ibor_indices_(answerable_of(std::move(conventions.ibor_indices)))
     , overnight_indices_(answerable_of(std::move(conventions.overnight_indices)))
     , swaps_(answerable_of(std::move(conventions.swaps)))
-    , ois_swaps_(answerable_of(std::move(conventions.ois_swaps))) {}
+    , ois_swaps_(answerable_of(std::move(conventions.ois_swaps)))
+    , cds_(std::move(conventions.cds)) {}
 
 std::expected<index_definition, lookup_error>
 convention_lookup::index_definition_of(const market_reference& index) const {
@@ -198,6 +199,24 @@ convention_lookup::ois_convention_of(const market_reference& index) const {
                       index,
                       "the address names a datum, not an index");
     return the_one_at(ois_swaps_, *named, index, "OIS convention");
+}
+
+std::expected<refdata::domain::cds_convention, lookup_error>
+convention_lookup::cds_convention_of(std::string_view id) const {
+    const refdata::domain::cds_convention* found = nullptr;
+    for (const auto& candidate : cds_) {
+        if (candidate.id != id)
+            continue;
+        if (found != nullptr)
+            return std::unexpected(lookup_error{lookup_refusal_kind::more_than_one_match,
+                                                std::string(id),
+                                                "more than one CDS convention has this id"});
+        found = &candidate;
+    }
+    if (found == nullptr)
+        return std::unexpected(lookup_error{
+            lookup_refusal_kind::no_match, std::string(id), "no CDS convention has this id"});
+    return *found;
 }
 
 }

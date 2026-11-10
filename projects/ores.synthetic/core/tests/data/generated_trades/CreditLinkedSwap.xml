@@ -2,8 +2,116 @@
 <Portfolio>
   <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
     <TradeType>CreditLinkedSwap</TradeType>
+    <CreditLinkedSwapData>
+      <CreditCurveId>oresmd://credit/5493001KJTIIGC8Y1R12?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
+      <SettlesAccrual>Y</SettlesAccrual>
+      <DefaultPaymentTime>atDefault</DefaultPaymentTime>
+      <IndependentPayments>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Cashflow</LegType>
+          <Currency>EUR</Currency>
+          <CashflowData>
+            <Cashflow>
+              <Amount date="2025-10-02">6765247.42</Amount>
+            </Cashflow>
+          </CashflowData>
+        </LegData>
+      </IndependentPayments>
+      <ContingentPayments>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>Following</PaymentConvention>
+          <DayCounter>ACT/360</DayCounter>
+          <Notionals>
+            <Notional>6765247.42</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-10-02</StartDate>
+              <EndDate>2028-10-02</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>WeekendsOnly</Calendar>
+              <Convention>Following</Convention>
+              <Rule>CDS2015</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.01</Rate>
+            </Rates>
+          </FixedLegData>
+        </LegData>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Cashflow</LegType>
+          <Currency>EUR</Currency>
+          <CashflowData>
+            <Cashflow>
+              <Amount date="2028-10-02">6765247.42</Amount>
+            </Cashflow>
+          </CashflowData>
+        </LegData>
+      </ContingentPayments>
+    </CreditLinkedSwapData>
   </Trade>
   <Trade id="f265a2f6-17d9-5f0c-8a83-ce659e4225cb">
     <TradeType>CreditLinkedSwap</TradeType>
+    <CreditLinkedSwapData>
+      <CreditCurveId>oresmd://credit/529900T8BM49AURSDO55?type=series&amp;instrument=cds&amp;quote=credit_spread&amp;seniority=SNRFOR&amp;ccy=EUR</CreditCurveId>
+      <SettlesAccrual>Y</SettlesAccrual>
+      <DefaultPaymentTime>atDefault</DefaultPaymentTime>
+      <IndependentPayments>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Cashflow</LegType>
+          <Currency>EUR</Currency>
+          <CashflowData>
+            <Cashflow>
+              <Amount date="2025-11-02">7675517.41</Amount>
+            </Cashflow>
+          </CashflowData>
+        </LegData>
+      </IndependentPayments>
+      <ContingentPayments>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>Following</PaymentConvention>
+          <DayCounter>ACT/360</DayCounter>
+          <Notionals>
+            <Notional>7675517.41</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-11-02</StartDate>
+              <EndDate>2027-11-02</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>WeekendsOnly</Calendar>
+              <Convention>Following</Convention>
+              <Rule>CDS2015</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
+        </LegData>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Cashflow</LegType>
+          <Currency>EUR</Currency>
+          <CashflowData>
+            <Cashflow>
+              <Amount date="2027-11-02">7675517.41</Amount>
+            </Cashflow>
+          </CashflowData>
+        </LegData>
+      </ContingentPayments>
+    </CreditLinkedSwapData>
   </Trade>
 </Portfolio>

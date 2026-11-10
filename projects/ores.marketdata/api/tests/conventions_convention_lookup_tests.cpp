@@ -242,3 +242,32 @@ TEST_CASE("a convention with no address is never found", "[marketdata][conventio
 
     CHECK(!lookup.index_definition_of(identifier(euribor_six_months)));
 }
+
+TEST_CASE("a_cds_convention_is_found_by_the_id_ore_names_it", "[conventions][convention_lookup]") {
+    auto set = conventions();
+    rd::cds_convention standard;
+    standard.id = "CDS-STANDARD-CONVENTIONS";
+    standard.frequency = "Quarterly";
+    set.cds.push_back(standard);
+    const convention_lookup lookup(set);
+
+    const auto found = lookup.cds_convention_of("CDS-STANDARD-CONVENTIONS");
+    REQUIRE(found);
+    CHECK(found->frequency == "Quarterly");
+
+    const auto missing = lookup.cds_convention_of("EUR-CDS-CONVENTIONS");
+    REQUIRE_FALSE(missing);
+    CHECK(missing.error().kind == lookup_refusal_kind::no_match);
+    CHECK(missing.error().reference == "EUR-CDS-CONVENTIONS");
+}
+
+TEST_CASE("two_cds_conventions_with_one_id_are_refused", "[conventions][convention_lookup]") {
+    convention_set set;
+    rd::cds_convention standard;
+    standard.id = "CDS-STANDARD-CONVENTIONS";
+    set.cds = {standard, standard};
+
+    const auto found = convention_lookup(set).cds_convention_of("CDS-STANDARD-CONVENTIONS");
+    REQUIRE_FALSE(found);
+    CHECK(found.error().kind == lookup_refusal_kind::more_than_one_match);
+}

@@ -49,7 +49,7 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 | [[id:46D4F712-DE5C-49E0-B94F-2EC4DF873A81][Store trade curve references as oresmd addresses]] | DONE | 2026-11-09 | 2026-11-09 | Reference, credit, volatility and income curve columns hold an oresmd address built from the ORE curve name on import, and the market configuration names them on export. |
 | [[id:5126758B-B4A9-4B3E-A512-CE3756FF86BC][Store trade underlyings and entities as oresmd addresses]] | DONE | 2026-11-09 | 2026-11-09 | Underlying, equity, commodity, reference entity, issuer and security columns hold an oresmd address. |
 | [[id:D2953FE0-2D86-4E0E-B856-5A16FDC6D0F6][Run the ORE engine on each recorded portfolio]] | DONE | 2026-11-09 | 2026-11-09 | A tagged test runs ORE on each recorded generated portfolio and fails on a trade ORE cannot read or build, unless a known list names it. |
-| [[id:D702F8DB-DC51-4663-A9DC-7F9960660A02][Generate credit trades through their builders]] | BACKLOG | |  | Every credit type the generator books is built by its trade builder, and ORE builds it. |
+| [[id:D702F8DB-DC51-4663-A9DC-7F9960660A02][Generate credit trades through their builders]] | DONE | 2026-11-09 | 2026-11-10 | Every credit type the generator books is built by its trade builder, and ORE builds it. |
 | [[id:671F4E8B-C675-4913-B950-0541DFCAE94B][Generate interest rate trades through their builders]] | BACKLOG | |  | Every interest rate type the generator books is built by its trade builder, and ORE builds it. |
 | [[id:B5E6E9CE-C1ED-4462-A651-02332DF3382E][Generate FX trades through their builders]] | BACKLOG | |  | Every FX type the generator books is built by its trade builder, and ORE builds it. |
 | [[id:0AF4A4DA-DCBC-4F26-975C-926B8FDF0ECE][Generate bond trades through their builders]] | BACKLOG | |  | Every bond type the generator books is built by its trade builder, and ORE builds it. |
@@ -62,6 +62,7 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 
 * Decisions
 
+- A generated credit trade names its credit curve by its reference entity, stored as an oresmd address of the LEI's credit spread series. Until the market data task gives each LEI a curve, ORE fails such a trade only on the missing curve, which counts as a market data error. The user chose this on 2026-11-10.
 - Split from [[id:98A3DD2D-EA91-4442-A0D8-0B58C03A1C7A][Prove generated trades value against the ORE samples]] on 2026-11-08 at sprint 29 close. Its done tasks are recorded there.
 - Revised on 2026-11-09: the point of the story is that trades are correct, so it ends with a valuation. "Correct" is measured against ORE: the NPV of a trade on an ORE sample's terms, against the NPV ORE gives for the sample. The review of ORE's code became a task of its own, because the design only cited =TradeGenerator=, which builds 11 products against 85 generated types.
 - The tasks run in table order, each using the one before it.

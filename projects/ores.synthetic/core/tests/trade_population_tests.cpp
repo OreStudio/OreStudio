@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ore_example_conventions.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -307,6 +308,7 @@ domain::trade_generation_scope credit_scope() {
     scope.asset_class_code = "credit";
     scope.trades_per_book = 4;
     scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
+    scope.conventions = ores::synthetic::tests::ore_example_conventions();
     return scope;
 }
 
@@ -317,16 +319,42 @@ TEST_CASE("a_credit_slot_states_its_row_and_names_a_legal_entity", "[trade_popul
     for (const auto& slot : plan.slots) {
         REQUIRE(slot.instruments.credit_instruments.size() == 1u);
         const auto& row = slot.instruments.credit_instruments.front();
-        // The row states the party boundary and no trade type: the trade states
-        // that one.
-        CHECK_FALSE(row.reference_entity_id_type.empty());
         /*
          * A credit trade names a party by one identifier, and the reference is
          * the LEI the dataset holds.
          */
         CHECK(row.reference_entity_id_type == "LEI");
         CHECK(row.reference_entity_id.size() == 20u);
+        CHECK_FALSE(slot.instruments.swap_legs.empty());
     }
+}
+
+TEST_CASE("a_credit_trade_names_the_credit_curve_of_its_reference_entity", "[trade_population]") {
+    auto scope = credit_scope();
+    scope.trades_per_book = 1;
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+    const auto& batch = plan.slots.front().instruments;
+    REQUIRE(batch.credit_default_swap_instruments.size() == 1u);
+    const auto& curve = batch.credit_default_swap_instruments.front().credit_curve_id;
+    REQUIRE(curve.has_value());
+    CHECK(curve->starts_with("oresmd://credit/" +
+                             batch.credit_instruments.front().reference_entity_id + "?"));
+}
+
+TEST_CASE("an_rpa_in_a_currency_no_swap_convention_floats_in_is_refused", "[trade_population]") {
+    auto scope = credit_scope();
+    scope.trade_type_codes = {"RiskParticipationAgreement"};
+    scope.currency_code = "JPY";
+    CHECK_THROWS_AS(plan_of(scope), trade_population_error);
+}
+
+TEST_CASE("a_credit_scope_whose_conventions_lack_the_cds_convention_is_refused",
+          "[trade_population]") {
+    auto scope = credit_scope();
+    scope.conventions.cds.clear();
+    CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
 
 /*

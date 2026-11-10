@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-boj-adapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ The uncollateralised overnight call rate (TONA) is stored as fixings in the syst
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-10                               |
 
 * Acceptance
@@ -44,9 +44,11 @@ The uncollateralised overnight call rate (TONA) is stored as fixings in the syst
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =boj_fetcher= implements =fetcher=: adapter =boj_stat=, scheme =boj_stat=, field =VALUES=. A source's key is =<database>.<series code>=, such as =FM01.STRDCLUCON=, as the ECB key is a dataflow and a key. A read is one GET of =/api/v1/getDataCode= in JSON.
+- The API takes its window in months, so the fetcher asks for the months that hold the window and keeps the days inside it. The answer gives a value or a null for each calendar day; a null is a day with no publication and is skipped.
+- The values are JSON numbers. The fetcher reads each as the shortest text that reads back to it, as the New York Fed fetcher does, and =decimal_of_percent= moves the point. The values have three decimals, so the text is the published one.
+- An answer whose =STATUS= is not 200, that is paged, or that does not name the series, is an error. An unknown series is a 400, which =read_body= reports as an error.
+- Option =--boj-url=. The seeds add the =boj= supplier and provider, with the copyright page and the credit "Source: Bank of Japan", the =boj_stat= adapter, the =boj-stat= session, the =boj-tona= feed scoped to the =JPY-TONAR= item, and the system party's subscription and route. The service registry hosts =boj-tona:boj:boj_stat:FM01.STRDCLUCON=.
 
 * Measurements
 
@@ -60,7 +62,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Call rate history the route serves | 7,069 rates, 1998-01-05 to 2026-11-06 | =curl -s 'https://www.stat-search.boj.or.jp/api/v1/getDataCode?format=json&lang=en&db=FM01&code=STRDCLUCON&startDate=198501&endDate=202611'=, non-null values counted | 3fa3501b5d |
+| Call rate fixings a fresh environment stored | 264, 2025-10-06 to 2026-11-06, last =0.01229= | =compass check= (=ticks-smoke=), then a count of the fixings of source =boj-tona= | 3fa3501b5d |
+| Cases of =ores.marketdata.official.tests= | 56 pass, 8 of them of the Bank of Japan | =ores.marketdata.official.tests= | 3fa3501b5d |
 
 * Notes
 
@@ -88,3 +92,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The uncollateralised overnight call rate (TONA) is stored as fixings in the system tenant, read from the Bank of Japan's time-series API by a specialised fetcher that the official adapter hosts beside the others. A fresh environment accepted the Bank's terms at setup and stored 264 fixings, the last 400 days, with the log line "Sent 264 fixing(s) of 'boj-tona'". The values are the decimals of the published percents, such as =0.01229= for 1.229, and the provider =boj= carries the credit "Source: Bank of Japan". The series maps to the =JPY-TONAR= item.
+
+The calibration sources note records the 7,069 rates the route serves from 1998-01-05, and corrects the earlier count of 13,483, which counted calendar days with no publication. It also states how the API's monthly window works. The use rests on the owner's judgement of 2026-11-09 that it is not commercial; the note records that the Bank was not asked.
+
+Unit tests parse a recorded answer and months with no publication, refuse seven malformed answers, a paged answer and an answer that does not name the series, check the URL of a read and the days kept, and refuse keys that are not series keys.

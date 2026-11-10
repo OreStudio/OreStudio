@@ -75,10 +75,11 @@ select results_eq(
        and f.tenant_id = s.tenant_id
        and f.valid_to = ores_utility_infinity_timestamp_fn()
       where s.tenant_id = ores_utility_system_tenant_id_fn()
-        and f.name in ('nyfed-sofr')
+        and f.name in ('nyfed-sofr', 'ecb-estr')
         and s.valid_to = ores_utility_infinity_timestamp_fn()
       order by 1$$,
-    $$values ('nyfed-sofr interest_rates oresmd://ir/USD?type=fixing&index=ibor&name=SOFR')$$,
+    $$values ('ecb-estr interest_rates oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER'),
+             ('nyfed-sofr interest_rates oresmd://ir/USD?type=fixing&index=ibor&name=SOFR')$$,
     'each overnight feed is scoped to the item of its series'
 );
 

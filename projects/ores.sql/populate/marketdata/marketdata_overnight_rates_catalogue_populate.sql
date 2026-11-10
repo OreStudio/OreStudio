@@ -118,6 +118,11 @@ values
      'nyfed', 'nyfed', 'production', 'https://markets.newyorkfed.org', '',
      '{"url":"https://markets.newyorkfed.org","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the reference rates of the New York Fed.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('ecb-data-portal', ores_utility_system_tenant_id_fn(), 0, 'ECB Data Portal',
+     'ecb', 'ecb_portal', 'production', 'https://data-api.ecb.europa.eu', '',
+     '{"url":"https://data-api.ecb.europa.eu","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the ECB Data Portal.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -131,6 +136,10 @@ values
     ('491b9101-f1e7-5020-a960-9799f3a78c2a', ores_utility_system_tenant_id_fn(), 0,
      'nyfed-sofr', 'nyfed', 'nyfed-markets', 'end_of_day', 'SOFR', true,
      'SOFR as the New York Fed publishes it, read by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('52a9af16-42ac-5fa6-85f1-dfe87ab35d84', ores_utility_system_tenant_id_fn(), 0,
+     'ecb-estr', 'ecb', 'ecb-data-portal', 'end_of_day', 'EST.B.EU000A2X2A25.WT', true,
+     '€STR as the ECB publishes it, read from the ECB Data Portal by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -144,7 +153,9 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, f.id, 'interest
        m.oresmd_uri, v.id,
        current_user, current_user, 'system.initial_load',
        'Initial population of the overnight rates scopes'
-from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR')) as s(feed, provider, scheme, external_id)
+from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
+             ('ecb-estr', 'ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT'))
+     as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
  and f.name = s.feed
@@ -193,5 +204,16 @@ begin
         '491b9101-f1e7-5020-a960-9799f3a78c2a',
         current_user, current_user, 'system.initial_load',
         'The system party reads SOFR from the New York Fed'
+    ) on conflict do nothing;
+
+    -- The system party subscribes to the ECB in the official rates catalogue.
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '943b73a2-7a70-5137-9f0c-ace0cbe3e645', ores_utility_system_tenant_id_fn(), 0, v_party, 'ecb', 'interest_rates',
+        '52a9af16-42ac-5fa6-85f1-dfe87ab35d84',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads €STR from the ECB Data Portal'
     ) on conflict do nothing;
 end $$;

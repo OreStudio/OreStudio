@@ -647,6 +647,7 @@ named with the adapter that reads it.
 - --source boc-frankfurter:boc:frankfurter:BOC
 - --source tcmb-frankfurter:tcmb:frankfurter:TCMB
 - --source nyfed-sofr:nyfed:nyfed:SOFR
+- --source ecb-estr:ecb:ecb_portal:EST.B.EU000A2X2A25.WT
 
 * ores.compute.wrapper
 :PROPERTIES:

@@ -138,7 +138,7 @@ values
      'SOFR as the New York Fed publishes it, read by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
     ('52a9af16-42ac-5fa6-85f1-dfe87ab35d84', ores_utility_system_tenant_id_fn(), 0,
-     'ecb-estr', 'ecb', 'ecb-data-portal', 'end_of_day', 'EST.B.EU000A2X2A25.WT', true,
+     'ecb-estr', 'ecb', 'ecb-data-portal', 'end_of_day', 'EST.B.EU000A2X2A25.WT', false,
      '€STR as the ECB publishes it, read from the ECB Data Portal by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)

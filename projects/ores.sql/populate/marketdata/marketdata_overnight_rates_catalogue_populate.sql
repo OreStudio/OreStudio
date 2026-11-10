@@ -128,6 +128,11 @@ values
      'boe', 'boe_iadb', 'production', 'https://www.bankofengland.co.uk', '',
      '{"url":"https://www.bankofengland.co.uk","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the Bank of England statistical database.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('boc-valet', ores_utility_system_tenant_id_fn(), 0, 'Bank of Canada Valet API',
+     'boc', 'boc_valet', 'production', 'https://www.bankofcanada.ca', '',
+     '{"url":"https://www.bankofcanada.ca","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Bank of Canada Valet API.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -149,6 +154,10 @@ values
     ('93de0868-9ab8-5a1e-a16a-66941e6b0acc', ores_utility_system_tenant_id_fn(), 0,
      'boe-sonia', 'boe', 'boe-database', 'end_of_day', 'IUDSOIA', true,
      'SONIA as the Bank of England publishes it, read from its statistical database by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('ef613368-bf4b-5367-ae33-b5df192549ac', ores_utility_system_tenant_id_fn(), 0,
+     'boc-corra', 'boc', 'boc-valet', 'end_of_day', 'AVG.INTWO', false,
+     'CORRA as the Bank of Canada publishes it, read from its Valet API by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -164,7 +173,8 @@ select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, f.id, 'interest
        'Initial population of the overnight rates scopes'
 from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('ecb-estr', 'ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT'),
-             ('boe-sonia', 'boe', 'boe_iadb', 'IUDSOIA'))
+             ('boe-sonia', 'boe', 'boe_iadb', 'IUDSOIA'),
+             ('boc-corra', 'boc', 'boc_valet', 'AVG.INTWO'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -243,5 +253,16 @@ begin
         '93de0868-9ab8-5a1e-a16a-66941e6b0acc',
         current_user, current_user, 'system.initial_load',
         'The system party reads SONIA from the Bank of England'
+    ) on conflict do nothing;
+
+    -- The system party subscribes to the Bank of Canada in the official rates catalogue.
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '222a1169-9b03-55ab-a08e-ef4ff5eb80ec', ores_utility_system_tenant_id_fn(), 0, v_party, 'boc', 'interest_rates',
+        'ef613368-bf4b-5367-ae33-b5df192549ac',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads CORRA from the Bank of Canada'
     ) on conflict do nothing;
 end $$;

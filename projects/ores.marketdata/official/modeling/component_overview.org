@@ -59,6 +59,8 @@ service maps and stores what it sends.
   asks again when the portal's gateway times out.
 - =boe_fetcher=, the fetcher that reads a series of the Bank of England's statistical
   database, such as SONIA.
+- =boc_fetcher=, the fetcher that reads a series of the Bank of Canada's Valet API, such as
+  CORRA.
 - =published_text=, the date, number and HTTP helpers that every fetcher shares.
 - =source_feed=, which serves one source through its fetcher.
 - =official_adapter=, which hosts every source and gives each the fetcher of its adapter.

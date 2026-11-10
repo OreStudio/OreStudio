@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:adapter:ir:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-bank-of-canada-adapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ CORRA is stored as fixings in the system tenant, with its history, read from the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
 | Now          | Not yet started.                       |
 | Waiting on   | [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] and [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]]. |

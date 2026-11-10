@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 0CACFA6B-D5A7-4336-8B8A-8D559A8AC119
+:END:
+#+title: Task: Keep quant free of stored codes
+#+description: The code spellings refdata stores move out of quant into refdata.core mappers, and one mapper reads an FX option convention into quant's quoting convention.
+#+type: task
+#+level: s1
+#+filetags: :analytics:refdata:architecture:support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/keep-quant-free-of-stored-codes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Quant holds only its own types: enums and small value types its engines need, testable with no other component. Today it also holds fifteen functions that translate refdata's stored spellings, such as ModifiedFollowing or DEPOSIT, into its enums and back. Their callers are all mappers in refdata.core and the market data service. The component that owns a record owns its mapping into quant, so these move into refdata.core, and the market data service calls them instead of parsing codes itself. The FX option convention, which the surface calibration needs, gets one mapper there too, and the synthetic source's private copy goes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-10                               |
+
+* Acceptance
+
+- Quant declares no function that reads or writes a stored code, and its engine headers name only enums.
+- refdata.core holds the code mappers in one unit with one error style, and every former caller uses it.
+- A round-trip test reads and writes every value of every enum, so a new value without a spelling fails.
+- One mapper reads an fx_option_convention row into quant's fx_quote_convention, choosing the long-term types at or past the switch tenor by comparing periods, and the synthetic source uses it.
+- Behaviour does not change: the quant, refdata, market data and synthetic tests pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done on 2026-11-10. Quant declares no function that reads or writes a stored code. The fifteen functions moved into =ores.refdata.core/mapping/quant_codes=, each code spelled once in an explicit table, so a quant enum no longer has to match a stored spelling for magic_enum. The five callers in refdata.core and the market data service use it, and refdata.core now links quant publicly because the mapping headers hand quant's types to their callers. Quant gained =domain::compare_periods=, which orders periods as QuantLib does. =ores.refdata.core/mapping/fx_option_convention_mapping= reads a tenor's text and an =fx_option_convention= row into quant's =fx_quote_convention=, and the synthetic source calls it in place of its own copy.
+
+Tests: quant 619 cases, refdata.core 545 cases with the database, synthetic API 861, market data service 231 and synthetic service 78, all passing. The market data and synthetic service suites pass only with the services stopped, because their NATS tests share the services' subject prefix; that defect is the capture NATS tests share the running services' subject prefix. The string process type of quant's process factory is the capture Quant's process factory takes a string process type.

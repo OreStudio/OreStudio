@@ -18,7 +18,6 @@
  *
  */
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
-#include <magic_enum/magic_enum.hpp>
 #include <stdexcept>
 
 namespace ores::analytics::quant::service {
@@ -65,21 +64,6 @@ double day_count_calculator::year_fraction(std::chrono::year_month_day start,
             return thirty_360(start, end);
     }
     throw std::invalid_argument("day_count_calculator: unrecognized day_count_convention_code");
-}
-
-day_count_convention_code parse_day_count_convention_code(const std::string& code) {
-    // "30/360" cannot be an enumerator name ("/" is invalid), so it is
-    // mapped by hand; every other code matches its enumerator exactly and
-    // is delegated to magic_enum.
-    if (code == "30/360")
-        return day_count_convention_code::THIRTY_360;
-
-    const auto parsed = magic_enum::enum_cast<day_count_convention_code>(code);
-    if (!parsed)
-        throw std::invalid_argument("parse_day_count_convention_code: unsupported convention '" +
-                                    code +
-                                    "' -- only A360, A365, A365F, and 30/360 are implemented");
-    return *parsed;
 }
 
 }

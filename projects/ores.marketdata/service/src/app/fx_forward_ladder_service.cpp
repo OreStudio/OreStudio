@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/fx_forward_ladder_service.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "../curve_pillar_reader.hpp"
 #include "../fx_forward_ladder_plan.hpp"
 #include "ores.analytics.quant/service/fx_forward_calculator.hpp"
@@ -149,7 +150,7 @@ funding_curve read_funding_curve(context ctx,
     out.points = anchor_curve(read_discount_curve(ctx, config.output_series_id, set->as_of, refctx),
                               reference);
     out.interpolation =
-        quant::service::parse_interpolation_method_code(config.interpolation_method);
+        ores::refdata::mapping::parse_interpolation_method_code(config.interpolation_method);
     out.source = {.currency = currency,
                   .curve_name = config.name,
                   .output_series_id = boost::uuids::to_string(config.output_series_id),
@@ -246,7 +247,7 @@ computed_fx_forward_set answer(context ctx, const fx_forward_inputs& request) {
         throw refused("The funding curves of " + request.pair_code +
                       " use different interpolation methods.");
 
-    const auto roll = quant::domain::parse_business_day_convention_code(
+    const auto roll = ores::refdata::mapping::parse_business_day_convention_code(
         convention.business_day_convention.value_or("ModifiedFollowing"));
     auto dates = build_ladder_dates(
         date_of(request.as_of), spot_days, roll, convention.end_of_month.value_or(false), calendar);

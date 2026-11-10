@@ -17,9 +17,9 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
+#include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <boost/uuid/string_generator.hpp>
 #include <algorithm>
-#include <charconv>
 #include <cmath>
 #include <format>
 #include <map>
@@ -30,50 +30,6 @@ namespace ores::synthetic::feed {
 namespace {
 
 namespace qm = analytics::quant::math;
-
-/// The length of a tenor such as 2Y or 6M in years, or nothing for one that is not.
-std::optional<double> years_of_tenor(std::string_view tenor) {
-    if (tenor.size() < 2)
-        return std::nullopt;
-    int count = 0;
-    const auto [end, ec] = std::from_chars(tenor.data(), tenor.data() + tenor.size() - 1, count);
-    if (ec != std::errc{} || end != tenor.data() + tenor.size() - 1 || count < 0)
-        return std::nullopt;
-    switch (tenor.back()) {
-        case 'D':
-            return count / 365.0;
-        case 'W':
-            return count * 7.0 / 365.0;
-        case 'M':
-            return count / 12.0;
-        case 'Y':
-            return static_cast<double>(count);
-        default:
-            return std::nullopt;
-    }
-}
-
-std::expected<qm::fx_atm_type, std::string> atm_of(std::string_view s) {
-    if (s == "AtmDeltaNeutral")
-        return qm::fx_atm_type::delta_neutral;
-    if (s == "AtmFwd")
-        return qm::fx_atm_type::forward;
-    return std::unexpected("the ATM type '" + std::string(s) +
-                           "' is not one the derivation quotes");
-}
-
-std::expected<qm::fx_delta_type, std::string> delta_of(std::string_view s) {
-    if (s == "Spot")
-        return qm::fx_delta_type::spot;
-    if (s == "Fwd")
-        return qm::fx_delta_type::forward;
-    if (s == "PaSpot")
-        return qm::fx_delta_type::premium_adjusted_spot;
-    if (s == "PaFwd")
-        return qm::fx_delta_type::premium_adjusted_forward;
-    return std::unexpected("the delta type '" + std::string(s) +
-                           "' is not one the derivation quotes");
-}
 
 /// The pair's log level on each date, keyed by date so the legs align.
 std::map<std::chrono::year_month_day, double> log_levels(const dated_series& series) {
@@ -176,39 +132,11 @@ pair_log_returns(const std::optional<dated_series>& plus,
 }
 
 std::expected<qm::fx_quote_convention, std::string>
-quote_convention_at(const refdata::domain::fx_option_convention& convention, double years) {
-    std::string_view atm = convention.atm_type;
-    std::string_view delta = convention.delta_type;
-    if (convention.switch_tenor) {
-        const auto switch_years = years_of_tenor(*convention.switch_tenor);
-        if (!switch_years)
-            return std::unexpected("the switch tenor '" + *convention.switch_tenor +
-                                   "' is not a tenor");
-        if (*switch_years > 0.0 && years >= *switch_years) {
-            if (convention.long_term_atm_type)
-                atm = *convention.long_term_atm_type;
-            if (convention.long_term_delta_type)
-                delta = *convention.long_term_delta_type;
-        }
-    }
-    const auto atm_type = atm_of(atm);
-    if (!atm_type)
-        return std::unexpected(atm_type.error());
-    const auto delta_type = delta_of(delta);
-    if (!delta_type)
-        return std::unexpected(delta_type.error());
-    const std::string favour = convention.risk_reversal_in_favor_of.value_or("Call");
-    if (favour != "Call" && favour != "Put")
-        return std::unexpected("a risk reversal is in favour of Call or Put, not '" + favour + "'");
-    const std::string style = convention.butterfly_style.value_or("Smile");
-    if (style != "Broker" && style != "Smile")
-        return std::unexpected("a butterfly is Broker or Smile, not '" + style + "'");
-    return qm::fx_quote_convention{.atm = *atm_type,
-                                   .delta = *delta_type,
-                                   .favour = favour == "Call" ? qm::fx_risk_reversal_favour::call :
-                                                                qm::fx_risk_reversal_favour::put,
-                                   .butterfly = style == "Broker" ? qm::fx_butterfly_style::broker :
-                                                                    qm::fx_butterfly_style::smile};
+convention_at(const refdata::domain::fx_option_convention& convention, std::string_view label) {
+    return refdata::mapping::parse_tenor_text(label).and_then(
+        [&](analytics::quant::domain::date_period expiry) {
+            return refdata::mapping::to_quote_convention(convention, expiry);
+        });
 }
 
 std::vector<marketdata::messaging::adapter_tick>
@@ -253,7 +181,7 @@ derive_missing_days(const derived_fx_pair& pair,
     std::vector<qm::fx_expiry> expiries;
     expiries.reserve(derived_fx_expiries.size());
     for (const auto& e : derived_fx_expiries) {
-        const auto at = quote_convention_at(convention, e.years);
+        const auto at = convention_at(convention, e.label);
         if (!at)
             return std::unexpected("the convention at " + std::string(e.label) + ": " + at.error());
         expiries.push_back({.label = std::string(e.label), .years = e.years, .convention = *at});

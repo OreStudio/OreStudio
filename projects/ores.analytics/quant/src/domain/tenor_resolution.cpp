@@ -23,45 +23,6 @@
 
 namespace ores::analytics::quant::domain {
 
-namespace {
-
-struct kind_entry final {
-    std::string_view code;
-    tenor_kind kind;
-};
-
-constexpr std::array<kind_entry, 2> kinds{{
-    {"PERIOD", tenor_kind::period},
-    {"SPECIAL", tenor_kind::special},
-}};
-
-struct anchor_entry final {
-    std::string_view code;
-    tenor_anchor anchor;
-};
-
-/// The order is @c ores_refdata_tenor_anchors_tbl's, by code.
-constexpr std::array<anchor_entry, 6> anchors{{
-    {"IMM_ROLL", tenor_anchor::imm_roll},
-    {"NEAR_LEG", tenor_anchor::near_leg},
-    {"NONE", tenor_anchor::none},
-    {"SPOT", tenor_anchor::spot},
-    {"TODAY", tenor_anchor::today},
-    {"TOMORROW", tenor_anchor::tomorrow},
-}};
-
-struct algorithm_entry final {
-    std::string_view code;
-    resolution_algorithm algorithm;
-};
-
-constexpr std::array<algorithm_entry, 2> algorithms{{
-    {"ANCHOR_OFFSET", resolution_algorithm::anchor_offset},
-    {"SCHEDULE_STEP", resolution_algorithm::schedule_step},
-}};
-
-} // namespace
-
 std::string_view to_string(resolution_status status) {
     switch (status) {
         case resolution_status::ok:
@@ -88,55 +49,6 @@ std::string_view to_string(resolution_status status) {
             return "schedule_exhausted";
     }
     return "unknown";
-}
-
-tenor_kind parse_tenor_kind_code(std::string_view code) {
-    for (const auto& entry : kinds) {
-        if (entry.code == code)
-            return entry.kind;
-    }
-    throw std::invalid_argument("Unrecognised tenor kind code: " + std::string(code));
-}
-
-std::string_view to_tenor_kind_code(tenor_kind kind) {
-    for (const auto& entry : kinds) {
-        if (entry.kind == kind)
-            return entry.code;
-    }
-    throw std::invalid_argument("Tenor kind has no persisted code");
-}
-
-tenor_anchor parse_tenor_anchor_code(std::string_view code) {
-    for (const auto& entry : anchors) {
-        if (entry.code == code)
-            return entry.anchor;
-    }
-    throw std::invalid_argument("Unrecognised tenor anchor code: " + std::string(code));
-}
-
-std::string_view to_tenor_anchor_code(tenor_anchor anchor) {
-    for (const auto& entry : anchors) {
-        if (entry.anchor == anchor)
-            return entry.code;
-    }
-    throw std::invalid_argument("Tenor anchor has no persisted code");
-}
-
-resolution_algorithm parse_resolution_algorithm_code(std::string_view code) {
-    for (const auto& entry : algorithms) {
-        if (entry.code == code)
-            return entry.algorithm;
-    }
-    throw std::invalid_argument("Unrecognised tenor resolution algorithm code: " +
-                                std::string(code));
-}
-
-std::string_view to_resolution_algorithm_code(resolution_algorithm algorithm) {
-    for (const auto& entry : algorithms) {
-        if (entry.algorithm == algorithm)
-            return entry.code;
-    }
-    throw std::invalid_argument("Tenor resolution algorithm has no persisted code");
 }
 
 } // namespace ores::analytics::quant::domain

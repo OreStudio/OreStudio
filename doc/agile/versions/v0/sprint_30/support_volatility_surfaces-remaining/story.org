@@ -71,6 +71,7 @@ The system builds and serves volatility surfaces as market data. A surface is ca
 | [[id:A0A98F65-9E6B-4AD0-9AB8-3FF9C21CAE4C][Take a new calibration at the market day roll]] | BACKLOG | | | A running feed whose pair has a newly approved calibration, or whose spread was recalibrated, takes it at its next market day roll without a restart. |
 | [[id:D3E4FB25-30DE-48B3-B6B4-E3A766E8EB50][Recalibrate the synthetic feeds on a schedule]] | BACKLOG | | | The scheduler starts the calibration workflow each business day, so new fixings move the levels and the fits without a person starting it. |
 | [[id:958AD1EA-6A2B-4067-A162-5515B9CC7402][Re-anchor a class to the public rates]] | BACKLOG | | | An operator re-anchors an asset class: its feeds restart from the latest calibrated levels, a deliberate and recorded jump, since otherwise a running feed's level follows its own path. |
+| [[id:0CACFA6B-D5A7-4336-8B8A-8D559A8AC119][Keep quant free of stored codes]] | DONE | 2026-11-10 | 2026-11-10 | The code spellings refdata stores move out of quant into refdata.core mappers, and one mapper reads an FX option convention into quant's quoting convention. |
 
 * Decisions
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
@@ -146,9 +147,9 @@ curve_computation compute_curve(ores::database::context ctx,
         resolve_bootstrap_pillars(pillars, refctx, raw.rates_by_point_id);
 
     const auto day_count_convention =
-        quant::parse_day_count_convention_code(config.day_count_convention);
+        ores::refdata::mapping::parse_day_count_convention_code(config.day_count_convention);
     const auto interpolation_method =
-        quant::parse_interpolation_method_code(config.interpolation_method);
+        ores::refdata::mapping::parse_interpolation_method_code(config.interpolation_method);
 
     std::vector<quant::bootstrapped_point> discount_curve;
     std::optional<ores::refdata::domain::ir_curve_bootstrap_config> discount_config;

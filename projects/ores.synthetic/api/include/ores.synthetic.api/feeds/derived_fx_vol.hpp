@@ -142,15 +142,11 @@ ORES_SYNTHETIC_API_EXPORT std::expected<pair_returns, std::string>
 pair_log_returns(const std::optional<dated_series>& plus, const std::optional<dated_series>& minus);
 
 /**
- * @brief The quoting convention of an expiry of a pair.
- *
- * An expiry at or past the convention's switch tenor uses its long-term ATM and delta
- * types. ORE's spellings are read: AtmDeltaNeutral and AtmFwd; Spot, Fwd, PaSpot and
- * PaFwd; a risk reversal in favour of Call or Put, Call when unstated; a Broker or Smile
- * butterfly, Smile when unstated. Refuses a type the derivation cannot quote.
+ * @brief The quoting convention of a pair's convention at an expiry label such as 1M, read by
+ * reference data's mapper.
  */
 ORES_SYNTHETIC_API_EXPORT std::expected<analytics::quant::math::fx_quote_convention, std::string>
-quote_convention_at(const refdata::domain::fx_option_convention& convention, double years);
+convention_at(const refdata::domain::fx_option_convention& convention, std::string_view label);
 
 /**
  * @brief The ticks of a pair's derived quotes on a day, one for each label of each

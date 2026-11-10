@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata.core/service/tenor_resolution_service.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.analytics.quant/domain/business_day_calendar_set.hpp"
 #include "ores.analytics.quant/domain/tenor_resolution.hpp"
 #include "ores.analytics.quant/service/tenor_resolution_engine.hpp"
@@ -48,11 +49,11 @@ namespace aquant_domain = ores::analytics::quant::domain;
 
 using ores::analytics::quant::domain::business_day_calendar_set;
 using ores::analytics::quant::domain::calendar_date_row;
-using ores::analytics::quant::domain::parse_business_day_convention_code;
-using ores::analytics::quant::domain::parse_period_unit_code;
-using ores::analytics::quant::domain::parse_resolution_algorithm_code;
-using ores::analytics::quant::domain::parse_tenor_anchor_code;
-using ores::analytics::quant::domain::parse_tenor_kind_code;
+using ores::refdata::mapping::parse_business_day_convention_code;
+using ores::refdata::mapping::parse_period_unit_code;
+using ores::refdata::mapping::parse_resolution_algorithm_code;
+using ores::refdata::mapping::parse_tenor_anchor_code;
+using ores::refdata::mapping::parse_tenor_kind_code;
 using ores::analytics::quant::domain::schedule_date;
 using ores::analytics::quant::domain::schedule_kind;
 using ores::analytics::quant::domain::tenor_resolution_request;

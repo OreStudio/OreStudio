@@ -102,6 +102,17 @@ the others in =domain::validate_arrival_process_parameters=.
 - =domain::validate_process_parameters(process_type, means, stdevs,
   weights, initial_price)=
 
+* Boundary
+
+Quant holds its own types and knows no stored spelling. Its engines take enums
+and small value types, such as =domain::date_period= and =math::fx_quote_convention=,
+so its tests need no other component. The component that owns a record owns its
+mapping into quant and out of it: reference data reads its codes in
+=ores.refdata.core/mapping/quant_codes.hpp= and its FX option conventions in
+=ores.refdata.core/mapping/fx_option_convention_mapping.hpp=, and market data maps
+its observations into engine inputs and the results back. A code is read once, when
+a row is loaded, so no engine loop sees a string.
+
 * Dependencies
 
 - =Boost::graph= / =Boost::boost= -- topology construction

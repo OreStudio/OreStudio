@@ -22,7 +22,6 @@
 set(files
     "domain/arrival_law.cpp"
     "domain/business_day_calendar_set.cpp"
-    "domain/calendar_rule.cpp"
     "domain/date_convention.cpp"
     "domain/operational_clock.cpp"
     "domain/process_parameter_validation.cpp"

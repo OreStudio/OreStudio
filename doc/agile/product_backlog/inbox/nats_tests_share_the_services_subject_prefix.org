@@ -1,0 +1,30 @@
+:PROPERTIES:
+:ID: 1358C240-46AE-4F27-8A56-15B8D4DD2C34
+:END:
+#+title: NATS tests share the running services' subject prefix
+#+description: ores.testing's make_nats_options gives every test the environment's ORES_NATS_SUBJECT_PREFIX, so a running service takes or answers a test's messages; three market data and synthetic tests fail whenever the services run.
+#+type: capture
+#+level: cross
+#+filetags: :testing:nats:tech-debt:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A test that talks over NATS should not share subjects with a running environment. Today =ores::testing::make_nats_options= reads =ORES_NATS_SUBJECT_PREFIX=, the same prefix the services of the worktree use. The fix gives each test run a prefix of its own, such as the environment prefix plus a random suffix, so the services never see the test's subjects. A test that needs a running service says so and is tagged, rather than depending on it by accident.
+
+* Why
+
+On 2026-11-10, with the services running, three cases failed on every run: the feed ingest loop cases =a_failed_copy_loses_no_other_tick_and_stores_none_twice_while_the_next_batch_waits= and the republish case at =app_feed_ingest_loop_tests.cpp:1338=, whose ticks the running market data service took through its queue group, and the simulator case =the adapter announces again until the service answers=, which expects no reply while the running service replies. With only NATS running, all 231 market data cases and all 78 synthetic service cases pass. A suite that fails depending on what else runs hides real failures and teaches people to ignore red.
+
+* References
+
+- =projects/ores.testing/include/ores.testing/nats_options_helper.hpp=
+- =projects/ores.marketdata/service/tests/app_feed_ingest_loop_tests.cpp=
+- =projects/ores.synthetic/service/tests/simulator_adapter_tests.cpp=
+
+* See also
+
+- Found while closing the task Keep quant free of stored codes.

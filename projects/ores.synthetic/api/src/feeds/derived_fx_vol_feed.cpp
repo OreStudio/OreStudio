@@ -150,7 +150,7 @@ derived_fx_vol_feed::ticks_of(const derived_fx_pair& pair,
     for (const auto& e : derived_fx_expiries) {
         if (!owed_expiries.contains(std::string(e.label)))
             continue;
-        const auto at = quote_convention_at(*convention, e.years);
+        const auto at = convention_at(*convention, e.label);
         if (!at)
             return std::unexpected("the convention at " + std::string(e.label) + ": " + at.error());
         expiries.push_back({.label = std::string(e.label), .years = e.years, .convention = *at});

@@ -35,9 +35,6 @@ using ores::analytics::quant::service::day_count_calculator;
 using ores::analytics::quant::service::day_count_convention_code;
 using ores::analytics::quant::service::discount_curve_required_error;
 using ores::analytics::quant::service::interpolation_method_code;
-using ores::analytics::quant::service::parse_bootstrap_curve_role_code;
-using ores::analytics::quant::service::parse_day_count_convention_code;
-using ores::analytics::quant::service::parse_interpolation_method_code;
 using namespace std::chrono;
 
 namespace {
@@ -461,49 +458,3 @@ TEST_CASE("interpolate_discount_factor rejects the recognised-but-unimplemented 
                     std::invalid_argument);
 }
 
-TEST_CASE("parse_bootstrap_curve_role_code accepts every valid curve_role.code",
-          "[curve_bootstrap_engine]") {
-    CHECK(parse_bootstrap_curve_role_code("DEPOSIT") == DEPOSIT);
-    CHECK(parse_bootstrap_curve_role_code("FRA") == FRA);
-    CHECK(parse_bootstrap_curve_role_code("SWAP") == SWAP);
-}
-
-TEST_CASE("parse_bootstrap_curve_role_code rejects an unsupported curve_role.code",
-          "[curve_bootstrap_engine]") {
-    CHECK_THROWS_AS(parse_bootstrap_curve_role_code("FUTURE"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_bootstrap_curve_role_code("NONE"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_bootstrap_curve_role_code(""), std::invalid_argument);
-    CHECK_THROWS_AS(parse_bootstrap_curve_role_code("deposit"), std::invalid_argument);
-}
-
-TEST_CASE("parse_interpolation_method_code accepts every valid interpolation_method.code, "
-          "including the recognised-but-unimplemented CUBIC_SPLINE",
-          "[curve_bootstrap_engine]") {
-    CHECK(parse_interpolation_method_code("LOG_LINEAR_DISCOUNT") == LOG_LINEAR_DISCOUNT);
-    CHECK(parse_interpolation_method_code("FLAT_FORWARD_THEN_LOG_LINEAR") ==
-          FLAT_FORWARD_THEN_LOG_LINEAR);
-    CHECK(parse_interpolation_method_code("CUBIC_SPLINE") ==
-          interpolation_method_code::CUBIC_SPLINE);
-}
-
-TEST_CASE("parse_interpolation_method_code rejects an unsupported interpolation_method.code",
-          "[curve_bootstrap_engine]") {
-    CHECK_THROWS_AS(parse_interpolation_method_code("MONOTONE_CONVEX"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_interpolation_method_code(""), std::invalid_argument);
-}
-
-TEST_CASE("parse_day_count_convention_code accepts every valid day_count_fraction_type.code",
-          "[curve_bootstrap_engine]") {
-    CHECK(parse_day_count_convention_code("A360") == day_count_convention_code::A360);
-    CHECK(parse_day_count_convention_code("A365") == day_count_convention_code::A365);
-    CHECK(parse_day_count_convention_code("A365F") == day_count_convention_code::A365F);
-    CHECK(parse_day_count_convention_code("30/360") == day_count_convention_code::THIRTY_360);
-}
-
-TEST_CASE("parse_day_count_convention_code rejects an unsupported day_count_fraction_type.code",
-          "[curve_bootstrap_engine]") {
-    CHECK_THROWS_AS(parse_day_count_convention_code("ActAct(ISDA)"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code("Business252"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code("30E/360"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code(""), std::invalid_argument);
-}

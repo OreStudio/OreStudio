@@ -24,7 +24,6 @@
 
 using ores::analytics::quant::service::day_count_calculator;
 using ores::analytics::quant::service::day_count_convention_code;
-using ores::analytics::quant::service::parse_day_count_convention_code;
 using namespace std::chrono;
 
 TEST_CASE("A360 divides actual days by 360", "[day_count_calculator]") {
@@ -117,23 +116,3 @@ TEST_CASE("year_fraction rejects an invalid start or end date", "[day_count_calc
         std::invalid_argument);
 }
 
-TEST_CASE("parse_day_count_convention_code accepts every implemented convention",
-          "[day_count_calculator]") {
-    CHECK(parse_day_count_convention_code("A360") == day_count_convention_code::A360);
-    CHECK(parse_day_count_convention_code("A365") == day_count_convention_code::A365);
-    CHECK(parse_day_count_convention_code("A365F") == day_count_convention_code::A365F);
-    CHECK(parse_day_count_convention_code("30/360") == day_count_convention_code::THIRTY_360);
-}
-
-TEST_CASE("parse_day_count_convention_code rejects an unsupported convention",
-          "[day_count_calculator]") {
-    CHECK_THROWS_AS(parse_day_count_convention_code("ActAct(ISDA)"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code("ActAct(ISMA)"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code("ActAct(AFB)"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code("30E/360"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code("30E/360(ISDA)"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code("Business252"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code("bogus"), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code(""), std::invalid_argument);
-    CHECK_THROWS_AS(parse_day_count_convention_code("a360"), std::invalid_argument);
-}

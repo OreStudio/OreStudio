@@ -20,6 +20,8 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "mapping/fx_option_convention_mapping.cpp"
+    "mapping/quant_codes.cpp"
     "messaging/asset_class_code_history_provider_registrar.cpp"
     "messaging/asset_class_code_registrar.cpp"
     "messaging/asset_class_history_provider_registrar.cpp"
@@ -1595,6 +1597,8 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/mapping/quant_codes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/messaging/asset_class_code_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/messaging/asset_class_code_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.core/messaging/asset_class_code_registrar.hpp"

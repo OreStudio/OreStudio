@@ -2128,3 +2128,19 @@ tangled into the runnable script library
 * Party Product Type Deal Classes
 
 - [[id:031ED9D1-C6DD-5FAD-952B-DF1C069CD510][How do I run the party_product_type_deal_classes commands from the shell?]]
+
+* Fx Forward Publish Points
+
+- [[id:1802384F-179F-52EF-A5ED-2169987386E0][How do I run the fx_forward_publish_points commands from the shell?]]
+
+* Fx Forward Publish Spots
+
+- [[id:2C169373-BF67-5618-8F0D-B6A29229CBC8][How do I run the fx_forward_publish_spots commands from the shell?]]
+
+* Fx Forward Publishes
+
+- [[id:4109B65F-E110-5469-93F3-1D11AEBFAEB2][How do I run the fx_forward_publishes commands from the shell?]]
+
+* Fx Forward Operation
+
+- [[id:864F0727-3C95-587E-B4AE-3E9149E9C9FC][How do I run the fx_forward_operation commands from the shell?]]

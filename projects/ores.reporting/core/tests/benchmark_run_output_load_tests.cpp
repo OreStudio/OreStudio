@@ -19,6 +19,7 @@
  */
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.platform/environment/environment.hpp"
+#include "ores.platform/process/memory.hpp"
 #include "ores.reporting.core/repository/report_metric_repository.hpp"
 #include "ores.reporting.core/results/run_output_reader.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -28,7 +29,6 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
-#include <sys/resource.h>
 
 namespace {
 
@@ -64,9 +64,7 @@ std::string raw_cube(std::size_t rows) {
 }
 
 long peak_mib() {
-    rusage usage{};
-    getrusage(RUSAGE_SELF, &usage);
-    return usage.ru_maxrss / 1024;
+    return static_cast<long>(ores::platform::process::peak_resident_bytes() / (1024 * 1024));
 }
 
 }

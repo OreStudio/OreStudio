@@ -47,9 +47,11 @@
  * must still be raised, so a family that fixes its trades removes its lines.
  *
  * ORES_ORE_EXECUTABLE names the engine. ORES_ORE_LIBRARY_PATH, when set, is
- * where the engine finds its shared libraries on Linux.
+ * where the engine finds its shared libraries. The test runs only on Linux,
+ * because the ORE engine is built only for Linux; elsewhere it skips.
  */
 
+#if defined(__linux__)
 namespace {
 
 namespace fs = std::filesystem;
@@ -164,9 +166,13 @@ std::string lines_of(const std::set<std::string>& lines) {
 }
 
 }
+#endif
 
 TEST_CASE("the ORE engine raises only the known errors on the recorded trades",
           "[synthetic][ore][generated][ore_engine][external]") {
+#if !defined(__linux__)
+    SKIP("The ORE engine is built only for Linux.");
+#else
     const auto executable =
         ores::platform::environment::environment::get_value("ORES_ORE_EXECUTABLE");
     if (!executable || executable->empty())
@@ -196,4 +202,5 @@ TEST_CASE("the ORE engine raises only the known errors on the recorded trades",
     CHECK(unexpected.empty());
     CHECK(no_longer_raised.empty());
     fs::remove_all(run_dir);
+#endif
 }

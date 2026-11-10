@@ -50,18 +50,22 @@ select results_eq(
        and c.tenant_id = v.tenant_id
        and c.valid_to = ores_utility_infinity_timestamp_fn()
       where v.tenant_id = ores_utility_system_tenant_id_fn()
-        and v.id_scheme in ('nyfed_rate_type', 'ecb_sdmx', 'boe_iadb', 'boc_valet', 'boj_stat')
+        and v.id_scheme in ('nyfed_rate_type', 'ecb_sdmx', 'boe_iadb', 'boc_valet', 'boj_stat', 'nb_sdmx')
         and v.valid_to = ores_utility_infinity_timestamp_fn()
       order by 1$$,
-    $$values ('boc AVG.INTWO CAD-CORRA'), ('boe IUDSOIA GBP-SONIA'), ('boj FM01.STRDCLUCON JPY-TONAR'),
-             ('ecb EST.B.EU000A2X2A25.WT EUR-ESTER'), ('nyfed SOFR USD-SOFR')$$,
+    $$values ('boc AVG.INTWO CAD-CORRA'),
+             ('boe IUDSOIA GBP-SONIA'),
+             ('boj FM01.STRDCLUCON JPY-TONAR'),
+             ('ecb EST.B.EU000A2X2A25.WT EUR-ESTER'),
+             ('norgesbank SHORT_RATES.B.NOWA.ON.R NOK-NOWA'),
+             ('nyfed SOFR USD-SOFR')$$,
     'each overnight series maps to the item of its index convention'
 );
 
 select is_empty(
     $$select code from ores_marketdata_providers_tbl
       where tenant_id = ores_utility_system_tenant_id_fn()
-        and code in ('nyfed', 'ecb', 'boe', 'boc', 'boj')
+        and code in ('nyfed', 'ecb', 'boe', 'boc', 'boj', 'norgesbank')
         and valid_to = ores_utility_infinity_timestamp_fn()
         and (terms_url = '' or terms_credit = '' or not allows_storage)$$,
     'each publisher of an overnight series states its terms and its credit'
@@ -75,13 +79,14 @@ select results_eq(
        and f.tenant_id = s.tenant_id
        and f.valid_to = ores_utility_infinity_timestamp_fn()
       where s.tenant_id = ores_utility_system_tenant_id_fn()
-        and f.name in ('nyfed-sofr', 'ecb-estr', 'boe-sonia', 'boc-corra', 'boj-tona')
+        and f.name in ('nyfed-sofr', 'ecb-estr', 'boe-sonia', 'boc-corra', 'boj-tona', 'norgesbank-nowa')
         and s.valid_to = ores_utility_infinity_timestamp_fn()
       order by 1$$,
     $$values ('boc-corra interest_rates oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
              ('boe-sonia interest_rates oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA'),
              ('boj-tona interest_rates oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
              ('ecb-estr interest_rates oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER'),
+             ('norgesbank-nowa interest_rates oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA'),
              ('nyfed-sofr interest_rates oresmd://ir/USD?type=fixing&index=ibor&name=SOFR')$$,
     'each overnight feed is scoped to the item of its series'
 );

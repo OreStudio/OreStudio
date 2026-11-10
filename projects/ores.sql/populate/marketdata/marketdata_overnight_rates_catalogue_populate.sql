@@ -55,6 +55,11 @@ values
      'The time-series statistics of the Bank of Japan, among them the uncollateralised overnight call rate (TONA), published each Tokyo business day.',
      32, 'https://www.boj.or.jp/en/about/copyright.htm',
      'Source: Bank of Japan', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'norgesbank', 0, 'Norges Bank', 'reference',
+     'The open data of Norges Bank, among them NOWA, published each Norwegian business day.',
+     33, 'https://www.norges-bank.no/en/about/terms-of-use/',
+     'Source: Norges Bank', true, '',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -70,7 +75,8 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT', 'OBS_VALUE', 'oresmd://ir/EUR?type=fixing&index=ibor&name=ESTER'),
     ('boe', 'boe_iadb', 'IUDSOIA', 'value', 'oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA'),
     ('boc', 'boc_valet', 'AVG.INTWO', 'v', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
-    ('boj', 'boj_stat', 'FM01.STRDCLUCON', 'VALUES', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR');
+    ('boj', 'boj_stat', 'FM01.STRDCLUCON', 'VALUES', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
+    ('norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R', 'OBS_VALUE', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
@@ -144,6 +150,11 @@ values
      'boj', 'boj_stat', 'production', 'https://www.stat-search.boj.or.jp', '',
      '{"url":"https://www.stat-search.boj.or.jp","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the Bank of Japan time-series API.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('norgesbank-data', ores_utility_system_tenant_id_fn(), 0, 'Norges Bank open data',
+     'norgesbank', 'nb_sdmx', 'production', 'https://data.norges-bank.no', '',
+     '{"url":"https://data.norges-bank.no","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the Norges Bank SDMX API.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -173,6 +184,10 @@ values
     ('25fb75e6-8f2f-5fe1-9672-9a018b25d061', ores_utility_system_tenant_id_fn(), 0,
      'boj-tona', 'boj', 'boj-stat', 'end_of_day', 'FM01.STRDCLUCON', true,
      'The uncollateralised overnight call rate (TONA) as the Bank of Japan publishes it, read from its time-series API by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('4cb8961a-a60d-54bf-ac82-6a43752d42cd', ores_utility_system_tenant_id_fn(), 0,
+     'norgesbank-nowa', 'norgesbank', 'norgesbank-data', 'end_of_day', 'SHORT_RATES.B.NOWA.ON.R', true,
+     'NOWA as Norges Bank publishes it, read from its SDMX API by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -190,7 +205,8 @@ from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('ecb-estr', 'ecb', 'ecb_sdmx', 'EST.B.EU000A2X2A25.WT'),
              ('boe-sonia', 'boe', 'boe_iadb', 'IUDSOIA'),
              ('boc-corra', 'boc', 'boc_valet', 'AVG.INTWO'),
-             ('boj-tona', 'boj', 'boj_stat', 'FM01.STRDCLUCON'))
+             ('boj-tona', 'boj', 'boj_stat', 'FM01.STRDCLUCON'),
+             ('norgesbank-nowa', 'norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -298,5 +314,23 @@ begin
         '25fb75e6-8f2f-5fe1-9672-9a018b25d061',
         current_user, current_user, 'system.initial_load',
         'The system party reads the call rate from the Bank of Japan'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        'c6d4da2d-4c15-5a4a-aae3-f10f43ff2872', ores_utility_system_tenant_id_fn(), 0, v_party, 'norgesbank',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes NOWA of Norges Bank for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '129fb7ef-862b-570e-8518-e92e0a829d52', ores_utility_system_tenant_id_fn(), 0, v_party, 'norgesbank', 'interest_rates',
+        '4cb8961a-a60d-54bf-ac82-6a43752d42cd',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads NOWA from Norges Bank'
     ) on conflict do nothing;
 end $$;

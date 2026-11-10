@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-the-norges-bank-adapter
+#+pr: 4553
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-10
@@ -26,11 +26,11 @@ NOWA is stored as fixings in the system tenant, with its history, read from Norg
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-10                               |
 
 * Acceptance
@@ -44,9 +44,11 @@ NOWA is stored as fixings in the system tenant, with its history, read from Norg
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- =norges_bank_fetcher= implements =fetcher=: adapter =nb_sdmx=, scheme =nb_sdmx=, field =OBS_VALUE=. A source's key is =<dataflow>.<series key>=, such as =SHORT_RATES.B.NOWA.ON.R=, as the ECB key is. A read is one GET of =/api/data/<dataflow>/<key>= in CSV, with =locale=en= so that the decimal mark is a point.
+- The CSV separates its cells with a semicolon and has no =KEY= column. The query names one series, so each row is an observation of the key. The ECB fetcher's private CSV helpers move to =published_text= as =lines_of=, =cells_of= and =column_of=, and both fetchers use them.
+- The API answers both a window with no observation and an unknown series with a 404. A shared helper, =read_window=, asks after a 404 for the series' latest observation, =lastNObservations=1=: a 200 means the window is empty, and anything else is an error. The Riksbank fetcher needs the same rule.
+- Option =--norges-bank-url=. The seeds add the =norgesbank= supplier and provider, with the terms-of-use page and the credit "Source: Norges Bank", the =nb_sdmx= adapter, the =norgesbank-data= session, the =norgesbank-nowa= feed scoped to the =NOK-NOWA= item, and the system party's subscription and route.
+- NOK has no overnight curve config yet, because the bootstrap engine does not implement the ACT/ACT.ISMA day count that =NOK-NOWA= states. The fixings are stored now, and the calibration reads them when the curve exists.
 
 * Measurements
 
@@ -60,7 +62,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| NOWA history the route serves | 3,801 rates, 2011-09-30 to 2026-11-06 | =curl -s 'https://data.norges-bank.no/api/data/SHORT_RATES/B.NOWA.ON.R?format=csv&startPeriod=2011-01-01&locale=en'=, rows with a value counted | 7b7abcd219 |
+| NOWA fixings a fresh environment stored | 275, 2025-10-06 to 2026-11-06, last =0.045= | =compass check= (=ticks-smoke=), then a count of the fixings of source =norgesbank-nowa= | 7b7abcd219 |
+| Cases of =ores.marketdata.official.tests= | 67 pass, 9 of them of Norges Bank | =ores.marketdata.official.tests= | 7b7abcd219 |
 
 * Notes
 
@@ -81,12 +85,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4553][#4553]] | [marketdata] Add the Norges Bank adapter |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4553: a byte-order mark would hide the first column | =published_text.cpp= | Accepted | =lines_of= strips a leading UTF-8 byte-order mark, and a case covers it. |
+| 2 | PR #4553: =cells_of= ignores quoting | =published_text.hpp= | Declined | The declaration of =cells_of= states that a cell holds no quoted separator. The SDMX CSV holds codes, dates and numbers. |
+| 3 | PR #4553: the window comment | =norges_bank.cpp= | Declined | The reviewer found it follows the comment rules; nothing to change. |
+| 4 | PR #4553: an empty window costs a second request | =published_text.cpp= | Declined | Only an empty window, such as a weekend, makes the second request, and it is one small GET. |
+| 5 | PR #4553: test =read_window= after a 404 | =domain_norges_bank_tests.cpp= | Declined | Both cases exist: an empty window of a known series, and an unknown series. |
+| 6 | PR #4553: a follow-up for the NOK curve | backlog | Accepted | Capture "Bootstrap the NOK and BRL overnight curves" in the inbox. |
 
 * Result
+
+NOWA is stored as fixings in the system tenant, read from Norges Bank's SDMX API by a specialised fetcher that the official adapter hosts beside the others. A fresh environment accepted Norges Bank's terms at setup and stored 275 fixings, the last 400 days, with the log line "Sent 275 fixing(s) of 'norgesbank-nowa'". The values are the decimals of the published percents, such as =0.045= for 4.5, and the provider =norgesbank= carries the credit "Source: Norges Bank". The series maps to the =NOK-NOWA= item.
+
+The API answers an empty window and an unknown series with the same 404. A shared helper, =read_window=, asks for the series' latest observation after a 404, so an empty window reads as no fixing and an unknown series is an error. The ECB fetcher's CSV helpers now live in =published_text=. The calibration sources note records the 3,801 rates the route serves from 2011-09-30.
+
+The work also found that the BCB's open licence may not cover the CDI, which B3 computes. The note records it, and the Banco Central do Brasil task is blocked on the CDI's terms.
+
+Unit tests parse a recorded answer and a row with no value, refuse five malformed answers, check the URL of a read, an empty window of a known series, an unknown series, a failed read, and keys that are not series keys.

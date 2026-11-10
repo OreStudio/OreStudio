@@ -114,4 +114,60 @@ std::expected<std::string, std::string> read_body(http::client::net::transport& 
     return std::move(answer->body);
 }
 
+std::expected<std::optional<std::string>, std::string>
+read_window(http::client::net::transport& transport,
+            const std::string& window_url,
+            const std::string& latest_url) {
+    auto answer = transport.get(window_url);
+    if (!answer)
+        return std::unexpected(answer.error().message);
+    if (answer->status == 200)
+        return std::optional<std::string>(std::move(answer->body));
+    if (answer->status != 404)
+        return std::unexpected(std::format("{} answered {}", window_url, answer->status));
+    auto latest = transport.get(latest_url);
+    if (!latest)
+        return std::unexpected(latest.error().message);
+    if (latest->status != 200)
+        return std::unexpected(
+            std::format("{} answered 404 and {} answered {}: the series is unknown",
+                        window_url,
+                        latest_url,
+                        latest->status));
+    return std::optional<std::string>{};
+}
+
+std::vector<std::string_view> cells_of(std::string_view line, char separator) {
+    std::vector<std::string_view> out;
+    std::size_t start = 0;
+    for (auto end = line.find(separator); end != std::string_view::npos;
+         end = line.find(separator, start)) {
+        out.push_back(line.substr(start, end - start));
+        start = end + 1;
+    }
+    out.push_back(line.substr(start));
+    return out;
+}
+
+std::vector<std::string_view> lines_of(std::string_view text) {
+    if (text.starts_with("\xEF\xBB\xBF"))
+        text.remove_prefix(3);
+    std::vector<std::string_view> out;
+    for (auto line : cells_of(text, '\n')) {
+        if (!line.empty() && line.back() == '\r')
+            line.remove_suffix(1);
+        if (!line.empty())
+            out.push_back(line);
+    }
+    return out;
+}
+
+std::optional<std::size_t> column_of(const std::vector<std::string_view>& header,
+                                     std::string_view name) {
+    const auto found = std::ranges::find(header, name);
+    if (found == header.end())
+        return std::nullopt;
+    return static_cast<std::size_t>(found - header.begin());
+}
+
 }

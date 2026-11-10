@@ -8,7 +8,7 @@
 #+filetags: :marketdata:ir:research:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
 #+branch: feature/find-routes-to-the-remaining-overnight-rates
-#+pr:
+#+pr: 4550
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4550][#4550]] | [agile] Find a route to the overnight rate of each remaining currency |
 
 * Review
 

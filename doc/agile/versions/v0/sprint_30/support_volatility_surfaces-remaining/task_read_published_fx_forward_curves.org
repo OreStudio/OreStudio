@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/read-published-fx-forward-curves
-#+pr:
+#+pr: 4543
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4543][#4543]] | [marketdata] Show published FX forward sets and their provenance |
 
 * Review
 

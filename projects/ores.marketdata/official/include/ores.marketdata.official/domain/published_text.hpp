@@ -40,6 +40,19 @@ namespace ores::marketdata::official::domain {
     date_of(std::string_view text);
 
 /**
+ * @brief The date of a text with an English month name, such as =29 Oct 2026= or =29-Oct-2026=.
+ *
+ * @p separator stands between the day, the month and the year.
+ */
+[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT
+    std::expected<std::chrono::year_month_day, std::string>
+    date_of_month_name(std::string_view text, char separator);
+
+/// The English short name of @p month, such as =Oct=.
+[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::string_view
+month_name(std::chrono::month month);
+
+/**
  * @brief The decimal of a percent published as @p text, such as =0.0397= for =3.97=.
  *
  * The decimal point moves two places in the text, so every published digit is kept and no

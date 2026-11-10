@@ -17,43 +17,57 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
- * Tick Coordinate Dictionary
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
  *
- * A tick row stores its datum as a small number, not as the URI text. This table says which
- * datum each number means within one series. A series without coordinates has one datum, and
- * so one row. The numbers of a series start at 1 and stay for as long as the series exists,
- * because a tick row refers to them. The URI is the one the feed sent, which is the URI of the
- * observation rows too.
+ * Tick Coordinate Table
  *
- * The ingest assigns a number the first time it sees a datum, so the table is small and cold:
- * one row for each distinct datum of a series. The ingest context names no party, so the
- * table has the tenant policy only, as the observation table has, and a reader states the
- * party in its query.
+ * A tick row stores its datum as a small number, not as the URI text. This table
+ * says which datum each number means within one stream. A series without
+ * coordinates has one datum, and so one row. The numbers of a stream start at 1 and
+ * stay for as long as the stream exists, because a tick row refers to them. The URI
+ * is the one the feed sent, which is the URI of the observation rows too.
+ *
+ * The stream is shared by every party, so this table is shared too: one row for each
+ * distinct datum of a stream, not one for each party of it. Every party of the
+ * stream therefore agrees on the coordinate order, and the read joins the table by
+ * the stream id alone.
+ *
+ * The ingest assigns a number the first time it sees a datum. The table belongs to
+ * no tenant and no party and carries no row-level security, as the tick table
+ * does.
+ *
+ * Variables: :marketdata_writer_user
  */
 
 create table if not exists "ores_marketdata_tick_coords_tbl" (
-    "tenant_id" uuid not null,
-    "party_id" uuid not null,
-    "series_id" uuid not null,
+    "stream_id" uuid not null,
     "coord" smallint not null,
     "oresmd_uri" text not null,
-    primary key (series_id, coord),
-    unique (series_id, oresmd_uri),
-    check ("coord" > 0),
-    check ("oresmd_uri" <> '')
+    primary key (stream_id, coord),
+    check ("stream_id" <> ores_utility_nil_uuid_fn())
 );
 
-alter table ores_marketdata_tick_coords_tbl enable row level security;
 
-drop policy if exists tick_coords_tbl_tenant_isolation_policy on ores_marketdata_tick_coords_tbl;
 
-create policy tick_coords_tbl_tenant_isolation_policy
-on ores_marketdata_tick_coords_tbl
-for all using (
-    tenant_id = (select nullif(current_setting('app.current_tenant_id', true), '')::uuid)
-)
-with check (
-    tenant_id = (select nullif(current_setting('app.current_tenant_id', true), '')::uuid)
-);
+create unique index if not exists marketdata_tick_coords_stream_uri_idx
+on "ores_marketdata_tick_coords_tbl" (stream_id, oresmd_uri);
+
+create or replace function ores_marketdata_tick_coords_insert_fn()
+returns trigger as $$
+declare
+begin
+
+
+    return NEW;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+create or replace trigger ores_marketdata_tick_coords_insert_trg
+before insert on "ores_marketdata_tick_coords_tbl"
+for each row execute function ores_marketdata_tick_coords_insert_fn();
+
+
+grant insert on ores_marketdata_tick_coords_tbl to :marketdata_writer_user;

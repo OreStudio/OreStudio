@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 170
+Tables: 171
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -407,6 +407,22 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_calendar_events_artefact_tbl
     One row per dated diary entry on a [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]]: a central-bank meeting, a scheduled data release, or an open-ended other event. One table for all event kinds -- never a table per calendar or per type (settled 2026-08-09, story Decision D1; see [[id:41E0E1FB-1D84-47E0-A417-2633F31F0A2A][Calendar Events]]). The diary_entry_type column classifies the entry via the open-ended [[id:AFAF296D-2962-48CE-A6E1-BFD5229E16C5][diary_entry_type]] vocabulary (holiday, central_bank_meeting, data_release, other). Holidays themselves keep their existing machinery (calendar_rules, calendar_exceptions, calendar_date) -- the holiday type stays in the vocabulary so the whole classification lives in one place, even though its physical home is elsewhere. Template/Instance: an event row is an *instance*; its template is the (calendar, diary_entry_type, name) triple. A worked case: the FOMC's eight regularly scheduled meetings per year are entered as a short run of central_bank_meeting instances on the US.FOMC calendar, transcribed from the Fed's published calendar with source='federalreserve.gov'. Formulaic recurrence generation is deferred; calendar_rules's grammar can later feed a template link if a consumer needs it. - Artefact Table
+    end note
+
+    entity ores_dq_calendar_exceptions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * calendar_code : text
+        * exception_date : date
+        * is_business_day : boolean
+          description : text
+    }
+
+    note right of ores_dq_calendar_exceptions_artefact_tbl
+    One row per one-off override for a single [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day. Mirrors ores::analytics::quant::domain::calendar_exception plus the usual refdata plumbing. Applies uniformly to *any* calendar -- transcribed or user-authored, based or base-less: a based calendar's full override story is entirely calendar.base_calendar_code (which base) plus its own exception rows (what's different), no separate "adjustment" concept needed. QuantLib's own irregular, year-gated special dates (the UK's Jubilee bank holidays, the NYSE's special closings) are transcribed here, not folded into a [[id:875E96F6-3FC7-4E0B-8E3C-2AC0F8BD488F][calendar_rule]] row, so a rule stays a timeless, indefinitely-repeating pattern and the genuinely irregular part of a calendar stays flat, no-logic-at-all data. - Artefact Table
     end note
 
     entity ores_dq_calendar_types_artefact_tbl  #F7E5FF {

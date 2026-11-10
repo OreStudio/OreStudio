@@ -54,18 +54,18 @@ struct result_guard {
     result_guard& operator=(const result_guard&) = delete;
 };
 
+void execute(pg_conn* conn, const char* sql) {
+    result_guard result(PQexec(conn, sql));
+    if (PQresultStatus(result.result) != PGRES_COMMAND_OK)
+        throw std::runtime_error(PQerrorMessage(conn));
+}
+
 }
 
 std::string tick_copy_line(const tick_row& row) {
     const auto micros = std::chrono::floor<std::chrono::microseconds>(row.ts);
-    return std::format("{},{},{},{:%F %T}+00,{},{},{}\n",
-                       row.tenant_id,
-                       row.party_id,
-                       row.series_id,
-                       micros,
-                       row.coord,
-                       row.value,
-                       row.feed_id);
+    return std::format(
+        "{},{},{:%F %T}+00,{},{}\n", row.stream_id, row.feed_id, micros, row.coord, row.value);
 }
 
 tick_writer::tick_writer(tick_writer_options options)
@@ -86,7 +86,8 @@ void tick_writer::write(std::span<const tick_row> rows) {
     if (rows.empty())
         return;
 
-    if (!conn_) {
+    const bool new_connection = conn_ == nullptr;
+    if (new_connection) {
         const auto info = std::format("host={} port={} dbname={} user={} password={} "
                                       "options='-c timezone=UTC'",
                                       conninfo_value(options_.host),
@@ -103,10 +104,16 @@ void tick_writer::write(std::span<const tick_row> rows) {
     }
 
     try {
+        if (new_connection)
+            execute(conn_,
+                    "create temp table ores_marketdata_ticks_stage ("
+                    "stream_id uuid, feed_id uuid, ts timestamptz, coord smallint, "
+                    "value double precision) on commit delete rows");
+        execute(conn_, "begin");
         {
             result_guard begin(PQexec(conn_,
-                                      "copy ores_marketdata_ticks_tbl "
-                                      "(tenant_id, party_id, series_id, ts, coord, value, feed_id) "
+                                      "copy ores_marketdata_ticks_stage "
+                                      "(stream_id, feed_id, ts, coord, value) "
                                       "from stdin with (format csv)"));
             if (PQresultStatus(begin.result) != PGRES_COPY_IN)
                 throw std::runtime_error(PQerrorMessage(conn_));
@@ -135,6 +142,14 @@ void tick_writer::write(std::span<const tick_row> rows) {
             throw std::runtime_error(PQerrorMessage(conn_));
         while (auto* extra = PQgetResult(conn_))
             PQclear(extra);
+
+        // No conflict target: naming the key would need SELECT, which the role does not hold.
+        execute(conn_,
+                "insert into ores_marketdata_ticks_tbl "
+                "(stream_id, feed_id, ts, coord, value) "
+                "select stream_id, feed_id, ts, coord, value from ores_marketdata_ticks_stage "
+                "on conflict do nothing");
+        execute(conn_, "commit");
     } catch (const std::exception& e) {
         const std::string message = e.what();
         close();

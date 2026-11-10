@@ -76,6 +76,7 @@ enum class outcome_code {
     batch_removal_is_unconditional,
     approval_required,
     party_required,
+    not_subscribed,
     range_inverted,
     range_too_large,
     series_ambiguous,
@@ -125,6 +126,8 @@ enum class outcome_code {
             return "approval_required";
         case outcome_code::party_required:
             return "party_required";
+        case outcome_code::not_subscribed:
+            return "not_subscribed";
         case outcome_code::range_inverted:
             return "range_inverted";
         case outcome_code::range_too_large:
@@ -180,6 +183,8 @@ enum class outcome_code {
         case outcome_code::approval_required:
             return ores::utility::domain::outcome::denied;
         case outcome_code::party_required:
+            return ores::utility::domain::outcome::denied;
+        case outcome_code::not_subscribed:
             return ores::utility::domain::outcome::denied;
         case outcome_code::range_inverted:
             return ores::utility::domain::outcome::invalid;
@@ -286,6 +291,11 @@ inline std::string fill(std::string_view tmpl, const outcome_args& a) {
         case outcome_code::party_required:
             return detail::fill(
                 "This read of the {entity} needs a party, and the session has none.", a);
+        case outcome_code::not_subscribed:
+            return detail::fill(
+                "This read of the {entity} needs a subscription to the {field} {value} that holds "
+                "display or non-display, and this party holds none that does.",
+                a);
         case outcome_code::range_inverted:
             return detail::fill("The range of the {entity} ends before it starts.", a);
         case outcome_code::range_too_large:

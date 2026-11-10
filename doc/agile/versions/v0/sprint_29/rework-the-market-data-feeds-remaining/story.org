@@ -122,6 +122,7 @@ The story closes on the tasks it finished:
 | [[id:B124F617-0859-4F78-9F81-85DEA485D97B][Seed the ladder family and let it fail like the rest]] | STARTED | 2026-11-04 | | The thirteen ladder reports are documented but no definition states them; they can be created and fail at the engine like every other report until the inputs and the vol data arrive. |
 | [[id:F2FE9A6D-1367-46C5-9532-56019FE92340][Set the intraday frequencies a desk expects]] | DONE | 2026-11-04 | 2026-11-04 | The expensive triple runs every fifteen minutes, the surface every thirty, and the spot ladder and trades-since are on demand; a desk expects them to tick at a cadence that matches their cost. |
 | [[id:38DDC0B4-A56D-42B4-B260-6C98BA356E0B][Schedule a report from its own page]] | DONE | 2026-11-04 | 2026-11-04 | Only the shell and the provisioner can schedule a report; the app has no Schedule action and no way to activate an on-demand report. |
+| [[id:A8FFF8B9-0240-472E-929E-E0E37641DB87][Store one tick for each source]] | DONE | 2026-10-25 | 2026-11-09 | Write each tick once under the system tenant, point the per-party series at it, and remove the ingest's routes read. |
 
 * Decisions
 

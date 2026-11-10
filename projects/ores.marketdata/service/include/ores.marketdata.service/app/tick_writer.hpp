@@ -31,21 +31,17 @@ struct pg_conn;
 namespace ores::marketdata::service::app {
 
 /**
- * @brief One row of the tick table: a value of a series at a time, with the owner of the
- * series.
+ * @brief One row of the tick table: a value of one coordinate of one stream at a time.
  *
  * The ids are views, because a batch repeats the same few of them for every row. The text they
  * view must outlive the row.
  */
 struct tick_row final {
-    std::string_view tenant_id;
-    std::string_view party_id;
-    std::string_view series_id;
+    std::string_view stream_id;
+    std::string_view feed_id;
     std::chrono::system_clock::time_point ts;
     short coord = 0;
     double value = 0;
-    /// The catalogue source that produced the value.
-    std::string_view feed_id;
 };
 
 /**
@@ -65,15 +61,17 @@ struct tick_writer_options final {
 };
 
 /**
- * @brief Writes rows of the tick table with COPY, as the tick writer role.
+ * @brief Writes rows of the tick table through a staging table, as the tick writer role.
  *
- * The role has BYPASSRLS and INSERT only, because PostgreSQL refuses COPY into a table with
- * row-level security for a role that the policies apply to. The writer holds one connection
- * of its own and opens it on the first write. It is not safe for two threads, and the
- * ingest worker is its only caller. A write that fails closes the connection, so the next
- * write opens a new one.
+ * The role has INSERT only, and it does not own the table or hold SELECT. The writer copies the
+ * rows into a temporary table of its session and inserts them from there, skipping any key the
+ * tick table already holds, so a redelivered tick changes nothing and the first value of a key
+ * stays. The writer holds one connection
+ * of its own and opens it on the first write. It is not safe for two threads, and the ingest
+ * worker is its only caller. A write that fails closes the connection, so the next write opens a
+ * new one.
  *
- * Every write is one COPY, so it is one transaction.
+ * Every write is one transaction.
  */
 class ORES_MARKETDATA_SERVICE_EXPORT tick_writer {
 public:
@@ -83,7 +81,7 @@ public:
     tick_writer& operator=(const tick_writer&) = delete;
 
     /**
-     * @brief Copies @p rows into the tick table.
+     * @brief Stores @p rows in the tick table, skipping the keys it already holds.
      *
      * @throws std::runtime_error when the connection or the COPY fails.
      */

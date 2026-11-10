@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
-#+updated: 2026-11-08
+#+updated: 2026-11-09
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ A module reads FRED series by id.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-29                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-09 |
 
 * Acceptance
 
@@ -84,3 +84,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-11-09. The survey chose the New York Fed's own API for SOFR, and nobody has read FRED's terms. SOFR moved to [[id:967DF1CA-32EE-42EB-8CB1-EF73238FE07B][Add the New York Fed adapter]]. The H.15 Treasury curve moved to the capture [[id:F542128F-A247-4F0D-948F-44FA02529CFD][Read the public government bond curves]].
+

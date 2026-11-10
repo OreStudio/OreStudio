@@ -17,26 +17,28 @@
 * Diagram
 
 #+attr_html: :width 100% :alt ores.marketdata.public component diagram
-#+caption: ores.marketdata.public
-[[file:ores.marketdata.public.png][file:ores.marketdata.public.png]]
+#+caption: ores.marketdata.official
+[[file:ores.marketdata.official.png][file:ores.marketdata.official.png]]
 
 * Summary
 
-=ores.marketdata.official= is the adapter for official market data: the daily rates
-that central banks and other public bodies publish. It speaks the adapter contract of the
+=ores.marketdata.official= hosts the adapters for official market data: the daily rates
+that central banks and other public bodies publish. Each adapter reads one access route
+through a fetcher of its own, and the process shares the rest between them. It speaks the adapter contract of the
 market data service, as the simulator does: it announces each source it hosts with the
-currencies its publisher quotes, answers the demand set the service sends, sends a
+ids its publisher publishes, answers the demand set the service sends, sends a
 heartbeat, and publishes each fixing as a tick in the publisher's own notation. On a new
 demand it backfills a window, oldest first, and after that it asks each publisher once a
-day. It reads the publishers through Frankfurter, one provider at a time, over
-=ores.http.client=, and it needs no database: the service maps and stores what it sends.
+day. The Frankfurter adapter reads the publishers through Frankfurter, one provider at a
+time. Each fetcher reads over =ores.http.client=, and the process needs no database: the
+service maps and stores what it sends.
 
 * Inputs
 
-- Its configuration: the Frankfurter address, the sources it hosts and the provider
-  each reads, the backfill window and the hour of the daily poll.
+- Its configuration: the Frankfurter address, the sources it hosts with the provider and
+  the adapter of each, the backfill window and the minutes between two polls.
 - The demand set of each source, from the market data service.
-- The answers of Frankfurter.
+- The answers of each publisher's access route, such as Frankfurter.
 
 * Outputs
 
@@ -47,8 +49,12 @@ day. It reads the publishers through Frankfurter, one provider at a time, over
 * Entry points
 
 - =ores.marketdata.official=, the process.
-- =frankfurter_fetcher=, which reads one provider's universe and rates.
-- =official_adapter=, which serves one source.
+- =fetcher=, the specialised half of an adapter: its code, its notation, and how it reads
+  its publisher.
+- =frankfurter_fetcher=, the fetcher that reads one Frankfurter provider's universe and
+  rates.
+- =source_feed=, which serves one source through its fetcher.
+- =official_adapter=, which hosts every source and gives each the fetcher of its adapter.
 
 * Dependencies
 

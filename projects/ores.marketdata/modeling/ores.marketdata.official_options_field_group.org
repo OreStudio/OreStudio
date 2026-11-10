@@ -63,7 +63,7 @@ The sources the adapter hosts.
 :default_value: 400
 :END:
 
-The days a source sends when a currency is first demanded.
+The days a source sends when an id is first demanded.
 
 ** poll_minutes
 :PROPERTIES:
@@ -79,8 +79,8 @@ What the struct needs beside it, after its printer.
 
 #+begin_src cpp :name options_declarations :implements CE396148-1E64-4D37-8D78-6430915C0F9F
 /**
- * @brief Reads one source as =<source name>:<provider code>:<Frankfurter key>=, such as
- * =ecb-frankfurter:ecb:ECB=.
+ * @brief Reads one source as =<source name>:<provider code>:<adapter code>:<key>=, such as
+ * =ecb-frankfurter:ecb:frankfurter:ECB=.
  */
 std::optional<domain::hosted_source> parse_source(const std::string& text);
 #+end_src

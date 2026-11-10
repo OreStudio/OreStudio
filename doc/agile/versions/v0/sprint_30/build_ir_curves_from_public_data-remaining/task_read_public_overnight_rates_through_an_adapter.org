@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
-#+updated: 2026-11-08
+#+updated: 2026-11-09
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The public overnight rates the survey finds usable are stored as fixings in the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
+| Last touched | 2026-11-09 |
 
 * Acceptance
 
@@ -87,3 +87,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned on 2026-11-09. Its scope moved to [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]], which has one specialised adapter for each publisher. The measure of each source's history depth moved to each adapter task. The Bank of Japan question moved to [[id:E5A66CAD-EABC-4916-B8BC-5EF2A5DD4BDA][Find a route to the overnight rate of each remaining currency]].
+

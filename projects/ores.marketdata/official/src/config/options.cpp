@@ -18,7 +18,10 @@
  *
  */
 #include "ores.marketdata.official/config/options.hpp"
+#include <algorithm>
 #include <ostream>
+#include <utility>
+#include <vector>
 
 namespace ores::marketdata::official::config {
 
@@ -29,16 +32,17 @@ std::ostream& operator<<(std::ostream& s, const options& v) {
 }
 
 std::optional<domain::hosted_source> parse_source(const std::string& text) {
-    const auto first = text.find(':');
-    const auto second = first == std::string::npos ? first : text.find(':', first + 1);
-    if (second == std::string::npos || text.find(':', second + 1) != std::string::npos)
+    std::vector<std::string> parts;
+    std::string::size_type start = 0;
+    for (auto end = text.find(':'); end != std::string::npos; end = text.find(':', start)) {
+        parts.push_back(text.substr(start, end - start));
+        start = end + 1;
+    }
+    parts.push_back(text.substr(start));
+    if (parts.size() != 4 || std::ranges::any_of(parts, &std::string::empty))
         return std::nullopt;
-    domain::hosted_source source{
-        text.substr(0, first), text.substr(first + 1, second - first - 1), text.substr(second + 1)};
-    if (source.source_name.empty() || source.provider_code.empty() ||
-        source.frankfurter_key.empty())
-        return std::nullopt;
-    return source;
+    return domain::hosted_source{
+        std::move(parts[0]), std::move(parts[1]), std::move(parts[2]), std::move(parts[3])};
 }
 
 }

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-04
-#+updated: 2026-11-08
+#+updated: 2026-11-09
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -29,9 +29,9 @@ A synthetic IR curve feed with a public source starts from that source's latest 
 | State        | BACKLOG                              |
 | Parent story | [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]] |
 | Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-04                               |
+| Waiting on   | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]]: no public IR rate is stored today. |
+| Next         | Start when the first adapter stores fixings, with the currencies that have them. |
+| Last touched | 2026-11-09 |
 
 * Acceptance
 

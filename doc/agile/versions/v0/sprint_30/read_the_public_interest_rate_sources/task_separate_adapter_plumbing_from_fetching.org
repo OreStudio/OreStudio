@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 0DB85F8F-4C7D-4428-B514-AF69CE8E5D86
+:END:
+#+title: Task: Separate the public source adapter's plumbing from its fetching
+#+description: The Frankfurter adapter splits into a fetcher, which reads its publisher, and a shared half, which announces, answers the demand, backfills and publishes, so a new adapter supplies only its fetcher.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:adapter:read_the_public_interest_rate_sources:sprint_30:v0:
+#+owner: marco
+#+branch: feature/read-the-public-overnight-rates
+#+pr: 4542
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each public source has its own adapter, because each publisher has its own API, its own format and its own terms. The code that does not depend on the publisher is shared: the announce, the demand set, the backfill from the latest stored fixing, the refresh and the publish of ticks. An adapter supplies a fetcher for its publisher, which names its adapter code and the notation of its ids, and nothing more. The process hosts every adapter, as =ores.synthetic.service= hosts the simulator and the derived source. The Frankfurter adapter is the first fetcher, and its behaviour does not change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-09                               |
+
+* Acceptance
+
+- The shared half holds the code that does not depend on the publisher, and the Frankfurter adapter uses it through a fetcher.
+- The shared half does not name a publisher, a publisher's key or a publisher's format.
+- A source names the adapter that reads it, and the process refuses a source whose adapter it does not host.
+- The tests of the Frankfurter adapter pass with no change to what they assert, and a fresh environment stores the same count of FX fixings as before.
+- A new adapter supplies its fetcher and its settings, and nothing else.
+
+* Plan
+
+The process stays one process. =ores.synthetic.service= already hosts two adapters, the simulator and the derived FX volatility source, so a process that hosts several adapters is the existing pattern, not a new one.
+
+- =domain::fetcher= is the specialised half: the adapter code, the id scheme and field, the universe of a key, and the fixings of a key over a window, as =published_fixing= values.
+- =frankfurter_fetcher= implements it. The pivot and the refusal of a rate in another base stay inside it, because they are Frankfurter's.
+- =source_feed= reads through a =fetcher&= and speaks its notation, so it no longer names a currency or a rate.
+- =hosted_source= gains =adapter_code= and renames =frankfurter_key= to =key=. A =--source= is =<source name>:<provider code>:<adapter code>:<key>=, and the service registry's four sources name =frankfurter=.
+- =official_adapter= takes the fetchers it hosts and gives each source the one its adapter code names. The announce takes its adapter code from that fetcher.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Official adapter suite | 13 cases, passed (9 kept, 4 new) | =ctest --preset linux-clang-release-ninja -R ores.marketdata.official= | this branch |
+| Fixings sent after a restart with the new binary | boc 6,433; tcmb 5,776; ecb 8,211; imf 8,984; 0 unknown ids at announce | =ores.marketdata.official.0.log= after =compass services restart ores.marketdata.official= | this branch |
+| Fixings stored before and after that restart | 29,404, last written 21:30 UTC, before the 23:37 restart | =compass sql -- -c "select count(*), max(valid_from) from ores_marketdata_market_fixings_tbl"= | this branch |
+
+* Notes
+
+Today the adapter knows only Frankfurter. =source_feed= takes a =frankfurter_fetcher=, =hosted_source= has a =frankfurter_key=, and =official_adapter.cpp= sets the adapter code to ="frankfurter"=. The synthetic simulator and the derived FX volatility source in =ores.synthetic= are adapters too, and one process hosts both.
+
+Two publishers share one adapter only when their API and format are the same, as the Frankfurter providers are. Otherwise each publisher has its own adapter.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4542][#4542]] | [marketdata] Separate the official adapter's plumbing from its fetching |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =<stdexcept>= is included by the header, but only the source throws | =official_adapter.hpp= | Accepted | Moved to the source file. |
+| 2 | The adapter takes the fetchers as raw pointers | =official_adapter.hpp= | Declined | The pointers own nothing: the fetchers are locals of =application::run= and outlive the adapter. The ownership rule is about owners. |
+| 3 | The overview's diagram link named =ores.marketdata.public.png=, which does not exist | =component_overview.org= | Accepted | Points at =ores.marketdata.official.png=, re-rendered. |
+| 4 | PR #4542: an unhosted adapter throws at startup; it must reach the user as a clear error | =official_adapter.cpp= | Declined | =main.cpp= catches =std::exception= and prints "Error: The source ... names the adapter ..." with a failure exit. The parser does not know which fetchers the process hosts, so the check stays where the fetchers are. |
+| 5 | PR #4542: state the fetcher lifetime, the single-thread use and the call order | =fetcher.hpp= | Accepted | The class comment states the three rules, and the adapter constructor states the lifetime. |
+| 6 | PR #4542: two fetchers of one adapter code are silently resolved to the first | =official_adapter.cpp= | Accepted | The constructor refuses them with =std::invalid_argument=. |
+| 7 | PR #4542: the misbased count is never read | =frankfurter.cpp= | Accepted | A read that refuses rows logs a warning with the count, the key and the pivot. |
+| 8 | PR #4542: say in the help that no part of a source holds a colon | =parser.cpp= | Accepted | The help text says so. Three parts, five parts and an empty part were already tested. |
+| 9 | PR #4542: no test of the adapter refusing an unhosted adapter, nor of a source feed with a fake fetcher | =tests= | Partly accepted | Three new cases cover the unhosted adapter, the hosted one and the duplicate code. =a_source_speaks_the_notation_of_its_fetcher= already drives a source feed with a fake fetcher. |
+| 10 | PR #4542: the failures on main must be red on main too | PR body | Declined | They come from main commits after the hotfix #4538 (FX forward recipe, party curves step words, handler permissions, ER diagrams). This branch touches none of their files. |
+
+* Result
+
+The official adapter is now a host of specialised adapters. =domain::fetcher= is the specialised half, which names its adapter code and the notation of its ids, and reads its publisher's universe and its fixings over a window. =frankfurter_fetcher= is the first fetcher, and the pivot and the refusal of a rate in another base stay inside it. =source_feed= and =official_adapter= are the shared half and name no publisher. A =--source= names its adapter, =<source name>:<provider code>:<adapter code>:<key>=, and the process refuses a source whose adapter it does not host.
+
+The behaviour of the Frankfurter sources did not change. The nine existing cases pass with only their construction changed. A restart of the running service with the new binary announced the four sources with no unknown id and sent their backfill, and the store added nothing, as it skips what it holds. Seven new cases cover a fetcher in another notation, a read of fixings before the universe, the source format, a source whose adapter is not hosted, and two fetchers of one adapter.
+
+The component overview, its diagram and the architecture note now describe one adapter for each access route.
+

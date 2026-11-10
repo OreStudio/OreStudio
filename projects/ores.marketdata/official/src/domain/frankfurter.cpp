@@ -145,11 +145,47 @@ std::expected<std::string, std::string> frankfurter_fetcher::read(const std::str
     return std::move(answer->body);
 }
 
-std::expected<provider_universe, std::string> frankfurter_fetcher::universe(std::string_view key) {
+std::expected<provider_universe, std::string> frankfurter_fetcher::provider(std::string_view key) {
     auto body = read(base_url_ + "/v2/providers");
     if (!body)
         return std::unexpected(body.error());
     return parse_universe(*body, key);
+}
+
+std::expected<std::vector<std::string>, std::string>
+frankfurter_fetcher::universe(std::string_view key) {
+    auto found = provider(key);
+    if (!found)
+        return std::unexpected(found.error());
+    pivots_.insert_or_assign(std::string(key), std::move(found->pivot));
+    return std::move(found->currencies);
+}
+
+std::expected<std::vector<published_fixing>, std::string> frankfurter_fetcher::fixings(
+    std::string_view key, std::chrono::year_month_day from, std::chrono::year_month_day to) {
+    const auto pivot = pivots_.find(key);
+    if (pivot == pivots_.end())
+        return std::unexpected("the universe of '" + std::string(key) + "' is not read");
+    auto read_rates = rates(key, pivot->second, from, to);
+    if (!read_rates)
+        return std::unexpected(read_rates.error());
+    std::vector<published_fixing> out;
+    out.reserve(read_rates->size());
+    std::uint64_t refused = 0;
+    for (auto& rate : *read_rates) {
+        if (rate.base != pivot->second) {
+            ++refused;
+            continue;
+        }
+        out.push_back({rate.date, std::move(rate.quote), std::move(rate.rate)});
+    }
+    if (refused > 0) {
+        misbased_ += refused;
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "Refused " << refused << " rates of '" << key << "' whose base is not the pivot '"
+            << pivot->second << "'";
+    }
+    return out;
 }
 
 std::expected<std::vector<published_rate>, std::string>

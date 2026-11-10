@@ -2,55 +2,67 @@
 :ID: 6E93FD89-3443-4BED-8E2F-9295E773BFB7
 :END:
 #+title: Story: Read the public interest rate sources
-#+description: The ECB Data Portal, FRED, the Bank of England and the US Treasury become adapters and feeds that deliver rates and curve pillars as end-of-day data.
+#+description: The public overnight rate of each currency is stored as fixings in the system tenant, read through one specialised adapter for each publisher, the way the FX rates are read through Frankfurter, so the synthetic IR feeds can calibrate from it.
 #+type: story
 #+level: s2
-#+filetags: :marketdata:implementation:sprint_30:v0:
+#+filetags: :marketdata:implementation:ir:adapter:sprint_30:v0:
 #+created: 2026-10-29
-#+updated: 2026-11-08
-#+environment:
+#+updated: 2026-11-09
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-The ECB Data Portal, FRED, the Bank of England and the US Treasury deliver their rates and curves as end-of-day feeds, so the synthetic IR feeds have a public seed.
+The public overnight rate of as many currencies as their publishers allow is stored as fixings in the system tenant, with its history. The system reads each rate the way it reads the public FX rates through Frankfurter: a supplier, an adapter, a session with its terms accepted at setup, and durable fixings. [[id:619CE2BF-C972-47CF-8900-AC2742AC2CD9][Calibrate the synthetic IR feeds from the public rates]] then starts each synthetic overnight-index feed from its currency's latest public rate.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Restructured on 2026-11-09 around the survey of [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][the calibration sources note]]. The first task separates the adapter plumbing from the Frankfurter fetching. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-11-08 |
+| Next          | Separate the adapter plumbing, then catalogue the overnight rate items. |
+| Last touched  | 2026-11-09 |
 
 * Acceptance
 
-- Each supplier has an adapter, a session and its feeds.
-- Rates are one value a day and curves are pillared items, catalogued and mapped.
-- Values arrive as durable fixings and a feed can start from the latest one.
+- Each usable public overnight rate has its own adapter, a supplier in the catalogue, a session and a feed. Its terms are accepted at setup, as the terms of the FX sources are.
+- A fresh environment stores the history of each usable rate as fixings, with no person acting.
+- SOFR, €STR, SONIA and CORRA are stored first, because the survey found them usable.
+- Each of the 28 currencies has a route and terms read, and a recorded answer: an adapter, or the reason it has none.
+- The fixings are the input of [[id:619CE2BF-C972-47CF-8900-AC2742AC2CD9][Calibrate the synthetic IR feeds from the public rates]] in [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]].
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:319D1167-5429-404D-A212-D2E616CEB13A][Add the ECB Data Portal adapter]] | BACKLOG | | | A module that reads ECB Data Portal series: €STR and the EUR AAA spot curve. |
-| [[id:C884743B-8461-4B8F-9312-B370E978A891][Add the FRED adapter]] | BACKLOG | | | A module that reads FRED series by id: SOFR and the H.15 Treasury par curve. |
-| [[id:17698965-09A3-4E0F-AE39-F5E694BF1D7F][Add the BoE statistics adapter]] | BACKLOG | | | A module that reads Bank of England statistics: SONIA and the gilt curve. |
-| [[id:BF7F804E-5F6D-4FD8-B57E-212DC754E43E][Add the US Treasury adapter]] | BACKLOG | | | A module that reads the US Treasury par yield curve. |
-| [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the interest rate items]] | BACKLOG | | | Rate and curve-pillar item identities, and the vendor instruments that map to them. |
-| [[id:E3C078D3-FFE5-4C40-9C09-83058FD3040F][Seed the IR feeds]] | BACKLOG | | | Sessions and feeds for the four suppliers, with end-of-day schedules and their scopes. |
+| [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] | DONE | 2026-11-09 | 2026-11-09 | The Frankfurter adapter splits into a fetcher, which reads its publisher, and a shared half, which announces, answers the demand, backfills and publishes, so a new adapter supplies only its fetcher. |
+| [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]] | BACKLOG |  | | Each overnight index that the synthetic IR feeds quote is one rate item, and each publisher's series maps to it as a vendor instrument of that publisher. |
+| [[id:967DF1CA-32EE-42EB-8CB1-EF73238FE07B][Add the New York Fed adapter]] | BACKLOG |  | | A specialised adapter reads SOFR from the New York Fed markets API and stores its history as fixings in the system tenant. |
+| [[id:319D1167-5429-404D-A212-D2E616CEB13A][Add the ECB Data Portal adapter]] | BACKLOG |  | | A specialised adapter reads €STR from the ECB Data Portal and stores its history as fixings in the system tenant. |
+| [[id:17698965-09A3-4E0F-AE39-F5E694BF1D7F][Add the BoE statistics adapter]] | BACKLOG |  | | A specialised adapter reads SONIA from the Bank of England statistical database and stores its history as fixings in the system tenant. |
+| [[id:4C154A06-298A-4E1F-9F40-89EFF7B2C1A9][Add the Bank of Canada adapter]] | BACKLOG |  | | A specialised adapter reads CORRA from the Bank of Canada Valet API and stores its history as fixings in the system tenant. |
+| [[id:E5A66CAD-EABC-4916-B8BC-5EF2A5DD4BDA][Find a route to the overnight rate of each remaining currency]] | BACKLOG |  | | For each currency without a usable source, read the publisher's route and terms, and add an adapter task for each source that is usable. |
+| [[id:C884743B-8461-4B8F-9312-B370E978A891][Add the FRED adapter]] | ABANDONED |  | | Replaced by the New York Fed adapter, because the survey chose the publisher's own API for SOFR. |
+| [[id:BF7F804E-5F6D-4FD8-B57E-212DC754E43E][Add the US Treasury adapter]] | ABANDONED |  | | Government bond curves moved to a capture, because the overnight-index bootstrap does not read them. |
+| [[id:E3C078D3-FFE5-4C40-9C09-83058FD3040F][Seed the IR feeds]] | ABANDONED |  | | Each adapter task now seeds its own supplier, session and feed. |
 
 * Decisions
 
+- One adapter for each publisher. Each publisher has its own API, its own format and its own terms, so an adapter that reads many publishers does too much work. Two publishers share an adapter only when their API and format are the same, as the Frankfurter providers are.
+- The plumbing is shared and the fetching is not. The shared half announces, answers the demand, backfills and publishes; an adapter supplies its fetcher and its settings. One process hosts every adapter, as =ores.synthetic.service= hosts two. See [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]].
+- Each publisher is read directly, not through an aggregator such as FRED, because the survey read the terms of each publisher and not of the aggregators.
+- Each adapter task ends with fixings stored in a fresh environment: the adapter, the catalogue mapping, the supplier, the session and the feed land together.
 - One session per supplier; the supplier and the publisher coincide for the direct APIs.
-- The service is end_of_day for all four at first.
-- A curve is a set of pillared items, not one item with an array.
+- The service is end_of_day for every source.
+- Restructured on 2026-11-09. The story now reads overnight rates only. It replaces the task "Read the public overnight rates through an adapter" of [[id:BE2FF8F5-3AC6-4B7C-B1BB-4EA480DE2C29][Build the IR curves of every supported currency from public data — the remaining work]], which was abandoned.
 
 * Out of scope
 
--
+- Government bond curves, such as the Treasury par curve, the gilt curve and the EUR AAA curve: [[id:F542128F-A247-4F0D-948F-44FA02529CFD][Read the public government bond curves]].
+- The calibration of the synthetic IR feeds: [[id:619CE2BF-C972-47CF-8900-AC2742AC2CD9][Calibrate the synthetic IR feeds from the public rates]].
+- Years of history from a static snapshot: [[id:1226D830-9285-4C45-9F5C-72F72AFC7352][Seed the public fixings history from a DQ snapshot]]. The adapters backfill only from the latest stored fixing.

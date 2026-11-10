@@ -22,8 +22,10 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/version/version.hpp"
+#include <algorithm>
 #include <optional>
 #include <span>
+#include <stdexcept>
 #include <utility>
 
 namespace ores::marketdata::official::app {
@@ -34,14 +36,30 @@ namespace subjects = ores::marketdata::domain;
 
 official_adapter::official_adapter(ores::nats::service::client& nats,
                                    std::vector<domain::hosted_source> sources,
-                                   domain::frankfurter_fetcher& fetcher,
+                                   const std::vector<domain::fetcher*>& fetchers,
                                    int backfill_days,
                                    adapter_timing timing)
     : nats_(nats)
     , timing_(timing) {
-    for (auto& source : sources)
+    for (auto it = fetchers.begin(); it != fetchers.end(); ++it) {
+        const auto code = (*it)->adapter_code();
+        if (std::ranges::any_of(it + 1, fetchers.end(), [&](const domain::fetcher* f) {
+                return f->adapter_code() == code;
+            }))
+            throw std::invalid_argument("Two fetchers serve the adapter '" + std::string(code) +
+                                        "'");
+    }
+    for (auto& source : sources) {
+        const auto found = std::ranges::find_if(fetchers, [&](const domain::fetcher* f) {
+            return f->adapter_code() == source.adapter_code;
+        });
+        if (found == fetchers.end())
+            throw std::invalid_argument("The source '" + source.source_name +
+                                        "' names the adapter '" + source.adapter_code +
+                                        "', which this process does not host");
         served_.push_back(std::make_unique<served>(
-            std::make_unique<domain::source_feed>(std::move(source), fetcher, backfill_days)));
+            std::make_unique<domain::source_feed>(std::move(source), **found, backfill_days)));
+    }
 }
 
 official_adapter::~official_adapter() {
@@ -54,8 +72,9 @@ std::vector<ores::nats::service::subscription> official_adapter::subscribe() {
         const auto subject = subjects::adapter_demand_subject(s->feed->source().source_name);
         BOOST_LOG_SEV(lg(), info) << "Serving source '" << s->feed->source().source_name
                                   << "' of provider '" << s->feed->source().provider_code
-                                  << "' from Frankfurter '" << s->feed->source().frankfurter_key
-                                  << "': demand on '" << subject << "'";
+                                  << "' through adapter '" << s->feed->source().adapter_code
+                                  << "' as '" << s->feed->source().key << "': demand on '"
+                                  << subject << "'";
         auto* target = s.get();
         subs.push_back(nats_.subscribe(
             subject, [this, target](ores::nats::message msg) { on_demand(*target, msg); }));
@@ -106,11 +125,10 @@ void official_adapter::on_demand(served& s, const ores::nats::message& msg) {
 bool official_adapter::announce(served& s) {
     const auto& name = s.feed->source().source_name;
     try {
-        // The module is the class that sends the announce, not the feed: one
-        // Frankfurter adapter hosts every source, so the code and version are
-        // the adapter's on every announce it makes.
+        // The module is the adapter that reads the source, not the feed: one adapter can
+        // host many sources, so the code and version are the adapter's.
         auto request = s.feed->announcement();
-        request.adapter_code = "frankfurter";
+        request.adapter_code = std::string(s.feed->reader().adapter_code());
         request.module_version = ORES_VERSION;
         const auto bytes = ores::nats::default_wire_codec().encode(request);
         const auto reply = nats_.request_sync(subjects::adapter_announce_subject(),
@@ -210,8 +228,8 @@ bool official_adapter::serve(served& s, clock::time_point now, bool may_refresh)
 
 void official_adapter::loop() {
     constexpr auto slice = std::chrono::milliseconds(50);
-    // Every source announces and beats on every pass, and one at most reads Frankfurter, so
-    // a long backfill of one source never starves the heartbeats of the others.
+    // Every source announces and beats on every pass, and one at most reads its publisher,
+    // so a long backfill of one source never starves the heartbeats of the others.
     std::size_t turn = 0;
     while (!stop_.load(std::memory_order_relaxed)) {
         bool refreshed = false;

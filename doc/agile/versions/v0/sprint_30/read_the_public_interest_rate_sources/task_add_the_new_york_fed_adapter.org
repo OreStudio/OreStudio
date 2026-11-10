@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 967DF1CA-32EE-42EB-8CB1-EF73238FE07B
+:END:
+#+title: Task: Add the New York Fed adapter
+#+description: A specialised adapter reads SOFR from the New York Fed markets API and stores its history as fixings in the system tenant.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:adapter:ir:read_the_public_interest_rate_sources:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-09
+#+updated: 2026-11-09
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+SOFR is stored as fixings in the system tenant, with its history, read from the New York Fed through the markets API, =markets.newyorkfed.org/api/rates/secured/sofr=, in JSON. The adapter is specialised: it reads the New York Fed alone, and it supplies only its fetcher and its settings to the shared half of [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]].
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:0DB85F8F-4C7D-4428-B514-AF69CE8E5D86][Separate the public source adapter's plumbing from its fetching]] and [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]]. |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-09 |
+
+* Acceptance
+
+- The adapter reads the New York Fed alone, and it does not copy the announce, the demand, the backfill or the publish code.
+- The New York Fed is a supplier in the catalogue, its SOFR series maps to the SOFR item of [[id:0D8B2280-F6E1-4198-8372-6712D1E8DFD8][Catalogue the overnight rate items]], and a session and a feed of it are seeded in the system tenant.
+- The session's terms are accepted at setup, as the terms of the FX sources are. A session whose terms are not accepted is skipped and reported, and provisioning does not fail.
+- A fresh environment stores the SOFR history as fixings within minutes of provisioning, and the log names the source and the count it stored.
+- Each fixing is stored as published, with the credit that the terms ask for.
+- The depth of the history is measured and written into [[id:3F9D6EAE-9FB8-4A0D-9BAF-1EA3EA93AB4F][the calibration sources note]].
+- Unit tests parse a recorded response of the New York Fed, and a malformed response gives an error, not a fixing.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -38,6 +38,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/config/options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/config/parser_exception.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/fetcher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/frankfurter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/domain/source_feed.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.official/export.hpp"

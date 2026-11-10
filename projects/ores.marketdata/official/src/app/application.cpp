@@ -20,6 +20,7 @@
 #include "ores.marketdata.official/app/application.hpp"
 #include "ores.http.client/net/transport.hpp"
 #include "ores.marketdata.official/app/official_adapter.hpp"
+#include "ores.marketdata.official/domain/frankfurter.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -56,7 +57,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     adapter_timing timing;
     timing.poll_interval = std::chrono::minutes(cfg.poll_minutes);
     official_adapter adapter(
-        nats, cfg.sources, fetcher, static_cast<int>(cfg.backfill_days), timing);
+        nats, cfg.sources, {&fetcher}, static_cast<int>(cfg.backfill_days), timing);
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

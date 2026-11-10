@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/log/engine_log.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.platform/process/pid.hpp"
 #include "ores.testing/project_root.hpp"
@@ -28,7 +29,6 @@
 #include <boost/process/v2/stdio.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
-#include <cstdlib>
 #include <filesystem>
 #include <iterator>
 #include <regex>
@@ -112,9 +112,8 @@ int run_engine(const std::string& executable, const fs::path& run_dir) {
     namespace bp2 = boost::process::v2;
     std::vector<bp2::environment::key_value_pair> env;
     const bp2::environment::key library_key("LD_LIBRARY_PATH");
-    std::string libraries;
-    if (const char* stated = std::getenv("ORES_ORE_LIBRARY_PATH"))
-        libraries = stated;
+    std::string libraries =
+        ores::platform::environment::environment::get_value_or_default("ORES_ORE_LIBRARY_PATH", "");
     for (const auto& entry : bp2::environment::current()) {
         if (!libraries.empty() && entry.key() == library_key) {
             libraries += ":" + entry.value().string();
@@ -168,8 +167,9 @@ std::string lines_of(const std::set<std::string>& lines) {
 
 TEST_CASE("the ORE engine raises only the known errors on the recorded trades",
           "[synthetic][ore][generated][ore_engine][external]") {
-    const char* executable = std::getenv("ORES_ORE_EXECUTABLE");
-    if (executable == nullptr || *executable == '\0')
+    const auto executable =
+        ores::platform::environment::environment::get_value("ORES_ORE_EXECUTABLE");
+    if (!executable || executable->empty())
         SKIP("ORES_ORE_EXECUTABLE names no ORE engine.");
 
     // A failed run leaves its directory behind, so ORE's log can be read.
@@ -179,7 +179,7 @@ TEST_CASE("the ORE engine raises only the known errors on the recorded trades",
     fs::remove_all(run_dir);
     stage_input(run_dir / "Input");
 
-    REQUIRE(run_engine(executable, run_dir) == 0);
+    REQUIRE(run_engine(*executable, run_dir) == 0);
     const auto structured_log = run_dir / "Output" / "log_structured.json";
     REQUIRE(fs::exists(structured_log));
 

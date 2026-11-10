@@ -22,6 +22,7 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/value_differ.hpp"
 #include "ores.ore.core/xml/value_fingerprint.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
@@ -34,7 +35,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <cstdlib>
 #include <filesystem>
 #include <map>
 #include <set>
@@ -258,8 +258,8 @@ fs::path refused_file(const std::string& type) {
 }
 
 bool updating() {
-    const auto* flag = std::getenv("ORES_UPDATE_GENERATED_TRADES");
-    return flag != nullptr && std::string_view(flag) == "1";
+    return ores::platform::environment::environment::get_value("ORES_UPDATE_GENERATED_TRADES") ==
+           "1";
 }
 
 /// The file's content, or empty when there is no file.

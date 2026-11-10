@@ -32,6 +32,7 @@
 #include "ores.refdata.core/repository/calendar_rule_repository.hpp"
 #include "ores.refdata.core/repository/currency_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <algorithm>
@@ -287,7 +288,13 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
     if (!to_write.empty()) {
         BOOST_LOG_SEV(lg(), info) << "Materialising " << to_write.size()
                                   << " calendar_date rows for " << calendar_code;
-        repository::calendar_date_repository(ctx_).write(to_write);
+        // The read above found none of these days, so each is claimed as new without a read of
+        // its own. The insert trigger does not refuse a new claim on a day that exists: a
+        // materialisation that ran since that read gets a second version with the same value.
+        const std::vector<ores::utility::domain::precondition> claims(
+            to_write.size(),
+            {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt});
+        repository::calendar_date_repository(ctx_).write(to_write, claims);
     }
 
     return to_write.size();

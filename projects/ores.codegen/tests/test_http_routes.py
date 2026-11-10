@@ -578,3 +578,32 @@ class TestTheWebRecordRoutes:
         text = _rendered_web(_web(), "cpp_http_route_web_records_tests.cpp.mustache")
         assert 'TEST_CASE("widget_web_routes_refuses_a_page_it_cannot_read"' in text
         assert "http_status::bad_gateway" in text
+
+    def test_a_model_without_a_resource_skips_the_record_archetype(self):
+        # The generator skips an archetype whose output does not resolve, which is
+        # how only the registry's models get a record unit.
+        import pytest
+        from codegen.core import resolve_output_path
+        pattern = "projects/ores.http/{component}/src/routes/{component}/{web_entity}_routes.cpp"
+        with pytest.raises(KeyError):
+            resolve_output_path(pattern, {"domain_entity": _entity()}, "domain_entity")
+        resolved = resolve_output_path(pattern, {"domain_entity": _web()}, "domain_entity")
+        assert resolved == "projects/ores.http/demo/src/routes/demo/widget_web_routes.cpp"
+
+    def test_the_catalogue_entry_is_json_naming_the_resource(self):
+        import json
+        import re
+        text = _rendered_web(_web())
+        entry = re.search(r'R"json\((.*)\)json"', text).group(1)
+        parsed = json.loads(entry)
+        assert parsed["key"] == "widgets"
+        assert parsed["keyFields"] == ["type"]
+        assert parsed["writePermission"] == "demo::widgets:write"
+
+    def test_a_put_subject_that_names_no_resource_is_refused(self):
+        import pytest
+        entity = _web()
+        entity["operations"] = [dict(op, subject="widgets.put") if op["verb"] == "put" else op
+                                for op in entity["operations"]]
+        with pytest.raises(ValueError, match="does not name its resource"):
+            entity_web_records_plan(entity)

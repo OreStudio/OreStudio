@@ -169,5 +169,17 @@ via its "Verifies task" field.
 | 2 | PR 1 local review: =unity-collisions= saw the 26 =wire_fields= overloads as one name. | =web_records_implementation.org= | Accepted | The body structs live in a namespace of the unit's own. |
 | 3 | PR 1 local review: =route-auth= tied a registration to the handler's =key= variable. | =web_records_implementation.org= | Accepted | The builders are named =<route>_route=, as the typed template names them. |
 | 4 | PR 1 local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR #4560 review: confirm the final tree is green. | — | No change | The rebuild on the final tree passed and was posted on the PR. |
+| 6 | PR #4560 review: a whole read stops on a short page, so a service that caps the page truncates the list. | =web_records_implementation.org= | Accepted | The read advances by the rows that arrived, and ends on an empty page or on a short one that completes the total. |
+| 7 | PR #4560 review: the reason check tests the untrimmed length, and the trims ignore line ends. | =web_records_implementation.org= | Accepted | One trim helper, over spaces, tabs and line ends, serves both checks. |
+| 8 | PR #4560 review: internal error text reaches the browser. | =web_records_implementation.org= | Accepted | The detail goes to the log, and the browser sees a fixed sentence. |
+| 9 | PR #4560 review: an unknown service error becomes 401. | =web_records_implementation.org= | Accepted | Only =unauthorized=, =token_expired= and =max_session_exceeded= become 401. Any other code is 502 =upstream-unavailable=. |
+| 10 | PR #4560 review: the new paths may collide with other routes. | =http_route_inventory.org= | No change | The inventory registers no method and path pair twice. |
+| 11 | PR #4560 review: a read-only resource could answer 405 or have no write routes. | =web_records_implementation.org= | Declined | The BFF answered 403 for a read-only resource, and the routes keep its behaviour. |
+| 12 | PR #4560 review: 26 units repeat the same helper code. | =web_records_implementation.org= | Deferred | PR 2 moves the shared helpers into one unit, before the synthetic units add to the copies. |
+| 13 | PR #4560 review: the archetype skip relies on a =KeyError=. | =core.py= | Accepted | A test pins the skip and the resolved path. |
+| 14 | PR #4560 review: the permission name falls back to the plural on an odd subject. | =org_loader.py= | Accepted | The plan refuses a put subject that does not name its resource, and a test pins it. |
+| 15 | PR #4560 review: the plan's =as_of= is unused. | =org_loader.py= | Accepted | Removed. |
+| 16 | PR #4560 review: test that the catalogue entry is valid JSON. | =test_http_routes.py= | Accepted | A test parses the rendered entry. |
 
 * Result

@@ -5844,7 +5844,12 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
     filters = [{"member": m["member"], "read_type": m["read_type"]}
                for m in members if m.get("is_equals")]
     sortable = [f["name"] for f in entity.get("sortable_fields") or []]
-    resource_name = put["subject"].split(".")[2] if put["subject"].count(".") >= 3 else plural
+    subject_parts = put["subject"].split(".")
+    if len(subject_parts) < 4:
+        raise ValueError(
+            f"{singular}: the put subject '{put['subject']}' does not name its resource "
+            "as <component>.v<n>.<resource>.<action>, so the permissions cannot be named")
+    resource_name = subject_parts[2]
     unit = f"{singular}_web"
 
     def _quoted(names: list[str]) -> list[dict[str, Any]]:
@@ -5862,7 +5867,6 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
                               or entity.get("current_state")),
         "writable": entity.get("web_read_only") is not True,
         "search": bool(entity.get("has_search")),
-        "as_of": bool(entity.get("has_as_of_lookup")),
         "key_fields": _quoted(key_fields),
         "sortable": _quoted(sortable),
         "filters": filters,

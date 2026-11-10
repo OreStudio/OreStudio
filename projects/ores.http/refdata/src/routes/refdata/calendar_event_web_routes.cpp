@@ -57,6 +57,16 @@ namespace messaging = ores::refdata::messaging;
 
 namespace {
 
+/// The unit's logger, for the detail a refusal does not show the browser.
+auto& calendar_event_web_lg() {
+    static auto instance = make_logger("ores.http.routes.refdata.calendar_event_web_routes");
+    return instance;
+}
+
+/// The sentence the browser sees when the route cannot answer; the detail goes to the log.
+constexpr std::string_view calendar_event_web_unanswered =
+    "The service could not answer this request.";
+
 /// How many rows a whole read asks for at a time.
 constexpr std::uint32_t calendar_event_web_page_size = 1000;
 
@@ -106,12 +116,18 @@ T calendar_event_web_read(const std::string& raw, const std::string& name) {
     }
 }
 
+/// The text without its leading and trailing blanks.
+std::string calendar_event_web_trimmed(const std::string& raw) {
+    constexpr std::string_view blanks = " \t\r\n";
+    const auto first = raw.find_first_not_of(blanks);
+    if (first == std::string::npos)
+        return {};
+    return raw.substr(first, raw.find_last_not_of(blanks) - first + 1);
+}
+
 /// A code named in the address: 1 to 100 characters once trimmed.
 std::string calendar_event_web_code(const std::string& raw, const std::string& sentence) {
-    const auto first = raw.find_first_not_of(" \t");
-    const auto last = raw.find_last_not_of(" \t");
-    const auto trimmed =
-        first == std::string::npos ? std::string{} : raw.substr(first, last - first + 1);
+    const auto trimmed = calendar_event_web_trimmed(raw);
     if (trimmed.empty() || trimmed.size() > 100)
         calendar_event_web_invalid(sentence);
     return trimmed;
@@ -138,15 +154,23 @@ calendar_event_web_call(const http_request& req, nats_client& session, const Req
                 calendar_event_web_refuse(http_status::forbidden, "forbidden", it->second);
             if (it->second == "bad_request")
                 calendar_event_web_invalid(it->second);
-            calendar_event_web_refuse(http_status::unauthorized, "not-authenticated", it->second);
+            if (it->second == "unauthorized" || it->second == "token_expired" ||
+                it->second == "max_session_exceeded")
+                calendar_event_web_refuse(
+                    http_status::unauthorized, "not-authenticated", it->second);
+            BOOST_LOG_SEV(calendar_event_web_lg(), warn) << "Unknown service error: " << it->second;
+            calendar_event_web_refuse(http_status::bad_gateway,
+                                      "upstream-unavailable",
+                                      std::string(calendar_event_web_unanswered));
         }
         auto decoded =
             ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
-        if (!decoded)
-            calendar_event_web_refuse(http_status::bad_gateway,
-                                      "internal",
-                                      std::string("Failed to decode response: ") +
-                                          decoded.error().what());
+        if (!decoded) {
+            BOOST_LOG_SEV(calendar_event_web_lg(), error)
+                << "Failed to decode response: " << decoded.error().what();
+            calendar_event_web_refuse(
+                http_status::bad_gateway, "internal", std::string(calendar_event_web_unanswered));
+        }
         return std::move(*decoded);
     } catch (const ores::nats::service::session_expired_error& e) {
         calendar_event_web_refuse(http_status::unauthorized, "session-expired", e.what());
@@ -271,8 +295,8 @@ std::optional<T> calendar_event_web_body(std::string_view text) {
 
 /// A reason is 1 to 200 characters once trimmed.
 bool calendar_event_web_has_reason(const std::string& reason) {
-    const auto first = reason.find_first_not_of(" \t");
-    return first != std::string::npos && reason.size() <= 200;
+    const auto trimmed = calendar_event_web_trimmed(reason);
+    return !trimmed.empty() && trimmed.size() <= 200;
 }
 
 }
@@ -286,12 +310,18 @@ calendar_event_web_routes::handle_list(const http_request& req, nats_client& ses
     try {
         if (req.query_params.find("limit") == req.query_params.end()) {
             std::vector<ores::refdata::domain::calendar_event> rows;
-            for (std::uint32_t offset = 0;; offset += calendar_event_web_page_size) {
+            // A service may cap a page below the size asked for, so the read
+            // advances by the rows that arrived and ends on an empty page, or on
+            // a short one once it holds the total.
+            for (std::uint32_t offset = 0;;) {
                 const auto reply = calendar_event_web_call(
                     req, session, calendar_event_web_page(offset, calendar_event_web_page_size));
                 calendar_event_web_require_ok(reply.result);
-                rows.insert(rows.end(), reply.calendar_events.begin(), reply.calendar_events.end());
-                if (reply.calendar_events.size() < calendar_event_web_page_size)
+                const auto& got = reply.calendar_events;
+                rows.insert(rows.end(), got.begin(), got.end());
+                offset += static_cast<std::uint32_t>(got.size());
+                if (got.empty() ||
+                    (got.size() < calendar_event_web_page_size && rows.size() >= reply.total))
                     break;
             }
             co_return http_response::json("{\"rows\":" + calendar_event_web_rows(rows) + "}");
@@ -358,7 +388,9 @@ calendar_event_web_routes::handle_list(const http_request& req, nats_client& ses
     } catch (const calendar_event_web_refusal& refusal) {
         co_return calendar_event_web_answer(refusal);
     } catch (const std::exception& e) {
-        co_return http_response::api_error(http_status::bad_gateway, "internal", e.what());
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(calendar_event_web_unanswered));
     }
 }
 
@@ -382,7 +414,9 @@ boost::asio::awaitable<http_response> calendar_event_web_routes::handle_key(cons
     } catch (const calendar_event_web_refusal& refusal) {
         co_return calendar_event_web_answer(refusal);
     } catch (const std::exception& e) {
-        co_return http_response::api_error(http_status::bad_gateway, "internal", e.what());
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(calendar_event_web_unanswered));
     }
 }
 
@@ -392,7 +426,7 @@ boost::asio::awaitable<http_response> calendar_event_web_routes::handle_by(const
         const auto parent = calendar_event_web_code(
             req.get_path_param("parent"), "A parent is named by a code of 1 to 100 characters.");
         std::vector<ores::refdata::domain::calendar_event> rows;
-        for (std::uint32_t offset = 0;; offset += calendar_event_web_page_size) {
+        for (std::uint32_t offset = 0;;) {
             messaging::list_by_calendar_code_calendar_events_request msg;
             msg.calendar_code = calendar_event_web_read<std::string>(parent, "parent");
             msg.scope = ores::utility::domain::scope::direct;
@@ -402,15 +436,20 @@ boost::asio::awaitable<http_response> calendar_event_web_routes::handle_by(const
             msg.order.descending = false;
             const auto reply = calendar_event_web_call(req, session, msg);
             calendar_event_web_require_ok(reply.result);
-            rows.insert(rows.end(), reply.calendar_events.begin(), reply.calendar_events.end());
-            if (reply.calendar_events.size() < calendar_event_web_page_size)
+            const auto& got = reply.calendar_events;
+            rows.insert(rows.end(), got.begin(), got.end());
+            offset += static_cast<std::uint32_t>(got.size());
+            if (got.empty() ||
+                (got.size() < calendar_event_web_page_size && rows.size() >= reply.total))
                 break;
         }
         co_return http_response::json("{\"rows\":" + calendar_event_web_rows(rows) + "}");
     } catch (const calendar_event_web_refusal& refusal) {
         co_return calendar_event_web_answer(refusal);
     } catch (const std::exception& e) {
-        co_return http_response::api_error(http_status::bad_gateway, "internal", e.what());
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(calendar_event_web_unanswered));
     }
 }
 
@@ -436,7 +475,9 @@ boost::asio::awaitable<http_response> calendar_event_web_routes::handle_put(cons
     } catch (const calendar_event_web_refusal& refusal) {
         co_return calendar_event_web_answer(refusal);
     } catch (const std::exception& e) {
-        co_return http_response::api_error(http_status::bad_gateway, "internal", e.what());
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(calendar_event_web_unanswered));
     }
 }
 
@@ -461,7 +502,9 @@ calendar_event_web_routes::handle_delete(const http_request& req, nats_client& s
     } catch (const calendar_event_web_refusal& refusal) {
         co_return calendar_event_web_answer(refusal);
     } catch (const std::exception& e) {
-        co_return http_response::api_error(http_status::bad_gateway, "internal", e.what());
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(calendar_event_web_unanswered));
     }
 }
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-credit-trades-through-builders
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Every credit trade type the generator books is built by its trade builder, and t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -38,14 +38,26 @@ Every credit trade type the generator books is built by its trade builder, and t
 - convention_lookup answers what each credit builder asks.
 - The credit planner draws values and calls the builders; its construct_* functions and *_terms structs are deleted.
 - The credit entries leave the recorded trades' known lists, and the recorded files change in the same commit.
-- The ORE engine test reads and builds every booked credit type.
+- The ORE engine test reads every booked credit type, and builds each one or fails only because the example market has no curve for its reference entity.
 - The roundtrip tests read every ORE sample trade of each booked credit type and write back every element ORE needs.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- A generated credit trade names its curve by its reference entity: the credit
+  spread series of the LEI, senior unsecured, in the trade currency, stored as
+  an oresmd address. The market data task gives each LEI its curve; until then
+  ORE reads the trade and fails only on the missing curve. The user chose this
+  on 2026-11-10.
+- =convention_lookup= answers a CDS convention by its id, as ORE names it.
+  The planner asks for =CDS-STANDARD-CONVENTIONS=.
+- One builder per booked type. CDS and index CDS share a premium leg built
+  from the CDS convention. The index option wraps an index CDS. The credit
+  linked swap pays a contingent coupon leg and redemption. The RPA wraps a
+  vanilla swap built by =vanilla_swap_builder= and pays a protection fee.
+- The scope carries the tenant's conventions, read by the population writer,
+  so the planner can build trades.
+- The credit planner draws terms, calls the builders, and the =construct_*=
+  functions, =credit_common_terms= and the plan's =credit_terms= are deleted.
 
 * Measurements
 

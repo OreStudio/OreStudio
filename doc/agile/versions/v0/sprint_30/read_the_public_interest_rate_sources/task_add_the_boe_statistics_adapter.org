@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
 #+branch: feature/add-the-boe-statistics-adapter
-#+pr:
+#+pr: 4548
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-29
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4548][#4548]] | [marketdata] Add the Bank of England statistics adapter |
 
 * Review
 

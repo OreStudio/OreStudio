@@ -8,7 +8,7 @@
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
 #+branch: feature/add-the-rba-adapter
-#+pr:
+#+pr: 4568
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-10
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4568][#4568]] | [marketdata] Add the RBA adapter |
 
 * Review
 

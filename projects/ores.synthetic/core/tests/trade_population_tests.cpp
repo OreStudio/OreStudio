@@ -806,6 +806,28 @@ TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
     CHECK(codes_of(plan).contains("KnockOutSwap"));
 }
 
+TEST_CASE("a_rate_population_draws_an_index_its_alias_conventions_name_and_skips_a_conflict",
+          "[trade_population]") {
+    auto scope = rate_scope();
+    const auto six_months = scope.conventions.swaps.front();
+    auto alias = six_months;
+    alias.id = "EUR-SWAP";
+    auto conflict = six_months;
+    conflict.id = "EUR-EURIBOR-3M-SWAP";
+    conflict.index = "EUR-EURIBOR-3M";
+    conflict.oresmd_uri = "oresmd://ir/EUR?type=fixing&index=ibor&name=EURIBOR&tenor=3M";
+    auto other_terms = conflict;
+    other_terms.id = "EUR-3M-SWAP-CONVENTIONS";
+    other_terms.fixed_frequency = "Semiannual";
+    scope.conventions.swaps.push_back(alias);
+    scope.conventions.swaps.push_back(conflict);
+    scope.conventions.swaps.push_back(other_terms);
+
+    const auto plan = plan_of(scope);
+
+    REQUIRE_FALSE(plan.slots.empty());
+}
+
 TEST_CASE("a_rate_population_without_a_swap_convention_in_its_currency_is_refused",
           "[trade_population]") {
     auto scope = rate_scope();

@@ -153,12 +153,15 @@ jobs:
         # apt.llvm.org installs clang in seconds. The LLVM release tarball that
         # this step downloaded before took 90 to 120 s. The version comes from
         # the file that the CI image is built from, so both get the same
-        # compiler.
+        # compiler. CC and CXX send the vcpkg C ports to clang, as the old
+        # install action did.
         if: ${{ matrix.compiler == 'clang' }}
         run: |
           llvm_major="$(sed -n 's/^LLVM_MAJOR=//p' build/docker/ci/versions.env)"
           ./build/scripts/install_llvm.sh "${llvm_major}"
           echo "/usr/lib/llvm-${llvm_major}/bin" >> "$GITHUB_PATH"
+          echo "CC=/usr/lib/llvm-${llvm_major}/bin/clang" >> "$GITHUB_ENV"
+          echo "CXX=/usr/lib/llvm-${llvm_major}/bin/clang++" >> "$GITHUB_ENV"
 
       - name: Restore sccache
         uses: actions/cache/restore@v6

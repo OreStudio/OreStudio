@@ -364,7 +364,7 @@ auto read_average_price_option(const record_reader& trade,
     r.commodity_code = commodity_address_of(commodity_instrument_projection_text_of(*data, "Name"));
     r.currency = commodity_instrument_projection_spelling_of(*data, "Currency");
     r.quantity = decimal_as_double(*data, amount).value_or(0.0);
-    r.strike_price = commodity_instrument_projection_decimal_of(*data, "Strike");
+    r.strike_price = optional_decimal_of(*data, "Strike");
     r.option_type = option_type_of(data->child("OptionData"));
     r.exercise_type = exercise_style_of(data->child("OptionData"));
     r.maturity_date = first_exercise_date_of(data->child("OptionData"));
@@ -728,6 +728,11 @@ void write_commodity_spread_option(record_writer& trade, const commodity_instrum
     data.set_decimal("SpreadStrike", v.strike_price.value_or(decimal{}));
 }
 
+/*
+ * ORE requires the position before the maturity, so the writer states it in
+ * schema order here, and the scalar terms that run after it write the row's
+ * own position over it.
+ */
 void write_intraday_power_forward(record_writer& trade, const commodity_instrument& v) {
     auto data = trade.child("IntradayPowerForwardData");
     data.set_spelling("Position", "Long", "position");

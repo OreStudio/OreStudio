@@ -121,7 +121,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A spread option with no second commodity in its currency fails the whole plan | =trade_population_planner.cpp= | Declined | The planner refuses with a clear message, as the basket draw does. A silent skip breaks the claim that a population states every booked type. |
+| 2 | The spread option writer may always state =LongShort= as Long | =commodity_instrument_projection.cpp= | Declined | The recorded spread options state =Short=, and the roundtrip test passes on them. |
+| 3 | The power forward writer hard-codes the position | =commodity_instrument_projection.cpp= | Accepted | A comment says the scalar terms write the row's position over it. |
+| 4 | The digital and average price readers use different strike helpers | =commodity_instrument_projection.cpp= | Accepted | Both read the strike as optional. |
+| 5 | A position read from ORE has no currency | =commodity_builders.hpp= | Accepted | The terms' documentation says so. |
+| 6 | The day length constant | =commodity_builders.cpp= | No change | The review states it is correct. |
+| 7 | The new columns need a migration | =trading_commodity_instruments_create.sql= | Declined | The project rebuilds databases from the create scripts and has no migrations. |
+| 8 | CI may flag the format of lines 90 to 115 | =commodity_instrument_projection.cpp= | Declined | GitHub runs no checks on a PR. The lines are unchanged from main. |
+| 9 | Add negative tests for the spread and power forward refusals | =builders_commodity_builders_tests.cpp= | No change | The tests exist for the same underlying, the end before the start, the delivery past the day and the delivery before the maturity. |
 
 * Result
 

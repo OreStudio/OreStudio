@@ -270,7 +270,11 @@ private:
 /// A holding of a quantity of one commodity.
 struct commodity_position_terms final {
     required<marketdata::datum::market_reference> underlying;
-    /// The currency the commodity is quoted in, which ORE values the position in.
+    /**
+     * The currency the commodity is quoted in, which ORE values the position
+     * in. ORE's position states no currency, so a position read from ORE has
+     * none.
+     */
     required<std::string> currency;
     required<utility::decimal::decimal> quantity;
     /// The unit the quantity counts, as the catalogue states it; empty when unstated.

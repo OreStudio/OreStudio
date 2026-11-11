@@ -125,6 +125,28 @@ render_commodity_instrument_fields(const domain::commodity_instrument& v) {
          .value = v.delivery_start ? std::to_string(*v.delivery_start) : std::string{}});
     fields.push_back({.name = "Delivery End",
                       .value = v.delivery_end ? std::to_string(*v.delivery_end) : std::string{}});
+    fields.push_back({.name = "Fva Date",
+                      .value = v.fva_date ?
+                                   ores::platform::time::datetime::to_iso8601_date(*v.fva_date) :
+                                   std::string{}});
+    fields.push_back({.name = "Premium Date",
+                      .value = v.premium_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                    *v.premium_date) :
+                                                std::string{}});
+    fields.push_back({.name = "Settlement Date",
+                      .value = v.settlement_date ? ores::platform::time::datetime::to_iso8601_date(
+                                                       *v.settlement_date) :
+                                                   std::string{}});
+    fields.push_back(
+        {.name = "Implied Vol Strike",
+         .value = v.implied_vol_strike ? v.implied_vol_strike->to_string() : std::string{}});
+    fields.push_back({.name = "Reset Strike",
+                      .value = v.reset_strike ? v.reset_strike->to_string() : std::string{}});
+    fields.push_back({.name = "Trigger Type", .value = v.trigger_type.value_or(std::string{})});
+    fields.push_back({.name = "Trigger Price",
+                      .value = v.trigger_price ? v.trigger_price->to_string() : std::string{}});
+    fields.push_back({.name = "Premium Amount",
+                      .value = v.premium_amount ? v.premium_amount->to_string() : std::string{}});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

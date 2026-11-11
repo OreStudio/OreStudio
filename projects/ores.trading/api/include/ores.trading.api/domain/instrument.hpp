@@ -221,6 +221,11 @@ struct commodity_instrument_data {
      * @brief An option strip's call and put strikes, each with its position.
      */
     std::vector<instrument_strike> strikes;
+    /**
+     * @brief The range bounds a commodity accumulator or TaRF pays on, in the
+     * shared rows the FX and equity accumulators use.
+     */
+    std::vector<range_bound> range_bounds;
 };
 
 // A credit trade states its legs as rows of the shared leg tables, and an index
@@ -762,6 +767,7 @@ inline void stamp_ids(commodity_instrument_data& data,
     stamp_one(data.option_exercise_prices);
     stamp_one(data.instrument_underlyings);
     stamp_one(data.strikes);
+    stamp_one(data.range_bounds);
 }
 
 inline void stamp_ids(credit_instrument_data& data,

@@ -94,6 +94,14 @@ struct commodity_instrument_entity {
     std::optional<std::chrono::year_month_day> delivery_date;
     std::optional<int> delivery_start;
     std::optional<int> delivery_end;
+    std::optional<std::chrono::year_month_day> fva_date;
+    std::optional<std::chrono::year_month_day> premium_date;
+    std::optional<std::chrono::year_month_day> settlement_date;
+    std::optional<ores::utility::decimal::decimal> implied_vol_strike;
+    std::optional<ores::utility::decimal::decimal> reset_strike;
+    std::optional<std::string> trigger_type;
+    std::optional<ores::utility::decimal::decimal> trigger_price;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -151,6 +159,14 @@ struct commodity_instrument_entity {
                query_builder::bind("delivery_date", &e::delivery_date) |
                query_builder::bind("delivery_start", &e::delivery_start) |
                query_builder::bind("delivery_end", &e::delivery_end) |
+               query_builder::bind("fva_date", &e::fva_date) |
+               query_builder::bind("premium_date", &e::premium_date) |
+               query_builder::bind("settlement_date", &e::settlement_date) |
+               query_builder::bind("implied_vol_strike", &e::implied_vol_strike) |
+               query_builder::bind("reset_strike", &e::reset_strike) |
+               query_builder::bind("trigger_type", &e::trigger_type) |
+               query_builder::bind("trigger_price", &e::trigger_price) |
+               query_builder::bind("premium_amount", &e::premium_amount) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

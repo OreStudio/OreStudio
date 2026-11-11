@@ -90,6 +90,14 @@ struct commodity_instrument_write {
     std::optional<std::chrono::year_month_day> delivery_date;
     std::optional<int> delivery_start;
     std::optional<int> delivery_end;
+    std::optional<std::chrono::year_month_day> fva_date;
+    std::optional<std::chrono::year_month_day> premium_date;
+    std::optional<std::chrono::year_month_day> settlement_date;
+    std::optional<ores::utility::decimal::decimal> implied_vol_strike;
+    std::optional<ores::utility::decimal::decimal> reset_strike;
+    std::optional<std::string> trigger_type;
+    std::optional<ores::utility::decimal::decimal> trigger_price;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
     std::string description;
 
     friend bool operator==(const commodity_instrument_write&,
@@ -476,6 +484,15 @@ inline constexpr std::string_view deleted = "trading.v1.events.commodity_instrum
         utility::codec::field{"delivery_date", &commodity_instrument_write::delivery_date},
         utility::codec::field{"delivery_start", &commodity_instrument_write::delivery_start},
         utility::codec::field{"delivery_end", &commodity_instrument_write::delivery_end},
+        utility::codec::field{"fva_date", &commodity_instrument_write::fva_date},
+        utility::codec::field{"premium_date", &commodity_instrument_write::premium_date},
+        utility::codec::field{"settlement_date", &commodity_instrument_write::settlement_date},
+        utility::codec::field{"implied_vol_strike",
+                              &commodity_instrument_write::implied_vol_strike},
+        utility::codec::field{"reset_strike", &commodity_instrument_write::reset_strike},
+        utility::codec::field{"trigger_type", &commodity_instrument_write::trigger_type},
+        utility::codec::field{"trigger_price", &commodity_instrument_write::trigger_price},
+        utility::codec::field{"premium_amount", &commodity_instrument_write::premium_amount},
         utility::codec::field{"description", &commodity_instrument_write::description},
     };
 }

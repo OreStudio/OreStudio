@@ -23,21 +23,25 @@
 #   ubuntu24.04-clang19-gcc14-<hash>
 #
 # Usage:
-#   build/docker/ci/build.sh [--image NAME] [--engine docker|podman]
+#   build/docker/ci/build.sh [--image NAME] [--engine docker|podman] [--print-ref]
 #
-# NAME defaults to ores-ci. The engine defaults to docker, or podman when
-# docker is absent. The last line of the output is the full image reference.
+# NAME defaults to ores-ci. --print-ref prints the image reference and builds
+# nothing, so a caller can ask whether that tag is already published. The
+# engine defaults to docker, or podman when docker is absent. The last line of
+# the output is the full image reference.
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root="$(cd "${here}/../../.." && pwd)"
 image="ores-ci"
 engine=""
+print_ref=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --image) image="$2"; shift 2 ;;
         --engine) engine="$2"; shift 2 ;;
+        --print-ref) print_ref=1; shift ;;
         *) echo "unknown argument: $1" >&2; exit 2 ;;
     esac
 done
@@ -61,6 +65,11 @@ inputs=("${here}/Dockerfile" "${here}/versions.env" "${root}/build/scripts/insta
 hash="$(cat "${inputs[@]}" | sha256sum | cut -c1-12)"
 tag="ubuntu${UBUNTU_VERSION}-clang${LLVM_MAJOR}-gcc${GCC_MAJOR}-${hash}"
 ref="${image}:${tag}"
+
+if [[ "${print_ref}" -eq 1 ]]; then
+    echo "${ref}"
+    exit 0
+fi
 
 "${engine}" build -f "${here}/Dockerfile" "${build_args[@]}" -t "${ref}" "${root}"
 

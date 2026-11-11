@@ -28,6 +28,10 @@
 ARG UBUNTU_VERSION
 FROM ubuntu:${UBUNTU_VERSION}
 
+# Links the package in GitHub Container Registry to this repository, so the
+# repository's workflows can pull it and its page lists it.
+LABEL org.opencontainers.image.source=https://github.com/OreStudio/OreStudio
+
 ARG LLVM_MAJOR
 ARG GCC_MAJOR
 ARG CMAKE_VERSION

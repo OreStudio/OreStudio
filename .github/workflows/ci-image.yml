@@ -1,0 +1,77 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: CI Image
+
+# Builds the Linux CI image from build/docker/ci and publishes it to GitHub
+# Container Registry. The tag holds a hash of every input of the image, so a
+# tag that is already published is the same image and the run stops there.
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - main
+    paths:
+      - 'build/docker/ci/**'
+      - 'build/scripts/install_llvm.sh'
+      - '.github/workflows/ci-image.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ci-image
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: publish-ci-image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Name the image
+        id: ref
+        run: |
+          ref="$(build/docker/ci/build.sh --image ghcr.io/orestudio/ores-ci --print-ref)"
+          echo "ref=${ref}" >> "$GITHUB_OUTPUT"
+          echo "Image: ${ref}"
+
+      - name: Log in to GitHub Container Registry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "${GH_TOKEN}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Check whether the tag is already published
+        id: exists
+        run: |
+          if docker manifest inspect "${{ steps.ref.outputs.ref }}" > /dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "${{ steps.ref.outputs.ref }} is already published."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and check the image
+        if: steps.exists.outputs.published == 'false'
+        run: build/docker/ci/build.sh --image ghcr.io/orestudio/ores-ci --engine docker
+
+      - name: Publish the image
+        if: steps.exists.outputs.published == 'false'
+        run: docker push "${{ steps.ref.outputs.ref }}"

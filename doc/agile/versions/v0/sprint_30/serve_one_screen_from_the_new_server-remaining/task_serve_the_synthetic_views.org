@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-synthetic-views
-#+pr:
+#+pr: 4629
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4629][#4629]] | [http] Serve the synthetic composed views |
 
 * Review
 

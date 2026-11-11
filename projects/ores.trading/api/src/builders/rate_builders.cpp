@@ -209,8 +209,8 @@ swaption_builder::swaption_builder(conventions_ref conventions, swaption_terms t
     , terms_(std::move(terms)) {}
 
 swap_result swaption_builder::build() const {
-    if (terms_.expiry.get() >= terms_.swap.start.get())
-        return std::unexpected(build_error{"expiry", "must be before the swap starts"});
+    if (terms_.expiry.get() > terms_.swap.start.get())
+        return std::unexpected(build_error{"expiry", "must not be after the swap starts"});
     auto out = swap_of(conventions_, terms_.swap);
     if (!out)
         return out;
@@ -248,8 +248,15 @@ swap_result callable_swap_builder::build() const {
 
     out->facts = domain::callable_swap_instrument{};
     out->options.push_back(option_of(terms_.position.get(), "Bermudan", "Physical"));
+    // The calls fall once a year on the first call's anniversary, whatever the
+    // legs pay; an anniversary of 29 February falls on the last day of February.
     int number = 0;
-    for (auto call = first; call < terms_.swap.maturity.get(); call += std::chrono::years{1}) {
+    for (auto years = std::chrono::years{0};; years += std::chrono::years{1}) {
+        auto call = first + years;
+        if (!call.ok())
+            call = call.year() / call.month() / std::chrono::last;
+        if (call >= terms_.swap.maturity.get())
+            break;
         domain::callable_swap_call_date row;
         row.sequence_number = ++number;
         row.call_date = call;

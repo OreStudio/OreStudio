@@ -269,3 +269,67 @@ TEST_CASE("an_inflation_index_with_no_convention_fails_and_names_the_term", rate
     REQUIRE_FALSE(swap.has_value());
     CHECK(swap.error().term == "index");
 }
+
+TEST_CASE("a_receive_fixed_cross_currency_swap_keeps_its_fixed_leg_first", rate_tags) {
+    const conv::convention_lookup lookup(rate_conventions());
+    auto domestic = swap_terms();
+    domestic.fixed_side = side::receive;
+    const cross_currency_swap_terms terms{.domestic = domestic,
+                                          .foreign_notional = *decimal::from_string("11000000"),
+                                          .foreign_currency = std::string("USD"),
+                                          .foreign_index = rate_reference(rate_libor_3m)};
+    const auto swap = cross_currency_swap_builder(lookup, terms).build();
+    REQUIRE(swap.has_value());
+    REQUIRE(swap->legs.size() == 2);
+    CHECK(swap->legs[0].leg_type_code == "Fixed");
+    CHECK(swap->legs[0].payer == false);
+    CHECK(swap->legs[1].leg_type_code == "Floating");
+    CHECK(swap->legs[1].payer == true);
+}
+
+TEST_CASE("a_short_floor_states_its_side_and_its_floor_strike", rate_tags) {
+    const conv::convention_lookup lookup(rate_conventions());
+    const auto floor = cap_floor_builder(lookup,
+                                         {.swap = swap_terms(),
+                                          .kind = cap_floor_kind::floor,
+                                          .position = option_position::short_option})
+                           .build();
+    REQUIRE(floor.has_value());
+    const auto* fact = std::get_if<ores::trading::domain::cap_floor_instrument>(&floor->facts);
+    REQUIRE(fact != nullptr);
+    CHECK(fact->long_short == "Short");
+    REQUIRE(floor->strikes.size() == 1);
+    CHECK(floor->strikes[0].strike_role == "floor");
+}
+
+TEST_CASE("a_call_on_29_february_falls_on_the_last_day_of_february_after", rate_tags) {
+    const conv::convention_lookup lookup(rate_conventions());
+    auto swap = swap_terms();
+    swap.start = 2027y / 1 / 5;
+    swap.maturity = 2031y / 1 / 5;
+    const auto callable =
+        callable_swap_builder(
+            lookup,
+            {.swap = swap, .first_call = 2028y / 2 / 29, .position = option_position::long_option})
+            .build();
+    REQUIRE(callable.has_value());
+    REQUIRE(callable->call_dates.size() == 3);
+    CHECK(callable->call_dates[0].call_date == 2028y / 2 / 29);
+    CHECK(callable->call_dates[1].call_date == 2029y / 2 / 28);
+    CHECK(callable->call_dates[2].call_date == 2030y / 2 / 28);
+    for (const auto& row : callable->call_dates)
+        CHECK(row.call_date.ok());
+}
+
+TEST_CASE("a_swaption_may_expire_on_the_day_its_swap_starts", rate_tags) {
+    const conv::convention_lookup lookup(rate_conventions());
+    const auto swaption = swaption_builder(lookup,
+                                           {.swap = swap_terms(),
+                                            .expiry = 2026y / 1 / 5,
+                                            .position = option_position::long_option,
+                                            .settles = settlement::physical})
+                              .build();
+    REQUIRE(swaption.has_value());
+    CHECK(swaption->options[0].settlement == "Physical");
+    CHECK_FALSE(swaption->options[0].settlement_method.has_value());
+}

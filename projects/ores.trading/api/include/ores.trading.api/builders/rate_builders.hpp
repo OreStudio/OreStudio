@@ -115,7 +115,7 @@ private:
 
 enum class settlement { cash, physical };
 
-/// A European option to enter a swap that starts after the expiry.
+/// A European option to enter a swap that starts on or after the expiry.
 struct swaption_terms final {
     vanilla_swap_terms swap;
     required<std::chrono::year_month_day> expiry;

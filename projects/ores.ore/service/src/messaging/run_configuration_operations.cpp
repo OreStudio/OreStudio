@@ -44,9 +44,11 @@
 #include <format>
 #include <optional>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace ores::ore::service::messaging {
@@ -144,10 +146,10 @@ ores::utility::codec::json_document family_list_request(std::uint64_t offset, st
     return request;
 }
 
-// One family's rows as JSON, paged, narrowed to the run's party when the family's
-// table carries a party. World families are the tenant's, so every row stays.
-// A row is a view into its page's document, so it is written out while that
-// document lives; the page goes at the end of each turn of the loop.
+// One family's rows as JSON, paged, narrowed to the run's party when the
+// family's table carries a party. World families are the tenant's, so every row
+// stays. A row is written while its page lives: a json_value is a view into the
+// page's document, so it must not be returned.
 std::vector<std::string>
 read_family(nats_client& owners,
             const ores::refdata::domain::convention_family_entry& family,

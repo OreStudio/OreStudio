@@ -66,6 +66,28 @@ Decisions made in the counterparty group:
   the BFF did. A read that the service refuses answers with the status the
   outcome names, through =rr::require_ok=.
 
+Decisions made in the conventions group:
+
+- The two routes that draw a convention's terms, the document read and the
+  terms write, wait for the reporting part. They read the ORE parameter and
+  value set tables, which the reporting service owns, through the BFF's
+  =readValueSets=. The curve configuration routes read the same tables. The
+  value set reader belongs in the reporting part that
+  [[id:504FD469-B1A1-4480-9694-34724AD2F2A5][Stand up the reporting part and serve its resources]]
+  creates, so those routes are ported after that part exists. The three routes
+  that need no value set (the families, one family's page and the family write)
+  are ported now.
+- The families are a table of typed units: each names its list request and the
+  reply member that holds its rows, so the compiler checks every name. A test
+  compares the table with the convention registry, so a family added to the
+  model fails the test until it is added here.
+- The tenor and currency pair conventions answer their rows. The BFF read their
+  rows from =tenor_conventions= and =currency_pair_conventions=, but the reply
+  names them =conventions=, so the BFF answered no rows for either family.
+- The screens' intent and the paged whole read move to shared units, as
+  =rr::stated_intent= with =rr::intent_of=, and =forwarding::forward_all=. The
+  counterparty unit's copies are deleted.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -114,6 +136,9 @@ via its "Verifies task" field.
 | 9 | PR #4616: =match= re-parsed each pattern and allocated per route. | =router.cpp= | Accepted | The rank is worked out once in =add_route=; one parameter map is reused. |
 | 10 | PR #4616: =is_uuid= used =std::regex=. | =record_routes.cpp= | Accepted | A 36 character check replaces it. |
 | 11 | PR #4616: duplicate ids, and a whole read with no bound. | =counterparty_screen_routes.cpp= | Accepted | Each id is named once; a whole read stops with an error after 1000 pages. |
+| 12 | Local review: the counterparty and conventions units each held the screens' intent and a paged whole read. | =record_routes.hpp=, =forwarding.hpp= | Accepted | One =rr::stated_intent= with =rr::intent_of=, and one =forwarding::forward_all=; the counterparty copies are deleted. |
+| 13 | Local review: both test files defined =answer_at=, and both units defined =wire_fields= in the same namespace, so the unity check failed. | Refdata tests and units | Accepted | One =route_answer.hpp= helper in the suite; each unit keeps its bodies in a namespace named for it. |
+| 14 | Local review: a hand table of families can drift from the registry. | =convention_screen_routes.cpp= | Accepted | A test compares the table with the registry; generating the table is left until a second consumer needs it. |
 
 * Result
 
@@ -123,7 +148,8 @@ row below records a group that has merged; the task closes when all five have.
 | Group | PR | Routes | State |
 |-------+----+--------+-------|
 | Counterparties | #4616 | 6 | Merged |
-| Conventions | | 5 | Open |
+| Conventions: families, page and write | | 3 | Open |
+| Conventions: document and terms | | 2 | Waits for the reporting part |
 | Curve configurations | | 3 | Open |
 | Tenors | | 9 | Open |
 | Records, calendars and ORE currency | | 10 | Open |

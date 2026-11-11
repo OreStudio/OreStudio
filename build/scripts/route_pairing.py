@@ -127,4 +127,7 @@ PAIRS = {
     ("GET", "/api/counterparties/:id/visibility"): ("GET", "/api/counterparties/{id}/visibility"),
     ("PUT", "/api/counterparties/:id/visibility"): ("PUT", "/api/counterparties/{id}/visibility"),
     ("PUT", "/api/counterparties/:id/business-centres"): ("PUT", "/api/counterparties/{id}/business-centres"),
+    ("GET", "/api/conventions/families"): ("GET", "/api/conventions/families"),
+    ("GET", "/api/conventions/:family"): ("GET", "/api/conventions/{family}"),
+    ("PUT", "/api/conventions/:family"): ("PUT", "/api/conventions/{family}"),
 }

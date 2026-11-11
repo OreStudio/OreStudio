@@ -45,7 +45,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <set>
-#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -64,30 +63,15 @@ namespace utility_domain = ores::utility::domain;
 
 namespace {
 
-/// How many rows a whole read asks for at a time, as the BFF asked.
-constexpr std::uint32_t counterparty_screen_page = 1000;
-
 /// The most counterparties one children read may name.
 constexpr std::size_t counterparty_screen_most_ids = 200;
 
-/// The most pages a whole read takes, so a service that ignores the limit cannot hold the route.
-constexpr std::uint32_t counterparty_screen_most_pages = 1000;
-
-/// Why a write is made, as the screen states it: the commentary may be left out.
-struct counterparty_screen_intent final {
-    std::string reason_code;
-    std::optional<std::string> commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_screen_intent>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"reason_code", &counterparty_screen_intent::reason_code},
-                      field{"commentary", &counterparty_screen_intent::commentary}};
-}
+/// The bodies the screen sends, beside the wire_fields each is read with.
+namespace counterparty_screen {
 
 /// The composite write as the screen sends it: each list of children may be left out.
 struct counterparty_composite_body final {
-    counterparty_screen_intent intent;
+    rr::stated_intent intent;
     refdata_domain::counterparty counterparty;
     std::optional<std::vector<refdata_domain::counterparty_identifier>> identifiers;
     std::optional<std::vector<refdata_domain::counterparty_contact_information>> contacts;
@@ -115,7 +99,7 @@ struct counterparty_composite_body final {
 /// Which party a counterparty is to be visible to.
 struct counterparty_visibility_body final {
     std::string partyId;
-    counterparty_screen_intent intent;
+    rr::stated_intent intent;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_visibility_body>) {
@@ -127,7 +111,7 @@ struct counterparty_visibility_body final {
 /// The business centres a counterparty is to hold.
 struct counterparty_centres_body final {
     std::vector<std::string> codes;
-    counterparty_screen_intent intent;
+    rr::stated_intent intent;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_centres_body>) {
@@ -136,13 +120,6 @@ struct counterparty_centres_body final {
                       field{"intent", &counterparty_centres_body::intent}};
 }
 
-/// The intent the service reads, or nothing when the reason or commentary is out of bounds.
-std::optional<utility_domain::change_intent> intent_of(const counterparty_screen_intent& stated) {
-    auto reason = rr::trimmed(stated.reason_code);
-    const auto commentary = stated.commentary.value_or("");
-    if (!rr::has_reason(reason) || rr::characters_of(commentary) > 2000)
-        return std::nullopt;
-    return utility_domain::change_intent{std::move(reason), commentary};
 }
 
 boost::uuids::uuid uuid_of(const std::string& text) {
@@ -155,28 +132,6 @@ std::string counterparty_id_of(const http_request& req) {
     if (!rr::is_uuid(id))
         rr::invalid("A counterparty is named by its identifier.");
     return id;
-}
-
-/**
- * Every row of a list, a page at a time until a page comes back short, as the
- * BFF read it.
- */
-template <typename Request, typename Rows>
-auto read_all(const http_request& req, nats_client& session, Request msg, Rows member) {
-    std::remove_cvref_t<decltype(std::declval<typename Request::response_type>().*member)> all;
-    std::uint32_t offset = 0;
-    for (std::uint32_t page = 0; page < counterparty_screen_most_pages; ++page) {
-        msg.offset = offset;
-        msg.limit = counterparty_screen_page;
-        const auto reply = ores::http::forwarding::forward(req, session, msg);
-        rr::require_ok(reply.result);
-        const auto& got = reply.*member;
-        all.insert(all.end(), got.begin(), got.end());
-        if (got.size() < counterparty_screen_page)
-            return all;
-        offset += static_cast<std::uint32_t>(got.size());
-    }
-    throw std::runtime_error("The service sent more pages than a whole read takes.");
 }
 
 /// The rows of a children read that belong to one counterparty.
@@ -272,11 +227,11 @@ void counterparty_screen_routes::register_routes(
                     messaging::list_counterparties_request found_msg;
                     found_msg.filter = messaging::counterparties_filter{};
                     found_msg.filter->id_one_of = std::vector<boost::uuids::uuid>{uuid_of(id)};
-                    const auto found =
-                        read_all(req,
-                                 session,
-                                 found_msg,
-                                 &messaging::list_counterparties_response::counterparties);
+                    const auto found = ores::http::forwarding::forward_all(
+                        req,
+                        session,
+                        found_msg,
+                        &messaging::list_counterparties_response::counterparties);
                     if (found.empty())
                         rr::refuse(
                             http_status::not_found, "not-found", "No counterparty has that id.");
@@ -284,12 +239,12 @@ void counterparty_screen_routes::register_routes(
                     identifiers_msg.filter = messaging::counterparty_identifiers_filter{};
                     identifiers_msg.filter->counterparty_id_one_of =
                         std::vector<boost::uuids::uuid>{uuid_of(id)};
-                    const auto identifiers =
-                        read_all(req,
-                                 session,
-                                 identifiers_msg,
-                                 &messaging::list_counterparty_identifiers_response::
-                                     counterparty_identifiers);
+                    const auto identifiers = ores::http::forwarding::forward_all(
+                        req,
+                        session,
+                        identifiers_msg,
+                        &messaging::list_counterparty_identifiers_response::
+                            counterparty_identifiers);
                     return http_response::json("{\"counterparty\":" + json::write(found.front()) +
                                                ",\"identifiers\":" + json::write(identifiers) +
                                                "}");
@@ -321,29 +276,33 @@ void counterparty_screen_routes::register_routes(
                     centres_msg.filter->counterparty_id_one_of = named;
                     return http_response::json(children_json(
                         *ids,
-                        read_all(req,
-                                 session,
-                                 identifiers_msg,
-                                 &messaging::list_counterparty_identifiers_response::
-                                     counterparty_identifiers),
-                        read_all(req,
-                                 session,
-                                 contacts_msg,
-                                 &messaging::list_counterparty_contact_informations_response::
-                                     counterparty_contact_informations),
-                        read_all(req,
-                                 session,
-                                 centres_msg,
-                                 &messaging::list_counterparty_business_centres_response::
-                                     counterparty_business_centres)));
+                        ores::http::forwarding::forward_all(
+                            req,
+                            session,
+                            identifiers_msg,
+                            &messaging::list_counterparty_identifiers_response::
+                                counterparty_identifiers),
+                        ores::http::forwarding::forward_all(
+                            req,
+                            session,
+                            contacts_msg,
+                            &messaging::list_counterparty_contact_informations_response::
+                                counterparty_contact_informations),
+                        ores::http::forwarding::forward_all(
+                            req,
+                            session,
+                            centres_msg,
+                            &messaging::list_counterparty_business_centres_response::
+                                counterparty_business_centres)));
                 });
             }));
 
     add(router->put("/api/counterparties/composite")
             .summary("Write a counterparty with its children in one change")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                const auto body = rr::read_body<counterparty_composite_body>(req.body);
-                const auto intent = body ? intent_of(body->intent) : std::nullopt;
+                const auto body =
+                    rr::read_body<counterparty_screen::counterparty_composite_body>(req.body);
+                const auto intent = body ? rr::intent_of(body->intent) : std::nullopt;
                 if (!body || !intent || body->counterparty.id.is_nil())
                     co_return rr::refused(
                         http_status::bad_request,
@@ -375,7 +334,7 @@ void counterparty_screen_routes::register_routes(
                         messaging::list_by_counterparty_id_party_counterparties_request msg;
                         msg.counterparty_id = uuid_of(counterparty_id_of(req));
                         msg.scope = utility_domain::scope::direct;
-                        const auto rows = read_all(
+                        const auto rows = ores::http::forwarding::forward_all(
                             req,
                             session,
                             msg,
@@ -391,8 +350,9 @@ void counterparty_screen_routes::register_routes(
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::put_party_counterparty_request>([&] {
                     const auto id = counterparty_id_of(req);
-                    const auto body = rr::read_body<counterparty_visibility_body>(req.body);
-                    const auto intent = body ? intent_of(body->intent) : std::nullopt;
+                    const auto body =
+                        rr::read_body<counterparty_screen::counterparty_visibility_body>(req.body);
+                    const auto intent = body ? rr::intent_of(body->intent) : std::nullopt;
                     if (!body || !intent || !rr::is_uuid(body->partyId))
                         rr::invalid(
                             "A visibility write names the party by its identifier, and a reason.");
@@ -411,8 +371,9 @@ void counterparty_screen_routes::register_routes(
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::put_many_counterparty_business_centres_request>([&] {
                     const auto id = counterparty_id_of(req);
-                    const auto body = rr::read_body<counterparty_centres_body>(req.body);
-                    const auto intent = body ? intent_of(body->intent) : std::nullopt;
+                    const auto body =
+                        rr::read_body<counterparty_screen::counterparty_centres_body>(req.body);
+                    const auto intent = body ? rr::intent_of(body->intent) : std::nullopt;
                     const std::string sentence =
                         "A business centre write names up to 1000 codes of 1 to 100 characters, "
                         "and a reason.";
@@ -430,12 +391,12 @@ void counterparty_screen_routes::register_routes(
                     held_msg.filter = messaging::counterparty_business_centres_filter{};
                     held_msg.filter->counterparty_id = uuid_of(id);
                     std::vector<std::string> held;
-                    for (const auto& row :
-                         read_all(req,
-                                  session,
-                                  held_msg,
-                                  &messaging::list_counterparty_business_centres_response::
-                                      counterparty_business_centres))
+                    for (const auto& row : ores::http::forwarding::forward_all(
+                             req,
+                             session,
+                             held_msg,
+                             &messaging::list_counterparty_business_centres_response::
+                                 counterparty_business_centres))
                         held.push_back(row.business_centre_code);
 
                     /*

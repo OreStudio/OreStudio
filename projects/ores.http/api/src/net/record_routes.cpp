@@ -88,6 +88,14 @@ bool has_reason(const std::string& reason) {
     return !value.empty() && value.size() <= 200;
 }
 
+std::optional<ores::utility::domain::change_intent> intent_of(const stated_intent& stated) {
+    auto reason = trimmed(stated.reason_code);
+    auto commentary = stated.commentary.value_or("");
+    if (!has_reason(reason) || characters_of(commentary) > 2000)
+        return std::nullopt;
+    return ores::utility::domain::change_intent{std::move(reason), std::move(commentary)};
+}
+
 void require_ok(const ores::utility::domain::result& result) {
     using ores::utility::domain::outcome;
     switch (result.outcome) {

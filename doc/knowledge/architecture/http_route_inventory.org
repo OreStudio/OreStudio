@@ -75,7 +75,7 @@ an API publishes no area, so it is counted under =(none)=.
 | market-data | adapters, connectivity, curves, fixing-series, public-rates, series, subscriptions | 31 | composed view 6, resource 25 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
-| reference-data | conventions, counterparties, curve-configuration, records, refdata, server, tenors | 283 | composed view 1, resource 282 |
+| reference-data | conventions, counterparties, curve-configuration, records, refdata, server, tenors | 286 | composed view 1, resource 285 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 44 | composed view 12, resource 32 |
 | simulation | calibration, market-regime, synthetic | 38 | composed view 3, resource 35 |
 | tenancy | iam, refdata, server | 83 | composed view 2, resource 81 |
@@ -153,14 +153,14 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | market-data | 31 | 0 | 31 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
-| reference-data | 30 | 7 | 23 |
+| reference-data | 30 | 10 | 20 |
 | reporting | 44 | 0 | 44 |
 | simulation | 28 | 0 | 28 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 0 | 24 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 12 | 23 |
-| total | 324 | 96 | 228 |
+| total | 324 | 99 | 225 |
 
 * The pairing
 
@@ -217,11 +217,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | PUT =/api/classifications/:list/rows/:code= | none |
 | PUT =/api/classifications/:list/rows/:code/label= | none |
 | POST =/api/client-log= | POST /api/client-log |
-| GET =/api/conventions/:family= | none |
-| PUT =/api/conventions/:family= | none |
+| GET =/api/conventions/:family= | GET /api/conventions/{family} |
+| PUT =/api/conventions/:family= | PUT /api/conventions/{family} |
 | GET =/api/conventions/:family/documents/:id= | none |
 | PUT =/api/conventions/:family/documents/:id/terms= | none |
-| GET =/api/conventions/families= | none |
+| GET =/api/conventions/families= | GET /api/conventions/families |
 | GET =/api/conventions/pick-lists= | GET /api/conventions/pick-lists |
 | GET =/api/counterparties= | GET /api/v1/reference-data/counterparties |
 | GET =/api/counterparties/:id= | GET /api/counterparties/{id} |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1178 routes: 324 answered by the BFF and 854 by ores.http.
+1181 routes: 324 answered by the BFF and 857 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -527,7 +527,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | get | =/api/accounts/{username}= | ores.http | projects/ores.http/iam/src/routes/iam/account_screen_routes.cpp:214 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | get | =/api/accounts/{username}/picture= | ores.http | projects/ores.http/iam/src/routes/iam/account_screen_routes.cpp:257 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | put | =/api/accounts/{username}/profile= | ores.http | projects/ores.http/iam/src/routes/iam/profile_routes.cpp:157 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
-| resource | access | get | =/api/accounts/{username}/sign-ins= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:233 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
+| resource | access | get | =/api/accounts/{username}/sign-ins= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:232 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | agile | get | =/api/agile/backlog= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:129 | The stories no sprint holds, in the order the file store keeps them. |
 | composed view | agile | get | =/api/agile/board= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:101 | One sprint's work items and the states they sit in, woven into the columns a person reads, from the sprint file and the story, task and capture documents under it. |
 | composed view | agile | get | =/api/agile/charts= | bff | projects/ores.web/packages/bff/src/agile-routes.ts:113 | One sprint's scope and the work remaining per day, computed from the sprint file and the state changes of the documents under it. |
@@ -744,23 +744,26 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | get | =/api/conventions/:family/documents/:id= | bff | projects/ores.web/packages/bff/src/conventions.ts:661 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
 | resource | reference-data | put | =/api/conventions/:family/documents/:id/terms= | bff | projects/ores.web/packages/bff/src/conventions.ts:799 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
 | resource | reference-data | get | =/api/conventions/families= | bff | projects/ores.web/packages/bff/src/conventions.ts:593 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
+| resource | reference-data | get | =/api/conventions/families= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:559 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
 | not an API | (none) | get | =/api/conventions/pick-lists= | bff | projects/ores.web/packages/bff/src/conventions.ts:702 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
 | not an API | (none) | get | =/api/conventions/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:383 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
+| resource | reference-data | get | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:604 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
+| resource | reference-data | put | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:620 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
 | resource | reference-data | get | =/api/counterparties= | bff | projects/ores.web/packages/bff/src/counterparties.ts:201 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | get | =/api/counterparties/:id= | bff | projects/ores.web/packages/bff/src/counterparties.ts:230 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/:id/business-centres= | bff | projects/ores.web/packages/bff/src/counterparties.ts:358 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | get | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:327 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:340 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | get | =/api/counterparties/children= | bff | projects/ores.web/packages/bff/src/counterparties.ts:252 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | get | =/api/counterparties/children= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:290 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | get | =/api/counterparties/children= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:249 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/composite= | bff | projects/ores.web/packages/bff/src/counterparties.ts:316 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | put | =/api/counterparties/composite= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:333 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | put | =/api/counterparties/composite= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:292 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | not an API | (none) | get | =/api/counterparties/pick-lists= | bff | projects/ores.web/packages/bff/src/counterparties.ts:288 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
 | not an API | (none) | get | =/api/counterparties/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:386 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
-| resource | reference-data | get | =/api/counterparties/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:258 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | put | =/api/counterparties/{id}/business-centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:400 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | get | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:361 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | put | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:380 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | get | =/api/counterparties/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:217 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | put | =/api/counterparties/{id}/business-centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:359 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | get | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:320 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | put | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:339 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | resource | market-data | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:312 | Computes a curve's points from a bootstrap configuration and stores nothing, a derived read of the curve the configuration describes. |
 | resource | market-data | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:378 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
 | resource | market-data | post | =/api/curves/fx-forward-ladder= | bff | projects/ores.web/packages/bff/src/curves.ts:410 | One currency pair's forward ladder at one as-of, one service read that stores nothing and names the missing input when it refuses. |
@@ -800,9 +803,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | get | =/api/lei-entities= | bff | projects/ores.web/packages/bff/src/server.ts:2538 | The root legal entities a tenant can be started from, matched and sized by the read because the deployment holds tens of thousands. |
 | resource | tenancy | get | =/api/lei-entities= | ores.http | projects/ores.http/iam/src/routes/iam/tenancy_catalogue_routes.cpp:156 | A tenancy screen's catalogue or page at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | auth | get | =/api/login-info= | bff | projects/ores.web/packages/bff/src/server.ts:1773 | The tenant's login records, one page or one account's record, the reads the audit screen uses to explain a locked account. |
-| resource | auth | get | =/api/login-info= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:152 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
+| resource | auth | get | =/api/login-info= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:151 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | auth | get | =/api/login-info/:accountId= | bff | projects/ores.web/packages/bff/src/server.ts:1793 | The tenant's login records, one page or one account's record, the reads the audit screen uses to explain a locked account. |
-| resource | auth | get | =/api/login-info/{accountId}= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:171 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
+| resource | auth | get | =/api/login-info/{accountId}= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:170 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | market-data | get | =/api/marketdata/adapters= | bff | projects/ores.web/packages/bff/src/adapters.ts:95 | Every adapter the service tracks, with what it serves, what it was asked to serve and the counts of the last demand it answered. |
 | composed view | market-data | get | =/api/marketdata/catalogue= | bff | projects/ores.web/packages/bff/src/subscriptions.ts:179 | The providers and the feeds that serve them in one answer, two collection reads, so a subscription or a route can name a feed by id. |
 | composed view | market-data | get | =/api/marketdata/connectivity= | bff | projects/ores.web/packages/bff/src/connectivity.ts:167 | The publishers, suppliers, adapters, sessions, feeds, scopes and routes the Connectivity screen draws, seven collection reads in one answer. |
@@ -842,7 +845,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | workflow | post | =/api/me/requests= | bff | projects/ores.web/packages/bff/src/inbox.ts:591 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
 | resource | workflow | delete | =/api/me/requests/:id= | bff | projects/ores.web/packages/bff/src/inbox.ts:607 | The signed-in person's own requests, raised, read and taken back, the withdrawal carrying the version the person saw. |
 | resource | auth | get | =/api/me/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1849 | The signed-in person's own open sessions, a self read the server scopes to the caller. |
-| resource | access | get | =/api/me/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:222 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
+| resource | access | get | =/api/me/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:221 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | composed view | access | get | =/api/me/ways-to-hold= | bff | projects/ores.web/packages/bff/src/server.ts:1223 | The roles the person could ask for that would give them a permission, weaving the role catalogue and what each role grants against the grants the person already has. |
 | resource | access | get | =/api/me/ways-to-hold= | ores.http | projects/ores.http/iam/src/routes/iam/role_write_routes.cpp:447 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | composed view | operations | get | =/api/operations/bus= | bff | projects/ores.web/packages/bff/src/operations.ts:593 | The NATS server samples over a window and one row per stream, a second read for each named stream, because no operation lists the streams. |
@@ -886,7 +889,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | qa | post | =/api/qa/scenarios/:id/steps/:step/images= | bff | projects/ores.web/packages/bff/src/qa.ts:193 | An image a tester attaches to one step of a scenario, written into the scenario's own store and read back with it. |
 | composed view | operations | get | =/api/queue/authorisations= | bff | projects/ores.web/packages/bff/src/inbox.ts:648 | The authorisation requests this person may decide with the deal each one names as it looks now, the open requests and the answered tail in one answer. |
 | not an API | (none) | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:499 | A catalogue of the resources a screen may read, each with its key fields, sortable fields, search flag, version flag and the write and delete permission names, which is a table description rather than a resource. |
-| not an API | (none) | get | =/api/refdata= | ores.http | projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp:208 | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
+| not an API | (none) | get | =/api/refdata= | ores.http | projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp:210 | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
 | not an API | (none) | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:679 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:525 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | put | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:649 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
@@ -1100,10 +1103,10 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | transport capability | auth | post | =/api/session/switch-party= | bff | projects/ores.web/packages/bff/src/server.ts:1078 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
 | resource | auth | post | =/api/session/switch-party= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:384 | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
 | resource | auth | get | =/api/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1819 | The tenant's sessions, one page or the open ones, and the write that ends one of them for an administrator. |
-| resource | auth | get | =/api/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:196 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
+| resource | auth | get | =/api/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:195 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | auth | post | =/api/sessions/:sessionId/end= | bff | projects/ores.web/packages/bff/src/audit.ts:183 | The tenant's sessions, one page or the open ones, and the write that ends one of them for an administrator. |
 | resource | auth | get | =/api/sessions/active= | bff | projects/ores.web/packages/bff/src/server.ts:1838 | The tenant's sessions, one page or the open ones, and the write that ends one of them for an administrator. |
-| resource | auth | get | =/api/sessions/active= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:211 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
+| resource | auth | get | =/api/sessions/active= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:210 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | auth | post | =/api/sessions/{sessionId}/end= | ores.http | projects/ores.http/iam/src/routes/iam/audit_routes.cpp:231 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | auth | post | =/api/signup= | bff | projects/ores.web/packages/bff/src/server.ts:860 | Registers one account against the tenant the address resolves to and answers its state rather than a session. |
 | resource | auth | post | =/api/signup= | ores.http | projects/ores.http/iam/src/routes/iam/account_door_routes.cpp:91 | A registration, the rules a password must keep, and the signed-in account's own password change, at the address and in the shape the BFF answered; a registration shares the sign-in budget. |

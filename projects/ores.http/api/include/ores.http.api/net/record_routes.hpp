@@ -138,6 +138,28 @@ ORES_HTTP_API_EXPORT bool is_uuid(std::string_view text);
 ORES_HTTP_API_EXPORT bool has_reason(const std::string& reason);
 
 /**
+ * @brief Why a screen's write is made, as the screen states it: the commentary
+ * may be left out.
+ */
+struct stated_intent final {
+    std::string reason_code;
+    std::optional<std::string> commentary;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stated_intent>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"reason_code", &stated_intent::reason_code},
+                      field{"commentary", &stated_intent::commentary}};
+}
+
+/**
+ * @brief The intent a service reads, with the reason trimmed, or nothing when
+ * the reason is not 1 to 200 characters or the commentary is over 2000.
+ */
+ORES_HTTP_API_EXPORT std::optional<ores::utility::domain::change_intent>
+intent_of(const stated_intent& stated);
+
+/**
  * @brief Refuse with the status a refused outcome names.
  *
  * A conflict the service states no words for says what it means.

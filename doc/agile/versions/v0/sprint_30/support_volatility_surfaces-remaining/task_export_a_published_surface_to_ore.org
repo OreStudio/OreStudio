@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/export-a-published-surface-to-ore
-#+pr:
+#+pr: 4577
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -80,7 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4577][#4577]] | [marketdata] Export a published surface as ORE option quotes |
 
 * Review
 

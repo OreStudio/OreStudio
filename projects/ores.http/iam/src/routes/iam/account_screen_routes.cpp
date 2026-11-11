@@ -82,7 +82,7 @@ http_response refused(http_status status, std::string code, std::string message)
 /// Run one forward, answering a refusal with its own status and any other
 /// failure as the service not answering.
 template <typename Request>
-http_response guarded(const Request&, const std::function<http_response()>& work) {
+http_response guarded(const std::function<http_response()>& work) {
     try {
         return work();
     } catch (const rr::refusal& r) {
@@ -90,6 +90,12 @@ http_response guarded(const Request&, const std::function<http_response()>& work
     } catch (const std::exception& e) {
         return ores::http::forwarding::unanswered(Request::nats_subject, e);
     }
+}
+
+/// Whether the path names the caller's own account, which the self read answers.
+bool is_own_account(const http_request& req, const std::string& username) {
+    const auto& claims = req.authenticated_user;
+    return claims && claims->username && *claims->username == username;
 }
 
 }
@@ -149,7 +155,7 @@ void account_screen_routes::register_routes(
                                "invalid-request",
                                "A page of people names an offset, a limit of 1 to 1000, a search, "
                                "and an order by username or name.");
-            return guarded(*page, [&] {
+            return guarded<messaging::list_accounts_request>([&] {
                 return http_response::json(
                     page_json(ores::http::forwarding::forward(req, session, *page)));
             });
@@ -162,12 +168,10 @@ void account_screen_routes::register_routes(
             if (username.empty())
                 return refused(
                     http_status::bad_request, "invalid-request", "A username is required.");
-            const auto own = req.authenticated_user && req.authenticated_user->username &&
-                             *req.authenticated_user->username == username;
-            if (own) {
-                const messaging::get_my_account_request mine;
-                return guarded(mine, [&] {
-                    const auto reply = ores::http::forwarding::forward(req, session, mine);
+            if (is_own_account(req, username)) {
+                return guarded<messaging::get_my_account_request>([&] {
+                    const auto reply = ores::http::forwarding::forward(
+                        req, session, messaging::get_my_account_request{});
                     if (reply.result.outcome != ores::utility::domain::outcome::ok)
                         return refused(
                             http_status::conflict, "invalid-request", reply.result.message);
@@ -176,7 +180,7 @@ void account_screen_routes::register_routes(
                 });
             }
             const messaging::get_account_request other{messaging::account_key{username}};
-            return guarded(other, [&] {
+            return guarded<messaging::get_account_request>([&] {
                 const auto reply = ores::http::forwarding::forward(req, session, other);
                 return http_response::json("{\"account\":" + account_view::json_of(reply.account) +
                                            "}");
@@ -192,7 +196,7 @@ void account_screen_routes::register_routes(
                                "invalid-request",
                                "A partyId is required. Send an empty string to clear the default.");
             const messaging::set_my_default_party_request msg{body->partyId};
-            return guarded(msg, [&] {
+            return guarded<messaging::set_my_default_party_request>([&] {
                 const auto reply = ores::http::forwarding::forward(req, session, msg);
                 if (!reply.success)
                     return refused(http_status::conflict, "invalid-request", reply.message);

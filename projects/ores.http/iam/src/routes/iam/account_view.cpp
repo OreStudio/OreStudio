@@ -32,6 +32,9 @@ namespace {
 
 constexpr std::array<std::string_view, 4> account_types{"user", "service", "algorithm", "llm"};
 
+/// A reference to another record, or null when there is none. The service
+/// states no reference as the nil identifier as well as by absence, and the
+/// screens read both as null, as the BFF's mapAccount did.
 std::string reference(const std::optional<boost::uuids::uuid>& id) {
     if (!id || id->is_nil())
         return "null";

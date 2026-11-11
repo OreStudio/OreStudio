@@ -4,7 +4,7 @@
 #+title: ores.http.nats
 #+description: The HTTP gateway's forwarding step: one HTTP request sent to a service over NATS as the caller, and each failure stated as an HTTP refusal.
 #+type: ores.codegen.component
-#+component_kind: adapter
+#+component_kind: core
 #+level: cross
 #+filetags: :http:rest:nats:component:
 #+created: 2026-11-11

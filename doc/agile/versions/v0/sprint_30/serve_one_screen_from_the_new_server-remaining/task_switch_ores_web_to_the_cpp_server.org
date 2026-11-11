@@ -38,6 +38,7 @@ Move the one switch that sends the requests of ores.web to the C++ server, and t
 - The inventory shows that the C++ server answers every route ores.web calls.
 - ores.web passes its end to end test against the C++ server.
 - A rollback to the BFF is one switch, and it is tested.
+- The ores.http.server service names the site configuration the BFF reads, through =--site-config= or =ORES_WEB_SITE_CONFIG=, so =/api/site= and =/api/site/deployment= answer.
 - The local gate is green.
 
 * Plan

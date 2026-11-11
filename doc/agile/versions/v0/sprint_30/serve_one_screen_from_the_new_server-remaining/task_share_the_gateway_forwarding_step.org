@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/share-the-gateway-forwarding-step
-#+pr:
+#+pr: 4571
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4571][#4571]] | [http] Share the gateway's forwarding step in ores.http.nats |
 
 * Review
 

@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "builders/credit_builders.cpp"
+    "builders/rate_builders.cpp"
     "builders/vanilla_swap_builder.cpp"
     "domain/activity_category_codec.cpp"
     "domain/activity_category_json_io.cpp"
@@ -813,6 +814,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/builder_registry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/cadence.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/credit_builders.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/option_position.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/rate_builders.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/required.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/vanilla_swap_builder.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/activity_category.hpp"
@@ -1339,7 +1342,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/rate_instrument_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/rate_instrument_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/rate_instrument_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/rate_instruments.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/rates_fact_variant.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/return_type.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/return_type_codec.hpp"

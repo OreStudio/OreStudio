@@ -1,6 +1,5 @@
 Ascot
 Autocallable_01
-BalanceGuaranteedSwap
 Bond
 BondFuture
 BondFutureOption
@@ -10,8 +9,6 @@ BondRepo
 BondTRS
 CBO
 CallableBond
-CallableSwap
-CapFloor
 CashPosition
 CommodityAccumulator
 CommodityAsianOption
@@ -41,7 +38,6 @@ CompositeTrade
 ContractForDifference
 ConvertibleBond
 CreditDefaultSwapOption
-CrossCurrencySwap
 DoubleDigitalOption
 EquityAccumulator
 EquityAsianOption
@@ -73,9 +69,7 @@ EquityVarianceSwap
 EquityWindowBarrierOption
 EquityWorstOfBasketSwap
 EuropeanOptionBarrier
-FlexiSwap
 ForwardBond
-ForwardRateAgreement
 ForwardVolatilityAgreement
 FxAccumulator
 FxAsianOption
@@ -103,13 +97,10 @@ FxTouchOption
 FxVarianceSwap
 FxWindowBarrierOption
 FxWorstOfBasketSwap
-InflationSwap
 IntradayPowerForward
-KnockOutSwap
 PerformanceOption_01
 RateDigitalOption
 ScriptedTrade
-Swaption
 SwaptionStraddle
 SyntheticCDO
 TotalReturnSwap

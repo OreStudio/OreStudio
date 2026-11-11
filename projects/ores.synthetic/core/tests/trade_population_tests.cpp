@@ -128,6 +128,7 @@ domain::trade_generation_scope bond_scope() {
     scope.as_of_date = std::chrono::year{2026} / 1 / 2;
     scope.seed = 7;
     scope.trades_per_book = scene_trades_per_book;
+    scope.conventions = ores::synthetic::tests::ore_example_conventions();
     /*
      * A convertible bond states the share it may convert into, so every bond
      * scope needs the equity catalogue the writer loads for it.
@@ -701,7 +702,7 @@ TEST_CASE("the_envelope_of_a_bond_plan_is_the_one_that_was_agreed", "[trade_popu
     CHECK(envelope_hash(render_envelope(plan_of(bond_scope()))) == 15911127303722676035ULL);
 }
 
-TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_population]") {
+TEST_CASE("a_rate_population_states_its_legs_in_the_book_currency", "[trade_population]") {
     const auto scope = rate_scope();
     const auto plan = plan_of(scope);
 
@@ -711,10 +712,13 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_populatio
          * The family states its rows and no bag: the legs, the amounts, the
          * rates and the strikes are what the writer persists.
          */
+        // A cap or a floor pays on the floating leg alone; every other type
+        // states a fixed leg against it.
+        const auto legs = slot.trade_type_code == "CapFloor" ? 1u : 2u;
         REQUIRE(slot.instruments.rate_instruments.size() == 1u);
-        REQUIRE(slot.instruments.swap_legs.size() == 2u);
-        REQUIRE(slot.instruments.swap_leg_amounts.size() == 2u);
-        REQUIRE(slot.instruments.swap_leg_rates.size() == 2u);
+        REQUIRE(slot.instruments.swap_legs.size() == legs);
+        REQUIRE(slot.instruments.swap_leg_amounts.size() == legs);
+        REQUIRE(slot.instruments.swap_leg_rates.size() == legs);
 
         const auto& row = slot.instruments.rate_instruments.front();
         REQUIRE(row.start_date.has_value());
@@ -724,7 +728,7 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_populatio
         const auto& floating = slot.instruments.swap_legs.back();
         CHECK(floating.leg_type_code == "Floating");
         CHECK(floating.payer.has_value());
-        CHECK_FALSE(*floating.payer);
+        CHECK(floating.floating_index_code.starts_with("oresmd://ir/"));
         if (slot.trade_type_code == "CrossCurrencySwap") {
             // Two legs of one currency are not a cross currency swap, so the
             // floating side states a currency the book does not.
@@ -734,8 +738,7 @@ TEST_CASE("a_rate_population_states_two_legs_of_one_currency", "[trade_populatio
             CHECK(floating.currency == scope.currency_code);
         }
 
-        // Only the cap floor states a strike; the swaption constructor it is
-        // drawn for states its own terms and no strike.
+        // Only the cap floor states a strike; a swaption's strike is its fixed rate.
         const bool struck = slot.trade_type_code == "CapFloor";
         CHECK(slot.instruments.instrument_strikes.size() == (struck ? 1u : 0u));
 
@@ -774,9 +777,10 @@ TEST_CASE("a_rate_config_that_states_one_slot_per_routed_code_draws_every_code",
     CHECK(codes_of(plan).contains("KnockOutSwap"));
 }
 
-TEST_CASE("a_rate_population_without_an_index_catalogue_is_refused", "[trade_population]") {
+TEST_CASE("a_rate_population_without_a_swap_convention_in_its_currency_is_refused",
+          "[trade_population]") {
     auto scope = rate_scope();
-    scope.floating_index_codes.clear();
+    scope.conventions.swaps.clear();
 
     CHECK_THROWS_AS(plan_of(scope), trade_population_error);
 }
@@ -1078,13 +1082,15 @@ TEST_CASE("an_inflation_population_states_the_index_the_tenant_holds", "[trade_p
 
         REQUIRE(slot.instruments.inflation_swap_instruments.size() == 1u);
         const auto& fact = slot.instruments.inflation_swap_instruments.front();
-        CHECK_FALSE(fact.inflation_index_code.empty());
-        CHECK(fact.lag_convention == "3M");
+        // The index is the address of one the tenant's own curves name, and
+        // its lag is the one the index's convention states.
+        CHECK(fact.inflation_index_code.starts_with("oresmd://inflation/"));
+        CHECK_FALSE(fact.lag_convention.empty());
         REQUIRE(fact.base_cpi.has_value());
         CHECK(*fact.base_cpi > 0.0);
-        // The index a trade states is one the tenant's own curves resolve.
-        CHECK(std::ranges::find(scope.inflation_index_codes, fact.inflation_index_code) !=
-              scope.inflation_index_codes.end());
+        CHECK(std::ranges::any_of(scope.inflation_index_codes, [&](const auto& code) {
+            return fact.inflation_index_code.find("/" + code + "?") != std::string::npos;
+        }));
         indices.insert(fact.inflation_index_code);
 
         /*
@@ -1095,12 +1101,7 @@ TEST_CASE("an_inflation_population_states_the_index_the_tenant_holds", "[trade_p
         const auto cpi = std::ranges::find_if(
             slot.instruments.swap_legs, [](const auto& leg) { return leg.leg_type_code == "CPI"; });
         REQUIRE(cpi != slot.instruments.swap_legs.end());
-        /*
-         * The leg states the index family rather than the index: the leg's own
-         * index column references the benchmark catalogue, and an inflation
-         * index is not a member of it.
-         */
-        CHECK(cpi->floating_index_code.empty());
+        CHECK(cpi->floating_index_code == fact.inflation_index_code);
         CHECK_FALSE(cpi->currency.empty());
     }
 

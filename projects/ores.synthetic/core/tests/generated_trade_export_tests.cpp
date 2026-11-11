@@ -428,7 +428,6 @@ void check_known(const std::set<std::string>& found, const std::set<std::string>
 /// The generated trade types the writer refuses. Asserted exactly.
 const std::set<std::string>& known_refusals() {
     static const std::set<std::string> known = {
-        "BalanceGuaranteedSwap",
         "EquityOptionPosition",
         /*
          * The planner states these products' terms as rows of their own, which

@@ -20,14 +20,15 @@
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
 #include "ores.trading.api/domain/equity_instruments.hpp"
 #include "ores.trading.api/domain/fx_instruments.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
-#include "ores.trading.api/domain/rate_instruments.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -1173,175 +1174,169 @@ constexpr std::string_view rate_types[] = {"Swap",
                                            "KnockOutSwap"};
 constexpr std::size_t rate_type_count = sizeof(rate_types) / sizeof(rate_types[0]);
 
-/*
- * The day counts a fixed leg cycles through. A leg that states a code the
- * store does not hold is refused, so these are reference data codes and not a
- * vocabulary of the generator's own.
- */
-constexpr std::string_view fixed_day_counts[] = {"30/360", "ActAct(ISDA)", "A360"};
-constexpr std::size_t fixed_day_count_count =
-    sizeof(fixed_day_counts) / sizeof(fixed_day_counts[0]);
-
 }
-
 
 namespace {
 
 /*
- * The index a slot resets on. A catalogue code carries its currency as a
- * prefix, such as =GBP-SONIA=, so a population denominated in one currency
- * picks from the indices of that currency rather than from every currency the
- * tenant holds. A set with no index of the scope's currency falls back to the
- * whole catalogue, because a leg in a currency with no index of its own is
- * still better stated than refused.
+ * The indices a rate trade draws: those the tenant's swap conventions name
+ * with a tenor, so a builder can read each leg's terms and a forward rate
+ * agreement or a cap resets on an Ibor index. The domestic ones are in the
+ * scope's currency, the foreign ones in any other.
  */
-/*
- * The index a cross currency swap resets on: one of a currency other than the
- * book's, because two legs in one currency are not a cross currency swap. A
- * catalogue with no such index falls back to the whole set, and the leg then
- * states the book's currency rather than pretending to be cross currency.
- */
-const std::string* foreign_index_for(const domain::trade_generation_scope& scope,
-                                     std::uint32_t slot) {
-    const auto own = std::string(scope.currency_code) + "-";
-    std::vector<const std::string*> foreign;
-    for (const auto& code : scope.floating_index_codes) {
-        if (!code.starts_with(own))
-            foreign.push_back(&code);
+std::vector<ores::marketdata::datum::market_reference>
+swap_indices_of(const domain::trade_generation_scope& scope, bool domestic) {
+    namespace md = ores::marketdata::datum;
+    std::vector<md::market_reference> out;
+    for (const auto& swap : scope.conventions.swaps) {
+        if (!swap.oresmd_uri)
+            continue;
+        auto index = md::market_reference::parse(*swap.oresmd_uri);
+        if (!index || index->index() == nullptr || index->index()->get("tenor") == nullptr)
+            continue;
+        if ((index->index()->subject() == scope.currency_code) == domestic)
+            out.push_back(std::move(*index));
     }
-    if (foreign.empty())
-        return nullptr;
-    return foreign[slot % foreign.size()];
+    return out;
 }
 
-const std::string& index_for(const domain::trade_generation_scope& scope, std::uint32_t slot) {
-    const auto own = std::string(scope.currency_code) + "-";
-    std::vector<const std::string*> matching;
-    for (const auto& code : scope.floating_index_codes) {
-        if (code.starts_with(own))
-            matching.push_back(&code);
-    }
-    if (!matching.empty())
-        return *matching[slot % matching.size()];
-    return scope.floating_index_codes[slot % scope.floating_index_codes.size()];
+ores::trading::domain::instrument_batch
+swap_batch_of(std::expected<ores::trading::domain::swap_instrument_data,
+                            ores::trading::builders::build_error> built,
+              const std::string& trade_type_code,
+              std::string description) {
+    if (!built)
+        throw trade_population_error("The " + trade_type_code + " builder refuses the drawn " +
+                                     built.error().term + ": " + built.error().message);
+    built->header.description = std::move(description);
+    ores::trading::domain::instrument_batch batch;
+    ores::trading::domain::append_instrument(batch,
+                                             ores::trading::domain::trade_instrument{*built});
+    return batch;
 }
 
 /*
- * The rate family states its own rows. The mapping from what the planner draws
- * to each product's constructor lives here, beside the drawing, and not in the
- * writer: the plan carries the rows and the writer persists them.
+ * The rate family builds each trade through its builder, from what the planner
+ * draws. Each type wraps a vanilla swap on a domestic index; the type decides
+ * what it adds and when its dates fall.
  */
 ores::trading::domain::instrument_batch
-construct_rate_batch(const domain::rate_terms& drawn,
-                     const std::string& trade_type_code,
-                     std::uint32_t slot,
-                     const std::string& internal_identifier) {
-    namespace tdom = ores::trading::domain;
-
+build_rate_trade(const domain::trade_generation_scope& scope,
+                 const ores::marketdata::conventions::convention_lookup& conventions,
+                 const domain::trade_population_slot& entry,
+                 std::uint32_t years) {
+    namespace tb = ores::trading::builders;
+    using ores::utility::decimal::decimal;
     const auto money = [](double value) {
-        return tdom::decimal::from_double(value).value();
+        return decimal::from_double(value).value();
     };
 
-    tdom::rate_common_terms common;
-    common.start_date = drawn.start_date;
-    common.maturity_date = drawn.maturity_date;
-    common.fixed.leg_type_code = "Fixed";
-    common.fixed.day_count_fraction_code = drawn.fixed_day_count_fraction_code;
-    common.fixed.business_day_convention_code = drawn.fixed_business_day_convention_code;
-    common.fixed.payment_frequency_code = drawn.fixed_payment_frequency_code;
-    common.fixed.currency = drawn.currency;
-    common.fixed.rate_role = "fixed";
-    common.fixed.value = money(drawn.fixed_rate);
-    common.fixed.notional = money(drawn.notional);
-    common.fixed.payer = true;
-    common.floating.leg_type_code = "Floating";
-    common.floating.day_count_fraction_code = drawn.floating_day_count_fraction_code;
-    common.floating.business_day_convention_code = drawn.floating_business_day_convention_code;
-    common.floating.payment_frequency_code = drawn.floating_payment_frequency_code;
-    common.floating.floating_index_code = drawn.floating_index_code;
-    /*
-     * A leg without a currency of its own is in the trade's, which is what a
-     * single-currency rate product states.
-     */
-    common.floating.currency =
-        drawn.floating_currency.empty() ? drawn.currency : drawn.floating_currency;
-    common.floating.rate_role = "spread";
-    common.floating.value = money(drawn.spread);
-    common.floating.notional = money(drawn.notional);
-    common.floating.payer = false;
+    const auto domestic = swap_indices_of(scope, true);
+    if (domestic.empty())
+        throw trade_population_error("No swap convention of the tenant names an index in " +
+                                     scope.currency_code +
+                                     ", so no interest rate trade can state its legs.");
 
+    const auto slot = entry.slot;
+    const auto& type = entry.trade_type_code;
+    const auto name = slot_name(scope, slot);
+    const auto position =
+        slot % 2 == 0 ? tb::option_position::long_option : tb::option_position::short_option;
     /*
-     * The direction alternates with the slot so a population states both sides
-     * of the book rather than every trade the same way round.
+     * A rate is a decimal in the store, not a percentage: one per cent to six
+     * per cent, quantised to a ten-thousandth so a decimal column holds it
+     * exactly.
      */
-    const auto direction = std::string(slot % 2 == 0 ? "Long" : "Short");
-    const auto& type = trade_type_code;
-    auto product = [&]() -> tdom::rate_product {
-        if (type == "Swap")
-            return tdom::construct_rate_swap(tdom::rate_swap_terms{common, 2});
-        if (type == "CrossCurrencySwap")
-            return tdom::construct_rate_cross_currency_swap(tdom::rate_swap_terms{common, 2});
-        if (type == "ForwardRateAgreement")
-            return tdom::construct_rate_fra(tdom::rate_fra_terms{common, direction});
-        if (type == "CapFloor")
-            return tdom::construct_rate_cap_floor(
-                tdom::rate_cap_floor_terms{common, money(drawn.strike.value_or(0.0))});
-        if (type == "Swaption") {
-            tdom::rate_swaption_terms terms{common,
-                                            drawn.expiry_date.value_or(drawn.start_date),
-                                            direction,
-                                            "European",
-                                            "Cash"};
-            return tdom::construct_rate_swaption(terms);
-        }
-        if (type == "CallableSwap")
-            return tdom::construct_rate_callable_swap(tdom::rate_callable_swap_terms{common});
-        if (type == "KnockOutSwap")
-            return tdom::construct_rate_knock_out_swap(
-                tdom::rate_knock_out_swap_terms{common, drawn.start_date, "UpAndOut"});
-        if (type == "FlexiSwap")
-            return tdom::construct_rate_flexi_swap(tdom::rate_flexi_swap_terms{common, direction});
-        if (type == "BalanceGuaranteedSwap")
-            return tdom::construct_rate_balance_guaranteed_swap(
-                tdom::rate_balance_guaranteed_swap_terms{common, internal_identifier});
-        throw trade_population_error("The rate trade type " + type +
-                                     " states no product this planner knows.");
-    }();
+    const auto fixed_rate = money(std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0);
+    const auto swap_from = [&](year_month_day start, year_month_day maturity) {
+        return tb::vanilla_swap_terms{.notional = money(entry.notional),
+                                      .currency = scope.currency_code,
+                                      .start = start,
+                                      .maturity = maturity,
+                                      .fixed_rate = fixed_rate,
+                                      .index = domestic[slot % domestic.size()],
+                                      .fixed_side =
+                                          slot % 2 == 0 ? tb::side::pay : tb::side::receive};
+    };
+    const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
+    const auto swap = swap_from(start, add_years(start, static_cast<int>(years)));
+    const auto built = [&](auto result) {
+        return swap_batch_of(std::move(result), type, "Generated interest rate trade.");
+    };
 
-    tdom::instrument_batch batch;
-    batch.rate_instruments.push_back(product.row);
-    for (const auto& leg : product.legs)
-        batch.swap_legs.push_back(leg);
-    for (const auto& amount : product.amounts)
-        batch.swap_leg_amounts.push_back(amount);
-    for (const auto& leg_rate : product.rates)
-        batch.swap_leg_rates.push_back(leg_rate);
-    for (const auto& strike : product.strikes)
-        batch.instrument_strikes.push_back(strike);
-    std::visit(
-        [&batch](const auto& fact) {
-            using fact_type = std::decay_t<decltype(fact)>;
-            if constexpr (std::is_same_v<fact_type, tdom::vanilla_swap_instrument>)
-                batch.vanilla_swap_instruments.push_back(fact);
-            else if constexpr (std::is_same_v<fact_type, tdom::fra_instrument>)
-                batch.fra_instruments.push_back(fact);
-            else if constexpr (std::is_same_v<fact_type, tdom::cap_floor_instrument>)
-                batch.cap_floor_instruments.push_back(fact);
-            else if constexpr (std::is_same_v<fact_type, tdom::swaption_instrument>)
-                batch.swaption_instruments.push_back(fact);
-            else if constexpr (std::is_same_v<fact_type, tdom::callable_swap_instrument>)
-                batch.callable_swap_instruments.push_back(fact);
-            else if constexpr (std::is_same_v<fact_type, tdom::knock_out_swap_instrument>)
-                batch.knock_out_swap_instruments.push_back(fact);
-            else if constexpr (std::is_same_v<fact_type, tdom::flexi_swap_instrument>)
-                batch.flexi_swap_instruments.push_back(fact);
-            else if constexpr (std::is_same_v<fact_type, tdom::inflation_swap_instrument>)
-                batch.inflation_swap_instruments.push_back(fact);
-            else
-                batch.balance_guaranteed_swap_instruments.push_back(fact);
-        },
-        product.fact);
-    return batch;
+    if (type == "Swap")
+        return built(tb::vanilla_swap_builder(conventions, swap).build());
+    if (type == "CrossCurrencySwap") {
+        const auto foreign = swap_indices_of(scope, false);
+        if (foreign.empty())
+            throw trade_population_error("No swap convention of the tenant names an index "
+                                         "outside " +
+                                         scope.currency_code +
+                                         ", so no cross currency swap can state its foreign leg.");
+        const auto& index = foreign[slot % foreign.size()];
+        return built(tb::cross_currency_swap_builder(conventions,
+                                                     {.domestic = swap,
+                                                      .foreign_notional = money(entry.notional),
+                                                      .foreign_currency = index.index()->subject(),
+                                                      .foreign_index = index})
+                         .build());
+    }
+    if (type == "ForwardRateAgreement") {
+        /*
+         * A forward rate agreement is a short contract that settles in the
+         * future: it starts in three months and runs for six.
+         */
+        const auto from = add_months(scope.as_of_date, 3);
+        return built(
+            tb::forward_rate_agreement_builder(
+                conventions, {.period = swap_from(from, add_months(from, 6)), .position = position})
+                .build());
+    }
+    if (type == "CapFloor")
+        return built(tb::cap_floor_builder(conventions,
+                                           {.swap = swap,
+                                            .kind = slot % 2 == 0 ? tb::cap_floor_kind::cap :
+                                                                    tb::cap_floor_kind::floor,
+                                            .position = position})
+                         .build());
+    if (type == "Swaption") {
+        /*
+         * An option is exercised after the population is written, and the
+         * swap it opens starts two days after its expiry.
+         */
+        const auto expiry = add_years(scope.as_of_date, 1);
+        const auto swap_start = year_month_day{sys_days{expiry} + days{2}};
+        return built(
+            tb::swaption_builder(
+                conventions,
+                {.swap = swap_from(swap_start, add_years(swap_start, static_cast<int>(years))),
+                 .expiry = expiry,
+                 .position = position,
+                 .settles = tb::settlement::cash})
+                .build());
+    }
+    if (type == "CallableSwap")
+        return built(tb::callable_swap_builder(
+                         conventions,
+                         {.swap = swap, .first_call = add_months(start, 6), .position = position})
+                         .build());
+    if (type == "KnockOutSwap")
+        return built(tb::knock_out_swap_builder(conventions,
+                                                {.swap = swap,
+                                                 .barrier_type = std::string("UpAndOut"),
+                                                 .barrier_level = money(0.08),
+                                                 .barrier_start = start})
+                         .build());
+    if (type == "FlexiSwap")
+        return built(
+            tb::flexi_swap_builder(conventions, {.swap = swap, .position = position}).build());
+    if (type == "BalanceGuaranteedSwap")
+        return built(
+            tb::balance_guaranteed_swap_builder(
+                conventions, {.swap = swap, .reference_security = entry.internal_identifier})
+                .build());
+    throw trade_population_error("The rate trade type " + type +
+                                 " states no builder this planner knows.");
 }
 
 }
@@ -1358,11 +1353,6 @@ domain::trade_population_plan
 rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     validate_scope(scope);
 
-    if (scope.floating_index_codes.empty())
-        throw trade_population_error(
-            "The tenant holds no benchmark rate, so no floating leg can name an index. Publish "
-            "the benchmark rate catalogue first.");
-
     const auto min_years = tenor_years_of(scope.min_tenor_code);
     const auto max_years = tenor_years_of(scope.max_tenor_code);
 
@@ -1371,6 +1361,7 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const ores::marketdata::conventions::convention_lookup conventions(scope.conventions);
     const auto types = booked_types(rate_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
@@ -1380,66 +1371,17 @@ rate_trade_planner::plan(const domain::trade_generation_scope& scope) const {
          * to reach a type always states it and the coverage claim is testable.
          */
         const auto& type = *types[slot % types.size()];
-        const auto* foreign =
-            (type == "CrossCurrencySwap") ? foreign_index_for(scope, slot) : nullptr;
-        const auto& index = foreign != nullptr ? *foreign : index_for(scope, slot);
 
         const auto span = max_years - min_years + 1;
         const auto drawn =
             min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
-        auto tenor_years = std::clamp(drawn, min_years, max_years);
-
-        /*
-         * A forward rate agreement is a short-dated contract: a ten year one is
-         * not the product, so the band is capped here rather than left to a
-         * config that states one band for the whole family.
-         */
-        if (type == "ForwardRateAgreement")
-            tenor_years = std::min<std::uint32_t>(tenor_years, 1U);
-
-        domain::rate_terms terms;
-        terms.currency = scope.currency_code;
-        terms.start_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
-        terms.maturity_date = add_years(terms.start_date, static_cast<int>(tenor_years));
-        terms.notional =
-            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
-        /*
-         * A rate is a decimal in the store, not a percentage: one per cent to
-         * six per cent, quantised to a ten-thousandth so a decimal column holds
-         * it exactly.
-         */
-        terms.fixed_rate = std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0;
-        terms.fixed_day_count_fraction_code =
-            std::string(fixed_day_counts[slot % fixed_day_count_count]);
-        terms.fixed_business_day_convention_code = "ModifiedFollowing";
-        terms.fixed_payment_frequency_code = "Annual";
-        terms.floating_index_code = index;
-        terms.spread = std::round(draw(name, 3) * 50.0) / 10000.0;
-        if (foreign != nullptr)
-            terms.floating_currency = foreign->substr(0, foreign->find('-'));
-        if (type == "CapFloor")
-            terms.strike = std::round((0.01 + 0.05 * draw(name, 4)) * 10000.0) / 10000.0;
-        if (type == "Swaption") {
-            /*
-             * An option is exercised after the population is written and
-             * before the swap it opens matures, so its expiry sits a year in.
-             */
-            terms.expiry_date = add_years(terms.start_date, 1);
-            terms.strike = terms.fixed_rate;
-        }
-        terms.floating_day_count_fraction_code = "ActAct(ISDA)";
-        terms.floating_business_day_convention_code = "ModifiedFollowing";
-        terms.floating_payment_frequency_code = "Semiannual";
 
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(type);
-        entry.notional = terms.notional;
-        /*
-         * The rate family states its rows here, where it draws them, and the
-         * plan carries no bag for it.
-         */
+        entry.notional =
+            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
         entry.instruments =
-            construct_rate_batch(terms, entry.trade_type_code, slot, entry.internal_identifier);
+            build_rate_trade(scope, conventions, entry, std::clamp(drawn, min_years, max_years));
 
         plan.slots.push_back(std::move(entry));
     }
@@ -2202,71 +2144,12 @@ namespace {
 constexpr std::string_view inflation_types[] = {"InflationSwap"};
 
 /*
- * The observation lag every slot states. A published index reaches the trade
- * behind its publication by a few months, and three is the lag the ONS and
- * Eurostat series the seed names are quoted at.
- */
-constexpr std::string_view inflation_observation_lag = "3M";
-
-/*
  * The base level the trade is struck from. The index is a level rather than a
  * rate, so the draw sits inside the band the seeded indices live in rather
  * than inside the notional band.
  */
 double base_cpi_from(const std::string& name) {
     return std::round((100.0 + 60.0 * draw(name, 5)) * 100.0) / 100.0;
-}
-
-/*
- * The inflation family states its rows here, where it draws them: a rates
- * header because the catalogue routes the code to the rates family's table, the
- * fixed side and the CPI side as legs, and the product's own fact row with the
- * index it observes.
- */
-ores::trading::domain::instrument_batch
-construct_inflation_batch(const domain::inflation_terms& drawn) {
-    namespace tdom = ores::trading::domain;
-    const auto money = [](double value) {
-        return tdom::decimal::from_double(value).value();
-    };
-
-    tdom::rate_common_terms common;
-    common.start_date = drawn.start_date;
-    common.maturity_date = drawn.maturity_date;
-    common.fixed.leg_type_code = "Fixed";
-    common.fixed.day_count_fraction_code = "ActAct(ISDA)";
-    common.fixed.business_day_convention_code = "ModifiedFollowing";
-    common.fixed.payment_frequency_code = "Annual";
-    common.fixed.currency = drawn.currency;
-    common.fixed.rate_role = "fixed";
-    common.fixed.value = money(drawn.fixed_rate);
-    common.fixed.notional = money(drawn.notional);
-    common.fixed.payer = true;
-    common.floating.leg_type_code = "CPI";
-    common.floating.day_count_fraction_code = "ActAct(ISDA)";
-    common.floating.business_day_convention_code = "ModifiedFollowing";
-    common.floating.payment_frequency_code = "Annual";
-    common.floating.currency = drawn.currency;
-    common.floating.notional = money(drawn.notional);
-    common.floating.payer = false;
-
-    const auto product = tdom::construct_rate_inflation_swap(
-        tdom::rate_inflation_swap_terms{common,
-                                        drawn.inflation_index_code,
-                                        drawn.base_cpi,
-                                        std::string(inflation_observation_lag)});
-
-    tdom::instrument_batch batch;
-    batch.rate_instruments.push_back(product.row);
-    for (const auto& leg : product.legs)
-        batch.swap_legs.push_back(leg);
-    for (const auto& amount : product.amounts)
-        batch.swap_leg_amounts.push_back(amount);
-    for (const auto& leg_rate : product.rates)
-        batch.swap_leg_rates.push_back(leg_rate);
-    batch.inflation_swap_instruments.push_back(
-        std::get<tdom::inflation_swap_instrument>(product.fact));
-    return batch;
 }
 
 }
@@ -2296,6 +2179,7 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
     plan.party_id = scope.party_id;
     plan.as_of_date = scope.as_of_date;
 
+    const ores::marketdata::conventions::convention_lookup conventions(scope.conventions);
     const auto types = booked_types(inflation_types, scope);
     for (std::uint32_t slot = 0; slot < slot_count(scope); ++slot) {
         const auto name = slot_name(scope, slot);
@@ -2304,26 +2188,33 @@ inflation_trade_planner::plan(const domain::trade_generation_scope& scope) const
         const auto drawn =
             min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
 
-        domain::inflation_terms terms;
-        terms.currency = scope.currency_code;
-        terms.start_date = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
-        terms.maturity_date =
-            add_years(terms.start_date, static_cast<int>(std::clamp(drawn, min_years, max_years)));
-        terms.notional =
-            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
-        terms.fixed_rate = std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0;
-        /*
-         * The index cycles the tenant's curves rather than being drawn, so a
-         * population longer than the list states every index the tenant holds.
-         */
-        terms.inflation_index_code =
-            scope.inflation_index_codes[slot % scope.inflation_index_codes.size()];
-        terms.base_cpi = base_cpi_from(name);
+        const auto& code = scope.inflation_index_codes[slot % scope.inflation_index_codes.size()];
+        const auto index = ores::marketdata::datum::market_reference::parse(
+            ores::marketdata::projection::ore_projection::address_of_index_or_stored(code));
+        if (!index)
+            throw trade_population_error("The inflation index " + code + " has no address.");
+        const auto start = add_months(scope.as_of_date, -static_cast<int>(slot % 6));
 
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(*types[slot % types.size()]);
-        entry.notional = terms.notional;
-        entry.instruments = construct_inflation_batch(terms);
+        entry.notional =
+            price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
+        const ores::trading::builders::inflation_swap_terms terms{
+            .notional = ores::utility::decimal::decimal::from_double(entry.notional).value(),
+            .currency = scope.currency_code,
+            .start = start,
+            .maturity = add_years(start, static_cast<int>(std::clamp(drawn, min_years, max_years))),
+            .fixed_rate = ores::utility::decimal::decimal::from_double(
+                              std::round((0.01 + 0.05 * draw(name, 2)) * 10000.0) / 10000.0)
+                              .value(),
+            .index = *index,
+            .base_cpi = base_cpi_from(name),
+            .fixed_side = slot % 2 == 0 ? ores::trading::builders::side::pay :
+                                          ores::trading::builders::side::receive};
+        entry.instruments = swap_batch_of(
+            ores::trading::builders::inflation_swap_builder(conventions, terms).build(),
+            entry.trade_type_code,
+            "Generated inflation swap.");
 
         plan.slots.push_back(std::move(entry));
     }

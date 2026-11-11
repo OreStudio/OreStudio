@@ -116,7 +116,8 @@ convention_lookup::convention_lookup(convention_set conventions)
     , overnight_indices_(answerable_of(std::move(conventions.overnight_indices)))
     , swaps_(answerable_of(std::move(conventions.swaps)))
     , ois_swaps_(answerable_of(std::move(conventions.ois_swaps)))
-    , cds_(std::move(conventions.cds)) {}
+    , cds_(std::move(conventions.cds))
+    , inflation_swaps_(answerable_of(std::move(conventions.inflation_swaps))) {}
 
 std::expected<index_definition, lookup_error>
 convention_lookup::index_definition_of(const market_reference& index) const {
@@ -217,6 +218,16 @@ convention_lookup::cds_convention_of(std::string_view id) const {
         return std::unexpected(lookup_error{
             lookup_refusal_kind::no_match, std::string(id), "no CDS convention has this id"});
     return *found;
+}
+
+std::expected<refdata::domain::inflation_swap_convention, lookup_error>
+convention_lookup::inflation_swap_convention_of(const market_reference& index) const {
+    const auto* named = index.index();
+    if (named == nullptr)
+        return refuse(lookup_refusal_kind::addresses_no_index,
+                      index,
+                      "the address names a datum, not an index");
+    return the_one_at(inflation_swaps_, *named, index, "inflation swap convention");
 }
 
 }

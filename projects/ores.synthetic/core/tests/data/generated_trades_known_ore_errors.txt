@@ -9,7 +9,6 @@ BondOption	Error parsing Trade XML	Error: No XML Child Node Strike found.
 BondPosition	Error parsing Trade XML	Error: No XML Child Node Identifier found.
 BondRepo	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
 CallableBond	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
-CallableSwap	Error parsing Trade XML	XML Node is NULL (expected OptionData)
 CommodityAccumulator	Error parsing Trade XML	CommodityAccumulatorData node not found
 CommodityAsianOption	Error parsing Trade XML	No CommodityAsianOptionData node found.
 CommodityBasketOption	Error building trade for context 'analytic/PRICING'	payoff type '' not recognised
@@ -54,7 +53,6 @@ EquityTouchOption	Error building trade for context 'analytic/PRICING'	No eqIndex
 EquityVarianceSwap	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity spot under configuration 'default' or 'default'
 EquityWorstOfBasketSwap	Error parsing Trade XML	Unknown Underlying type share
 FlexiSwap	Error building trade for context 'analytic/PRICING'	No EngineBuilder for LGM/Grid/FlexiSwap
-ForwardRateAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'EUR-ESTR' of type ibor index under configuration 'default' or 'default'
 FxAccumulator	Error building trade for context 'analytic/PRICING'	invalid payoff type, expected Accumulator or Decumulator
 FxAverageForward	Error building trade for context 'analytic/PRICING'	makeSchedule(): Schedule does not have an end date, this is not supported in this context / for this trade type. Please provide an end date.
 FxBarrierOption	Error building trade for context 'analytic/PRICING'	Invalid number of barrier levels
@@ -72,11 +70,11 @@ IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No Cr
 IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'	No CreditIndex constituents data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 IndexCreditDefaultSwapOption	Error building trade for context 'analytic/PRICING'	No CreditIndex constituents data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
-InflationSwap	Error parsing Trade XML	Error: No XML Node Rates found.
+InflationSwap	Error building trade for context 'analytic/PRICING'	did not find object 'UKRPIX' of type zero inflation index under configuration 'default' or 'default'
+InflationSwap	Error building trade for context 'analytic/PRICING'	did not find object 'USCPIA' of type zero inflation index under configuration 'default' or 'default'
 IntradayPowerForward	Error parsing Trade XML	XMLNode is NULL (was looking for child Position)
 PerformanceOption_01	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
 RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 RiskParticipationAgreement	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 ScriptedTrade	Error building trade for context 'analytic/PRICING'	Could not build index info for '.SPX', expected a valid COMM, FX, EQ, GENERIC, Ibor, Swap, Inflation index identifier.
 ScriptedTrade	Error building trade for context 'analytic/PRICING'	Could not build index info for 'GB0005405286', expected a valid COMM, FX, EQ, GENERIC, Ibor, Swap, Inflation index identifier.
-Swaption	Error building trade for context 'analytic/PRICING'	Settlement type "" not recognized

@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/conventions/convention_lookup.hpp"
 #include "ores.marketdata.api/datum/market_reference.hpp"
 #include "ores.trading.api/builders/build_error.hpp"
+#include "ores.trading.api/builders/option_position.hpp"
 #include "ores.trading.api/builders/required.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
@@ -37,8 +38,6 @@ namespace ores::trading::builders {
 
 /// Which side of the default risk a trade is on.
 enum class protection { buy, sell };
-
-enum class option_position { long_option, short_option };
 
 /**
  * @brief The terms of protection on one reference entity.

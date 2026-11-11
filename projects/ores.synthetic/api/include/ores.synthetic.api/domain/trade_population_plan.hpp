@@ -273,24 +273,6 @@ struct equity_range_bound final {
 };
 
 /**
- * @brief The facts an inflation trade states.
- *
- * An inflation swap is a fixed rate against a published index. The index is the
- * tenant's own curve name, so a trade resolves to the curve the seed published;
- * the base is the index level the trade is struck from, and the rate and the
- * notional are the swap's own.
- */
-struct inflation_terms final {
-    std::string currency;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    double notional = 0.0;
-    double fixed_rate = 0.0;
-    std::string inflation_index_code;
-    double base_cpi = 0.0;
-};
-
-/**
  * @brief The facts a bond trade states.
  */
 struct bond_terms final {
@@ -366,60 +348,6 @@ struct commodity_terms final {
     std::optional<std::chrono::year_month_day> swaption_expiry_date;
     /// The members a basket product names, in the order it draws them.
     std::vector<commodity_basket_member> basket;
-};
-
-/**
- * @brief The facts the rate planner draws, before it states its rows.
- *
- * The family states rows in the plan, so this is the drawing's own shape and
- * never a slot's bag.
- *
- * An interest rate trade reduces to one fixed leg against one floating leg,
- * whatever its trade type: the type decides the exercise and payment features
- * the specialised tables would hold, and this states the legs every routed
- * type has. Every code here is the reference data's own, so the generator
- * invents no vocabulary of its own.
- */
-struct rate_terms final {
-    /// The currency both legs are denominated in.
-    std::string currency;
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    /// The notional both legs state, in the currency above.
-    double notional = 0.0;
-    /// What the fixed leg pays, as a decimal: 0.05 is five per cent, which is
-    /// the unit the store holds the rate in.
-    double fixed_rate = 0.0;
-    std::string fixed_day_count_fraction_code;
-    std::string fixed_business_day_convention_code;
-    std::string fixed_payment_frequency_code;
-    /**
-     * @brief The index the floating leg resets on, as the floating index
-     * catalogue spells it, such as =USD-SOFR= or =GBP-SONIA=.
-     */
-    std::string floating_index_code;
-    /// What the floating leg pays over that index, as a decimal.
-    double spread = 0.0;
-    std::string floating_day_count_fraction_code;
-    std::string floating_business_day_convention_code;
-    std::string floating_payment_frequency_code;
-
-    /**
-     * @brief The currency the floating leg is denominated in, when it differs
-     * from the fixed leg's. Empty for a trade in one currency, which is most
-     * of them: only a cross currency swap states two.
-     */
-    std::string floating_currency;
-    /// The strike a cap, a floor or a swaption states, as a decimal.
-    std::optional<double> strike;
-    /**
-     * @brief The date a swaption may be exercised.
-     *
-     * It belongs to the trade and not to the maturity, and it falls after the
-     * as-of date: an option that expired before the population was written
-     * exercises nothing.
-     */
-    std::optional<std::chrono::year_month_day> expiry_date;
 };
 
 /**

@@ -65,12 +65,19 @@ std::string text_of(const fs::path& path) {
     return ores::platform::filesystem::file::read_content(path);
 }
 
+/*
+ * The recorded types the run leaves out. ORE crashes building a balance
+ * guaranteed swap when the engine factory has no builder for its model, as the
+ * Products configuration has none, and the crash ends the whole run.
+ */
+const std::set<std::string> crash_ore = {"BalanceGuaranteedSwap"};
+
 /// Every recorded trade, each renamed for its file so the merged ids are unique.
 std::string merged_portfolio() {
     std::vector<fs::path> files;
     for (const auto& entry :
          fs::directory_iterator(ores::testing::project_root::resolve(recorded_dir)))
-        if (entry.path().extension() == ".xml")
+        if (entry.path().extension() == ".xml" && !crash_ore.contains(entry.path().stem()))
             files.push_back(entry.path());
     std::sort(files.begin(), files.end());
 

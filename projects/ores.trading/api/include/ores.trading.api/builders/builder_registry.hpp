@@ -21,6 +21,7 @@
 #define ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include <set>
 #include <string_view>
@@ -34,7 +35,16 @@ using all_builders = std::tuple<vanilla_swap_builder,
                                 index_credit_default_swap_builder,
                                 index_credit_default_swap_option_builder,
                                 credit_linked_swap_builder,
-                                risk_participation_agreement_builder>;
+                                risk_participation_agreement_builder,
+                                cross_currency_swap_builder,
+                                forward_rate_agreement_builder,
+                                cap_floor_builder,
+                                swaption_builder,
+                                callable_swap_builder,
+                                knock_out_swap_builder,
+                                flexi_swap_builder,
+                                balance_guaranteed_swap_builder,
+                                inflation_swap_builder>;
 
 namespace detail {
 

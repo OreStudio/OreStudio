@@ -5,48 +5,61 @@
     <InflationSwapData>
       <LegData>
         <Payer>true</Payer>
-        <LegType>Fixed</LegType>
+        <LegType>ZeroCouponFixed</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2026-01-02">723174.17</Notional>
+          <Notional>723174.17</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2026-01-02</StartDate>
             <EndDate>2036-01-02</EndDate>
-            <Tenor>1Y</Tenor>
-            <Convention>MF</Convention>
+            <Tenor>0D</Tenor>
+            <Calendar>UK</Calendar>
+            <Convention>ModifiedFollowing</Convention>
+            <Rule>Zero</Rule>
           </Rules>
         </ScheduleData>
-        <FixedLegData>
+        <ZeroCouponFixedLegData>
           <Rates>
             <Rate>0.0457</Rate>
           </Rates>
-        </FixedLegData>
+          <Compounding>Compounded</Compounding>
+        </ZeroCouponFixedLegData>
       </LegData>
       <LegData>
         <Payer>false</Payer>
         <LegType>CPI</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2026-01-02">723174.17</Notional>
+          <Notional>723174.17</Notional>
+          <Exchanges>
+            <NotionalFinalExchange>true</NotionalFinalExchange>
+          </Exchanges>
         </Notionals>
         <ScheduleData>
-          <Rules>
-            <StartDate>2026-01-02</StartDate>
-            <EndDate>2036-01-02</EndDate>
-            <Tenor>1Y</Tenor>
-            <Convention>MF</Convention>
-          </Rules>
+          <Dates>
+            <Calendar>UK</Calendar>
+            <Convention>ModifiedFollowing</Convention>
+            <Dates>
+              <Date>2036-01-02</Date>
+            </Dates>
+          </Dates>
         </ScheduleData>
         <CPILegData>
           <Index>UKRPIX</Index>
+          <Rates>
+            <Rate>0</Rate>
+          </Rates>
           <BaseCPI>159.28</BaseCPI>
-          <ObservationLag>3M</ObservationLag>
+          <StartDate>2026-01-02</StartDate>
+          <ObservationLag>2M</ObservationLag>
+          <Interpolation>Flat</Interpolation>
+          <SubtractInflationNotional>true</SubtractInflationNotional>
         </CPILegData>
       </LegData>
     </InflationSwapData>
@@ -55,49 +68,62 @@
     <TradeType>InflationSwap</TradeType>
     <InflationSwapData>
       <LegData>
-        <Payer>true</Payer>
-        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <LegType>ZeroCouponFixed</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-12-02">3070177.38</Notional>
+          <Notional>3070177.38</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-12-02</StartDate>
             <EndDate>2030-12-02</EndDate>
-            <Tenor>1Y</Tenor>
-            <Convention>MF</Convention>
+            <Tenor>0D</Tenor>
+            <Calendar>US</Calendar>
+            <Convention>ModifiedFollowing</Convention>
+            <Rule>Zero</Rule>
           </Rules>
         </ScheduleData>
-        <FixedLegData>
+        <ZeroCouponFixedLegData>
           <Rates>
             <Rate>0.0415</Rate>
           </Rates>
-        </FixedLegData>
+          <Compounding>Compounded</Compounding>
+        </ZeroCouponFixedLegData>
       </LegData>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>CPI</LegType>
         <Currency>EUR</Currency>
         <PaymentConvention>ModifiedFollowing</PaymentConvention>
-        <DayCounter>A360</DayCounter>
+        <DayCounter>30/360</DayCounter>
         <Notionals>
-          <Notional startDate="2025-12-02">3070177.38</Notional>
+          <Notional>3070177.38</Notional>
+          <Exchanges>
+            <NotionalFinalExchange>true</NotionalFinalExchange>
+          </Exchanges>
         </Notionals>
         <ScheduleData>
-          <Rules>
-            <StartDate>2025-12-02</StartDate>
-            <EndDate>2030-12-02</EndDate>
-            <Tenor>1Y</Tenor>
-            <Convention>MF</Convention>
-          </Rules>
+          <Dates>
+            <Calendar>US</Calendar>
+            <Convention>ModifiedFollowing</Convention>
+            <Dates>
+              <Date>2030-12-02</Date>
+            </Dates>
+          </Dates>
         </ScheduleData>
         <CPILegData>
           <Index>USCPIA</Index>
+          <Rates>
+            <Rate>0</Rate>
+          </Rates>
           <BaseCPI>103.14</BaseCPI>
+          <StartDate>2025-12-02</StartDate>
           <ObservationLag>3M</ObservationLag>
+          <Interpolation>Linear</Interpolation>
+          <SubtractInflationNotional>true</SubtractInflationNotional>
         </CPILegData>
       </LegData>
     </InflationSwapData>

@@ -487,16 +487,11 @@ TEST_CASE("a context reaches the layer through one pool that every copy shares",
     CHECK(scoped.pq_session().actor == "someone");
 }
 
-TEST_CASE("a context re-scoped inside a unit of work still reads the tenant it opened with",
-          "[pq]") {
+TEST_CASE("a context re-scoped inside a unit of work is refused", "[pq]") {
     ores::testing::scoped_database_helper h;
     ores::database::repository::unit_of_work uow(h.context());
-    const auto scoped = uow.ctx().with_tenant(random_tenant(), "someone");
 
-    const auto seen = ores::database::transact(
-        scoped, [&](transaction& tx) { return std::get<0>(tx.query(current_tenant).at(0)); });
-
-    CHECK(seen == h.context().tenant_id().to_string());
+    CHECK_THROWS_AS(uow.ctx().with_tenant(random_tenant(), "someone"), std::logic_error);
 }
 
 TEST_CASE("a call on a committed unit of work is refused", "[pq]") {

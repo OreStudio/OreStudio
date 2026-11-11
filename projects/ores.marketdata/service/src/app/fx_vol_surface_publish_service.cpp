@@ -245,18 +245,24 @@ fx_vol_surface_publish_service::publish(context ctx,
                     " already asks to publish this calibration and is " + open->state_code + ".");
         }
 
-        // The request and its subject are one act, so no request ever names no surface.
-        ores::database::repository::unit_of_work uow(ctx);
-        const auto& tx = uow.ctx();
-        ores::inbox::service::approval_lifecycle lifecycle(tx);
-        const auto kind = lifecycle.kind(std::string(fx_vol_surface_publish_kind_code));
+        // The kind, the asker and the rule that may close the raise are read before
+        // the unit of work opens: a transaction's tenant and parties are fixed when
+        // it opens, and the rule is the tenant's.
+        ores::inbox::service::approval_lifecycle reader(ctx);
+        const auto kind = reader.kind(std::string(fx_vol_surface_publish_kind_code));
         if (!kind)
             throw std::runtime_error(
                 "No such kind of request: " + std::string(fx_vol_surface_publish_kind_code) + ".");
-        const auto me = lifecycle.actor_account_id();
+        const auto me = reader.actor_account_id();
         if (!me)
             throw std::runtime_error("The signed-in account was not found.");
-        const auto raised = lifecycle.raise(*kind, req.reason, *me);
+        const auto policy = reader.policy_for(*kind, false);
+
+        // The request and its subject are one act, so no request ever names no surface.
+        ores::database::repository::unit_of_work uow(ctx);
+        const auto& tx = uow.ctx();
+        const auto raised = ores::inbox::service::approval_lifecycle(tx).raise_under(
+            policy, *kind, req.reason, *me);
 
         domain::fx_vol_surface_publish record;
         record.tenant_id = ctx.tenant_id();

@@ -37,8 +37,18 @@ using namespace ores::logging;
 operational_authorisation_service::operational_authorisation_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
+authorisation_policy operational_authorisation_service::prepare() {
+    ores::inbox::service::approval_lifecycle lifecycle(ctx_);
+    authorisation_policy out;
+    out.kind = lifecycle.kind(kind_code);
+    if (out.kind)
+        out.policy = lifecycle.policy_for(*out.kind, false);
+    return out;
+}
+
 std::optional<raised_authorisation>
-operational_authorisation_service::raise_if_awaiting(const boost::uuids::uuid& trade_id) {
+operational_authorisation_service::raise_if_awaiting(const boost::uuids::uuid& trade_id,
+                                                     const authorisation_policy& prepared) {
     // The reads go through the caller's transaction, which holds the trade
     // before it commits. A query on a connection of its own would not see it.
     const auto id = boost::uuids::to_string(trade_id);
@@ -81,15 +91,15 @@ operational_authorisation_service::raise_if_awaiting(const boost::uuids::uuid& t
         }
     }
 
-    ores::inbox::service::approval_lifecycle lifecycle(ctx_);
-    auto kind = lifecycle.kind(kind_code);
-    if (!kind)
+    if (!prepared.kind)
         throw std::runtime_error(std::string("No such kind of request: ") + kind_code);
+    ores::inbox::service::approval_lifecycle lifecycle(ctx_);
     const auto me = lifecycle.actor_account_id();
     if (!me)
         throw std::runtime_error("The signed-in account was not found.");
 
-    auto request = lifecycle.raise(*kind, "A live trade awaits operational authorisation.", *me);
+    auto request = lifecycle.raise_under(
+        prepared.policy, *prepared.kind, "A live trade awaits operational authorisation.", *me);
 
     domain::trade_authorisation_request detail;
     detail.tenant_id = ctx_.tenant_id();
@@ -103,7 +113,7 @@ operational_authorisation_service::raise_if_awaiting(const boost::uuids::uuid& t
 
     BOOST_LOG_SEV(lg(), info) << "Raised request " << boost::uuids::to_string(request.id)
                               << " for trade " << id;
-    return raised_authorisation{std::move(*kind), std::move(request)};
+    return raised_authorisation{*prepared.kind, std::move(request)};
 }
 
 void operational_authorisation_service::announce(const raised_authorisation& raised) {

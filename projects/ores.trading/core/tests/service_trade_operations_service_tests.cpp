@@ -596,7 +596,7 @@ TEST_CASE("an_execution_does_not_ask_the_same_question_twice", "[service]") {
 
     // A second write of the same kind of fact must not raise a second one.
     ores::trading::service::operational_authorisation_service authorisation(f.ctx);
-    CHECK_FALSE(authorisation.raise_if_awaiting(req.anchor.id).has_value());
+    CHECK_FALSE(authorisation.raise_if_awaiting(req.anchor.id, authorisation.prepare()).has_value());
     CHECK(requests_for(f.ctx, req.anchor.id).size() == 1);
 }
 
@@ -618,7 +618,7 @@ TEST_CASE("an_amendment_raises_its_own_request_after_the_last_was_answered", "[s
     ores::inbox::repository::approval_request_repository().write(f.ctx, approved);
 
     ores::trading::service::operational_authorisation_service authorisation(f.ctx);
-    REQUIRE(authorisation.raise_if_awaiting(req.anchor.id).has_value());
+    REQUIRE(authorisation.raise_if_awaiting(req.anchor.id, authorisation.prepare()).has_value());
     CHECK(requests_for(f.ctx, req.anchor.id).size() == 2);
 }
 

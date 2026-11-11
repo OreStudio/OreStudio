@@ -593,6 +593,7 @@ std::vector<observation_record> read_manual_points(market_observation_repository
          AND o.observation_datetime = l.observation_datetime AND o.valid_to = $3
         WHERE l.tenant_id = $1 AND l.series_id = $2 AND l.point_source_kind = 'manual'
             AND l.valid_to = $3
+        ORDER BY o.oresmd_uri, o.observation_datetime, o.valid_from
     )";
 
     const auto rows = query_builder::execute_parameterized_multi_column_query(
@@ -623,6 +624,7 @@ std::vector<observation_record> read_manual_points_all(market_observation_reposi
          AND o.observation_datetime = l.observation_datetime AND o.valid_to = $2
         WHERE l.tenant_id = $1 AND l.point_source_kind = 'manual'
             AND l.valid_to = $2
+        ORDER BY o.series_id, o.oresmd_uri, o.observation_datetime, o.valid_from
     )";
 
     const auto rows = query_builder::execute_parameterized_multi_column_query(
@@ -694,6 +696,8 @@ std::vector<observation_record> market_observation_repository::read_as_of_record
     // A current manual point owns its coordinate until cleared, overlaying the
     // fed value and any later automatic write. One whose instant is after the
     // snapshot instant is not in it; one the snapshot covers is, whenever keyed.
+    // The points come oldest first for each coordinate, so the newest one the
+    // snapshot covers is the one left standing.
     for (const auto& manual : read_manual_points(ctx, series_id, lg())) {
         if (manual.observation.observation_datetime > as_of_datetime)
             continue;
@@ -782,7 +786,8 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
             {market_observation_mapper::map(as_of_observation(row, 0, "read_as_of_all")),
              as_of_recorded_at(row, 0, "read_as_of_all")});
 
-    // A current manual point owns its datum until cleared, as in the read for one series.
+    // A current manual point owns its datum until cleared, as in the read for one series:
+    // oldest first, so the newest one the snapshot covers is the one left standing.
     std::map<std::pair<std::string, std::string>, std::size_t> position;
     for (std::size_t i = 0; i != result.size(); ++i)
         position[{boost::uuids::to_string(result[i].observation.series_id),
@@ -792,10 +797,12 @@ std::vector<domain::market_observation> market_observation_repository::read_as_o
             continue;
         const auto key = std::pair{boost::uuids::to_string(manual.observation.series_id),
                                    manual.observation.oresmd_uri};
-        if (const auto it = position.find(key); it != position.end())
+        if (const auto it = position.find(key); it != position.end()) {
             result[it->second] = std::move(manual);
-        else
+        } else {
+            position[key] = result.size();
             result.push_back(std::move(manual));
+        }
     }
 
     std::vector<domain::market_observation> observations;

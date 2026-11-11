@@ -510,6 +510,46 @@ TEST_CASE("read_as_of_all_gives_the_manual_point_the_read_for_one_series_gives",
     }
 }
 
+TEST_CASE("two_manual_points_on_one_coordinate_read_as_the_newer_one", "[repository]") {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    // The feed writes another coordinate only, so both manual points are keyed on
+    // a coordinate no fed value stands at.
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    ores::marketdata::repository::observation_lineage_repository lineage_repo;
+    obs_repo.insert(h.context(), make_observation(ctx, s.id, "SPOT-3M", t0, 0.0300));
+    // The newer point is keyed first, so a read that kept the store's own order
+    // would end on the older one.
+    for (const auto& [minutes, value] : {std::pair{20, 0.0600}, std::pair{10, 0.0500}}) {
+        auto manual =
+            make_observation(ctx, s.id, "SPOT-1M", t0 + std::chrono::minutes(minutes), value);
+        obs_repo.insert(h.context(), manual);
+        lineage_repo.write(h.context(), make_lineage(ctx, manual, "manual"));
+    }
+
+    const auto instant = t0 + std::chrono::minutes(30);
+    const auto keyed = datum_uri("SPOT-1M");
+    std::vector<std::string> from_one, from_all;
+    for (const auto& o : obs_repo.read_as_of(h.context(), s.id, instant))
+        if (o.oresmd_uri == keyed)
+            from_one.push_back(o.value);
+    for (const auto& o : obs_repo.read_as_of_all(h.context(), instant))
+        if (o.series_id == s.id && o.oresmd_uri == keyed)
+            from_all.push_back(o.value);
+
+    REQUIRE(from_one.size() == 1);
+    CHECK(from_one.front() == "0.060000");
+    CHECK(from_all == from_one);
+}
+
 namespace {
 
 // The session an operator writes a manual point with: the series' party, so

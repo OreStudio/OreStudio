@@ -167,6 +167,21 @@ enum class auto_approval_rule {
 [[nodiscard]] ORES_INBOX_CORE_EXPORT std::string_view code_of(auto_approval_rule rule);
 
 /**
+ * @brief What a raise reads before its transaction opens.
+ *
+ * The rule that closes the raise, the account that closes it and the mode its
+ * decision names are configuration, read for the whole tenant and from the
+ * system tenant. A transaction's tenant and parties are fixed when it opens, and
+ * a second connection taken while it holds one can wait on a bounded pool for
+ * ever, so a raise inside a unit of work is handed these instead of reading them.
+ */
+struct raise_policy final {
+    std::optional<auto_approval_rule> rule;
+    std::optional<boost::uuids::uuid> system_actor;
+    approvals_mode_state mode;
+};
+
+/**
  * @brief The approval request lifecycle: raising, deciding and the two reads
  * a person works from.
  *
@@ -310,6 +325,24 @@ public:
                                    const std::string& reason,
                                    const boost::uuids::uuid& requested_by,
                                    const std::vector<std::string>& part_codes = {});
+
+    /**
+     * @brief Reads what a raise of a kind needs, before any transaction opens.
+     *
+     * Call it on a context bound to no transaction, then raise inside the unit
+     * of work with the policy it returns.
+     */
+    raise_policy policy_for(const domain::approval_kind& kind, bool names_parts);
+
+    /**
+     * @brief Raises as @ref raise does, with the policy read before the
+     * transaction opened, so the raise only writes.
+     */
+    domain::approval_request raise_under(const raise_policy& policy,
+                                         const domain::approval_kind& kind,
+                                         const std::string& reason,
+                                         const boost::uuids::uuid& requested_by,
+                                         const std::vector<std::string>& part_codes = {});
 
     /**
      * @brief The parts a request needs, with the order each answers in.
@@ -492,7 +525,8 @@ private:
     domain::approval_request close_without_approval(const domain::approval_request& request,
                                                     const domain::approval_kind& kind,
                                                     const boost::uuids::uuid& system_actor,
-                                                    auto_approval_rule rule);
+                                                    auto_approval_rule rule,
+                                                    const approvals_mode_state& mode);
 
     ores::database::context ctx_;
 };

@@ -146,10 +146,14 @@ TEST_CASE("verify_rejects_an_empty_password_or_hash", "[crypto]") {
 TEST_CASE("verify_rejects_a_downgraded_scrypt_cost", "[crypto]") {
     auto lg(make_logger(test_suite));
 
+    using ores::platform::environment::environment;
+
     const std::string password = "a_password";
 
-    // The suite runs with ORES_TEST_PASSWORD_FAST set, so the cost this
-    // build produces, and therefore the floor, is ln=10.
+    // With the fast flag set the cost this build produces, and therefore the
+    // floor, is ln=10. The case sets the flag itself, because the cases run in
+    // a random order and a run need not start with it set.
+    environment::set_value(fast_flag, "1");
     const auto at_the_floor = make_scrypt_hash(password, 10);
     const auto below_the_floor = make_scrypt_hash(password, 1);
     REQUIRE_FALSE(at_the_floor.empty());

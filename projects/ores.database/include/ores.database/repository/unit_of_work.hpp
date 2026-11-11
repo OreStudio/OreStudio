@@ -26,6 +26,7 @@
 #include "ores.database/pq/transaction.hpp"
 #include "ores.database/repository/repository_exception.hpp"
 #include <memory>
+#include <optional>
 
 namespace ores::database::repository {
 
@@ -86,9 +87,11 @@ public:
     }
 
     /**
-     * @brief Commits the transaction.
+     * @brief Commits the transaction and returns its connection to the pool.
      *
-     * Does nothing on a second call.
+     * The context from ctx() refuses every statement after the commit, so
+     * work that follows a commit uses a context bound to no transaction, on a
+     * connection of its own. Does nothing on a second call.
      *
      * @throws repository_exception when the commit fails.
      */
@@ -96,7 +99,7 @@ public:
 
 private:
     context base_;
-    pq::pool::lease lease_;
+    std::optional<pq::pool::lease> lease_;
     std::unique_ptr<pq::transaction> transaction_;
     context ctx_;
     bool committed_ = false;

@@ -235,6 +235,11 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
             break;
     }
 
+    // The authorisation's kind and policy are read before the unit of work
+    // opens, because a context bound to a transaction cannot read for another
+    // tenant or party.
+    const auto authorisation = operational_authorisation_service(ctx_).prepare();
+
     // One transaction writes the anchor, the activity, the booking, the state,
     // the identifiers and the instrument, so a failure in any of them leaves
     // none of them. A read made through the transaction joins it without
@@ -324,8 +329,8 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
     // A trade booked live in a real book awaits Operations. The request joins
     // this transaction, so a trade is never live without one.
-    operational_authorisation_service authorisation(ctx);
-    const auto raised = authorisation.raise_if_awaiting(anchor.id);
+    const auto raised =
+        operational_authorisation_service(ctx).raise_if_awaiting(anchor.id, authorisation);
 
     uow.commit();
 
@@ -346,6 +351,7 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
 
 std::optional<raised_authorisation>
 trade_operations_service::execute_within(context ctx,
+                                         const authorisation_policy& authorisation,
                                          const boost::uuids::uuid& trade_id,
                                          const std::string& change_reason_code,
                                          const std::string& change_commentary,
@@ -386,8 +392,7 @@ trade_operations_service::execute_within(context ctx,
     if (activity_id != nullptr)
         *activity_id = activity.id;
 
-    operational_authorisation_service authorisation(ctx);
-    return authorisation.raise_if_awaiting(trade_id);
+    return operational_authorisation_service(ctx).raise_if_awaiting(trade_id, authorisation);
 }
 
 messaging::execute_trade_response
@@ -401,6 +406,11 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
     messaging::execute_trade_response response;
     const auto id = boost::uuids::to_string(request.trade_id);
     BOOST_LOG_SEV(lg(), debug) << "Executing trade " << id;
+
+    // The authorisation's kind and policy are read before the unit of work
+    // opens, because a context bound to a transaction cannot read for another
+    // tenant or party.
+    const auto authorisation = operational_authorisation_service(ctx_).prepare();
 
     // The activity, the state and the request are one decision, so they are one
     // transaction: a trade that goes live without its request is exactly the
@@ -458,8 +468,12 @@ trade_operations_service::execute_trade(const messaging::execute_trade_request& 
     }
 
     auto activity_id = boost::uuids::uuid{};
-    const auto raised = execute_within(
-        ctx, request.trade_id, request.change_reason_code, request.change_commentary, &activity_id);
+    const auto raised = execute_within(ctx,
+                                       authorisation,
+                                       request.trade_id,
+                                       request.change_reason_code,
+                                       request.change_commentary,
+                                       &activity_id);
 
     uow.commit();
 
@@ -497,6 +511,10 @@ trade_operations_service::complete_structure(const messaging::complete_structure
         return response;
     }
 
+    // The authorisation's kind and policy are read before the unit of work
+    // opens, because a context bound to a transaction cannot read for another
+    // tenant or party.
+    const auto authorisation = operational_authorisation_service(ctx_).prepare();
     unit_of_work uow(ctx_);
     const auto& ctx = uow.ctx();
 
@@ -623,7 +641,7 @@ trade_operations_service::complete_structure(const messaging::complete_structure
         if (still_draft.empty() || still_draft.front() != "true")
             continue;
         auto one = execute_within(
-            ctx, leg.trade_id, request.change_reason_code, request.change_commentary);
+            ctx, authorisation, leg.trade_id, request.change_reason_code, request.change_commentary);
         if (one)
             raised.push_back(std::move(*one));
     }

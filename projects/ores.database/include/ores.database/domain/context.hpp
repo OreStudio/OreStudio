@@ -29,6 +29,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -144,9 +145,13 @@ public:
     /**
      * @brief A context for another tenant, with no party.
      *
-     * The service account, the pool, the open policy, the roles and any
-     * bound transaction are kept, so narrowing a request's context never widens
-     * what it may do.
+     * The service account, the pool, the open policy and the roles are kept, so
+     * narrowing a request's context never widens what it may do. A context bound
+     * to a transaction refuses a change of tenant or party, because the
+     * transaction set them when it opened and a copy would still run under them.
+     * A read for another tenant or party is made before the unit of work opens:
+     * a unit of work holds its connection from the start, and a second one taken
+     * while it does can wait on a bounded pool for ever.
      */
     [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id, std::string actor) const {
         auto scoped = *this;
@@ -154,13 +159,14 @@ public:
         scoped.party_id_.reset();
         scoped.visible_party_ids_.clear();
         scoped.actor_ = std::move(actor);
+        refuse_change_inside_transaction(scoped);
         return scoped;
     }
 
     /**
      * @brief A context for a tenant and a party, with the parties it sees.
      *
-     * Keeps what with_tenant() keeps.
+     * Keeps and refuses what with_tenant() keeps and refuses.
      */
     [[nodiscard]] context with_party(utility::uuid::tenant_id tenant_id,
                                      boost::uuids::uuid party_id,
@@ -171,6 +177,7 @@ public:
         scoped.party_id_ = party_id;
         scoped.visible_party_ids_ = std::move(visible_party_ids);
         scoped.actor_ = std::move(actor);
+        refuse_change_inside_transaction(scoped);
         return scoped;
     }
 
@@ -193,6 +200,17 @@ public:
     ORES_DATABASE_EXPORT pq::session_context pq_session() const;
 
 private:
+    void refuse_change_inside_transaction(const context& to) const {
+        if (active_transaction_ == nullptr)
+            return;
+        if (to.tenant_id_ == tenant_id_ && to.party_id_ == party_id_ &&
+            to.visible_party_ids_ == visible_party_ids_)
+            return;
+        throw std::logic_error(
+            "A context bound to a transaction cannot change its tenant or party: the "
+            "transaction set them when it opened. Make the read before the unit of work opens.");
+    }
+
     pq::connection_options options_;
     pq::open_policy policy_;
     utility::uuid::tenant_id tenant_id_;

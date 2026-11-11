@@ -27,7 +27,7 @@ namespace ores::database::repository {
 unit_of_work::unit_of_work(context ctx)
     : base_(std::move(ctx))
     , lease_(base_.pq_pool().acquire())
-    , transaction_(std::make_unique<pq::transaction>(lease_.get(), base_.pq_session()))
+    , transaction_(std::make_unique<pq::transaction>(lease_->get(), base_.pq_session()))
     , ctx_(base_.with_transaction(*transaction_)) {}
 
 unit_of_work::~unit_of_work() {
@@ -38,13 +38,19 @@ unit_of_work::~unit_of_work() {
 void unit_of_work::commit() {
     if (committed_)
         return;
+    // The transaction has ended whether the commit succeeds or fails, and an
+    // ended transaction refuses every statement, so the connection goes back to
+    // the pool here rather than when the unit of work goes out of scope. Work
+    // after a commit then never holds this connection while it waits on another.
     try {
         transaction_->commit();
     } catch (const pq::store_error& e) {
+        lease_.reset();
         BOOST_THROW_EXCEPTION(
             repository_exception(std::format("Cannot commit the transaction: {}", e.what())));
     }
     committed_ = true;
+    lease_.reset();
 }
 
 }

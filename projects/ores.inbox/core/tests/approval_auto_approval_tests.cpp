@@ -19,6 +19,7 @@
  */
 #include "approval_fixture.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.api/domain/approval_kind.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -321,6 +322,48 @@ TEST_CASE("a_person_in_another_party_is_bound_by_the_tenants_mode", "[approval][
 
     CHECK(raised.state_code == "approved");
     CHECK(raised.auto_approval_code == "tenant");
+}
+
+TEST_CASE("a_raise_inside_a_unit_of_work_by_a_party_is_bound_by_the_tenants_mode",
+          "[approval][auto]") {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approvals_mode mode(h, "auto_approved");
+    const auto base = acting(h);
+    const auto party = boost::uuids::random_generator{}();
+    const auto as_party = base.with_party(base.tenant_id(), party, {party}, base.actor());
+
+    // The raise and its subject are one transaction. The policy is read before
+    // it opens, under the party's view, and still finds the tenant's mode; the
+    // raise inside it only writes.
+    approval_lifecycle reader(as_party);
+    const auto seeded = reader.kind("iam.role_grant");
+    REQUIRE(seeded);
+    const auto policy = reader.policy_for(*seeded, false);
+    ores::database::repository::unit_of_work uow(as_party);
+    const auto raised =
+        approval_lifecycle(uow.ctx()).raise_under(policy, *seeded, "Raised with its subject", asker.id);
+    uow.commit();
+
+    CHECK(raised.state_code == "approved");
+    CHECK(raised.auto_approval_code == "tenant");
+}
+
+TEST_CASE("a_raise_inside_a_unit_of_work_that_reads_its_own_policy_is_refused",
+          "[approval][auto]") {
+    ores::testing::scoped_database_helper h;
+    const auto asker = seed_account(h);
+    approvals_mode mode(h, "auto_approved");
+    approval_lifecycle reader(acting(h));
+    const auto seeded = reader.kind("iam.role_grant");
+    REQUIRE(seeded);
+
+    // The policy is the tenant's and the system tenant's to read, which a
+    // transaction fixed to one tenant and party cannot do, so the read fails
+    // where it is made rather than answering for the wrong tenant.
+    ores::database::repository::unit_of_work uow(acting(h));
+    CHECK_THROWS_AS(approval_lifecycle(uow.ctx()).raise(*seeded, "Reads inside", asker.id),
+                    std::logic_error);
 }
 
 TEST_CASE("turning_the_mode_off_makes_the_next_raise_wait", "[approval][auto]") {

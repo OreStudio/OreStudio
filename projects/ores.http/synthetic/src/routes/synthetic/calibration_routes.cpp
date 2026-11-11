@@ -171,6 +171,7 @@ void refuse_other_members(const std::string& body,
     const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(
         yyjson_read(body.data(), body.size(), 0), &yyjson_doc_free);
     auto* root = doc ? yyjson_doc_get_root(doc.get()) : nullptr;
+    // A body that is not an object is left to the read that follows, which refuses it.
     if (!yyjson_is_obj(root))
         return;
     auto members = yyjson_obj_iter_with(root);

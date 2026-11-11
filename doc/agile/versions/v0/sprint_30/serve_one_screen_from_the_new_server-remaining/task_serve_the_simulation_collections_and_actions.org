@@ -190,6 +190,9 @@ via its "Verifies task" field.
 | 16 | PR #4623: the FX engine list could fall out of step with the service. | =process_preview_routes.cpp= | Accepted | The comment says the service publishes none, so the list is stated as the BFF stated it. |
 | 17 | PR #4623: no price or number check on the FX paths, NaN, every refusal a 400, the IR value padding, the frequency not trimmed. | =process_preview_routes.cpp= | Declined | Each is the BFF's behaviour. JSON carries no NaN or infinity and the reader refuses them; a transport failure throws and answers 502, so only the service's own refusal is a 400. |
 | 18 | Local review: two names collided with other files of the unity build. | =calibration_routes.cpp=, =calibration_routes_tests.cpp= | Accepted | Renamed to =calibration_body_of= and =calibrated_feed_id=; the collision check is clean. |
+| 19 | PR #4625: an unrelated 58 MB ORE package was committed. | =external/ore/packages/= | Declined | The intraday ORE package belongs in the tree beside the other packages; the owner kept it. |
+| 20 | PR #4625: the member check returns quietly for a body that is not an object. | =calibration_routes.cpp= | Accepted | A comment says the read that follows refuses it. |
+| 21 | PR #4625: the policy and pin writes are not atomic; no test covers an unchanged order. | =calibration_routes.cpp= | Declined | Each write converges and a concurrent one fails its precondition, as the BFF's did. An unchanged-order test needs a forward the suite cannot fake yet. |
 
 * Result
 

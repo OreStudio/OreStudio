@@ -26,22 +26,32 @@ Every commodity trade type the generator books is built by its trade builder, an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
 
-- convention_lookup answers what each commodity builder asks.
-- The commodity planner draws values and calls the builders; its construct_* functions and *_terms structs are deleted.
-- The commodity entries leave the recorded trades' known lists, and the recorded files change in the same commit.
-- The ORE engine test reads and builds every booked commodity type.
-- The roundtrip tests read every ORE sample trade of each booked commodity type and write back every element ORE needs.
+- The eight commodity types the projection writes, forward, option, average
+  price option, option strip, swap, swaption, variance swap and basket option,
+  are built by their builders in =commodity_builders.hpp=, and the planner
+  calls them.
+- Their entries leave the recorded trades' known lists, and the recorded files
+  change in the same commit.
+- The ORE engine test builds each of the eight types.
+- The other commodity types move to
+  [[id:0831C742-E84E-4943-9126-BDDB21B41B0A][Project and build the remaining commodity products]],
+  which also deletes the old constructors.
 
 * Plan
+
+Steps 1 and 2 are this task. Steps 3 to 5 moved to
+[[id:0831C742-E84E-4943-9126-BDDB21B41B0A][Project and build the remaining commodity products]],
+because each of those types needs a projection writer and reader before a
+builder can help it, and one PR for all of it would be too large to review.
 
 The commodity family differs from equity in one way that sets the order of
 work. The projection writes only eight of the twenty-five booked types:
@@ -113,3 +123,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The eight commodity types the ORE projection writes are built by their
+builders in =commodity_builders.hpp=: forward, option, average price option,
+option strip, swap, swaption, variance swap and basket option. The planner
+calls them, and ORE builds each one with no error.
+
+The trade errors this task fixed:
+
+- Every commodity trade is in its commodity's quotation currency, so the
+  forward is no longer a quanto cash flow ORE refuses.
+- The option and swaption settle in cash.
+- The option strip and the swap state their legs and schedules as the shared
+  leg rows, so each schedule has an end date.
+- The basket option pays a vanilla payoff.
+
+A commodity is an oresmd address in every built row, and the row keeps the
+catalogue unit its quantity counts. The other seventeen commodity types keep
+their constructors. They move to
+[[id:0831C742-E84E-4943-9126-BDDB21B41B0A][Project and build the remaining commodity products]].

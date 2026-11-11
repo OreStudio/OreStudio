@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: marketdata
-Tables: 31
+Tables: 36
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -339,6 +339,226 @@ package "marketdata" #E3F2FD {
     and a new subscription routes to it.
     The system tenant and the system party own the rows. Every tenant reads them and
     only the system tenant writes them.
+    end note
+
+    entity ores_marketdata_fx_forward_publish_points_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * publish_id : uuid <<FK>>
+        * sequence_index : integer
+        * tenor_code : text
+        * near_date : date
+        * value_date : date
+        * base_discount : double
+        * quote_discount : double
+        * forward_rate : double
+        * forward_points : double
+        * swap_points : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_fx_forward_publish_points_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Fx Forward Publish Point Table
+    One tenor of a published FX forward set. The row holds every number the ladder
+    shows for the tenor, as the set computed them, so a reader gets the published
+    numbers back after the spot and the curves have moved.
+    end note
+
+    entity ores_marketdata_fx_forward_publish_spots_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * publish_id : uuid <<FK>>
+        * leg_code : text
+        * pair_code : text
+        * series_id : uuid <<FK>>
+        * observed_at : timestamptz
+        * value : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_fx_forward_publish_spots_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Fx Forward Publish Spot Table
+    One spot observation a published FX forward set read. A USD pair reads one, its
+    own. A cross reads two, the USD leg of each currency, and derives its spot from
+    them, so the set names both.
+    end note
+
+    entity ores_marketdata_fx_forward_publishes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * request_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * pair_code : text
+        * as_of : timestamptz
+        * spot_date : date
+        * spot_rate : double
+        * base_curve_publish_id : uuid <<FK>>
+        * quote_curve_publish_id : uuid <<FK>>
+        * convention_version : integer
+        * calendar_codes : text
+        * method_code : text
+        * published_by : text
+          published_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_fx_forward_publishes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Fx Forward Publish Table
+    The detail row of one marketdata.fx_forward_publish approval request: the FX
+    forward set the request authorises, where each of its numbers came from, and the
+    record of the act once the set is published.
+    A forward set is derived data, so it belongs to a party, as a funding curve does.
+    The subject is the party, the pair and the as-of instant. The set is computed
+    when the request is raised, so the person who decides reads the numbers they
+    approve, and the apply publishes exactly those numbers. The tenors are the
+    fx_forward_publish_point rows of the publish, and the spot observations it read
+    are its fx_forward_publish_spot rows: one for a USD pair, two for a cross.
+    The provenance is on this row: the publish of each funding curve the set
+    discounts with, the version of the pair's convention, the calendars its dates
+    roll on, and the method that combined them. Each names its own record, so a
+    reader follows a number back to the market and to the curves. A curve
+    publish is named and not copied, so the withdrawal of a curve shows on every set
+    built from it without a write here. The apply does not check the curves again: the
+    decider approved those numbers, and a curve withdrawn after the raise shows on the
+    set as withdrawn rather than stopping it.
+    published_at and published_by are the publication record, empty while the
+    request waits and written in one act when the approved set is published.
+    request_id is the natural key, so a request authorises one publish.
+    end note
+
+    entity ores_marketdata_fx_vol_surface_calibrations_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * blueprint_id : uuid <<FK>>
+        * as_of : timestamptz
+        * party_id : uuid <<FK>>
+        * blueprint_version : integer
+        * output_series_id : uuid <<FK>>
+        * forward_publish_id : uuid <<FK>>
+        * smile_model : text
+        * rho : double
+        * eta : double
+        * gamma : double
+        * converged : boolean
+        * max_abs_error : double
+        * pillars_beyond_tolerance : integer
+        * pillar_fits : jsonb
+        * violations : jsonb
+        * missing_pillars : jsonb
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_fx_vol_surface_calibrations_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Fx Vol Surface Calibration Table
+    A calibration fits a blueprint's smile model to the quotes its pillars read at an
+    as-of, and writes the surface as observations of the blueprint's output series.
+    Those observations are the candidate's grid. This record is what the
+    calibration found beside them: the fitted parameters, how far each pillar's
+    quote is from the surface, the arbitrage the surface admits, and the pillars
+    no contributor quoted. They belong to one calibration, not to the blueprint,
+    so they are held here, against the candidate, and the publish of the
+    candidate reads them.
+    The blueprint and the as-of are the natural key. A calibration of the same
+    blueprint at the same as-of writes a new version of this record, so a rerun
+    converges on one candidate and its history keeps the earlier fits.
+    The three JSON arrays are the checks, in the shapes the calibrate reply uses.
+    pillar_fits has one entry for each pillar that had a quote, naming its point,
+    the weighted quote, the fitted volatility, the error and whether the error is
+    beyond the tolerance. violations names each arbitrage condition the surface
+    breaks, by kind and expiry. missing_pillars names each pillar no contributor
+    quoted, with the series it read. The source series of each grid point, and the
+    weight each carried, are in the point's observation_lineage.
+    end note
+
+    entity ores_marketdata_fx_vol_surface_publishes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * request_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * blueprint_id : uuid <<FK>>
+        * as_of : timestamptz
+        * output_series_id : uuid <<FK>>
+        * calibration_id : uuid <<FK>>
+        * calibration_version : integer
+        * converged : boolean
+        * max_abs_error : double
+        * pillars_beyond_tolerance : integer
+        * violation_count : integer
+        * published_by : text
+          published_at : timestamptz
+          superseded_at : timestamptz
+          superseded_by_request_id : uuid <<FK>>
+          superseded_as_of : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_marketdata_fx_vol_surface_publishes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Fx Vol Surface Publish Table
+    The detail row of one marketdata.fx_vol_surface_publish approval request: the
+    calibrated candidate the request authorises, the checks of that candidate, and
+    the record of the act once the surface is published.
+    A surface is derived data and belongs to its blueprint's party. The subject is the
+    blueprint and the as-of, which name one calibration record. The raise copies that
+    record's checks here, so the person who decides reads the fit they approve: whether
+    it converged, its largest pillar error, how many pillars are beyond the tolerance,
+    and how many arbitrage conditions it breaks. The apply publishes that calibration
+    and no later one: a calibration rerun after the raise is a new version, and the
+    apply refuses a version the request did not name.
+    A blueprint's output series holds one live surface. The apply ends every live set
+    of the series in the same act, as a curve publish does, so the superseded set and
+    its successor both stay in the history. published_at and published_by are the
+    publication record, empty while the request waits. request_id is the natural
+    key, so a request authorises one publish.
     end note
 
     entity ores_marketdata_market_calibration_values_tbl <<temporal>> #C6F0D8 {
@@ -758,6 +978,7 @@ package "marketdata" #E3F2FD {
         * derivation_config_version : integer
           source_as_of : timestamptz
         * source_series_ids : jsonb
+        * source_weights : jsonb
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>

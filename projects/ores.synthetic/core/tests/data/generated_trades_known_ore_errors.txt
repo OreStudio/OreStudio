@@ -14,23 +14,17 @@ CallableBond	Error during trade pricing	empty Handle cannot be dereferenced
 CallableBond	Error during trade pricing (additional results)	empty Handle cannot be dereferenced
 CommodityAccumulator	Error parsing Trade XML	CommodityAccumulatorData node not found
 CommodityAsianOption	Error parsing Trade XML	No CommodityAsianOptionData node found.
-CommodityBasketOption	Error building trade for context 'analytic/PRICING'	payoff type '' not recognised
 CommodityBasketVarianceSwap	Error parsing Trade XML	BasketVarianceSwapData node not found
 CommodityBestEntryOption	Error parsing Trade XML	BestEntryOptionData node not found
 CommodityDigitalAveragePriceOption	Error parsing Trade XML	No CommodityDigitalAveragePriceOptionData Node
 CommodityDigitalOption	Error parsing Trade XML	A commodity option needs a 'CommodityDigitalOptionData' node
-CommodityForward	Error building trade for context 'analytic/PRICING'	Quanto cashflow is not supported. Underlying commodity index currency USD is diffferent than the settlement currency EUR
 CommodityForwardVolatilityAgreement	Error parsing Trade XML	ForwardVolatilityAgreementData node not found
 CommodityGenericBarrierOption	Error parsing Trade XML	CommodityGenericBarrierOptionData node not found
-CommodityOption	Error building trade for context 'analytic/PRICING'	Settlement type "" not recognized
-CommodityOptionStrip	Error building trade for context 'analytic/PRICING'	makeSchedule(): Schedule does not have an end date, this is not supported in this context / for this trade type. Please provide an end date.
 CommodityPairwiseVarianceSwap	Error parsing Trade XML	TradeFactory::getBuilder(CommodityPairwiseVarianceSwap): no builder found
 CommodityPosition	Error parsing Trade XML	XML Node is NULL (expected CommodityPositionData)
 CommodityRainbowOption	Error parsing Trade XML	CommodityRainbowOptionData node not found
 CommoditySpreadOption	Error parsing Trade XML	XML Node is NULL (expected CommoditySpreadOptionData)
 CommodityStrikeResettableOption	Error parsing Trade XML	StrikeResettableOptionData node not found
-CommoditySwap	Error building trade for context 'analytic/PRICING'	vector::reserve
-CommoditySwaption	Error building trade for context 'analytic/PRICING'	Settlement type "" not recognized
 CommodityTaRF	Error parsing Trade XML	CommodityTaRFData node not found
 CommodityWindowBarrierOption	Error parsing Trade XML	CommodityWindowBarrierOptionData node not found
 CommodityWorstOfBasketSwap	Error parsing Trade XML	WorstOfBasketSwapData node not found
@@ -40,21 +34,21 @@ CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not fi
 CreditLinkedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 CreditLinkedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 DoubleDigitalOption	Error parsing Trade XML	XMLUtils::getNodeName(): XML Node is NULL
-EquityAccumulator	Error building trade for context 'analytic/PRICING'	invalid payoff type, expected Accumulator or Decumulator
-EquityAsianOption	Error parsing Trade XML	ScheduleData::fromXML(): no node given
+EquityAccumulator	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
+EquityAsianOption	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity curve under configuration 'default' or 'default'
 EquityBarrierOption	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
-EquityCliquetOption	Error parsing Trade XML	XMLUtils::getNodeName(): XML Node is NULL
-EquityDigitalOption	Error building trade for context 'analytic/PRICING'	Option Style unknown: 
+EquityCliquetOption	Error building trade for context 'analytic/PRICING'	did not find object 'GB0005405286' of type equity vol curve under configuration 'default' or 'default'
+EquityDigitalOption	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity spot under configuration 'default' or 'default'
 EquityDoubleBarrierOption	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity curve under configuration 'default' or 'default'
 EquityEuropeanBarrierOption	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity spot under configuration 'default' or 'default'
 EquityForward	Error building trade for context 'analytic/PRICING'	did not find object 'GB0005405286' of type equity curve under configuration 'default' or 'default'
 EquityOption	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
 EquityPosition	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
-EquitySwap	Error parsing Trade XML	XML Node is NULL (expected FloatingLegData)
-EquityTaRF	Error parsing Trade XML	either RangeBounds or RangeBoundSet nodes required
-EquityTouchOption	Error building trade for context 'analytic/PRICING'	No eqIndex provided
+EquitySwap	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
+EquityTaRF	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
+EquityTouchOption	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity spot under configuration 'default' or 'default'
 EquityVarianceSwap	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity spot under configuration 'default' or 'default'
-EquityWorstOfBasketSwap	Error parsing Trade XML	Unknown Underlying type share
+EquityWorstOfBasketSwap	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
 FlexiSwap	Error building trade for context 'analytic/PRICING'	No EngineBuilder for LGM/Grid/FlexiSwap
 IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR
 IndexCreditDefaultSwap	Error building trade for context 'analytic/PRICING'	No CreditIndex reference data for oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR

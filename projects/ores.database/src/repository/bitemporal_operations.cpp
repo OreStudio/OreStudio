@@ -18,6 +18,7 @@
  *
  */
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/pq/store_error.hpp"
 #include "ores.database/pq/text.hpp"
 #include "ores.database/pq/transaction.hpp"
 #include "ores.database/query_builder/execute.hpp"
@@ -73,9 +74,15 @@ std::vector<std::string> first_column(
     return out;
 }
 
-}
 
-namespace {
+/// A failed query, carrying the SQLSTATE the server stated, so a caller can tell
+/// one refusal from another without reading the server's words.
+pq::store_error query_failed(const PGresult* result, const std::string& err_msg) {
+    const char* state = PQresultErrorField(result, PG_DIAG_SQLSTATE);
+    std::string sqlstate = state ? state : "";
+    const auto kind = pq::classify(sqlstate);
+    return pq::store_error("Query execution failed: " + err_msg, std::move(sqlstate), kind);
+}
 
 auto& bitemporal_lg() {
     static auto instance = ores::logging::make_logger("ores.utility.database.postgres");
@@ -252,11 +259,9 @@ std::vector<std::string> execute_raw_string_query(context ctx,
                                                   const std::string& sql,
                                                   logging::logger_t& lg,
                                                   const std::string& operation_desc) {
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
     if (auto* tx = ctx.active_transaction())
         return first_column(rows_on_transaction(*tx, sql, {}));
-
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
     std::vector<std::string> result;
 
@@ -279,7 +284,7 @@ std::vector<std::string> execute_raw_string_query(context ctx,
     if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
         BOOST_LOG_SEV(lg, error) << "Query failed: " << err_msg;
-        throw std::runtime_error("Query execution failed: " + err_msg);
+        throw query_failed(result_guard.result, err_msg);
     }
 
     // Extract results
@@ -298,6 +303,7 @@ std::vector<std::string> execute_raw_string_query(context ctx,
 
 std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
     context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc) {
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
     if (auto* tx = ctx.active_transaction()) {
         std::map<std::string, std::vector<std::string>> grouped;
         for (const auto& row : rows_on_transaction(*tx, sql, {}))
@@ -305,9 +311,6 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
                 grouped[*row[0]].push_back(*row[1]);
         return grouped;
     }
-
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
     std::map<std::string, std::vector<std::string>> result;
 
@@ -330,7 +333,7 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
     if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
         BOOST_LOG_SEV(lg, error) << "Query failed: " << err_msg;
-        throw std::runtime_error("Query execution failed: " + err_msg);
+        throw query_failed(result_guard.result, err_msg);
     }
 
     // Extract results - expecting at least 2 columns (key, value)
@@ -355,11 +358,9 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
 
 std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
     context ctx, const std::string& sql, logging::logger_t& lg, const std::string& operation_desc) {
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
     if (auto* tx = ctx.active_transaction())
         return rows_on_transaction(*tx, sql, {});
-
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
     std::vector<std::vector<std::optional<std::string>>> result;
 
@@ -382,7 +383,7 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
     if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
         BOOST_LOG_SEV(lg, error) << "Query failed: " << err_msg;
-        throw std::runtime_error("Query execution failed: " + err_msg);
+        throw query_failed(result_guard.result, err_msg);
     }
 
     // Extract results
@@ -412,13 +413,11 @@ void execute_raw_command(context ctx,
                          const std::string& sql,
                          logging::logger_t& lg,
                          const std::string& operation_desc) {
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
     if (auto* tx = ctx.active_transaction()) {
         rows_on_transaction(*tx, sql, {});
         return;
     }
-
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
 
     // A connection of its own, with the context's connection options
     const auto conn_str = build_connection_string(ctx.connection_options());
@@ -473,12 +472,10 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
                                                             const std::vector<std::string>& params,
                                                             logging::logger_t& lg,
                                                             const std::string& operation_desc) {
-    if (auto* tx = ctx.active_transaction())
-        return first_column(rows_on_transaction(*tx, sql, as_optional(params)));
-
-
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
                              << " parameters";
+    if (auto* tx = ctx.active_transaction())
+        return first_column(rows_on_transaction(*tx, sql, as_optional(params)));
 
     std::vector<std::string> result;
 
@@ -517,7 +514,7 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
     if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
         BOOST_LOG_SEV(lg, error) << "Query failed: " << err_msg;
-        throw std::runtime_error("Query execution failed: " + err_msg);
+        throw query_failed(result_guard.result, err_msg);
     }
 
     // Extract results
@@ -539,14 +536,12 @@ void execute_parameterized_command(context ctx,
                                    const std::vector<std::string>& params,
                                    logging::logger_t& lg,
                                    const std::string& operation_desc) {
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
+                             << " parameters";
     if (auto* tx = ctx.active_transaction()) {
         rows_on_transaction(*tx, sql, as_optional(params));
         return;
     }
-
-
-    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
-                             << " parameters";
 
     // A connection of its own, with the context's connection options
     const auto conn_str = build_connection_string(ctx.connection_options());
@@ -618,12 +613,10 @@ execute_parameterized_multi_column_query(context ctx,
                                          const std::vector<std::optional<std::string>>& params,
                                          logging::logger_t& lg,
                                          const std::string& operation_desc) {
-    if (auto* tx = ctx.active_transaction())
-        return rows_on_transaction(*tx, sql, params);
-
-
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql << " with " << params.size()
                              << " parameters";
+    if (auto* tx = ctx.active_transaction())
+        return rows_on_transaction(*tx, sql, params);
 
     std::vector<std::vector<std::optional<std::string>>> result;
 
@@ -668,7 +661,7 @@ execute_parameterized_multi_column_query(context ctx,
         const std::string err_msg = PQerrorMessage(conn_guard.conn);
         BOOST_LOG_SEV(lg, error) << operation_desc << ". Query failed after " << ms_since(began)
                                  << " ms: " << err_msg;
-        throw std::runtime_error("Query execution failed: " + err_msg);
+        throw query_failed(result_guard.result, err_msg);
     }
 
     const int num_rows = PQntuples(result_guard.result);

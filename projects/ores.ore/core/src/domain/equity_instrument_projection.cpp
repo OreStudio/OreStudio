@@ -977,7 +977,8 @@ void write_equity_cliquet_option(record_writer& trade,
                                  const equity_option_instrument& v,
                                  const equity_instrument_data& carrier) {
     auto data = trade.child("EquityCliquetOptionData");
-    write_name_or_underlying(data, carrier, v.underlying_name);
+    // ORE reads a cliquet's equity from Underlying only; it looks for Name on the trade.
+    write_underlying_or_equity(data, carrier, v.underlying_name);
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Notional", v.notional);
     data.set_spelling("LongShort", v.long_short.empty() ? "Long" : v.long_short, "long short");

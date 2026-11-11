@@ -16,9 +16,7 @@ The two routes of a pair can use different verbs. Many BFF GET and DELETE routes
 to a C++ POST operation on purpose, so do not change a verb to make a pair match.
 """
 
-IAM_OPS = "/api/v1/iam/ops"
 ACCESS = "/api/v1/access"
-AUTH = "/api/v1/auth"
 REFDATA = "/api/v1/reference-data"
 
 PAIRS = {
@@ -61,13 +59,16 @@ PAIRS = {
     ("PUT", "/api/roles/:roleId/permissions"): ("PUT", "/api/roles/{roleId}/permissions"),
 
     # auth
-    ("POST", "/api/session"): ("POST", f"{AUTH}/sessions"),
-    ("DELETE", "/api/session"): ("DELETE", f"{AUTH}/sessions"),
-    ("GET", "/api/session"): ("GET", f"{AUTH}/sessions/me"),
+    ("POST", "/api/session"): ("POST", "/api/session"),
+    ("POST", "/api/session/party"): ("POST", "/api/session/party"),
+    ("POST", "/api/session/switch-party"): ("POST", "/api/session/switch-party"),
+    ("DELETE", "/api/session"): ("DELETE", "/api/session"),
+    ("GET", "/api/session"): ("GET", "/api/session"),
     ("GET", "/api/login-info"): ("GET", "/api/login-info"),
     ("GET", "/api/login-info/:accountId"): ("GET", "/api/login-info/{accountId}"),
-    ("POST", "/api/account/password"): ("POST", f"{IAM_OPS}/change_password"),
-    ("POST", "/api/signup"): ("POST", f"{IAM_OPS}/signup"),
+    ("POST", "/api/account/password"): ("POST", "/api/account/password"),
+    ("GET", "/api/password-policy"): ("GET", "/api/password-policy"),
+    ("POST", "/api/signup"): ("POST", "/api/signup"),
     ("GET", "/api/sessions"): ("GET", "/api/sessions"),
     ("GET", "/api/sessions/active"): ("GET", "/api/sessions/active"),
     ("POST", "/api/sessions/:sessionId/end"): ("POST", "/api/sessions/{sessionId}/end"),
@@ -120,4 +121,68 @@ PAIRS = {
     ("GET", "/api/counterparties/pick-lists"): ("GET", "/api/counterparties/pick-lists"),
     ("GET", "/api/tenors/pick-lists"): ("GET", "/api/tenors/pick-lists"),
     ("GET", "/api/counterparties"): ("GET", f"{REFDATA}/counterparties"),
+    ("GET", "/api/counterparties/:id"): ("GET", "/api/counterparties/{id}"),
+    ("GET", "/api/counterparties/children"): ("GET", "/api/counterparties/children"),
+    ("PUT", "/api/counterparties/composite"): ("PUT", "/api/counterparties/composite"),
+    ("GET", "/api/counterparties/:id/visibility"): ("GET", "/api/counterparties/{id}/visibility"),
+    ("PUT", "/api/counterparties/:id/visibility"): ("PUT", "/api/counterparties/{id}/visibility"),
+    ("PUT", "/api/counterparties/:id/business-centres"): ("PUT", "/api/counterparties/{id}/business-centres"),
+    ("GET", "/api/conventions/families"): ("GET", "/api/conventions/families"),
+    ("GET", "/api/conventions/:family"): ("GET", "/api/conventions/{family}"),
+    ("PUT", "/api/conventions/:family"): ("PUT", "/api/conventions/{family}"),
+    ("POST", "/api/tenors/preview-resolution"): ("POST", "/api/tenors/preview-resolution"),
+    ("POST", "/api/tenors/resolve"): ("POST", "/api/tenors/resolve"),
+    ("POST", "/api/tenors/resolve-convention"): ("POST", "/api/tenors/resolve-convention"),
+    ("GET", "/api/tenors/conventions/:code/resolutions"): ("GET", "/api/tenors/conventions/{code}/resolutions"),
+    ("PUT", "/api/tenors/tenors"): ("PUT", "/api/tenors/tenors"),
+    ("PUT", "/api/tenors/conventions"): ("PUT", "/api/tenors/conventions"),
+    ("PUT", "/api/tenors/conventions/:code/resolutions/:tenor"): ("PUT", "/api/tenors/conventions/{code}/resolutions/{tenor}"),
+    ("DELETE", "/api/tenors/conventions/:code/resolutions/:tenor"): ("DELETE", "/api/tenors/conventions/{code}/resolutions/{tenor}"),
+    ("GET", "/api/refdata/calendars/:code/days"): ("GET", "/api/refdata/calendars/{code}/days"),
+    ("POST", "/api/refdata/calendars/:code/rebuild"): ("POST", "/api/refdata/calendars/{code}/rebuild"),
+    ("GET", "/api/refdata/currencies/ore-document"): ("GET", "/api/refdata/currencies/ore-document"),
+    ("POST", "/api/refdata/currencies/ore-import/preview"): ("POST", "/api/refdata/currencies/ore-import/preview"),
+    ("POST", "/api/refdata/currencies/ore-import"): ("POST", "/api/refdata/currencies/ore-import"),
+    ("GET", "/api/change-reasons"): ("GET", "/api/change-reasons"),
+
+    # simulation
+    ("POST", "/api/synthetic/feeds/:id/start"): ("POST", "/api/synthetic/feeds/{id}/start"),
+    ("POST", "/api/synthetic/feeds/:id/stop"): ("POST", "/api/synthetic/feeds/{id}/stop"),
+    ("POST", "/api/synthetic/folders/:id/start"): ("POST", "/api/synthetic/folders/{id}/start"),
+    ("POST", "/api/synthetic/folders/:id/stop"): ("POST", "/api/synthetic/folders/{id}/stop"),
+    ("GET", "/api/synthetic/folder-feeds"): ("GET", "/api/synthetic/folder-feeds"),
+    ("POST", "/api/synthetic/feed-selection/start"): ("POST", "/api/synthetic/feed-selection/start"),
+    ("POST", "/api/synthetic/feed-selection/stop"): ("POST", "/api/synthetic/feed-selection/stop"),
+    ("GET", "/api/synthetic/feeds/:id/ticks"): ("GET", "/api/synthetic/feeds/{id}/ticks"),
+    ("GET", "/api/synthetic/feed-raster"): ("GET", "/api/synthetic/feed-raster"),
+    ("POST", "/api/synthetic/simulate/fx"): ("POST", "/api/synthetic/simulate/fx"),
+    ("POST", "/api/synthetic/simulate/ir"): ("POST", "/api/synthetic/simulate/ir"),
+    ("POST", "/api/synthetic/convert/fx"): ("POST", "/api/synthetic/convert/fx"),
+    ("POST", "/api/synthetic/convert/fx-simple"): ("POST", "/api/synthetic/convert/fx-simple"),
+    ("POST", "/api/synthetic/convert/ir"): ("POST", "/api/synthetic/convert/ir"),
+    ("POST", "/api/synthetic/preview/ir-shape"): ("POST", "/api/synthetic/preview/ir-shape"),
 }
+
+# A BFF route that takes the resource as a parameter is answered in ores.http by
+# one generated route per resource, at the address the BFF would have matched.
+# Each family names the registry the BFF reads its resources from, the C++
+# address with {resource} in place of the resource, and which resources must
+# answer it: every resource, those read by one key, those read by a parent, or
+# those the registry marks writable. The inventory reads the registry and fails
+# when a resource that must answer a family has no route at its address.
+REFDATA_RECORDS = "projects/ores.web/packages/wire-protocol/src/records.ts:REFDATA_RECORDS"
+SYNTHETIC_RECORDS = "projects/ores.web/packages/bff/src/synthetic.ts:SYNTHETIC_RECORDS"
+
+FAMILIES = {
+    ("GET", "/api/refdata/:resource"): (REFDATA_RECORDS, "GET", "/api/refdata/{resource}", "every"),
+    ("GET", "/api/refdata/:resource/key/:key"): (REFDATA_RECORDS, "GET", "/api/refdata/{resource}/key/{key}", "one_key"),
+    ("GET", "/api/refdata/:resource/by/:parent"): (REFDATA_RECORDS, "GET", "/api/refdata/{resource}/by/{parent}", "list_by"),
+    ("PUT", "/api/refdata/:resource"): (REFDATA_RECORDS, "PUT", "/api/refdata/{resource}", "writable"),
+    ("DELETE", "/api/refdata/:resource"): (REFDATA_RECORDS, "DELETE", "/api/refdata/{resource}", "writable"),
+    ("GET", "/api/synthetic/:resource"): (SYNTHETIC_RECORDS, "GET", "/api/synthetic/{resource}", "every"),
+    ("GET", "/api/synthetic/:resource/key/:key"): (SYNTHETIC_RECORDS, "GET", "/api/synthetic/{resource}/key/{key}", "one_key"),
+    ("GET", "/api/synthetic/:resource/by/:parent"): (SYNTHETIC_RECORDS, "GET", "/api/synthetic/{resource}/by/{parent}", "list_by"),
+    ("PUT", "/api/synthetic/:resource"): (SYNTHETIC_RECORDS, "PUT", "/api/synthetic/{resource}", "writable"),
+    ("DELETE", "/api/synthetic/:resource"): (SYNTHETIC_RECORDS, "DELETE", "/api/synthetic/{resource}", "writable"),
+}
+

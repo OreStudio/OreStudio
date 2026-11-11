@@ -249,3 +249,7 @@ two ways a surface differs from a curve.
 - [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] -- the calibration is a call that reads the quotes and answers the calibrated points and their errors.
 - [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] -- a compute over the same recipe, inputs and as-of converges on the candidate version it already wrote rather than duplicating the points.
 - [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] -- the construction reads refdata's recipe and conventions and market data's observations, and each component owns its own store.
+
+* See also
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster, and where to read this page in it.

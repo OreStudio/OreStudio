@@ -45,3 +45,17 @@ describe('the content type of a request body', () => {
         expect(headers().get('content-type')).toBeNull();
     });
 });
+
+describe('the mark that a request came from this client', () => {
+    it('is sent on a write, which the server refuses a cookie session without', async () => {
+        const headers = sentHeaders();
+        await api.acceptProviderTerms('boc', 3);
+        expect(headers().get('x-ores-request')).toBe('1');
+    });
+
+    it('is sent on a request with no body too', async () => {
+        const headers = sentHeaders();
+        await api.withdrawProviderTerms('boc');
+        expect(headers().get('x-ores-request')).toBe('1');
+    });
+});

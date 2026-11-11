@@ -151,6 +151,40 @@ struct http_server_options final {
      * @brief Server identifier for responses.
      */
     std::string server_identifier{"ores-http-server"};
+    /**
+     * @brief Whether every route runs under a rate policy. Only a test turns it off.
+     */
+    bool rate_limit_enabled{true};
+    /**
+     * @brief The requests one client address may make in a minute to a route that needs no
+     * session, and the burst it may spend at once.
+     */
+    std::uint32_t open_requests_per_minute{300};
+    /**
+     * @brief The requests one account may make in a minute to a route that needs a session.
+     * A screen asks for many reads as it opens, so the burst is generous.
+     */
+    std::uint32_t authenticated_requests_per_minute{1200};
+    /**
+     * @brief The sign-in and sign-up attempts one client address may make in a minute, one
+     * budget shared by both, as the BFF counted them.
+     */
+    std::uint32_t credential_attempts_per_minute{10};
+    /**
+     * @brief The registration policy reads one client address may make in a minute.
+     */
+    std::uint32_t registration_policy_reads_per_minute{120};
+    /**
+     * @brief The most clients and accounts the limiter tracks at once. Past it, the bucket
+     * closest to full is dropped, which forgets the least.
+     */
+    std::size_t rate_limit_max_keys{65536};
+    /**
+     * @brief The proxies whose forwarded address names the client, as a comma separated
+     * list of networks such as 127.0.0.1/32,10.0.0.0/8. Empty trusts none, so the
+     * client is always the socket's peer.
+     */
+    std::string trusted_proxies{""};
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<http_server_options>) {
@@ -179,6 +213,19 @@ struct http_server_options final {
         ::ores::utility::codec::field{"cors_allowed_origins",
                                       &http_server_options::cors_allowed_origins},
         ::ores::utility::codec::field{"server_identifier", &http_server_options::server_identifier},
+        ::ores::utility::codec::field{"rate_limit_enabled",
+                                      &http_server_options::rate_limit_enabled},
+        ::ores::utility::codec::field{"open_requests_per_minute",
+                                      &http_server_options::open_requests_per_minute},
+        ::ores::utility::codec::field{"authenticated_requests_per_minute",
+                                      &http_server_options::authenticated_requests_per_minute},
+        ::ores::utility::codec::field{"credential_attempts_per_minute",
+                                      &http_server_options::credential_attempts_per_minute},
+        ::ores::utility::codec::field{"registration_policy_reads_per_minute",
+                                      &http_server_options::registration_policy_reads_per_minute},
+        ::ores::utility::codec::field{"rate_limit_max_keys",
+                                      &http_server_options::rate_limit_max_keys},
+        ::ores::utility::codec::field{"trusted_proxies", &http_server_options::trusted_proxies},
     };
 }
 

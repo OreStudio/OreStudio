@@ -113,6 +113,7 @@ void bootstrap_routes::register_routes(
             .description("Forwards to the iam.v1.ops.create_initial_admin operation.")
             .tags({"iam"})
             .auth_optional()
+            .rate_limit("credential")
             .body<messaging::create_initial_admin_request>()
             .response<messaging::create_initial_admin_response>()
             .handler([&session](const http_request& req) {

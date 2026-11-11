@@ -22,7 +22,6 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.http/routes/iam/access_read_routes.hpp"
 #include "ores.http/routes/iam/account_view.hpp"
 #include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
@@ -237,7 +236,7 @@ void profile_routes::register_routes(
         "Read one account's contact record, as an administrator",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
-            if (!access_read_routes::is_uuid(account))
+            if (!rr::is_uuid(account))
                 return refused(
                     http_status::not_found, "not-found", "No account has this identifier.");
             return guarded<messaging::list_by_account_id_account_contact_informations_request>([&] {
@@ -251,7 +250,7 @@ void profile_routes::register_routes(
         "Write one account's contact record, as an administrator",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
-            if (!access_read_routes::is_uuid(account))
+            if (!rr::is_uuid(account))
                 return refused(
                     http_status::not_found, "not-found", "No account has this identifier.");
             const auto contact = read_contact(req.body);

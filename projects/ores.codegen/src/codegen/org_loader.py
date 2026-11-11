@@ -4387,6 +4387,19 @@ def parse_declared_messages(root: "OrgNode") -> list[dict[str, Any]]:
                     "'true', 'yes' and '1'"
                 )
             entry["http_route"] = True
+        # The rate policy a public route runs under, by name, when the default
+        # for an open route is not the right budget: a route that takes a
+        # credential shares the sign-in budget. A route that needs a session
+        # counts its account, so a policy there would count nobody it means to.
+        rate_policy = str(props.get("rate_policy", "")).strip()
+        if rate_policy:
+            if entry.get("requires_session") != "false":
+                raise ValueError(
+                    f"message {node.title} states :rate_policy: {rate_policy!r} "
+                    "but needs a session; only a message that states :auth: none "
+                    "takes a named rate policy"
+                )
+            entry["rate_policy"] = rate_policy
         # The verb a generated shell command answers to, when the message's own
         # name is not the word a caller would type. A message is named for the
         # artefact and the action both -- bootstrap_status_request -- while the
@@ -4995,6 +5008,8 @@ def shell_command_projection(messages: list[dict[str, Any]]) -> list[dict[str, A
             # projection carries the fact so the HTTP facet can read it; the
             # shell facet ignores it, because a command is a NATS caller.
             "http_route": bool(message.get("http_route")),
+            # The rate policy the HTTP route runs under, or empty for the default.
+            "rate_policy": message.get("rate_policy", ""),
             # Whether replaying the command destroys the environment it runs
             # in. The model states it, because the shape does not: a reset and
             # a status read are both a bare command name.
@@ -6139,6 +6154,7 @@ def operation_http_route_plan(operation: dict[str, Any]) -> dict[str, Any]:
             "request": command["request"],
             "response_type": command["response_type"],
             "requires_session": not command.get("public", False),
+            "rate_policy": command.get("rate_policy", ""),
             # A message with no field takes an empty body, so the handler
             # constructs it rather than parsing an absent one.
             "has_fields": bool(command.get("positionals") or command.get("flags")),

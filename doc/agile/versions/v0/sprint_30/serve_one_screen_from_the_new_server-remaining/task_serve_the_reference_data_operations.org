@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-reference-data-operations
+#+pr: 4620
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Port the 29 BFF routes of the reference data area to the C++ server. Include con
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-11                               |
 
 * Acceptance
 
@@ -41,9 +41,83 @@ Port the 29 BFF routes of the reference data area to the C++ server. Include con
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The inventory lists 33 unpaired reference data routes in five groups. Each group
+is one pull request, so each review covers one screen's routes.
+
+| Group | Routes | BFF source |
+|-------+--------+------------|
+| Counterparties | 6 | =counterparties.ts= |
+| Conventions | 5 | =conventions.ts= |
+| Curve configurations | 3 | =curve-configuration.ts= |
+| Tenors | 9 | =tenors.ts= |
+| Generic records, calendars and ORE currency documents | 10 | =records.ts= |
+
+Each route keeps the BFF's address and answer shape, as the earlier ports did.
+
+Decisions made in the counterparty group:
+
+- The router sends a path to the most specific pattern that matches it. A
+  literal segment beats a parameter at the first segment where two patterns
+  differ, as the BFF's framework did. Before this, the first pattern added won,
+  so =/api/counterparties/{id}= could take =/api/counterparties/children=.
+- The identifier check moves into =record_routes= as =rr::is_uuid=. The IAM and
+  assets copies are deleted, so the refdata routes use the same check.
+- A write answers the service's =result= with 200, whatever its outcome, as
+  the BFF did. A read that the service refuses answers with the status the
+  outcome names, through =rr::require_ok=.
+
+Decisions made in the conventions group:
+
+- The two routes that draw a convention's terms, the document read and the
+  terms write, wait for the reporting part. They read the ORE parameter and
+  value set tables, which the reporting service owns, through the BFF's
+  =readValueSets=. The curve configuration routes read the same tables. The
+  value set reader belongs in the reporting part that
+  [[id:504FD469-B1A1-4480-9694-34724AD2F2A5][Stand up the reporting part and serve its resources]]
+  creates, so those routes are ported after that part exists. The three routes
+  that need no value set (the families, one family's page and the family write)
+  are ported now.
+- The families are a table of typed units: each names its list request and the
+  reply member that holds its rows, so the compiler checks every name. A test
+  compares the table with the convention registry, so a family added to the
+  model fails the test until it is added here.
+- The tenor and currency pair conventions answer their rows. The BFF read their
+  rows from =tenor_conventions= and =currency_pair_conventions=, but the reply
+  names them =conventions=, so the BFF answered no rows for either family.
+- The screens' intent and the paged whole read move to shared units, as
+  =rr::stated_intent= with =rr::intent_of=, and =forwarding::forward_all=. The
+  counterparty unit's copies are deleted.
+
+Decisions made in the tenors group:
+
+- =GET /api/tenors/catalogue= is a composed view with a cache policy, so
+  [[id:068865A5-2C31-4735-873E-2CB04A134EF2][Serve the tenor catalogue composed view]]
+  serves it. This group serves the other eight tenor routes.
+- A one-row write as a screen states it is =rr::versioned_write=, sent through
+  =forwarding::put_at_version=, and answered by =rr::result_with=. The
+  conventions family write uses the same three.
+- A resolution and a write answer 200 with the service's result whatever its
+  outcome, as the BFF did: a declined rule is an answer.
+- The membership write takes its convention and tenor codes from the address,
+  as the BFF did, so the body may leave them out.
+
+Decisions made in the records group:
+
+- The generic =/api/refdata/:resource= routes are answered by the generated
+  unit of each resource, at the address the BFF matched. =route_pairing.py=
+  states them as families: each names the BFF registry, the C++ address with
+  ={resource}= in it, and which resources must answer it (every resource, those
+  read by one key, those read by a parent, or the writable ones). The inventory
+  reads the registry and fails when a resource lacks its address. The 26
+  resources of =REFDATA_RECORDS= all answer.
+- The ORE currency routes link =ores.ore.api= into the refdata part. The
+  inventory files a route by the screen that calls it, and these are the
+  currency screen's import and export.
+- =GET /api/change-reasons= was missing from the plan's count; it is reference
+  data and is ported here, in =ores.http.core= beside the history route, because
+  every screen's reason picker reads it.
+- A failed calendar days read or rebuild answers 409 with the service's words,
+  as the BFF's =OperationFailedError= did.
 
 * Measurements
 
@@ -61,6 +135,11 @@ task and name that file in the Command column.
 
 * Notes
 
+Component audit of =ores.http= at close: =validate_docs.sh= passes for all 40
+components. The task adds no part. =ores.http.refdata= now also links
+=ores.ore.api=, a service's wire protocol, which the component overview allows:
+the gateway depends on the services' wire protocols and not on their libraries.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -76,12 +155,71 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4620][#4620]] | [http] Serve the calendar days, ORE currency documents and change reasons |
+| [[https://github.com/OreStudio/OreStudio/pull/4619][#4619]] | [http] Serve the tenors screen's operations |
+| [[https://github.com/OreStudio/OreStudio/pull/4618][#4618]] | [http] Serve the conventions screen's families, page and write |
+| [[https://github.com/OreStudio/OreStudio/pull/4616][#4616]] | [http] Serve the counterparty screen's routes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the first pattern added took a path a more specific pattern also matched. | =router.cpp= | Accepted | A literal segment now beats a parameter; a router test adds the parameter first to prove it. |
+| 2 | Local review: =match= now tries every route rather than stopping at the first. | =router.cpp= | Declined | The first match stopped half way on average, so the cost at most doubles; correctness needs every candidate. |
+| 3 | Local review: three copies of one identifier check. | =record_routes.cpp= | Accepted | One =rr::is_uuid=, with a test; the IAM and assets copies are deleted. |
+| 4 | Local review: a composite body that leaves a child list out. | =counterparty_screen_routes.cpp= | Accepted | Each list is optional and becomes empty, as the BFF's defaults did; the counterparty itself is still read strictly. |
+| 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | PR #4616: an upper case id in a children read matched no rows. | =counterparty_screen_routes.cpp= | Accepted | =read_ids= puts each id in its lower case form; a test names one in upper case. |
+| 7 | PR #4616: the business centre write was not atomic. | =counterparty_screen_routes.cpp= | Accepted | The links go as one =put_many= and the closes as one =delete_many=; each lands whole, links first. |
+| 8 | PR #4616: the composite message promised an id check the code did not make. | =counterparty_screen_routes.cpp= | Accepted | A nil counterparty id is refused, as the BFF's schema did; a test proves it. |
+| 9 | PR #4616: =match= re-parsed each pattern and allocated per route. | =router.cpp= | Accepted | The rank is worked out once in =add_route=; one parameter map is reused. |
+| 10 | PR #4616: =is_uuid= used =std::regex=. | =record_routes.cpp= | Accepted | A 36 character check replaces it. |
+| 11 | PR #4616: duplicate ids, and a whole read with no bound. | =counterparty_screen_routes.cpp= | Accepted | Each id is named once; a whole read stops with an error after 1000 pages. |
+| 12 | Local review: the counterparty and conventions units each held the screens' intent and a paged whole read. | =record_routes.hpp=, =forwarding.hpp= | Accepted | One =rr::stated_intent= with =rr::intent_of=, and one =forwarding::forward_all=; the counterparty copies are deleted. |
+| 13 | Local review: both test files defined =answer_at=, and both units defined =wire_fields= in the same namespace, so the unity check failed. | Refdata tests and units | Accepted | One =route_answer.hpp= helper in the suite; each unit keeps its bodies in a namespace named for it. |
+| 14 | Local review: a hand table of families can drift from the registry. | =convention_screen_routes.cpp= | Accepted | A test compares the table with the registry; generating the table is left until a second consumer needs it. |
+| 15 | PR #4618: the families read makes about 28 sequential round trips. | =convention_screen_routes.cpp= | Declined | The BFF read each count in turn, one row each; a failed count is null, not a failed page. Concurrent counts can come with the screen's own change. |
+| 16 | PR #4618: the refusal catch looked unreachable. | =convention_screen_routes.cpp= | Accepted | A refusal is not a standard exception, so both handlers run; the refusal handler is now first, as in =count_of=. |
+| 17 | PR #4618: the zip keeps only the first row of each part. | =convention_screen_routes.cpp= | Accepted | A comment states why: a part array holds the one row of its central row, as the BFF zipped. |
+| 18 | PR #4618: a read-only family's write answers 400. | =convention_screen_routes.cpp= | Declined | The BFF answered 400, and ores.web reads it so. |
+| 19 | PR #4618: a missing version means a new row. | =convention_screen_routes.cpp= | Accepted | The refusal says the version is null for a new row. |
+| 20 | PR #4618: a write answers 200 whatever its outcome. | =convention_screen_routes.cpp= | Accepted | The route's OpenAPI description says to read =result.outcome=. |
+| 21 | PR #4618: minor points. | =convention_screen_routes.cpp= | Partly accepted | The local =written= is renamed =row=. The 26-row lookup stays; the plain families' shared flag is tested against the registry. |
+| 22 | PR #4618: run the write and a composite page against a live service. | All | Declined | The dev database is in bootstrap mode with no accounts; the switch task tests ores.web end to end. |
+| 23 | Local review: the tenor and conventions writes each built the precondition and the answer. | =record_routes.hpp=, =forwarding.hpp= | Accepted | One =rr::versioned_write=, =forwarding::put_at_version= and =rr::result_with=; the conventions unit uses them. |
+| 24 | Local review: a resolution's horizon and spot are typed dates. | =tenor_screen_routes.cpp= | Accepted | A malformed date is refused with 400 before forwarding; the BFF passed the text to the service, which refused it. |
+| 25 | PR #4619: the tenor and convention writes do not check the row's own code. | =tenor_screen_routes.cpp= | Declined | The BFF passed the row to the service, which checks it and names the field it refuses. |
+| 26 | PR #4619: every question requires a calendar code. | =tenor_screen_routes.cpp= | Declined | The BFF required a code of 1 to 100 characters on all three, and the screen always sends one. |
+| 27 | PR #4619: =decltype(Put{}.change.write)= in =put_at_version=. | =forwarding.hpp= | Declined | Every put request is default constructible, and the protocols name no write type alias. |
+| 28 | PR #4619: the membership write and removal answer only the result. | =tenor_screen_routes.cpp= | Declined | The BFF answered only the result, and the screen reads only that. |
+| 29 | PR #4619: =question_sentence= has a static initialiser. | =tenor_screen_routes.cpp= | Accepted | It is a =constexpr std::string_view=. |
+| 30 | Local review: a generic BFF route has no single C++ route to pair with. | =route_pairing.py=, =route_inventory.py= | Accepted | Families pair it with one address per registry resource; four tests prove the registry read and the check that names a missing address. |
+| 31 | Local review: =/api/change-reasons= was a reference data gap outside the plan. | =change_reason_routes.cpp= | Accepted | Ported in this group, with a test of its page bounds. |
+| 32 | PR #4620: a year's days are read by paging from the calendar's first day. | =calendar_screen_routes.cpp= | Deferred | The dates filter has no date range, so the fix is on the refdata service; captured as [[id:8F6F0248-B10D-4BB6-A402-BF262F7589E8][A calendar year read pages from the calendar's first day]]. |
+| 33 | PR #4620: two import choices may name one currency. | =currency_ore_document_routes.cpp= | Accepted | The service takes the last one, so the order would decide; the gateway refuses a repeated currency, with a test. |
+| 34 | PR #4620: a failed days read answers 409. | =calendar_screen_routes.cpp= | Declined | The BFF answered 409, and the screen reads it so. |
+| 35 | PR #4620: small notes. | =calendar_screen_routes.cpp=, =currency_ore_document_routes.cpp= | Partly accepted | The local =year= is now =requested_year=. The preview body keeps the server's 1 MB default limit, which holds a currency file. |
 
 * Result
+
+The C++ server answers 23 of the reference data area's BFF routes in hand-written
+units, over four pull requests. The generated units answer the five generic
+record routes, which the inventory now pairs as families and checks against the
+BFF's registry. Each
+new route has a test of its refusals and of its forward step. Six routes leave
+this task: the conventions document and terms routes and the three curve
+configuration routes read the ORE value sets, so
+[[id:504FD469-B1A1-4480-9694-34724AD2F2A5][Stand up the reporting part and serve its resources]]
+serves them with the value set reader; the tenor catalogue is a composed view,
+so [[id:068865A5-2C31-4735-873E-2CB04A134EF2][Serve the tenor catalogue composed view]]
+serves it.
+
+| Group | PR | Routes | State |
+|-------+----+--------+-------|
+| Counterparties | #4616 | 6 | Merged |
+| Conventions: families, page and write | #4618 | 3 | Merged |
+| Tenors | #4619 | 8 | Merged |
+| Records, calendars, ORE currency and change reasons | #4620 | 6 and 5 families | Merged |
+| Conventions: document and terms | | 2 | Moved to the reporting part task |
+| Curve configurations | | 3 | Moved to the reporting part task |
+| Tenor catalogue view | | 1 | Moved to the tenor catalogue view task |

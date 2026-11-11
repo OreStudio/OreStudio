@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: F3AB6302-3325-4BDF-8106-70E0168C40F9
+:END:
+#+title: Story: Make the build faster
+#+description: Cut CI and local build time by tuning unity batches, removing compile-time hot spots and setup cost.
+#+type: story
+#+level: s2
+#+filetags: :ci:build:sprint_30:v0:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Builds get fast enough that integration moves more often and an advisory PR build becomes possible. Today a continuous Linux build takes 42 min (debug) to 90 min (release) on a 4-core runner, sccache hits 38% of compiles, one unity unit (ores.synthetic.core.tests unity_0) takes 24 min alone, and setup costs 7 to 10 min. Unity builds stay: they cut CI from 230-280 min to 60-130 min. No new hardware is available, so all experiments run on GitHub-hosted runners.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Measure the unity batch size.          |
+| Last touched  | 2026-11-11                               |
+
+* Acceptance
+
+- The unity batch size of each heavy target is chosen from a measured comparison of 16, 8, 4 and off.
+- No single compile unit takes more than 5 min on the CI runner.
+- CI setup before the build takes at most 2 min.
+- A measured distribution of incremental PR build times decides whether an advisory PR build job is added.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EEC2B388-FD61-44D5-9C5F-C725C1260027][Measure the unity batch size]] | STARTED | 2026-11-11 | | Compare unity batch sizes 16, 8, 4 and off on GitHub runners, for a cold build and an incremental PR build. |
+| [[id:60C38C16-8BF0-4687-A0BC-D6F0617BE6BC][Split the slowest compile units]] | BACKLOG | | | Find why the slowest compile units take 7 to 24 min and fix the cause. |
+| [[id:1E08BE17-D216-4CE6-8EE3-BE761DB9D551][Prebuild the CI image]] | BACKLOG | | | Build a CI container image with clang, packages, PostgreSQL and vcpkg dependencies installed. |
+| [[id:2148728E-C651-4C29-BA72-52E7AEB5E21D][Measure incremental PR builds]] | BACKLOG | | | Replay the last 20 merged PRs on GitHub runners to measure incremental build and affected-test times. |
+
+* Decisions
+
+- *Keep unity builds.* Unity (commit 7f2c4f037a, 2026-10-27) cut the continuous Linux build-and-test step from 230-280 min to 60-130 min. Without it a cold debug run is close to the 6-hour job limit. Tune the batch size per target instead of removing it.
+- *Run every experiment on GitHub-hosted runners.* The repository is public, so the minutes are free, and the local machine already serves 10 worktrees with 2 concurrent builds.
+- *A PR build, if any, is advisory.* It cannot reliably finish in 5 to 15 min on a 4-core runner, so it must not block a merge.
+- *Evidence, run 42954775219 (2026-11-11).* Build 42 min (debug) and 90 min (release); tests 9 to 10 min; setup 7 to 10 min; sccache hit 347 of 914 compiles. Continuous runs since unity vary from 22 to 177 min on near-identical code, so a warm cache already gives a fast build.
+
+* Out of scope
+
+- The branch promotion model: [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]].
+- Choosing which local checks a change runs: [[id:3C11CA27-D35F-49AD-8A23-9017F6F7C3DB][Run only the checks a change needs — the remaining work]].
+- New hardware or paid larger runners.

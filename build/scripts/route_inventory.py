@@ -32,7 +32,7 @@ from route_classification import (  # noqa: E402
     RULES,
     VIEWS,
 )
-from route_pairing import PAIRS  # noqa: E402
+from route_pairing import FAMILIES, PAIRS  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 INVENTORY = ROOT / "doc/knowledge/architecture/http_route_inventory.org"
@@ -389,6 +389,85 @@ def composed_views(found):
     return lines
 
 
+REGISTRY_ARRAY = re.compile(r"^(?:export )?const (\w+)\b[^=]*= \[\n(.*?)^\];", re.MULTILINE | re.DOTALL)
+REGISTRY_ENTRY = re.compile(r"^    \{\n(.*?)^    \},?$", re.MULTILINE | re.DOTALL)
+# A group of entries spread into the array, each completed by the members a
+# trailing map adds, such as the reference data lookups the synthetic screens read.
+REGISTRY_SPREAD = re.compile(
+    r"^    \.\.\.\[\n(.*?)^    \]\.map\([^\n]*\n(.*?)^    \}\)\),?$", re.MULTILINE | re.DOTALL)
+SPREAD_ENTRY = re.compile(r"^        \{\n(.*?)^        \},?$", re.MULTILINE | re.DOTALL)
+
+
+def members_of(body, indent):
+    """An entry's own members, one per line from its first column: nested values are deeper."""
+    return "\n".join(line[indent:] for line in body.splitlines()
+                     if line.startswith(" " * indent) and line[indent:indent + 1] != " ")
+
+
+def resource_of(members):
+    """What one registry entry answers, from its members, or None when it names no key.
+
+    The two registries state a resource in two forms. The reference data one
+    names =keyFields=, =listBy= and =writable=; the synthetic one names one
+    =keyField=, a =parentField= for a read by parent, and a =writes= schema for
+    a resource a screen writes.
+    """
+    key = re.search(r"^key: '([^']+)'", members, re.MULTILINE)
+    if key is None:
+        return None
+    fields = re.search(r"^keyFields: \[([^\]]*)\]", members, re.MULTILINE)
+    writable = re.search(r"^writable: (true|false)", members, re.MULTILINE)
+    named = lambda member: re.search(rf"^{member}:", members, re.MULTILINE) is not None
+    return {
+        "key": key.group(1),
+        "every": True,
+        "one_key": named("keyField") or (
+            fields is not None and len(re.findall(r"'[^']+'", fields.group(1))) == 1),
+        "list_by": named("listBy") or named("parentField"),
+        "writable": writable.group(1) == "true" if writable is not None else named("writes"),
+    }
+
+
+def registry_resources(spec):
+    """The resources a BFF registry declares, each with what it answers.
+
+    The spec is a file and the name of the array it declares. Each entry states
+    its key, how many fields name a row, whether it is read by a parent and
+    whether a screen writes it, which decide which of a family's routes the
+    resource must answer.
+    """
+    path, name = spec.rsplit(":", 1)
+    text = (ROOT / path).read_text(encoding="utf-8")
+    array = next((m.group(2) for m in REGISTRY_ARRAY.finditer(text) if m.group(1) == name), None)
+    if array is None:
+        return []
+    found = []
+    for entry in REGISTRY_ENTRY.finditer(array):
+        found.append(resource_of(members_of(entry.group(1), 8)))
+    for spread in REGISTRY_SPREAD.finditer(array):
+        shared = members_of(spread.group(2), 8)
+        for entry in SPREAD_ENTRY.finditer(spread.group(1)):
+            found.append(resource_of(members_of(entry.group(1), 12) + "\n" + shared))
+    return [resource for resource in found if resource is not None]
+
+
+def family_targets(family):
+    """The C++ routes a family pairs a BFF route with: one per resource that must answer it."""
+    spec, method, template, needs = family
+    return [(method, template.replace("{resource}", resource["key"]))
+            for resource in registry_resources(spec) if resource[needs]]
+
+
+def target_of(key):
+    """The C++ equivalent of a BFF route as the pairing section prints it, or none."""
+    if key in PAIRS:
+        return " ".join(PAIRS[key])
+    if key in FAMILIES:
+        _, method, template, _ = FAMILIES[key]
+        return f"{method} {template}, one per resource ({len(family_targets(FAMILIES[key]))})"
+    return "none"
+
+
 def coverage(found):
     """The coverage and pairing sections, counted from route_pairing."""
     per_area = {}
@@ -399,8 +478,8 @@ def coverage(found):
         area = decision.area if decision is not None else NO_AREA
         counts = per_area.setdefault(area, [0, 0])
         counts[0] += 1
-        counts[1] += key in PAIRS
-        target = " ".join(PAIRS[key]) if key in PAIRS else "none"
+        counts[1] += key in PAIRS or key in FAMILIES
+        target = target_of(key)
         rows.append(f"| {key[0]} ={key[1]}= | {target} |")
 
     lines = ["* The coverage", ""]
@@ -434,6 +513,15 @@ def bad_pairs(found):
             problems.append(f"{' '.join(source)}: the BFF does not answer this route")
         if target not in cpp:
             problems.append(f"{' '.join(source)}: ores.http does not answer {' '.join(target)}")
+    for source, family in FAMILIES.items():
+        if source not in bff:
+            problems.append(f"{' '.join(source)}: the BFF does not answer this route")
+        targets = family_targets(family)
+        if not targets:
+            problems.append(f"{' '.join(source)}: {family[0]} declares no resource")
+        for target in targets:
+            if target not in cpp:
+                problems.append(f"{' '.join(source)}: ores.http does not answer {' '.join(target)}")
     return problems
 
 

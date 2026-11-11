@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 877BF897-FE27-4F45-8293-E207D23AC1F7
+:END:
+#+title: Never run builds with cmake directly
+#+description: Build through compass build, never with cmake --build, make or ninja.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :build:memory:project:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+Never run a build by calling cmake --build, make or ninja directly. Build through compass build with the targets, so the build prints its own log path and keeps the job cap.
+
+*Why:* The user said: also never run builds using cmake directly, after the agent started a cmake --build of the ores.http suites.
+
+*How to apply:* Whenever a change needs compiling, use compass build with the affected targets and -j 4 or fewer, or let the user run the build when they say so. Tail the log file compass prints; never pipe or redirect the command.

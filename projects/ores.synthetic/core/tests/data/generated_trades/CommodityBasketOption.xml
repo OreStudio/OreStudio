@@ -3,30 +3,27 @@
   <Trade id="0e6cb4a2-2a7b-571c-bf6b-f956ac1db9bf">
     <TradeType>CommodityBasketOption</TradeType>
     <CommodityBasketOptionData>
-      <Currency>EUR</Currency>
+      <Currency>USD</Currency>
       <Notional>72681.74</Notional>
       <Strike>87</Strike>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
           <Name>NYMEX:CL</Name>
-          <Weight>0.3333333333333333</Weight>
+          <Weight>0.5</Weight>
         </Underlying>
         <Underlying>
           <Type>Commodity</Type>
           <Name>NYMEX:NG</Name>
-          <Weight>0.3333333333333333</Weight>
-        </Underlying>
-        <Underlying>
-          <Type>Commodity</Type>
-          <Name>NYMEX:CL</Name>
-          <Weight>0.3333333333333333</Weight>
+          <Weight>0.5</Weight>
         </Underlying>
       </Underlyings>
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
+        <PayoffType>Vanilla</PayoffType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2034-09-02</ExerciseDate>
         </ExerciseDates>
@@ -36,30 +33,27 @@
   <Trade id="e90a03e7-0ff1-57f5-ae66-716b64d4a5e1">
     <TradeType>CommodityBasketOption</TradeType>
     <CommodityBasketOptionData>
-      <Currency>EUR</Currency>
+      <Currency>USD</Currency>
       <Notional>97047.19</Notional>
       <Strike>160.58</Strike>
       <Underlyings>
         <Underlying>
           <Type>Commodity</Type>
           <Name>NYMEX:NG</Name>
-          <Weight>0.3333333333333333</Weight>
+          <Weight>0.5</Weight>
         </Underlying>
         <Underlying>
           <Type>Commodity</Type>
           <Name>NYMEX:CL</Name>
-          <Weight>0.3333333333333333</Weight>
-        </Underlying>
-        <Underlying>
-          <Type>Commodity</Type>
-          <Name>NYMEX:NG</Name>
-          <Weight>0.3333333333333333</Weight>
+          <Weight>0.5</Weight>
         </Underlying>
       </Underlyings>
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
+        <PayoffType>Vanilla</PayoffType>
         <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2032-08-02</ExerciseDate>
         </ExerciseDates>

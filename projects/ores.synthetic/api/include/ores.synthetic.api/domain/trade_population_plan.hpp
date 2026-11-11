@@ -239,40 +239,6 @@ struct trade_generation_scope final {
  * family that has no security at all.
  */
 /**
- * @brief One constituent of a worst-of basket.
- *
- * The kind travels with the code because the store refuses a code the kind's
- * catalogue does not hold, and the price is what the constituent opened at.
- */
-struct equity_basket_member final {
-    std::string name;
-    std::string kind;
-    std::optional<double> weight;
-    std::optional<double> initial_price;
-};
-
-/**
- * @brief One determination period of a worst-of basket.
- *
- * The document states its two level lists one entry per date, so a period
- * carries both levels and the ordinal that pairs them with the schedule.
- */
-struct equity_basket_period final {
-    std::optional<std::chrono::year_month_day> period_date;
-    std::optional<double> knock_out_level;
-    std::optional<double> fixed_trigger_level;
-};
-
-/**
- * @brief One range an accumulator pays inside, and the leverage it pays at.
- */
-struct equity_range_bound final {
-    std::optional<double> range_from;
-    std::optional<double> range_to;
-    std::optional<double> leverage;
-};
-
-/**
  * @brief The facts the commodity planner draws, before it states its rows.
  *
  * The family states rows in the plan, so this is the drawing's own shape and
@@ -333,94 +299,6 @@ struct commodity_terms final {
  * a reader of a bond slot sees bond facts and a reader of another family never
  * has to ask what a security is.
  */
-
-/**
- * @brief What the equity family's nine tables state.
- *
- * The union of the family rather than a struct per product, because the
- * planner makes one payload and the writer reads from it the fields the routed
- * table states. A member a product does not state keeps its default and the
- * writer never reads it.
- *
- * A basket is rows and not a string: the constituents carry their kind and the
- * price each opened at, and the periods carry the levels the determination
- * dates state, so a worst-of basket of two names over four dates states two
- * constituents and four periods.
- */
-struct equity_terms final {
-    /// The underlying a single-name product states.
-    std::string underlying_name;
-    /// The kind the underlying belongs to: =Equity=, =FX= or =Commodity=.
-    std::string underlying_kind;
-    std::string currency;
-    /// The notional a swap or an option states, or the quantity of a forward
-    /// or a position.
-    double notional = 0.0;
-    double quantity = 0.0;
-    /// The price a forward, a position or an option states.
-    std::optional<double> fixed_price;
-    std::optional<double> strike;
-
-    std::chrono::year_month_day start_date;
-    std::chrono::year_month_day maturity_date;
-    std::chrono::year_month_day expiry_date;
-    std::optional<std::chrono::year_month_day> averaging_start_date;
-    std::optional<std::chrono::year_month_day> averaging_end_date;
-
-    /// =Call= or =Put=, and =European=, =American= or =Bermudan=.
-    std::string option_type;
-    std::string exercise_type;
-    /// =Cash= or =Physical=.
-    std::string settlement_type;
-    /// =Long= or =Short=.
-    std::string long_short;
-
-    /// The barriers a barrier or a digital product states.
-    std::optional<double> lower_barrier;
-    std::optional<double> upper_barrier;
-    std::string lower_barrier_type;
-    std::string upper_barrier_type;
-    std::optional<double> barrier_level;
-    std::string barrier_type;
-    std::optional<double> rebate;
-    std::optional<double> payout_amount;
-
-    /// How a swap returns, and how often it pays.
-    std::string return_type;
-    std::string payment_frequency_code;
-    /// How an Asian averages, and how often a cliquet observes.
-    std::string average_type;
-    std::string cliquet_frequency;
-    /// =Variance= or =Volatility=, the moment a variance swap states.
-    std::string moment_type;
-    std::optional<double> variance_strike;
-
-    /// The accumulator's own terms.
-    std::string fixing_frequency;
-    std::optional<double> knock_out_level;
-    std::optional<double> target_amount;
-    std::string target_type;
-    std::string payoff_type;
-    /// The TaRF's points and the cliquet's caps.
-    std::optional<double> target_points;
-    std::optional<double> moneyness;
-    std::optional<double> local_cap;
-    std::optional<double> local_floor;
-    std::optional<double> global_cap;
-    std::optional<double> global_floor;
-    std::uint32_t settlement_days = 0;
-    std::optional<double> premium;
-    std::string premium_currency;
-    std::optional<std::chrono::year_month_day> premium_payment_date;
-
-    /// The constituents of a worst-of basket, in the document's order.
-    std::vector<equity_basket_member> basket;
-    /// The periods a worst-of basket observes, in the document's order.
-    std::vector<equity_basket_period> periods;
-    /// The ranges an accumulator pays inside.
-    std::vector<equity_range_bound> range_bounds;
-};
-
 
 /**
  * @brief One trade the population states, with every reference already

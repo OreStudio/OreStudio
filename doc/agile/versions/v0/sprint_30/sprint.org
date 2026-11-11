@@ -127,6 +127,8 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] | BACKLOG | | | Generated trades are correct according to ORE: it builds them, and a report values them to ORE's own NPVs. |
 | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] | STARTED | 2026-11-09 | | The C++ server answers a fraction of what the BFF answers, and the browser calls none of it. Port the layer to parity one functionality at a time, merge each as it lands, and leave the BFF serving the browser until every route it answers has an equivalent. Retiring the BFF is a later set of pull requests, once the coverage is complete. |
 | [[id:23FBE0B5-A263-49B8-90F5-B45B42DD46F1][Split the types that carry too many columns — the remaining work]] | BACKLOG | | | The persisted types hold 30 to 60 flat columns, which the data-oriented model forbids. Inventory them, decide which are one aggregate over several components, and split those into components of their own. |
+| [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] | BACKLOG | | | Main breaks often because every PR lands untested on main. PRs merge into dev; CI fast-forwards integration on a green continuous Linux run and main on a green nightly, so developers start from green and main only goes from green to green. |
+| [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] | BACKLOG | | | A continuous Linux build takes 42 to 90 min on a 4-core runner with a 38% cache hit rate and a 24-min compile unit. Tune unity batches, remove compile hot spots and setup cost, and measure whether an advisory PR build can fit. |
 
 ** Hotfixes
 

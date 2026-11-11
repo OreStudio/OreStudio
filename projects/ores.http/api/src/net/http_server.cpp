@@ -22,6 +22,8 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <chrono>
+#include <stdexcept>
 #include <string>
 
 namespace ores::http::net {
@@ -59,6 +61,10 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
     sessions_ = std::make_shared<domain::session_store>(
         std::chrono::hours(12), [] { return std::chrono::system_clock::now(); });
 
+    if (options_.rate_limit_enabled)
+        limits_ = std::make_shared<rate_limiting>(rate_policies::from(options_),
+                                                  trusted_proxies::parse(options_.trusted_proxies),
+                                                  options_.rate_limit_max_keys);
     BOOST_LOG_SEV(lg(), info) << "HTTP server initializing with options: " << options_;
 
     // No credential is built from these options. The verifier arrives from the
@@ -155,8 +161,26 @@ asio::awaitable<void> http_server::run() {
     acceptor_ = std::make_unique<tcp::acceptor>(io_ctx_, endpoint);
     acceptor_->set_option(asio::socket_base::reuse_address(true));
 
+    if (limits_) {
+        /*
+         * A route that names a policy no one defined would run unlimited, or with a
+         * budget nobody chose, so the server refuses to start instead.
+         */
+        const auto unknown = limits_->policies.unknown_policies(router_->routes());
+        if (!unknown.empty()) {
+            std::string list;
+            for (const auto& u : unknown)
+                list += (list.empty() ? "" : "; ") + u;
+            throw std::invalid_argument("Routes name rate policies that do not exist: " + list);
+        }
+    }
+
     running_.store(true);
     bytes_accumulator_->start();
+    if (limits_) {
+        sweep_timer_ = std::make_unique<boost::asio::steady_timer>(io_ctx_);
+        schedule_sweep();
+    }
     BOOST_LOG_SEV(lg(), info) << "Service ready.";
     BOOST_LOG_SEV(lg(), info) << "Waiting for requests...";
     BOOST_LOG_SEV(lg(), info) << "Accepting connections on port " << options_.port << ".";
@@ -198,7 +222,9 @@ asio::awaitable<void> http_server::accept_connections() {
                                                           accumulate_,
                                                           &counters_,
                                                           sessions_,
-                                                          cookie_);
+                                                          cookie_,
+                                                          limits_,
+                                                          renewer_);
 
             asio::co_spawn(
                 io_ctx_,
@@ -233,6 +259,18 @@ std::uint16_t http_server::bound_port() const {
     return ec ? 0 : endpoint.port();
 }
 
+void http_server::schedule_sweep() {
+    sweep_timer_->expires_after(std::chrono::seconds(30));
+    sweep_timer_->async_wait([this](const boost::system::error_code& ec) {
+        if (ec || !running_.load())
+            return;
+        const auto dropped = limits_->limiter.sweep();
+        BOOST_LOG_SEV(lg(), trace) << "Rate limiter swept " << dropped << " full bucket(s), "
+                                   << limits_->limiter.tracked() << " kept";
+        schedule_sweep();
+    });
+}
+
 void http_server::stop() {
     BOOST_LOG_SEV(lg(), info) << "Stopping HTTP server...";
     running_.store(false);
@@ -254,6 +292,9 @@ void http_server::stop() {
         const auto accumulator = bytes_accumulator_;
         boost::asio::post(io_ctx_, [accumulator] { accumulator->stop(); });
     }
+
+    if (sweep_timer_)
+        boost::asio::post(io_ctx_, [this] { sweep_timer_->cancel(); });
 
     BOOST_LOG_SEV(lg(), info) << "HTTP server stop initiated, " << "waiting for "
                               << active_connections_.load() << " active connections";

@@ -20,6 +20,8 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "feed_operation_routes_tests.cpp"
+    "feed_tick_routes_tests.cpp"
     "folder_web_routes_tests.cpp"
     "fx_spot_generation_config_web_routes_tests.cpp"
     "gmm_component_web_routes_tests.cpp"
@@ -29,6 +31,7 @@ set(files
     "main.cpp"
     "market_data_generation_config_web_routes_tests.cpp"
     "market_data_provider_web_routes_tests.cpp"
+    "process_preview_routes_tests.cpp"
     "variance_calibration_input_point_web_routes_tests.cpp"
     "variance_calibration_input_web_routes_tests.cpp"
     "variance_calibration_web_routes_tests.cpp"

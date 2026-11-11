@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-simulation-collections-and-actions
+#+pr: 4623
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Port the 25 BFF routes of the simulation area to the C++ server. Include the rem
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,78 @@ Port the 25 BFF routes of the simulation area to the C++ server. Include the rem
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The inventory lists 25 unpaired simulation resource routes in five groups. Each
+group is one pull request, so each review covers one screen's routes.
+
+| Group | Routes | BFF source |
+|-------+--------+------------|
+| Feed and folder operations | 7 | =synthetic.ts= |
+| Feed ticks and the raster | 2 | =synthetic.ts=, =market-regime.ts=, =feed-ticks.ts= |
+| Simulation and conversion | 6 | =synthetic.ts= |
+| Calibration | 6 | =calibration.ts= |
+| Market regime | 4 | =market-regime.ts= |
+
+The feed ticks and the raster read buffers the BFF fills by listening to each
+running feed's tick subject, so they need a tick buffer in the gateway, which
+is its own pull request.
+
+The three composed views of the area (=GET /api/synthetic/calibration/:assetClass=,
+=GET /api/synthetic/feed-folders= and =GET /api/synthetic/market-trace=) belong
+to [[id:BE5A7BF2-B680-42BF-AB49-E9801C307742][Serve the synthetic composed views]].
+
+The first pull request also pairs the five generic =/api/synthetic/:resource=
+routes as families, as the reference data task paired its own. The generated
+units already answer the 16 resources of the BFF's =SYNTHETIC_RECORDS=. That
+registry states a resource in another form, so the inventory's registry reader
+learns it: one =keyField=, a =parentField= for a read by parent, and
+=readOnlyBecause= for a resource no screen writes.
+
+Each route keeps the BFF's address and answer shape, as the earlier ports did.
+
+Decisions made in the feed and folder operations group:
+
+- The folder start and stop call the market data service, so the synthetic part
+  links =ores.marketdata.api=, a service's wire protocol. The inventory files a
+  route by the screen that calls it, and these are the feed screen's.
+- A refused start or stop answers 409, a refused page or selection 400, and an
+  unread running set 502, as the BFF answered them.
+- The feed page refuses a query parameter it does not know, as the BFF's strict
+  schema did. A selection body ignores a member it does not know, because the
+  codec reads the members it names; the BFF refused one.
+- The registry reader learns the synthetic form, and reads the three reference
+  data lookups that the synthetic registry spreads into its array with the
+  members a trailing map adds.
+
+Decisions made in the feed ticks group:
+
+- =feed_tick_buffers= keeps the newest 500 ticks of each source a read names,
+  as the BFF's =FeedTickBuffers= did, and is shared by every session. It listens
+  on =synthetic.v1.ops.feed_tick.<source>= through the client's transport and
+  reads each =market_tick= with the process's wire codec.
+- Each source's ticks have a lock of their own, which a tick handler takes and
+  nothing else holds while it does. The handler owns the run it fills, so a tick
+  that arrives while a source is dropped writes to a buffer no one reads. A
+  dropped subscription stops outside the buffers' lock, because stopping waits
+  for its handlers.
+- The buffers live in the route handlers, which the router owns. The server
+  declares the NATS client before the HTTP server, so the subscriptions stop
+  before the client goes.
+- The subscriber is a function the buffers are given, so a test hands ticks in
+  without a transport.
+- A tick's time is written as UTC to the millisecond, the form the browser
+  parses; the BFF passed the text its decoder gave.
+
+Decisions made in the simulation and conversion group:
+
+- Five of the six bodies read as the service's own request, so the codec checks
+  their shape and the route checks the bounds the BFF checked. The simple-view
+  conversion reads a body of its own, because the BFF defaulted the side of
+  the conversion the screen leaves out.
+- A preview the service refuses answers 400 with its words, as the BFF did.
+- An IR conversion's parameters arrive as a name-to-value object and go to the
+  service as two aligned lists; its answer is the object again. The members of
+  that object come back in name order, which a JSON object does not promise
+  anyway.
 
 * Measurements
 
@@ -76,12 +145,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4623][#4623]] | [http] Serve the synthetic screens' previews |
+| [[https://github.com/OreStudio/OreStudio/pull/4622][#4622]] | [http] Serve the feed ticks and the raster |
+| [[https://github.com/OreStudio/OreStudio/pull/4621][#4621]] | [http] Serve the feed screen's operations |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the synthetic registry spreads three lookups whose members a map adds. | =route_inventory.py= | Accepted | The reader takes the spread entries with the map's members; a test proves both forms and that a nested member is not the entry's own. |
+| 2 | Local review: a third suite needed a route answer helper. | =synthetic/tests/route_answer.hpp= | Accepted | The same helper as the refdata suite's, in the synthetic suite's namespace; a shared test library would need a home outside the parts. |
+| 3 | PR #4621: the feed page's row splice assumed a non-empty object. | =feed_operation_routes.cpp= | Accepted | =with_running= adds the member to an empty object too, and refuses a row that is not an object. |
+| 4 | PR #4621: each page also reads the running feeds, and the two failures answer 400 and 502. | =feed_operation_routes.cpp= | Declined | The BFF read the running set on every page, and answered a refused page 400 and an unread running set 502. |
+| 5 | PR #4621: selection ids are not checked as identifiers. | =feed_operation_routes.cpp= | Declined | The BFF capped each at 40 characters and left the rest to the service. |
+| 6 | PR #4621: a single start answers 409, a selection 400; =from_chars= refuses a sign. | =feed_operation_routes.cpp= | Declined | Both statuses are the BFF's. A signed number is refused rather than read, which no screen sends. |
+| 7 | PR #4621: the message answer repeated. | =feed_operation_routes.cpp= | Accepted | One =message_answer= helper. |
+| 8 | Local review: a subscription that stops inside the buffers' lock would block every read while it drains. | =feed_tick_buffers.cpp= | Accepted | =keep_only= moves the dropped runs out and stops them after the lock is released. |
+| 9 | Local review: a tick could reach a run that was dropped. | =feed_tick_buffers.cpp= | Accepted | The handler holds the run by a shared pointer; a test sends a tick to a dropped source. |
+| 10 | PR #4622: running feeds come first only within the first 120 the service answers. | =feed_tick_routes.cpp= | Accepted | As the BFF read them; the comment now says the partition is within that page. |
+| 11 | PR #4622: a raster read drops the buffers a ticks read made. | =feed_tick_buffers.hpp= | Accepted | As the BFF's did; the class comment now says a stopped feed's ticks last until a raster read stops listening. |
+| 12 | PR #4622: ticks reads could grow the subscriptions without end. | =feed_tick_buffers.cpp= | Accepted | At most a thousand sources are heard; a new one past that answers no ticks. A test proves the bound and that a dropped source frees a place. |
+| 13 | PR #4622: the raster's arrival time is the feed's stamp. | =feed_tick_buffers.hpp= | Accepted | As the BFF read it; =arrival_times= now says it reads the observation time. |
+| 14 | PR #4622: minor points. | =feed_tick_buffers.cpp=, =feed_tick_routes.cpp= | Partly accepted | The ticks route says its first read answers none, and a test sends ticks from another thread while reads drop and watch sources. =watch= still subscribes under the lock, so two reads of one source cannot both subscribe. =from_chars= for a double is used in the synthetic service and the ORE core already. |
+| 15 | PR #4623: the IR conversion caps no parameter count and does not trim a name. | =process_preview_routes.cpp= | Accepted | At most 100 parameters, each named by a trimmed code of 1 to 100 characters, as the other IR previews; two tests prove it. |
+| 16 | PR #4623: the FX engine list could fall out of step with the service. | =process_preview_routes.cpp= | Accepted | The comment says the service publishes none, so the list is stated as the BFF stated it. |
+| 17 | PR #4623: no price or number check on the FX paths, NaN, every refusal a 400, the IR value padding, the frequency not trimmed. | =process_preview_routes.cpp= | Declined | Each is the BFF's behaviour. JSON carries no NaN or infinity and the reader refuses them; a transport failure throws and answers 502, so only the service's own refusal is a 400. |
 
 * Result
+
+The task is delivered in five pull requests, one per group of the plan. Each
+row below records a group; the task closes when all five have merged.
+
+| Group | PR | Routes | State |
+|-------+----+--------+-------|
+| Feed and folder operations, and the synthetic families | #4621 | 7 and 5 families | Merged |
+| Feed ticks and the raster | #4622 | 2 | Merged |
+| Simulation and conversion | #4623 | 6 | Merged |
+| Calibration | | 6 | Open |
+| Market regime | | 4 | Open |

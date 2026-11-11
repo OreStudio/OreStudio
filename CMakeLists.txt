@@ -127,7 +127,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
 option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
 option(WITH_MEMCHECK "Configure the tests for a run under valgrind." OFF)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-option(ORES_UNITY_BUILD "Build each target as unity translation units of 16 sources." ON)
+option(ORES_UNITY_BUILD "Build each target as unity translation units." ON)
+set(ORES_UNITY_BUILD_BATCH_SIZE 16 CACHE STRING
+    "Sources merged into each unity translation unit.")
 
 #
 # A unity build is the largest lever on total build time. Generated code is
@@ -137,7 +139,7 @@ option(ORES_UNITY_BUILD "Build each target as unity translation units of 16 sour
 #
 if(ORES_UNITY_BUILD)
     set(CMAKE_UNITY_BUILD ON)
-    set(CMAKE_UNITY_BUILD_BATCH_SIZE 16)
+    set(CMAKE_UNITY_BUILD_BATCH_SIZE ${ORES_UNITY_BUILD_BATCH_SIZE})
 endif()
 
 #

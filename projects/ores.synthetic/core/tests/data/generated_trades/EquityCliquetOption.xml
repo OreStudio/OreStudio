@@ -3,17 +3,23 @@
   <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
     <TradeType>EquityCliquetOption</TradeType>
     <EquityCliquetOptionData>
-      <Name>GB0005405286</Name>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>GB0005405286</Name>
+      </Underlying>
       <Currency>GBP</Currency>
-      <Notional>6765247.42</Notional>
+      <Notional>39332.83</Notional>
       <LongShort>Short</LongShort>
       <OptionType>Call</OptionType>
       <Moneyness>1</Moneyness>
       <ScheduleData>
         <Rules>
-          <StartDate></StartDate>
-          <Tenor>Quarterly</Tenor>
-          <Convention>MF</Convention>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2028-10-02</EndDate>
+          <Tenor>3M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ScheduleData>
     </EquityCliquetOptionData>
@@ -21,17 +27,23 @@
   <Trade id="4544e123-acf4-5ebe-84b2-1925ec250eea">
     <TradeType>EquityCliquetOption</TradeType>
     <EquityCliquetOptionData>
-      <Name>GB0005405286</Name>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>GB0005405286</Name>
+      </Underlying>
       <Currency>GBP</Currency>
-      <Notional>4191327.35</Notional>
+      <Notional>3169.2</Notional>
       <LongShort>Long</LongShort>
       <OptionType>Call</OptionType>
       <Moneyness>1</Moneyness>
       <ScheduleData>
         <Rules>
-          <StartDate></StartDate>
-          <Tenor>Quarterly</Tenor>
-          <Convention>MF</Convention>
+          <StartDate>2025-12-02</StartDate>
+          <EndDate>2026-12-02</EndDate>
+          <Tenor>3M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ScheduleData>
     </EquityCliquetOptionData>

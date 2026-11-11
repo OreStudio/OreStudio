@@ -56,6 +56,21 @@ void carry_session_token(domain::http_request& req, const std::string& token) {
         req.headers["authorization"] = "Bearer " + token;
 }
 
+/**
+ * Every X-Forwarded-For line, in order, as one list. A proxy may append a line of
+ * its own rather than extend the first, and the first line is the client's to
+ * write, so reading it alone would let a client choose whom it counts as.
+ */
+std::string forwarded_for_of(const boost::beast::http::fields& fields) {
+    std::string out;
+    for (auto [it, end] = fields.equal_range("X-Forwarded-For"); it != end; ++it) {
+        if (!out.empty())
+            out += ',';
+        out.append(it->value());
+    }
+    return out;
+}
+
 /// Methods that change something, and so need proof of intent.
 bool changes_something(domain::http_method method) {
     switch (method) {
@@ -95,6 +110,26 @@ struct discard_unless_published final {
     }
 };
 
+/// Gives up a renewal claim on every path out, cancellation included.
+struct renewal_claim final {
+    domain::session_store& store;
+    const std::string& identifier;
+    bool failed = true;
+    ~renewal_claim() {
+        store.end_renewal(identifier, failed);
+    }
+};
+
+/// A session's renewal, as the worker pool runs it: it blocks on IAM.
+struct run_token_renewal final {
+    const domain::token_renewer& renew;
+    const std::string& token;
+
+    asio::awaitable<domain::token_renewal> operator()() const {
+        co_return renew(token);
+    }
+};
+
 /// The route handler, as the worker pool runs it.
 struct run_route_handler final {
     const domain::request_handler& handler;
@@ -127,7 +162,9 @@ http_session::http_session(asio::ip::tcp::socket socket,
                            session_bytes_callback bytes_callback,
                            server_counters* counters,
                            std::shared_ptr<domain::session_store> sessions,
-                           domain::cookie_settings cookie)
+                           domain::cookie_settings cookie,
+                           std::shared_ptr<rate_limiting> limits,
+                           domain::token_renewer renewer)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
@@ -136,10 +173,13 @@ http_session::http_session(asio::ip::tcp::socket socket,
     , bytes_callback_(std::move(bytes_callback))
     , counters_(counters)
     , sessions_(std::move(sessions))
-    , cookie_(std::move(cookie)) {
+    , cookie_(std::move(cookie))
+    , limits_(std::move(limits))
+    , renewer_(std::move(renewer)) {
 
     auto endpoint = stream_.socket().remote_endpoint();
-    remote_address_ = endpoint.address().to_string();
+    peer_ = endpoint.address();
+    remote_address_ = peer_.to_string();
     BOOST_LOG_SEV(lg(), debug) << "HTTP session created for: " << remote_address_ << ":"
                                << endpoint.port();
 }
@@ -192,6 +232,26 @@ asio::awaitable<void> http_session::run() {
             auto route = router_->match(
                 convert_method(parser.get().method()), route_path(subject), path_params);
             const auto limit = body_limit_for(route);
+
+            /*
+             * A policy that counts the client runs before the body is read, so a
+             * refused request costs a header parse. One that counts the account
+             * runs once the credential is proved.
+             */
+            std::optional<rate_note> note;
+            if (limits_ != nullptr) {
+                client_ = client_of(peer_, forwarded_for_of(parser.get()), limits_->trusted);
+                const auto& policy = limits_->policies.for_route(route);
+                if (policy.key == rate_key::client) {
+                    const auto decision = limits_->limiter.take(policy, client_);
+                    if (!decision.allowed) {
+                        co_await refuse_rate_limited(
+                            version, subject, policy, decision, client_, false);
+                        break;
+                    }
+                    note = rate_note{&policy, decision};
+                }
+            }
 
             const auto declared = parser.content_length().value_or(0);
             if (declared > limit) {
@@ -278,7 +338,8 @@ asio::awaitable<void> http_session::run() {
                 counters_->requests.fetch_add(1, std::memory_order_relaxed);
                 counters_->request_bytes.fetch_add(byte_count, std::memory_order_relaxed);
             }
-            co_await handle_request(std::move(domain_req), std::move(route), keep_alive);
+            co_await handle_request(
+                std::move(domain_req), std::move(route), keep_alive, std::move(note));
             if (sink != nullptr && !sink->published())
                 BOOST_LOG_SEV(lg(), warn)
                     << "The handler for " << subject << " answered without publishing its body";
@@ -313,6 +374,83 @@ asio::awaitable<void> http_session::refuse(unsigned version,
     BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
     auto response = domain::http_response::error(status, std::string(reason));
     co_await write_response(response, version, false, true);
+}
+
+asio::awaitable<void> http_session::refuse_rate_limited(unsigned version,
+                                                        std::string_view subject,
+                                                        const rate_policy& policy,
+                                                        const rate_decision& decision,
+                                                        std::string_view caller,
+                                                        bool keep_alive) {
+    if (counters_ != nullptr)
+        counters_->record_rate_limited(policy.name);
+    if (limits_->may_warn())
+        BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << " for " << caller
+                                  << " under the rate policy " << policy.name
+                                  << "; further refusals are logged at debug for ten seconds";
+    else
+        BOOST_LOG_SEV(lg(), debug) << "Refusing " << subject << " for " << caller
+                                   << " under the rate policy " << policy.name;
+    co_await write_response(rate_limited(policy, decision), version, keep_alive, true);
+}
+
+asio::awaitable<bool> http_session::renew_if_due(const std::string& identifier,
+                                                 domain::session_record& record) {
+    if (!renewer_)
+        co_return true;
+    /*
+     * A token is renewed once three quarters of its life have passed, so the
+     * request that renews it, and every request that arrives while it does, still
+     * holds a token that is valid.
+     */
+    const auto now = std::chrono::system_clock::now();
+    const auto lifetime = record.claims.expires_at - record.claims.issued_at;
+    const auto remaining = record.claims.expires_at - now;
+    // A token whose life is not positive states nothing to renew by.
+    if (lifetime <= decltype(lifetime)::zero() || remaining > lifetime / 4 ||
+        !sessions_->begin_renewal(identifier))
+        co_return true;
+
+    renewal_claim claim{*sessions_, identifier};
+    const auto token = record.token;
+    domain::token_renewal renewal;
+    try {
+        renewal = workers_ != nullptr ? co_await workers_->run(run_token_renewal{renewer_, token}) :
+                                        renewer_(token);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "A session's token was not renewed: " << e.what();
+    }
+
+    using outcome = domain::token_renewal::outcome;
+    if (renewal.result == outcome::refused) {
+        BOOST_LOG_SEV(lg(), info) << "IAM refused to renew a session's token; the session ends";
+        claim.failed = false;
+        sessions_->close(identifier);
+        co_return false;
+    }
+    if (renewal.result == outcome::renewed && renewal.claims) {
+        claim.failed = false;
+        sessions_->update(identifier, [&](domain::session_record& r) {
+            r.token = renewal.token;
+            r.claims = *renewal.claims;
+        });
+        record.token = renewal.token;
+        record.claims = *renewal.claims;
+    }
+    co_return true;
+}
+
+asio::awaitable<bool> http_session::refused_failed_credential(unsigned version,
+                                                              std::string_view subject,
+                                                              bool keep_alive) {
+    if (limits_ == nullptr)
+        co_return false;
+    const auto& policy = limits_->policies.for_route(std::nullopt);
+    const auto decision = limits_->limiter.take(policy, client_);
+    if (decision.allowed)
+        co_return false;
+    co_await refuse_rate_limited(version, subject, policy, decision, client_, keep_alive);
+    co_return true;
 }
 
 asio::awaitable<void>
@@ -404,7 +542,8 @@ std::uint64_t http_session::body_limit_for(const std::optional<domain::route>& r
 
 asio::awaitable<void> http_session::handle_request(domain::http_request domain_req,
                                                    std::optional<domain::route> route,
-                                                   bool keep_alive) {
+                                                   bool keep_alive,
+                                                   std::optional<rate_note> note) {
 
     const auto path = route_path(domain_req.target);
     const auto version =
@@ -434,6 +573,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         BOOST_LOG_SEV(lg(), debug)
             << "No route matched for: " << static_cast<int>(domain_req.method) << " " << path;
         auto not_found = domain::http_response::not_found("Endpoint not found");
+        if (note)
+            state_rate_limit(not_found, *note->policy, note->decision);
         co_await write_response(not_found, version, keep_alive, true);
         co_return;
     }
@@ -475,6 +616,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 BOOST_LOG_SEV(lg(), warn)
                     << "Invalid token for " << matched->pattern << " from " << remote_address_
                     << ": " << ores::security::jwt::to_string(claims_result.error());
+                if (co_await refused_failed_credential(version, matched->pattern, keep_alive))
+                    co_return;
                 auto unauthorized = domain::http_response::unauthorized(
                     ores::security::jwt::to_string(claims_result.error()));
                 co_await write_response(unauthorized, version, keep_alive, true);
@@ -485,7 +628,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
             const auto identifier =
                 domain::session_cookie::read(domain_req.get_header("cookie"), cookie_);
             if (identifier.has_value()) {
-                if (auto record = sessions_->touch(*identifier); record.has_value()) {
+                auto record = sessions_->touch(*identifier);
+                if (record.has_value() && co_await renew_if_due(*identifier, *record)) {
                     claims = std::move(record->claims);
                     session_proof = true;
                     carry_session_token(domain_req, record->token);
@@ -503,6 +647,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         if (!claims.has_value()) {
             BOOST_LOG_SEV(lg(), warn)
                 << "No usable credential for " << matched->pattern << " from " << remote_address_;
+            if (co_await refused_failed_credential(version, matched->pattern, keep_alive))
+                co_return;
             auto unauthorized = domain::http_response::unauthorized(
                 "A bearer token or a session cookie is required");
             if (clear_the_cookie)
@@ -551,6 +697,20 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 co_return;
             }
         }
+
+        if (limits_ != nullptr) {
+            const auto& policy = limits_->policies.for_route(matched);
+            if (policy.key == rate_key::account) {
+                const auto& account = domain_req.authenticated_user->subject;
+                const auto decision = limits_->limiter.take(policy, account);
+                if (!decision.allowed) {
+                    co_await refuse_rate_limited(
+                        version, matched->pattern, policy, decision, account, keep_alive);
+                    co_return;
+                }
+                note = rate_note{&policy, decision};
+            }
+        }
     } else if (sessions_ != nullptr && !changes_something(domain_req.method) &&
                !domain_req.get_bearer_token().has_value()) {
         /*
@@ -562,7 +722,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         if (const auto identifier =
                 domain::session_cookie::read(domain_req.get_header("cookie"), cookie_);
             identifier.has_value()) {
-            if (auto record = sessions_->touch(*identifier); record.has_value()) {
+            auto record = sessions_->touch(*identifier);
+            if (record.has_value() && co_await renew_if_due(*identifier, *record)) {
                 domain_req.authenticated_user = std::move(record->claims);
                 carry_session_token(domain_req, record->token);
             }
@@ -606,6 +767,9 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
 
     // Add server header
     response.set_header("Server", options_.server_identifier);
+
+    if (note)
+        state_rate_limit(response, *note->policy, note->decision);
 
     co_await write_response(
         response, version, keep_alive, domain_req.method != domain::http_method::head);

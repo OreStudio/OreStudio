@@ -33,9 +33,12 @@
 #include "ores.http/routes/refdata/calendar_routes.hpp"
 #include "ores.http/routes/refdata/calendar_rule_routes.hpp"
 #include "ores.http/routes/refdata/calendar_rule_web_routes.hpp"
+#include "ores.http/routes/refdata/calendar_screen_routes.hpp"
 #include "ores.http/routes/refdata/calendar_web_routes.hpp"
 #include "ores.http/routes/refdata/classification_routes.hpp"
+#include "ores.http/routes/refdata/convention_screen_routes.hpp"
 #include "ores.http/routes/refdata/counterparty_routes.hpp"
+#include "ores.http/routes/refdata/counterparty_screen_routes.hpp"
 #include "ores.http/routes/refdata/counterparty_web_routes.hpp"
 #include "ores.http/routes/refdata/country_routes.hpp"
 #include "ores.http/routes/refdata/country_web_routes.hpp"
@@ -47,6 +50,7 @@
 #include "ores.http/routes/refdata/currency_currency_group_web_routes.hpp"
 #include "ores.http/routes/refdata/currency_group_routes.hpp"
 #include "ores.http/routes/refdata/currency_group_web_routes.hpp"
+#include "ores.http/routes/refdata/currency_ore_document_routes.hpp"
 #include "ores.http/routes/refdata/currency_pair_convention_calendar_routes.hpp"
 #include "ores.http/routes/refdata/currency_pair_convention_calendar_web_routes.hpp"
 #include "ores.http/routes/refdata/currency_pair_convention_routes.hpp"
@@ -77,6 +81,7 @@
 #include "ores.http/routes/refdata/party_web_routes.hpp"
 #include "ores.http/routes/refdata/payment_frequency_web_routes.hpp"
 #include "ores.http/routes/refdata/pick_list_routes.hpp"
+#include "ores.http/routes/refdata/tenor_screen_routes.hpp"
 #include "ores.http/routes/refdata/tenor_web_routes.hpp"
 #include <string>
 #include <string_view>
@@ -192,6 +197,13 @@ void refdata_routes::register_routes(
     // The option lists the reference data forms offer, one read per form.
     pick_list_routes::register_routes(router, registry, session);
     party_page_routes::register_routes(router, registry, session);
+
+    // The counterparty onboarding screen's own reads and writes.
+    counterparty_screen_routes::register_routes(router, registry, session);
+    convention_screen_routes::register_routes(router, registry, session);
+    tenor_screen_routes::register_routes(router, registry, session);
+    calendar_screen_routes::register_routes(router, registry, session);
+    currency_ore_document_routes::register_routes(router, registry, session);
 
     // The reference data lookups the synthetic screens read, under /api/synthetic.
     tenor_web_routes::register_routes(router, registry, session);

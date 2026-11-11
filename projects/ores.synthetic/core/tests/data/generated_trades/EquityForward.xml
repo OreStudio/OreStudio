@@ -8,7 +8,7 @@
       <Name>GB0005405286</Name>
       <Currency>GBP</Currency>
       <Strike>2002.58</Strike>
-      <Quantity>5817155.05</Quantity>
+      <Quantity>2905</Quantity>
     </EquityForwardData>
   </Trade>
   <Trade id="d937809a-06ec-57f6-a738-417fabd91365">
@@ -19,7 +19,7 @@
       <Name>GB0005405286</Name>
       <Currency>GBP</Currency>
       <Strike>4829.91</Strike>
-      <Quantity>674201.2</Quantity>
+      <Quantity>140</Quantity>
     </EquityForwardData>
   </Trade>
 </Portfolio>

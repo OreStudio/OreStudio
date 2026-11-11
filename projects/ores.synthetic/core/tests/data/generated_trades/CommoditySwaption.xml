@@ -4,7 +4,9 @@
     <TradeType>CommoditySwaption</TradeType>
     <CommoditySwaptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2026-04-02</ExerciseDate>
         </ExerciseDates>
@@ -12,26 +14,53 @@
       <LegData>
         <Payer>true</Payer>
         <LegType>CommodityFixed</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
+        <PaymentConvention>Following</PaymentConvention>
+        <PaymentLag>5</PaymentLag>
+        <PaymentCalendar>US-NYSE</PaymentCalendar>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-04-02</StartDate>
+            <EndDate>2027-10-02</EndDate>
+            <Tenor>1M</Tenor>
+            <Calendar>NullCalendar</Calendar>
+            <Convention>Unadjusted</Convention>
+            <Rule>Backward</Rule>
+          </Rules>
+        </ScheduleData>
         <CommodityFixedLegData>
           <Quantities>
             <Quantity>46504.05</Quantity>
           </Quantities>
           <Prices>
-            <Price>0</Price>
+            <Price>41.44</Price>
           </Prices>
         </CommodityFixedLegData>
       </LegData>
       <LegData>
         <Payer>false</Payer>
         <LegType>CommodityFloating</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
+        <PaymentConvention>Following</PaymentConvention>
+        <PaymentLag>5</PaymentLag>
+        <PaymentCalendar>US-NYSE</PaymentCalendar>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-04-02</StartDate>
+            <EndDate>2027-10-02</EndDate>
+            <Tenor>1M</Tenor>
+            <Calendar>NullCalendar</Calendar>
+            <Convention>Unadjusted</Convention>
+            <Rule>Backward</Rule>
+          </Rules>
+        </ScheduleData>
         <CommodityFloatingLegData>
           <Name>NYMEX:NG</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
             <Quantity>46504.05</Quantity>
           </Quantities>
+          <IsAveraged>true</IsAveraged>
         </CommodityFloatingLegData>
       </LegData>
     </CommoditySwaptionData>
@@ -40,34 +69,63 @@
     <TradeType>CommoditySwaption</TradeType>
     <CommoditySwaptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2026-03-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <LegData>
-        <Payer>true</Payer>
+        <Payer>false</Payer>
         <LegType>CommodityFixed</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
+        <PaymentConvention>Following</PaymentConvention>
+        <PaymentLag>5</PaymentLag>
+        <PaymentCalendar>US-NYSE</PaymentCalendar>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-03-02</StartDate>
+            <EndDate>2029-09-02</EndDate>
+            <Tenor>1M</Tenor>
+            <Calendar>NullCalendar</Calendar>
+            <Convention>Unadjusted</Convention>
+            <Rule>Backward</Rule>
+          </Rules>
+        </ScheduleData>
         <CommodityFixedLegData>
           <Quantities>
             <Quantity>19876.61</Quantity>
           </Quantities>
           <Prices>
-            <Price>0</Price>
+            <Price>130.61</Price>
           </Prices>
         </CommodityFixedLegData>
       </LegData>
       <LegData>
-        <Payer>false</Payer>
+        <Payer>true</Payer>
         <LegType>CommodityFloating</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
+        <PaymentConvention>Following</PaymentConvention>
+        <PaymentLag>5</PaymentLag>
+        <PaymentCalendar>US-NYSE</PaymentCalendar>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2026-03-02</StartDate>
+            <EndDate>2029-09-02</EndDate>
+            <Tenor>1M</Tenor>
+            <Calendar>NullCalendar</Calendar>
+            <Convention>Unadjusted</Convention>
+            <Rule>Backward</Rule>
+          </Rules>
+        </ScheduleData>
         <CommodityFloatingLegData>
           <Name>NYMEX:CL</Name>
           <PriceType>FutureSettlement</PriceType>
           <Quantities>
             <Quantity>19876.61</Quantity>
           </Quantities>
+          <IsAveraged>true</IsAveraged>
         </CommodityFloatingLegData>
       </LegData>
     </CommoditySwaptionData>

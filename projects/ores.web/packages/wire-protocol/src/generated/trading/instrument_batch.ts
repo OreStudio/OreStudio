@@ -56,6 +56,10 @@ import type { BondIssueLegScheduleDate } from './domain/bond_issue_leg_schedule_
 import type { Ascot } from './domain/ascot.js';
 import type { BondForward } from './domain/bond_forward.js';
 import type { BondFuture } from './domain/bond_future.js';
+import type { BondLeg } from './domain/bond_leg.js';
+import type { BondLegAmortization } from './domain/bond_leg_amortization.js';
+import type { BondLegAmount } from './domain/bond_leg_amount.js';
+import type { BondLegRate } from './domain/bond_leg_rate.js';
 import type { BondOption } from './domain/bond_option.js';
 import type { BondRepo } from './domain/bond_repo.js';
 import type { BondTrs } from './domain/bond_trs.js';
@@ -147,6 +151,10 @@ export interface InstrumentBatch {
     ascots: Ascot[];
     bond_forwards: BondForward[];
     bond_futures: BondFuture[];
+    bond_legs: BondLeg[];
+    bond_leg_amortizations: BondLegAmortization[];
+    bond_leg_amounts: BondLegAmount[];
+    bond_leg_rates: BondLegRate[];
     bond_options: BondOption[];
     bond_repos: BondRepo[];
     bond_trs: BondTrs[];

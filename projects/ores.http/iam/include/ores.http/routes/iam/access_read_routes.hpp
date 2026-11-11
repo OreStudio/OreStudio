@@ -107,11 +107,6 @@ public:
      */
     [[nodiscard]] static std::string
     holders_json(const ores::iam::messaging::role_holders_response& reply);
-
-    /**
-     * @brief Whether a path names a record by identifier.
-     */
-    [[nodiscard]] static bool is_uuid(const std::string& text);
 };
 
 }

@@ -45,7 +45,7 @@ The routes are =GET /api/bootstrap=, =POST /api/bootstrap/administrator=,
 =POST /api/bootstrap/complete=, =GET /api/tenant-setup= and
 =GET /api/registration-policy=. The first two run with no session. The bootstrap
 read states whether the browser holds a session, so it may wait for
-[[id:D4275B6D-BF22-4A77-9F00-018D776966CB][Serve the browser's session routes, sign-up and password]].
+[[id:E57938AF-06F7-4330-B992-F7BE5296D8A3][Serve the browser's session routes]].
 The BFF rate limits the policy read, which the C++ server cannot do yet.
 
 - An open route did not read the browser's session at all. The session path

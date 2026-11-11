@@ -727,6 +727,61 @@ RULES = (
          CPP, RESOURCE, "access",
          "An access screen's read or write at the address and in the shape the BFF answered,"
          " forwarded to IAM as the caller, kept so the screens work when the BFF goes."),
+    Rule("the counterparty screen's route",
+         ("regex", r"^(GET|PUT) /api/counterparties/(\{id\}(/(visibility|business-centres))?|children|composite)$"),
+         CPP, RESOURCE, "reference-data",
+         "The counterparty onboarding screen's read or write at the address and in the shape"
+         " the BFF answered: one record with its identifiers, the children of a page, the"
+         " composite write, and the visibility and business centre writes."),
+    Rule("the conventions screen's route",
+         ("regex", r"^(GET /api/conventions/(families|\{family\})|PUT /api/conventions/\{family\})$"),
+         CPP, RESOURCE, "reference-data",
+         "The conventions screen's read or write at the address and in the shape the BFF"
+         " answered: each family with its count, one family's page, and the write of a family"
+         " whose terms the screen draws."),
+    Rule("the tenors screen's route",
+         ("regex", r"^(POST /api/tenors/(preview-resolution|resolve|resolve-convention)"
+                   r"|GET /api/tenors/conventions/\{code\}/resolutions"
+                   r"|PUT /api/tenors/(tenors|conventions)"
+                   r"|(PUT|DELETE) /api/tenors/conventions/\{code\}/resolutions/\{tenor\})$"),
+         CPP, RESOURCE, "reference-data",
+         "The tenors screen's operation at the address and in the shape the BFF answered: the"
+         " resolution of a drafted rule and of the stored rules, one convention's membership"
+         " rows, and the writes of a tenor, a convention and a membership row."),
+    Rule("the calendar screen's business days route",
+         ("regex", r"^(GET /api/refdata/calendars/\{code\}/days|POST /api/refdata/calendars/\{code\}/rebuild)$"),
+         CPP, RESOURCE, "reference-data",
+         "One calendar's built days in one year, and the build of its days to the end of a"
+         " year, at the address and in the shape the BFF answered."),
+    Rule("the currencies' ORE document route",
+         ("regex", r"^(GET /api/refdata/currencies/ore-document|POST /api/refdata/currencies/ore-import(/preview)?)$"),
+         CPP, RESOURCE, "reference-data",
+         "The currencies' ORE import and export: the document the ORE service writes, what a"
+         " file would change, and the import, each answered with the service's own words."),
+    Rule("the change reasons a screen offers",
+         ("exact", "GET /api/change-reasons"),
+         CPP, RESOURCE, "reference-data",
+         "The reasons a screen offers for a write, read from the data quality service in the"
+         " shape the BFF answered."),
+    Rule("the feed screen's operation",
+         ("regex", r"^(POST /api/synthetic/(feeds|folders)/\{id\}/(start|stop)"
+                   r"|POST /api/synthetic/feed-selection/(start|stop)"
+                   r"|GET /api/synthetic/folder-feeds)$"),
+         CPP, RESOURCE, "simulation",
+         "The feed screen's operation at the address and in the shape the BFF answered: one"
+         " feed or one folder's feeds started and stopped, a page of the feeds a filter matches"
+         " with whether each runs, and the start and stop of a selection."),
+    Rule("the feed screens' live read",
+         ("regex", r"^GET /api/synthetic/(feeds/\{id\}/ticks|feed-raster)$"),
+         CPP, RESOURCE, "simulation",
+         "One feed's newest ticks, and when each feed's ticks arrived in a window, read from"
+         " the buffers the gateway fills by listening to the feeds a screen names."),
+    Rule("the synthetic screens' preview",
+         ("regex", r"^POST /api/synthetic/(simulate/(fx|ir)|convert/(fx|fx-simple|ir)|preview/ir-shape)$"),
+         CPP, RESOURCE, "simulation",
+         "A preview the synthetic screens draw from the values on the screen and store nothing"
+         " of: sample paths, the conversions between engines and the simple view, and the rate"
+         " at each ladder row."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",
@@ -738,6 +793,17 @@ RULES = (
          "The deployment's tenants as system administration reads them, each joined with the"
          " run that set it up, at the address and in the shape the BFF answered, refused"
          " without the deployment read."),
+    Rule("the browser's session route",
+         ("regex", r"^((GET|POST|DELETE) /api/session|POST /api/session/(party|switch-party))$"),
+         CPP, RESOURCE, "auth",
+         "The browser's session at the address and in the shape the BFF answered: sign in,"
+         " read, sign out, choose the party a login waits on, and move to another party."),
+    Rule("the account door's route",
+         ("regex", r"^(POST /api/(signup|account/password)|GET /api/password-policy)$"),
+         CPP, RESOURCE, "auth",
+         "A registration, the rules a password must keep, and the signed-in account's own"
+         " password change, at the address and in the shape the BFF answered; a"
+         " registration shares the sign-in budget."),
     Rule("a setup screen's route",
          ("regex", r"^(GET /api/(bootstrap|tenant-setup|registration-policy)|POST /api/bootstrap/(administrator|complete))$"),
          CPP, RESOURCE, "tenancy",

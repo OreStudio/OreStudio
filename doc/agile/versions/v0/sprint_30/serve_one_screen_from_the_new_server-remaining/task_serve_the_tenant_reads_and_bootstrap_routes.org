@@ -53,7 +53,7 @@ The routes fall into two groups, each a reviewable unit:
   request that carries the tenant's token.
 
 The bootstrap read states whether the browser holds a session, so it may
-wait for [[id:D4275B6D-BF22-4A77-9F00-018D776966CB][Serve the browser's session routes, sign-up and password]].
+wait for [[id:E57938AF-06F7-4330-B992-F7BE5296D8A3][Serve the browser's session routes]].
 
 On 2026-11-11 the task served the reads inside a tenant, and the bootstrap
 and setup routes moved to [[id:1BFF30C8-F1D4-4917-99B1-F6F6F3069D02][Serve the bootstrap and setup routes]].

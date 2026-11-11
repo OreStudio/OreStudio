@@ -29,6 +29,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <stdexcept>
 
 namespace {
@@ -161,7 +162,8 @@ TEST_CASE("a committed unit of work returns its connection before it goes out of
     const auto rows = execute_raw_multi_column_query(second.ctx(), "select 1", lg, "probe");
     REQUIRE(rows.size() == 1);
     second.commit();
-    CHECK_THROWS(execute_raw_multi_column_query(first.ctx(), "select 1", lg, "probe"));
+    CHECK_THROWS_WITH(execute_raw_multi_column_query(first.ctx(), "select 1", lg, "probe"),
+                      "The transaction has ended");
 }
 
 TEST_CASE("a raw insert through a unit of work is rolled back", "[unit_of_work]") {

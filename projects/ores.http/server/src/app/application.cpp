@@ -24,6 +24,7 @@
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.http.api/net/http_server.hpp"
+#include "ores.http.core/routes/change_reason_routes.hpp"
 #include "ores.http.core/routes/change_routes.hpp"
 #include "ores.http.core/routes/history_routes.hpp"
 #include "ores.http.core/routes/site_routes.hpp"
@@ -36,7 +37,9 @@
 #include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
+#include "ores.http/routes/iam/browser_session_routes.hpp"
 #include "ores.http/routes/iam/iam_routes.hpp"
+#include "ores.http/routes/iam/session_renewal.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.http/routes/synthetic/synthetic_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
@@ -180,6 +183,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     ores::http::routes::history_routes::register_routes(router, registry, service_nats);
 
+    ores::http::routes::change_reason_routes::register_routes(router, registry, service_nats);
+
     /*
      * The site the served client reads about itself is the BFF's file, chosen the
      * same way, so a deployment states it once for both. A server with none still
@@ -212,6 +217,9 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     session_cookie.secure = cfg.server.enable_ssl;
     session_cookie.path = cfg.web_session_path;
     server.set_cookie_settings(session_cookie);
+    // A browser session outlives its first token: the gateway renews it before it expires.
+    server.set_token_renewer(http::routes::iam::session_renewal::renewer(
+        service_nats, [&server] { return server.verifier(); }));
 
     /*
      * The door finds the verifier when a sign-in needs it. The runner installs the
@@ -221,6 +229,11 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     http::routes::iam::auth_session_routes auth_sessions(
         service_nats, server.sessions(), [&server] { return server.verifier(); }, session_cookie);
     auth_sessions.register_routes(router, registry);
+
+    // The browser's own session routes, at the BFF's addresses, beside the door.
+    http::routes::iam::browser_session_routes browser_sessions(
+        service_nats, server.sessions(), [&server] { return server.verifier(); }, session_cookie);
+    browser_sessions.register_routes(router, registry);
 
     // The setup screens say whether the browser sent the cookie, so they share it.
     http::routes::iam::bootstrap_screen_routes bootstrap_screens(service_nats, session_cookie);

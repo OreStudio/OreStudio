@@ -143,3 +143,31 @@ TEST_CASE("record_routes_reads_an_identifier_only_in_its_canonical_form", "[reco
     CHECK_FALSE(rr::is_uuid("00000000-0000-0000-0000-00000000000g"));
     CHECK_FALSE(rr::is_uuid(" 00000000-0000-0000-0000-00000000000a"));
 }
+
+TEST_CASE("record_routes_refuses_a_query_parameter_the_read_does_not_name", "[record_routes]") {
+    ores::http::domain::http_request req;
+    req.query_params["limit"] = "5";
+    CHECK_FALSE(record_routes_refusal_of([&] { rr::refuse_unknown_params(req, {"limit"}); }));
+    req.query_params["colour"] = "red";
+    const auto refused =
+        record_routes_refusal_of([&] { rr::refuse_unknown_params(req, {"limit"}); });
+    REQUIRE(refused);
+    CHECK(refused->status == http_status::bad_request);
+    CHECK(refused->message == "This read cannot take colour.");
+}
+
+TEST_CASE("record_routes_refuses_a_body_member_the_shape_does_not_name", "[record_routes]") {
+    const auto refusal_for = [](const std::string& body) {
+        return record_routes_refusal_of(
+            [&] { rr::refuse_unknown_members(body, {"mode"}, "A switch states a mode."); });
+    };
+    CHECK_FALSE(refusal_for(R"({"mode":"auto"})"));
+    CHECK_FALSE(refusal_for("{}"));
+    // A body that is not an object is the read's to refuse.
+    CHECK_FALSE(refusal_for("[]"));
+    CHECK_FALSE(refusal_for(""));
+    const auto refused = refusal_for(R"({"mode":"auto","by":"me"})");
+    REQUIRE(refused);
+    CHECK(refused->status == http_status::bad_request);
+    CHECK(refused->message == "A switch states a mode.");
+}

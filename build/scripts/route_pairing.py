@@ -167,6 +167,10 @@ PAIRS = {
     ("DELETE", "/api/synthetic/calibration/:assetClass/policy"): ("DELETE", "/api/synthetic/calibration/{assetClass}/policy"),
     ("PUT", "/api/synthetic/calibration/feeds/:id/pin"): ("PUT", "/api/synthetic/calibration/feeds/{id}/pin"),
     ("DELETE", "/api/synthetic/calibration/feeds/:id/pin"): ("DELETE", "/api/synthetic/calibration/feeds/{id}/pin"),
+    ("GET", "/api/synthetic/market-regime"): ("GET", "/api/synthetic/market-regime"),
+    ("POST", "/api/synthetic/market-regime"): ("POST", "/api/synthetic/market-regime"),
+    ("PUT", "/api/synthetic/market-regime/settings"): ("PUT", "/api/synthetic/market-regime/settings"),
+    ("GET", "/api/synthetic/market-history"): ("GET", "/api/synthetic/market-history"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

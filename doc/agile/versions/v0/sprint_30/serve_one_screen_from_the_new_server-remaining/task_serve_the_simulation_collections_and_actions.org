@@ -26,11 +26,11 @@ Port the 25 BFF routes of the simulation area to the C++ server. Include the rem
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -132,6 +132,18 @@ Decisions made in the calibration group:
 - The run and the review refuse a body member they do not name, as the BFF's
   strict schemas did. The policy and the pin ignore one, as the BFF's did.
 
+Decisions made in the market regime group:
+
+- The four routes are one unit, =market_regime_routes=, because the regime
+  screen calls them. The market trace stays with the composed views task.
+- A read or a switch the service does not answer is a 502 with its words, and
+  settings it refuses are a 400 with its words, as the BFF answered them.
+- A sample's and a slot's time is written by the JSON codec, the form the
+  service's own wire gives, which the BFF passed on.
+- The strict reads of a query and of a body moved into =record_routes= as
+  =refuse_unknown_params= and =refuse_unknown_members=, and the calibration and
+  feed tick routes call them instead of their own copies.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -196,13 +208,21 @@ via its "Verifies task" field.
 
 * Result
 
-The task is delivered in five pull requests, one per group of the plan. Each
-row below records a group; the task closes when all five have merged.
+The 25 simulation resource routes are served by ores.http at the BFF's
+addresses and in its answer shapes, and the five generic =/api/synthetic/:resource=
+routes are paired as families. The route inventory pairs every one of them.
+The three composed views stay with the composed views task. The task was
+delivered in five pull requests, one per group of the plan; it is closed on the
+last of them.
+
+Component audit: the task touched ores.http (the synthetic and api parts). The
+parts kept their shape: route units in the synthetic part, shared refusals in
+=record_routes=. =validate_docs.sh= passes for all 40 components.
 
 | Group | PR | Routes | State |
 |-------+----+--------+-------|
 | Feed and folder operations, and the synthetic families | #4621 | 7 and 5 families | Merged |
 | Feed ticks and the raster | #4622 | 2 | Merged |
 | Simulation and conversion | #4623 | 6 | Merged |
-| Calibration | | 6 | In review |
-| Market regime | | 4 | Open |
+| Calibration | #4625 | 6 | Merged |
+| Market regime | | 4 | In review |

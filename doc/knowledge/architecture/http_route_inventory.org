@@ -77,11 +77,11 @@ an API publishes no area, so it is counted under =(none)=.
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 300 | composed view 1, resource 299 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 44 | composed view 12, resource 32 |
-| simulation | calibration, market-regime, synthetic | 57 | composed view 3, resource 54 |
+| simulation | calibration, market-regime, synthetic | 59 | composed view 3, resource 56 |
 | tenancy | iam, refdata, server | 83 | composed view 2, resource 81 |
 | trading | blotter, book-changes, booking, books, structures, trades | 24 | composed view 2, resource 22 |
 | workflow | inbox, server, timeline | 18 | composed view 6, resource 12 |
-| (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 403 | not an API 385, transport capability 18 |
+| (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 405 | not an API 387, transport capability 18 |
 
 * The composed views
 
@@ -155,12 +155,12 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 24 | 6 |
 | reporting | 44 | 0 | 44 |
-| simulation | 28 | 21 | 7 |
+| simulation | 28 | 25 | 3 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 0 | 24 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 22 | 13 |
-| total | 324 | 144 | 180 |
+| total | 324 | 148 | 176 |
 
 * The pairing
 
@@ -451,10 +451,10 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/synthetic/folder-feeds= | GET /api/synthetic/folder-feeds |
 | POST =/api/synthetic/folders/:id/start= | POST /api/synthetic/folders/{id}/start |
 | POST =/api/synthetic/folders/:id/stop= | POST /api/synthetic/folders/{id}/stop |
-| GET =/api/synthetic/market-history= | none |
-| GET =/api/synthetic/market-regime= | none |
-| POST =/api/synthetic/market-regime= | none |
-| PUT =/api/synthetic/market-regime/settings= | none |
+| GET =/api/synthetic/market-history= | GET /api/synthetic/market-history |
+| GET =/api/synthetic/market-regime= | GET /api/synthetic/market-regime |
+| POST =/api/synthetic/market-regime= | POST /api/synthetic/market-regime |
+| PUT =/api/synthetic/market-regime/settings= | PUT /api/synthetic/market-regime/settings |
 | GET =/api/synthetic/market-trace= | none |
 | POST =/api/synthetic/preview/ir-shape= | POST /api/synthetic/preview/ir-shape |
 | POST =/api/synthetic/simulate/fx= | POST /api/synthetic/simulate/fx |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1216 routes: 324 answered by the BFF and 892 by ores.http.
+1220 routes: 324 answered by the BFF and 896 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1128,7 +1128,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | trading | post | =/api/structures/:key/legs= | bff | projects/ores.web/packages/bff/src/structures.ts:1073 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
 | resource | trading | delete | =/api/structures/:key/legs/:tradeId= | bff | projects/ores.web/packages/bff/src/structures.ts:979 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
 | not an API | (none) | get | =/api/synthetic= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1052 | A catalogue of the synthetic resources a screen may write, each with its key field, sortable fields, search flag, permission names and the reason it may be read only, which is a table description rather than a resource. |
-| not an API | (none) | get | =/api/synthetic= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/synthetic_routes.cpp:120 | The catalogue the BFF answered, built from each record unit's own entry for the session, so the screens keep reading the resources they may name when the BFF goes. |
+| not an API | (none) | get | =/api/synthetic= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/synthetic_routes.cpp:122 | The catalogue the BFF answered, built from each record unit's own entry for the session, so the screens keep reading the resources they may name when the BFF goes. |
 | not an API | (none) | delete | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1371 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
 | not an API | (none) | get | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1232 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
 | not an API | (none) | put | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1325 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
@@ -1140,13 +1140,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | simulation | post | =/api/synthetic/calibration/:assetClass/run= | bff | projects/ores.web/packages/bff/src/calibration.ts:354 | Calibrates every feed of a class, or the one feed named, and writes each moved level and deviation as a new version of the feed config. |
 | resource | simulation | delete | =/api/synthetic/calibration/feeds/:id/pin= | bff | projects/ores.web/packages/bff/src/calibration.ts:586 | Pins one candidate on a feed as the exception to its class policy, or clears the feed's own items so it follows the policy again. |
 | resource | simulation | put | =/api/synthetic/calibration/feeds/:id/pin= | bff | projects/ores.web/packages/bff/src/calibration.ts:558 | Pins one candidate on a feed as the exception to its class policy, or clears the feed's own items so it follows the policy again. |
-| resource | simulation | delete | =/api/synthetic/calibration/feeds/{id}/pin= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:568 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
-| resource | simulation | put | =/api/synthetic/calibration/feeds/{id}/pin= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:540 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | delete | =/api/synthetic/calibration/feeds/{id}/pin= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:549 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | put | =/api/synthetic/calibration/feeds/{id}/pin= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:521 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
 | resource | simulation | post | =/api/synthetic/calibration/variance/:id/review= | bff | projects/ores.web/packages/bff/src/calibration.ts:383 | Approves or rejects one proposed GJR-GARCH calibration with the reviewer's reason; approving supersedes the pair's earlier approval and older proposals and points the pair's feeds at it. |
-| resource | simulation | post | =/api/synthetic/calibration/variance/{id}/review= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:408 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
-| resource | simulation | delete | =/api/synthetic/calibration/{assetClass}/policy= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:516 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
-| resource | simulation | put | =/api/synthetic/calibration/{assetClass}/policy= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:450 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
-| resource | simulation | post | =/api/synthetic/calibration/{assetClass}/run= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:373 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | post | =/api/synthetic/calibration/variance/{id}/review= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:389 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | delete | =/api/synthetic/calibration/{assetClass}/policy= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:497 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | put | =/api/synthetic/calibration/{assetClass}/policy= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:431 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | post | =/api/synthetic/calibration/{assetClass}/run= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:353 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
 | not an API | (none) | delete | =/api/synthetic/collections= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_data_generation_config_web_routes.cpp:379 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/collections= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_data_generation_config_web_routes.cpp:346 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | put | =/api/synthetic/collections= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_data_generation_config_web_routes.cpp:368 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
@@ -1159,7 +1159,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | simulation | post | =/api/synthetic/convert/ir= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:262 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
 | composed view | simulation | get | =/api/synthetic/feed-folders= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1078 | The folders and the feeds under each at any depth, two collections woven, with the count of each kind so no screen reads the feeds. |
 | resource | simulation | get | =/api/synthetic/feed-raster= | bff | projects/ores.web/packages/bff/src/market-regime.ts:450 | The times of the ticks each feed published in the window, one row per feed, a stopped feed keeping its row so the picture shows that it is silent. |
-| not an API | (none) | get | =/api/synthetic/feed-raster= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_tick_routes.cpp:187 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
+| not an API | (none) | get | =/api/synthetic/feed-raster= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_tick_routes.cpp:178 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | resource | simulation | post | =/api/synthetic/feed-selection/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1169 | Starts or stops the feeds a person picked, or the feeds a filter matches less those left out, the service finding them. |
 | resource | simulation | post | =/api/synthetic/feed-selection/start= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:346 | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
 | resource | simulation | post | =/api/synthetic/feed-selection/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1190 | Starts or stops the feeds a person picked, or the feeds a filter matches less those left out, the service finding them. |
@@ -1169,7 +1169,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | simulation | get | =/api/synthetic/feeds/:id/ticks= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1209 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
 | resource | simulation | post | =/api/synthetic/feeds/{id}/start= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:232 | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
 | resource | simulation | post | =/api/synthetic/feeds/{id}/stop= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:244 | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
-| resource | simulation | get | =/api/synthetic/feeds/{id}/ticks= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_tick_routes.cpp:138 | One feed's newest ticks, and when each feed's ticks arrived in a window, read from the buffers the gateway fills by listening to the feeds a screen names. |
+| resource | simulation | get | =/api/synthetic/feeds/{id}/ticks= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_tick_routes.cpp:129 | One feed's newest ticks, and when each feed's ticks arrived in a window, read from the buffers the gateway fills by listening to the feeds a screen names. |
 | resource | simulation | get | =/api/synthetic/folder-feeds= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1113 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
 | not an API | (none) | get | =/api/synthetic/folder-feeds= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:288 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | delete | =/api/synthetic/folders= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/folder_web_routes.cpp:354 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
@@ -1208,9 +1208,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | get | =/api/synthetic/ir-template-entries/by/{parent}= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/ir_curve_template_entry_web_routes.cpp:398 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/ir-template-entries/key/{key}= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/ir_curve_template_entry_web_routes.cpp:387 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | resource | simulation | get | =/api/synthetic/market-history= | bff | projects/ores.web/packages/bff/src/market-regime.ts:342 | The ticks of the last hour folded by the second and by asset class, with the pace and active share of each slot, counts rather than ticks so the read costs the same at any tick rate. |
+| not an API | (none) | get | =/api/synthetic/market-history= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_regime_routes.cpp:226 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | resource | simulation | get | =/api/synthetic/market-regime= | bff | projects/ores.web/packages/bff/src/market-regime.ts:273 | The market state in force, the multiplier every feed is scaled by, and who holds the state. |
+| not an API | (none) | get | =/api/synthetic/market-regime= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_regime_routes.cpp:180 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | resource | simulation | post | =/api/synthetic/market-regime= | bff | projects/ores.web/packages/bff/src/market-regime.ts:386 | Forces the regime or hands it back to the chain, or sets how the market moves, the reply being the state after the write. |
+| resource | simulation | post | =/api/synthetic/market-regime= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_regime_routes.cpp:192 | The market-wide arrival factor at the address and in the shape the BFF answered: the regime in force, the switch that forces it, the settings that move it, and the tick counts of the last stretch of the run. |
 | resource | simulation | put | =/api/synthetic/market-regime/settings= | bff | projects/ores.web/packages/bff/src/market-regime.ts:402 | Forces the regime or hands it back to the chain, or sets how the market moves, the reply being the state after the write. |
+| resource | simulation | put | =/api/synthetic/market-regime/settings= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_regime_routes.cpp:210 | The market-wide arrival factor at the address and in the shape the BFF answered: the regime in force, the switch that forces it, the settings that move it, and the tick counts of the last stretch of the run. |
 | composed view | simulation | get | =/api/synthetic/market-trace= | bff | projects/ores.web/packages/bff/src/market-regime.ts:283 | The scheduler's recent decisions woven into one trail: every tick with the gap its law drew and the wall gap it took, every regime turn and pin, and every change of the feeds. |
 | not an API | (none) | delete | =/api/synthetic/parameter-definitions= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_parameter_definition_web_routes.cpp:386 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/parameter-definitions= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_parameter_definition_web_routes.cpp:353 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |

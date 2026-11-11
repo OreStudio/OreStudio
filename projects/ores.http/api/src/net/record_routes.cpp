@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <utility>
 #include <yyjson.h>
@@ -86,6 +87,29 @@ bool is_uuid(std::string_view text) {
 bool has_reason(const std::string& reason) {
     const auto value = trimmed(reason);
     return !value.empty() && value.size() <= 200;
+}
+
+void refuse_unknown_params(const domain::http_request& req,
+                           std::initializer_list<std::string_view> names) {
+    for (const auto& [name, value] : req.query_params)
+        if (std::ranges::find(names, std::string_view(name)) == names.end())
+            invalid("This read cannot take " + name + ".");
+}
+
+void refuse_unknown_members(std::string_view body,
+                            std::initializer_list<std::string_view> names,
+                            const std::string& sentence) {
+    const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(
+        yyjson_read(body.data(), body.size(), 0), &yyjson_doc_free);
+    auto* root = doc ? yyjson_doc_get_root(doc.get()) : nullptr;
+    if (!yyjson_is_obj(root))
+        return;
+    auto members = yyjson_obj_iter_with(root);
+    while (auto* key = yyjson_obj_iter_next(&members)) {
+        const std::string_view name(yyjson_get_str(key), yyjson_get_len(key));
+        if (std::ranges::find(names, name) == names.end())
+            invalid(sentence);
+    }
 }
 
 std::optional<ores::utility::domain::change_intent> intent_of(const stated_intent& stated) {

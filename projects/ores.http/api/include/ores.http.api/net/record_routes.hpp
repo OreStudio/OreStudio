@@ -20,6 +20,7 @@
 #ifndef ORES_HTTP_API_NET_RECORD_ROUTES_HPP
 #define ORES_HTTP_API_NET_RECORD_ROUTES_HPP
 
+#include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/domain/http_status.hpp"
 #include "ores.http.api/export.hpp"
@@ -136,6 +137,28 @@ ORES_HTTP_API_EXPORT bool is_uuid(std::string_view text);
  * @brief Whether a reason is 1 to 200 characters once trimmed.
  */
 ORES_HTTP_API_EXPORT bool has_reason(const std::string& reason);
+
+/**
+ * @brief Refuse a query parameter the read does not name, as the BFF's strict
+ * reads did.
+ *
+ * @throws refusal naming the parameter.
+ */
+ORES_HTTP_API_EXPORT void refuse_unknown_params(const domain::http_request& req,
+                                                std::initializer_list<std::string_view> names);
+
+/**
+ * @brief Refuse a body member the shape does not name, as the BFF's strict
+ * bodies did.
+ *
+ * A body that is not a JSON object is left to the read that follows, which
+ * refuses it.
+ *
+ * @throws refusal naming the sentence.
+ */
+ORES_HTTP_API_EXPORT void refuse_unknown_members(std::string_view body,
+                                                 std::initializer_list<std::string_view> names,
+                                                 const std::string& sentence);
 
 /**
  * @brief Why a screen's write is made, as the screen states it: the commentary

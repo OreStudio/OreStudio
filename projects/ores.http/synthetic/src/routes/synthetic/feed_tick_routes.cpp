@@ -33,9 +33,7 @@
 #include <algorithm>
 #include <charconv>
 #include <format>
-#include <initializer_list>
 #include <set>
-#include <string_view>
 
 namespace ores::http::routes::synthetic {
 
@@ -65,13 +63,6 @@ int tick_query_number(
         rr::invalid("The " + name + " is a whole number from " + std::to_string(lowest) + " to " +
                     std::to_string(highest) + ".");
     return value;
-}
-
-/// Refuses a query parameter the read does not name, as the BFF's strict reads did.
-void refuse_unknown(const http_request& req, std::initializer_list<std::string_view> names) {
-    for (const auto& [name, value] : req.query_params)
-        if (std::ranges::find(names, std::string_view(name)) == names.end())
-            rr::invalid("This read cannot take " + name + ".");
 }
 
 /// The first row of a feed list that names one feed, as the session reads it.
@@ -145,7 +136,7 @@ void feed_tick_routes::register_routes(
                       buffers](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::list_fx_spot_generation_configs_request>(
                     [&] {
-                        refuse_unknown(req, {"limit", "resource"});
+                        rr::refuse_unknown_params(req, {"limit", "resource"});
                         const auto limit = tick_query_number(
                             req, "limit", 1, static_cast<int>(feed_tick_buffers::capacity), 200);
                         auto resource = req.get_query_param("resource");
@@ -192,7 +183,7 @@ void feed_tick_routes::register_routes(
             .handler([&session,
                       buffers](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::list_folder_feeds_request>([&] {
-                    refuse_unknown(req, {"seconds"});
+                    rr::refuse_unknown_params(req, {"seconds"});
                     const auto seconds = tick_query_number(req, "seconds", 1, 600, 120);
 
                     synthetic_messaging::list_folder_feeds_request every;

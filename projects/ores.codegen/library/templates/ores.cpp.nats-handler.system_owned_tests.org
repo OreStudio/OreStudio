@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 687946DF-24DA-4D3B-A8E4-D2F151DAF390
+:END:
+#+title: ores.cpp.nats-handler.system_owned_tests
+#+description: System-owned entity handler tests: a write from a session of another tenant is denied, and the system tenant's write passes the gate.
+#+type: archetype
+#+output: projects/{component_core_dir}/tests/messaging_{system_owned_entity}_tests.cpp
+#+facet: ores.cpp.nats-handler
+#+model_types: domain_entity
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+The tests of the gate a system-owned entity's handler puts on its writes. Every
+tenant shares the rows, and the handler writes them in the system tenant's
+context, so the store's tenant policy cannot refuse a tenant's write. The
+handler's gate is the only barrier, and these tests prove it for every write
+operation the entity has.
+
+Each case drives the handler over real NATS on test subjects, with a token the
+test mints. The body is one byte no wire format decodes, so no case writes a
+row. A session of the test tenant is denied before the body is read. A session
+of the system tenant passes the gate and is refused at the decode step, which
+proves the gate let it through without changing the system tenant's rows.
+
+The unit renders only for a model that states =:system_tenant_validation:=.
+The output path names ={system_owned_entity}=, which resolves only for such a
+model.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_nats_handler_system_owned_tests.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_nats_handler_system_owned_tests.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.nats-handler.system_owned_tests.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+{{#system_tenant_validation}}
+#include "ores.{{component_core}}/messaging/{{entity_singular}}_handler.hpp"
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+#include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.testing/handler_test_support.hpp"
+#include "ores.testing/nats_options_helper.hpp"
+#include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <array>
+#include <catch2/catch_test_macros.hpp>
+#include <cstddef>
+#include <optional>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+namespace {
+
+const std::string {{entity_singular}}_subjects("ores.test.{{component}}.{{entity_singular}}_system_owned.");
+
+struct {{entity_singular}}_system_owned_fixture {
+    ores::testing::scoped_database_helper db;
+    ores::nats::service::client nats;
+    ores::testing::handler_test_keys keys;
+    std::vector<ores::nats::service::subscription> subs;
+
+    {{entity_singular}}_system_owned_fixture()
+        : nats(ores::testing::make_nats_options()) {
+        nats.connect();
+        REQUIRE(nats.is_connected());
+{{#operations}}
+{{#is_write}}
+        subs.push_back(nats.queue_subscribe(
+            {{entity_singular}}_subjects + "{{method}}", "ores.test",
+            [this](ores::nats::message m) {
+                ores::{{component}}::messaging::{{entity_singular}}_handler(
+                    nats, db.context(), std::optional(keys.verifier()))
+                    .{{method}}(std::move(m));
+            }));
+{{/is_write}}
+{{/operations}}
+    }
+
+    /**
+     * @brief The reply to a body no wire format decodes, from a session of @p tenant
+     * that holds every write permission the entity names.
+     */
+    ores::nats::message send(const std::string& method,
+                             const ores::utility::uuid::tenant_id& tenant) {
+        const auto token = keys.token_without_party(
+            tenant.to_string(),
+            {"{{component}}::{{entity_plural}}:write", "{{component}}::{{entity_plural}}:delete"});
+        std::unordered_map<std::string, std::string> headers;
+        headers[std::string(ores::nats::headers::authorization)] =
+            std::string(ores::nats::headers::bearer_prefix) + token;
+        const std::array<std::byte, 1> undecodable{std::byte{0xc1}};
+        return nats.request_sync({{entity_singular}}_subjects + method, undecodable, headers);
+    }
+};
+
+}
+
+TEST_CASE("{{entity_singular}}_handler_denies_a_write_from_another_tenant",
+          "[messaging][system_owned]") {
+    {{entity_singular}}_system_owned_fixture f;
+{{#operations}}
+{{#is_write}}
+    {
+        const auto reply = ores::testing::decode_reply<ores::{{component}}::messaging::{{response}}>(
+            f.send("{{method}}", f.db.tenant_id()));
+        REQUIRE(reply);
+        CHECK(reply->result.outcome == ores::utility::domain::outcome::denied);
+        CHECK(reply->result.code == "system_tenant_required");
+    }
+{{/is_write}}
+{{/operations}}
+}
+
+TEST_CASE("{{entity_singular}}_handler_lets_the_system_tenant_write",
+          "[messaging][system_owned]") {
+    {{entity_singular}}_system_owned_fixture f;
+{{#operations}}
+{{#is_write}}
+    CHECK(ores::testing::error_of(
+              f.send("{{method}}", ores::utility::uuid::tenant_id::system())) == "bad_request");
+{{/is_write}}
+{{/operations}}
+}
+{{/system_tenant_validation}}
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:4B13E23E-FD4D-439D-A8BF-73D0C0FE0415][ores.cpp.nats-handler]].
+- Sibling archetype: [[id:9DE9ACA3-DB9D-40B5-B62F-271B8FFC860E][ores.cpp.nats-handler.nats_handler_header]].
+- The refusal: =system_tenant_required= in [[id:974F054E-3BD5-4D16-9EA6-A995C21AFAAC][ores.database.outcomes]].

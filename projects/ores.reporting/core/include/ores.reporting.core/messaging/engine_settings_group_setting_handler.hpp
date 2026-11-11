@@ -26,6 +26,7 @@
 #define ORES_REPORTING_CORE_MESSAGING_ENGINE_SETTINGS_GROUP_SETTING_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,7 +58,8 @@ using namespace ores::logging;
  * @brief NATS message handler for engine settings group setting operations.
  *
  * Engine Settings Group Settings are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class engine_settings_group_setting_handler {
 public:
@@ -252,6 +254,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_engine_settings_group_setting_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "engine settings group setting"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<put_engine_settings_group_setting_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(engine_settings_group_setting_handler_lg(), warn)
@@ -303,6 +313,14 @@ public:
             engine_settings_group_setting_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::engine_settings_group_settings:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_many_engine_settings_group_settings_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "engine settings group setting"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<put_many_engine_settings_group_settings_request>(msg);
@@ -358,6 +376,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_engine_settings_group_setting_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "engine settings group setting"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<delete_engine_settings_group_setting_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(engine_settings_group_setting_handler_lg(), warn)
@@ -409,6 +435,14 @@ public:
             engine_settings_group_setting_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "reporting::engine_settings_group_settings:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_many_engine_settings_group_settings_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "engine settings group setting"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<delete_many_engine_settings_group_settings_request>(msg);

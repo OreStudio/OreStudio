@@ -40,6 +40,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
 #include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
 {{#system_tenant_validation}}
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/system_tenant_validation}}
 {{#has_parent_id}}
@@ -68,7 +69,8 @@ using namespace ores::logging;
 {{#system_tenant_validation}}
  *
  * {{entity_plural_words_cap}} are system-owned global entities; list{{^current_state}} and history{{/current_state}}
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
 {{/system_tenant_validation}}
  */
 class {{entity_singular}}_handler {
@@ -111,6 +113,18 @@ public:
             return;
         }
 {{/is_guarded}}
+{{#system_tenant_validation}}
+{{#is_write}}
+        if (!req_ctx.tenant_id().is_system()) {
+            {{response}} refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "{{entity_singular_words}}"});
+            reply(nats_, msg, refused);
+            return;
+        }
+{{/is_write}}
+{{/system_tenant_validation}}
         auto req = decode<{{request}}>(msg);
         if (!req) {
             BOOST_LOG_SEV({{entity_singular}}_handler_lg(), warn)
@@ -173,6 +187,7 @@ private:
 #include "ores.{{component_include}}/messaging/{{name_singular}}_protocol.hpp"
 #include "ores.{{component_core}}/service/{{name_singular}}_service.hpp"
 {{#system_tenant_validation}}
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 {{/system_tenant_validation}}
 
@@ -235,6 +250,18 @@ public:
             return;
         }
 {{/is_guarded}}
+{{#system_tenant_validation}}
+{{#is_write}}
+        if (!req_ctx.tenant_id().is_system()) {
+            {{response}} refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "{{name_singular}}"});
+            reply(nats_, msg, refused);
+            return;
+        }
+{{/is_write}}
+{{/system_tenant_validation}}
         auto req = decode<{{request}}>(msg);
         if (!req) {
             BOOST_LOG_SEV({{name_singular}}_handler_lg(), warn)

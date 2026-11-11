@@ -392,6 +392,25 @@ and not read the raw values the history returns, so it is refused here.
 This read of the {entity} needs a subscription to the {field} {value} that holds display or non-display, and this party holds none that does.
 #+end_src
 
+** system_tenant_required
+:PROPERTIES:
+:code: system_tenant_required
+:outcome: denied
+:producer: request
+:args: entity
+:END:
+
+A write to a catalogue every tenant shares arrives in a session of another
+tenant. The rows belong to the system tenant, and the service writes them in the
+system tenant's context, so the store's tenant policy cannot refuse the write.
+The permission to write is not enough: it names what a role may change in its
+own tenant, and these rows are in no tenant's own. This check is the only
+barrier, so the service refuses here.
+
+#+begin_src text :name message
+Only the system tenant changes the {entity} rows, which every tenant shares.
+#+end_src
+
 ** range_inverted
 :PROPERTIES:
 :code: range_inverted

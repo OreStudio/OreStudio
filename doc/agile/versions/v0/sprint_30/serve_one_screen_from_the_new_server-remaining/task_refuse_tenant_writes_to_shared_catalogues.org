@@ -8,12 +8,12 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/refuse-tenant-writes-to-shared-catalogues
-#+pr:
+#+pr: 4578
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Make the synthetic service refuse a write to a catalogue every tenant shares (pr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -40,9 +40,31 @@ Make the synthetic service refuse a write to a catalogue every tenant shares (pr
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The gap is wider than the five catalogues the BFF guarded. Every entity that
+states =:system_tenant_validation:= has a generated handler that switches to the
+system tenant's context before it calls the service, for writes as well as
+reads. A session of any tenant that holds the write permission therefore wrote
+the rows every tenant shares, and the store's tenant policy could not refuse
+it, because the write arrived as the system tenant. Forty-one handlers in five
+components had this shape.
+
+- The outcome catalogue gains =system_tenant_required=, a =denied= outcome the
+  service states before the store runs.
+- The handler template denies each write operation of such an entity, after the
+  permission check and before it reads the body, unless the session is the
+  system tenant's. The junction block states the same gate, so a future
+  system-owned junction is gated too.
+- A new archetype, =ores.cpp.nats-handler.system_owned_tests=, renders one test
+  per such entity a client may write. It drives each write over NATS with a
+  body no wire format decodes. A session of the test tenant is denied; a
+  session of the system tenant passes the gate and is refused at the decode
+  step. No case writes a row.
+
+The three variance calibration catalogues the task names do not state the
+flag, and they need no gate. Their handlers write in the caller's own tenant,
+their removals filter on that tenant, and their tenant policy refuses a row
+under any other tenant. A tenant's write there makes a row of its own, which
+the table's per tenant and party keys allow.
 
 * Measurements
 
@@ -75,12 +97,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4578][#4578]] | [codegen] Deny a tenant's write to a catalogue every tenant shares |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local build: a system-owned entity with no client write rendered a test with empty cases. | =core.py= | Accepted | The placeholder resolves only for a model a client may write, read from =:read_only:= and =:client_read_only:=. |
+| 2 | Local build: the synthetic and analytics test targets could not see =ores.service= headers, which a handler header includes. | component models | Accepted | Both models declare =ores.service.lib= for their tests. |
+| 3 | Local build: three analytics tests used =info= without a using directive, and built only while a unity sibling leaked one. | analytics tests | Accepted | Each states =using namespace ores::logging;=, as its siblings do. |
+| 4 | =component-drift=: refdata's CMake was edited by hand on main, and its model did not say so. | refdata =component_overview.org= | Accepted | The model states quant as a public dependency and magic_enum for the tests. |
+| 5 | =component-drift=: =ores.http.nats= is missing from =#+parts:= and states the adapter kind. | =ores.http= models | Tracked | Modelling the part makes codegen own its CMake, a change of its own. [[id:B773B120-7C5D-47C2-A44E-484E13BEEFF7][Model the gateway's forwarding part so codegen owns it]] takes it. |
+| 6 | Local review: a test that cannot fail proves nothing. | generated tests | Checked | With the provider handler's gate removed, its test fails at the first write. |
+| 7 | PR #4578 review: the gate rests on a verb list, so a new state-changing verb would pass it. | =org_loader.py= | Accepted | The derivation names its read and write verbs, and refuses any other, so an unknown verb fails the generation instead of serving an unguarded handler. A test pins it. A dry run of every handler found none. |
+| 8 | PR #4578 review: a hand-written handler may switch to the system tenant for a write. | hand-written handlers | No change | The hand-written handlers that switch read the system catalogue only, such as the dq template list and the reporting trigger's configuration types. |
+| 9 | PR #4578 review: the test rebuilds the permission code from a pattern. | test archetype | Declined | The handler builds its check from the same expression, so the two cannot differ. |
+| 10 | PR #4578 review: watch the full run for link fallout from the new =ores.service= links. | — | No change | The five test targets build with -Werror. |
 
 * Result
+
+Every handler of an entity whose rows the system tenant owns now denies a
+write from a session of any other tenant, with =denied= and
+=system_tenant_required=. Forty-one handlers in synthetic, marketdata,
+reporting, analytics and refdata take the gate from the template, and a
+generated test per writable entity proves it over NATS for each write: 39
+entities, 78 cases, all passing. The five catalogues the BFF guarded are
+covered: providers and process types by the gate, and the three variance
+calibration catalogues by their own tenant scoping, which already keeps a
+tenant away from the system's rows.

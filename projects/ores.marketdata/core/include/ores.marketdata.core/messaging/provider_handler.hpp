@@ -26,6 +26,7 @@
 #define ORES_MARKETDATA_CORE_MESSAGING_PROVIDER_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/provider_protocol.hpp"
 #include "ores.marketdata.core/service/provider_service.hpp"
@@ -56,7 +57,8 @@ using namespace ores::logging;
  * @brief NATS message handler for provider operations.
  *
  * Providers are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class provider_handler {
 public:
@@ -237,6 +239,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_provider_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "provider"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<put_provider_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(provider_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -284,6 +294,14 @@ public:
             provider_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::providers:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_many_providers_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "provider"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<put_many_providers_request>(msg);
@@ -335,6 +353,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_provider_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "provider"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<delete_provider_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(provider_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -382,6 +408,14 @@ public:
             provider_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::providers:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_many_providers_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "provider"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<delete_many_providers_request>(msg);

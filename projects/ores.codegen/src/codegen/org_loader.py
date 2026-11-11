@@ -4177,6 +4177,15 @@ _OPERATION_PREFIXES = (
 )
 
 
+# Every verb a derived operation may state. A write changes state and is
+# guarded by the resource's write or delete code, and on a catalogue the system
+# tenant owns, by the system tenant gate too. A verb in neither set would pass
+# both, so the derivation refuses it rather than serve it unguarded.
+_WRITE_VERBS = frozenset(("put", "put_many", "delete", "delete_many"))
+_READ_VERBS = frozenset(("list", "list_scoped", "get", "get_many",
+                         "get_version", "list_versions"))
+
+
 def _operation_verb(name: str) -> str:
     """The verb one derived request states, or an empty string if none."""
     for prefix, verb in _OPERATION_PREFIXES:
@@ -4240,7 +4249,11 @@ def protocol_operations(
         names = [field.get("name") for field in fields]
         leading_type = fields[0].get("cpp_type", "") if fields else ""
         verb = message.get("verb") or _operation_verb(message["name"])
-        is_write = verb in ("put", "put_many", "delete", "delete_many")
+        if verb not in _WRITE_VERBS | _READ_VERBS:
+            raise ValueError(
+                f"{message['name']} states the verb {verb!r}, which is neither "
+                "a read nor a write, so its handler would be unguarded")
+        is_write = verb in _WRITE_VERBS
         guarded_read = (not is_write and verb != ""
                         and message["subject"] not in open_reads)
         operations.append({

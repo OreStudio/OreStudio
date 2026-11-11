@@ -44,6 +44,7 @@ using ores::analytics::repository::pricing_model_config_repository;
 using ores::ore::domain::pricing_engine_projection;
 using ores::platform::filesystem::file;
 using ores::testing::scoped_database_helper;
+using namespace ores::logging;
 
 /**
  * The whole path, through the database: a corpus document is parsed, mapped into

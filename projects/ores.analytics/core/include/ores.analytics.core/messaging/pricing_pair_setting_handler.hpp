@@ -28,6 +28,7 @@
 #include "ores.analytics.api/messaging/pricing_pair_setting_protocol.hpp"
 #include "ores.analytics.core/service/pricing_pair_setting_service.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -57,7 +58,8 @@ using namespace ores::logging;
  * @brief NATS message handler for pricing pair setting operations.
  *
  * Pricing Pair Settings are system-owned global entities; list and history
- * operations use the system tenant context.
+ * operations use the system tenant context. Every tenant shares the rows, so
+ * a write from a session of any other tenant is denied.
  */
 class pricing_pair_setting_handler {
 public:
@@ -244,6 +246,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_pricing_pair_setting_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "pricing pair setting"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<put_pricing_pair_setting_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(pricing_pair_setting_handler_lg(), warn)
@@ -293,6 +303,14 @@ public:
             pricing_pair_setting_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "analytics::pricing_pair_settings:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            put_many_pricing_pair_settings_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "pricing pair setting"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<put_many_pricing_pair_settings_request>(msg);
@@ -346,6 +364,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_pricing_pair_setting_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "pricing pair setting"});
+            reply(nats_, msg, refused);
+            return;
+        }
         auto req = decode<delete_pricing_pair_setting_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(pricing_pair_setting_handler_lg(), warn)
@@ -395,6 +421,14 @@ public:
             pricing_pair_setting_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "analytics::pricing_pair_settings:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!req_ctx.tenant_id().is_system()) {
+            delete_many_pricing_pair_settings_response refused;
+            refused.result = ores::database::domain::refuse(
+                ores::database::domain::outcome_code::system_tenant_required,
+                {.entity = "pricing pair setting"});
+            reply(nats_, msg, refused);
             return;
         }
         auto req = decode<delete_many_pricing_pair_settings_request>(msg);

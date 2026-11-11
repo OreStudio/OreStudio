@@ -45,6 +45,7 @@ using ores::analytics::repository::todays_market_config_repository;
 using ores::ore::domain::todays_market_projection;
 using ores::platform::filesystem::file;
 using ores::testing::scoped_database_helper;
+using namespace ores::logging;
 
 /**
  * The whole path, through the database: a corpus document is parsed, mapped into

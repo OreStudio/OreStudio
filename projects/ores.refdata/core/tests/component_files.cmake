@@ -152,6 +152,7 @@ set(files
     "mapping_quant_codes_tests.cpp"
     "message_codec_tests.cpp"
     "messaging_book_proposal_mapping_tests.cpp"
+    "messaging_convention_kind_term_system_owned_tests.cpp"
     "messaging_counterparty_proposal_mapping_tests.cpp"
     "monetary_nature_eventing_integration_tests.cpp"
     "netting_agreement_eventing_integration_tests.cpp"

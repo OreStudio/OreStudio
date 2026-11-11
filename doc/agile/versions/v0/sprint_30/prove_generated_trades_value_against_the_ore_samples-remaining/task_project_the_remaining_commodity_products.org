@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 0831C742-E84E-4943-9126-BDDB21B41B0A
 :END:
-#+title: Task: Project and build the remaining commodity products
-#+description: The commodity types the ORE projection does not yet write get a writer, a reader and a builder, and ORE builds each one.
+#+title: Task: Project and build the native commodity products
+#+description: The digital, digital average price, position, spread option and intraday power forward types get a writer, a reader and a builder, and ORE builds each one.
 #+type: task
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every commodity type the generator books that the projection does not yet write gets a projection writer and reader and a trade builder, and the ORE engine test builds each one.
+The commodity types ORE builds with their own classes, rather than as
+scripted trades, are written and read by the projection and built by their
+builders, and the ORE engine test builds each one.
 
 * Status
 
@@ -35,11 +37,17 @@ Every commodity type the generator books that the projection does not yet write 
 
 * Acceptance
 
-- The projection writes and reads the accumulator, TaRF, worst-of basket swap, rainbow, best entry, generic and window barrier, strike resettable, basket variance swap, Asian, digital and digital average price options, the forward volatility agreement, the position, the spread option and the intraday power forward.
-- Each of those types is built by its builder, and the planner calls it.
-- CommodityPairwiseVarianceSwap leaves the generator with its reason recorded, because ORE has no builder for it.
-- The construct_commodity_* functions, their terms and the plan's commodity_terms are deleted.
-- The commodity entries leave the known lists, or stay with a market data reason.
+- The projection writes and reads the digital option, the digital average
+  price option, the position, the spread option and the intraday power
+  forward.
+- Each of them is built by its builder, and the planner calls it.
+- The commodity row gains the columns these products state, through the
+  codegen model.
+- Their entries leave the known lists, or stay with a market data reason.
+- The rest of the commodity work is in three tasks:
+  - [[id:00D52EE5-E337-493E-8442-280910E072B5][Project and build the single commodity scripted products]]
+  - [[id:4A8E426E-9DC6-4864-80C1-4F73799DCEAF][Project and build the commodity basket scripted products]]
+  - [[id:1F6D904E-2BCA-4336-94F7-3EFD4805CABF][Close out the commodity constructors]]
 
 * Plan
 

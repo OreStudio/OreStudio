@@ -18,15 +18,31 @@
  *
  */
 #include "ores.http.api/net/image_answer.hpp"
+#include <algorithm>
+#include <cctype>
 
 namespace ores::http::net {
+
+namespace {
+
+/// Whether a stored type names an image and is safe as a header value: image/
+/// and then only the characters a media type's subtype may hold.
+bool is_image_type(const std::string& type) {
+    if (!type.starts_with("image/") || type.size() == 6)
+        return false;
+    return std::ranges::all_of(type.substr(6), [](unsigned char c) {
+        return std::isalnum(c) || c == '+' || c == '-' || c == '.';
+    });
+}
+
+}
 
 domain::http_response image_answer(const std::string& mime_type, std::string bytes) {
     domain::http_response resp;
     resp.status = domain::http_status::ok;
-    resp.content_type = mime_type.empty()               ? std::string("image/svg+xml") :
-                        mime_type.starts_with("image/") ? mime_type :
-                                                          std::string("application/octet-stream");
+    resp.content_type = mime_type.empty()        ? std::string("image/svg+xml") :
+                        is_image_type(mime_type) ? mime_type :
+                                                   std::string("application/octet-stream");
     resp.body = std::move(bytes);
     resp.headers["Cache-Control"] = "private, max-age=300";
     resp.headers["X-Content-Type-Options"] = "nosniff";

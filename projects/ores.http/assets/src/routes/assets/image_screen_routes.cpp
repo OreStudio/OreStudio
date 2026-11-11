@@ -207,6 +207,8 @@ void image_screen_routes::register_routes(
                 return refused(http_status::bad_request,
                                "invalid-request",
                                "An upload needs a media type and the image bytes.");
+            // The upload answers 200 with the outcome in its result, as the BFF did:
+            // the screen reads a refused upload's reason from there.
             return guarded<messaging::upload_image_request>([&] {
                 const auto reply = ores::http::forwarding::forward(
                     req, session, messaging::upload_image_request{image->mime_type, image->data});

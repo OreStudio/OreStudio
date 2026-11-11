@@ -115,4 +115,8 @@ TEST_CASE("image_answer_serves_only_an_image_type", "[image_screen]") {
     CHECK(ores::http::net::image_answer("image/png", "x").content_type == "image/png");
     CHECK(ores::http::net::image_answer("text/html", "x").content_type ==
           "application/octet-stream");
+    CHECK(ores::http::net::image_answer("image/svg+xml", "x").content_type == "image/svg+xml");
+    CHECK(ores::http::net::image_answer("image/png\r\nX-Evil: 1", "x").content_type ==
+          "application/octet-stream");
+    CHECK(ores::http::net::image_answer("image/", "x").content_type == "application/octet-stream");
 }

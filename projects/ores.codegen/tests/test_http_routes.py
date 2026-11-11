@@ -688,3 +688,58 @@ class TestTheWebRecordRoutes:
         text = _rendered_web(_web(web_system_owned=True),
                              "cpp_http_route_web_records_tests.cpp.mustache")
         assert 'entry.find("\\"writable\\":false")' in text
+
+
+from codegen.org_loader import entity_web_classification_plan  # noqa: E402
+
+
+def _columns(*names):
+    """Columns as the loader hands them over, each with its C++ type."""
+    types = {"display_order": "int"}
+    return [{"name": n, "cpp_type": types.get(n, "std::string")} for n in names]
+
+
+def _list(**declared):
+    """A code list in the classification screen's registry."""
+    entity = _entity()
+    entity["primary_key"] = {"column": "code", "columns": [_key("code")]}
+    entity["columns"] = _columns("name", "description", "display_order")
+    entity["web_classification"] = "widget-kinds"
+    entity["web_classification_topic"] = "widgets"
+    entity.update(declared)
+    return entity
+
+
+class TestTheClassificationRoutes:
+    """A model that names a classification list gets the screen's list routes."""
+
+    def test_a_model_that_names_no_list_has_no_classification_routes(self):
+        assert entity_web_classification_plan(_entity()) is None
+
+    def test_the_shape_follows_the_write_record(self):
+        assert entity_web_classification_plan(_list())["shape"] == "named"
+        ordered = _list(columns=_columns("description", "display_order"))
+        assert entity_web_classification_plan(ordered)["shape"] == "ordered"
+        plain = _list(columns=_columns("description"))
+        assert entity_web_classification_plan(plain)["shape"] == "plain"
+
+    def test_a_list_is_addressed_by_its_key_and_labelled_in_its_domain(self):
+        plan = entity_web_classification_plan(_list())
+        assert plan["base"] == "/api/classifications/widget-kinds"
+        assert plan["code_domain"] == "widget"
+        assert plan["editable"] is True
+
+    def test_a_list_of_ore_spellings_is_read_only(self):
+        plan = entity_web_classification_plan(_list(web_classification_read_only=True))
+        assert plan["editable"] is False
+
+    def test_a_list_without_a_topic_is_refused(self):
+        import pytest
+        with pytest.raises(ValueError, match="topic"):
+            entity_web_classification_plan(_list(web_classification_topic=""))
+
+    def test_a_list_keyed_by_anything_but_its_code_is_refused(self):
+        import pytest
+        entity = _list(primary_key={"column": "type", "columns": [_key("type")]})
+        with pytest.raises(ValueError, match="code alone"):
+            entity_web_classification_plan(entity)

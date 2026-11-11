@@ -77,5 +77,7 @@ PAIRS = {
     # reference data
     ("GET", "/api/refdata"): ("GET", "/api/refdata"),
     ("GET", "/api/synthetic"): ("GET", "/api/synthetic"),
+    ("GET", "/api/classifications"): ("GET", "/api/classifications"),
+    ("GET", "/api/labels"): ("GET", "/api/labels"),
     ("GET", "/api/counterparties"): ("GET", f"{REFDATA}/counterparties"),
 }

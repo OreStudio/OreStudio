@@ -2,10 +2,15 @@
 :ores.cpp.wire-codec.enabled: true
 :ID: 1A454661-81B5-4F8F-93A6-06547412DD84
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.http-route.web_classification_header.enabled: true
+:ores.cpp.http-route.web_classification_implementation.enabled: true
+:ores.cpp.http-route.web_classification_tests.enabled: true
 :END:
 #+title: ores.refdata.calendar_type
 #+description: Classification of a calendar's purpose: public holiday, central bank meeting, financial centre, data release, or other.
 #+type: ores.codegen.entity
+#+web_classification: calendar-type
+#+web_classification_topic: calendars
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+brief: Classification of a calendar's purpose.

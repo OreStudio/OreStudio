@@ -19,12 +19,12 @@
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.marketdata.api/datum/value.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <charconv>
 #include <cmath>
 #include <format>
 #include <set>
-#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::marketdata::service::app {
 
@@ -86,13 +86,15 @@ std::vector<std::string> split_list(const std::string& text) {
     return out;
 }
 
-std::string point_of(const std::string& expiry, const std::string& label) {
+std::string pillar_key_of(const std::string& expiry, const std::string& label) {
     return expiry + "/" + label;
 }
 
 /// Whether the labels quoted at one expiry are enough for SSVI: an ATM, and a risk reversal and
 /// a butterfly at one delta.
-bool ssvi_has_enough(bool atm, const std::set<int>& risk_reversals, const std::set<int>& butterflies) {
+bool ssvi_has_enough(bool atm,
+                     const std::set<int>& risk_reversals,
+                     const std::set<int>& butterflies) {
     if (!atm)
         return false;
     return std::ranges::any_of(risk_reversals, [&](int d) { return butterflies.contains(d); });
@@ -101,7 +103,8 @@ bool ssvi_has_enough(bool atm, const std::set<int>& risk_reversals, const std::s
 std::expected<qs::ssvi_grid_strike, std::string> grid_strike_of(const std::string& text) {
     const auto parsed = datum::strike::parse(text);
     if (!parsed)
-        return std::unexpected("the output strike '" + text + "' is not a strike: " + parsed.error());
+        return std::unexpected("the output strike '" + text +
+                               "' is not a strike: " + parsed.error());
     if (std::holds_alternative<datum::atm_strike>(parsed->which()))
         return qs::ssvi_grid_strike{text, qs::ssvi_atm_strike{}};
     const auto* delta = std::get_if<datum::delta_strike>(&parsed->which());
@@ -117,13 +120,14 @@ std::expected<qs::ssvi_grid_strike, std::string> grid_strike_of(const std::strin
     double size = 0.0;
     const auto [end, ec] = std::from_chars(digits.data(), digits.data() + digits.size(), size);
     if (ec != std::errc{} || end != digits.data() + digits.size() || !(size > 0.0 && size < 100.0))
-        return std::unexpected("the output strike '" + text + "' has a delta that is not above 0 and below 100");
-    return qs::ssvi_grid_strike{
-        text,
-        qs::ssvi_delta_strike{.type = *type,
-                              .side = delta->option_type == "Call" ? qm::option_side::call :
-                                                                     qm::option_side::put,
-                              .delta = size / 100.0}};
+        return std::unexpected("the output strike '" + text +
+                               "' has a delta that is not above 0 and below 100");
+    return qs::ssvi_grid_strike{text,
+                                qs::ssvi_delta_strike{.type = *type,
+                                                      .side = delta->option_type == "Call" ?
+                                                                  qm::option_side::call :
+                                                                  qm::option_side::put,
+                                                      .delta = size / 100.0}};
 }
 
 int days_between(std::chrono::year_month_day a, std::chrono::year_month_day b) {
@@ -140,15 +144,19 @@ discounts_at(const surface_forward_set& forwards,
     for (const auto& p : forwards.points)
         if (p.tenor == tenor)
             return std::pair{p.base_discount, p.quote_discount};
-    if (by_date.empty() || std::chrono::sys_days(value_date) > std::chrono::sys_days(by_date.back().value_date))
-        return std::unexpected(std::format("the forward set {} ends before the {} expiry",
-                                           forwards.publish_id, tenor));
-    surface_forward_point before{.tenor = "spot", .value_date = forwards.spot_date,
-                                 .base_discount = 1.0, .quote_discount = 1.0};
+    if (by_date.empty() ||
+        std::chrono::sys_days(value_date) > std::chrono::sys_days(by_date.back().value_date))
+        return std::unexpected(std::format(
+            "the forward set {} ends before the {} expiry", forwards.publish_id, tenor));
+    surface_forward_point before{.tenor = "spot",
+                                 .value_date = forwards.spot_date,
+                                 .base_discount = 1.0,
+                                 .quote_discount = 1.0};
     for (const auto& after : by_date) {
         if (std::chrono::sys_days(after.value_date) >= std::chrono::sys_days(value_date)) {
             const double span = days_between(before.value_date, after.value_date);
-            const double share = span > 0 ? days_between(before.value_date, value_date) / span : 1.0;
+            const double share =
+                span > 0 ? days_between(before.value_date, value_date) / span : 1.0;
             const auto lerp = [&](double lo, double hi) {
                 return std::exp(std::log(lo) + share * (std::log(hi) - std::log(lo)));
             };
@@ -157,7 +165,8 @@ discounts_at(const surface_forward_set& forwards,
         }
         before = after;
     }
-    return std::unexpected("the forward set " + forwards.publish_id + " has no row near the " + tenor + " expiry");
+    return std::unexpected("the forward set " + forwards.publish_id + " has no row near the " +
+                           tenor + " expiry");
 }
 
 /// An expiry's time, market and convention, as the engine reads them.
@@ -167,17 +176,17 @@ struct expiry_terms final {
     qm::fx_quote_convention convention{};
 };
 
-std::expected<expiry_terms, std::string>
-terms_at(const surface_calibration_recipe& recipe,
-         const surface_forward_set& forwards,
-         const std::vector<surface_forward_point>& by_date,
-         const std::string& code,
-         qd::date_period period,
-         std::chrono::year_month_day as_of) {
+std::expected<expiry_terms, std::string> terms_at(const surface_calibration_recipe& recipe,
+                                                  const surface_forward_set& forwards,
+                                                  const std::vector<surface_forward_point>& by_date,
+                                                  const std::string& code,
+                                                  qd::date_period period,
+                                                  std::chrono::year_month_day as_of) {
     const auto convention = mapping::to_quote_convention(*recipe.convention, period);
     if (!convention)
         return std::unexpected("expiry " + code + ": " + convention.error());
-    const auto discounts = discounts_at(forwards, by_date, code, add_period(forwards.spot_date, period));
+    const auto discounts =
+        discounts_at(forwards, by_date, code, add_period(forwards.spot_date, period));
     if (!discounts)
         return std::unexpected(discounts.error());
     // An FX option expires a tenor after the trade and delivers a tenor after spot, so its time
@@ -194,7 +203,8 @@ terms_at(const surface_calibration_recipe& recipe,
 std::chrono::year_month_day add_period(std::chrono::year_month_day from, qd::date_period period) {
     using namespace std::chrono;
     const auto clamp = [](year_month_day d) {
-        return d.ok() ? d : year_month_day{year_month_day_last{d.year(), month_day_last{d.month()}}};
+        return d.ok() ? d :
+                        year_month_day{year_month_day_last{d.year(), month_day_last{d.month()}}};
     };
     switch (period.unit) {
         case qd::period_unit::day:
@@ -231,7 +241,7 @@ std::expected<checked_recipe, std::string> check_recipe(const surface_calibratio
     std::map<std::string, expiry_labels> labels_by_expiry;
     std::set<std::string> points;
     for (const auto& pillar : recipe.pillars) {
-        const auto point = point_of(pillar.expiry_code, pillar.strike_label);
+        const auto point = pillar_key_of(pillar.expiry_code, pillar.strike_label);
         if (!points.insert(point).second)
             return std::unexpected("pillar " + point + " appears twice in the blueprint");
         const auto label = read_strike_label(point, pillar.strike_label);
@@ -312,7 +322,8 @@ prepare_calibration(const surface_calibration_recipe& recipe,
     if (!(forwards.spot > 0.0))
         return std::unexpected("the forward set " + forwards.publish_id + " has no spot");
     auto by_date = forwards.points;
-    std::ranges::sort(by_date, {}, [](const auto& p) { return std::chrono::sys_days(p.value_date); });
+    std::ranges::sort(
+        by_date, {}, [](const auto& p) { return std::chrono::sys_days(p.value_date); });
 
     prepared_surface_calibration out;
     out.request.pillar_tolerance = pillar_tolerance;
@@ -332,7 +343,7 @@ prepare_calibration(const surface_calibration_recipe& recipe,
         for (const auto& pillar : recipe.pillars) {
             if (pillar.expiry_code != expiry.code)
                 continue;
-            const auto point = point_of(pillar.expiry_code, pillar.strike_label);
+            const auto point = pillar_key_of(pillar.expiry_code, pillar.strike_label);
             const auto read = read_strike_label(point, pillar.strike_label);
             if (!read)
                 return std::unexpected(read.error());
@@ -348,8 +359,10 @@ prepare_calibration(const surface_calibration_recipe& recipe,
                 if (source.pillar_id != pillar.id)
                     continue;
                 const double* value = nullptr;
-                if (const auto series = quotes.find(source.market_series_id); series != quotes.end())
-                    if (const auto found = series->second.find({pillar.expiry_code, pillar.strike_label});
+                if (const auto series = quotes.find(source.market_series_id);
+                    series != quotes.end())
+                    if (const auto found =
+                            series->second.find({pillar.expiry_code, pillar.strike_label});
                         found != series->second.end())
                         value = &found->second;
                 if (!value) {

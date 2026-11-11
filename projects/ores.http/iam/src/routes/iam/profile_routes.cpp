@@ -50,6 +50,8 @@ namespace rr = ores::http::net::record_routes;
 using access_screen_answers::guarded;
 using access_screen_answers::refused;
 using ores::utility::domain::outcome;
+using ores::utility::domain::precondition;
+using ores::utility::domain::precondition_kind;
 
 namespace {
 
@@ -276,8 +278,6 @@ void profile_routes::register_routes(
                 write.phone = contact->phone.value_or("");
                 write.email = contact->email.value_or("");
                 write.web_page = contact->webPage.value_or("");
-                using ores::utility::domain::precondition;
-                using ores::utility::domain::precondition_kind;
                 put.change.precondition =
                     contact->version ?
                         precondition{precondition_kind::must_match_version,

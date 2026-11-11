@@ -771,6 +771,11 @@ RULES = (
          "The feed screen's operation at the address and in the shape the BFF answered: one"
          " feed or one folder's feeds started and stopped, a page of the feeds a filter matches"
          " with whether each runs, and the start and stop of a selection."),
+    Rule("the feed screens' live read",
+         ("regex", r"^GET /api/synthetic/(feeds/\{id\}/ticks|feed-raster)$"),
+         CPP, RESOURCE, "simulation",
+         "One feed's newest ticks, and when each feed's ticks arrived in a window, read from"
+         " the buffers the gateway fills by listening to the feeds a screen names."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

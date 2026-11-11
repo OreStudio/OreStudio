@@ -33,6 +33,14 @@
 
 namespace ores::refdata::mapping {
 
+/// An ATM type in ORE's spelling: AtmDeltaNeutral or AtmFwd.
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::expected<analytics::quant::math::fx_atm_type, std::string>
+parse_fx_atm_type_code(std::string_view code);
+
+/// A delta type in ORE's spelling: Spot, Fwd, PaSpot or PaFwd.
+[[nodiscard]] ORES_REFDATA_CORE_EXPORT std::expected<analytics::quant::math::fx_delta_type, std::string>
+parse_fx_delta_type_code(std::string_view code);
+
 /**
  * @brief A tenor as a convention or a quote writes it, such as 1W, 6M or 2Y, as a period.
  *

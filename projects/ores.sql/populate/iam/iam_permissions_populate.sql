@@ -1934,6 +1934,8 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_forward_publishes:read',           'View the subject an FX forward publish request names, and the record of its publication');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_forward_publish_points:read',      'View the tenors of a published FX forward set: dates, discount factors, forwards and points');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_forward_publish_spots:read',       'View the spot observations a published FX forward set read');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_vol_surface:calibrate',           'Calibrate an FX volatility surface blueprint and store its candidate');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::fx_vol_surface_calibrations:read',     'View the candidate an FX volatility surface calibration wrote and its checks');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'marketdata::*', 'Full access to all market data operations');
 
     -- =============================================================================

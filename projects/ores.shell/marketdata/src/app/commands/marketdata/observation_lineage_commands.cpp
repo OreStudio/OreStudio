@@ -141,7 +141,7 @@ void observation_lineage_commands::register_commands(cli::Menu& root_menu, nats_
         },
         "add <party_id> <series_id> <observation_datetime> <oresmd_uri> <point_source_kind> "
         "<derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> "
-        "<reason> <commentary>");
+        "<source_weights> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -150,7 +150,7 @@ void observation_lineage_commands::register_commands(cli::Menu& root_menu, nats_
         },
         "set <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> <point_source_kind> "
         "<derivation_config_id> <derivation_config_version> <source_as_of> <source_series_ids> "
-        "<reason> <commentary> [--version <n>]");
+        "<source_weights> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +159,7 @@ void observation_lineage_commands::register_commands(cli::Menu& root_menu, nats_
         },
         "put-many --count <n> <id> <party_id> <series_id> <observation_datetime> <oresmd_uri> "
         "<point_source_kind> <derivation_config_id> <derivation_config_version> <source_as_of> "
-        "<source_series_ids> <reason> <commentary>");
+        "<source_series_ids> <source_weights> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -360,8 +360,8 @@ void observation_lineage_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -387,6 +387,8 @@ void observation_lineage_commands::process_add(std::ostream& out,
             req.change.write.source_as_of, parsed->positionals[next++], "source_as_of");
         observation_lineage_read_token(
             req.change.write.source_series_ids, parsed->positionals[next++], "source_series_ids");
+        observation_lineage_read_token(
+            req.change.write.source_weights, parsed->positionals[next++], "source_weights");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -431,8 +433,8 @@ void observation_lineage_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 11 + 2) {
+            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -458,6 +460,8 @@ void observation_lineage_commands::process_set(std::ostream& out,
             req.change.write.source_as_of, parsed->positionals[next++], "source_as_of");
         observation_lineage_read_token(
             req.change.write.source_series_ids, parsed->positionals[next++], "source_series_ids");
+        observation_lineage_read_token(
+            req.change.write.source_weights, parsed->positionals[next++], "source_weights");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -514,8 +518,8 @@ void observation_lineage_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 10 + 2) {
-            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 11 + 2) {
+            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -543,6 +547,8 @@ void observation_lineage_commands::process_put_many(std::ostream& out,
                 change.write.source_as_of, parsed->positionals[next++], "source_as_of");
             observation_lineage_read_token(
                 change.write.source_series_ids, parsed->positionals[next++], "source_series_ids");
+            observation_lineage_read_token(
+                change.write.source_weights, parsed->positionals[next++], "source_weights");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

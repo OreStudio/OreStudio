@@ -71,6 +71,7 @@ create table if not exists "ores_marketdata_observation_lineages_tbl" (
     "derivation_config_version" integer not null,
     "source_as_of" timestamp with time zone null,
     "source_series_ids" jsonb not null,
+    "source_weights" jsonb not null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -86,6 +87,7 @@ create table if not exists "ores_marketdata_observation_lineages_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check (jsonb_array_length("source_series_ids") >= 0),
+    check (jsonb_array_length("source_weights") in (0, jsonb_array_length("source_series_ids"))),
     check ("point_source_kind" in ('derived', 'manual'))
 );
 

@@ -209,6 +209,24 @@ is not a JSON array.
 std::string(R"(["00000000-0000-0000-0000-000000000001"])")
 #+end_src
 
+** source_weights
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:default_value: "[]"
+:END:
+
+Serialised JSON array of the weight each source series carried, index for
+index with =source_series_ids=, for a derivation that weighs its sources, such
+as a surface calibration that weighs each contributor's quote. Empty (=[]=)
+for a derivation that does not weigh them, such as a curve bootstrap, whose
+every source counts in full.
+
+#+begin_src cpp :name generator
+std::string("[]")
+#+end_src
+
 * SQL
 
 ** Flags
@@ -231,6 +249,7 @@ name does not change under a database that already carries it.
 | expression                                     |
 |-------------------------------------------------|
 | jsonb_array_length("source_series_ids") >= 0 |
+| jsonb_array_length("source_weights") in (0, jsonb_array_length("source_series_ids")) |
 | "point_source_kind" in ('derived', 'manual') |
 
 * C++

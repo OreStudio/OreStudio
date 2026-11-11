@@ -1,0 +1,10 @@
+# A trader of ACCOUS calibrates the party's EURUSD_SSVI blueprint. The first
+# call reads the party's published EUR/USD forward set and the derived quotes at
+# AS_OF and writes the candidate. The second names an as-of before any forward
+# set, and is refused, naming the forwards. Run with BLUEPRINT, AS_OF and EARLY set.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_vol_surface_operation calibrate-fx-vol-surface ${BLUEPRINT} ${AS_OF}
+fx_vol_surface_operation calibrate-fx-vol-surface ${BLUEPRINT} ${EARLY}
+logout

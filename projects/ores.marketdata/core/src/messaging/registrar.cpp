@@ -45,6 +45,8 @@
 #include "ores.marketdata.core/messaging/fx_forward_publish_registrar.hpp"
 #include "ores.marketdata.core/messaging/fx_forward_publish_spot_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/fx_forward_publish_spot_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_vol_surface_calibration_history_provider_registrar.hpp"
+#include "ores.marketdata.core/messaging/fx_vol_surface_calibration_registrar.hpp"
 #include "ores.marketdata.core/messaging/import_handler.hpp"
 #include "ores.marketdata.core/messaging/manual_point_handler.hpp"
 #include "ores.marketdata.core/messaging/market_calibration_value_registrar.hpp"
@@ -155,6 +157,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     fold(register_fx_forward_publish_handlers(nats, ctx, verifier));
     fold(register_fx_forward_publish_point_handlers(nats, ctx, verifier));
     fold(register_fx_forward_publish_spot_handlers(nats, ctx, verifier));
+    fold(register_fx_vol_surface_calibration_handlers(nats, ctx, verifier));
 
     // The acceptance of a provider's terms, whose one writer is this handler.
     subs.push_back(nats.queue_subscribe(std::string(accept_provider_terms_request::nats_subject),
@@ -366,6 +369,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_fx_forward_publish_history_provider(hist_registry);
         register_fx_forward_publish_point_history_provider(hist_registry);
         register_fx_forward_publish_spot_history_provider(hist_registry);
+        register_fx_vol_surface_calibration_history_provider(hist_registry);
         register_provider_history_provider(hist_registry);
         register_feed_history_provider(hist_registry);
         register_feed_scope_history_provider(hist_registry);

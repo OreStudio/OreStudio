@@ -1,0 +1,281 @@
+:PROPERTIES:
+:ID: BDB130FB-08AC-4545-B023-A661A261C657
+:ores.cpp.wire-codec.enabled: true
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: ores.marketdata.fx_vol_surface_operations
+#+description: Codegen operation model for the calibration of a party's FX volatility surface blueprint into a candidate.
+#+type: ores.codegen.operation
+#+component: marketdata
+#+subcomponent: api
+#+entity_singular: fx_vol_surface_operation
+#+namespace: ores::marketdata::messaging
+#+brief: The calibration of a party's FX volatility surfaces.
+#+filetags: :model:operation:marketdata:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+The calibration behind the calibrate journey. A caller names a blueprint of its
+party and an as-of. The service checks the recipe before it reads a quote, reads
+the quotes the pillars name and the party's published forward set, fits the
+smile model and writes the candidate: the grid as observations of the output
+series with lineage, and the checks as a calibration record. The reply carries
+what the record holds, so a caller reads the fit and its errors at once. A
+refusal is a reply with =success= false and a message that names what failed.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** fx_vol_pillar_fit
+
+#+begin_src cpp :name comment
+/**
+ * @brief How far one quoted pillar is from the calibrated surface.
+ */
+#+end_src
+
+*** point
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** quoted
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** fitted
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** error
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** beyond_tolerance
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+** fx_vol_grid_point
+
+#+begin_src cpp :name comment
+/**
+ * @brief One point of the candidate's grid, as written to the output series.
+ */
+#+end_src
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** strike
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** log_moneyness
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** volatility
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** fx_vol_violation
+
+#+begin_src cpp :name comment
+/**
+ * @brief One arbitrage condition the calibrated surface breaks.
+ */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** fx_vol_missing_pillar
+
+#+begin_src cpp :name comment
+/**
+ * @brief A pillar no contributor quoted at the as-of, with the series it read.
+ */
+#+end_src
+
+*** point
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** series_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+** calibrate_fx_vol_surface_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.calibrate_fx_vol_surface
+:response: calibrate_fx_vol_surface_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Calibrates one FX volatility surface blueprint of the caller's party at an as-of and writes the candidate. The recipe is checked before any quote is read. A refusal names what failed, and writes nothing.
+ */
+#+end_src
+
+*** blueprint_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The blueprint to calibrate.
+ */
+#+end_src
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the calibration reads its quotes and forwards at.
+ */
+#+end_src
+
+** calibrate_fx_vol_surface_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The candidate the calibration wrote, or why it refused.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calibration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** blueprint_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** blueprint_version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** forward_publish_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** rho
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** eta
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** gamma
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** converged
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** max_abs_error
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** pillars
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_pillar_fit>
+:END:
+
+*** grid
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_grid_point>
+:END:
+
+*** violations
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_violation>
+:END:
+
+*** missing
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_missing_pillar>
+:END:

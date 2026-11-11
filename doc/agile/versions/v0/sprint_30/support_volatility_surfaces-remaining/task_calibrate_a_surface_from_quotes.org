@@ -48,9 +48,13 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The calibration follows the curve bootstrap: read the recipe, read the quotes at the as-of, run the engine, write observations of the output series with lineage, and declare the series' axes.
+
+- *Engine.* Grid strikes are a fixed log-moneyness, the ATM or a delta, solved on the fitted smile of each grid expiry in its own market and convention, so the blueprint's =DEL/Spot/Put/25= strikes are honoured.
+- *Planner.* =fx_vol_surface_calibration_plan= is pure: the four recipe checks, each expiry's market from the published forward set (the tenor's row, or a log-linear interpolation of the discount factors), each pillar's weighted contributions, and the missing pillars.
+- *Service.* =marketdata.v1.ops.calibrate_fx_vol_surface= reads the rows and quotes, calls the planner and the engine, and writes the grid, its lineage, the =expiry= and =strike= axes and the candidate record.
+- *Stores.* A new =fx_vol_surface_calibration= record per blueprint and as-of holds the fit and its checks. The lineage gains =source_weights=. A new derivation kind marks the output series.
+- *Convention reading* moved to ores.refdata.core first, in Keep quant free of stored codes, so quant takes no stored code.
 
 * Measurements
 

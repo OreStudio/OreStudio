@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 6C5AD4C3-7EF8-5518-A28D-389E6A4C46B8
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_surface_calibrations commands from the shell?
+#+description: Every command the fx_vol_surface_calibrations submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_surface_calibrations:
+
+This file documents the fx_vol_surface_calibrations resource at the shell, one section per command. Every command is a subcommand of =fx_vol_surface_calibrations=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 05549413-0366-59CB-80C7-172F0B17195D
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_calibrations list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_calibrations.list=.
+
+#+name: fx_vol_surface_calibrations-list
+#+begin_src ores-shell :tangle fx_vol_surface_calibrations-list.ores :exports none
+fx_vol_surface_calibrations list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B6537243-4403-56FB-9C94-3A075B3FA89A
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_calibrations get <id>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_calibrations.get=.
+
+#+name: fx_vol_surface_calibrations-get
+#+begin_src ores-shell :tangle fx_vol_surface_calibrations-get.ores :exports none
+fx_vol_surface_calibrations get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5E1A6532-A389-5F89-8B10-0EE7681A19E7
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_calibrations get-many <id>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_calibrations.get_many=.
+
+#+name: fx_vol_surface_calibrations-get-many
+#+begin_src ores-shell :tangle fx_vol_surface_calibrations-get-many.ores :exports none
+fx_vol_surface_calibrations get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 8AC1F3B8-336F-59D3-B16A-982D0DD7DAC9
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_calibrations versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_calibrations_versions.list=.
+
+#+name: fx_vol_surface_calibrations-versions
+#+begin_src ores-shell :tangle fx_vol_surface_calibrations-versions.ores :exports none
+fx_vol_surface_calibrations versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 975DA99B-5361-596D-B148-1734FFE564A1
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_calibrations version <id> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_calibrations_versions.get=.
+
+#+name: fx_vol_surface_calibrations-version
+#+begin_src ores-shell :tangle fx_vol_surface_calibrations-version.ores :exports none
+fx_vol_surface_calibrations version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

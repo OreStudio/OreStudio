@@ -21,12 +21,10 @@
 
 namespace ores::refdata::mapping {
 
-namespace {
-
 namespace qd = analytics::quant::domain;
 namespace qm = analytics::quant::math;
 
-std::expected<qm::fx_atm_type, std::string> atm_of(std::string_view code) {
+std::expected<qm::fx_atm_type, std::string> parse_fx_atm_type_code(std::string_view code) {
     if (code == "AtmDeltaNeutral")
         return qm::fx_atm_type::delta_neutral;
     if (code == "AtmFwd")
@@ -35,7 +33,7 @@ std::expected<qm::fx_atm_type, std::string> atm_of(std::string_view code) {
                            "' is not AtmDeltaNeutral or AtmFwd");
 }
 
-std::expected<qm::fx_delta_type, std::string> delta_of(std::string_view code) {
+std::expected<qm::fx_delta_type, std::string> parse_fx_delta_type_code(std::string_view code) {
     if (code == "Spot")
         return qm::fx_delta_type::spot;
     if (code == "Fwd")
@@ -46,8 +44,6 @@ std::expected<qm::fx_delta_type, std::string> delta_of(std::string_view code) {
         return qm::fx_delta_type::premium_adjusted_forward;
     return std::unexpected("the delta type '" + std::string(code) +
                            "' is not Spot, Fwd, PaSpot or PaFwd");
-}
-
 }
 
 std::expected<qd::date_period, std::string> parse_tenor_text(std::string_view text) {
@@ -96,10 +92,10 @@ to_quote_convention(const domain::fx_option_convention& convention, qd::date_per
             }
         }
     }
-    const auto atm_type = atm_of(atm);
+    const auto atm_type = parse_fx_atm_type_code(atm);
     if (!atm_type)
         return std::unexpected(atm_type.error());
-    const auto delta_type = delta_of(delta);
+    const auto delta_type = parse_fx_delta_type_code(delta);
     if (!delta_type)
         return std::unexpected(delta_type.error());
     const std::string favour = convention.risk_reversal_in_favor_of.value_or("Call");

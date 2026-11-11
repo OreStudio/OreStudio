@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :marketdata:implementation:read_the_public_interest_rate_sources:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-the-banxico-adapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ The overnight TIIE de Fondeo is stored as fixings in the system tenant, with its
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6E93FD89-3443-4BED-8E2F-9295E773BFB7][Read the public interest rate sources]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | A person registers a Banco de Mexico SIE API token; the key goes to the credential store. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-10                               |
 
 * Acceptance
@@ -48,6 +48,20 @@ The overnight TIIE de Fondeo is stored as fixings in the system tenant, with its
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+- The SIE API needs a token, so this task also builds the path of a key, the
+  first one any adapter needs: =.env= holds it, =compass env configure= keeps
+  it, the seed names it as =env:NAME=, and =resolve_secret= reads it when the
+  adapter starts. A gate check keeps a key out of every file git would commit.
+- The fetcher sends the token as the =token= query parameter, so =redacted=
+  masks it. =read_body= and =read_window= put an unmasked address in their
+  errors, so they now mask it too.
+- The Riksbank key the owner registered goes through the same path, as the
+  optional =subscription-key=.
+- The item is =oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE=, the item of
+  the =MXN-FTIIE= overnight convention, which the MXN OIS conventions and Acme's
+  =MXN1D= curve name. =MXN-TIIE= is the TIIE family whose swaps fix on the 28-day
+  rate, so its item is not the TIIE de Fondeo.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -60,7 +74,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| History the SIE API holds for =SF331451= | 5,244 rates, 2006-01-02 to 2026-11-10 | =curl .../series/SF331451/datos/1990-01-01/2026-11-10?token=...=, counted with Python | c79c3a9e83 |
+| Fixings stored in a fresh environment after provisioning | 275 for MXN FTIIE, last 0.0626; 275 for SEK SWESTR, last 0.01652 | a query of =ores_marketdata_market_fixings_tbl= in the system tenant | c79c3a9e83 |
+| Unit tests of the official adapter | 100 test cases, 414 assertions, all passed | =publish/bin/ores.marketdata.official.tests= | c79c3a9e83 |
+| Credentials of =.env= found in a file git would commit | 0 of 4 | =python3 build/scripts/check_no_committed_credentials.py= | 3ee6a50d1b |
 
 * Notes
 
@@ -90,3 +107,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The overnight TIIE de Fondeo is stored as fixings of the =MXN-FTIIE= item in
+the system tenant, read from Banco de Mexico's SIE API with a token from
+=.env=. A fresh environment stored 275 fixings after provisioning, the last
+0.0626 for 2026-11-10. The API holds 5,244 rates from 2006-01-02.
+
+Keys now have one path: =.env=, kept by =compass env configure=; an =env:NAME=
+ref in the provider seed; =resolve_secret= when the adapter starts; and the
+=no-committed-credentials= gate check. The Riksbank fetcher sends the
+registered key and read 275 fixings again, so the capture /Register a
+Riksbank API key/ is retired. Errors of a refused read now mask the address.
+
+For the calibration: the synthetic MXN curve is named =MXN-TIIE= with the
+family =tiie=, while the public fixing is of =MXN-FTIIE=, the overnight index.
+The calibration maps the one to the other.

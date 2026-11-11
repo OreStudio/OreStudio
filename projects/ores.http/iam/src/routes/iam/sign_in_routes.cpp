@@ -66,6 +66,18 @@ std::optional<std::uint32_t> whole_number(const http_request& req,
     return value;
 }
 
+/// An offset of zero or more and a limit of one to @p most, @p fallback when
+/// the query leaves it out.
+std::optional<std::pair<std::uint32_t, std::uint32_t>>
+page_of(const http_request& req, std::uint32_t fallback, std::uint32_t most) {
+    const auto offset =
+        whole_number(req, "offset", 0, 0, std::numeric_limits<std::uint32_t>::max());
+    const auto limit = whole_number(req, "limit", fallback, 1, most);
+    if (!offset || !limit)
+        return std::nullopt;
+    return std::pair{*offset, *limit};
+}
+
 http_response not_whole_numbers() {
     return refused(http_status::bad_request,
                    "invalid-request",
@@ -86,22 +98,12 @@ std::string login_info_answer(const std::optional<ores::iam::domain::login_info>
 
 std::optional<std::pair<std::uint32_t, std::uint32_t>>
 sign_in_routes::read_sign_ins_page(const http_request& req) {
-    const auto offset =
-        whole_number(req, "offset", 0, 0, std::numeric_limits<std::uint32_t>::max());
-    const auto limit = whole_number(req, "limit", 20, 1, 200);
-    if (!offset || !limit)
-        return std::nullopt;
-    return std::pair{*offset, *limit};
+    return page_of(req, 20, 200);
 }
 
 std::optional<std::pair<std::uint32_t, std::uint32_t>>
 sign_in_routes::read_page(const http_request& req) {
-    const auto offset =
-        whole_number(req, "offset", 0, 0, std::numeric_limits<std::uint32_t>::max());
-    const auto limit = whole_number(req, "limit", 100, 1, 1000);
-    if (!offset || !limit)
-        return std::nullopt;
-    return std::pair{*offset, *limit};
+    return page_of(req, 100, 1000);
 }
 
 void sign_in_routes::register_routes(

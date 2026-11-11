@@ -100,7 +100,7 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR'),
     ('rba', 'rba_table', 'f1.FIRMMCRID', 'value', 'oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA'),
     ('bcb', 'bcb_sgs', '4389', 'valor', 'oresmd://ir/BRL?type=fixing&index=ibor&name=CDI'),
-    ('banxico', 'banxico_sie', 'SF331451', 'dato', 'oresmd://ir/MXN?type=fixing&index=ibor&name=TIIE');
+    ('banxico', 'banxico_sie', 'SF331451', 'dato', 'oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,

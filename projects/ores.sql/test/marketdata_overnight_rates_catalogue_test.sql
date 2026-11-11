@@ -40,7 +40,7 @@ select plan(5);
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
 select results_eq(
-    $$select v.provider_code || ' ' || v.external_id || ' ' || coalesce(c.id, '<no convention>')
+    $$select v.provider_code || ' ' || v.external_id || ' ' || coalesce(c.id, d.id, '<no convention>')
       from ores_marketdata_market_data_vendor_instruments_tbl v
       join ores_marketdata_market_data_mappings_tbl m
         on m.vendor_instrument_id = v.id
@@ -50,11 +50,15 @@ select results_eq(
         on c.oresmd_uri = m.oresmd_uri
        and c.tenant_id = v.tenant_id
        and c.valid_to = ores_utility_infinity_timestamp_fn()
+      left join lateral (
+          select min(a.id) as id from ores_dq_overnight_index_conventions_artefact_tbl a
+          where a.oresmd_uri = m.oresmd_uri and c.id is null
+      ) d on true
       where v.tenant_id = ores_utility_system_tenant_id_fn()
         and v.id_scheme in ('nyfed_rate_type', 'ecb_sdmx', 'boe_iadb', 'boc_valet', 'boj_stat', 'nb_sdmx', 'riksbank_swestr', 'rba_table', 'bcb_sgs', 'banxico_sie')
         and v.valid_to = ores_utility_infinity_timestamp_fn()
       order by 1$$,
-    $$values ('banxico SF331451 MXN-TIIE'),
+    $$values ('banxico SF331451 MXN-FTIIE'),
              ('bcb 4389 BRL-CDI'),
              ('boc AVG.INTWO CAD-CORRA'),
              ('boe IUDSOIA GBP-SONIA'),
@@ -66,7 +70,7 @@ select results_eq(
              ('nyfed SOFR USD-SOFR'),
              ('rba f1.FIRMMCRID AUD-AONIA'),
              ('riksbank SWESTR SEK-SWESTR')$$,
-    'each overnight series maps to the item of its index conventions, the built-in one and the alias a curve names'
+    'each overnight series maps to the item of its index conventions: the built-in one, the alias a curve names, or else the one the conventions dataset gives'
 );
 
 select is_empty(
@@ -109,7 +113,7 @@ select results_eq(
         and f.name in ('nyfed-sofr', 'ecb-estr', 'boe-sonia', 'boc-corra', 'boj-tona', 'norgesbank-nowa', 'riksbank-swestr', 'rba-aonia', 'bcb-cdi', 'banxico-tiie-fondeo')
         and s.valid_to = ores_utility_infinity_timestamp_fn()
       order by 1$$,
-    $$values ('banxico-tiie-fondeo interest_rates oresmd://ir/MXN?type=fixing&index=ibor&name=TIIE'),
+    $$values ('banxico-tiie-fondeo interest_rates oresmd://ir/MXN?type=fixing&index=ibor&name=FTIIE'),
              ('bcb-cdi interest_rates oresmd://ir/BRL?type=fixing&index=ibor&name=CDI'),
              ('boc-corra interest_rates oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
              ('boe-sonia interest_rates oresmd://ir/GBP?type=fixing&index=ibor&name=SONIA'),

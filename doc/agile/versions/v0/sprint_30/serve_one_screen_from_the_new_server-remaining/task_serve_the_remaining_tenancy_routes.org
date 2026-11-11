@@ -43,7 +43,7 @@ Serve the parties page of the session's own tenant and the parties the caller wo
 
 The task began with eighteen tenancy routes. On 2026-11-11 the sixteen that
 need the roster, the setup state, a read inside another tenant or a
-provisioning journey moved to [[id:169CA9EA-6515-45B6-9F9F-7385FCF53C98][Serve the tenant roster, setup and provisioning routes]],
+provisioning journey moved to [[id:169CA9EA-6515-45B6-9F9F-7385FCF53C98][Serve the provisioning routes]],
 so this task serves the two party reads.
 
 - =GET /api/me/parties= joins the account screen routes in the IAM part: it is

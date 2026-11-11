@@ -42,6 +42,8 @@ target_link_libraries(${lib_target_name}
         ores.assets.api.lib
         # The tenancy screens paint each status and type with a dq badge.
         ores.dq.api.lib
+        # Party provisioning places the new party under the tenant's root party.
+        ores.refdata.api.lib
     PRIVATE
         ores.http.nats.lib
         ores.iam.api.lib

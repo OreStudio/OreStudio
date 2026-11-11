@@ -33,6 +33,7 @@
 #include "ores.http/routes/iam/login_routes.hpp"
 #include "ores.http/routes/iam/permission_routes.hpp"
 #include "ores.http/routes/iam/profile_routes.hpp"
+#include "ores.http/routes/iam/provisioning_routes.hpp"
 #include "ores.http/routes/iam/role_routes.hpp"
 #include "ores.http/routes/iam/role_write_routes.hpp"
 #include "ores.http/routes/iam/seed_profile_routes.hpp"
@@ -58,6 +59,7 @@ void iam_routes::register_routes(std::shared_ptr<ores::http::net::router> router
     audit_routes::register_routes(router, registry, session);
     sign_in_routes::register_routes(router, registry, session);
     tenancy_catalogue_routes::register_routes(router, registry, session);
+    provisioning_routes::register_routes(router, registry, session);
     account_credential_routes::register_routes(router, registry, session);
     account_contact_information_routes::register_routes(router, registry, session);
     account_operations_routes::register_routes(router, registry, session);

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/repository/approval_decision_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
@@ -70,10 +71,6 @@ boost::uuids::uuid party_of(const context& ctx) {
     return *party;
 }
 
-std::string writer_of(const context& ctx) {
-    return ctx.actor().empty() ? ctx.service_account() : ctx.actor();
-}
-
 /// Writes the candidate set a request authorises: its subject, its tenors and its spots.
 void write_candidate(const context& ctx,
                      const boost::uuids::uuid& request_id,
@@ -103,7 +100,7 @@ void write_candidate(const context& ctx,
     record.method_code = "covered_interest_parity";
     record.published_by = "";
     record.published_at = std::nullopt;
-    record.modified_by = writer_of(ctx);
+    record.modified_by = ores::service::messaging::delegated_actor(ctx);
     record.performed_by = ctx.service_account();
     record.change_reason_code = "system.new_record";
     record.change_commentary = commentary;
@@ -215,7 +212,7 @@ void apply(const context& ctx,
         return;
     }
 
-    const auto publisher = writer_of(ctx);
+    const auto publisher = ores::service::messaging::delegated_actor(ctx);
     // Whole seconds, the precision every nullable timestamp of this schema keeps, so the
     // instant returned is the one a reader holds.
     record->published_at =

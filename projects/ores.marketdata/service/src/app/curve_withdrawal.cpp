@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -149,7 +150,7 @@ withdraw_curve(const ores::database::context& ctx,
             boost::uuids::string_generator{}(request.approval_request_id);
     }
 
-    const auto actor = ctx.actor().empty() ? ctx.service_account() : ctx.actor();
+    const auto actor = ores::service::messaging::delegated_actor(ctx);
     record.withdrawn_at =
         std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     record.withdrawn_by = actor;

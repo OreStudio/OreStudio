@@ -17,6 +17,7 @@
  *
  */
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.analytics.quant/service/ssvi_calibration_engine.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
@@ -58,7 +59,7 @@ namespace refdata_repo = ores::refdata::repository;
 using time_point = std::chrono::system_clock::time_point;
 using context = ores::database::context;
 
-auto& lg() {
+auto& calibration_log() {
     static auto instance =
         ores::logging::make_logger("ores.marketdata.service.app.fx_vol_surface_calibration_service");
     return instance;
@@ -73,10 +74,6 @@ boost::uuids::uuid calibration_id_of(const boost::uuids::uuid& blueprint, time_p
         std::chrono::duration_cast<std::chrono::microseconds>(as_of.time_since_epoch()).count();
     return boost::uuids::name_generator_sha1(calibration_namespace)(
         boost::uuids::to_string(blueprint) + "@" + std::to_string(micros));
-}
-
-std::string writer_of(const context& ctx) {
-    return ctx.actor().empty() ? ctx.service_account() : ctx.actor();
 }
 
 surface_calibration_recipe read_recipe(context ctx, const std::string& blueprint_id,
@@ -236,7 +233,7 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
             }
         const auto source_series_ids = json_strings(source_ids);
         const auto source_weights = json_numbers(weights);
-        const auto writer = writer_of(ctx);
+        const auto writer = ores::service::messaging::delegated_actor(ctx);
 
         if (output_series.derivation_kind == "OBSERVED") {
             output_series.derivation_kind = "FX_VOL_SURFACE_CALIBRATION";
@@ -360,12 +357,12 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
         out.gamma = record.gamma;
         out.converged = record.converged;
         out.max_abs_error = max_abs_error;
-        BOOST_LOG_SEV(lg(), ores::logging::info) << out.message;
+        BOOST_LOG_SEV(calibration_log(), ores::logging::info) << out.message;
     } catch (const std::exception& e) {
         out = {};
         out.success = false;
         out.message = e.what();
-        BOOST_LOG_SEV(lg(), ores::logging::warn) << "Calibration refused: " << e.what();
+        BOOST_LOG_SEV(calibration_log(), ores::logging::warn) << "Calibration refused: " << e.what();
     }
     return out;
 }

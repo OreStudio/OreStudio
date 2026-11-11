@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-reference-data-operations
-#+pr: 4618
+#+pr: 4619
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -132,6 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4619][#4619]] | [http] Serve the tenors screen's operations |
 | [[https://github.com/OreStudio/OreStudio/pull/4618][#4618]] | [http] Serve the conventions screen's families, page and write |
 | [[https://github.com/OreStudio/OreStudio/pull/4616][#4616]] | [http] Serve the counterparty screen's routes |
 

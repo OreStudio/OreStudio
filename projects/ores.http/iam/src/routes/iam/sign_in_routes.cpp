@@ -106,6 +106,31 @@ sign_in_routes::read_page(const http_request& req) {
     return page_of(req, 100, 1000);
 }
 
+std::optional<std::string>
+sign_in_routes::sign_ins_json(const http_request& req,
+                              nats_client& session,
+                              const std::string& username,
+                              std::pair<std::uint32_t, std::uint32_t> page) {
+    const auto read = ores::http::forwarding::forward(
+        req, session, messaging::get_account_request{messaging::account_key{username}});
+    if (!read.account)
+        return std::nullopt;
+    const auto& account = *read.account;
+    const auto info = ores::http::forwarding::forward(
+        req, session, messaging::get_login_info_request{messaging::login_info_key{account.id}});
+    messaging::list_sessions_request list;
+    list.offset = page.first;
+    list.limit = page.second;
+    list.order.field = "start_time";
+    list.order.descending = true;
+    list.filter = messaging::sessions_filter{account.id, std::nullopt};
+    const auto sessions = ores::http::forwarding::forward(req, session, list);
+    return "{\"account\":" + account_view::json_of(account) +
+           ",\"loginInfo\":" + account_view::json_of(info.login_info) +
+           ",\"sessions\":" + account_view::json_of(sessions.sessions) +
+           ",\"totalCount\":" + std::to_string(sessions.total) + "}";
+}
+
 void sign_in_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -213,28 +238,11 @@ void sign_in_routes::register_routes(
                 return not_whole_numbers();
             const auto username = req.get_path_param("username");
             return guarded<messaging::list_sessions_request>([&] {
-                const auto read = ores::http::forwarding::forward(
-                    req, session, messaging::get_account_request{messaging::account_key{username}});
-                if (!read.account)
+                const auto answer = sign_ins_json(req, session, username, *page);
+                if (!answer)
                     return refused(
                         http_status::not_found, "not-found", "No account has this username.");
-                const auto& account = *read.account;
-                const auto info = ores::http::forwarding::forward(
-                    req,
-                    session,
-                    messaging::get_login_info_request{messaging::login_info_key{account.id}});
-                messaging::list_sessions_request list;
-                list.offset = page->first;
-                list.limit = page->second;
-                list.order.field = "start_time";
-                list.order.descending = true;
-                list.filter = messaging::sessions_filter{account.id, std::nullopt};
-                const auto sessions = ores::http::forwarding::forward(req, session, list);
-                return http_response::json(
-                    "{\"account\":" + account_view::json_of(account) +
-                    ",\"loginInfo\":" + account_view::json_of(info.login_info) +
-                    ",\"sessions\":" + account_view::json_of(sessions.sessions) +
-                    ",\"totalCount\":" + std::to_string(sessions.total) + "}");
+                return http_response::json(*answer);
             });
         });
 }

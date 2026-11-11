@@ -55,7 +55,7 @@ The routes fall into three groups, each a reviewable unit:
   request that carries the tenant's token.
 
 On 2026-11-11 the task served the roster first, and the other two groups
-moved to [[id:76115CCB-0D67-4833-8A6B-050F744C1677][Serve the reads inside a tenant and the bootstrap routes]].
+moved to [[id:76115CCB-0D67-4833-8A6B-050F744C1677][Serve the reads inside a tenant]].
 
 - =deployment_access= is a new unit in the IAM part. It names the deployment
   read and refuses a caller whose roles do not cover it, by the rule

@@ -738,6 +738,11 @@ RULES = (
          "The deployment's tenants as system administration reads them, each joined with the"
          " run that set it up, at the address and in the shape the BFF answered, refused"
          " without the deployment read."),
+    Rule("a read inside a tenant",
+         ("regex", r"^GET /api/tenants/\{code\}/(parties|people|accounts/\{username\}/sign-ins|images/\{id\})$"),
+         CPP, RESOURCE, "tenancy",
+         "One tenant's data read from system administration, inside the tenant for the read"
+         " alone, at the address and in the shape the BFF answered."),
     Rule("a provisioning journey's route",
          ("regex", r"^(GET /api/seed-profiles|POST /api/provision-(tenant|party))$"),
          CPP, RESOURCE, "tenancy",

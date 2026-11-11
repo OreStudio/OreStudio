@@ -48,6 +48,7 @@ set(files
     "sign_in_routes_tests.cpp"
     "signup_routes_tests.cpp"
     "tenancy_catalogue_routes_tests.cpp"
+    "tenant_inside_routes_tests.cpp"
     "tenant_roster_routes_tests.cpp"
     "tenant_routes_tests.cpp"
     "tenant_status_routes_tests.cpp"

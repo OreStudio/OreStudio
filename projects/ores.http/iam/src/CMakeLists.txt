@@ -48,6 +48,8 @@ target_link_libraries(${lib_target_name}
         ores.workflow.api.lib
     PRIVATE
         ores.http.nats.lib
+        # A tenant's parties, read inside it, are the refdata part's party page.
+        ores.http.refdata.lib
         ores.iam.api.lib
         ores.utility.lib)
 

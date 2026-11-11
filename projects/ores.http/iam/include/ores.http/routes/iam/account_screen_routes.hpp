@@ -20,9 +20,12 @@
 #ifndef ORES_HTTP_ROUTES_IAM_ACCOUNT_SCREEN_ROUTES_HPP
 #define ORES_HTTP_ROUTES_IAM_ACCOUNT_SCREEN_ROUTES_HPP
 
+#include "ores.assets.api/domain/image.hpp"
 #include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <memory>
@@ -61,6 +64,20 @@ public:
      */
     [[nodiscard]] static std::string
     page_json(const ores::iam::messaging::list_accounts_response& reply);
+
+    /**
+     * @brief The reporting shape, as the screen reads it: an empty reference
+     * reads as null.
+     */
+    [[nodiscard]] static std::string
+    tree_json(const ores::iam::messaging::get_reporting_tree_response& reply);
+
+    /**
+     * @brief One picture as the browser shows it: its bytes, kept privately for
+     * five minutes and never run as a document.
+     */
+    [[nodiscard]] static ores::http::domain::http_response
+    picture_of(const ores::assets::domain::image& image);
 };
 
 }

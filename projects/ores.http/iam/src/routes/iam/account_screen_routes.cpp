@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http/routes/iam/account_screen_routes.hpp"
+#include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
@@ -27,6 +28,7 @@
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <charconv>
 #include <cstdint>
@@ -36,6 +38,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <vector>
 
 namespace ores::http::routes::iam {
 
@@ -45,6 +48,7 @@ using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
 namespace json = ores::utility::codec::json;
 namespace messaging = ores::iam::messaging;
+namespace assets = ores::assets::messaging;
 namespace rr = ores::http::net::record_routes;
 using access_screen_answers::characters_of;
 using access_screen_answers::guarded;
@@ -74,6 +78,23 @@ bool is_own_account(const http_request& req, const std::string& username) {
     return claims && claims->username && *claims->username == username;
 }
 
+/// One account by username: the caller's own by the self read, which needs no
+/// account permission, any other by the account read. A failed self read is
+/// refused as the BFF refused a failed operation.
+std::optional<ores::iam::domain::account>
+account_or_own(const http_request& req, nats_client& session, const std::string& username) {
+    if (is_own_account(req, username)) {
+        const auto reply =
+            ores::http::forwarding::forward(req, session, messaging::get_my_account_request{});
+        if (reply.result.outcome != ores::utility::domain::outcome::ok)
+            throw rr::refusal{http_status::conflict, "invalid-request", reply.result.message};
+        return reply.account;
+    }
+    return ores::http::forwarding::forward(
+               req, session, messaging::get_account_request{messaging::account_key{username}})
+        .account;
+}
+
 }
 
 std::optional<messaging::list_accounts_request>
@@ -95,6 +116,50 @@ account_screen_routes::read_page_query(const http_request& req) {
     if (!search.empty())
         out.filter = messaging::accounts_filter{std::nullopt, search};
     return out;
+}
+
+std::string account_screen_routes::tree_json(const messaging::get_reporting_tree_response& reply) {
+    const auto or_null = [](const std::string& id) {
+        return id.empty() ? std::string("null") : json::write(id);
+    };
+    std::string out = "{\"unrooted\":" + std::to_string(reply.unrooted) + ",\"nodes\":[";
+    for (std::size_t i = 0; i < reply.nodes.size(); ++i) {
+        const auto& n = reply.nodes[i];
+        out += (i == 0 ? "{" : ",{");
+        out += "\"accountId\":" + json::write(n.account_id);
+        out += ",\"username\":" + json::write(n.username);
+        out += ",\"fullName\":" + json::write(n.full_name);
+        out += ",\"jobTitle\":" + json::write(n.job_title);
+        out += ",\"accountType\":" + json::write(n.account_type.empty() ? "user" : n.account_type);
+        out += ",\"imageId\":" + or_null(n.image_id);
+        out += ",\"reportsToAccountId\":" + or_null(n.reports_to_account_id);
+        out +=
+            ",\"reportsOutsideScope\":" + std::string(n.reports_outside_scope ? "true" : "false");
+        out += ",\"depth\":" + std::to_string(n.depth);
+        out += ",\"directReports\":" + std::to_string(n.direct_reports);
+        out += ",\"partyIds\":" + json::write(n.party_ids) + "}";
+    }
+    out += "],\"parties\":[";
+    for (std::size_t i = 0; i < reply.parties.size(); ++i) {
+        const auto& p = reply.parties[i];
+        out += (i == 0 ? "{" : ",{");
+        out += "\"partyId\":" + json::write(p.party_id);
+        out += ",\"name\":" + json::write(p.name);
+        out += ",\"shortCode\":" + json::write(p.short_code);
+        out += ",\"parentPartyId\":" + or_null(p.parent_party_id) + "}";
+    }
+    return out + "]}";
+}
+
+http_response account_screen_routes::picture_of(const ores::assets::domain::image& image) {
+    http_response resp;
+    resp.status = http_status::ok;
+    resp.content_type = image.mime_type.empty() ? "image/svg+xml" : image.mime_type;
+    resp.body.assign(image.data.begin(), image.data.end());
+    resp.headers["Cache-Control"] = "private, max-age=300";
+    resp.headers["X-Content-Type-Options"] = "nosniff";
+    resp.headers["Content-Security-Policy"] = "default-src 'none'; sandbox";
+    return resp;
 }
 
 std::string account_screen_routes::page_json(const messaging::list_accounts_response& reply) {
@@ -144,22 +209,10 @@ void account_screen_routes::register_routes(
             if (username.empty())
                 return refused(
                     http_status::bad_request, "invalid-request", "A username is required.");
-            if (is_own_account(req, username)) {
-                return guarded<messaging::get_my_account_request>([&] {
-                    const auto reply = ores::http::forwarding::forward(
-                        req, session, messaging::get_my_account_request{});
-                    if (reply.result.outcome != ores::utility::domain::outcome::ok)
-                        return refused(
-                            http_status::conflict, "invalid-request", reply.result.message);
-                    return http_response::json(
-                        "{\"account\":" + account_view::json_of(reply.account) + "}");
-                });
-            }
-            const messaging::get_account_request other{messaging::account_key{username}};
             return guarded<messaging::get_account_request>([&] {
-                const auto reply = ores::http::forwarding::forward(req, session, other);
-                return http_response::json("{\"account\":" + account_view::json_of(reply.account) +
-                                           "}");
+                return http_response::json(
+                    "{\"account\":" +
+                    account_view::json_of(account_or_own(req, session, username)) + "}");
             });
         });
 
@@ -178,6 +231,71 @@ void account_screen_routes::register_routes(
                     return refused(http_status::conflict, "invalid-request", reply.message);
                 return http_response::json("{\"defaultPartyId\":" + json::write(body->partyId) +
                                            "}");
+            });
+        });
+
+    add(router->get("/api/accounts/{username}/picture"),
+        "Read the picture of one account",
+        [&session](const http_request& req) {
+            const auto username = req.get_path_param("username");
+            return guarded<assets::list_images_request>([&] {
+                const auto account = account_or_own(req, session, username);
+                if (!account || !account->image_id || account->image_id->is_nil())
+                    return refused(
+                        http_status::not_found, "not-found", "This account has no picture.");
+                assets::list_images_request list;
+                list.limit = 1;
+                list.filter = assets::images_filter{
+                    std::vector<boost::uuids::uuid>{*account->image_id}, std::nullopt};
+                const auto reply = ores::http::forwarding::forward(req, session, list);
+                if (reply.result.outcome != ores::utility::domain::outcome::ok)
+                    return refused(http_status::conflict, "invalid-request", reply.result.message);
+                if (reply.images.empty())
+                    return refused(
+                        http_status::not_found, "not-found", "This account has no picture.");
+                return picture_of(reply.images.front());
+            });
+        });
+
+    add(router->put("/api/accounts/{accountId}/reporting-line"),
+        "Set or clear who one account reports to",
+        [&session](const http_request& req) {
+            const auto body = json::read_expected<reporting_line_body>(req.body);
+            if (!body)
+                return refused(http_status::bad_request,
+                               "invalid-request",
+                               "A reportsToAccountId is required. Send an empty string to clear "
+                               "the line.");
+            return guarded<messaging::set_reporting_line_request>([&] {
+                const auto reply = ores::http::forwarding::forward(
+                    req,
+                    session,
+                    messaging::set_reporting_line_request{req.get_path_param("accountId"),
+                                                          body->reportsToAccountId,
+                                                          body->expectedVersion.value_or(""),
+                                                          body->reasonCode.value_or(""),
+                                                          body->commentary.value_or("")});
+                if (reply.result.outcome != ores::utility::domain::outcome::ok)
+                    return refused(http_status::conflict, "invalid-request", reply.result.message);
+                if (!reply.account)
+                    return refused(http_status::conflict,
+                                   "invalid-request",
+                                   "The write answered without the account it wrote.");
+                return http_response::json(account_view::json_of(*reply.account));
+            });
+        });
+
+    add(router->get("/api/reporting-tree"),
+        "Read the tenant's reporting shape, or one account's branch of it",
+        [&session](const http_request& req) {
+            return guarded<messaging::get_reporting_tree_request>([&] {
+                const auto reply = ores::http::forwarding::forward(
+                    req,
+                    session,
+                    messaging::get_reporting_tree_request{req.get_query_param("root")});
+                if (reply.result.outcome != ores::utility::domain::outcome::ok)
+                    return refused(http_status::conflict, "invalid-request", reply.result.message);
+                return http_response::json(tree_json(reply));
             });
         });
 }

@@ -1,0 +1,9 @@
+# Step 3: the trader applies the approved request, and a repeat changes nothing.
+# Run with BLUEPRINT, AS_OF and REQUEST set.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_vol_surface_operation publish-fx-vol-surface ${BLUEPRINT} ${AS_OF} --approval_request_id ${REQUEST}
+fx_vol_surface_operation publish-fx-vol-surface ${BLUEPRINT} ${AS_OF} --approval_request_id ${REQUEST}
+fx_vol_surface_operation get-fx-vol-surface-publish-subject ${REQUEST}
+logout

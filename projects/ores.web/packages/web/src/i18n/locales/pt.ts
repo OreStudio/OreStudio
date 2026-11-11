@@ -532,6 +532,8 @@ const pt: SourceCatalogue = {
 
     'notification.marketdata.curve_published':
         'A curva {curve} de {party} esta em vigor desde {published_at}, publicada por {publisher} com data de referencia {as_of}. Substitui o conjunto com data de {previous_as_of}, ou nada quando e o primeiro.',
+    'notification.marketdata.surface_published':
+        'A superficie de volatilidade {surface} de {party} esta em vigor desde {published_at}, publicada por {publisher} com data de referencia {as_of}. Substitui a superficie com data de {previous_as_of}, ou nada quando e a primeira.',
     'notification.marketdata.curve_withdrawn':
         'A curva {curve} de {party} foi retirada em {withdrawn_at} por {withdrawn_by}: {reason}. O seu ultimo conjunto publicado tinha a data de {as_of}.',
 

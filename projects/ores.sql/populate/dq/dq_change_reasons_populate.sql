@@ -280,6 +280,28 @@ BEGIN
         69      -- display order
     );
 
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.surface_published',
+        'A surface publish applied the approved calibration: the record stamps who published it and when',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (the stamp is a new version of the subject row)
+        false,  -- not for delete
+        false,  -- no commentary required
+        70      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.surface_superseded',
+        'A later published surface replaced a published one: the record links the successor request and its as-of',
+        'system',
+        false,  -- not for new
+        true,   -- applies to amend (the link is a new version of the superseded row)
+        false,  -- not for delete
+        false,  -- no commentary required
+        71      -- display order
+    );
+
     -- =============================================================================
     -- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
     -- =============================================================================

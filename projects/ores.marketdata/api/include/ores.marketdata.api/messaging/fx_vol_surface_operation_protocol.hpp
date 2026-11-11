@@ -30,6 +30,7 @@
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <chrono>
 #include <cstddef>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -137,6 +138,100 @@ struct calibrate_fx_vol_surface_response {
 
     friend bool operator==(const calibrate_fx_vol_surface_response&,
                            const calibrate_fx_vol_surface_response&) = default;
+};
+
+/**
+ * @brief Raises, or applies, the publish of a calibrated surface of the caller's party. A call that
+ * names no approved request raises a marketdata.fx_vol_surface_publish request for the calibration
+ * of the blueprint at the as-of, and records its checks for the decider. A call that names the
+ * approved request publishes that calibration and ends the set it replaces. A blueprint with no
+ * calibration at the as-of is refused, and nothing is written.
+ */
+struct publish_fx_vol_surface_request {
+    using response_type = struct publish_fx_vol_surface_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.publish_fx_vol_surface";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string blueprint_id;
+    std::chrono::system_clock::time_point as_of;
+    /**
+     * @brief The approved request this call applies, or empty to raise one.
+     */
+    std::string approval_request_id = "";
+    /**
+     * @brief Why the surface should be published, for the decider to read.
+     */
+    std::string reason = "";
+
+    friend bool operator==(const publish_fx_vol_surface_request&,
+                           const publish_fx_vol_surface_request&) = default;
+};
+
+/**
+ * @brief What the call did: raised a request, published a surface, or refused and why.
+ */
+struct publish_fx_vol_surface_response {
+    bool success = false;
+    std::string message;
+    std::string approval_request_id;
+    std::string state_code;
+    std::optional<std::chrono::system_clock::time_point> published_at;
+    std::string published_by;
+
+    friend bool operator==(const publish_fx_vol_surface_response&,
+                           const publish_fx_vol_surface_response&) = default;
+};
+
+/**
+ * @brief Reads the subject of a surface publish request: the candidate it authorises, the checks
+ * the raise recorded, and what has happened to it since.
+ */
+struct get_fx_vol_surface_publish_subject_request {
+    using response_type = struct get_fx_vol_surface_publish_subject_response;
+    static constexpr std::string_view nats_subject =
+        "marketdata.v1.ops.get_fx_vol_surface_publish_subject";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string approval_request_id;
+
+    friend bool operator==(const get_fx_vol_surface_publish_subject_request&,
+                           const get_fx_vol_surface_publish_subject_request&) = default;
+};
+
+/**
+ * @brief The subject of a surface publish request, or why it cannot be read.
+ */
+struct get_fx_vol_surface_publish_subject_response {
+    bool success = false;
+    std::string message;
+    std::string approval_request_id;
+    std::string state_code;
+    std::string blueprint_name;
+    std::string party_id;
+    std::chrono::system_clock::time_point as_of;
+    std::string calibration_id;
+    int calibration_version = 0;
+    bool converged = false;
+    double max_abs_error = 0.0;
+    int pillars_beyond_tolerance = 0;
+    int violation_count = 0;
+    std::optional<std::chrono::system_clock::time_point> published_at;
+    std::string published_by;
+    std::optional<std::chrono::system_clock::time_point> superseded_at;
+    std::string superseded_by_request_id;
+
+    friend bool operator==(const get_fx_vol_surface_publish_subject_response&,
+                           const get_fx_vol_surface_publish_subject_response&) = default;
 };
 
 /**
@@ -257,6 +352,115 @@ struct calibrate_fx_vol_surface_response {
     };
 }
 
+/**
+ * @brief The members of publish_fx_vol_surface_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_fx_vol_surface_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"blueprint_id",
+                                      &publish_fx_vol_surface_request::blueprint_id},
+        ::ores::utility::codec::field{"as_of", &publish_fx_vol_surface_request::as_of},
+        ::ores::utility::codec::field{"approval_request_id",
+                                      &publish_fx_vol_surface_request::approval_request_id},
+        ::ores::utility::codec::field{"reason", &publish_fx_vol_surface_request::reason},
+    };
+}
+
+/**
+ * @brief The members of publish_fx_vol_surface_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<publish_fx_vol_surface_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &publish_fx_vol_surface_response::success},
+        ::ores::utility::codec::field{"message", &publish_fx_vol_surface_response::message},
+        ::ores::utility::codec::field{"approval_request_id",
+                                      &publish_fx_vol_surface_response::approval_request_id},
+        ::ores::utility::codec::field{"state_code", &publish_fx_vol_surface_response::state_code},
+        ::ores::utility::codec::field{"published_at",
+                                      &publish_fx_vol_surface_response::published_at},
+        ::ores::utility::codec::field{"published_by",
+                                      &publish_fx_vol_surface_response::published_by},
+    };
+}
+
+/**
+ * @brief The members of get_fx_vol_surface_publish_subject_request, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_fx_vol_surface_publish_subject_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{
+            "approval_request_id",
+            &get_fx_vol_surface_publish_subject_request::approval_request_id},
+    };
+}
+
+/**
+ * @brief The members of get_fx_vol_surface_publish_subject_response, named as the wire names them
+ * and in the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_fx_vol_surface_publish_subject_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success",
+                                      &get_fx_vol_surface_publish_subject_response::success},
+        ::ores::utility::codec::field{"message",
+                                      &get_fx_vol_surface_publish_subject_response::message},
+        ::ores::utility::codec::field{
+            "approval_request_id",
+            &get_fx_vol_surface_publish_subject_response::approval_request_id},
+        ::ores::utility::codec::field{"state_code",
+                                      &get_fx_vol_surface_publish_subject_response::state_code},
+        ::ores::utility::codec::field{"blueprint_name",
+                                      &get_fx_vol_surface_publish_subject_response::blueprint_name},
+        ::ores::utility::codec::field{"party_id",
+                                      &get_fx_vol_surface_publish_subject_response::party_id},
+        ::ores::utility::codec::field{"as_of", &get_fx_vol_surface_publish_subject_response::as_of},
+        ::ores::utility::codec::field{"calibration_id",
+                                      &get_fx_vol_surface_publish_subject_response::calibration_id},
+        ::ores::utility::codec::field{
+            "calibration_version",
+            &get_fx_vol_surface_publish_subject_response::calibration_version},
+        ::ores::utility::codec::field{"converged",
+                                      &get_fx_vol_surface_publish_subject_response::converged},
+        ::ores::utility::codec::field{"max_abs_error",
+                                      &get_fx_vol_surface_publish_subject_response::max_abs_error},
+        ::ores::utility::codec::field{
+            "pillars_beyond_tolerance",
+            &get_fx_vol_surface_publish_subject_response::pillars_beyond_tolerance},
+        ::ores::utility::codec::field{
+            "violation_count", &get_fx_vol_surface_publish_subject_response::violation_count},
+        ::ores::utility::codec::field{"published_at",
+                                      &get_fx_vol_surface_publish_subject_response::published_at},
+        ::ores::utility::codec::field{"published_by",
+                                      &get_fx_vol_surface_publish_subject_response::published_by},
+        ::ores::utility::codec::field{"superseded_at",
+                                      &get_fx_vol_surface_publish_subject_response::superseded_at},
+        ::ores::utility::codec::field{
+            "superseded_by_request_id",
+            &get_fx_vol_surface_publish_subject_response::superseded_by_request_id},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -326,6 +530,62 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::calibrate_fx_vol_surface_response& v);
     static ores::marketdata::messaging::calibrate_fx_vol_surface_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::publish_fx_vol_surface_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::publish_fx_vol_surface_request& v);
+    static ores::marketdata::messaging::publish_fx_vol_surface_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::publish_fx_vol_surface_request& v);
+    static ores::marketdata::messaging::publish_fx_vol_surface_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::publish_fx_vol_surface_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::publish_fx_vol_surface_response& v);
+    static ores::marketdata::messaging::publish_fx_vol_surface_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::publish_fx_vol_surface_response& v);
+    static ores::marketdata::messaging::publish_fx_vol_surface_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_fx_vol_surface_publish_subject_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_fx_vol_surface_publish_subject_request& v);
+    static ores::marketdata::messaging::get_fx_vol_surface_publish_subject_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_fx_vol_surface_publish_subject_request& v);
+    static ores::marketdata::messaging::get_fx_vol_surface_publish_subject_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response& v);
+    static ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response
+    read_json(std::string_view text);
+    static std::string write_msgpack(
+        const ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response& v);
+    static ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

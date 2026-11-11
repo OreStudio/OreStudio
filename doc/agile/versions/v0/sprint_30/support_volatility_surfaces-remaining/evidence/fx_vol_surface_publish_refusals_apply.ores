@@ -1,0 +1,15 @@
+# The refusals of a surface publish, step 2. The decider approves both requests,
+# and the trader applies them: the older surface is refused because a newer one is
+# live, and the rerun calibration is refused because the decision does not cover
+# it. Run with BLUEPRINT, OLD, NEW, OLD_REQUEST and NEW_REQUEST set.
+connect $ORES_NATS_URL
+
+login mark.reid@acme_corporation Secure-Password-123
+approval_operations decide-approval ${OLD_REQUEST} approve "Approved to show the backdating refusal" none --version 1
+approval_operations decide-approval ${NEW_REQUEST} approve "Approved to show the rerun refusal" none --version 1
+logout
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_vol_surface_operation publish-fx-vol-surface ${BLUEPRINT} ${OLD} --approval_request_id ${OLD_REQUEST}
+fx_vol_surface_operation publish-fx-vol-surface ${BLUEPRINT} ${NEW} --approval_request_id ${NEW_REQUEST}
+logout

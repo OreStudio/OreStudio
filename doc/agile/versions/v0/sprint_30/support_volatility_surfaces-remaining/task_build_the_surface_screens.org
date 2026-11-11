@@ -40,6 +40,8 @@ A person can calibrate a surface, see the candidate and its errors, send it to p
 - A published surface shows as a heatmap and as slices through =SurfacePanel=.
 - The Evolution page shows a party's published surface, and how it moved over a range, through =SurfacePanel=. A surface is a party's derived data, so it shows there; the raw market vols show on the synthetic screen.
 - A candidate is always labelled as a candidate.
+- The published surface has a record page at =market-data/published-surfaces/<series>=, where the surface publish notice links.
+- The approval inbox shows a surface publish request's subject, the candidate and its checks, as it shows a curve publish's.
 
 * Plan
 

@@ -59,6 +59,8 @@
 \ir ./marketdata_fx_forward_publish_spots_notify_trigger_create.sql
 \ir ./marketdata_fx_vol_surface_calibrations_create.sql
 \ir ./marketdata_fx_vol_surface_calibrations_notify_trigger_create.sql
+\ir ./marketdata_fx_vol_surface_publishes_create.sql
+\ir ./marketdata_fx_vol_surface_publishes_notify_trigger_create.sql
 \ir ./marketdata_market_fixings_create.sql
 \ir ./marketdata_market_fixings_notify_trigger_create.sql
 \ir ./marketdata_series_classification_rules_create.sql

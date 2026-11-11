@@ -1,0 +1,513 @@
+:PROPERTIES:
+:ID: DE07060F-9717-4B6E-991F-0EDEFD8D1FDA
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.marketdata.fx_vol_surface_publish
+#+description: The subject a marketdata.fx_vol_surface_publish approval request names, the checks of the candidate it authorises, and the publication and supersession the apply records.
+#+type: ores.codegen.entity
+#+component: marketdata
+#+filetags:
+#+entity_singular: fx_vol_surface_publish
+#+entity_plural: fx_vol_surface_publishes
+#+entity_title: Fx Vol Surface Publish
+#+brief: The subject, checks and publication of one FX volatility surface publish.
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+The detail row of one =marketdata.fx_vol_surface_publish= approval request: the
+calibrated candidate the request authorises, the checks of that candidate, and
+the record of the act once the surface is published.
+
+A surface is derived data and belongs to its blueprint's party. The subject is the
+blueprint and the as-of, which name one calibration record. The raise copies that
+record's checks here, so the person who decides reads the fit they approve: whether
+it converged, its largest pillar error, how many pillars are beyond the tolerance,
+and how many arbitrage conditions it breaks. The apply publishes that calibration
+and no later one: a calibration rerun after the raise is a new version, and the
+apply refuses a version the request did not name.
+
+A blueprint's output series holds one live surface. The apply ends every live set
+of the series in the same act, as a curve publish does, so the superseded set and
+its successor both stay in the history. =published_at= and =published_by= are the
+publication record, empty while the request waits. =request_id= is the natural
+key, so a request authorises one publish.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     marketdata
+:profile:       uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID identifying this row.
+
+** request_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:END:
+
+The approval request this record is the subject of.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:filterable: true
+:END:
+
+The party the surface belongs to: its blueprint's party. Only a person acting for it raises the publish.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** blueprint_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:filterable: true
+:END:
+
+The =fx_vol_surface_blueprint= (in ores.refdata) the surface was calibrated from.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** as_of
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:sortable: true
+:END:
+
+The as-of of the calibration the request authorises.
+
+#+begin_src cpp :name generator
+ctx.past_timepoint()
+#+end_src
+
+** output_series_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The =market_series= the surface was written to, and whose live set this publish becomes.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** calibration_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The =fx_vol_surface_calibration= the request authorises.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** calibration_version
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The version of the calibration record the request authorises. A rerun after the raise is a later version, and the apply refuses it.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** converged
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the calibration converged, as the raise read it.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** max_abs_error
+:PROPERTIES:
+:type:     double precision
+:cpp_type: double
+:nullable: false
+:END:
+
+The largest absolute pillar error of the calibration, in volatility, as the raise read it.
+
+#+begin_src cpp :name generator
+0.0001
+#+end_src
+
+** pillars_beyond_tolerance
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many pillars of the calibration are beyond the tolerance, as the raise read it.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** violation_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many arbitrage conditions the calibrated surface breaks, as the raise read it.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** published_by
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable:      false
+:default_value: ""
+:END:
+
+The username of the account that applied the request, or empty while it waits.
+
+#+begin_src cpp :name generator
+std::string("")
+#+end_src
+
+** published_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When the set was published, or null while the request waits.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** superseded_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When a later set took this one's place, or null while this set is in use.
+
+A supersession is a publish whose subject is the successor, so the instant is
+the successor's published instant and no person signs it: the successor's own
+record names the publisher.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** superseded_by_request_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The publish request whose apply replaced this set, or null.
+
+A soft reference, as the withdrawal request is: the successor is published under
+its own request and this row links to it so a reader follows one live set and one
+superseded set and never two live sets.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** superseded_as_of
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+The as-of the successor was built at, or null.
+
+Carried beside the successor's request so the history names the set that
+replaced this one without a second read.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:            ores_marketdata_fx_vol_surface_publishes_tbl
+:rls_tenant_isolation: true
+:END:
+
+The record is tenant-scoped, as a curve publish is: the decider of a publish is a
+tenant function, so the subject names its party instead of hiding behind it.
+
+** Checks
+
+| expression                                                       |
+|------------------------------------------------------------------|
+| ("published_at" is null) = ("published_by" = '')                 |
+| "as_of" > '1970-01-01 00:00:00+00'::timestamp with time zone     |
+| ("superseded_at" is null) = ("superseded_by_request_id" is null) |
+| ("superseded_at" is null) = ("superseded_as_of" is null)         |
+| "superseded_at" is null or "published_at" is not null            |
+| "max_abs_error" >= 0                                             |
+| "pillars_beyond_tolerance" >= 0                                  |
+| "violation_count" >= 0                                           |
+
+** Indexes
+
+| name                                   | columns                                          | unique | current_only |
+|----------------------------------------+--------------------------------------------------+--------+--------------|
+| fx_vol_surface_publishes_series        | tenant_id, output_series_id, as_of desc          | false  | true         |
+
+* Foreign keys
+
+** request_id
+:PROPERTIES:
+:table:         ores_inbox_approval_requests_tbl
+:target_column: id
+:nullable:      false
+:list_by:       true
+:error_message: Invalid request_id: %. No approval request found with this id.
+:END:
+
+The request the record is the subject of. Its own id is the one the publish call
+names, so a record that names a request the store does not hold authorises
+nothing.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.api/generators/approval_request_generator.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_state_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto asker = ores::iam::generators::generate_synthetic_account(ctx);
+        asker.account_type = "service";
+        asker.change_reason_code = "system.test";
+        ores::iam::repository::account_repository asker_repo;
+        asker_repo.write(party_ctx, asker);
+
+        auto request = ores::inbox::generators::generate_synthetic_approval_request(ctx);
+        request.change_reason_code = "system.test";
+        request.requested_by = asker.id;
+
+        const auto system_ctx =
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+        const auto kinds =
+            ores::inbox::repository::approval_kind_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(kinds.empty());
+        request.kind_code = kinds.front().code;
+        const auto states =
+            ores::inbox::repository::approval_request_state_repository{}.read_latest(system_ctx);
+        REQUIRE_FALSE(states.empty());
+        request.state_code = states.front().code;
+
+        ores::inbox::repository::approval_request_repository request_repo;
+        request_repo.write(party_ctx, request);
+        v.request_id = request.id;
+    }
+#+end_src
+
+** party_id
+:PROPERTIES:
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: publish
+:entity_plural_short:   publishes
+:entity_singular_words: FX volatility surface publish
+:entity_plural_words:   FX volatility surface publishes
+:END:
+
+*** read_latest_by_request
+:PROPERTIES:
+:ID: 4681D66B-F3CF-4277-8134-0F5107E2BE8E
+:END:
+
+Reads the record of one request, if the store holds one. The gate asks here.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::optional<domain::fx_vol_surface_publish>
+read_latest_by_request(context ctx, const std::string& request_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <optional>
+#include <string>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::optional<domain::fx_vol_surface_publish>
+fx_vol_surface_publish_repository::read_latest_by_request(context ctx, const std::string& request_id) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "request_id"_c == request_id &&
+                                            "valid_to"_c == max);
+    auto rows = query_builder::execute_read_query<fx_vol_surface_publish_entity, domain::fx_vol_surface_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return fx_vol_surface_publish_mapper::map(entities); },
+        lg(),
+        "Reading the FX volatility surface publish of a request.");
+    if (rows.empty())
+        return std::nullopt;
+    return rows.front();
+}
+#+end_src
+
+*** read_live_for_series
+:PROPERTIES:
+:ID: B7B48859-876E-4EAB-B27A-DF5E44142D46
+:END:
+
+Reads every record of one series that was published and has not ended, newest
+first. The publish gate asks here before it stamps the successor: one live set is
+what a reader is promised, so a series that holds more than one is a set that
+never ended, and the apply ends them all.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::fx_vol_surface_publish>
+read_live_for_series(context ctx, const boost::uuids::uuid& series_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <boost/uuid/uuid_io.hpp>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::fx_vol_surface_publish>
+fx_vol_surface_publish_repository::read_live_for_series(context ctx,
+                                               const boost::uuids::uuid& series_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading the live sets of series: " << series_id;
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto sid = boost::uuids::to_string(series_id);
+    const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "output_series_id"_c == sid &&
+                             "valid_to"_c == max);
+
+    auto rows = query_builder::execute_read_query<fx_vol_surface_publish_entity, domain::fx_vol_surface_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return fx_vol_surface_publish_mapper::map(entities); },
+        lg(),
+        "Reading the live sets of a series.");
+
+    // A set is live when it was published and nothing ended it: a record with no
+    // instant is a request that still waits, and one that carries an end is a set
+    // a reader no longer prices from.
+    rows.erase(std::remove_if(rows.begin(),
+                              rows.end(),
+                              [](const auto& r) {
+                                  return !r.published_at.has_value() ||
+                                         r.superseded_at.has_value();
+                              }),
+               rows.end());
+    std::sort(rows.begin(), rows.end(), [](const auto& a, const auto& b) {
+        return *a.published_at > *b.published_at;
+    });
+    return rows;
+}
+#+end_src
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: p
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| as_of        | As Of        |
+| published_by | Published By |
+| published_at | Published At |
+
+* See also
+
+- [[id:9BC6FEDE-01E5-43B8-8A04-ACF0A5AB12B6][ores.marketdata.curve_publish]] -- the curve publish this record follows.
+- [[id:E8B8D507-2113-476B-B6C2-BAECF35CCD79][ores.marketdata.fx_forward_publish]] -- the forward set a calibration reads.

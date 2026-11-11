@@ -22,8 +22,17 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.service/export.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
 
 namespace ores::marketdata::service::app {
+
+/**
+ * @brief The id of the calibration record of a blueprint at an as-of, the same on every rerun, so
+ * a calibration and its publish name one record.
+ */
+[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT boost::uuids::uuid
+calibration_id_of(const boost::uuids::uuid& blueprint_id, std::chrono::system_clock::time_point as_of);
 
 /**
  * @brief Calibrates a party's FX volatility surface blueprint at an as-of into a candidate.

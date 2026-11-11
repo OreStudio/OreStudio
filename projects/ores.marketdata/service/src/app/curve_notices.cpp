@@ -251,4 +251,24 @@ void announce_withdrawal(const ores::database::context& ctx,
                  curve_link);
 }
 
+void announce_surface_publish(const ores::database::context& ctx,
+                              const domain::fx_vol_surface_publish& published,
+                              std::optional<std::chrono::system_clock::time_point> previous_as_of) {
+    repository::market_series_repository repo;
+    const auto series = repo.read_latest(ctx, boost::uuids::to_string(published.output_series_id));
+    const auto surface = series.empty() ? "series " + boost::uuids::to_string(published.output_series_id) :
+                                          series.front().oresmd_uri;
+    raise_notice(ctx,
+                 surface_published_kind_code,
+                 published.party_id,
+                 {{.name = "surface", .value = surface},
+                  {.name = "party", .value = party_name_of(ctx, published.party_id)},
+                  {.name = "as_of", .value = instant_of(published.as_of)},
+                  {.name = "published_at", .value = instant_of(published.published_at)},
+                  {.name = "publisher", .value = published.published_by},
+                  {.name = "request", .value = boost::uuids::to_string(published.request_id)},
+                  {.name = "previous_as_of", .value = instant_of(previous_as_of)}},
+                 "market-data/published-surfaces/" + escape_path(surface));
+}
+
 }

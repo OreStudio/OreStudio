@@ -68,6 +68,22 @@ public:
     static void process_calibrate_fx_vol_surface(std::ostream& out,
                                                  ores::nats::service::nats_client& session,
                                                  const std::vector<std::string>& args);
+
+    /**
+     * @brief publish-fx-vol-surface <blueprint_id> <as_of> [--approval_request_id <v>] [--reason
+     * <v>]
+     */
+    static void process_publish_fx_vol_surface(std::ostream& out,
+                                               ores::nats::service::nats_client& session,
+                                               const std::vector<std::string>& args);
+
+    /**
+     * @brief get-fx-vol-surface-publish-subject <approval_request_id>
+     */
+    static void
+    process_get_fx_vol_surface_publish_subject(std::ostream& out,
+                                               ores::nats::service::nats_client& session,
+                                               const std::vector<std::string>& args);
 };
 
 }

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/publish-a-calibrated-surface
+#+pr: 4573
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ A candidate surface becomes authoritative in the same three acts as a curve. A m
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -38,16 +38,13 @@ A candidate surface becomes authoritative in the same three acts as a curve. A m
 - A maker raises the publish of a candidate, and the maker cannot approve it.
 - An approved publish applies once, and a repeat changes nothing.
 - The new set ends the set it replaces for the same blueprint, and history shows both.
-- A candidate with arbitrage, or with a pillar beyond tolerance, shows this to the person who decides.
+- A candidate whose fit did not converge, whose pillars are beyond the tolerance, or that breaks an arbitrage condition shows so to the person who decides, before the decision.
 - A published surface sends the same kind of notice as a published curve.
 - A surface belongs to the blueprint's party, and only a person acting for that party can raise its publish.
-- A candidate whose fit did not converge, whose pillars are beyond the tolerance, or that breaks an arbitrage condition shows so to the decider before the decision.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The publish follows the curve publish and the forward set publish. A new =fx_vol_surface_publish= record is the subject of a =marketdata.fx_vol_surface_publish= request: the blueprint, the as-of, the calibration and its version, and the calibration's checks copied at the raise, so the decider reads what they approve. The apply refuses a calibration rerun after the raise, publishes once, ends every live surface of the output series in one unit of work, and sends a =marketdata.surface_published= notice through the curve notices' helpers. A read, =get_fx_vol_surface_publish_subject=, gives the decider the subject. The services name the session's party through a shared =session_party=.
 
 * Measurements
 
@@ -82,12 +79,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4573][#4573]] | [marketdata] Publish a calibrated surface |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | An older as-of can supersede a newer live surface | =fx_vol_surface_publish_service.cpp= | Fixed | The apply refuses a surface older than the live one; shown live. |
+| 2 | A failed record write leaves an orphan request | =fx_vol_surface_publish_service.cpp= | Fixed | The raise and its subject are one unit of work. |
+| 3 | A duplicate pending raise is allowed | =fx_vol_surface_publish_service.cpp= | Fixed | A raise is refused while a request for the same calibration waits or is approved; shown live. |
+| 4 | The subject read has no party check | =fx_vol_surface_publish_service.cpp= | Kept | The decider is a tenant-wide Market Risk function, so the subject is tenant-scoped, as a curve publish's is. |
+| 5 | A missing request reads as success | =fx_vol_surface_publish_service.cpp= | Fixed | It is refused, naming the request. |
+| 6 | A database failure reads as a wrong id; a double read; an unused include | =fx_vol_surface_publish_service.cpp= | Fixed | The failure reaches the caller, the apply reuses the record it wrote, and the include is gone. |
+| 7 | Evidence for the rerun refusal | evidence | Fixed | =fx_vol_surface_publish_refusals_*.ores= shows the rerun, backdating and duplicate refusals. |
 
 * Result
+
+Done on 2026-11-11. On a fresh Acme tenant with the auto-approval off, a trader of ACCOUS calibrated EURUSD_SSVI at 01:58 and 01:59 and raised the publish of the first; the request waited. The trader could not decide it (=not_a_decider=). The Market Risk decider read its subject, converged with a largest error of 0.000012, no pillar beyond the tolerance and no violation, and approved. The trader applied it once, and a repeat was refused, naming when and by whom it was published. The second surface, published the same way, superseded the first: the first row's history reads raised, published, superseded, with the successor's as-of, and the second is the series' one live surface. Each apply sent one =marketdata.surface_published= notice. The scripts are =evidence/fx_vol_surface_publish_*.ores= and =evidence/fx_vol_surface_publishes.sql=. After the review, the refusals were shown live: an older surface than the live one, a second raise while one waits, and a calibration rerun after the raise.
+
+The party rule is in the service and was not exercised with a second party. The record page the notice links to and the inbox's view of the subject are in the screens task.
+
+Tests: market data API 1069, shell market data 421.

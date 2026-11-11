@@ -356,6 +356,20 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                       mm::fx_vol_surface_operations_handler h(n, c, v);
                                       h.calibrate(std::move(msg));
                                   }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::publish_fx_vol_surface_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::fx_vol_surface_operations_handler h(n, c, v);
+                                      h.publish(std::move(msg));
+                                  }));
+            subs.push_back(
+                n.queue_subscribe(std::string(mm::get_fx_vol_surface_publish_subject_request::nats_subject),
+                                  queue,
+                                  [&n, c, v](ores::nats::message msg) mutable {
+                                      mm::fx_vol_surface_operations_handler h(n, c, v);
+                                      h.read_publish(std::move(msg));
+                                  }));
             subs.push_back(n.queue_subscribe(std::string(mm::publish_curve_request::nats_subject),
                                              queue,
                                              [&n, c, v](ores::nats::message msg) mutable {

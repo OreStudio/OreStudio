@@ -66,17 +66,6 @@ auto& calibration_log() {
     return instance;
 }
 
-/// The namespace the id of a calibration record is derived in, from its blueprint and as-of.
-const boost::uuids::uuid calibration_namespace =
-    boost::uuids::string_generator{}("5a3c8e42-8a29-48ee-9953-c76a29a3c6ca");
-
-boost::uuids::uuid calibration_id_of(const boost::uuids::uuid& blueprint, time_point as_of) {
-    const auto micros =
-        std::chrono::duration_cast<std::chrono::microseconds>(as_of.time_since_epoch()).count();
-    return boost::uuids::name_generator_sha1(calibration_namespace)(
-        boost::uuids::to_string(blueprint) + "@" + std::to_string(micros));
-}
-
 surface_calibration_recipe read_recipe(context ctx, const std::string& blueprint_id,
                                        const boost::uuids::uuid& party) {
     const auto blueprints = refdata_repo::fx_vol_surface_blueprint_repository{}.read_latest(ctx, blueprint_id);
@@ -174,19 +163,26 @@ std::string to_string(qs::ssvi_arbitrage_kind kind) {
 
 }
 
+boost::uuids::uuid calibration_id_of(const boost::uuids::uuid& blueprint_id,
+                                     std::chrono::system_clock::time_point as_of) {
+    static const auto calibration_namespace =
+        boost::uuids::string_generator{}("5a3c8e42-8a29-48ee-9953-c76a29a3c6ca");
+    const auto micros =
+        std::chrono::duration_cast<std::chrono::microseconds>(as_of.time_since_epoch()).count();
+    return boost::uuids::name_generator_sha1(calibration_namespace)(
+        boost::uuids::to_string(blueprint_id) + "@" + std::to_string(micros));
+}
+
 mm::calibrate_fx_vol_surface_response
 fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_fx_vol_surface_request& req) {
     mm::calibrate_fx_vol_surface_response out;
     try {
-        const auto party = ctx.party_id();
-        if (!party || party->is_nil())
-            throw std::invalid_argument(
-                "A surface belongs to a party, and the session names none. Sign in to a party.");
+        const auto party = ores::service::messaging::session_party(ctx, "A surface");
         const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
         if (as_of == time_point{})
             throw std::invalid_argument("Name the as-of instant the calibration reads the market at.");
 
-        const auto recipe = read_recipe(ctx, req.blueprint_id, *party);
+        const auto recipe = read_recipe(ctx, req.blueprint_id, party);
         const auto checked = check_recipe(recipe);
         if (!checked)
             throw std::invalid_argument("The recipe of " + recipe.blueprint.name + " is refused: " +

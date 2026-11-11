@@ -55,7 +55,7 @@ answers the camelCase shape the BFF gave. A refused outcome answers with the
 status its outcome names, as the other C++ routes do, where the BFF answered
 every refusal with 409.
 
-The other 23 routes move to [[id:3E4FCAC5-4E49-4853-AC51-470E73F6D66A][Serve the access writes, profiles and the reporting tree]].
+The other 23 routes move to [[id:3E4FCAC5-4E49-4853-AC51-470E73F6D66A][Serve the account list, one account and the default party]].
 
 * Measurements
 

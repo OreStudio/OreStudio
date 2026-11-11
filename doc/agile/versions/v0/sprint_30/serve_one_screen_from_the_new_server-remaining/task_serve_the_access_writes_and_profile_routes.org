@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 3E4FCAC5-4E49-4853-AC51-470E73F6D66A
 :END:
-#+title: Task: Serve the access writes, profiles and the reporting tree
+#+title: Task: Serve the account list, one account and the default party
 #+description: Twenty-three access routes remain at the BFF's addresses: the account list and one account, pictures, profiles, contact information, the default party, the reporting line and tree, locks, role grants, role edits, role permission writes and the ways to hold a permission.
 #+type: task
 #+level: s1
@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve the remaining 23 access routes ores.web calls at the BFF's own addresses a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -41,9 +41,20 @@ Serve the remaining 23 access routes ores.web calls at the BFF's own addresses a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Serve the people screens' account reads and the default party at the BFF's
+addresses: =GET /api/accounts=, =GET /api/accounts/:username= and
+=POST /api/me/default-party=. An account is stated as the screens read it by
+one shared writer, =account_view=: camelCase, an unknown account type read as
+a person, and the nil identifier on a reference read as null, as the BFF's
+=mapAccount= did. One account named by the caller's own username is read by
+the self read, which needs no account permission.
+
+The access screens' shapes move into one header, =access_screen_shapes=, which
+every access route reads and writes: the unity build check found two units of
+the part each defining =wire_fields= for its own shapes, and the shapes are one
+vocabulary.
+
+The other 20 routes move to [[id:0BA78447-4EB6-4655-87EA-5CF45B0581A9][Serve the access profiles, contacts, locks and role writes]].
 
 * Measurements
 
@@ -85,3 +96,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The C++ server answers the account list, one account and the default party at
+the addresses ores.web calls, each paired with its BFF route in the inventory.
+The tests prove the page query's limits, the refusals before forwarding, the
+self read, and the account as the screens read it.

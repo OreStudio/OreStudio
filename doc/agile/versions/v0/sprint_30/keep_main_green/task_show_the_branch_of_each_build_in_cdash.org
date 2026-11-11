@@ -36,7 +36,8 @@ A CDash reader sees at a glance which branch each build tested. Each workflow bu
 * Acceptance
 
 - CTest.cmake takes a branch parameter and passes it to ctest_start as GROUP, with the model unchanged.
-- The CDash dashboard shows dev, integration and main as separate groups, each with its Nightly or Continuous builds.
+- The CDash dashboard shows dev (continuous builds), integration (nightly builds) and main (tag and release builds) as separate groups.
+- main gets no build of its own: it is fast-forwarded to a commit the nightlies built as the tip of integration, so that build is main's build. The promotion job writes the promoted commit and its CDash build link in its job summary.
 - The nightly workflows check out the tip of integration, and a green nightly fast-forwards main to that commit.
 - The build name and site do not change, so CDash history for each preset stays continuous.
 

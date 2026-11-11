@@ -389,38 +389,66 @@ def composed_views(found):
     return lines
 
 
+REGISTRY_ARRAY = re.compile(r"^(?:export )?const (\w+)\b[^=]*= \[\n(.*?)^\];", re.MULTILINE | re.DOTALL)
 REGISTRY_ENTRY = re.compile(r"^    \{\n(.*?)^    \},?$", re.MULTILINE | re.DOTALL)
+# A group of entries spread into the array, each completed by the members a
+# trailing map adds, such as the reference data lookups the synthetic screens read.
+REGISTRY_SPREAD = re.compile(
+    r"^    \.\.\.\[\n(.*?)^    \]\.map\([^\n]*\n(.*?)^    \}\)\),?$", re.MULTILINE | re.DOTALL)
+SPREAD_ENTRY = re.compile(r"^        \{\n(.*?)^        \},?$", re.MULTILINE | re.DOTALL)
+
+
+def members_of(body, indent):
+    """An entry's own members, one per line from its first column: nested values are deeper."""
+    return "\n".join(line[indent:] for line in body.splitlines()
+                     if line.startswith(" " * indent) and line[indent:indent + 1] != " ")
+
+
+def resource_of(members):
+    """What one registry entry answers, from its members, or None when it names no key.
+
+    The two registries state a resource in two forms. The reference data one
+    names =keyFields=, =listBy= and =writable=; the synthetic one names one
+    =keyField=, a =parentField= for a read by parent, and a =writes= schema for
+    a resource a screen writes.
+    """
+    key = re.search(r"^key: '([^']+)'", members, re.MULTILINE)
+    if key is None:
+        return None
+    fields = re.search(r"^keyFields: \[([^\]]*)\]", members, re.MULTILINE)
+    writable = re.search(r"^writable: (true|false)", members, re.MULTILINE)
+    named = lambda member: re.search(rf"^{member}:", members, re.MULTILINE) is not None
+    return {
+        "key": key.group(1),
+        "every": True,
+        "one_key": named("keyField") or (
+            fields is not None and len(re.findall(r"'[^']+'", fields.group(1))) == 1),
+        "list_by": named("listBy") or named("parentField"),
+        "writable": writable.group(1) == "true" if writable is not None else named("writes"),
+    }
 
 
 def registry_resources(spec):
     """The resources a BFF registry declares, each with what it answers.
 
-    The spec is a file and the name of the array it exports. Each entry states
-    its key, its key fields, whether it is writable and whether it is read by a
-    parent, which decide which of a family's routes the resource must answer.
+    The spec is a file and the name of the array it declares. Each entry states
+    its key, how many fields name a row, whether it is read by a parent and
+    whether a screen writes it, which decide which of a family's routes the
+    resource must answer.
     """
     path, name = spec.rsplit(":", 1)
     text = (ROOT / path).read_text(encoding="utf-8")
-    start = text.find(f"export const {name}")
-    end = text.find("\n];", start)
-    if start < 0 or end < 0:
+    array = next((m.group(2) for m in REGISTRY_ARRAY.finditer(text) if m.group(1) == name), None)
+    if array is None:
         return []
-    resources = []
-    for entry in REGISTRY_ENTRY.finditer(text[start:end + 3]):
-        body = entry.group(1)
-        key = re.search(r"^        key: '([^']+)'", body, re.MULTILINE)
-        fields = re.search(r"^        keyFields: \[([^\]]*)\]", body, re.MULTILINE)
-        writable = re.search(r"^        writable: (true|false)", body, re.MULTILINE)
-        if key is None or fields is None or writable is None:
-            continue
-        resources.append({
-            "key": key.group(1),
-            "every": True,
-            "one_key": len(re.findall(r"'[^']+'", fields.group(1))) == 1,
-            "list_by": re.search(r"^        listBy:", body, re.MULTILINE) is not None,
-            "writable": writable.group(1) == "true",
-        })
-    return resources
+    found = []
+    for entry in REGISTRY_ENTRY.finditer(array):
+        found.append(resource_of(members_of(entry.group(1), 8)))
+    for spread in REGISTRY_SPREAD.finditer(array):
+        shared = members_of(spread.group(2), 8)
+        for entry in SPREAD_ENTRY.finditer(spread.group(1)):
+            found.append(resource_of(members_of(entry.group(1), 12) + "\n" + shared))
+    return [resource for resource in found if resource is not None]
 
 
 def family_targets(family):

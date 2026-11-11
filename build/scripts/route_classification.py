@@ -763,6 +763,14 @@ RULES = (
          CPP, RESOURCE, "reference-data",
          "The reasons a screen offers for a write, read from the data quality service in the"
          " shape the BFF answered."),
+    Rule("the feed screen's operation",
+         ("regex", r"^(POST /api/synthetic/(feeds|folders)/\{id\}/(start|stop)"
+                   r"|POST /api/synthetic/feed-selection/(start|stop)"
+                   r"|GET /api/synthetic/folder-feeds)$"),
+         CPP, RESOURCE, "simulation",
+         "The feed screen's operation at the address and in the shape the BFF answered: one"
+         " feed or one folder's feeds started and stopped, a page of the feeds a filter matches"
+         " with whether each runs, and the start and stop of a selection."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

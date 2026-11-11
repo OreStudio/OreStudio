@@ -77,11 +77,11 @@ an API publishes no area, so it is counted under =(none)=.
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 300 | composed view 1, resource 299 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 44 | composed view 12, resource 32 |
-| simulation | calibration, market-regime, synthetic | 38 | composed view 3, resource 35 |
+| simulation | calibration, market-regime, synthetic | 44 | composed view 3, resource 41 |
 | tenancy | iam, refdata, server | 83 | composed view 2, resource 81 |
 | trading | blotter, book-changes, booking, books, structures, trades | 24 | composed view 2, resource 22 |
 | workflow | inbox, server, timeline | 18 | composed view 6, resource 12 |
-| (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 401 | not an API 383, transport capability 18 |
+| (none) | books, classifications, conventions, core, counterparties, oresmd, pricing-engines, records, refdata, reporting, sensitivity-templates, server, synthetic, tenors | 402 | not an API 384, transport capability 18 |
 
 * The composed views
 
@@ -155,12 +155,12 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 24 | 6 |
 | reporting | 44 | 0 | 44 |
-| simulation | 28 | 0 | 28 |
+| simulation | 28 | 7 | 21 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 0 | 24 |
 | workflow | 18 | 0 | 18 |
-| (none) | 35 | 17 | 18 |
-| total | 324 | 118 | 206 |
+| (none) | 35 | 22 | 13 |
+| total | 324 | 130 | 194 |
 
 * The pairing
 
@@ -426,11 +426,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/structures/:key/legs= | none |
 | DELETE =/api/structures/:key/legs/:tradeId= | none |
 | GET =/api/synthetic= | GET /api/synthetic |
-| DELETE =/api/synthetic/:resource= | none |
-| GET =/api/synthetic/:resource= | none |
-| PUT =/api/synthetic/:resource= | none |
-| GET =/api/synthetic/:resource/by/:parent= | none |
-| GET =/api/synthetic/:resource/key/:key= | none |
+| DELETE =/api/synthetic/:resource= | DELETE /api/synthetic/{resource}, one per resource (6) |
+| GET =/api/synthetic/:resource= | GET /api/synthetic/{resource}, one per resource (16) |
+| PUT =/api/synthetic/:resource= | PUT /api/synthetic/{resource}, one per resource (6) |
+| GET =/api/synthetic/:resource/by/:parent= | GET /api/synthetic/{resource}/by/{parent}, one per resource (4) |
+| GET =/api/synthetic/:resource/key/:key= | GET /api/synthetic/{resource}/key/{key}, one per resource (16) |
 | GET =/api/synthetic/calibration/:assetClass= | none |
 | DELETE =/api/synthetic/calibration/:assetClass/policy= | none |
 | PUT =/api/synthetic/calibration/:assetClass/policy= | none |
@@ -443,14 +443,14 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/synthetic/convert/ir= | none |
 | GET =/api/synthetic/feed-folders= | none |
 | GET =/api/synthetic/feed-raster= | none |
-| POST =/api/synthetic/feed-selection/start= | none |
-| POST =/api/synthetic/feed-selection/stop= | none |
-| POST =/api/synthetic/feeds/:id/start= | none |
-| POST =/api/synthetic/feeds/:id/stop= | none |
+| POST =/api/synthetic/feed-selection/start= | POST /api/synthetic/feed-selection/start |
+| POST =/api/synthetic/feed-selection/stop= | POST /api/synthetic/feed-selection/stop |
+| POST =/api/synthetic/feeds/:id/start= | POST /api/synthetic/feeds/{id}/start |
+| POST =/api/synthetic/feeds/:id/stop= | POST /api/synthetic/feeds/{id}/stop |
 | GET =/api/synthetic/feeds/:id/ticks= | none |
-| GET =/api/synthetic/folder-feeds= | none |
-| POST =/api/synthetic/folders/:id/start= | none |
-| POST =/api/synthetic/folders/:id/stop= | none |
+| GET =/api/synthetic/folder-feeds= | GET /api/synthetic/folder-feeds |
+| POST =/api/synthetic/folders/:id/start= | POST /api/synthetic/folders/{id}/start |
+| POST =/api/synthetic/folders/:id/stop= | POST /api/synthetic/folders/{id}/stop |
 | GET =/api/synthetic/market-history= | none |
 | GET =/api/synthetic/market-regime= | none |
 | POST =/api/synthetic/market-regime= | none |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1195 routes: 324 answered by the BFF and 871 by ores.http.
+1202 routes: 324 answered by the BFF and 878 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1128,7 +1128,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | trading | post | =/api/structures/:key/legs= | bff | projects/ores.web/packages/bff/src/structures.ts:1073 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
 | resource | trading | delete | =/api/structures/:key/legs/:tradeId= | bff | projects/ores.web/packages/bff/src/structures.ts:979 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
 | not an API | (none) | get | =/api/synthetic= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1052 | A catalogue of the synthetic resources a screen may write, each with its key field, sortable fields, search flag, permission names and the reason it may be read only, which is a table description rather than a resource. |
-| not an API | (none) | get | =/api/synthetic= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/synthetic_routes.cpp:112 | The catalogue the BFF answered, built from each record unit's own entry for the session, so the screens keep reading the resources they may name when the BFF goes. |
+| not an API | (none) | get | =/api/synthetic= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/synthetic_routes.cpp:114 | The catalogue the BFF answered, built from each record unit's own entry for the session, so the screens keep reading the resources they may name when the BFF goes. |
 | not an API | (none) | delete | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1371 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
 | not an API | (none) | get | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1232 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
 | not an API | (none) | put | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1325 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
@@ -1151,17 +1151,24 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | composed view | simulation | get | =/api/synthetic/feed-folders= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1078 | The folders and the feeds under each at any depth, two collections woven, with the count of each kind so no screen reads the feeds. |
 | resource | simulation | get | =/api/synthetic/feed-raster= | bff | projects/ores.web/packages/bff/src/market-regime.ts:450 | The times of the ticks each feed published in the window, one row per feed, a stopped feed keeping its row so the picture shows that it is silent. |
 | resource | simulation | post | =/api/synthetic/feed-selection/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1169 | Starts or stops the feeds a person picked, or the feeds a filter matches less those left out, the service finding them. |
+| resource | simulation | post | =/api/synthetic/feed-selection/start= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:325 | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
 | resource | simulation | post | =/api/synthetic/feed-selection/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1190 | Starts or stops the feeds a person picked, or the feeds a filter matches less those left out, the service finding them. |
+| resource | simulation | post | =/api/synthetic/feed-selection/stop= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:342 | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
 | resource | simulation | post | =/api/synthetic/feeds/:id/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1418 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
 | resource | simulation | post | =/api/synthetic/feeds/:id/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1429 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
 | resource | simulation | get | =/api/synthetic/feeds/:id/ticks= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1209 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
+| resource | simulation | post | =/api/synthetic/feeds/{id}/start= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:213 | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
+| resource | simulation | post | =/api/synthetic/feeds/{id}/stop= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:225 | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
 | resource | simulation | get | =/api/synthetic/folder-feeds= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1113 | A page of feeds a filter matches, one feed's ticks, and the start and stop writes of a feed's run. |
+| not an API | (none) | get | =/api/synthetic/folder-feeds= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:269 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | delete | =/api/synthetic/folders= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/folder_web_routes.cpp:354 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/folders= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/folder_web_routes.cpp:321 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | put | =/api/synthetic/folders= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/folder_web_routes.cpp:343 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | resource | simulation | post | =/api/synthetic/folders/:id/start= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1445 | Starts or stops every feed under one folder, its subtree included, and answers what started, what was already running and what was skipped. |
 | resource | simulation | post | =/api/synthetic/folders/:id/stop= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1470 | Starts or stops every feed under one folder, its subtree included, and answers what started, what was already running and what was skipped. |
 | not an API | (none) | get | =/api/synthetic/folders/key/{key}= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/folder_web_routes.cpp:332 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
+| resource | simulation | post | =/api/synthetic/folders/{id}/start= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:237 | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
+| resource | simulation | post | =/api/synthetic/folders/{id}/stop= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_operation_routes.cpp:254 | The feed screen's operation at the address and in the shape the BFF answered: one feed or one folder's feeds started and stopped, a page of the feeds a filter matches with whether each runs, and the start and stop of a selection. |
 | not an API | (none) | delete | =/api/synthetic/fx-feeds= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/fx_spot_generation_config_web_routes.cpp:355 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/fx-feeds= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/fx_spot_generation_config_web_routes.cpp:333 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | put | =/api/synthetic/fx-feeds= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/fx_spot_generation_config_web_routes.cpp:344 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |

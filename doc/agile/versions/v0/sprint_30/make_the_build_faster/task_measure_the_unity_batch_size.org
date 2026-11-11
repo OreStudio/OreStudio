@@ -8,7 +8,7 @@
 #+filetags: :ci:build:make_the_build_faster:sprint_30:v0:
 #+owner: marco
 #+branch: feature/measure-the-unity-batch-size
-#+pr:
+#+pr: 4610
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4610][#4610]] | [build] Add a workflow that measures the unity batch size |
 
 * Review
 

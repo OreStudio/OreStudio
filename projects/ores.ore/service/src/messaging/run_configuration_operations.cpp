@@ -144,15 +144,17 @@ ores::utility::codec::json_document family_list_request(std::uint64_t offset, st
     return request;
 }
 
-// One family's rows, paged, narrowed to the run's party when the family's
+// One family's rows as JSON, paged, narrowed to the run's party when the family's
 // table carries a party. World families are the tenant's, so every row stays.
-std::vector<ores::utility::codec::json_value>
+// A row is a view into its page's document, so it is written out while that
+// document lives; the page goes at the end of each turn of the loop.
+std::vector<std::string>
 read_family(nats_client& owners,
             const ores::refdata::domain::convention_family_entry& family,
             const std::string& party_id) {
     const auto subject = std::string(family.subject_stem) + ".list";
     constexpr std::uint64_t page_size = 1000;
-    std::vector<ores::utility::codec::json_value> rows;
+    std::vector<std::string> rows;
     for (std::uint64_t offset = 0;; offset += page_size) {
         const auto response = call_subject(owners, subject, family_list_request(offset, page_size));
         const auto object = response.root();
@@ -172,7 +174,7 @@ read_family(nats_client& owners,
             break;
         for (const auto& row : array.elements())
             if (!family.party_scoped || party_of_family_row(row) == party_id)
-                rows.push_back(row);
+                rows.push_back(row.write());
         if (array.size() < page_size)
             break;
     }
@@ -217,8 +219,8 @@ domain::conventions_package read_conventions(nats_client& owners, const std::str
     domain::conventions_package package;
     for (const auto& family : ores::refdata::domain::convention_families) {
         int sequence = 0;
-        for (const auto& row : read_family(owners, family, party_id))
-            package.bundle.rows.push_back({std::string(family.key), sequence++, row.write()});
+        for (auto& row : read_family(owners, family, party_id))
+            package.bundle.rows.push_back({std::string(family.key), sequence++, std::move(row)});
     }
     // FX conventions have no store, as they have none on the write path.
     return package;

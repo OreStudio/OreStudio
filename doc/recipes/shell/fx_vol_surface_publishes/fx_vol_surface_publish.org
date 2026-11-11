@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 76AFB1EE-4634-5C3F-9CEE-5ED47DE597A0
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the fx_vol_surface_publishes commands from the shell?
+#+description: Every command the fx_vol_surface_publishes submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:fx_vol_surface_publishes:
+
+This file documents the fx_vol_surface_publishes resource at the shell, one section per command. Every command is a subcommand of =fx_vol_surface_publishes=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 7D1D1828-B6E2-5D46-A314-BB7260B7253A
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_publishes list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_publishes.list=.
+
+#+name: fx_vol_surface_publishes-list
+#+begin_src ores-shell :tangle fx_vol_surface_publishes-list.ores :exports none
+fx_vol_surface_publishes list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: B543F13C-B1EA-5831-8F8E-DA7AF67E56B5
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_publishes get <id>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_publishes.get=.
+
+#+name: fx_vol_surface_publishes-get
+#+begin_src ores-shell :tangle fx_vol_surface_publishes-get.ores :exports none
+fx_vol_surface_publishes get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 5DB4481A-40BB-5EFC-A754-9D9A12DC18DA
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_publishes get-many <id>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_publishes.get_many=.
+
+#+name: fx_vol_surface_publishes-get-many
+#+begin_src ores-shell :tangle fx_vol_surface_publishes-get-many.ores :exports none
+fx_vol_surface_publishes get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =by-request-id=
+:PROPERTIES:
+:ID: A30758D6-079E-5745-9BEB-0E0A476D8E84
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_publishes by-request-id <request_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_publishes.list_by_request_id=.
+
+#+name: fx_vol_surface_publishes-by-request-id
+#+begin_src ores-shell :tangle fx_vol_surface_publishes-by-request-id.ores :exports none
+fx_vol_surface_publishes by-request-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 067D56CF-B901-53CC-A122-06B2BD577A9E
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_publishes versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_publishes_versions.list=.
+
+#+name: fx_vol_surface_publishes-versions
+#+begin_src ores-shell :tangle fx_vol_surface_publishes-versions.ores :exports none
+fx_vol_surface_publishes versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: EB793109-D4B9-5FDE-A1E3-7D01E96B9208
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+fx_vol_surface_publishes version <id> --version <n>
+#+end_example
+
+It is addressed at =marketdata.v1.fx_vol_surface_publishes_versions.get=.
+
+#+name: fx_vol_surface_publishes-version
+#+begin_src ores-shell :tangle fx_vol_surface_publishes-version.ores :exports none
+fx_vol_surface_publishes version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

@@ -36,6 +36,7 @@ set(files
     "fx_forward_publish_point_eventing_integration_tests.cpp"
     "fx_forward_publish_spot_eventing_integration_tests.cpp"
     "fx_vol_surface_calibration_eventing_integration_tests.cpp"
+    "fx_vol_surface_publish_eventing_integration_tests.cpp"
     "main.cpp"
     "market_data_mapping_eventing_integration_tests.cpp"
     "market_data_vendor_instrument_eventing_integration_tests.cpp"

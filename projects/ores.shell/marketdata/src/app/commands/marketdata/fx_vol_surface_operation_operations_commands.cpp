@@ -56,6 +56,21 @@ void fx_vol_surface_operation_operations_commands::register_commands(cli::Menu& 
         },
         "calibrate-fx-vol-surface <blueprint_id> <as_of>");
 
+    menu->Insert(
+        "publish-fx-vol-surface",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_publish_fx_vol_surface(std::ref(out), std::ref(session), std::move(args));
+        },
+        "publish-fx-vol-surface <blueprint_id> <as_of> [--approval_request_id <v>] [--reason <v>]");
+
+    menu->Insert(
+        "get-fx-vol-surface-publish-subject",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_fx_vol_surface_publish_subject(
+                std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-fx-vol-surface-publish-subject <approval_request_id>");
+
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -106,6 +121,129 @@ void fx_vol_surface_operation_operations_commands::process_calibrate_fx_vol_surf
     } else {
         result = do_request<ores::marketdata::messaging::calibrate_fx_vol_surface_response>(
             out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void fx_vol_surface_operation_operations_commands::process_publish_fx_vol_surface(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating publish-fx-vol-surface request.";
+
+    using request_type = ores::marketdata::messaging::publish_fx_vol_surface_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run publish-fx-vol-surface." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "approval_request_id", .requires_value = true, .default_value = ""},
+        {.name = "reason", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 2;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.blueprint_id = parsed->positionals[next++];
+        req.as_of = ores::shell::app::from_token<std::chrono::system_clock::time_point>(
+            parsed->positionals[next++], "as_of");
+        if (const auto& raw_approval_request_id = parsed->flag("approval_request_id");
+            !raw_approval_request_id.empty()) {
+            req.approval_request_id = raw_approval_request_id;
+        }
+        if (const auto& raw_reason = parsed->flag("reason"); !raw_reason.empty()) {
+            req.reason = raw_reason;
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::marketdata::messaging::publish_fx_vol_surface_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::marketdata::messaging::publish_fx_vol_surface_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::marketdata::messaging::publish_fx_vol_surface_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void fx_vol_surface_operation_operations_commands::process_get_fx_vol_surface_publish_subject(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-fx-vol-surface-publish-subject request.";
+
+    using request_type = ores::marketdata::messaging::get_fx_vol_surface_publish_subject_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-fx-vol-surface-publish-subject."
+                      << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 1;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.approval_request_id = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<
+            ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result =
+            do_request<ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response>(
+                out, session, std::string(req.nats_subject), req);
     }
     if (!result)
         return;

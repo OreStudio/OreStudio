@@ -22,13 +22,16 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
+#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <optional>
+#include <string>
 
 namespace ores::marketdata::messaging {
 
@@ -39,9 +42,12 @@ inline auto& fx_vol_surface_operations_handler_lg() {
 }
 
 /**
- * @brief The calibration of a party's FX volatility surface blueprint.
+ * @brief The calibration of a party's FX volatility surface blueprint, and the approval-gated
+ * publish of a calibrated surface.
  *
- * A calibration writes a candidate, so it needs the permission to calibrate a surface.
+ * A calibration writes a candidate, so it needs the permission to calibrate a surface. The maker
+ * of a publish needs the permission the kind names, as for a curve, so the gate moves when the
+ * tenant moves the kind. Reading a request's subject needs the permission to read publishes.
  */
 class fx_vol_surface_operations_handler {
 public:
@@ -74,6 +80,60 @@ public:
         reply(nats_,
               msg,
               ores::marketdata::service::app::fx_vol_surface_calibration_service::calibrate(*req_ctx, *req));
+    }
+
+    void publish(ores::nats::message msg) {
+        using namespace ores::logging;
+        using namespace ores::service::messaging;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(fx_vol_surface_operations_handler_lg(), msg);
+        auto req_ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx) {
+            error_reply(nats_, msg, req_ctx.error());
+            return;
+        }
+        std::string maker_permission;
+        try {
+            maker_permission = ores::marketdata::service::app::raise_permission_of(
+                *req_ctx, ores::marketdata::service::app::fx_vol_surface_publish_kind_code);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(fx_vol_surface_operations_handler_lg(), error)
+                << msg.subject << " refused: " << e.what();
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        if (!maker_permission.empty() && !has_permission(*req_ctx, maker_permission)) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        const auto req = decode<publish_fx_vol_surface_request>(msg);
+        if (!req) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        reply(nats_, msg, ores::marketdata::service::app::fx_vol_surface_publish_service::publish(*req_ctx, *req));
+    }
+
+    void read_publish(ores::nats::message msg) {
+        using namespace ores::logging;
+        using namespace ores::service::messaging;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(fx_vol_surface_operations_handler_lg(), msg);
+        auto req_ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx) {
+            error_reply(nats_, msg, req_ctx.error());
+            return;
+        }
+        if (!has_permission(*req_ctx, "marketdata::fx_vol_surface_publishes:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        const auto req = decode<get_fx_vol_surface_publish_subject_request>(msg);
+        if (!req) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        reply(nats_, msg, ores::marketdata::service::app::fx_vol_surface_publish_service::read(*req_ctx, *req));
     }
 
 private:

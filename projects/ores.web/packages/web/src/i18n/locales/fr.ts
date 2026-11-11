@@ -533,6 +533,8 @@ const fr: SourceCatalogue = {
 
     'notification.marketdata.curve_published':
         "La courbe {curve} de {party} est en vigueur depuis {published_at}, publiée par {publisher} à la date d'arrêté {as_of}. Elle remplace l'ensemble arrêté au {previous_as_of}, ou rien lorsqu'il s'agit du premier.",
+    'notification.marketdata.surface_published':
+        "La surface de volatilité {surface} de {party} est en vigueur depuis {published_at}, publiée par {publisher} à la date d'arrêté {as_of}. Elle remplace la surface arrêtée au {previous_as_of}, ou rien lorsqu'il s'agit de la première.",
     'notification.marketdata.curve_withdrawn':
         'La courbe {curve} de {party} a été retirée le {withdrawn_at} par {withdrawn_by} : {reason}. Son dernier ensemble publié était arrêté au {as_of}.',
 

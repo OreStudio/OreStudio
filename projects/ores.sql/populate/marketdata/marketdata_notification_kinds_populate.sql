@@ -56,6 +56,11 @@ insert into ores_inbox_notification_kinds_tbl (
      'Curve withdrawn', 'A published curve was taken out of use, with the reason against the act',
      'notification.marketdata.curve_withdrawn', true, 51,
      current_user, current_user, 'system.initial_load',
+     'Initial population of the market data notification kinds'),
+    (ores_utility_system_tenant_id_fn(), 'marketdata.surface_published', 0,
+     'Surface published', 'A new version of a volatility surface became the one the desk prices from',
+     'notification.marketdata.surface_published', true, 52,
+     current_user, current_user, 'system.initial_load',
      'Initial population of the market data notification kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

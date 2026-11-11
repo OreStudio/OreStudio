@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/domain/curve_publish.hpp"
+#include "ores.marketdata.api/domain/fx_vol_surface_publish.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <chrono>
 #include <optional>
@@ -37,6 +38,7 @@ namespace ores::marketdata::service::app {
  */
 inline constexpr std::string_view curve_published_kind_code = "marketdata.curve_published";
 inline constexpr std::string_view curve_withdrawn_kind_code = "marketdata.curve_withdrawn";
+inline constexpr std::string_view surface_published_kind_code = "marketdata.surface_published";
 
 /**
  * @brief Tells the readers of a curve that a new version is live.
@@ -80,6 +82,20 @@ ORES_MARKETDATA_SERVICE_EXPORT void
 announce_withdrawal(const ores::database::context& ctx,
                     const domain::curve_publish& withdrawn,
                     std::optional<std::chrono::system_clock::time_point> previous_as_of);
+
+/**
+ * @brief Tells the readers of a volatility surface that a new version is live.
+ *
+ * The same notice as a curve's, at the same moment and to the same readers: a surface is a
+ * published set, and its publish moves it once. The subject is the surface's output series.
+ *
+ * @param previous_as_of The as-of of the surface this one replaced, or nothing when it is the
+ * first the series ever had.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT void
+announce_surface_publish(const ores::database::context& ctx,
+                         const domain::fx_vol_surface_publish& published,
+                         std::optional<std::chrono::system_clock::time_point> previous_as_of);
 
 }
 #endif

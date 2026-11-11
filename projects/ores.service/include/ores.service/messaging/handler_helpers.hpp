@@ -299,6 +299,22 @@ inline void require_party(const ores::database::context& ctx) {
 }
 
 /**
+ * @brief The party the session acts for, or a refusal that names what belongs to one.
+ *
+ * Derived data such as a forward set or a surface belongs to a party, so an act on it needs the
+ * session's party.
+ *
+ * @param what What belongs to the party, as a sentence starts it, such as "A surface".
+ */
+inline boost::uuids::uuid session_party(const ores::database::context& ctx, std::string_view what) {
+    const auto party = ctx.party_id();
+    if (!party || party->is_nil())
+        throw std::invalid_argument(std::string(what) +
+                                    " belongs to a party, and the session names none. Sign in to a party.");
+    return *party;
+}
+
+/**
  * @brief Checks whether the request context carries a required permission.
  *
  * A context built from a token carries the token's permission list, and the

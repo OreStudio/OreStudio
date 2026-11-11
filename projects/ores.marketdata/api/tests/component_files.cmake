@@ -62,6 +62,8 @@ set(files
     "fx_vol_surface_calibration_codec_roundtrip_tests.cpp"
     "fx_vol_surface_calibration_protocol_codec_roundtrip_tests.cpp"
     "fx_vol_surface_operation_protocol_codec_roundtrip_tests.cpp"
+    "fx_vol_surface_publish_codec_roundtrip_tests.cpp"
+    "fx_vol_surface_publish_protocol_codec_roundtrip_tests.cpp"
     "main.cpp"
     "market_calibration_value_codec_roundtrip_tests.cpp"
     "market_calibration_value_protocol_codec_roundtrip_tests.cpp"

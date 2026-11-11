@@ -63,14 +63,6 @@ time_point at_store_precision(time_point t) {
     return std::chrono::floor<std::chrono::microseconds>(t);
 }
 
-boost::uuids::uuid party_of(const context& ctx) {
-    const auto party = ctx.party_id();
-    if (!party || party->is_nil())
-        throw std::invalid_argument(
-            "A forward set belongs to a party, and the session names none. Sign in to a party.");
-    return *party;
-}
-
 /// Writes the candidate set a request authorises: its subject, its tenors and its spots.
 void write_candidate(const context& ctx,
                      const boost::uuids::uuid& request_id,
@@ -309,7 +301,7 @@ msg::publish_fx_forward_response
 fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_request& req) {
     msg::publish_fx_forward_response resp;
     try {
-        const auto party = party_of(ctx);
+        const auto party = ores::service::messaging::session_party(ctx, "A forward set");
         const auto as_of = at_store_precision(req.as_of);
         if (as_of == time_point{})
             throw std::invalid_argument(
@@ -364,7 +356,7 @@ fx_forward_publish_service::read(context ctx, const msg::get_published_fx_forwar
     msg::get_published_fx_forward_response out;
     out.pair_code = req.pair_code;
     try {
-        const auto party = party_of(ctx);
+        const auto party = ores::service::messaging::session_party(ctx, "A forward set");
         const auto sets = repository::fx_forward_publish_repository{}.read_published_for_pair(
             ctx, party, req.pair_code);
         const auto found =

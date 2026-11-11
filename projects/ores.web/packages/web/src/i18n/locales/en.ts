@@ -535,6 +535,8 @@ export const en: SourceCatalogue = {
 
     'notification.marketdata.curve_published':
         'The curve {curve} of {party} is live from {published_at}, published by {publisher} as of {as_of}. It replaces the set as of {previous_as_of}, or nothing when it is the first.',
+    'notification.marketdata.surface_published':
+        'The volatility surface {surface} of {party} is live from {published_at}, published by {publisher} as of {as_of}. It replaces the surface as of {previous_as_of}, or nothing when it is the first.',
     'notification.marketdata.curve_withdrawn':
         'The curve {curve} of {party} was withdrawn on {withdrawn_at} by {withdrawn_by}: {reason}. Its last published set was as of {as_of}.',
 

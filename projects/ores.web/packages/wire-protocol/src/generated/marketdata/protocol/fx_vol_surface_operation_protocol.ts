@@ -98,8 +98,69 @@ export interface CalibrateFxVolSurfaceResponse {
     missing: FxVolMissingPillar[];
 }
 
+/**
+ * @brief Raises, or applies, the publish of a calibrated surface of the caller's party. A call that names no approved request raises a marketdata.fx_vol_surface_publish request for the calibration of the blueprint at the as-of, and records its checks for the decider. A call that names the approved request publishes that calibration and ends the set it replaces. A blueprint with no calibration at the as-of is refused, and nothing is written.
+ */
+export interface PublishFxVolSurfaceRequest {
+    blueprint_id: string;
+    as_of: string;
+    /**
+     * @brief The approved request this call applies, or empty to raise one.
+     */
+    approval_request_id: string;
+    /**
+     * @brief Why the surface should be published, for the decider to read.
+     */
+    reason: string;
+}
+
+/**
+ * @brief What the call did: raised a request, published a surface, or refused and why.
+ */
+export interface PublishFxVolSurfaceResponse {
+    success: boolean;
+    message: string;
+    approval_request_id: string;
+    state_code: string;
+    published_at: string | null;
+    published_by: string;
+}
+
+/**
+ * @brief Reads the subject of a surface publish request: the candidate it authorises, the checks the raise recorded, and what has happened to it since.
+ */
+export interface GetFxVolSurfacePublishSubjectRequest {
+    approval_request_id: string;
+}
+
+/**
+ * @brief The subject of a surface publish request, or why it cannot be read.
+ */
+export interface GetFxVolSurfacePublishSubjectResponse {
+    success: boolean;
+    message: string;
+    approval_request_id: string;
+    state_code: string;
+    blueprint_name: string;
+    party_id: string;
+    as_of: string;
+    calibration_id: string;
+    calibration_version: number;
+    converged: boolean;
+    max_abs_error: number;
+    pillars_beyond_tolerance: number;
+    violation_count: number;
+    published_at: string | null;
+    published_by: string;
+    superseded_at: string | null;
+    superseded_by_request_id: string;
+}
+
 export const subjects = {
     calibrate_fx_vol_surface_request: 'marketdata.v1.ops.calibrate_fx_vol_surface',
+    publish_fx_vol_surface_request: 'marketdata.v1.ops.publish_fx_vol_surface',
+    get_fx_vol_surface_publish_subject_request:
+        'marketdata.v1.ops.get_fx_vol_surface_publish_subject',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -108,4 +169,6 @@ export const subjects = {
  */
 export const requiresSession = {
     calibrate_fx_vol_surface_request: true,
+    publish_fx_vol_surface_request: true,
+    get_fx_vol_surface_publish_subject_request: true,
 } as const;

@@ -4,13 +4,13 @@
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.marketdata.fx_vol_surface_operations
-#+description: Codegen operation model for the calibration of a party's FX volatility surface blueprint into a candidate.
+#+description: Codegen operation model for the calibration of a party's FX volatility surface blueprint into a candidate, and the approval-gated publish of a candidate.
 #+type: ores.codegen.operation
 #+component: marketdata
 #+subcomponent: api
 #+entity_singular: fx_vol_surface_operation
 #+namespace: ores::marketdata::messaging
-#+brief: The calibration of a party's FX volatility surfaces.
+#+brief: The calibration and publish of a party's FX volatility surfaces.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-11-11
 #+updated: 2026-11-11
@@ -27,6 +27,7 @@ refusal is a reply with =success= false and a message that names what failed.
 
 #+begin_src cpp :name includes
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 #+end_src
@@ -278,4 +279,205 @@ refusal is a reply with =success= false and a message that names what failed.
 *** missing
 :PROPERTIES:
 :cpp_type: std::vector<fx_vol_missing_pillar>
+:END:
+
+** publish_fx_vol_surface_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.publish_fx_vol_surface
+:response: publish_fx_vol_surface_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Raises, or applies, the publish of a calibrated surface of the caller's party. A call that names no approved request raises a marketdata.fx_vol_surface_publish request for the calibration of the blueprint at the as-of, and records its checks for the decider. A call that names the approved request publishes that calibration and ends the set it replaces. A blueprint with no calibration at the as-of is refused, and nothing is written.
+ */
+#+end_src
+
+*** blueprint_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The approved request this call applies, or empty to raise one.
+ */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the surface should be published, for the decider to read.
+ */
+#+end_src
+
+** publish_fx_vol_surface_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the call did: raised a request, published a surface, or refused and why.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** state_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_fx_vol_surface_publish_subject_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_fx_vol_surface_publish_subject
+:response: get_fx_vol_surface_publish_subject_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the subject of a surface publish request: the candidate it authorises, the checks the raise recorded, and what has happened to it since.
+ */
+#+end_src
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_fx_vol_surface_publish_subject_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The subject of a surface publish request, or why it cannot be read.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** approval_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** state_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** blueprint_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** party_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** calibration_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calibration_version
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** converged
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** max_abs_error
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+*** pillars_beyond_tolerance
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** violation_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** superseded_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** superseded_by_request_id
+:PROPERTIES:
+:cpp_type: std::string
 :END:

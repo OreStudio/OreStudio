@@ -57,6 +57,8 @@
 \ir ./marketdata_adapters_drop.sql
 \ir ./marketdata_market_fixings_notify_trigger_drop.sql
 \ir ./marketdata_market_fixings_drop.sql
+\ir ./marketdata_fx_vol_surface_publishes_notify_trigger_drop.sql
+\ir ./marketdata_fx_vol_surface_publishes_drop.sql
 \ir ./marketdata_fx_vol_surface_calibrations_notify_trigger_drop.sql
 \ir ./marketdata_fx_vol_surface_calibrations_drop.sql
 \ir ./marketdata_fx_forward_publish_spots_notify_trigger_drop.sql

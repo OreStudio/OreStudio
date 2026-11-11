@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 908E710A-C9A3-433E-AC93-92B67FB76B6C
+:END:
+#+title: Task: Pass the database context by reference behind a forward declaration
+#+description: Pass the database context as a const reference, forward-declare it in every header that only passes it along, and keep libpq and the pool out of context.hpp.
+#+type: task
+#+level: s1
+#+filetags: :build:compilation:headers:database:break_the_large_compilation_dependencies:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.database::context= is passed by value through most repository and service signatures and stored by value in most services. Every header that names it includes =context.hpp=, and through it =pq/connection.hpp= (with =libpq-fe.h=), =pq/pool.hpp= (with =<mutex>= and =<condition_variable>=) and =pq/transaction.hpp=. Most of those headers only pass the context along. This task passes the context by reference, forward-declares it where it is only named, and keeps the connection detail out of its header, so a change to the context or to libpq rebuilds only the code that uses them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2B6612F6-D9F8-4DFF-8952-61716D22C2CF][Break the large compilation dependencies]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- A parameter that only reads or forwards a context takes =const context&=. A context stays a value where it is stored, such as a service's =ctx_=, and where it is returned, such as =with_tenant=, =with_party=, =with_roles= and =with_transaction=.
+- Every place that keeps a context past the call, or captures it in a lambda that can outlive the call (an async handler, a thread, a deferred task), takes a copy. A script lists these places before the change, and the task records each one, because a compile does not find a dangling reference.
+- =ores.database/domain/context_fwd.hpp= declares =class context;=. A header that only names a context includes it, not =context.hpp=.
+- =context.hpp= includes neither libpq nor the pool:
+  - the pool slot (=pq_slot=: mutex, pool, size) is held behind a pointer to an incomplete type, defined in the =.cpp=;
+  - =pq::transaction= is forward-declared, since the context only holds a pointer to it;
+  - =connection_options= and =open_policy= move to a small header without =libpq-fe.h=.
+- The analysis of [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]] decides whether the context splits in two: the service-lifetime part (connection options, open policy, pool) and the per-request part (tenant, party, visible parties, actor, service account, roles, transaction). If it splits, this task does the split and records why.
+- The repository and service codegen templates emit the new signatures and includes. Generated code is regenerated, not edited. Hand-written code moves by a codemod script, kept with the task, so it reruns.
+- The rules of [[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][A context bound to a transaction cannot change its tenant or party]] hold unchanged, and their tests pass.
+- Measured before and after, at named commits: the objects that depend on =context.hpp= and on =libpq-fe.h=, and the rebuild time after =context.hpp= is touched.
+- Every test suite passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Found during the publish lifecycle work: a change to =context.hpp= rebuilt most of the tree. A copy of a context costs a few small allocations and one atomic increment on the shared pool slot, which is small beside a database round trip, so the main gain expected is compile time, not run time. The task may measure the run-time cost too, but it does not need to.
+
+Do this after [[id:2E186CC8-BA83-4271-8EF0-DE2465994A8D][Find the headers that couple the build]], so the forward-declaration header and the split follow the conventions the analysis sets.
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

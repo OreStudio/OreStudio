@@ -22,7 +22,6 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.http/routes/iam/access_read_routes.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/permission_protocol.hpp"
@@ -172,7 +171,7 @@ std::vector<role_write_routes::role_summary> read_roles(const http_request& req,
 
 std::optional<give_role_body> role_write_routes::read_give_role(const std::string& body) {
     auto give = json::read_expected<give_role_body>(body);
-    if (!give || !access_read_routes::is_uuid(give->roleId))
+    if (!give || !rr::is_uuid(give->roleId))
         return std::nullopt;
     const auto reason = characters_of(give->reasonCode);
     if (reason < 1 || reason > 100 || !note_fits(give->note))
@@ -300,7 +299,7 @@ void role_write_routes::register_routes(
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
             const auto give = read_give_role(req.body);
-            if (!access_read_routes::is_uuid(account) || !give)
+            if (!rr::is_uuid(account) || !give)
                 return refused(
                     http_status::bad_request, "invalid-request", "Choose a role and a reason.");
             return guarded<messaging::assign_role_request>([&] {
@@ -320,7 +319,7 @@ void role_write_routes::register_routes(
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
             const auto role = req.get_path_param("roleId");
-            if (!access_read_routes::is_uuid(account) || !access_read_routes::is_uuid(role))
+            if (!rr::is_uuid(account) || !rr::is_uuid(role))
                 return refused(
                     http_status::not_found, "not-found", "No such role on this account.");
             return guarded<messaging::revoke_role_request>([&] {
@@ -384,7 +383,7 @@ void role_write_routes::register_routes(
     add(router->put("/api/roles/{roleId}"), "Edit a role", [&session](const http_request& req) {
         const auto id = req.get_path_param("roleId");
         const auto role = read_edited_role(req.body);
-        if (!access_read_routes::is_uuid(id) || !role)
+        if (!rr::is_uuid(id) || !role)
             return refused(http_status::bad_request,
                            "invalid-request",
                            "A role needs a name and the version it was read at.");
@@ -415,7 +414,7 @@ void role_write_routes::register_routes(
         [&session](const http_request& req) {
             const auto id = req.get_path_param("roleId");
             const auto bundle = read_bundle(req.body);
-            if (!access_read_routes::is_uuid(id) || !bundle)
+            if (!rr::is_uuid(id) || !bundle)
                 return refused(http_status::bad_request,
                                "invalid-request",
                                "Send the permissions the role grants.");
@@ -429,7 +428,7 @@ void role_write_routes::register_routes(
         [&session](const http_request& req) {
             const auto id = req.get_path_param("roleId");
             const auto changes = read_changes(req.body);
-            if (!access_read_routes::is_uuid(id) || !changes)
+            if (!rr::is_uuid(id) || !changes)
                 return refused(http_status::bad_request,
                                "invalid-request",
                                "Send the permissions to add or remove, and why.");

@@ -51,6 +51,8 @@ While a tenant's mode is =auto_approved=, or a provisioning grant is held, every
 
 * See also
 
+
+- [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]]
 - [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]]
 - [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]]

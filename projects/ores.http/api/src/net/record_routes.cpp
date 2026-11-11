@@ -19,7 +19,9 @@
  */
 #include "ores.http.api/net/record_routes.hpp"
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
+#include <string>
 #include <utility>
 #include <yyjson.h>
 
@@ -68,6 +70,17 @@ std::string code(const std::string& raw, const std::string& sentence) {
     if (value.empty() || value.size() > 100)
         invalid(sentence);
     return value;
+}
+
+bool is_uuid(std::string_view text) {
+    if (text.size() != 36)
+        return false;
+    for (std::size_t i = 0; i < text.size(); ++i) {
+        const bool hyphen_place = i == 8 || i == 13 || i == 18 || i == 23;
+        if (hyphen_place ? text[i] != '-' : std::isxdigit(static_cast<unsigned char>(text[i])) == 0)
+            return false;
+    }
+    return true;
 }
 
 bool has_reason(const std::string& reason) {

@@ -32,6 +32,8 @@ A caller that needs a configuration read, such as [[id:71146F3F-B884-4E61-BA8B-A
 
 * See also
 
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:3C334C3B-2760-4278-95B8-B71268E8FD18][A transaction sets its own tenant context, so any connection serves any tenant]]
 - [[id:37D08E01-F99C-4D2D-8ACA-E19E252BBE3D][A repository works inside an open transaction and never holds credentials]]
 - [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]]

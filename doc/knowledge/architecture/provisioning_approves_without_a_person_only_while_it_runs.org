@@ -40,6 +40,8 @@ When the grant is released or expires, a person decides every request, unless th
 
 * See also
 
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][A request closes without a person only under a stated rule]]
 - [[id:6014CFE1-D978-4ABA-BBA9-D87040FE44BA][The acme_demo profile is ten ordered steps, and the steps are data]]
 - [[id:8B0D92BD-7D15-45B7-80EA-07D111F73EB3][An Acme approval is decided by a permitted person who did not raise it]]

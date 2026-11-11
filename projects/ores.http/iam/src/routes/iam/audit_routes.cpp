@@ -21,7 +21,6 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.http/routes/iam/access_read_routes.hpp"
 #include "ores.iam.api/messaging/geo_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -233,7 +232,7 @@ void audit_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
         "End one session",
         [&session](const http_request& req) {
             const auto id = req.get_path_param("sessionId");
-            if (!access_read_routes::is_uuid(id))
+            if (!ores::http::net::record_routes::is_uuid(id))
                 return refused(
                     http_status::bad_request, "invalid-request", "A session id is required.");
             return guarded<messaging::end_session_request>([&] {

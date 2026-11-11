@@ -32,7 +32,6 @@
 #include <functional>
 #include <limits>
 #include <optional>
-#include <regex>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -168,12 +167,6 @@ std::string access_read_routes::roles_json(const messaging::role_page_response& 
     return json::write(view);
 }
 
-bool access_read_routes::is_uuid(const std::string& text) {
-    static const std::regex form(
-        "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-    return std::regex_match(text, form);
-}
-
 std::optional<access_read_routes::permission_query>
 access_read_routes::read_permission_query(const http_request& req) {
     const auto area = text_of(req, "area", 100);
@@ -193,7 +186,7 @@ access_read_routes::read_roles_query(const http_request& req) {
     const auto include_service = flag_of(req, "includeService");
     const auto offset = number_of(req, "offset", 0, 0, std::numeric_limits<int>::max());
     const auto limit = number_of(req, "limit", 15, 1, 500);
-    if ((!role_id.empty() && !is_uuid(role_id)) || !search || !area || !include_service ||
+    if ((!role_id.empty() && !rr::is_uuid(role_id)) || !search || !area || !include_service ||
         !offset || !limit)
         return std::nullopt;
     return roles_query{role_id, *search, *area, *include_service, *offset, *limit};
@@ -226,7 +219,7 @@ void access_read_routes::register_routes(
         "Read the roles one account holds",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
-            if (!is_uuid(account))
+            if (!rr::is_uuid(account))
                 return rr::answer(rr::refusal{
                     http_status::not_found, "not-found", "No account has this identifier."});
             return answer(req, session, messaging::get_account_roles_request{account}, access_json);
@@ -248,7 +241,7 @@ void access_read_routes::register_routes(
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
             const auto query = read_permission_query(req);
-            if (!is_uuid(account) || !query)
+            if (!rr::is_uuid(account) || !query)
                 return not_a_page();
             return answer(req,
                           session,
@@ -278,7 +271,7 @@ void access_read_routes::register_routes(
             const auto role = req.get_path_param("roleId");
             const auto query = read_permission_query(req);
             const auto unheld = flag_of(req, "includeUnheld");
-            if (!is_uuid(role) || !query || !unheld)
+            if (!rr::is_uuid(role) || !query || !unheld)
                 return not_a_page();
             return answer(
                 req,
@@ -293,7 +286,7 @@ void access_read_routes::register_routes(
             const auto role = req.get_path_param("roleId");
             const auto offset = number_of(req, "offset", 0, 0, std::numeric_limits<int>::max());
             const auto limit = number_of(req, "limit", 15, 1, 500);
-            if (!is_uuid(role) || !offset || !limit)
+            if (!rr::is_uuid(role) || !offset || !limit)
                 return not_a_page();
             return answer(req,
                           session,

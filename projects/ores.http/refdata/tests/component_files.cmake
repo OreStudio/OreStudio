@@ -42,6 +42,7 @@ set(files
     "calendar_web_routes_tests.cpp"
     "contact_type_classification_routes_tests.cpp"
     "counterparty_routes_tests.cpp"
+    "counterparty_screen_routes_tests.cpp"
     "counterparty_web_routes_tests.cpp"
     "country_routes_tests.cpp"
     "country_web_routes_tests.cpp"

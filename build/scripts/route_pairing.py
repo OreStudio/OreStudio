@@ -121,4 +121,10 @@ PAIRS = {
     ("GET", "/api/counterparties/pick-lists"): ("GET", "/api/counterparties/pick-lists"),
     ("GET", "/api/tenors/pick-lists"): ("GET", "/api/tenors/pick-lists"),
     ("GET", "/api/counterparties"): ("GET", f"{REFDATA}/counterparties"),
+    ("GET", "/api/counterparties/:id"): ("GET", "/api/counterparties/{id}"),
+    ("GET", "/api/counterparties/children"): ("GET", "/api/counterparties/children"),
+    ("PUT", "/api/counterparties/composite"): ("PUT", "/api/counterparties/composite"),
+    ("GET", "/api/counterparties/:id/visibility"): ("GET", "/api/counterparties/{id}/visibility"),
+    ("PUT", "/api/counterparties/:id/visibility"): ("PUT", "/api/counterparties/{id}/visibility"),
+    ("PUT", "/api/counterparties/:id/business-centres"): ("PUT", "/api/counterparties/{id}/business-centres"),
 }

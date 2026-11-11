@@ -127,6 +127,12 @@ refused(domain::http_status status, std::string code, std::string message);
 ORES_HTTP_API_EXPORT std::string code(const std::string& raw, const std::string& sentence);
 
 /**
+ * @brief Whether a text is an identifier in its canonical form: five groups of
+ * hexadecimal digits joined by hyphens.
+ */
+ORES_HTTP_API_EXPORT bool is_uuid(std::string_view text);
+
+/**
  * @brief Whether a reason is 1 to 200 characters once trimmed.
  */
 ORES_HTTP_API_EXPORT bool has_reason(const std::string& reason);

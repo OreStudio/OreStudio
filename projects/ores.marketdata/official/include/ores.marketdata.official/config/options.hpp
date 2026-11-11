@@ -90,6 +90,11 @@ struct options final {
      */
     std::string banxico_url;
     /**
+     * @brief The address of the Banco Central de Chile's statistical site, which serves its BDE web
+     * service.
+     */
+    std::string bcch_url;
+    /**
      * @brief The sources the adapter hosts.
      */
     std::vector<domain::hosted_source> sources;
@@ -118,6 +123,7 @@ struct options final {
         ::ores::utility::codec::field{"rba_url", &options::rba_url},
         ::ores::utility::codec::field{"bcb_url", &options::bcb_url},
         ::ores::utility::codec::field{"banxico_url", &options::banxico_url},
+        ::ores::utility::codec::field{"bcch_url", &options::bcch_url},
         ::ores::utility::codec::field{"sources", &options::sources},
         ::ores::utility::codec::field{"backfill_days", &options::backfill_days},
         ::ores::utility::codec::field{"poll_minutes", &options::poll_minutes},

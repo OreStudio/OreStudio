@@ -24,6 +24,7 @@ set(files
     "config_options_tests.cpp"
     "domain_banxico_tests.cpp"
     "domain_bcb_tests.cpp"
+    "domain_bcch_tests.cpp"
     "domain_boc_tests.cpp"
     "domain_boe_tests.cpp"
     "domain_boj_tests.cpp"

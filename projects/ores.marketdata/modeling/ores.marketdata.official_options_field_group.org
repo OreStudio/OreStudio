@@ -120,6 +120,13 @@ The address of the Banco Central do Brasil's API site, which serves its SGS API.
 
 The address of Banco de Mexico's site, which serves its SIE API.
 
+** bcch_url
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The address of the Banco Central de Chile's statistical site, which serves its BDE web service.
+
 ** sources
 :PROPERTIES:
 :cpp_type: std::vector<domain::hosted_source>

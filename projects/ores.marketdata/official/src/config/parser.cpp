@@ -48,6 +48,7 @@ const std::string riksbank_url_arg("riksbank-url");
 const std::string rba_url_arg("rba-url");
 const std::string bcb_url_arg("bcb-url");
 const std::string banxico_url_arg("banxico-url");
+const std::string bcch_url_arg("bcch-url");
 const std::string source_arg("source");
 const std::string backfill_days_arg("backfill-days");
 const std::string poll_minutes_arg("poll-minutes");
@@ -104,6 +105,10 @@ options_description make_options_description() {
         banxico_url_arg.c_str(),
         value<std::string>()->default_value("https://www.banxico.org.mx"),
         "Address of Banco de Mexico's site, which serves its SIE API")(
+        bcch_url_arg.c_str(),
+        value<std::string>()->default_value("https://si3.bcentral.cl"),
+        "Address of the Banco Central de Chile's statistical site, which serves its BDE web "
+        "service")(
         source_arg.c_str(),
         value<std::vector<std::string>>()->composing(),
         "A source to host, as <source name>:<provider code>:<adapter code>:<key>, such as "
@@ -176,6 +181,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.rba_url = vm[rba_url_arg].as<std::string>();
     r.bcb_url = vm[bcb_url_arg].as<std::string>();
     r.banxico_url = vm[banxico_url_arg].as<std::string>();
+    r.bcch_url = vm[bcch_url_arg].as<std::string>();
     r.backfill_days = vm[backfill_days_arg].as<std::uint32_t>();
     if (r.backfill_days < 1 || r.backfill_days > 3650)
         BOOST_THROW_EXCEPTION(parser_exception("--backfill-days is from 1 to 3650."));

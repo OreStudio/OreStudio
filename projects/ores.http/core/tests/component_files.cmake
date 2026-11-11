@@ -27,6 +27,7 @@ set(files
     "change_ticker_tests.cpp"
     "history_routes_tests.cpp"
     "main.cpp"
+    "site_routes_tests.cpp"
     "storage_upload_end_to_end_tests.cpp"
     "storage_upload_sink_tests.cpp"
     "web_bundle_routes_tests.cpp"

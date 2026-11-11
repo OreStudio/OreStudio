@@ -20,7 +20,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_PRODUCT_BATCH_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_PRODUCT_BATCH_HPP
 
-#include "ores.trading.api/domain/bond_instruments.hpp"
+#include "ores.trading.api/domain/bond_product.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 
 namespace ores::trading::domain {
@@ -50,6 +50,20 @@ inline void append(instrument_batch& batch, bond_product&& product) {
         batch.bond_issue_call_dates.push_back(std::move(v));
     for (auto& v : product.conversion_targets)
         batch.bond_issue_conversion_targets.push_back(std::move(v));
+    for (auto& v : product.legs)
+        batch.bond_legs.push_back(std::move(v));
+    for (auto& v : product.leg_amounts)
+        batch.bond_leg_amounts.push_back(std::move(v));
+    for (auto& v : product.leg_rates)
+        batch.bond_leg_rates.push_back(std::move(v));
+    for (auto& v : product.option_block)
+        batch.instrument_options.push_back(std::move(v));
+    for (auto& v : product.schedules)
+        batch.instrument_schedules.push_back(std::move(v));
+    for (auto& v : product.schedule_dates)
+        batch.instrument_schedule_dates.push_back(std::move(v));
+    for (auto& v : product.underlyings)
+        batch.instrument_underlyings.push_back(std::move(v));
 }
 
 }

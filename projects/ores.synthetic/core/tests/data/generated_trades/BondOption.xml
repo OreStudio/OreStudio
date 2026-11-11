@@ -4,11 +4,22 @@
     <TradeType>BondOption</TradeType>
     <BondOptionData>
       <OptionData>
-        <LongShort></LongShort>
+        <LongShort>Short</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2027-01-02</ExerciseDate>
+        </ExerciseDates>
       </OptionData>
+      <Strike>98.52</Strike>
+      <Redemption>100</Redemption>
+      <PriceType>Clean</PriceType>
+      <KnocksOut>false</KnocksOut>
       <BondData>
         <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
         <SecurityId>POP0I8Z1XE0C6</SecurityId>
+        <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
@@ -17,9 +28,28 @@
         <LegData>
           <Payer>false</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
             <Notional>1</Notional>
           </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-07-02</StartDate>
+              <EndDate>2030-07-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
         <SubType>Fixed</SubType>
       </BondData>
@@ -29,11 +59,22 @@
     <TradeType>BondOption</TradeType>
     <BondOptionData>
       <OptionData>
-        <LongShort></LongShort>
+        <LongShort>Short</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2027-01-02</ExerciseDate>
+        </ExerciseDates>
       </OptionData>
+      <Strike>100.16</Strike>
+      <Redemption>100</Redemption>
+      <PriceType>Clean</PriceType>
+      <KnocksOut>false</KnocksOut>
       <BondData>
         <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
         <SecurityId>POPPD9V2UE1T1</SecurityId>
+        <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
@@ -42,9 +83,28 @@
         <LegData>
           <Payer>false</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
             <Notional>1</Notional>
           </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-07-02</StartDate>
+              <EndDate>2028-07-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
         <SubType>Fixed</SubType>
       </BondData>

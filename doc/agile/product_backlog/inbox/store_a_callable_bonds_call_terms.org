@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: A75186C1-ECE1-4CD2-8511-64F4EA2ED729
+:END:
+#+title: Store a callable bond's call terms
+#+description: The store keeps a callable bond's call dates but not each call's style, price, price type or accrual, so the ORE writer states fixed stand-ins.
+#+type: capture
+#+level: cross
+#+filetags: :bond:trading:ore:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give each call date of a callable bond its own style, price, price type and
+whether it includes accrual, as ORE's =CallData= states them. Today
+=bond_issue_call_date= keeps only the date.
+
+* Why
+
+The ORE writer must state those four lists, so it writes the same stand-ins
+for every call: Bermudan, at par, clean, with accrual. A callable bond imported
+from a document whose calls differ, such as an American call or a call above
+par, therefore exports with different terms than it was read with, and values
+differently. The stand-ins were an empty style and a price of zero until the
+bond builders task, which ORE refused.
+
+* References
+
+- =write_call_dates= in =projects/ores.ore/core/src/domain/bond_instrument_projection.cpp=.
+- The Products example's =referencedata.xml=, whose call data states each term.
+
+* See also
+
+- [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]]

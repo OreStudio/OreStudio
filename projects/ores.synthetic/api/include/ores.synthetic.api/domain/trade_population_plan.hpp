@@ -273,30 +273,6 @@ struct equity_range_bound final {
 };
 
 /**
- * @brief The facts a bond trade states.
- */
-struct bond_terms final {
-    std::string security_id;
-    boost::uuids::uuid issue_id;
-    /**
-     * @brief The counterparty that issued the security. It is a fact of the
-     * security and not of the trade, so it need not be the trade's own.
-     */
-    boost::uuids::uuid issuer_id;
-    std::chrono::year_month_day issue_date;
-    std::chrono::year_month_day maturity_date;
-    /// The security's original term in years, not the trade's remaining life.
-    std::uint32_t tenor_years = 1;
-    std::string calendar = "TARGET";
-    /**
-     * @brief The curve this trade's bond is discounted on, as the oresmd URI of
-     * the market series that curve is, or empty when the population states
-     * none.
-     */
-    std::string reference_curve_id;
-};
-
-/**
  * @brief The facts the commodity planner draws, before it states its rows.
  *
  * The family states rows in the plan, so this is the drawing's own shape and

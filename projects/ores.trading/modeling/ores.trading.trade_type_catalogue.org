@@ -385,6 +385,10 @@ and the last three are shared shapes: the bond pilot built them and the rates
 family writes to them rather than widening them, so the array is the same
 shape whichever family states the rows.
 
+A bond trade's own legs, its repo's cash leg, its TRS's funding leg and its
+Ascot's swap leg, are here too, so a booking carries the whole bond and the
+generator and the import write it through one path.
+
 | child                                       |
 |---------------------------------------------|
 | bond_issue                                  |
@@ -399,6 +403,10 @@ shape whichever family states the rows.
 | ascot                                       |
 | bond_forward                                |
 | bond_future                                 |
+| bond_leg                                    |
+| bond_leg_amortization                       |
+| bond_leg_amount                             |
+| bond_leg_rate                               |
 | bond_option                                 |
 | bond_repo                                   |
 | bond_trs                                    |

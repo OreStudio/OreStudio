@@ -22,13 +22,97 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.trading.api/domain/ascot.hpp"
+#include "ores.trading.api/domain/bond_forward.hpp"
+#include "ores.trading.api/domain/bond_future.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
+#include "ores.trading.api/domain/bond_issue_leg.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amortization.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
+#include "ores.trading.api/domain/bond_leg.hpp"
+#include "ores.trading.api/domain/bond_leg_amortization.hpp"
+#include "ores.trading.api/domain/bond_leg_amount.hpp"
+#include "ores.trading.api/domain/bond_leg_rate.hpp"
+#include "ores.trading.api/domain/bond_option.hpp"
+#include "ores.trading.api/domain/bond_repo.hpp"
+#include "ores.trading.api/domain/bond_trs.hpp"
+#include "ores.trading.api/domain/instrument_option.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
+#include "ores.trading.api/domain/instrument_option_payment_date.hpp"
+#include "ores.trading.api/domain/instrument_option_premium.hpp"
+#include "ores.trading.api/domain/instrument_schedule.hpp"
+#include "ores.trading.api/domain/instrument_schedule_date.hpp"
+#include "ores.trading.api/domain/instrument_strike.hpp"
+#include "ores.trading.api/domain/instrument_underlying.hpp"
 #include "ores.trading.core/export.hpp"
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace ores::trading::service {
+
+/**
+ * @brief The rows a bond security owns, as the issue-keyed tables hold them.
+ *
+ * A bond's own legs belong to the security rather than to the trade, so they
+ * and everything they state key on the issue.
+ */
+struct issue_leg_rows final {
+    std::vector<domain::bond_issue_leg> legs;
+    std::vector<domain::bond_issue_leg_amount> amounts;
+    std::vector<domain::bond_issue_leg_rate> rates;
+    std::vector<domain::bond_issue_leg_amortization> amortizations;
+    std::vector<domain::bond_issue_leg_schedule> schedules;
+    std::vector<domain::bond_issue_leg_schedule_date> schedule_dates;
+};
+
+/**
+ * @brief The rows a bond trade owns, as the trade-keyed tables hold them.
+ *
+ * The rows stay in the order their query returned: by instrument, then by the
+ * owner's role and number, then by the child's own ordinal. The product's fact
+ * row is the one its trade type names; the others stay empty.
+ */
+struct bond_trade_rows final {
+    std::vector<domain::bond_leg> legs;
+    std::vector<domain::bond_leg_amount> amounts;
+    std::vector<domain::bond_leg_rate> rates;
+    std::vector<domain::bond_leg_amortization> amortizations;
+    std::vector<domain::instrument_schedule> schedules;
+    std::vector<domain::instrument_schedule_date> schedule_dates;
+    std::optional<domain::instrument_option> option;
+    std::vector<domain::instrument_option_premium> option_premiums;
+    std::vector<domain::instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<domain::instrument_option_payment_date> option_payment_dates;
+    std::vector<domain::instrument_option_exercise_price> option_exercise_prices;
+    std::optional<domain::instrument_strike> strike;
+    std::optional<domain::bond_forward> forward;
+    std::optional<domain::bond_option> bond_option;
+    std::optional<domain::bond_trs> trs;
+    std::optional<domain::bond_repo> repo;
+    std::optional<domain::bond_future> future;
+    std::optional<domain::ascot> ascot;
+    std::vector<domain::instrument_underlying> underlyings;
+};
+
+/**
+ * @brief Completes a bond's container from its trade's rows and its security's.
+ *
+ * The export reader reads the rows and calls this; a caller that already holds
+ * the rows, such as a test, calls it the same way.
+ */
+ORES_TRADING_CORE_EXPORT void assemble_bond(domain::bond_instrument_data& data,
+                                            const bond_trade_rows& trade,
+                                            const issue_leg_rows& issue);
+
+/// The security's legs as the export writes them, in the order the issue lists them.
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_data>
+bond_legs_of(const issue_leg_rows& rows);
 
 /**
  * @brief Rebuilds bond instrument containers from the rows that hold them.

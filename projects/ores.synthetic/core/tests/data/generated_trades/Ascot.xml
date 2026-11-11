@@ -7,6 +7,7 @@
         <BondData>
           <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
           <SecurityId>POPXMIZYWCP90</SecurityId>
+          <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
           <SettlementDays>2</SettlementDays>
           <Calendar>TARGET</Calendar>
           <IssueDate>2025-07-02</IssueDate>
@@ -15,20 +16,77 @@
           <LegData>
             <Payer>false</Payer>
             <LegType>Fixed</LegType>
+            <Currency>EUR</Currency>
+            <PaymentConvention>F</PaymentConvention>
+            <DayCounter>ACT/ACT</DayCounter>
             <Notionals>
               <Notional>1</Notional>
             </Notionals>
+            <ScheduleData>
+              <Rules>
+                <StartDate>2025-07-02</StartDate>
+                <EndDate>2031-07-02</EndDate>
+                <Tenor>1Y</Tenor>
+                <Calendar>TARGET</Calendar>
+                <Convention>F</Convention>
+                <TermConvention>F</TermConvention>
+                <Rule>Forward</Rule>
+              </Rules>
+            </ScheduleData>
+            <FixedLegData>
+              <Rates>
+                <Rate>0.05</Rate>
+              </Rates>
+            </FixedLegData>
           </LegData>
           <SubType>Fixed</SubType>
         </BondData>
+        <ConversionData>
+          <ConversionRatios>
+            <ConversionRatio>6.13</ConversionRatio>
+          </ConversionRatios>
+          <Underlying>
+            <Type>Equity</Type>
+            <Name>MSFT.O</Name>
+          </Underlying>
+        </ConversionData>
       </ConvertibleBondData>
       <OptionData>
-        <LongShort></LongShort>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>American</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2026-01-02</ExerciseDate>
+          <ExerciseDate>2031-07-02</ExerciseDate>
+        </ExerciseDates>
       </OptionData>
       <ReferenceSwapData>
         <LegData>
           <Payer>false</Payer>
-          <LegType>Fixed</LegType>
+          <LegType>Floating</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>3614264.98</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2031-07-02</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FloatingLegData>
+            <Index>EUR-EURIBOR-6M</Index>
+            <Spreads>
+              <Spread>0.02</Spread>
+            </Spreads>
+          </FloatingLegData>
         </LegData>
       </ReferenceSwapData>
     </AscotData>
@@ -40,6 +98,7 @@
         <BondData>
           <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
           <SecurityId>POPQ97VJQHMZ2</SecurityId>
+          <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
           <SettlementDays>2</SettlementDays>
           <Calendar>TARGET</Calendar>
           <IssueDate>2025-07-02</IssueDate>
@@ -48,20 +107,77 @@
           <LegData>
             <Payer>false</Payer>
             <LegType>Fixed</LegType>
+            <Currency>EUR</Currency>
+            <PaymentConvention>F</PaymentConvention>
+            <DayCounter>ACT/ACT</DayCounter>
             <Notionals>
               <Notional>1</Notional>
             </Notionals>
+            <ScheduleData>
+              <Rules>
+                <StartDate>2025-07-02</StartDate>
+                <EndDate>2026-07-02</EndDate>
+                <Tenor>1Y</Tenor>
+                <Calendar>TARGET</Calendar>
+                <Convention>F</Convention>
+                <TermConvention>F</TermConvention>
+                <Rule>Forward</Rule>
+              </Rules>
+            </ScheduleData>
+            <FixedLegData>
+              <Rates>
+                <Rate>0.05</Rate>
+              </Rates>
+            </FixedLegData>
           </LegData>
           <SubType>Fixed</SubType>
         </BondData>
+        <ConversionData>
+          <ConversionRatios>
+            <ConversionRatio>12.1</ConversionRatio>
+          </ConversionRatios>
+          <Underlying>
+            <Type>Equity</Type>
+            <Name>.SPX</Name>
+          </Underlying>
+        </ConversionData>
       </ConvertibleBondData>
       <OptionData>
-        <LongShort></LongShort>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>American</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2026-01-02</ExerciseDate>
+          <ExerciseDate>2026-07-02</ExerciseDate>
+        </ExerciseDates>
       </OptionData>
       <ReferenceSwapData>
         <LegData>
           <Payer>false</Payer>
-          <LegType>Fixed</LegType>
+          <LegType>Floating</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>4191327.35</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2026-07-02</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FloatingLegData>
+            <Index>EUR-EURIBOR-6M</Index>
+            <Spreads>
+              <Spread>0.02</Spread>
+            </Spreads>
+          </FloatingLegData>
         </LegData>
       </ReferenceSwapData>
     </AscotData>

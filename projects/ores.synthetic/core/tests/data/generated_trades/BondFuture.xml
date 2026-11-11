@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Portfolio>
+  <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
+    <TradeType>BondFuture</TradeType>
+    <BondFutureData>
+      <ContractName>ZB</ContractName>
+      <ContractNotional>1e+05</ContractNotional>
+      <LongShort>Short</LongShort>
+      <ApplyConversionFactor>true</ApplyConversionFactor>
+      <UseFuturePrice>true</UseFuturePrice>
+    </BondFutureData>
+  </Trade>
+  <Trade id="8f2c08ef-f6c9-5ff2-a0f5-37b3df0624a2">
+    <TradeType>BondFuture</TradeType>
+    <BondFutureData>
+      <ContractName>FGBM</ContractName>
+      <ContractNotional>1e+05</ContractNotional>
+      <LongShort>Short</LongShort>
+      <ApplyConversionFactor>true</ApplyConversionFactor>
+      <UseFuturePrice>true</UseFuturePrice>
+    </BondFutureData>
+  </Trade>
+</Portfolio>

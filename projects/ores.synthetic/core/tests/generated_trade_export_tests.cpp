@@ -31,6 +31,7 @@
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
@@ -127,6 +128,9 @@ domain::trade_generation_scope scope_of(const std::string& asset_class_code) {
     scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
     scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
     scope.conventions = ores::synthetic::tests::ore_example_conventions();
+    // The curve a bond is discounted on, as a generation config names it; the
+    // Products example builds this one.
+    scope.reference_curve_id = "EUR-EURIBOR-6M";
     return scope;
 }
 
@@ -185,14 +189,44 @@ const std::map<std::string, recorded_type>& generated() {
             for (const auto& slot : planner_for(asset_class).plan(scope).slots) {
                 auto request = trading_trade_population_writer::book_request_for(slot, scope);
                 /*
-                 * A bond's security is written before its trade and joined back
-                 * by the export reader, so the slot carries it beside the batch.
+                 * A bond's security is written before its trade, and the export
+                 * reader joins it and the trade's own rows back through
+                 * assemble_bond. The slot carries the security beside the
+                 * batch, and the batch holds only this trade's rows.
                  */
                 for (auto& bond : request.instruments.bond_instruments) {
                     if (slot.bond_issue)
                         bond.issue = *slot.bond_issue;
                     bond.call_dates = slot.bond_issue_call_dates;
                     bond.conversion_targets = slot.bond_issue_conversion_targets;
+                    const auto& batch = request.instruments;
+                    const auto first = [](const auto& rows) {
+                        using row = std::decay_t<decltype(rows.front())>;
+                        return rows.empty() ? std::optional<row>{} :
+                                              std::optional<row>{rows.front()};
+                    };
+                    ores::trading::service::bond_trade_rows trade;
+                    trade.legs = batch.bond_legs;
+                    trade.amounts = batch.bond_leg_amounts;
+                    trade.rates = batch.bond_leg_rates;
+                    trade.schedules = batch.instrument_schedules;
+                    trade.schedule_dates = batch.instrument_schedule_dates;
+                    trade.option = first(batch.instrument_options);
+                    trade.strike = first(batch.instrument_strikes);
+                    trade.forward = first(batch.bond_forwards);
+                    trade.bond_option = first(batch.bond_options);
+                    trade.trs = first(batch.bond_trs);
+                    trade.repo = first(batch.bond_repos);
+                    trade.future = first(batch.bond_futures);
+                    trade.ascot = first(batch.ascots);
+                    trade.underlyings = batch.instrument_underlyings;
+                    ores::trading::service::assemble_bond(
+                        bond,
+                        trade,
+                        {.legs = slot.bond_issue_legs,
+                         .amounts = slot.bond_issue_leg_amounts,
+                         .rates = slot.bond_issue_leg_rates,
+                         .schedules = slot.bond_issue_leg_schedules});
                 }
                 state_keys(request.instruments, slot.trade_id, slot.trade_type_code);
                 auto& trades = by_type[slot.trade_type_code];
@@ -432,15 +466,6 @@ void check_known(const std::set<std::string>& found, const std::set<std::string>
 const std::set<std::string>& known_refusals() {
     static const std::set<std::string> known = {
         "EquityOptionPosition",
-        /*
-         * The planner states these products' terms as rows of their own, which
-         * the export reader joins to the bond from the database. The batch the
-         * test exports from has no such join, so the three are refused here
-         * whatever the reports do; the database leg of the story judges them.
-         */
-        "BondFuture",
-        "BondTRS",
-        "ForwardBond",
     };
     return known;
 }

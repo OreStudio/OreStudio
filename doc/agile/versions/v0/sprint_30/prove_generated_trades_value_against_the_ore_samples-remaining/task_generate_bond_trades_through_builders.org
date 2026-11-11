@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-bond-trades-through-builders
+#+pr: 4597
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ Every bond trade type the generator books is built by its trade builder, and the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -43,9 +43,25 @@ Every bond trade type the generator books is built by its trade builder, and the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The export test joined a bond's issue but none of its other rows, while the
+  export reader joins them all. So the recorded bonds were not what a real
+  export writes: Bond, CallableBond and ConvertibleBond lacked their coupon
+  leg, BondOption its strike, and BondFuture, BondTRS and ForwardBond were
+  refused. The reader's assembly becomes a pure function over the rows,
+  =bond_legs_of= for the issue's legs and one for the trade's rows, which the
+  reader and the test both call.
+- The test scope states a reference curve, as a tenant's generation config
+  does; the Products example names =EUR-EURIBOR-6M=.
+- A booking carries a bond trade's own legs: the trade-type catalogue lists the
+  trade-keyed bond leg tables, so the generated batch and its writer carry a
+  repo's cash leg, a TRS's funding leg and an Ascot's swap leg through the
+  same path as every other row. The user chose this on 2026-11-11.
+- One builder per booked bond type. A bond issue builder states the security
+  and its coupon leg; each trade builder states the rows its product needs:
+  the option block and strike of an option, the cash leg of a repo, the
+  funding leg of a TRS, the swap leg of an Ascot, the identifier of a position.
+- The =construct_*= functions, their terms and the plan's =bond_terms= are
+  deleted.
 
 * Measurements
 
@@ -78,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4597][#4597]] | [trading] Generate bond trades through their builders |
 
 * Review
 
@@ -87,3 +103,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A bond issue builder states the security and its coupon leg, and one builder
+per booked bond type states the rows its product needs, in =bond_builders.hpp=.
+The planner calls them; the bond constructors, =bond_terms= and the old
+=bond_instruments.hpp= are deleted, and =bond_product= has a header of its own.
+
+The export test now assembles each bond through =assemble_bond=, the reader's
+own assembly, so a recorded bond is what a real export writes. Three apparent
+ORE failures were the test's: the coupon leg and the option strike were never
+joined, and BondFuture, BondTRS and ForwardBond were refused.
+
+ORE now reads every booked bond type. Bond, BondRepo, BondTRS and ForwardBond
+build and price. The rest fail only on what the Products example lacks: equity
+curves for the convertible's shares (ConvertibleBond, Ascot), a bond volatility
+curve (BondOption), reference data for the generated security (BondPosition),
+the issuer's credit curve (CallableBond, whose engine dereferences an empty
+default curve without one) and a BondFuture engine.
+
+The callable bond writer's call stand-ins are now the Products example's:
+Bermudan, at par, clean, with accrual. They were an empty style and a price of
+zero, which ORE refused. Storing each call's own terms is the capture
+[[id:A75186C1-ECE1-4CD2-8511-64F4EA2ED729][Store a callable bond's call terms]].

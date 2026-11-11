@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 #define ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 
+#include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
@@ -61,7 +62,17 @@ using all_builders = std::tuple<vanilla_swap_builder,
                                 fx_average_forward_builder,
                                 fx_tarf_builder,
                                 fx_variance_swap_builder,
-                                fx_accumulator_builder>;
+                                fx_accumulator_builder,
+                                bond_builder,
+                                bond_position_builder,
+                                bond_option_builder,
+                                forward_bond_builder,
+                                bond_future_builder,
+                                bond_repo_builder,
+                                bond_trs_builder,
+                                callable_bond_builder,
+                                convertible_bond_builder,
+                                ascot_builder>;
 
 namespace detail {
 

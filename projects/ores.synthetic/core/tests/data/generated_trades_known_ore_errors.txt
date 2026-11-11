@@ -3,12 +3,15 @@
 # A family's builder task removes its lines; the test fails on any change.
 # The messages are ORE's own, so an upgrade of external/ore or of the engine
 # that runs the test can change them; record the new messages then.
-Ascot	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
-Bond	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
-BondOption	Error parsing Trade XML	Error: No XML Child Node Strike found.
-BondPosition	Error parsing Trade XML	Error: No XML Child Node Identifier found.
-BondRepo	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
-CallableBond	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
+Ascot	Error building trade for context 'analytic/PRICING'	did not find object '.SPX' of type equity curve under configuration 'default' or 'default'
+Ascot	Error building trade for context 'analytic/PRICING'	did not find object 'MSFT.O' of type equity curve under configuration 'default' or 'default'
+BondFuture	Error building trade for context 'analytic/PRICING'	No Pricing Engine configuration was provided for trade type BondFuture
+BondOption	Error building trade for context 'analytic/PRICING'	BondOptionEngineBuilder: volatility curve ID for trade id 'BondOption-1', security id 'POP0I8Z1XE0C6' not given
+BondOption	Error building trade for context 'analytic/PRICING'	BondOptionEngineBuilder: volatility curve ID for trade id 'BondOption-2', security id 'POPPD9V2UE1T1' not given
+BondPosition	Error building trade for context 'analytic/PRICING'	Build failed for underlying Bond (POPWJZKDKJKR3): BondFactory: could not build bond 'POPWJZKDKJKR3': no reference data given or no suitable builder registered. Check if bond is set up in the reference data and that there is a builder for the reference data type.
+BondPosition	Error building trade for context 'analytic/PRICING'	Build failed for underlying Bond (POPZLGWDZBWA7): BondFactory: could not build bond 'POPZLGWDZBWA7': no reference data given or no suitable builder registered. Check if bond is set up in the reference data and that there is a builder for the reference data type.
+CallableBond	Error during trade pricing	empty Handle cannot be dereferenced
+CallableBond	Error during trade pricing (additional results)	empty Handle cannot be dereferenced
 CommodityAccumulator	Error parsing Trade XML	CommodityAccumulatorData node not found
 CommodityAsianOption	Error parsing Trade XML	No CommodityAsianOptionData node found.
 CommodityBasketOption	Error building trade for context 'analytic/PRICING'	payoff type '' not recognised
@@ -31,7 +34,7 @@ CommoditySwaption	Error building trade for context 'analytic/PRICING'	Settlement
 CommodityTaRF	Error parsing Trade XML	CommodityTaRFData node not found
 CommodityWindowBarrierOption	Error parsing Trade XML	CommodityWindowBarrierOptionData node not found
 CommodityWorstOfBasketSwap	Error parsing Trade XML	WorstOfBasketSwapData node not found
-ConvertibleBond	Error parsing Trade XML	XML Node is NULL (expected FixedLegData)
+ConvertibleBond	Error building trade for context 'analytic/PRICING'	did not find object '.STOXX50E' of type equity curve under configuration 'default' or 'default'
 CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 CreditDefaultSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/5493001KJTIIGC8Y1R12?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'
 CreditLinkedSwap	Error building trade for context 'analytic/PRICING'	did not find object 'oresmd://credit/529900T8BM49AURSDO55?type=series&instrument=cds&quote=credit_spread&seniority=SNRFOR&ccy=EUR' of type default curve under configuration 'default' or 'default'

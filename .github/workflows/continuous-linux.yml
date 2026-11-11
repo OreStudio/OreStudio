@@ -79,6 +79,27 @@ jobs:
             echo "should_build=false" >> "$GITHUB_OUTPUT"
           fi
 
+  validate-sql:
+    name: validate-sql-schema
+    needs: guard
+    if: needs.guard.outputs.should_build == 'true'
+    # The validation needs no compiler and no database, so it runs beside the
+    # build, not before it.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Validate SQL Schema
+        run: |
+          pip install --quiet pystache
+          ./projects/ores.sql/utility/validate_schemas.sh
+
   build:
     needs: guard
     if: needs.guard.outputs.should_build == 'true'
@@ -103,47 +124,6 @@ jobs:
             family: linux
             compiler: clang
     steps:
-      - name: Free disk space
-        run: |
-          echo "=== Disk space before cleanup ==="
-          df -h
-          # Language runtimes and SDKs not needed by this build
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /usr/share/swift
-          sudo rm -rf /usr/lib/jvm
-          sudo rm -rf /home/linuxbrew/.linuxbrew
-          sudo rm -rf /usr/local/.ghcup
-          sudo rm -rf /usr/share/miniconda
-          sudo rm -rf /usr/share/miniconda3
-          # Cloud CLIs
-          sudo rm -rf /opt/az
-          sudo rm -rf /opt/pipx/venvs/azure-cli
-          sudo rm -rf /usr/lib/google-cloud-sdk
-          sudo rm -rf /usr/share/google-cloud-sdk
-          sudo rm -rf /usr/local/share/powershell
-          # Browser bundles
-          sudo rm -rf /usr/local/share/chromium
-          sudo rm -rf /usr/local/share/chrome_beta
-          sudo rm -rf /opt/google/chrome
-          # Pre-installed toolchain caches we don't use
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo rm -rf /opt/hostedtoolcache/Ruby
-          sudo rm -rf /opt/hostedtoolcache/node
-          sudo rm -rf /opt/hostedtoolcache/go
-          sudo rm -rf /usr/local/share/boost
-          sudo rm -rf /usr/local/lib/node_modules
-          # Snap packages
-          sudo snap remove lxd 2>/dev/null || true
-          sudo rm -rf /var/cache/snapd
-          # Docker images
-          sudo docker image prune --all --force || true
-          # apt cache
-          sudo apt-get clean
-          echo "=== Disk space after cleanup ==="
-          df -h
-
       - uses: actions/checkout@v7
         with:
           submodules: true
@@ -161,11 +141,6 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Validate SQL Schema
-        run: |
-          pip install --quiet pystache
-          ./projects/ores.sql/utility/validate_schemas.sh
-
       - name: Check every Boost header has a vcpkg port behind it
         # Boost arrives as per-library ports, so a new library compiles for
         # whoever added it and fails on a clean install with a missing header.
@@ -175,11 +150,13 @@ jobs:
         run: python3 build/scripts/check_boost_dependencies.py
 
       - name: Install Clang
-        uses: KyleMayes/install-llvm-action@v2
+        # The Ubuntu archive has clang 19, so apt installs it in seconds. The
+        # LLVM release tarball that this step downloaded before took 90 to 120 s.
         if: ${{ matrix.compiler == 'clang' }}
-        with:
-          version: "19"
-          arch: x64
+        run: |
+          sudo apt-get update -q -o Acquire::Retries=3
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q -o Acquire::Retries=3 clang-19 llvm-19
+          echo "/usr/lib/llvm-19/bin" >> "$GITHUB_PATH"
 
       - name: Restore sccache
         uses: actions/cache/restore@v6

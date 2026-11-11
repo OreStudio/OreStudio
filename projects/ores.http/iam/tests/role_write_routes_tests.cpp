@@ -92,6 +92,8 @@ TEST_CASE("role_write_routes_read_each_body_within_the_bff_limits", "[role_write
     CHECK(role_write_routes::read_edited_role(
         R"({"name":"Trader","version":3,"registrationDefault":false,"requestable":true})"));
 
+    CHECK_FALSE(role_write_routes::read_edited_role(
+        R"({"name":"Trader","version":4294967296,"registrationDefault":false,"requestable":true})"));
     CHECK(role_write_routes::read_bundle(R"({"codes":["iam::roles:read"]})"));
     CHECK_FALSE(role_write_routes::read_bundle(R"({"codes":[""]})"));
     CHECK(role_write_routes::read_changes(R"({"add":["a"],"note":"why"})"));

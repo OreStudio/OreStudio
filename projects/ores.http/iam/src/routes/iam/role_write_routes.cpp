@@ -35,6 +35,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <functional>
+#include <limits>
 #include <unordered_set>
 #include <utility>
 
@@ -52,6 +53,11 @@ using access_screen_answers::guarded;
 using access_screen_answers::refused;
 
 namespace {
+
+/// Whether a role is one a service holds, whose permissions no screen shows.
+bool is_service_role(const ores::iam::domain::role& role) {
+    return role.name.ends_with("Service");
+}
 
 /// The most a catalogue read holds, as the BFF read it.
 constexpr std::uint32_t catalogue_page = 1000;
@@ -75,8 +81,9 @@ std::optional<role_body> read_role(const std::string& body, bool edited) {
     const auto name = characters_of(role->name);
     if (name < 1 || name > 100 || (role->description && characters_of(*role->description) > 1000))
         return std::nullopt;
-    if (edited &&
-        (!role->version || *role->version < 0 || !role->registrationDefault || !role->requestable))
+    if (edited && (!role->version || *role->version < 0 ||
+                   *role->version > std::numeric_limits<std::uint32_t>::max() ||
+                   !role->registrationDefault || !role->requestable))
         return std::nullopt;
     return std::move(*role);
 }
@@ -203,7 +210,7 @@ std::string role_write_routes::roles_json(const std::vector<role_summary>& roles
         out += ",\"version\":" + std::to_string(r.version);
         out += ",\"name\":" + json::write(r.name);
         out += ",\"description\":" + json::write(r.description);
-        out += ",\"service\":" + std::string(r.name.ends_with("Service") ? "true" : "false");
+        out += ",\"service\":" + std::string(is_service_role(r) ? "true" : "false");
         out +=
             ",\"registrationDefault\":" + std::string(r.is_registration_default ? "true" : "false");
         out += ",\"requestable\":" + std::string(r.is_requestable ? "true" : "false");
@@ -299,7 +306,7 @@ void role_write_routes::register_routes(
                 rr::require_ok(reply.result);
                 std::vector<role_summary> roles;
                 for (const auto& role : reply.roles) {
-                    const auto service = role.name.ends_with("Service");
+                    const auto service = is_service_role(role);
                     roles.push_back(
                         {role,
                          service ? std::vector<std::string>{} :
@@ -327,6 +334,9 @@ void role_write_routes::register_routes(
             return refused(http_status::bad_request, "invalid-request", "A role needs a name.");
         const auto id = boost::uuids::random_generator()();
         return guarded<messaging::put_role_request>([&] {
+            // A new role is requestable and not given at registration, whatever
+            // the body says: the BFF made every new role this way, and the
+            // editor sets the flags once the role exists.
             const auto reply = ores::http::forwarding::forward(
                 req, session, put_role_of(id, *role, std::nullopt, false, true));
             return written(reply.result,
@@ -387,6 +397,9 @@ void role_write_routes::register_routes(
                                "invalid-request",
                                "Send the permissions to add or remove, and why.");
             return guarded<messaging::put_role_permissions_request>([&] {
+                // The read and the write are two calls with no version between
+                // them, as the BFF made them, so two changes to one role at the
+                // same moment can each drop the other's.
                 return save_permissions(req,
                                         session,
                                         id,

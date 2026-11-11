@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-remaining-auth-routes
-#+pr:
+#+pr: 4587
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4587][#4587]] | [http] Serve the audit screens' reads and the end of a session |
 
 * Review
 

@@ -24,14 +24,15 @@ REFDATA = "/api/v1/reference-data"
 
 PAIRS = {
     # access
-    ("GET", "/api/accounts"): ("GET", f"{ACCESS}/accounts"),
-    ("GET", "/api/accounts/:username"): ("GET", f"{ACCESS}/accounts/{{username}}"),
+    ("GET", "/api/accounts"): ("GET", "/api/accounts"),
+    ("GET", "/api/accounts/:username"): ("GET", "/api/accounts/{username}"),
     ("GET", "/api/accounts/:accountId/contact-information"):
         ("GET", f"{ACCESS}/account_contact_informations/by-account-id/{{account_id}}"),
     ("PUT", "/api/accounts/:accountId/contact-information"):
         ("PUT", f"{ACCESS}/account_contact_informations"),
     ("POST", "/api/accounts/:accountId/lock"): ("POST", f"{IAM_OPS}/lock_account"),
     ("POST", "/api/accounts/:accountId/unlock"): ("POST", f"{IAM_OPS}/unlock_account"),
+    ("POST", "/api/me/default-party"): ("POST", "/api/me/default-party"),
     ("GET", "/api/me/access"): ("GET", "/api/me/access"),
     ("GET", "/api/me/permissions"): ("GET", "/api/me/permissions"),
     ("GET", "/api/accounts/:accountId/permissions"): ("GET", "/api/accounts/{accountId}/permissions"),

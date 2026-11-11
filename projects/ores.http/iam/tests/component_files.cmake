@@ -25,6 +25,7 @@ set(files
     "account_credential_routes_tests.cpp"
     "account_operations_routes_tests.cpp"
     "account_routes_tests.cpp"
+    "account_screen_routes_tests.cpp"
     "auth_event_operations_routes_tests.cpp"
     "auth_session_routes_tests.cpp"
     "auth_session_sign_in_live_tests.cpp"

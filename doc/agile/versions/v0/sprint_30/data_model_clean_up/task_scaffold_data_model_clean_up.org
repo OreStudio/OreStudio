@@ -8,7 +8,7 @@
 #+filetags: :data_model_clean_up:sprint_30:v0:
 #+owner: marco
 #+branch: feature/data-model-clean-up
-#+pr:
+#+pr: 4602
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4602][#4602]] | [agile] Start the data model clean up story |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/generate-bond-trades-through-builders
-#+pr:
+#+pr: 4597
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4597][#4597]] | [trading] Generate bond trades through their builders |
 
 * Review
 

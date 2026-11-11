@@ -92,6 +92,10 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the token now lives on the request inside the server. | =http_session.cpp= | Accepted | It is the session's own token, which the server already holds; the answer never carries it, and a test of the answer already proves that. |
 | 2 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 3 | PR review: the lowercase header key relies on the map's rule. | =http_session.cpp= | Declined | =http_request= stores every header key in lowercase by its own rule, and =get_header= lowercases each lookup. |
+| 4 | PR review: an empty token would become a bare =Bearer=. | =http_session.cpp= | Accepted | A session with no token sets no header. |
+| 5 | PR review: optional-auth routes still forward no token. | =http_session.cpp= | Accepted | The bootstrap task handles it, as the PR states. |
+| 6 | PR review: the comment is long. | =http_session.cpp= | Accepted | Two lines now. |
 
 * Result
 

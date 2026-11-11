@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 95498D9D-291D-4C41-A0E5-4C876181F150
+:END:
+#+title: Task: Serve step commands on a bounded set of workers
+#+description: Initial task for: Run a service's steps concurrently
+#+type: task
+#+level: s1
+#+filetags: :run_a_services_steps_concurrently:sprint_30:v0:
+#+owner: marco
+#+branch: feature/run-a-services-steps-concurrently
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D550641-953B-4F17-BFA4-B1DB1EFBE62C][Run a service's steps concurrently]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=serve_step_commands= runs a service's steps on a number of workers it is
+given, and the IAM service runs its provisioning steps on four.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:1D550641-953B-4F17-BFA4-B1DB1EFBE62C][Run a service's steps concurrently]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+
+The provisioning run of the conventions story stopped at attach_photos: the
+IAM service ran its steps one at a time on the delivery thread of its step
+subscription, generate_trades took about 25 minutes, and attach_photos,
+set_staff_passwords and schedule_reports waited behind it until the workflow
+failed attach_photos as unclaimed after twenty minutes.
+
+1. Audit the step handlers of the fourteen services that serve steps for
+   state a call changes. Their members are references, database contexts,
+   configuration, and caches that lock or read wait-free, with one
+   exception: the service token provider caches its token with no lock, and
+   handlers on several subscriptions already call it at once.
+2. Add =step_workers=, a fixed set of threads that waits for a free worker
+   rather than queueing, so a command not yet taken stays with the server.
+3. Give =serve_step_commands= a number of workers, one by default, and run
+   the IAM provisioning steps on four. Steps that hold a database connection
+   for long, such as the data quality publishes, stay on one: more workers
+   than the pool's two connections would starve the service's other handlers.
+4. Lock the service token provider.
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

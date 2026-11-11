@@ -495,7 +495,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     provisioning_routes.on(
         ores::iam::workflow::provision_tenant_step_subject,
         [tph](ores::nats::delivery delivery) { tph->provision_step(std::move(delivery)); });
-    subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, provisioning_routes));
+    // A provisioning run dispatches several steps at once, and one of them,
+    // generate_trades, waits on the synthetic service for many minutes. On one
+    // thread it would hold back the steps dispatched beside it until the
+    // workflow fails them as unclaimed. These steps mostly ask other services
+    // and hold a database connection only for their own short writes, so four
+    // of them run at once.
+    constexpr std::size_t provisioning_step_workers = 4;
+    subs.push_back(ores::service::messaging::serve_step_commands(
+        nats, qg, provisioning_routes, provisioning_step_workers));
     // The account-picture reconcile the attach_photos step runs is also a
     // subject, so an operator can re-run it from a client and a scope that is
     // not a provisioning run can be reconciled.

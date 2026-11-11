@@ -20,9 +20,10 @@ It reads every declaration site in the tree, in three shapes:
   * ``ensure_stream(name, filters)`` creates a stream. The name is the argument
     of ``make_stream_name``, and the filters are ``covering_subjects`` over the
     subjects named.
-  * ``serve_step_commands(nats, service, routes)`` creates the service's step
-    stream and the one durable consumer over it, both derived from the routes
-    table's subjects, so the two cannot disagree.
+  * ``serve_step_commands(nats, service, routes[, workers])`` creates the
+    service's step stream and the one durable consumer over it, both derived
+    from the routes table's subjects, so the two cannot disagree. The worker
+    count does not change the stream.
   * ``js_queue_subscribe(subject, durable, group, handler, stream, bound)``
     reads one subject durably on a stream that something else must ensure.
 
@@ -621,8 +622,10 @@ def scan(root: Path) -> Catalogue:
                     where = f"{rel}:{line_of(text, at)}"
                     try:
                         args = split_arguments(text, text.index("(", at))
-                        if len(args) != 3:
-                            raise Unresolved("serve_step_commands takes three arguments")
+                        if len(args) not in (3, 4):
+                            raise Unresolved(
+                                "serve_step_commands takes three arguments and an optional worker count"
+                            )
                         service = tree.service_name(args[1], rel, at)
                         routes = re.sub(r"\s+", "", args[2])
                         if not IDENTIFIER.match(routes):

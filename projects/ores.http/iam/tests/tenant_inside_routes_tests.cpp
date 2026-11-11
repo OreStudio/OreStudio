@@ -60,13 +60,23 @@ const std::string image_id = "00000000-0000-0000-0000-0000000000a1";
 
 }
 
-TEST_CASE("tenant_inside_routes_carry_the_tenant_token_and_nothing_else", "[tenant_inside]") {
+TEST_CASE("tenant_inside_routes_carry_the_tenant_token_and_say_so", "[tenant_inside]") {
     http_request req;
     req.headers["authorization"] = "Bearer caller";
     req.headers["cookie"] = "ores_session=s";
     req.path_params["code"] = "acme";
-    const auto inside = tenant_inside_routes::as_token(req, "tenant");
+    ores::security::jwt::jwt_claims claims;
+    claims.subject = "admin";
+    claims.tenant_id = "ffffffff-ffff-ffff-ffff-ffffffffffff";
+    req.authenticated_user = claims;
+    const auto inside = tenant_inside_routes::as_token(req, "tenant", "acme-id");
     CHECK(inside.get_bearer_token() == "tenant");
+    REQUIRE(inside.authenticated_user);
+    CHECK(inside.authenticated_user->subject == "admin");
+    CHECK(inside.authenticated_user->tenant_id == "acme-id");
+    CHECK(inside.authenticated_user->acting_from_tenant_id ==
+          "ffffffff-ffff-ffff-ffff-ffffffffffff");
+    CHECK(req.authenticated_user->tenant_id == "ffffffff-ffff-ffff-ffff-ffffffffffff");
     CHECK(inside.get_header("cookie") == "ores_session=s");
     CHECK(inside.get_path_param("code") == "acme");
     CHECK(req.get_bearer_token() == "caller");

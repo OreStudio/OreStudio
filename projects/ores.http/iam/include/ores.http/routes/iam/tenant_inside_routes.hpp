@@ -54,11 +54,16 @@ private:
 
 public:
     /**
-     * @brief This request, carrying another token: a forward made with it is
-     * answered as that token's tenant.
+     * @brief This request, carrying the token of a tenant it entered: a forward
+     * made with it is answered as that tenant.
+     *
+     * The claims say what the token says, so a reader of the copy sees the
+     * entered tenant, and the tenant the caller acts from.
      */
     [[nodiscard]] static ores::http::domain::http_request
-    as_token(const ores::http::domain::http_request& req, const std::string& token);
+    as_token(const ores::http::domain::http_request& req,
+             const std::string& token,
+             const std::string& tenant_id);
 
     /**
      * @brief Run a read inside the tenant the address names.

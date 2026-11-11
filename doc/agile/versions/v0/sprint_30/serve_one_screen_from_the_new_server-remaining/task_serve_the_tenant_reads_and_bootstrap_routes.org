@@ -116,6 +116,11 @@ via its "Verifies task" field.
 | 3 | =unity-collisions=: =answer_of= in two test files. | =provisioning_routes_tests.cpp=, =tenant_inside_routes_tests.cpp= | Accepted | Running one registered route is shared test logic, so it is =route_answer= in one test header, and each file's wrapper is named for its unit. |
 | 4 | Local review: the entry and exit cannot be tested without a live service. | =tenant_inside_routes.cpp= | Declined | The tests prove the token swap and every refusal before the entry; the PR states the limit. |
 | 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | PR review: the copy keeps the caller's claims, which name the caller's tenant. | =tenant_inside_routes.cpp= | Accepted | No reader on the inside path reads the claims today. The copy now states what its token says: the entered tenant, and the tenant the caller acts from. A test proves it. |
+| 7 | PR review: the own-tenant check compares UUID text. | =tenant_inside_routes.cpp= | Accepted | A comment says both ids are canonical lowercase text. |
+| 8 | PR review: the entry, the exit on failure and the 403 are not tested. | =tenant_inside_routes.cpp= | Declined | They need a live service or a seam no other route has; the PR states the limit. |
+| 9 | PR review: cookie sessions do not yet carry their token. | =http_session.cpp= | Accepted | The task "Carry a browser session's token to the services" tracks it, and its PR follows this one. |
+| 10 | PR review: two bound readers for one rule. | =tenant_inside_routes.cpp= | Declined | Each matches its BFF schema; the parties read already reuses the party page's reader. |
 
 * Result
 

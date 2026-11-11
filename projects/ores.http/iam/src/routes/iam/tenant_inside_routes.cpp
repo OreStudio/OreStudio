@@ -84,9 +84,15 @@ bool is_image_id(const std::string& text) {
 
 }
 
-http_request tenant_inside_routes::as_token(const http_request& req, const std::string& token) {
+http_request tenant_inside_routes::as_token(const http_request& req,
+                                            const std::string& token,
+                                            const std::string& tenant_id) {
     auto inside = req;
     inside.headers["authorization"] = "Bearer " + token;
+    if (inside.authenticated_user) {
+        inside.authenticated_user->acting_from_tenant_id = inside.authenticated_user->tenant_id;
+        inside.authenticated_user->tenant_id = tenant_id;
+    }
     return inside;
 }
 
@@ -98,6 +104,7 @@ tenant_inside_routes::read_inside(const http_request& req,
     const auto t = tenant_roster_routes::known_tenant(req, session, req.get_path_param("code"));
     const auto tenant_id = boost::uuids::to_string(t.id);
     const auto& claims = req.authenticated_user;
+    // Both ids are canonical lowercase UUID text, so equal text is the same tenant.
     if (claims && claims->tenant_id && *claims->tenant_id == tenant_id)
         return read(req);
 
@@ -105,7 +112,7 @@ tenant_inside_routes::read_inside(const http_request& req,
         ores::http::forwarding::forward(req, session, messaging::enter_tenant_request{tenant_id});
     if (!entered.success || entered.token.empty())
         throw rr::refusal{http_status::forbidden, "forbidden", entered.message};
-    const auto inside = as_token(req, entered.token);
+    const auto inside = as_token(req, entered.token, tenant_id);
     const auto leave = [&] {
         using namespace ores::logging;
         try {

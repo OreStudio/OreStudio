@@ -8,7 +8,7 @@
 #+filetags: :marketdata:publish:approval:auto_approval:database:support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/publish-lifecycle-1-bound-context
-#+pr:
+#+pr: 4624
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4624][#4624]] | [database] Keep every unit of work on one connection and one scope |
 
 * Review
 

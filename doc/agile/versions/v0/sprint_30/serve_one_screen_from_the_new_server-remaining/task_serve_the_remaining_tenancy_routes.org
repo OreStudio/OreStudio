@@ -101,6 +101,11 @@ via its "Verifies task" field.
 | 3 | =route-auth=: the site routes, from main, pass each route through a helper the checker cannot follow. | =site_routes.cpp= | Accepted | Each site route is named and registered where it is built, so the checker reads its chain. |
 | 4 | =format=: an include out of order. | =refdata_routes.cpp= | Accepted | =clang-format= applied. |
 | 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | PR review: the refusal names offset and limit when a search or sort is too long. | =party_page_routes.cpp= | Declined | The BFF answered every malformed page with these words. |
+| 7 | PR review: a failed flag read leaves no trace. | =party_page_routes.cpp= | Accepted | It is logged as a warning, as the BFF logged it. The logger and =flags_or_none= are private members of the class, the component's convention, which also avoids a unity clash with =classification_routes.cpp=. Both catch blocks stay, because a refusal is not a =std::exception=. |
+| 8 | PR review: =<map>=, =<optional>= and the rest arrive only through the header. | =party_page_routes.cpp= | Declined | The unit's own header includes each, and that header is the unit's interface. |
+| 9 | PR review: the flag read's limit assumes an exact match. | =party_page_routes.cpp= | Declined | =code_one_of= is an exact match, and the BFF set the same limit. |
+| 10 | PR review: an empty sort is not tested. | =party_page_routes.cpp= | Declined | The BFF sent an empty field too, and the service reads it as its default order. |
 
 * Result
 

@@ -23,13 +23,16 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include <cstdint>
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::http::routes::refdata {
@@ -43,6 +46,25 @@ namespace ores::http::routes::refdata {
  * flags cannot be read goes out without them, as the BFF sent it.
  */
 class party_page_routes {
+private:
+    inline static std::string_view logger_name = "ores.http.routes.refdata.party_page_routes";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+    /**
+     * @brief The flag of each business centre named, or none when they cannot
+     * be read. A flag is decoration, so a page whose flags fail is still the
+     * page, and the failure is logged.
+     */
+    static std::map<std::string, std::string>
+    flags_or_none(const ores::http::domain::http_request& req,
+                  ores::nats::service::nats_client& session,
+                  const std::set<std::string>& codes);
+
 public:
     /**
      * @brief What one page asks for, as the BFF took it from the address.

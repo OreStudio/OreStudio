@@ -107,21 +107,21 @@ centre_flags(const http_request& req, nats_client& session, const std::set<std::
     return flags;
 }
 
-/**
- * The flags, or none when they cannot be read. A flag is decoration, so a page
- * whose flags fail is still the page.
- */
-std::map<std::string, std::string>
-flags_or_none(const http_request& req, nats_client& session, const std::set<std::string>& codes) {
-    try {
-        return centre_flags(req, session, codes);
-    } catch (const rr::refusal&) {
-        return {};
-    } catch (const std::exception&) {
-        return {};
-    }
 }
 
+std::map<std::string, std::string> party_page_routes::flags_or_none(
+    const http_request& req, nats_client& session, const std::set<std::string>& codes) {
+    try {
+        return centre_flags(req, session, codes);
+    } catch (const rr::refusal& r) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), warn) << "The flags a page names could not be read: " << r.message;
+        return {};
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), warn) << "The flags a page names could not be read: " << e.what();
+        return {};
+    }
 }
 
 std::optional<party_page_routes::page_query>

@@ -34,8 +34,9 @@
 namespace ores::http::routes::iam {
 
 /**
- * @brief The routes that make or change a credential: a registration, the rules
- * a password must keep, and the signed-in account's own password change.
+ * @brief The routes at the account's door: a registration, and the rules a
+ * password must keep. The signed-in account's own password change belongs to
+ * browser_session_routes, because it clears the session's reset flag.
  *
  * A registration and the rules answer somebody with no session. A registration
  * shares the sign-in budget, because both are writes a stranger can drive

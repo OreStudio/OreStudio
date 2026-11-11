@@ -22,6 +22,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/iam/tenancy_screen_shapes.hpp"
+#include "ores.http/routes/iam/tenant_parties.hpp"
 #include "ores.iam.api/messaging/seed_profile_parameter_protocol.hpp"
 #include "ores.iam.api/messaging/seed_profile_protocol.hpp"
 #include "ores.iam.api/messaging/seed_profile_step_protocol.hpp"
@@ -52,8 +53,6 @@ namespace rr = ores::http::net::record_routes;
 
 namespace {
 
-/// How many parties one page of the root search reads, as the BFF read them.
-constexpr std::uint32_t party_page = 500;
 
 /// How many starting points the journey reads, as the BFF read them. A
 /// deployment holds a handful, so one page holds them all.
@@ -111,21 +110,6 @@ std::string choice_json(const provisioning_routes::seed_profile_reads& read) {
     return out + "]}";
 }
 
-/// Every party of the caller's own tenant, read a page at a time.
-std::vector<ores::refdata::domain::party> every_party(const http_request& req,
-                                                      nats_client& session) {
-    std::vector<ores::refdata::domain::party> parties;
-    for (std::uint32_t offset = 0;; offset += party_page) {
-        refdata::list_parties_request msg;
-        msg.offset = offset;
-        msg.limit = party_page;
-        const auto reply = ores::http::forwarding::forward(req, session, msg);
-        rr::require_done(reply.result);
-        parties.insert(parties.end(), reply.parties.begin(), reply.parties.end());
-        if (reply.parties.empty() || parties.size() >= reply.total)
-            return parties;
-    }
-}
 
 std::string party_result_json(bool success,
                               const std::string& message,
@@ -278,7 +262,7 @@ void provisioning_routes::register_routes(
                 put.change.write.full_name = body->fullName;
                 put.change.write.party_category = "Operational";
                 put.change.write.party_type = "Corporate";
-                put.change.write.parent_party_id = root_of(every_party(req, session));
+                put.change.write.parent_party_id = root_of(tenant_parties::every(req, session));
                 put.change.write.business_center_code = "WRLD";
                 put.change.write.status = "Inactive";
                 put.change.precondition.kind =

@@ -316,6 +316,32 @@ struct password_change_body final {
                       field{"newPassword", &password_change_body::newPassword}};
 }
 
+/**
+ * @brief A sign-in: the username and the password.
+ */
+struct credentials_body final {
+    std::string username;
+    std::string password;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<credentials_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"username", &credentials_body::username},
+                      field{"password", &credentials_body::password}};
+}
+
+/**
+ * @brief The party a session is to work in.
+ */
+struct party_choice_body final {
+    std::string partyId;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_choice_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"partyId", &party_choice_body::partyId}};
+}
+
 }
 
 #endif

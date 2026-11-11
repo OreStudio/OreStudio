@@ -21,7 +21,6 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/iam/account_door_routes.hpp"
 #include "ores.nats/service/nats_client.hpp"
-#include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -119,7 +118,6 @@ TEST_CASE("account_door_routes_open_the_door_and_share_the_sign_in_budget", "[ac
     CHECK_FALSE(signup.requires_auth);
     CHECK(signup.rate_policy == "credential");
     CHECK_FALSE(find(http_method::get, "/api/password-policy").requires_auth);
-    CHECK(find(http_method::post, "/api/account/password").requires_auth);
 }
 
 TEST_CASE("account_door_routes_refuse_an_incomplete_body_before_forwarding", "[account_door]") {
@@ -129,12 +127,6 @@ TEST_CASE("account_door_routes_refuse_an_incomplete_body_before_forwarding", "[a
         CHECK(answer.status == http_status::bad_request);
         CHECK(answer.body.find("are required") != std::string::npos);
     }
-    http_request bad;
-    bad.body = R"({"currentPassword":"a"})";
-    const auto password = ores::http::iam::tests::route_answer<account_door_routes>(
-        http_method::post, "/api/account/password", bad);
-    CHECK(password.status == http_status::bad_request);
-    CHECK(password.body.find("new password are required") != std::string::npos);
     // The client is not connected, so an accepted request fails at the forward step.
     CHECK(door_answer(
               http_method::post, "/api/signup", R"({"principal":"a","password":"p","email":"e"})")

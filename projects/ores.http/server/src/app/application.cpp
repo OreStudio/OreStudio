@@ -36,6 +36,7 @@
 #include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
+#include "ores.http/routes/iam/browser_session_routes.hpp"
 #include "ores.http/routes/iam/iam_routes.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.http/routes/synthetic/synthetic_routes.hpp"
@@ -221,6 +222,11 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     http::routes::iam::auth_session_routes auth_sessions(
         service_nats, server.sessions(), [&server] { return server.verifier(); }, session_cookie);
     auth_sessions.register_routes(router, registry);
+
+    // The browser's own session routes, at the BFF's addresses, beside the door.
+    http::routes::iam::browser_session_routes browser_sessions(
+        service_nats, server.sessions(), [&server] { return server.verifier(); }, session_cookie);
+    browser_sessions.register_routes(router, registry);
 
     // The setup screens say whether the browser sent the cookie, so they share it.
     http::routes::iam::bootstrap_screen_routes bootstrap_screens(service_nats, session_cookie);

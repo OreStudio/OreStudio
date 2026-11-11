@@ -23,7 +23,6 @@
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/iam/access_screen_shapes.hpp"
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
-#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <map>
@@ -134,33 +133,6 @@ void account_door_routes::register_routes(
             .build();
     router->add_route(policy);
     registry->register_route(policy);
-
-    const auto password =
-        router->post("/api/account/password")
-            .summary("Change the signed-in account's own password")
-            .tags({"auth"})
-            .auth_required()
-            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
-                const auto body = json::read_expected<password_change_body>(req.body);
-                if (!body || body->currentPassword.empty() || body->newPassword.empty())
-                    co_return rr::refused(
-                        http_status::bad_request,
-                        "invalid-request",
-                        "The current password and the new password are required.");
-                co_return guarded<messaging::change_password_request_typed>([&] {
-                    const auto reply = ores::http::forwarding::forward(
-                        req,
-                        session,
-                        messaging::change_password_request_typed{body->currentPassword,
-                                                                 body->newPassword});
-                    if (!reply.success)
-                        return rr::refused(http_status::conflict, "invalid-request", reply.message);
-                    return http_response::json(R"({"success":true})");
-                });
-            })
-            .build();
-    router->add_route(password);
-    registry->register_route(password);
 }
 
 }

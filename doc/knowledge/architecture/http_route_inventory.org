@@ -69,7 +69,7 @@ an API publishes no area, so it is counted under =(none)=.
 | agile | agile-routes | 6 | composed view 2, resource 4 |
 | analytics | sensitivity-templates | 6 | resource 6 |
 | assets | assets, server | 38 | composed view 1, resource 37 |
-| auth | audit, iam, server | 60 | resource 55, transport capability 5 |
+| auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
 | grid | grid-app-versions, grid-downloads, grid-jobs, operations | 14 | composed view 3, resource 11 |
 | market-data | adapters, connectivity, curves, fixing-series, public-rates, series, subscriptions | 31 | composed view 6, resource 25 |
@@ -147,7 +147,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | agile | 6 | 0 | 6 |
 | analytics | 6 | 0 | 6 |
 | assets | 5 | 4 | 1 |
-| auth | 18 | 16 | 2 |
+| auth | 18 | 18 | 0 |
 | changes | 2 | 2 | 0 |
 | grid | 14 | 0 | 14 |
 | market-data | 31 | 0 | 31 |
@@ -160,7 +160,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | trading | 24 | 0 | 24 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 12 | 23 |
-| total | 324 | 88 | 236 |
+| total | 324 | 90 | 234 |
 
 * The pairing
 
@@ -406,12 +406,12 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/roles/page= | GET /api/roles/page |
 | GET =/api/seed-profiles= | GET /api/seed-profiles |
 | GET =/api/series/:id/observations= | none |
-| DELETE =/api/session= | DELETE /api/v1/auth/sessions |
-| GET =/api/session= | GET /api/v1/auth/sessions/me |
-| POST =/api/session= | POST /api/v1/auth/sessions |
+| DELETE =/api/session= | DELETE /api/session |
+| GET =/api/session= | GET /api/session |
+| POST =/api/session= | POST /api/session |
 | GET =/api/session-statistics= | GET /api/session-statistics |
-| POST =/api/session/party= | none |
-| POST =/api/session/switch-party= | none |
+| POST =/api/session/party= | POST /api/session/party |
+| POST =/api/session/switch-party= | POST /api/session/switch-party |
 | GET =/api/sessions= | GET /api/sessions |
 | POST =/api/sessions/:sessionId/end= | POST /api/sessions/{sessionId}/end |
 | GET =/api/sessions/active= | GET /api/sessions/active |
@@ -493,13 +493,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1167 routes: 324 answered by the BFF and 843 by ores.http.
+1172 routes: 324 answered by the BFF and 848 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
 | transport capability | (none) | get | =/= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:92 | The built browser bundle's index, served so a browser can start the application. |
 | resource | auth | post | =/api/account/password= | bff | projects/ores.web/packages/bff/src/server.ts:1126 | Replaces the signed-in account's own password, the account named by the session so nobody else's is reachable. |
-| resource | auth | post | =/api/account/password= | ores.http | projects/ores.http/iam/src/routes/iam/account_door_routes.cpp:135 | A registration, the rules a password must keep, and the signed-in account's own password change, at the address and in the shape the BFF answered; a registration shares the sign-in budget. |
+| resource | auth | post | =/api/account/password= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:378 | A registration, the rules a password must keep, and the signed-in account's own password change, at the address and in the shape the BFF answered; a registration shares the sign-in budget. |
 | resource | access | get | =/api/accounts= | bff | projects/ores.web/packages/bff/src/server.ts:1168 | The tenant's accounts, one page, because the number of accounts a tenant holds is not a number a screen uses. |
 | resource | access | get | =/api/accounts= | ores.http | projects/ores.http/iam/src/routes/iam/account_screen_routes.cpp:199 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | get | =/api/accounts/:accountId/access= | bff | projects/ores.web/packages/bff/src/server.ts:1297 | The roles one account holds, or the permissions those roles grant, and the writes that give a role for a reason or take it away. |
@@ -865,13 +865,13 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | get | =/api/parties= | bff | projects/ores.web/packages/bff/src/server.ts:2462 | One page of the session's own tenant's parties, scoped by row-level security so the route names no tenant. |
 | resource | tenancy | get | =/api/parties= | ores.http | projects/ores.http/refdata/src/routes/refdata/party_page_routes.cpp:216 | A tenancy screen's catalogue or page at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | auth | get | =/api/password-policy= | bff | projects/ores.web/packages/bff/src/server.ts:1150 | The rules a password must satisfy, read from the validator that enforces them rather than copied into a screen. |
-| resource | auth | get | =/api/password-policy= | ores.http | projects/ores.http/iam/src/routes/iam/account_door_routes.cpp:120 | A registration, the rules a password must keep, and the signed-in account's own password change, at the address and in the shape the BFF answered; a registration shares the sign-in budget. |
+| resource | auth | get | =/api/password-policy= | ores.http | projects/ores.http/iam/src/routes/iam/account_door_routes.cpp:123 | A registration, the rules a password must keep, and the signed-in account's own password change, at the address and in the shape the BFF answered; a registration shares the sign-in budget. |
 | resource | access | get | =/api/permissions= | bff | projects/ores.web/packages/bff/src/server.ts:1463 | Every permission the platform defines, the catalogue a role is described against. |
 | resource | access | get | =/api/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/role_write_routes.cpp:356 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | tenancy | post | =/api/provision-party= | bff | projects/ores.web/packages/bff/src/server.ts:2582 | Adds one party to the tenant the caller works in and starts the run that brings it to life, the row first and the run after it. |
-| resource | tenancy | post | =/api/provision-party= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:265 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
+| resource | tenancy | post | =/api/provision-party= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:249 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | tenancy | post | =/api/provision-tenant= | bff | projects/ores.web/packages/bff/src/server.ts:2634 | Provisions one tenant from a starting point and answers the run that does the rest. |
-| resource | tenancy | post | =/api/provision-tenant= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:245 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
+| resource | tenancy | post | =/api/provision-tenant= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:229 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | qa | get | =/api/qa/docs/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:163 | One document the scenario store holds, by its identifier. |
 | resource | qa | get | =/api/qa/scenarios= | bff | projects/ores.web/packages/bff/src/qa.ts:151 | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
 | resource | qa | get | =/api/qa/scenarios/:id= | bff | projects/ores.web/packages/bff/src/qa.ts:156 | The QA scenarios the store holds, one scenario by id, and the image kept beside one of its steps. |
@@ -1079,15 +1079,20 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | put | =/api/roles/{roleId}/permissions= | ores.http | projects/ores.http/iam/src/routes/iam/role_write_routes.cpp:413 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | access | post | =/api/roles/{roleId}/permissions/changes= | ores.http | projects/ores.http/iam/src/routes/iam/role_write_routes.cpp:427 | An access screen's read or write at the address and in the shape the BFF answered, forwarded to IAM as the caller, kept so the screens work when the BFF goes. |
 | resource | tenancy | get | =/api/seed-profiles= | bff | projects/ores.web/packages/bff/src/server.ts:2519 | The starting points a new tenant may be provisioned from, each with the step kinds it orders and the parameters its form declares. |
-| resource | tenancy | get | =/api/seed-profiles= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:218 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
+| resource | tenancy | get | =/api/seed-profiles= | ores.http | projects/ores.http/iam/src/routes/iam/provisioning_routes.cpp:202 | The starting points a tenant is provisioned from and the two journeys that provision, at the address and in the shape the BFF answered, forwarded as the caller. |
 | resource | market-data | get | =/api/series/:id/observations= | bff | projects/ores.web/packages/bff/src/series.ts:77 | One series' observations inside a window, oldest first, the count read as the cap on the answer. |
 | transport capability | auth | delete | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1025 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| resource | auth | delete | =/api/session= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:342 | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
 | transport capability | auth | get | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:1017 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| resource | auth | get | =/api/session= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:330 | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
 | transport capability | auth | post | =/api/session= | bff | projects/ores.web/packages/bff/src/server.ts:944 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| resource | auth | post | =/api/session= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:317 | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
 | resource | auth | get | =/api/session-statistics= | bff | projects/ores.web/packages/bff/src/audit.ts:139 | The tenant's session statistics, one row per day and account, newest day first, the audit screen's own collection. |
 | resource | auth | get | =/api/session-statistics= | ores.http | projects/ores.http/iam/src/routes/iam/audit_routes.cpp:186 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | transport capability | auth | post | =/api/session/party= | bff | projects/ores.web/packages/bff/src/server.ts:1034 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| resource | auth | post | =/api/session/party= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:354 | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
 | transport capability | auth | post | =/api/session/switch-party= | bff | projects/ores.web/packages/bff/src/server.ts:1078 | The browser's cookie credential: minted by the sign-in, read back, ended, and re-scoped to another party, and the session it wraps is the /api/v1/auth/sessions resource. |
+| resource | auth | post | =/api/session/switch-party= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:366 | The browser's session at the address and in the shape the BFF answered: sign in, read, sign out, choose the party a login waits on, and move to another party. |
 | resource | auth | get | =/api/sessions= | bff | projects/ores.web/packages/bff/src/server.ts:1819 | The tenant's sessions, one page or the open ones, and the write that ends one of them for an administrator. |
 | resource | auth | get | =/api/sessions= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:196 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | auth | post | =/api/sessions/:sessionId/end= | bff | projects/ores.web/packages/bff/src/audit.ts:183 | The tenant's sessions, one page or the open ones, and the write that ends one of them for an administrator. |
@@ -1095,7 +1100,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | auth | get | =/api/sessions/active= | ores.http | projects/ores.http/iam/src/routes/iam/sign_in_routes.cpp:211 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | auth | post | =/api/sessions/{sessionId}/end= | ores.http | projects/ores.http/iam/src/routes/iam/audit_routes.cpp:232 | An audit screen's read or an administrator's end of a session, at the address and in the shape the BFF answered, forwarded to IAM as the caller. |
 | resource | auth | post | =/api/signup= | bff | projects/ores.web/packages/bff/src/server.ts:860 | Registers one account against the tenant the address resolves to and answers its state rather than a session. |
-| resource | auth | post | =/api/signup= | ores.http | projects/ores.http/iam/src/routes/iam/account_door_routes.cpp:88 | A registration, the rules a password must keep, and the signed-in account's own password change, at the address and in the shape the BFF answered; a registration shares the sign-in budget. |
+| resource | auth | post | =/api/signup= | ores.http | projects/ores.http/iam/src/routes/iam/account_door_routes.cpp:91 | A registration, the rules a password must keep, and the signed-in account's own password change, at the address and in the shape the BFF answered; a registration shares the sign-in budget. |
 | transport capability | (none) | get | =/api/site= | bff | projects/ores.web/packages/bff/src/server.ts:902 | What the served client needs to render itself, the environment and on the developer surface the host, port and namespace, which the design delivers with the bundle rather than as a resource. |
 | transport capability | (none) | get | =/api/site= | ores.http | projects/ores.http/core/src/routes/site_routes.cpp:300 | What the served client needs to render itself, read from the site configuration the BFF read, and the deployment's plumbing where the developer surface is offered. |
 | transport capability | (none) | get | =/api/site/deployment= | bff | projects/ores.web/packages/bff/src/server.ts:925 | What the served client needs to render itself, the environment and on the developer surface the host, port and namespace, which the design delivers with the bundle rather than as a resource. |
@@ -1357,7 +1362,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:205 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
 | resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:279 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
 | resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:204 | Replaces the permissions one role grants with exactly the set sent. |
-| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:160 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:161 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
 | resource | reference-data | get | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:340 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:386 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:399 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |

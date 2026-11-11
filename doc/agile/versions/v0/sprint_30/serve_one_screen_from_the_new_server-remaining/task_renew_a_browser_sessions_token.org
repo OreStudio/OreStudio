@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 7D194F8C-6352-4F0B-AA9B-D1D8E716A7AC
+:END:
+#+title: Task: Renew a browser session's token
+#+description: A browser session in the C++ gateway holds the access token IAM minted, which lives thirty minutes, and the gateway never renews it, so every browser session ends at its first expiry. The BFF's client refreshed the token when a service said it had expired, and retried.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/renew-a-browser-sessions-token
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A browser session keeps working for as long as IAM allows it, because the gateway renews the token it holds before it expires.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- A cookie session whose token nears its expiry is renewed through iam.v1.ops.refresh, once, however many requests arrive together.
+- A refresh IAM refuses ends the session and clears the cookie, as a maximum session age does.
+- Tests prove the renewal, the single flight and the refusal.
+- The local gate is green.
+
+* Plan
+
+Found on 2026-11-11 while reading the BFF's session for the session routes.
+IAM mints an access token that lives =iam.token.access_lifetime_seconds=, 1800
+by default. The BFF's client answered a service's =token_expired= by calling
+=iam.v1.ops.refresh= with the token, keeping the new one, and retrying, with
+one refresh shared by concurrent callers. The C++ gateway keeps the token in
+its session store and never renews it, and =forwarding= answers a lapsed
+session as a 401, so a browser session ends at its first expiry.
+
+The gateway's session path is in =ores.http.api=, which knows no NATS, so the
+renewal is a callback the application gives the session store, run before the
+token expires rather than after a refusal, on a worker and not the I/O thread.
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

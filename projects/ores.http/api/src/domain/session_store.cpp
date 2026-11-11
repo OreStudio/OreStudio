@@ -142,6 +142,22 @@ std::optional<std::string> session_store::rotate(const std::string& identifier) 
     return replacement;
 }
 
+bool session_store::update(const std::string& identifier,
+                           const std::function<void(session_record&)>& change) {
+    const std::lock_guard lock(mutex_);
+    auto found = entries_.find(key_of(identifier));
+    if (found == entries_.end())
+        return false;
+    if (expired(found->second)) {
+        entries_.erase(found);
+        return false;
+    }
+    change(found->second.record);
+    found->second.record.last_used = now_();
+    found->second.expires = found->second.record.last_used + ttl_;
+    return true;
+}
+
 std::size_t session_store::size() const {
     const std::lock_guard lock(mutex_);
     return entries_.size();

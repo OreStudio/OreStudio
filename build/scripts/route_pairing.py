@@ -17,7 +17,6 @@ to a C++ POST operation on purpose, so do not change a verb to make a pair match
 """
 
 ACCESS = "/api/v1/access"
-AUTH = "/api/v1/auth"
 REFDATA = "/api/v1/reference-data"
 
 PAIRS = {
@@ -60,9 +59,11 @@ PAIRS = {
     ("PUT", "/api/roles/:roleId/permissions"): ("PUT", "/api/roles/{roleId}/permissions"),
 
     # auth
-    ("POST", "/api/session"): ("POST", f"{AUTH}/sessions"),
-    ("DELETE", "/api/session"): ("DELETE", f"{AUTH}/sessions"),
-    ("GET", "/api/session"): ("GET", f"{AUTH}/sessions/me"),
+    ("POST", "/api/session"): ("POST", "/api/session"),
+    ("POST", "/api/session/party"): ("POST", "/api/session/party"),
+    ("POST", "/api/session/switch-party"): ("POST", "/api/session/switch-party"),
+    ("DELETE", "/api/session"): ("DELETE", "/api/session"),
+    ("GET", "/api/session"): ("GET", "/api/session"),
     ("GET", "/api/login-info"): ("GET", "/api/login-info"),
     ("GET", "/api/login-info/:accountId"): ("GET", "/api/login-info/{accountId}"),
     ("POST", "/api/account/password"): ("POST", "/api/account/password"),

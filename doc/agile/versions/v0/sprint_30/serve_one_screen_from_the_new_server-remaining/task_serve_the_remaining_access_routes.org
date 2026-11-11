@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-remaining-access-routes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Port the 30 BFF routes of the access area to the C++ server. Include the me alia
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -41,9 +41,21 @@ Port the 30 BFF routes of the access area to the C++ server. Include the me alia
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The pairing gave ten of the access area's 30 routes a C++ route, but none of
+them at the address ores.web calls: =GET /api/accounts/:accountId/access= pairs
+with =POST /api/v1/iam/ops/get_account_roles=. The story's decision of
+2026-11-11 records that each area task serves the BFF's own address and shape.
+
+This task serves the seven reads of the access screens in a hand-written unit,
+=access_read_routes=: the roles the caller and an account hold, a permission
+page of each, a page of the tenant's roles, a page of what a role grants, and
+a page of who holds a role. Each forwards the caller's token, reads the query
+within the BFF's limits, refuses a page that is not one before it forwards, and
+answers the camelCase shape the BFF gave. A refused outcome answers with the
+status its outcome names, as the other C++ routes do, where the BFF answered
+every refusal with 409.
+
+The other 23 routes move to [[id:3E4FCAC5-4E49-4853-AC51-470E73F6D66A][Serve the access writes, profiles and the reporting tree]].
 
 * Measurements
 
@@ -85,3 +97,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The C++ server answers the seven access reads at the addresses ores.web calls,
+each paired with its BFF route in the inventory. The tests prove the query
+limits, the refusals before forwarding and the shape of each answer, including
+a holder with no picture stated as null.

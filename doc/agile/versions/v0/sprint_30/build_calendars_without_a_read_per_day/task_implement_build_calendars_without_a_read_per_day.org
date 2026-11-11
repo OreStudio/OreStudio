@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: 55EDD7B9-7A31-4873-9323-FD165C452344
+:END:
+#+title: Task: Write the calendar days with their claims known
+#+description: Initial task for: Build the calendars without a read per day
+#+type: task
+#+level: s1
+#+filetags: :build_calendars_without_a_read_per_day:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/build-calendars-without-a-read-per-day
+#+pr: 4561
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6EA15737-5413-46FB-9660-9C279B42B454][Build the calendars without a read per day]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The calendar materialiser writes a calendar's new days with a new claim for each, so the repository reads no day before the insert, and provisioning builds the calendars inside the step's 600 s.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6EA15737-5413-46FB-9660-9C279B42B454][Build the calendars without a read per day]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-10                               |
+
+* Acceptance
+
+- =calendar_materialisation_service::regenerate= passes a claim for each day, so =replace_claim= runs for none.
+- A fresh provisioning of Acme completes, with the time of =build_calendars= in the IAM log.
+- The calendar materialisation tests pass unchanged.
+
+* Plan
+
+- Measure first. =pg_stat_statements= showed the per-day reads and their transactions. A set-based insert of one calendar, rolled back, gave the floor of the table: 2.66 s through the trigger, 1.03 s with the trigger off, 0.16 s with the exclusion constraint also dropped.
+- Change the caller, not the generated repository. The materialiser knows the days are new, and it calls the =write(rows, claims)= overload that the repository already has. The generated per-row read in the other batch writers is a capture.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =build_calendars= before the fix | timed out at 600 s; the service wrote 35 calendars from 22:38:20 to 23:01:58, about 35 s each | IAM and refdata service logs | 8fe5cf1c76 (main) |
+| Transactions for the calendar days before the fix | 454,068 =begin= for 445,995 inserted days | =pg_stat_statements= for the database | 8fe5cf1c76 (main) |
+| =build_calendars= after the fix | 168.4 s for 35 calendars, 3.5 s to 6.0 s each | =provision_step build_calendars returned after= in the IAM log | this branch, on ab8370bcde |
+| Day reads after the fix | 34 calendar reads; none for each day | =pg_stat_statements= for the database | this branch, on ab8370bcde |
+| Server time of the inserts after the fix | 130 s for 473,025 rows, 0.275 ms each | =pg_stat_statements= for the database | this branch, on ab8370bcde |
+| One calendar, set-based, rolled back | 2.66 s with the trigger; 1.03 s without; 0.16 s without the exclusion constraint too | =compass sql -- -f cal_floor.sql= | ab8370bcde (main) |
+
+* Notes
+
+- Other worktrees built on the machine during both provisioning runs, so the times are not baselines. The counts of statements do not depend on load.
+- The rest of the 168 s is the per-row insert trigger and the indexes. [[id:27439333-B0FF-40A0-80AE-D61026E0BEC1][Store only the closed days of a calendar]] records how to reduce it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4561][#4561]] | [refdata] Build the calendars without a read per day |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =write(rows, claims)= does not check that the vectors have the same size | =calendar_date_repository.cpp= | Accepted as a capture | The repository is generated, so the check belongs to [[id:DBCB9D0E-2592-4968-95FC-A2EE2C3536AD][Resolve the claims of a batch write in one read]], which now records it. The sizes match here by construction. |
+| 2 | No test asserts that no day is read | =service_calendar_materialisation_service_tests.cpp= | Declined | =regenerate_is_extend_only_and_does_not_rewrite_existing_watermark= asserts that a second pass writes 0 rows. A count of reads is not observable without instrumenting the repository; =pg_stat_statements= measured it. |
+| 3 | The trigger cannot refuse a =must_not_exist= claim | =refdata_calendar_date_create.sql= | Accepted as a capture | The same capture now records that version 0 means both "no claim" and "must not exist" to the generated trigger. |
+
+* Result
+
+Provisioning builds the 35 holiday calendars of Acme in 168 s, inside the step's 600 s, where it timed out before. The materialiser claims each new day as new, so the 445,995 per-day reads and their transactions are gone. The remaining time is the insert trigger and the indexes, at 0.275 ms a row.

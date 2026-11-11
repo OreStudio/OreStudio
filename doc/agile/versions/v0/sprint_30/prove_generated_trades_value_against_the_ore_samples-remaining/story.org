@@ -52,7 +52,7 @@ Every trade the generator books is correct according to ORE: ORE builds it, and 
 | [[id:D702F8DB-DC51-4663-A9DC-7F9960660A02][Generate credit trades through their builders]] | DONE | 2026-11-09 | 2026-11-10 | Every credit type the generator books is built by its trade builder, and ORE builds it. |
 | [[id:671F4E8B-C675-4913-B950-0541DFCAE94B][Generate interest rate trades through their builders]] | DONE | 2026-11-10 | 2026-11-11 | Every interest rate type the generator books is built by its trade builder, and ORE builds it. |
 | [[id:B5E6E9CE-C1ED-4462-A651-02332DF3382E][Generate FX trades through their builders]] | DONE | 2026-11-11 | 2026-11-11 | Every FX type the generator books is built by its trade builder, and ORE builds it. |
-| [[id:0AF4A4DA-DCBC-4F26-975C-926B8FDF0ECE][Generate bond trades through their builders]] | STARTED | 2026-11-11 |  | Every bond type the generator books is built by its trade builder, and ORE builds it. |
+| [[id:0AF4A4DA-DCBC-4F26-975C-926B8FDF0ECE][Generate bond trades through their builders]] | DONE | 2026-11-11 | 2026-11-11 | Every bond type the generator books is built by its trade builder, and ORE builds it. |
 | [[id:910BC16A-C381-47C5-909B-04A463591703][Generate equity trades through their builders]] | BACKLOG | |  | Every equity type the generator books is built by its trade builder, and ORE builds it. |
 | [[id:686571A9-A33B-4A40-A916-D1EFEDA85E5B][Generate commodity trades through their builders]] | BACKLOG | |  | Every commodity type the generator books is built by its trade builder, and ORE builds it. |
 | [[id:CC88F1BD-9E18-4531-9597-4799F48F5A74][Generate scripted trades through their builders]] | BACKLOG | |  | Every scripted type the generator books is built by its trade builder, and ORE builds it. |

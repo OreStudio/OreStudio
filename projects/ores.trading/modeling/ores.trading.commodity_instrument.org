@@ -492,6 +492,49 @@ Whether an average price option's averaging includes its period end, as =Include
 
 Whether a commodity forward is long or short, as =Position= states it.
 
+** digital_payoff
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:economic: true
+:END:
+
+The cash a digital option pays when it ends in the money, as =Payoff= or
+=DigitalCashPayoff= states it.
+
+** delivery_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: true
+:END:
+
+The day an intraday power forward delivers on, as =DeliveryDate= states it.
+
+** delivery_start
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:economic: true
+:END:
+
+The second of the delivery day an intraday power forward starts to deliver,
+as =DeliveryStart= states it.
+
+** delivery_end
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:economic: true
+:END:
+
+The second of the delivery day an intraday power forward stops delivering,
+as =DeliveryEnd= states it.
+
 ** description
 :PROPERTIES:
 :type:     text

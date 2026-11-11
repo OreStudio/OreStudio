@@ -86,6 +86,10 @@ namespace ores::trading::domain {
         utility::codec::field{"future_month_offset", &commodity_instrument::future_month_offset},
         utility::codec::field{"include_period_end", &commodity_instrument::include_period_end},
         utility::codec::field{"position", &commodity_instrument::position},
+        utility::codec::field{"digital_payoff", &commodity_instrument::digital_payoff},
+        utility::codec::field{"delivery_date", &commodity_instrument::delivery_date},
+        utility::codec::field{"delivery_start", &commodity_instrument::delivery_start},
+        utility::codec::field{"delivery_end", &commodity_instrument::delivery_end},
         utility::codec::field{"description", &commodity_instrument::description},
         utility::codec::field{"audit", &commodity_instrument::audit},
     };

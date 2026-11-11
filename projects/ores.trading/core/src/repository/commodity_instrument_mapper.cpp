@@ -88,6 +88,10 @@ commodity_instrument_mapper::map(const commodity_instrument_entity& v) {
     r.future_month_offset = v.future_month_offset;
     r.include_period_end = v.include_period_end;
     r.position = v.position;
+    r.digital_payoff = v.digital_payoff;
+    r.delivery_date = v.delivery_date;
+    r.delivery_start = v.delivery_start;
+    r.delivery_end = v.delivery_end;
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -148,6 +152,10 @@ commodity_instrument_mapper::map(const domain::commodity_instrument& v) {
     r.future_month_offset = v.future_month_offset;
     r.include_period_end = v.include_period_end;
     r.position = v.position;
+    r.digital_payoff = v.digital_payoff;
+    r.delivery_date = v.delivery_date;
+    r.delivery_start = v.delivery_start;
+    r.delivery_end = v.delivery_end;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

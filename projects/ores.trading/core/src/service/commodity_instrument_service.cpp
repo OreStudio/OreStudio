@@ -140,6 +140,10 @@ commodity_instrument_to_domain(const messaging::commodity_instrument_write& writ
     v.future_month_offset = write.future_month_offset;
     v.include_period_end = write.include_period_end;
     v.position = write.position;
+    v.digital_payoff = write.digital_payoff;
+    v.delivery_date = write.delivery_date;
+    v.delivery_start = write.delivery_start;
+    v.delivery_end = write.delivery_end;
     v.description = write.description;
     return v;
 }

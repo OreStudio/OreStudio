@@ -87,6 +87,10 @@ struct commodity_instrument_write {
     std::optional<int> future_month_offset;
     std::optional<bool> include_period_end;
     std::optional<std::string> position;
+    std::optional<ores::utility::decimal::decimal> digital_payoff;
+    std::optional<std::chrono::year_month_day> delivery_date;
+    std::optional<int> delivery_start;
+    std::optional<int> delivery_end;
     std::string description;
 
     friend bool operator==(const commodity_instrument_write&,
@@ -470,6 +474,10 @@ inline constexpr std::string_view deleted = "trading.v1.events.commodity_instrum
         utility::codec::field{"include_period_end",
                               &commodity_instrument_write::include_period_end},
         utility::codec::field{"position", &commodity_instrument_write::position},
+        utility::codec::field{"digital_payoff", &commodity_instrument_write::digital_payoff},
+        utility::codec::field{"delivery_date", &commodity_instrument_write::delivery_date},
+        utility::codec::field{"delivery_start", &commodity_instrument_write::delivery_start},
+        utility::codec::field{"delivery_end", &commodity_instrument_write::delivery_end},
         utility::codec::field{"description", &commodity_instrument_write::description},
     };
 }

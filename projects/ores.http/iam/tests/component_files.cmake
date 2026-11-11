@@ -23,6 +23,7 @@ set(files
     "access_read_routes_tests.cpp"
     "account_contact_information_routes_tests.cpp"
     "account_credential_routes_tests.cpp"
+    "account_door_routes_tests.cpp"
     "account_operations_routes_tests.cpp"
     "account_routes_tests.cpp"
     "account_screen_routes_tests.cpp"

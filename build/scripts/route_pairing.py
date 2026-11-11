@@ -161,6 +161,12 @@ PAIRS = {
     ("POST", "/api/synthetic/convert/fx-simple"): ("POST", "/api/synthetic/convert/fx-simple"),
     ("POST", "/api/synthetic/convert/ir"): ("POST", "/api/synthetic/convert/ir"),
     ("POST", "/api/synthetic/preview/ir-shape"): ("POST", "/api/synthetic/preview/ir-shape"),
+    ("POST", "/api/synthetic/calibration/:assetClass/run"): ("POST", "/api/synthetic/calibration/{assetClass}/run"),
+    ("POST", "/api/synthetic/calibration/variance/:id/review"): ("POST", "/api/synthetic/calibration/variance/{id}/review"),
+    ("PUT", "/api/synthetic/calibration/:assetClass/policy"): ("PUT", "/api/synthetic/calibration/{assetClass}/policy"),
+    ("DELETE", "/api/synthetic/calibration/:assetClass/policy"): ("DELETE", "/api/synthetic/calibration/{assetClass}/policy"),
+    ("PUT", "/api/synthetic/calibration/feeds/:id/pin"): ("PUT", "/api/synthetic/calibration/feeds/{id}/pin"),
+    ("DELETE", "/api/synthetic/calibration/feeds/:id/pin"): ("DELETE", "/api/synthetic/calibration/feeds/{id}/pin"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

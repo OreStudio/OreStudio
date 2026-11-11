@@ -77,7 +77,7 @@ an API publishes no area, so it is counted under =(none)=.
 | qa | qa | 6 | resource 6 |
 | reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 300 | composed view 1, resource 299 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 44 | composed view 12, resource 32 |
-| simulation | calibration, market-regime, synthetic | 51 | composed view 3, resource 48 |
+| simulation | calibration, market-regime, synthetic | 57 | composed view 3, resource 54 |
 | tenancy | iam, refdata, server | 83 | composed view 2, resource 81 |
 | trading | blotter, book-changes, booking, books, structures, trades | 24 | composed view 2, resource 22 |
 | workflow | inbox, server, timeline | 18 | composed view 6, resource 12 |
@@ -155,12 +155,12 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | qa | 6 | 0 | 6 |
 | reference-data | 30 | 24 | 6 |
 | reporting | 44 | 0 | 44 |
-| simulation | 28 | 15 | 13 |
+| simulation | 28 | 21 | 7 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 0 | 24 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 22 | 13 |
-| total | 324 | 138 | 186 |
+| total | 324 | 144 | 180 |
 
 * The pairing
 
@@ -432,12 +432,12 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/synthetic/:resource/by/:parent= | GET /api/synthetic/{resource}/by/{parent}, one per resource (4) |
 | GET =/api/synthetic/:resource/key/:key= | GET /api/synthetic/{resource}/key/{key}, one per resource (16) |
 | GET =/api/synthetic/calibration/:assetClass= | none |
-| DELETE =/api/synthetic/calibration/:assetClass/policy= | none |
-| PUT =/api/synthetic/calibration/:assetClass/policy= | none |
-| POST =/api/synthetic/calibration/:assetClass/run= | none |
-| DELETE =/api/synthetic/calibration/feeds/:id/pin= | none |
-| PUT =/api/synthetic/calibration/feeds/:id/pin= | none |
-| POST =/api/synthetic/calibration/variance/:id/review= | none |
+| DELETE =/api/synthetic/calibration/:assetClass/policy= | DELETE /api/synthetic/calibration/{assetClass}/policy |
+| PUT =/api/synthetic/calibration/:assetClass/policy= | PUT /api/synthetic/calibration/{assetClass}/policy |
+| POST =/api/synthetic/calibration/:assetClass/run= | POST /api/synthetic/calibration/{assetClass}/run |
+| DELETE =/api/synthetic/calibration/feeds/:id/pin= | DELETE /api/synthetic/calibration/feeds/{id}/pin |
+| PUT =/api/synthetic/calibration/feeds/:id/pin= | PUT /api/synthetic/calibration/feeds/{id}/pin |
+| POST =/api/synthetic/calibration/variance/:id/review= | POST /api/synthetic/calibration/variance/{id}/review |
 | POST =/api/synthetic/convert/fx= | POST /api/synthetic/convert/fx |
 | POST =/api/synthetic/convert/fx-simple= | POST /api/synthetic/convert/fx-simple |
 | POST =/api/synthetic/convert/ir= | POST /api/synthetic/convert/ir |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1210 routes: 324 answered by the BFF and 886 by ores.http.
+1216 routes: 324 answered by the BFF and 892 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1128,7 +1128,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | trading | post | =/api/structures/:key/legs= | bff | projects/ores.web/packages/bff/src/structures.ts:1073 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
 | resource | trading | delete | =/api/structures/:key/legs/:tradeId= | bff | projects/ores.web/packages/bff/src/structures.ts:979 | The structure collection: the tree flattened for reading, one structure with its legs, the leg candidates, and the leg writes that take a trade out of a container. |
 | not an API | (none) | get | =/api/synthetic= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1052 | A catalogue of the synthetic resources a screen may write, each with its key field, sortable fields, search flag, permission names and the reason it may be read only, which is a table description rather than a resource. |
-| not an API | (none) | get | =/api/synthetic= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/synthetic_routes.cpp:118 | The catalogue the BFF answered, built from each record unit's own entry for the session, so the screens keep reading the resources they may name when the BFF goes. |
+| not an API | (none) | get | =/api/synthetic= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/synthetic_routes.cpp:120 | The catalogue the BFF answered, built from each record unit's own entry for the session, so the screens keep reading the resources they may name when the BFF goes. |
 | not an API | (none) | delete | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1371 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
 | not an API | (none) | get | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1232 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
 | not an API | (none) | put | =/api/synthetic/:resource= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1325 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the feeds' own routes name what they serve. |
@@ -1140,17 +1140,23 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | simulation | post | =/api/synthetic/calibration/:assetClass/run= | bff | projects/ores.web/packages/bff/src/calibration.ts:354 | Calibrates every feed of a class, or the one feed named, and writes each moved level and deviation as a new version of the feed config. |
 | resource | simulation | delete | =/api/synthetic/calibration/feeds/:id/pin= | bff | projects/ores.web/packages/bff/src/calibration.ts:586 | Pins one candidate on a feed as the exception to its class policy, or clears the feed's own items so it follows the policy again. |
 | resource | simulation | put | =/api/synthetic/calibration/feeds/:id/pin= | bff | projects/ores.web/packages/bff/src/calibration.ts:558 | Pins one candidate on a feed as the exception to its class policy, or clears the feed's own items so it follows the policy again. |
+| resource | simulation | delete | =/api/synthetic/calibration/feeds/{id}/pin= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:568 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | put | =/api/synthetic/calibration/feeds/{id}/pin= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:540 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
 | resource | simulation | post | =/api/synthetic/calibration/variance/:id/review= | bff | projects/ores.web/packages/bff/src/calibration.ts:383 | Approves or rejects one proposed GJR-GARCH calibration with the reviewer's reason; approving supersedes the pair's earlier approval and older proposals and points the pair's feeds at it. |
+| resource | simulation | post | =/api/synthetic/calibration/variance/{id}/review= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:408 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | delete | =/api/synthetic/calibration/{assetClass}/policy= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:516 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | put | =/api/synthetic/calibration/{assetClass}/policy= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:450 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
+| resource | simulation | post | =/api/synthetic/calibration/{assetClass}/run= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/calibration_routes.cpp:373 | The calibration screen's action at the address and in the shape the BFF answered: a class's calibration run and stored, a variance calibration reviewed, a class's policy stated or removed, and one feed's candidate pinned or cleared. |
 | not an API | (none) | delete | =/api/synthetic/collections= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_data_generation_config_web_routes.cpp:379 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/collections= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_data_generation_config_web_routes.cpp:346 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | put | =/api/synthetic/collections= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_data_generation_config_web_routes.cpp:368 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/collections/key/{key}= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_data_generation_config_web_routes.cpp:357 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | resource | simulation | post | =/api/synthetic/convert/fx= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1500 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
-| resource | simulation | post | =/api/synthetic/convert/fx= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:193 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
+| resource | simulation | post | =/api/synthetic/convert/fx= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:197 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
 | resource | simulation | post | =/api/synthetic/convert/fx-simple= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1519 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
-| resource | simulation | post | =/api/synthetic/convert/fx-simple= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:217 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
+| resource | simulation | post | =/api/synthetic/convert/fx-simple= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:221 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
 | resource | simulation | post | =/api/synthetic/convert/ir= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1536 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
-| resource | simulation | post | =/api/synthetic/convert/ir= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:258 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
+| resource | simulation | post | =/api/synthetic/convert/ir= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:262 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
 | composed view | simulation | get | =/api/synthetic/feed-folders= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1078 | The folders and the feeds under each at any depth, two collections woven, with the count of each kind so no screen reads the feeds. |
 | resource | simulation | get | =/api/synthetic/feed-raster= | bff | projects/ores.web/packages/bff/src/market-regime.ts:450 | The times of the ticks each feed published in the window, one row per feed, a stopped feed keeping its row so the picture shows that it is silent. |
 | not an API | (none) | get | =/api/synthetic/feed-raster= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/feed_tick_routes.cpp:187 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
@@ -1215,7 +1221,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | put | =/api/synthetic/payment-frequencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/payment_frequency_web_routes.cpp:357 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/payment-frequencies/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/payment_frequency_web_routes.cpp:346 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | resource | simulation | post | =/api/synthetic/preview/ir-shape= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1573 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
-| resource | simulation | post | =/api/synthetic/preview/ir-shape= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:311 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
+| resource | simulation | post | =/api/synthetic/preview/ir-shape= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:316 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
 | not an API | (none) | delete | =/api/synthetic/process-types= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_web_routes.cpp:374 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/process-types= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_web_routes.cpp:341 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | put | =/api/synthetic/process-types= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/yield_curve_process_type_web_routes.cpp:363 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
@@ -1225,9 +1231,9 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | put | =/api/synthetic/providers= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_data_provider_web_routes.cpp:355 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/providers/key/{key}= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/market_data_provider_web_routes.cpp:344 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | resource | simulation | post | =/api/synthetic/simulate/fx= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1485 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
-| resource | simulation | post | =/api/synthetic/simulate/fx= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:171 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
+| resource | simulation | post | =/api/synthetic/simulate/fx= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:175 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
 | resource | simulation | post | =/api/synthetic/simulate/ir= | bff | projects/ores.web/packages/bff/src/synthetic.ts:1561 | A derived read of the synthetic service's own function: a mixture or engine parameter set converted between views, spot or short-rate paths sampled, or the rate at each ladder row, with nothing stored. |
-| resource | simulation | post | =/api/synthetic/simulate/ir= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:291 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
+| resource | simulation | post | =/api/synthetic/simulate/ir= | ores.http | projects/ores.http/synthetic/src/routes/synthetic/process_preview_routes.cpp:296 | A preview the synthetic screens draw from the values on the screen and store nothing of: sample paths, the conversions between engines and the simple view, and the rate at each ladder row. |
 | not an API | (none) | delete | =/api/synthetic/tenors= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_web_routes.cpp:356 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | get | =/api/synthetic/tenors= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_web_routes.cpp:323 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |
 | not an API | (none) | put | =/api/synthetic/tenors= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_web_routes.cpp:345 | The generic router's addresses, one generated unit per resource in the BFF's shapes and two hand-written feed key reads, kept so the screens work when the BFF goes. |

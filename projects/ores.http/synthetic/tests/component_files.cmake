@@ -20,6 +20,7 @@
 # Template: cmake_component_files_tests.mustache
 # To modify, update the template and regenerate.
 set(files
+    "calibration_routes_tests.cpp"
     "feed_operation_routes_tests.cpp"
     "feed_tick_routes_tests.cpp"
     "folder_web_routes_tests.cpp"

@@ -782,6 +782,13 @@ RULES = (
          "A preview the synthetic screens draw from the values on the screen and store nothing"
          " of: sample paths, the conversions between engines and the simple view, and the rate"
          " at each ladder row."),
+    Rule("the calibration screen's action",
+         ("regex", r"^(POST /api/synthetic/calibration/(\{assetClass\}/run|variance/\{id\}/review)"
+                   r"|(PUT|DELETE) /api/synthetic/calibration/(\{assetClass\}/policy|feeds/\{id\}/pin))$"),
+         CPP, RESOURCE, "simulation",
+         "The calibration screen's action at the address and in the shape the BFF answered: a"
+         " class's calibration run and stored, a variance calibration reviewed, a class's policy"
+         " stated or removed, and one feed's candidate pinned or cleared."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

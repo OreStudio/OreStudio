@@ -74,7 +74,8 @@ public:
      * required field is missing or empty.
      *
      * Each parameter travels as one name=value entry, which is the command's
-     * form.
+     * form. The entries are in name order, not the order the browser sent,
+     * because the body is read as a map; the service reads each by its name.
      */
     [[nodiscard]] static std::optional<ores::iam::messaging::provision_tenant_command>
     read_tenant_command(const std::string& body);

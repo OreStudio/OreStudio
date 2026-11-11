@@ -114,6 +114,12 @@ via its "Verifies task" field.
 | 2 | Local review: a JSON list column that holds something else. | =provisioning_routes.cpp= | Accepted | The read fails as unanswered, as the BFF's schema failed it, and a test proves the refusal. |
 | 3 | Local review: the request bodies are file-local codec structs. | =provisioning_routes.cpp= | Accepted | They sit in the unit's anonymous namespace, so no other unit of the part can clash with them. |
 | 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR review: the profile and child reads take one page and never check the total. | =provisioning_routes.cpp= | Accepted in part | The BFF read the same single pages, so the limits stay. They are now named constants whose comments say why one page holds them all. |
+| 6 | PR review: a party whose stage fails stays in the tenant, inactive. | =provisioning_routes.cpp= | Declined | The BFF wrote the party and started the stage the same way. A second attempt with the same short code is refused by the service. |
+| 7 | PR review: the checks are non-empty only, and the LEI is not checked. | =provisioning_routes.cpp= | Declined | The BFF checked the same, and the services check the values. |
+| 8 | PR review: a tenant with several roots gets the first. | =provisioning_routes.cpp= | Declined | A tenant has exactly one root, and the BFF took the first match too. |
+| 9 | PR review: the parameter order needs a comment in the code. | =provisioning_routes.hpp= | Accepted | The reader's comment says the entries are in name order and why that is safe. |
+| 10 | PR review: the handler runs without suspending, and the JSON is written by hand. | =provisioning_routes.cpp= | Declined | Both match the sibling route units, and exact-JSON tests cover the shape. |
 
 * Result
 

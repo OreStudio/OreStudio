@@ -93,6 +93,14 @@ struct provision_party_body final {
 /// How many parties one page of the root search reads, as the BFF read them.
 constexpr std::uint32_t party_page = 500;
 
+/// How many starting points the journey reads, as the BFF read them. A
+/// deployment holds a handful, so one page holds them all.
+constexpr std::uint32_t profile_page = 50;
+
+/// How many steps or parameters one starting point's read takes, as the BFF
+/// read them. A profile declares far fewer.
+constexpr std::uint32_t profile_child_page = 200;
+
 /// A JSON list column's texts, refused when it holds anything else.
 std::vector<std::string> texts_or_throw(const std::string& column, std::string_view what) {
     auto texts = provisioning_routes::texts_of(column);
@@ -250,19 +258,19 @@ void provisioning_routes::register_routes(
         [&session](const http_request& req) {
             return ores::http::forwarding::guarded<messaging::list_seed_profiles_request>([&] {
                 messaging::list_seed_profiles_request page_msg;
-                page_msg.limit = 50;
+                page_msg.limit = profile_page;
                 const auto page = ores::http::forwarding::forward(req, session, page_msg);
                 rr::require_done(page.result);
                 std::vector<seed_profile_reads> reads;
                 for (const auto& profile : page.seed_profiles) {
                     messaging::list_by_seed_profile_id_seed_profile_steps_request steps_msg;
                     steps_msg.seed_profile_id = profile.id;
-                    steps_msg.limit = 200;
+                    steps_msg.limit = profile_child_page;
                     const auto steps = ores::http::forwarding::forward(req, session, steps_msg);
                     rr::require_done(steps.result);
                     messaging::list_by_seed_profile_id_seed_profile_parameters_request params_msg;
                     params_msg.seed_profile_id = profile.id;
-                    params_msg.limit = 200;
+                    params_msg.limit = profile_child_page;
                     const auto params = ores::http::forwarding::forward(req, session, params_msg);
                     rr::require_done(params.result);
                     reads.push_back(

@@ -91,18 +91,17 @@ struct options final {
      */
     std::string web_dir{"/var/ores/http-server/web"};
     /**
-     * @brief The site configuration the served client reads, the BFF's
-     * =environments.json=.
+     * @brief The site configuration the served client reads, the BFF's environments.json.
      *
-     * Empty reads the file =ORES_WEB_SITE_CONFIG= names. Without one, the
-     * server answers no site routes and logs why.
+     * Empty reads the file ORES_WEB_SITE_CONFIG names. Without one, the server
+     * answers no site routes and logs why.
      */
     std::string site_config;
     /**
      * @brief The environment of the site configuration this server serves.
      *
-     * Empty chooses it as the BFF does: =ORES_WEB_ENV=, the checkout's
-     * =ORES_ENV_NAME=, the file's active environment, then its first.
+     * Empty chooses it as the BFF does: ORES_WEB_ENV, the checkout's
+     * ORES_ENV_NAME, the file's active environment, then its first.
      */
     std::string site_env;
     /**

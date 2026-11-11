@@ -49,7 +49,7 @@ const std::string two_environments = R"({
   "developerAccounts": [{"username": "alice", "label": "Trader"}]
 })";
 
-std::string write_file(const std::string& text) {
+std::string site_file(const std::string& text) {
     const auto path = std::filesystem::temp_directory_path() / "ores_site_config_tests.json";
     std::ofstream(path) << text;
     return path.string();
@@ -109,7 +109,7 @@ TEST_CASE("site_configuration_refuses_a_file_it_cannot_serve", "[site]") {
 }
 
 TEST_CASE("site_configuration_chooses_the_environment_in_the_bff_order", "[site]") {
-    const auto path = write_file(two_environments);
+    const auto path = site_file(two_environments);
     CHECK(load_site(path, "", variables({})).served.id == "local");
     CHECK(load_site(path, "prod", variables({{"ORES_WEB_ENV", "local"}})).served.id == "prod");
     CHECK(load_site(path, "", variables({{"ORES_WEB_ENV", "prod"}, {"ORES_ENV_NAME", "local"}}))
@@ -122,7 +122,7 @@ TEST_CASE("site_configuration_chooses_the_environment_in_the_bff_order", "[site]
 }
 
 TEST_CASE("site_configuration_lets_the_deployment_override_the_developer_surface", "[site]") {
-    const auto path = write_file(two_environments);
+    const auto path = site_file(two_environments);
     CHECK(load_site(path, "", variables({})).configuration.developerTools);
     CHECK_FALSE(load_site(path, "", variables({{"ORES_WEB_DEVELOPER_TOOLS", "0"}}))
                     .configuration.developerTools);
@@ -131,17 +131,20 @@ TEST_CASE("site_configuration_lets_the_deployment_override_the_developer_surface
 }
 
 TEST_CASE("site_configuration_reads_the_file_ores_web_ships", "[site]") {
-    const auto path = ores::testing::project_root::resolve("projects/ores.web/config/environments.json");
+    const auto path =
+        ores::testing::project_root::resolve("projects/ores.web/config/environments.json");
     const auto site = load_site(path.string(), "", variables({}));
     CHECK_FALSE(site.served.id.empty());
 }
 
 TEST_CASE("site_routes_state_offers_test_accounts_only_with_the_developer_surface", "[site]") {
-    const auto path = write_file(two_environments);
+    const auto path = site_file(two_environments);
     const auto open = site_routes::site_state(load_site(path, "prod", variables({})));
     CHECK(open.body.find(R"("appName":"ORE Studio")") != std::string::npos);
-    CHECK(open.body.find(R"("environment":{"id":"prod","displayName":"Production","description":"Live","nonProduction":false})") !=
-          std::string::npos);
+    CHECK(
+        open.body.find(
+            R"("environment":{"id":"prod","displayName":"Production","description":"Live","nonProduction":false})") !=
+        std::string::npos);
     CHECK(open.body.find(R"("username":"alice")") != std::string::npos);
     const auto closed = site_routes::site_state(
         load_site(path, "", variables({{"ORES_WEB_DEVELOPER_TOOLS", "0"}})));
@@ -149,7 +152,7 @@ TEST_CASE("site_routes_state_offers_test_accounts_only_with_the_developer_surfac
 }
 
 TEST_CASE("site_routes_deployment_is_absent_without_the_developer_surface", "[site]") {
-    const auto path = write_file(two_environments);
+    const auto path = site_file(two_environments);
     const auto absent = site_routes::deployment(
         load_site(path, "", variables({{"ORES_WEB_DEVELOPER_TOOLS", "0"}})));
     CHECK(absent.status == http_status::not_found);
@@ -158,17 +161,21 @@ TEST_CASE("site_routes_deployment_is_absent_without_the_developer_surface", "[si
     CHECK(shown.status == http_status::ok);
     CHECK(shown.body.find(R"("host":"localhost")") != std::string::npos);
     CHECK(shown.body.find(R"("tls":{})") != std::string::npos);
-    CHECK(shown.body.find(R"("available":[{"id":"local","displayName":"Local","nonProduction":true},{"id":"prod","displayName":"Production","nonProduction":false}])") !=
-          std::string::npos);
+    CHECK(
+        shown.body.find(
+            R"("available":[{"id":"local","displayName":"Local","nonProduction":true},{"id":"prod","displayName":"Production","nonProduction":false}])") !=
+        std::string::npos);
 }
 
 TEST_CASE("site_routes_client_log_takes_only_the_browser_trail", "[site]") {
     CHECK(site_routes::read_client_log(entry("ores.web.client")));
-    CHECK(site_routes::read_client_log(entry("ores.web.client.blotter", R"(,"fields":{"rows":3,"ok":true,"tab":"fx"})")));
+    CHECK(site_routes::read_client_log(
+        entry("ores.web.client.blotter", R"(,"fields":{"rows":3,"ok":true,"tab":"fx"})")));
     CHECK_FALSE(site_routes::read_client_log(entry("ores.iam.service")));
     CHECK_FALSE(site_routes::read_client_log(entry("ores.web.client", R"(,"fields":{"Bad":1})")));
     CHECK_FALSE(site_routes::read_client_log(entry("ores.web.client", R"(,"fields":{"k":[1]})")));
-    CHECK_FALSE(site_routes::read_client_log(R"({"entries":[{"at":"x","level":"fatal","logger":"ores.web.client","message":"m"}]})"));
+    CHECK_FALSE(site_routes::read_client_log(
+        R"({"entries":[{"at":"x","level":"fatal","logger":"ores.web.client","message":"m"}]})"));
     CHECK_FALSE(site_routes::read_client_log("{}"));
     std::string many = R"({"entries":[)";
     for (int i = 0; i < 101; ++i)
@@ -191,9 +198,8 @@ TEST_CASE("site_routes_register_the_liveness_answer_without_a_site", "[site]") {
         router, std::make_shared<ores::http::openapi::endpoint_registry>(), std::nullopt);
     const auto& routes = router->routes();
     const auto has = [&](const std::string& pattern, bool auth) {
-        return std::ranges::any_of(routes, [&](const auto& r) {
-            return r.pattern == pattern && r.requires_auth == auth;
-        });
+        return std::ranges::any_of(
+            routes, [&](const auto& r) { return r.pattern == pattern && r.requires_auth == auth; });
     };
     CHECK(has("/api/health", false));
     CHECK(has("/api/client-log", true));

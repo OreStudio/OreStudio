@@ -141,8 +141,7 @@ std::optional<site_routes::client_entry> entry_of(yyjson_val* v) {
     auto level = text("level", 5);
     auto logger = text("logger", 200);
     auto message = text("message", 200);
-    if (!at || !level || !logger || !message ||
-        std::ranges::find(levels, *level) == levels.end() ||
+    if (!at || !level || !logger || !message || std::ranges::find(levels, *level) == levels.end() ||
         !std::regex_match(*logger, logger_form))
         return std::nullopt;
     site_routes::client_entry entry{*at, *level, *logger, *message, {}};
@@ -219,8 +218,9 @@ site_routes::read_client_log(const std::string& body) {
 http_response site_routes::handle_client_log(const http_request& req) {
     const auto entries = read_client_log(req.body);
     if (!entries)
-        return rr::answer(rr::refusal{
-            http_status::bad_request, "invalid-request", "The client log is not one the browser sends."});
+        return rr::answer(rr::refusal{http_status::bad_request,
+                                      "invalid-request",
+                                      "The client log is not one the browser sends."});
     static auto lg = ores::logging::make_logger("ores.web.client");
     const auto& claims = req.authenticated_user;
     const auto session_id = claims ? claims->session_id.value_or("") : std::string{};
@@ -231,9 +231,8 @@ http_response site_routes::handle_client_log(const http_request& req) {
             if (std::ranges::find(reserved, key) == reserved.end())
                 facts += " " + key + "=" + value;
         BOOST_LOG_SEV(lg, severity_of(entry.level))
-            << "[" << entry.logger << "] " << entry.message << facts
-            << " session_id=" << session_id << " account=" << account
-            << " client_time=" << entry.at;
+            << "[" << entry.logger << "] " << entry.message << facts << " session_id=" << session_id
+            << " account=" << account << " client_time=" << entry.at;
     }
     return http_response::json(R"({"ok":true})");
 }

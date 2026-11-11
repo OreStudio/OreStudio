@@ -59,7 +59,8 @@ void check(const site_configuration& configuration, std::string_view source) {
         if (!std::regex_match(e.id, id_form))
             refuse("the environment id '" + e.id + "' is not lower case letters, digits and _");
         if (e.displayName.empty() || e.host.empty() || e.subjectPrefix.empty())
-            refuse("the environment '" + e.id + "' needs a displayName, a host and a subjectPrefix");
+            refuse("the environment '" + e.id +
+                   "' needs a displayName, a host and a subjectPrefix");
         if (e.port < 1 || e.port > 65535)
             refuse("the environment '" + e.id + "' has no port between 1 and 65535");
         if (!ids.insert(e.id).second)
@@ -69,8 +70,8 @@ void check(const site_configuration& configuration, std::string_view source) {
         if (a.username.empty())
             refuse("a developer account has no username");
     if (!configuration.active.empty() && !ids.contains(configuration.active))
-        refuse("active environment '" + configuration.active + "' is not defined; known: " +
-               ids_of(configuration));
+        refuse("active environment '" + configuration.active +
+               "' is not defined; known: " + ids_of(configuration));
 }
 
 }
@@ -83,10 +84,11 @@ site_configuration parse_site(std::string_view text, std::string_view source) {
     return std::move(*parsed);
 }
 
-loaded_site
-load_site(const std::string& path, const std::string& environment_id, const variable_lookup& lookup) {
-    const auto source_path = !path.empty() ? std::optional<std::string>(path) :
-                                             non_empty(lookup(site_config_variable));
+loaded_site load_site(const std::string& path,
+                      const std::string& environment_id,
+                      const variable_lookup& lookup) {
+    const auto source_path =
+        !path.empty() ? std::optional<std::string>(path) : non_empty(lookup(site_config_variable));
     if (!source_path)
         throw site_configuration_error("No site configuration: pass one, or set " +
                                        std::string(site_config_variable) + ".");
@@ -103,7 +105,7 @@ load_site(const std::string& path, const std::string& environment_id, const vari
     if (checkout)
         std::ranges::replace(*checkout, '-', '_');
     std::optional<std::string> requested =
-        !environment_id.empty() ? std::optional<std::string>(environment_id) :
+        !environment_id.empty()           ? std::optional<std::string>(environment_id) :
         non_empty(lookup("ORES_WEB_ENV")) ? non_empty(lookup("ORES_WEB_ENV")) :
         checkout                          ? checkout :
         !configuration.active.empty()     ? std::optional<std::string>(configuration.active) :

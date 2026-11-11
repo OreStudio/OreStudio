@@ -179,8 +179,9 @@ inline constexpr std::string_view site_config_variable = "ORES_WEB_SITE_CONFIG";
  * environment, else its first. =ORES_WEB_DEVELOPER_TOOLS= overrides the file's
  * developer surface. Throws site_configuration_error naming what is wrong.
  */
-[[nodiscard]] ORES_HTTP_CORE_EXPORT loaded_site
-load_site(const std::string& path, const std::string& environment_id, const variable_lookup& lookup);
+[[nodiscard]] ORES_HTTP_CORE_EXPORT loaded_site load_site(const std::string& path,
+                                                          const std::string& environment_id,
+                                                          const variable_lookup& lookup);
 
 /**
  * @brief Read and check a site configuration from its text.

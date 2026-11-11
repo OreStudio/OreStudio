@@ -377,14 +377,18 @@ void pick_list_routes::register_routes(
         router->add_route(built);
         registry->register_route(built);
     };
-    add(router->get("/api/books/pick-lists"), "Read the books form's option lists", books_pick_lists);
+    add(router->get("/api/books/pick-lists"),
+        "Read the books form's option lists",
+        books_pick_lists);
     add(router->get("/api/conventions/pick-lists"),
         "Read the conventions form's option lists",
         conventions_pick_lists);
     add(router->get("/api/counterparties/pick-lists"),
         "Read the counterparties form's option lists",
         counterparties_pick_lists);
-    add(router->get("/api/tenors/pick-lists"), "Read the tenors form's option lists", tenors_pick_lists);
+    add(router->get("/api/tenors/pick-lists"),
+        "Read the tenors form's option lists",
+        tenors_pick_lists);
 }
 
 }

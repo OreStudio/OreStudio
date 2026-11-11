@@ -20,13 +20,16 @@
 #include "ores.http/routes/synthetic/market_regime_routes.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.synthetic.api/messaging/market_regime_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <algorithm>
 #include <charconv>
+#include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -164,6 +167,65 @@ synthetic_messaging::get_market_history_request history_of(const http_request& r
     return msg;
 }
 
+/// A number named in the query, from lowest to highest, or its default when left out.
+double trace_query_number(const http_request& req,
+                          const std::string& name,
+                          double lowest,
+                          double highest,
+                          double fallback,
+                          bool whole) {
+    if (!req.query_params.contains(name))
+        return fallback;
+    const auto raw = req.get_query_param(name);
+    double value = 0.0;
+    const auto [end, error] = std::from_chars(raw.data(), raw.data() + raw.size(), value);
+    if (raw.empty() || error != std::errc{} || end != raw.data() + raw.size() ||
+        !std::isfinite(value) || value < lowest || value > highest ||
+        (whole && value != std::floor(value)))
+        rr::invalid("A trace reads a source of up to 256 characters, from 1 to 3600 seconds, "
+                    "and from 1 to 20000 events.");
+    return value;
+}
+
+/// The most events one trace read returns; the newest are kept.
+constexpr double trace_most_events = 20000;
+
+}
+
+market_trace
+market_regime_routes::trace_of(const synthetic_messaging::get_market_trace_response& reply) {
+    market_trace out;
+    out.runSeed = reply.run_seed;
+    out.ticksPerSecond = reply.ticks_per_second;
+    out.heapSize = reply.heap_size;
+    out.latenessSeconds = reply.lateness_seconds;
+    out.maxLatenessSeconds = reply.max_lateness_seconds;
+    out.series = reply.series;
+    out.events.reserve(reply.events.size());
+    for (const auto& e : reply.events)
+        out.events.push_back({e.kind,
+                              e.source_name,
+                              e.at,
+                              e.tau,
+                              e.operational_gap,
+                              e.wall_gap,
+                              e.compensated_gap,
+                              e.heat,
+                              e.multiplier,
+                              e.pace,
+                              e.state});
+    out.feeds.reserve(reply.series_states.size());
+    for (const auto& f : reply.series_states)
+        out.feeds.push_back({f.source_name,
+                             f.mode,
+                             f.rate,
+                             f.sensitivity,
+                             f.effective_rate,
+                             f.phase,
+                             f.excess,
+                             f.branching_ratio,
+                             f.decay});
+    return out;
 }
 
 void market_regime_routes::register_routes(
@@ -220,6 +282,38 @@ void market_regime_routes::register_routes(
                                         "The synthetic service refused the settings." :
                                         reply.message);
                     return regime_answer(reply);
+                });
+            }));
+
+    add(router->get("/api/synthetic/market-trace")
+            .summary("The market trace")
+            .description("A composed view owned by the synthetic service: the scheduler's recent "
+                         "decisions, every tick with the gap its law drew and the wall gap it "
+                         "took, every regime turn, pin and change of the feeds, with every "
+                         "running feed's law now. One feed's events and the market's, or all of "
+                         "them. One trace call. The answer carries an ETag and stays fresh for "
+                         "10 seconds.")
+            .response<market_trace>()
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<synthetic_messaging::get_market_trace_request>([&] {
+                    rr::refuse_unknown_params(req, {"source", "seconds", "limit"});
+                    synthetic_messaging::get_market_trace_request msg;
+                    msg.source_name = req.get_query_param("source");
+                    if (rr::characters_of(msg.source_name) > 256)
+                        rr::invalid("A trace reads a source of up to 256 characters, from 1 to "
+                                    "3600 seconds, and from 1 to 20000 events.");
+                    msg.seconds = trace_query_number(req, "seconds", 1, 3600, 120, false);
+                    msg.limit = static_cast<std::uint32_t>(
+                        trace_query_number(req, "limit", 1, trace_most_events, 5000, true));
+                    const auto reply = forwarding::forward(req, session, msg);
+                    if (!reply.success)
+                        rr::refuse(http_status::bad_gateway,
+                                   "upstream-unavailable",
+                                   reply.message.empty() ?
+                                       "The synthetic service refused the trace read." :
+                                       reply.message);
+                    return ores::http::net::view_answer(
+                        req, json::write(trace_of(reply)), {std::chrono::seconds(10)});
                 });
             }));
 

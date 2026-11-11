@@ -35,6 +35,7 @@ set(files
     "net/record_routes.cpp"
     "net/router.cpp"
     "net/server_counters.cpp"
+    "net/view_answer.cpp"
     "openapi/endpoint_registry.cpp"
 )
 
@@ -63,6 +64,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/router.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/server_counters.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/session_bytes_accumulator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/view_answer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/net/worker_pool.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/openapi/endpoint_registry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http.api/ores.http.api.hpp"

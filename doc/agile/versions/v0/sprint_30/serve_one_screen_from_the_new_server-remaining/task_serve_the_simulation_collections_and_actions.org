@@ -229,4 +229,4 @@ parts kept their shape: route units in the synthetic part, shared refusals in
 | Feed ticks and the raster | #4622 | 2 | Merged |
 | Simulation and conversion | #4623 | 6 | Merged |
 | Calibration | #4625 | 6 | Merged |
-| Market regime | | 4 | In review |
+| Market regime | #4628 | 4 | Merged |

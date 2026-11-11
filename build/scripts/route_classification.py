@@ -200,6 +200,25 @@ RULES = (
          CPP, NOT_API, NO_AREA,
          "The catalogue the BFF answered, built from each record unit's own entry for the"
          " session, so the screens keep reading the resources they may name when the BFF goes."),
+    # The synthetic composed views, ahead of the record routes whose addresses
+    # they share; each keeps the name the BFF's rule gives it, so the view's
+    # obligations are stated once.
+    Rule("the synthetic folder tree",
+         ("exact", "GET /api/synthetic/feed-folders"),
+         CPP, COMPOSED, "simulation",
+         "The folders and the feeds under each at any depth, answered by ores.http from one"
+         " folder call at the address and in the shape the BFF answered."),
+    Rule("the market trace",
+         ("exact", "GET /api/synthetic/market-trace"),
+         CPP, COMPOSED, "simulation",
+         "The scheduler's recent decisions and every running feed's law, answered by"
+         " ores.http from one trace call at the address and in the shape the BFF answered."),
+    Rule("the calibration of an asset class",
+         ("exact", "GET /api/synthetic/calibration/{assetClass}"),
+         CPP, COMPOSED, "simulation",
+         "The policy a class calibrates under and how every feed of it resolves, with the"
+         " coverage counts, answered by ores.http at the address and in the shape the BFF"
+         " answered; nothing starts."),
     Rule("the synthetic record routes",
          ("regex", r"^(GET|PUT|DELETE) /api/synthetic/[a-z-]+(/key/\{key\}|/by/\{parent\})?$"),
          CPP, NOT_API, NO_AREA,

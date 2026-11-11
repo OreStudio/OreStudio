@@ -62,7 +62,8 @@ PAIRS = {
     ("POST", "/api/images"): ("POST", "/api/v1/assets/images"),
 
     # changes
-    ("GET", "/api/events"): ("GET", "/api/v1/changes"),
+    ("GET", "/api/events"): ("GET", "/api/events"),
+    ("POST", "/api/events/watch"): ("POST", "/api/events/watch"),
 
     # tenancy
     ("GET", "/api/tenants"): ("GET", f"{TENANCY}/tenants"),

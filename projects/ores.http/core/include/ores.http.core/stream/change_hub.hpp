@@ -43,6 +43,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -81,10 +82,81 @@ inline std::string make_epoch() {
  * within the tenant: a change to a party's data is the business of that party and
  * of an administrator; a tenant-wide change, which names no party, is everyone's.
  */
+/**
+ * @brief The collections one session is watching, which a screen changes as it moves.
+ *
+ * A stream is one-way, so the session states what it watches beside it rather than
+ * on it, and the set changes under an open stream. A collection is named as the
+ * component and the entity, joined by a dot, as a frame names it.
+ */
+class watch_set final {
+public:
+    /// Replaces what is watched.
+    void replace(std::unordered_set<std::string> collections) {
+        const std::lock_guard lock(mu_);
+        collections_ = std::move(collections);
+    }
+
+    /// Whether a frame about this collection is wanted.
+    [[nodiscard]] bool contains(const std::string& collection) const {
+        const std::lock_guard lock(mu_);
+        return collections_.contains(collection);
+    }
+
+private:
+    mutable std::mutex mu_;
+    std::unordered_set<std::string> collections_;
+};
+
+/**
+ * @brief The watch set of each session that has a stream open.
+ *
+ * A set lives as long as the stream that reads it: the registry holds it weakly,
+ * so a session that closed its stream leaves nothing behind.
+ */
+class watch_registry final {
+public:
+    /// The set a new stream of this session reads, made empty when there is none.
+    [[nodiscard]] std::shared_ptr<watch_set> open(const std::string& session) {
+        const std::lock_guard lock(mu_);
+        std::erase_if(sets_, [](const auto& entry) { return entry.second.expired(); });
+        if (auto found = sets_[session].lock())
+            return found;
+        auto made = std::make_shared<watch_set>();
+        sets_[session] = made;
+        return made;
+    }
+
+    /// Replaces what a session watches. A session with no stream open has nothing
+    /// to change, and says so.
+    bool watch(const std::string& session, std::unordered_set<std::string> collections) {
+        const std::lock_guard lock(mu_);
+        const auto found = sets_.find(session);
+        if (found == sets_.end())
+            return false;
+        const auto set = found->second.lock();
+        if (!set)
+            return false;
+        set->replace(std::move(collections));
+        return true;
+    }
+
+private:
+    std::mutex mu_;
+    std::unordered_map<std::string, std::weak_ptr<watch_set>> sets_;
+};
+
 struct stream_scope final {
     std::string tenant;
     std::string party;
     bool sees_all_parties = false;
+    /// What the session watches, or nothing for a stream that hears every collection.
+    std::shared_ptr<const watch_set> watching;
+
+    /// Whether a frame about this collection is wanted on this stream.
+    [[nodiscard]] bool wants(const std::string& collection) const {
+        return !watching || watching->contains(collection);
+    }
 };
 
 /**
@@ -301,7 +373,8 @@ public:
 
         if (resumed) {
             const auto eligible = [&](const retained_frame& frame) {
-                return frame.id > resumed->last_seen && hears(frame.tenant, frame.party);
+                return frame.id > resumed->last_seen && hears(frame.tenant, frame.party) &&
+                       scope.wants(frame.collection);
             };
             const auto oldest = retained_.empty() ? 0 : retained_.front().id;
             const auto newest = retained_.empty() ? 0 : retained_.back().id;
@@ -361,7 +434,8 @@ public:
         for (auto& subscription : open) {
             const auto& scope = subscription->scope();
             const auto hears = (tenant == scope.tenant || tenant == system_tenant_) &&
-                               (party.empty() || scope.sees_all_parties || party == scope.party);
+                               (party.empty() || scope.sees_all_parties || party == scope.party) &&
+                               scope.wants(collection);
             if (hears)
                 subscription->push(key, stamped);
         }
@@ -423,10 +497,18 @@ private:
  */
 class change_stream_source final : public domain::awaitable_body_source {
 public:
+    /**
+     * @param opening What the stream writes before any frame, such as the message
+     *        that tells a client it is connected; nothing when empty.
+     */
     change_stream_source(std::shared_ptr<change_subscription> subscription,
-                         std::chrono::milliseconds keep_alive)
+                         std::chrono::milliseconds keep_alive,
+                         std::string opening = {})
         : subscription_(std::move(subscription))
-        , keep_alive_(keep_alive) {}
+        , keep_alive_(keep_alive) {
+        if (!opening.empty())
+            ready_.push_back(std::move(opening));
+    }
 
     /**
      * @brief Ends the stream when the client it was written for is gone.

@@ -25,6 +25,7 @@ set(files
     "change_pump_tests.cpp"
     "change_stream_tests.cpp"
     "change_ticker_tests.cpp"
+    "change_watch_tests.cpp"
     "history_routes_tests.cpp"
     "main.cpp"
     "site_routes_tests.cpp"

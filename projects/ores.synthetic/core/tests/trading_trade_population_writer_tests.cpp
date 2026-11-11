@@ -20,7 +20,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
-#include "ores.trading.api/domain/fx_instruments.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -92,18 +92,23 @@ TEST_CASE("a_generated_trade_states_the_rows_its_slot_carries", "[writer]") {
  * only place in the population that can catch a date the codec lost.
  */
 TEST_CASE("a_wire_round_trip_keeps_a_variance_swaps_dates", "[writer]") {
-    using ores::trading::domain::fx_variance_swap_terms;
-
     const auto start = std::chrono::year_month_day{
         std::chrono::year{2026}, std::chrono::month{10}, std::chrono::day{31}};
     const auto end = std::chrono::year_month_day{
         std::chrono::year{2027}, std::chrono::month{10}, std::chrono::day{31}};
-    fx_variance_swap_terms terms{start, end, "USD", "AAPL", "Long", 16.0, {}, "Variance"};
-    terms.notional = ores::trading::domain::decimal::from_double(1000.0).value();
+    ores::trading::domain::fx_variance_swap_instrument row;
+    row.identity.trade_type_code = "FxVarianceSwap";
+    row.start_date = start;
+    row.end_date = end;
+    row.currency = "USD";
+    row.underlying_code = "AAPL";
+    row.long_short = "Long";
+    row.strike = 16.0;
+    row.notional = ores::utility::decimal::decimal::from_double(1000.0).value();
+    row.moment_type = "Variance";
 
     ores::trading::messaging::book_trade_request request;
-    request.instruments.fx_variance_swap_instruments.push_back(
-        ores::trading::domain::construct_fx_variance_swap(terms));
+    request.instruments.fx_variance_swap_instruments.push_back(row);
 
     const auto& codec = ores::nats::default_wire_codec();
     const auto bytes = codec.encode(request);

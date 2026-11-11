@@ -21,6 +21,8 @@
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/importer.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.ore.core/xml/value_differ.hpp"
 #include "ores.ore.core/xml/value_fingerprint.hpp"
 #include "ores.platform/environment/environment.hpp"
@@ -37,6 +39,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <filesystem>
+#include <format>
 #include <map>
 #include <set>
 #include <sstream>
@@ -573,3 +576,51 @@ TEST_CASE("a recorded trade states every path the ORE examples of its type state
     INFO("Recorded types ORE has no example of:" << listed(no_example));
     check_known(found, known_missing_paths());
 }
+
+/*
+ * A generated trade holds oresmd addresses, and the projection writes each as
+ * ORE names it. The importer reads those names back into addresses through the
+ * same mappers, so a recorded trade read and written again states the same
+ * values. A name one side spells by hand, outside the mappers, breaks this.
+ */
+TEST_CASE("every recorded trade reads back and writes the same values",
+          "[synthetic][ore][generated]") {
+    namespace xml = ores::ore::xml;
+    std::size_t trades = 0;
+    std::string differences;
+    for (const auto& entry : fs::directory_iterator(recorded_directory())) {
+        if (entry.path().extension() != ".xml")
+            continue;
+        const auto items = xml::importer::import_portfolio_with_context(entry.path());
+        std::vector<ores::trading::messaging::trade_export_item> exports;
+        ores::trading::domain::instrument_batch batch;
+        for (const auto& item : items) {
+            const auto id = boost::uuids::string_generator()(
+                std::format("00000000-0000-0000-0000-{:012}", ++trades));
+            auto instrument = item.instrument;
+            ores::trading::domain::stamp_ids(instrument, id);
+            ores::trading::messaging::trade_export_item exported;
+            exported.anchor = item.anchor;
+            exported.anchor.id = id;
+            exported.ore_id = item.ore_id;
+            exported.envelope = item.envelope;
+            exports.push_back(std::move(exported));
+            ores::trading::domain::append_instrument(batch, instrument);
+        }
+        const auto recorded = document::read(file::read_content(entry.path()));
+        const auto written = document::read(xml::exporter::export_portfolio(exports, batch));
+        REQUIRE(recorded.has_value());
+        REQUIRE(written.has_value());
+        const auto before = xml::value_fingerprints_of(*recorded, "Trade", "id");
+        const auto after = xml::value_fingerprints_of(*written, "Trade", "id");
+        REQUIRE(before.size() == after.size());
+        for (std::size_t i = 0; i < before.size(); ++i)
+            for (const auto& difference : xml::diff_values(before[i].values, after[i].values))
+                differences += entry.path().stem().string() + " " + before[i].key + ": " +
+                               xml::describe(difference) + "\n";
+    }
+    INFO(differences);
+    CHECK(trades > 100);
+    CHECK(differences.empty());
+}
+

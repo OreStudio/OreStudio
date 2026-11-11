@@ -32,7 +32,7 @@
 #include "ores.refdata.core/repository/portfolio_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.trading.api/domain/fx_instruments.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/origin.hpp"
 #include "ores.trading.api/generators/bond_issue_call_date_generator.hpp"
 #include "ores.trading.api/generators/bond_issue_conversion_target_generator.hpp"
@@ -842,11 +842,17 @@ TEST_CASE("a_booked_variance_swap_keeps_its_dates_in_order", "[service]") {
         std::chrono::year{2026}, std::chrono::month{10}, std::chrono::day{31}};
     const auto end = std::chrono::year_month_day{
         std::chrono::year{2027}, std::chrono::month{10}, std::chrono::day{31}};
-    ores::trading::domain::fx_variance_swap_terms terms{
-        start, end, "USD", "AAPL", "Long", 16.0, {}, "Variance"};
-    terms.notional = ores::trading::domain::decimal::from_double(1000.0).value();
-    req.instruments.fx_variance_swap_instruments.push_back(
-        ores::trading::domain::construct_fx_variance_swap(terms));
+    ores::trading::domain::fx_variance_swap_instrument row;
+    row.identity.trade_type_code = "FxVarianceSwap";
+    row.start_date = start;
+    row.end_date = end;
+    row.currency = "USD";
+    row.underlying_code = "AAPL";
+    row.long_short = "Long";
+    row.strike = 16.0;
+    row.notional = ores::utility::decimal::decimal::from_double(1000.0).value();
+    row.moment_type = "Variance";
+    req.instruments.fx_variance_swap_instruments.push_back(row);
     req.anchor.trade_type = "FxVarianceSwap";
 
     const auto response = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});

@@ -509,7 +509,7 @@ auto read_fx_tarf(const record_reader& trade) -> fx_asian_forward_instrument {
         return r;
     r.currency = fx_instrument_projection_spelling_of(*data, "Currency");
     if (const auto underlying = data->child("Underlying"))
-        r.fx_index = address_of(fx_instrument_projection_text_of(*underlying, "Name"));
+        r.fx_index = fx_address_of(fx_instrument_projection_text_of(*underlying, "Name"));
     r.fixing_amount = fx_instrument_projection_optional_decimal_of(*data, "FixingAmount");
     if (const auto option = data->child("OptionData"))
         r.long_short = fx_instrument_projection_text_of(*option, "LongShort");
@@ -834,7 +834,7 @@ void write_fx_tarf(record_writer& trade,
 
     if (!underlying_block::write_underlyings(data, "Underlying", carrier, "underlying")) {
         auto underlying = data.child("Underlying");
-        underlying.set_text("Name", ore_name_of(v.fx_index));
+        underlying.set_text("Name", underlying_name_of(v.fx_index));
         underlying.set_text("Type", "FX");
     }
     data.child("OptionData").set_text("LongShort", v.long_short.empty() ? "Long" : v.long_short);

@@ -21,6 +21,7 @@
 #define ORES_TRADING_API_BUILDERS_BUILDER_REGISTRY_HPP
 
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include <set>
@@ -44,7 +45,23 @@ using all_builders = std::tuple<vanilla_swap_builder,
                                 knock_out_swap_builder,
                                 flexi_swap_builder,
                                 balance_guaranteed_swap_builder,
-                                inflation_swap_builder>;
+                                inflation_swap_builder,
+                                fx_forward_builder,
+                                fx_swap_builder,
+                                fx_option_builder,
+                                fx_barrier_option_builder<fx_barrier_product::barrier>,
+                                fx_barrier_option_builder<fx_barrier_product::double_barrier>,
+                                fx_barrier_option_builder<fx_barrier_product::european_barrier>,
+                                fx_barrier_option_builder<fx_barrier_product::kiko>,
+                                fx_barrier_option_builder<fx_barrier_product::generic>,
+                                fx_digital_option_builder<fx_digital_product::digital>,
+                                fx_digital_option_builder<fx_digital_product::touch>,
+                                fx_digital_option_builder<fx_digital_product::double_touch>,
+                                fx_digital_option_builder<fx_digital_product::digital_barrier>,
+                                fx_average_forward_builder,
+                                fx_tarf_builder,
+                                fx_variance_swap_builder,
+                                fx_accumulator_builder>;
 
 namespace detail {
 

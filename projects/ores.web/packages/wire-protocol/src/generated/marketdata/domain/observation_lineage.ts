@@ -43,6 +43,7 @@ export interface ObservationLineage {
     derivation_config_version: number;
     source_as_of: string | null;
     source_series_ids: string;
+    source_weights: string;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

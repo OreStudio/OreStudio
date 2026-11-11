@@ -57,6 +57,7 @@ render_observation_lineage_fields(const domain::observation_lineage& v) {
                                    ores::platform::time::datetime::to_iso8601_utc(*v.source_as_of) :
                                    std::string{}});
     fields.push_back({.name = "Source Series Ids", .value = v.source_series_ids});
+    fields.push_back({.name = "Source Weights", .value = v.source_weights});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

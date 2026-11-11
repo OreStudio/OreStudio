@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.testing/uuid_of.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -72,9 +73,7 @@ using ores::platform::time::datetime;
 
 const auto covered = datetime::from_iso8601_utc("2026-10-06T00:00:00Z");
 
-boost::uuids::uuid cut_uuid_of(const std::string& text) {
-    return boost::uuids::string_generator()(text);
-}
+using ores::testing::uuid_of;
 
 domain::cut_kind lookup(const std::string& code,
                         const std::string& family,
@@ -110,7 +109,7 @@ std::vector<domain::cut_kind> the_seven_kinds() {
 
 domain::cut cut_of(const std::string& kind_code, const std::string& instant_text, int ordinal = 1) {
     domain::cut cut;
-    cut.id = cut_uuid_of(std::format("00000000-0000-0000-0000-{:012}", ordinal));
+    cut.id = uuid_of(std::format("00000000-0000-0000-0000-{:012}", ordinal));
     cut.kind_code = kind_code;
     cut.scope_code = "ACME-LONDON";
     cut.business_centre_code = "LDN";
@@ -133,7 +132,7 @@ domain::cut waiting_cut(const std::string& kind_code, const std::string& instant
     auto cut = cut_of(kind_code, instant_text);
     cut.approved_by.clear();
     cut.approved_at.reset();
-    cut.approval_request_id = cut_uuid_of("aaaaaaaa-0000-0000-0000-000000000001");
+    cut.approval_request_id = uuid_of("aaaaaaaa-0000-0000-0000-000000000001");
     return cut;
 }
 
@@ -142,7 +141,7 @@ cut_resolution_context context_of(std::chrono::system_clock::time_point covered_
     ctx.covered_date = covered_date;
     ctx.scope_code = "ACME-LONDON";
     ctx.business_centre_code = "LDN";
-    ctx.party_id = cut_uuid_of("bbbbbbbb-0000-0000-0000-000000000001");
+    ctx.party_id = uuid_of("bbbbbbbb-0000-0000-0000-000000000001");
     ctx.timepoint_timezone = "Europe/London";
     ctx.run_instant = datetime::from_iso8601_utc("2026-10-07T07:40:00Z");
     ctx.taken_by = "svc.reporting";
@@ -376,8 +375,8 @@ TEST_CASE("a run mints a body once every part is assembled", "[service][cut][res
     auto ctx = context_of();
     ctx.preview = false;
     cut_body body;
-    body.market_data_snapshot_id = cut_uuid_of("cccccccc-0000-0000-0000-000000000001");
-    body.deal_population_id = cut_uuid_of("cccccccc-0000-0000-0000-000000000002");
+    body.market_data_snapshot_id = uuid_of("cccccccc-0000-0000-0000-000000000001");
+    body.deal_population_id = uuid_of("cccccccc-0000-0000-0000-000000000002");
     body.reference_data_version = "rd-2026-10-07";
     body.engine_version = "ore-1.2.3";
     body.code_version = "abc1234";
@@ -494,7 +493,7 @@ TEST_CASE("a body of another centre or another party supersedes nothing",
     other_centre.business_centre_code = "ZRH";
     auto other_party = other_centre;
     other_party.business_centre_code = early.business_centre_code;
-    other_party.party_id = cut_uuid_of("bbbbbbbb-0000-0000-0000-000000000099");
+    other_party.party_id = uuid_of("bbbbbbbb-0000-0000-0000-000000000099");
 
     CHECK_FALSE(later_cut_holds_its_place(early, {other_centre, other_party}));
 }
@@ -628,8 +627,8 @@ cut_resolution_context run_context(const occasion& occasion,
     ctx.taken_by = actor;
 
     cut_body body;
-    body.market_data_snapshot_id = cut_uuid_of("cccccccc-0000-0000-0000-000000000001");
-    body.deal_population_id = cut_uuid_of("cccccccc-0000-0000-0000-000000000002");
+    body.market_data_snapshot_id = uuid_of("cccccccc-0000-0000-0000-000000000001");
+    body.deal_population_id = uuid_of("cccccccc-0000-0000-0000-000000000002");
     body.reference_data_version = "rd-2026-10-07";
     body.engine_version = "ore-1.2.3";
     body.code_version = "abc1234";

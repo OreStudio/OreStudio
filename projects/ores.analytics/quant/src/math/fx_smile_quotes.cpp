@@ -250,4 +250,31 @@ std::expected<fx_atm_reading, std::string> read_smile(fx_smile_function smile,
     return fx_atm_reading{.strike = forward * std::exp(*x_atm), .volatility = atm};
 }
 
+std::expected<double, std::string> smile_atm_log_moneyness(fx_smile_function smile,
+                                                           double level,
+                                                           double years,
+                                                           const fx_market& market,
+                                                           fx_atm_type atm,
+                                                           fx_delta_type delta) {
+    const fx_quote_convention convention{.atm = atm,
+                                         .delta = delta,
+                                         .favour = fx_risk_reversal_favour::call,
+                                         .butterfly = fx_butterfly_style::smile};
+    return smile_reader(smile, level, years, market, convention).atm();
+}
+
+std::expected<double, std::string> smile_delta_log_moneyness(fx_smile_function smile,
+                                                             double level,
+                                                             double years,
+                                                             const fx_market& market,
+                                                             fx_delta_type type,
+                                                             option_side side,
+                                                             double delta) {
+    const fx_quote_convention convention{.atm = fx_atm_type::delta_neutral,
+                                         .delta = type,
+                                         .favour = fx_risk_reversal_favour::call,
+                                         .butterfly = fx_butterfly_style::smile};
+    return smile_reader(smile, level, years, market, convention).pillar(side, delta, level);
+}
+
 }

@@ -41,6 +41,7 @@ A candidate surface becomes authoritative in the same three acts as a curve. A m
 - A candidate with arbitrage, or with a pillar beyond tolerance, shows this to the person who decides.
 - A published surface sends the same kind of notice as a published curve.
 - A surface belongs to the blueprint's party, and only a person acting for that party can raise its publish.
+- A candidate whose fit did not converge, whose pillars are beyond the tolerance, or that breaks an arbitrage condition shows so to the decider before the decision.
 
 * Plan
 

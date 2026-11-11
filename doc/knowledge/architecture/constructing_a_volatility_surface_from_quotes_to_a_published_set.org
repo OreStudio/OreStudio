@@ -195,8 +195,8 @@ series, the contributors' weights, the smile model and the output series.
 
 The second is the calibration operation. A request that names the blueprint and
 the as-of and a response that carries the calibrated points and the error per
-pillar, the =marketdata.v1.surface.calibrate= subject the calibrate journey
-names, with the engine behind it.
+pillar, the =marketdata.v1.ops.calibrate_fx_vol_surface= subject, which the calibrate
+journey calls, with the engine behind it.
 
 The third is the validation operation. Both kinds of check run in the service,
 the first held against the blueprint's version and the second against the

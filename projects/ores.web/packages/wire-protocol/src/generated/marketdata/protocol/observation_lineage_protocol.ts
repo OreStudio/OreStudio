@@ -43,6 +43,7 @@ export interface ObservationLineageWrite {
     derivation_config_version: number;
     source_as_of: string | null;
     source_series_ids: string;
+    source_weights: string;
 }
 
 export interface ObservationLineageChange {

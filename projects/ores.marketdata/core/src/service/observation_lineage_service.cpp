@@ -113,6 +113,7 @@ observation_lineage_to_domain(const messaging::observation_lineage_write& write)
     v.derivation_config_version = write.derivation_config_version;
     v.source_as_of = write.source_as_of;
     v.source_series_ids = write.source_series_ids;
+    v.source_weights = write.source_weights;
     return v;
 }
 

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
@@ -196,7 +197,7 @@ ores::inbox::domain::approval_request raise_publish_request(const ores::database
     record.as_of = subject.as_of;
     record.published_by = "";
     record.published_at = std::nullopt;
-    record.modified_by = ctx.actor().empty() ? ctx.service_account() : ctx.actor();
+    record.modified_by = ores::service::messaging::delegated_actor(ctx);
     record.performed_by = ctx.service_account();
     record.change_reason_code = "system.new_record";
     record.change_commentary =

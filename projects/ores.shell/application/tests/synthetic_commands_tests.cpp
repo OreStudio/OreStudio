@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.testing/uuid_of.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.synthetic.api/domain/gmm_component_codec.hpp"
@@ -58,9 +59,7 @@ const std::string fx_config("bbbbbbbb-0000-4000-8000-000000000001");
 const std::string ir_config("cccccccc-0000-4000-8000-000000000001");
 const std::string party("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
-boost::uuids::uuid id_of(const std::string& text) {
-    return boost::uuids::string_generator()(text);
-}
+using ores::testing::uuid_of;
 
 synthetic::fx_spot_generation_config fx_config_row(const std::string& id,
                                                    const std::string& owner,
@@ -69,9 +68,9 @@ synthetic::fx_spot_generation_config fx_config_row(const std::string& id,
                                                    bool enabled,
                                                    bool auto_start) {
     synthetic::fx_spot_generation_config row;
-    row.id = id_of(id);
-    row.party_id = id_of(party);
-    row.config_id = id_of(owner);
+    row.id = uuid_of(id);
+    row.party_id = uuid_of(party);
+    row.config_id = uuid_of(owner);
     row.base_currency_code = "EUR";
     row.quote_currency_code = "USD";
     row.source_name = source_name;
@@ -87,9 +86,9 @@ synthetic::fx_spot_generation_config fx_config_row(const std::string& id,
 
 synthetic::gmm_component gmm_row(const std::string& fx_id, int index) {
     synthetic::gmm_component row;
-    row.id = id_of("dddddddd-0000-4000-8000-00000000000" + std::to_string(index));
-    row.party_id = id_of(party);
-    row.fx_spot_config_id = id_of(fx_id);
+    row.id = uuid_of("dddddddd-0000-4000-8000-00000000000" + std::to_string(index));
+    row.party_id = uuid_of(party);
+    row.fx_spot_config_id = uuid_of(fx_id);
     row.component_index = index;
     row.description = "component " + std::to_string(index);
     row.weight = 0.5;
@@ -101,9 +100,9 @@ synthetic::gmm_component gmm_row(const std::string& fx_id, int index) {
 synthetic::ir_curve_generation_config
 ir_config_row(const std::string& id, const std::string& owner, const std::string& source_name) {
     synthetic::ir_curve_generation_config row;
-    row.id = id_of(id);
-    row.party_id = id_of(party);
-    row.config_id = id_of(owner);
+    row.id = uuid_of(id);
+    row.party_id = uuid_of(party);
+    row.config_id = uuid_of(owner);
     row.currency_code = "USD";
     row.index_family = "sofr";
     row.role = "self_discounting";
@@ -117,9 +116,9 @@ ir_config_row(const std::string& id, const std::string& owner, const std::string
 
 synthetic::ir_curve_template_entry entry_row(const std::string& ir_id, int sequence) {
     synthetic::ir_curve_template_entry row;
-    row.id = id_of("eeeeeeee-0000-4000-8000-00000000000" + std::to_string(sequence));
-    row.party_id = id_of(party);
-    row.ir_curve_config_id = id_of(ir_id);
+    row.id = uuid_of("eeeeeeee-0000-4000-8000-00000000000" + std::to_string(sequence));
+    row.party_id = uuid_of(party);
+    row.ir_curve_config_id = uuid_of(ir_id);
     row.sequence_index = sequence;
     row.start_tenor_code = "1Y";
     row.end_tenor_code = "1Y";
@@ -133,7 +132,7 @@ feed_listing two_class_listing() {
     feed_listing listing;
 
     synthetic::market_data_generation_config container;
-    container.id = id_of(config_one);
+    container.id = uuid_of(config_one);
     container.name = "Basic";
     listing.configs.push_back(container);
 
@@ -158,9 +157,9 @@ feed_listing two_class_listing() {
     listing.template_entries.push_back(entry_row(ir_config, 0));
     listing.template_entries.push_back(entry_row(ir_config, 1));
     synthetic::ir_curve_generation_config_process_parameter_value value;
-    value.id = id_of("ffffffff-0000-4000-8000-000000000001");
-    value.config_id = id_of(ir_config);
-    value.parameter_definition_id = id_of("ffffffff-0000-4000-8000-000000000002");
+    value.id = uuid_of("ffffffff-0000-4000-8000-000000000001");
+    value.config_id = uuid_of(ir_config);
+    value.parameter_definition_id = uuid_of("ffffffff-0000-4000-8000-000000000002");
     value.parameter_value = 0.5;
     listing.parameter_values.push_back(value);
 
@@ -180,7 +179,7 @@ feed_listing ir_setup_listing() {
     int index = 0;
     for (const std::string name : {"kappa", "theta", "sigma", "initial_rate"}) {
         synthetic::yield_curve_process_parameter_definition definition;
-        definition.id = id_of("99999999-0000-4000-8000-00000000000" + std::to_string(++index));
+        definition.id = uuid_of("99999999-0000-4000-8000-00000000000" + std::to_string(++index));
         definition.process_type_code = "VASICEK";
         definition.parameter_name = name;
         listing.definitions.push_back(definition);
@@ -340,7 +339,7 @@ TEST_CASE("setup_plans_the_ir_rows_a_curve_needs", "[commands][synthetic]") {
     auto lg(make_logger(test_suite));
 
     synthetic::yield_curve_process_parameter_definition kappa;
-    kappa.id = id_of("99999999-0000-4000-8000-000000000001");
+    kappa.id = uuid_of("99999999-0000-4000-8000-000000000001");
     kappa.process_type_code = "VASICEK";
     kappa.parameter_name = "kappa";
 

@@ -60,6 +60,7 @@ namespace ores::marketdata::domain {
                               &observation_lineage::derivation_config_version},
         utility::codec::field{"source_as_of", &observation_lineage::source_as_of},
         utility::codec::field{"source_series_ids", &observation_lineage::source_series_ids},
+        utility::codec::field{"source_weights", &observation_lineage::source_weights},
         utility::codec::field{"modified_by", &observation_lineage::modified_by},
         utility::codec::field{"performed_by", &observation_lineage::performed_by},
         utility::codec::field{"change_reason_code", &observation_lineage::change_reason_code},

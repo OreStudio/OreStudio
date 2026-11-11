@@ -8,7 +8,7 @@
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/calibrate-a-surface-from-quotes
-#+pr:
+#+pr: 4566
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
@@ -26,11 +26,11 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Published FX forward sets for each party. |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -44,12 +44,17 @@ A caller names a blueprint and an as-of, and the system writes a calibrated surf
 - A repeat over the same blueprint and as-of converges on the same points.
 - A candidate is not readable as a published surface.
 - The forwards come from the party's published forward set, and the lineage names that set.
+- The output series declares its expiry and strike axes, so the Evolution page reads the grid as a surface. Today no ingest-made series declares an axis, and the snapshot refuses one without.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The calibration follows the curve bootstrap: read the recipe, read the quotes at the as-of, run the engine, write observations of the output series with lineage, and declare the series' axes.
+
+- *Engine.* Grid strikes are a fixed log-moneyness, the ATM or a delta, solved on the fitted smile of each grid expiry in its own market and convention, so the blueprint's =DEL/Spot/Put/25= strikes are honoured.
+- *Planner.* =fx_vol_surface_calibration_plan= is pure: the four recipe checks, each expiry's market from the published forward set (the tenor's row, or a log-linear interpolation of the discount factors), each pillar's weighted contributions, and the missing pillars.
+- *Service.* =marketdata.v1.ops.calibrate_fx_vol_surface= reads the rows and quotes, calls the planner and the engine, and writes the grid, its lineage, the =expiry= and =strike= axes and the candidate record.
+- *Stores.* A new =fx_vol_surface_calibration= record per blueprint and as-of holds the fit and its checks. The lineage gains =source_weights=. A new derivation kind marks the output series.
+- *Convention reading* moved to ores.refdata.core first, in Keep quant free of stored codes, so quant takes no stored code.
 
 * Measurements
 
@@ -86,12 +91,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4566][#4566]] | [marketdata] Calibrate a volatility surface from its quotes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The four writes are not atomic | =fx_vol_surface_calibration_service.cpp= | Fixed | One =unit_of_work= holds the claim, the grid, the axes, the lineage and the record. |
+| 2 | A rerun at the same as-of may duplicate rows | =fx_vol_surface_calibration_service.cpp= | Verified | The live rerun left 35 observations and the record at version 2. |
+| 3 | The output series' owner is not checked | =fx_vol_surface_calibration_service.cpp= | Fixed | A series another derivation owns is refused. |
+| 4 | The lineage weights are lossy | =fx_vol_surface_calibration_service.cpp= | Documented | A series carries its first pillar's weight; each pillar's weight is in the blueprint version the lineage names. |
+| 5 | A fit that did not converge is still written | =fx_vol_surface_calibration_service.cpp= | Kept | A candidate records what the quotes imply; the publish task now shows the fit and its checks to the decider. |
+| 6 | The time and the discounting use different dates | =fx_vol_surface_calibration_plan.cpp= | Kept | An FX option's time runs from the trade and its delivery from spot; a comment states it. |
+| 7 | Duplicate pillars, an unchecked label, an unchecked delta | =fx_vol_surface_calibration_plan.cpp= | Fixed | Each is refused, with tests for the duplicate and for a forward set that ends early. |
+| 8 | Read by blueprint, batch the lineage reads, escape JSON | =fx_vol_surface_calibration_service.cpp= | Deferred | Grids of 35 points and a handful of blueprints; the JSON holds UUIDs only. |
 
 * Result
+
+Done on 2026-11-11. On a fresh Acme tenant, a trader of ACCOUS published the party's EUR/USD forward set and calibrated its EURUSD_SSVI blueprint at 01:05. The fit converged with every one of its 35 pillars within the tolerance, the largest error 0.000012 in volatility, no arbitrage violation and no missing pillar. The output series holds 35 observations, 1W to 1Y by five delta strikes, is claimed FX_VOL_SURFACE_CALIBRATION and declares its expiry and strike axes. Each point's lineage names blueprint version 1, the derived series and its weight. A rerun at the same as-of converged on the same record, at version 2, with no duplicate observation. An as-of before any forward set was refused, naming the forwards. The scripts are =evidence/fx_vol_surface_calibrate.ores= and =evidence/fx_vol_surface_calibrations.sql=.
+
+The first live run was refused: the derived source quotes no 2Y, so EURUSD_SSVI now seeds 1W to 1Y; see the story's decisions. Both provisioning runs failed at the unrelated =generate_trades= step, filed as the capture Provisioning fails when two swap conventions name the drawn index.
+
+Tests: quant 621, market data service 239 with only NATS running, market data API 1042, shell market data 404, IAM blueprints 8, refdata mappers 25.

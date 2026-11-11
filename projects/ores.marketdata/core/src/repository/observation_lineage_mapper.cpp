@@ -59,6 +59,7 @@ domain::observation_lineage observation_lineage_mapper::map(const observation_li
     r.derivation_config_version = v.derivation_config_version;
     r.source_as_of = v.source_as_of;
     r.source_series_ids = v.source_series_ids;
+    r.source_weights = v.source_weights;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -85,6 +86,7 @@ observation_lineage_entity observation_lineage_mapper::map(const domain::observa
     r.derivation_config_version = v.derivation_config_version;
     r.source_as_of = v.source_as_of;
     r.source_series_ids = v.source_series_ids;
+    r.source_weights = v.source_weights;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

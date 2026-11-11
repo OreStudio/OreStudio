@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 419FD59B-6BC8-4646-BEC8-AE10C08F0103
+:END:
+#+title: Task: Show the market vols on the synthetic screen
+#+description: The synthetic screen shows the system's raw FX volatility quotes as a vendor would, ATM, risk reversal and butterfly by expiry for each pair, from the derived source now and the surface generator later.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:web:volatility:support_volatility_surfaces-remaining:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-10
+#+updated: 2026-11-10
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person who runs the system's market data can see the FX volatility quotes the system publishes, as they see its spots and IR quotes. The synthetic screen shows, for each pair, the latest ATM, risk reversal and butterfly quotes by expiry, and how each moved over a range. These are the vendor's raw quotes, not a surface: a surface is a party's derived data and shows on the Evolution page once it is published. Today the derived source is the only vol source, and it derives its quotes from the fixings. The FX volatility surface generator adds synthetic contributors later, and the same view shows them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-10                               |
+
+* Acceptance
+
+- The synthetic screen lists each pair the derived source quotes, with its latest quotes by expiry and quote kind, the as-of they carry and the source.
+- A person sees how a pair's quotes moved over a range they choose.
+- A pair with no quote says so, rather than showing an empty grid.
+- Once the generator exists, its contributors show in the same view, each named, beside the derived source.
+- The view is in English, French and Portuguese, and tested.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

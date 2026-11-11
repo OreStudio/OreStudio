@@ -60,6 +60,7 @@ struct observation_lineage_write {
     int derivation_config_version{};
     std::optional<std::chrono::system_clock::time_point> source_as_of;
     std::string source_series_ids;
+    std::string source_weights;
 
     friend bool operator==(const observation_lineage_write&,
                            const observation_lineage_write&) = default;
@@ -406,6 +407,7 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.observation_li
                               &observation_lineage_write::derivation_config_version},
         utility::codec::field{"source_as_of", &observation_lineage_write::source_as_of},
         utility::codec::field{"source_series_ids", &observation_lineage_write::source_series_ids},
+        utility::codec::field{"source_weights", &observation_lineage_write::source_weights},
     };
 }
 

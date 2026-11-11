@@ -248,6 +248,17 @@ BEGIN
     );
 
     PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'system.surface_calibration',
+        'A calibration fitted an FX volatility surface blueprint to its quotes and wrote the candidate, its grid and its lineage',
+        'system',
+        true,   -- applies to new
+        true,   -- applies to amend (a rerun at the same as-of is a new version)
+        false,  -- not for delete
+        false,  -- no commentary required
+        67      -- display order
+    );
+
+    PERFORM ores_dq_change_reasons_upsert_fn(ores_utility_system_tenant_id_fn(),
         'system.curve_withdrawn',
         'A published curve was taken out of use: the record stamps the account, the instant and the reason',
         'system',

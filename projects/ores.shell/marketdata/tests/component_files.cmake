@@ -33,6 +33,8 @@ set(files
     "fx_forward_publish_commands_tests.cpp"
     "fx_forward_publish_point_commands_tests.cpp"
     "fx_forward_publish_spot_commands_tests.cpp"
+    "fx_vol_surface_calibration_commands_tests.cpp"
+    "fx_vol_surface_operation_operations_commands_tests.cpp"
     "main.cpp"
     "market_data_mapping_commands_tests.cpp"
     "market_data_vendor_instrument_commands_tests.cpp"

@@ -151,6 +151,14 @@ struct observation_lineage final {
     std::string source_series_ids;
 
     /**
+     * @brief Serialised JSON array of the weight each source series carried, index for index with
+     * source_series_ids, for a derivation that weighs its sources, such as a surface calibration
+     * that weighs each contributor's quote. Empty ([]) for a derivation that does not weigh them,
+     * such as a curve bootstrap, whose every source counts in full.
+     */
+    std::string source_weights = "[]";
+
+    /**
      * @brief Username of the person who last modified this observation lineage.
      */
     std::string modified_by;

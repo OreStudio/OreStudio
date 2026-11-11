@@ -36,6 +36,7 @@
 #include "ores.shell/app/commands/marketdata/fx_forward_publish_commands.hpp"
 #include "ores.shell/app/commands/marketdata/fx_forward_publish_point_commands.hpp"
 #include "ores.shell/app/commands/marketdata/fx_forward_publish_spot_commands.hpp"
+#include "ores.shell/app/commands/marketdata/fx_vol_surface_calibration_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_fixing_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_observation_commands.hpp"
 #include "ores.shell/app/commands/marketdata/market_series_asset_class_commands.hpp"
@@ -169,6 +170,7 @@ void marketdata_commands::register_commands(cli::Menu& root_menu, nats_client& s
     fx_forward_publish_commands::register_commands(root_menu, session);
     fx_forward_publish_point_commands::register_commands(root_menu, session);
     fx_forward_publish_spot_commands::register_commands(root_menu, session);
+    fx_vol_surface_calibration_commands::register_commands(root_menu, session);
     feed_commands::register_commands(root_menu, session);
     feed_scope_commands::register_commands(root_menu, session);
     adapter_commands::register_commands(root_menu, session);

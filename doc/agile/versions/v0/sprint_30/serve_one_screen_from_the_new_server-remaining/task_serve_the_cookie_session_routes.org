@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: D4275B6D-BF22-4A77-9F00-018D776966CB
 :END:
-#+title: Task: Serve the browser's cookie session routes
-#+description: Five auth routes are the browser's door: POST, GET and DELETE /api/session, and the two party switches. The C++ server signs in with a cookie at /api/v1/auth/sessions, at other addresses and in another shape.
+#+title: Task: Serve the browser's session routes, sign-up and password
+#+description: Eight auth routes belong to the browser's session: POST, GET and DELETE /api/session, the two party switches, sign-up, the password policy and the password change. The C++ server signs in with a cookie at /api/v1/auth/sessions, at other addresses and in another shape.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
@@ -20,7 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Serve the cookie session and the party switches at the BFF's own addresses and shapes, so the browser signs in to the C++ server as it does to the BFF.
+Serve the cookie session, the party switches, sign-up, the password policy and
+the password change at the BFF's own addresses and shapes, so the browser signs
+in to the C++ server as it does to the BFF. Sign-up and the policy are read
+before a session exists, sign-up is rate limited per address, and a password
+change updates the session the browser holds, so all eight are the session's
+work.
 
 * Status
 
@@ -35,7 +40,7 @@ Serve the cookie session and the party switches at the BFF's own addresses and s
 
 * Acceptance
 
-- Each of the five routes names its same-address C++ route in the inventory.
+- Each of the eight routes names its same-address C++ route in the inventory.
 - A test proves each route against the answer the BFF gives.
 - The local gate is green.
 

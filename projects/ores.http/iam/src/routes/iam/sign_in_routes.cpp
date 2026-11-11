@@ -24,6 +24,7 @@
 #include "ores.http/routes/iam/access_screen_answers.hpp"
 #include "ores.http/routes/iam/account_view.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/login_info_protocol.hpp"
 #include "ores.iam.api/messaging/session_operations_protocol.hpp"
 #include "ores.iam.api/messaging/session_protocol.hpp"
@@ -65,6 +66,18 @@ std::optional<std::uint32_t> whole_number(const http_request& req,
     return value;
 }
 
+/// An offset of zero or more and a limit of one to @p most, @p fallback when
+/// the query leaves it out.
+std::optional<std::pair<std::uint32_t, std::uint32_t>>
+page_of(const http_request& req, std::uint32_t fallback, std::uint32_t most) {
+    const auto offset =
+        whole_number(req, "offset", 0, 0, std::numeric_limits<std::uint32_t>::max());
+    const auto limit = whole_number(req, "limit", fallback, 1, most);
+    if (!offset || !limit)
+        return std::nullopt;
+    return std::pair{*offset, *limit};
+}
+
 http_response not_whole_numbers() {
     return refused(http_status::bad_request,
                    "invalid-request",
@@ -84,13 +97,13 @@ std::string login_info_answer(const std::optional<ores::iam::domain::login_info>
 }
 
 std::optional<std::pair<std::uint32_t, std::uint32_t>>
+sign_in_routes::read_sign_ins_page(const http_request& req) {
+    return page_of(req, 20, 200);
+}
+
+std::optional<std::pair<std::uint32_t, std::uint32_t>>
 sign_in_routes::read_page(const http_request& req) {
-    const auto offset =
-        whole_number(req, "offset", 0, 0, std::numeric_limits<std::uint32_t>::max());
-    const auto limit = whole_number(req, "limit", 100, 1, 1000);
-    if (!offset || !limit)
-        return std::nullopt;
-    return std::pair{*offset, *limit};
+    return page_of(req, 100, 1000);
 }
 
 void sign_in_routes::register_routes(
@@ -189,6 +202,39 @@ void sign_in_routes::register_routes(
                     req, session, messaging::get_my_sessions_request{});
                 return http_response::json(
                     "{\"sessions\":" + account_view::json_of(reply.sessions) + "}");
+            });
+        });
+
+    add(router->get("/api/accounts/{username}/sign-ins"),
+        "Read one account with its sign-in state and its sessions, newest first",
+        [&session](const http_request& req) {
+            const auto page = read_sign_ins_page(req);
+            if (!page)
+                return not_whole_numbers();
+            const auto username = req.get_path_param("username");
+            return guarded<messaging::list_sessions_request>([&] {
+                const auto read = ores::http::forwarding::forward(
+                    req, session, messaging::get_account_request{messaging::account_key{username}});
+                if (!read.account)
+                    return refused(
+                        http_status::not_found, "not-found", "No account has this username.");
+                const auto& account = *read.account;
+                const auto info = ores::http::forwarding::forward(
+                    req,
+                    session,
+                    messaging::get_login_info_request{messaging::login_info_key{account.id}});
+                messaging::list_sessions_request list;
+                list.offset = page->first;
+                list.limit = page->second;
+                list.order.field = "start_time";
+                list.order.descending = true;
+                list.filter = messaging::sessions_filter{account.id, std::nullopt};
+                const auto sessions = ores::http::forwarding::forward(req, session, list);
+                return http_response::json(
+                    "{\"account\":" + account_view::json_of(account) +
+                    ",\"loginInfo\":" + account_view::json_of(info.login_info) +
+                    ",\"sessions\":" + account_view::json_of(sessions.sessions) +
+                    ",\"totalCount\":" + std::to_string(sessions.total) + "}");
             });
         });
 }

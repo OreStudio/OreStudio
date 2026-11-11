@@ -42,6 +42,7 @@ PAIRS = {
     ("GET", "/api/reporting-tree"): ("GET", "/api/reporting-tree"),
     ("GET", "/api/me/ways-to-hold"): ("GET", "/api/me/ways-to-hold"),
     ("GET", "/api/me/sessions"): ("GET", "/api/me/sessions"),
+    ("GET", "/api/accounts/:username/sign-ins"): ("GET", "/api/accounts/{username}/sign-ins"),
     ("GET", "/api/me/access"): ("GET", "/api/me/access"),
     ("GET", "/api/me/permissions"): ("GET", "/api/me/permissions"),
     ("GET", "/api/accounts/:accountId/permissions"): ("GET", "/api/accounts/{accountId}/permissions"),

@@ -127,3 +127,20 @@ TEST_CASE("account_view_answers_the_sign_in_record_and_session_the_screens_read"
                             "\"protocol\":\"binary\""})
         CHECK(sessions.find(key) != std::string::npos);
 }
+
+TEST_CASE("sign_in_routes_read_an_account_sign_ins_page_as_the_bff_did", "[sign_in]") {
+    const auto defaults = sign_in_routes::read_sign_ins_page(sign_in_request({}));
+    REQUIRE(defaults);
+    CHECK(defaults->second == 20);
+    CHECK(sign_in_routes::read_sign_ins_page(sign_in_request({{"limit", "200"}})));
+    CHECK_FALSE(sign_in_routes::read_sign_ins_page(sign_in_request({{"limit", "201"}})));
+    nats_client session;
+    CHECK(sign_in_call(session,
+                       "/api/accounts/{username}/sign-ins",
+                       sign_in_request({{"limit", "0"}}, {{"username", "alice"}}))
+              .status == http_status::bad_request);
+    CHECK(sign_in_call(session,
+                       "/api/accounts/{username}/sign-ins",
+                       sign_in_request({}, {{"username", "alice"}}))
+              .status == http_status::bad_gateway);
+}

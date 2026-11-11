@@ -55,6 +55,14 @@ public:
      */
     [[nodiscard]] static std::optional<std::pair<std::uint32_t, std::uint32_t>>
     read_page(const ores::http::domain::http_request& req);
+
+    /**
+     * @brief The page of an account's sign-ins a query names, or nothing when
+     * it is not one: an offset of zero or more and a limit of 1 to 200, 20 when
+     * left out.
+     */
+    [[nodiscard]] static std::optional<std::pair<std::uint32_t, std::uint32_t>>
+    read_sign_ins_page(const ores::http::domain::http_request& req);
 };
 
 }

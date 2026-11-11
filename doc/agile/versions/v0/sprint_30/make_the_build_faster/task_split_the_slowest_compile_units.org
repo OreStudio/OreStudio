@@ -28,9 +28,9 @@ No single compile unit takes more than 5 min on the CI runner, so a cold build i
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | PR for the flat field list is open. Three units still take more than 300 s locally. |
+| Waiting on   | Merge, then the first CI build on main. |
+| Next         | Measure each unit on the CI runner. Split the units that are still above 5 min. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -40,9 +40,15 @@ No single compile unit takes more than 5 min on the CI runner, so a cold build i
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Run -ftime-trace on the slowest units to find the cause.
+2. The trace showed template instantiation of the =std::tuple= that
+   =wire_fields()= returns for each type. Every use of a field list
+   instantiated the full tuple machinery for the list size.
+3. Replace the tuple with =ores::utility::codec::field_list=, a flat list
+   that the codecs walk with a fold expression. Regenerate every
+   generated header that builds a field list.
+4. Measure each unit again on the CI runner after the merge. Split any unit
+   that is still above 5 min.
 
 * Measurements
 
@@ -60,8 +66,25 @@ task and name that file in the Command column.
 | ores.iam.core unity_1 compile | 612 s | same | same |
 | ores.marketdata.api unity_12 compile | 438 s | same | same |
 | ores.shell synthetic_commands.cpp compile | 433 s | same | same |
+| ores.synthetic.core.tests unity_0 compile, flat field list | 160 s | same, release build of the branch, load average up to 76 on 8 cores | 08d0893659 |
+| slowest ores.iam.core unit, flat field list | below 150 s | same | 08d0893659 |
+| slowest ores.marketdata.api unit (unity_13), flat field list | 160 s | same | 08d0893659 |
+| units above 300 s, flat field list | 3: trading.api unity_48 384 s, refdata.api unity_80 353 s, inbox.api unity_6 303 s | same | 08d0893659 |
+| ctest, flat field list | 100 of 100 passed | =compass test run --preset linux-clang-release-ninja -- -j 4= | 08d0893659 |
 
 * Notes
+
+- The local times come from a shared machine with a load average up to 76 on
+  8 cores, so they are high. The acceptance names the CI runner, so the CI
+  build on main decides it.
+- The release build did not compile =synthetic_commands.cpp= again, so its
+  time is still the 433 s from 2026-10-27.
+- =compass smoke ticks --fresh= at 08d0893659: the first run failed at step 11
+  =give_party_surface_blueprints= because the 3 min quote wait ran out under a
+  load of 76. The second run, at low load, passed step 11 and failed at step
+  13 =generate_trades= on the duplicate GBP LIBOR 3M swap convention. That
+  defect is on main and has the capture
+  [[id:9137921C-B9C9-4C9F-84B6-847A07B61F28][Name GBP LIBOR 3M in one swap convention]].
 
 * Test Scenarios
 

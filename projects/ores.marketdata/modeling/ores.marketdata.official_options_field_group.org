@@ -113,6 +113,13 @@ The address of the RBA's site, which serves its statistical tables.
 
 The address of the Banco Central do Brasil's API site, which serves its SGS API.
 
+** banxico_url
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The address of Banco de Mexico's site, which serves its SIE API.
+
 ** sources
 :PROPERTIES:
 :cpp_type: std::vector<domain::hosted_source>

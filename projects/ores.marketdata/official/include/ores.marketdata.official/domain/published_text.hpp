@@ -48,6 +48,15 @@ namespace ores::marketdata::official::domain {
     std::expected<std::chrono::year_month_day, std::string>
     date_of_month_name(std::string_view text, char separator);
 
+/**
+ * @brief The date of a text of digits in the order day, month and year, such as =06/11/2026=.
+ *
+ * @p separator stands between the day, the month and the year.
+ */
+[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT
+    std::expected<std::chrono::year_month_day, std::string>
+    date_of_day_first(std::string_view text, char separator);
+
 /// The English short name of @p month, such as =Oct=.
 [[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::string_view month_name(std::chrono::month month);
 

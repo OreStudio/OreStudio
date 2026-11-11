@@ -148,3 +148,23 @@ TEST_CASE("the_riksbank_fetcher_refuses_a_name_that_is_not_a_series_name", "[dom
     CHECK_FALSE(fetcher.fixings("", rb_day(2026, 11, 2), rb_day(2026, 11, 6)).has_value());
     CHECK(transport.asked.empty());
 }
+
+TEST_CASE("a_riksbank_fetcher_with_a_key_sends_it_on_each_read_and_never_in_an_error",
+          "[domain][riksbank]") {
+    const std::string key = "0123456789abcdef0123456789abcdef";
+    riksbank_transport transport;
+    transport.answers.push_back({404, "application/json", ""});
+    transport.answers.push_back({403, "application/json", ""});
+    riksbank_fetcher fetcher(transport, "https://api.riksbank.se", key);
+
+    const auto fixings = fetcher.fixings("SWESTR", rb_day(2026, 11, 3), rb_day(2026, 11, 6));
+
+    CHECK(transport.asked ==
+          std::vector<std::string>{
+              "https://api.riksbank.se/swestr/v1/all/SWESTR?fromDate=2026-11-03&toDate=2026-11-06"
+              "&subscription-key=" +
+                  key,
+              "https://api.riksbank.se/swestr/v1/latest/SWESTR?subscription-key=" + key});
+    REQUIRE_FALSE(fixings.has_value());
+    CHECK(fixings.error().find(key) == std::string::npos);
+}

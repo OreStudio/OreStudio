@@ -57,6 +57,31 @@ std::expected<std::chrono::year_month_day, std::string> date_of(std::string_view
     return date;
 }
 
+std::expected<std::chrono::year_month_day, std::string> date_of_day_first(std::string_view text,
+                                                                          char separator) {
+    const auto refused = std::unexpected(
+        std::format("'{}' is not a date of the form 06{}11{}2026", text, separator, separator));
+    const auto digits_only = [&] {
+        for (std::size_t i = 0; i < text.size(); ++i)
+            if (i != 2 && i != 5 && (text[i] < '0' || text[i] > '9'))
+                return false;
+        return true;
+    };
+    unsigned d = 0;
+    unsigned m = 0;
+    int y = 0;
+    if (text.size() != 10 || text[2] != separator || text[5] != separator || !digits_only() ||
+        std::from_chars(text.data(), text.data() + 2, d).ec != std::errc{} ||
+        std::from_chars(text.data() + 3, text.data() + 5, m).ec != std::errc{} ||
+        std::from_chars(text.data() + 6, text.data() + 10, y).ec != std::errc{})
+        return refused;
+    const std::chrono::year_month_day date{
+        std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
+    if (!date.ok())
+        return refused;
+    return date;
+}
+
 std::expected<std::chrono::year_month_day, std::string> date_of_month_name(std::string_view text,
                                                                            char separator) {
     const auto refused = [&] {
@@ -147,7 +172,8 @@ std::expected<std::string, std::string> read_body(http::client::net::transport& 
     if (!answer)
         return std::unexpected(answer.error().message);
     if (answer->status != 200)
-        return std::unexpected(std::format("{} answered {}", url, answer->status));
+        return std::unexpected(
+            std::format("{} answered {}", http::client::net::redacted(url), answer->status));
     return std::move(answer->body);
 }
 
@@ -161,15 +187,16 @@ read_window(http::client::net::transport& transport,
     if (answer->status == 200)
         return std::optional<std::string>(std::move(answer->body));
     if (answer->status != 404)
-        return std::unexpected(std::format("{} answered {}", window_url, answer->status));
+        return std::unexpected(
+            std::format("{} answered {}", http::client::net::redacted(window_url), answer->status));
     auto latest = transport.get(latest_url);
     if (!latest)
         return std::unexpected(latest.error().message);
     if (latest->status != 200)
         return std::unexpected(
             std::format("{} answered 404 and {} answered {}: the series is unknown",
-                        window_url,
-                        latest_url,
+                        http::client::net::redacted(window_url),
+                        http::client::net::redacted(latest_url),
                         latest->status));
     return std::optional<std::string>{};
 }

@@ -22,6 +22,7 @@
 set(files
     "app_official_adapter_tests.cpp"
     "config_options_tests.cpp"
+    "domain_banxico_tests.cpp"
     "domain_bcb_tests.cpp"
     "domain_boc_tests.cpp"
     "domain_boe_tests.cpp"

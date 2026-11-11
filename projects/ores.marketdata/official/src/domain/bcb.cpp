@@ -22,7 +22,6 @@
 #include <boost/json/parse.hpp>
 #include <boost/json/value.hpp>
 #include <algorithm>
-#include <charconv>
 #include <format>
 #include <iterator>
 #include <utility>
@@ -33,29 +32,6 @@ namespace {
 
 /// The longest window the fetcher asks for, inside the API's ten years for a daily series.
 constexpr std::chrono::days bcb_max_window{5 * 365};
-
-std::expected<std::chrono::year_month_day, std::string> bcb_date_of(std::string_view text) {
-    const auto refused = std::unexpected("'" + std::string(text) + "' is not a date");
-    unsigned d = 0;
-    unsigned m = 0;
-    int y = 0;
-    const auto digits_only = [&] {
-        for (std::size_t i = 0; i < text.size(); ++i)
-            if (i != 2 && i != 5 && (text[i] < '0' || text[i] > '9'))
-                return false;
-        return true;
-    };
-    if (text.size() != 10 || text[2] != '/' || text[5] != '/' || !digits_only() ||
-        std::from_chars(text.data(), text.data() + 2, d).ec != std::errc{} ||
-        std::from_chars(text.data() + 3, text.data() + 5, m).ec != std::errc{} ||
-        std::from_chars(text.data() + 6, text.data() + 10, y).ec != std::errc{})
-        return refused;
-    const std::chrono::year_month_day date{
-        std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
-    if (!date.ok())
-        return refused;
-    return date;
-}
 
 std::string bcb_query_date(std::chrono::year_month_day date) {
     return std::format("{:02}/{:02}/{:04}",
@@ -84,7 +60,7 @@ std::expected<std::vector<published_fixing>, std::string> parse_bcb_series(std::
             return std::unexpected("an entry of the answer has no text data and valor");
         if (value->as_string().empty())
             continue;
-        auto parsed = bcb_date_of(date->as_string());
+        auto parsed = date_of_day_first(date->as_string(), '/');
         if (!parsed)
             return std::unexpected(parsed.error());
         auto decimal = decimal_of_percent(value->as_string());

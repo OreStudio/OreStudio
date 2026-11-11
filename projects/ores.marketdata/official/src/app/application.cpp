@@ -20,6 +20,7 @@
 #include "ores.marketdata.official/app/application.hpp"
 #include "ores.http.client/net/transport.hpp"
 #include "ores.marketdata.official/app/official_adapter.hpp"
+#include "ores.marketdata.official/domain/banxico.hpp"
 #include "ores.marketdata.official/domain/bcb.hpp"
 #include "ores.marketdata.official/domain/boc.hpp"
 #include "ores.marketdata.official/domain/boe.hpp"
@@ -30,6 +31,7 @@
 #include "ores.marketdata.official/domain/nyfed.hpp"
 #include "ores.marketdata.official/domain/rba.hpp"
 #include "ores.marketdata.official/domain/riksbank.hpp"
+#include "ores.marketdata.official/domain/secret.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -63,6 +65,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << "Riksbank    : " << cfg.riksbank_url;
     BOOST_LOG_SEV(lg(), info) << "RBA         : " << cfg.rba_url;
     BOOST_LOG_SEV(lg(), info) << "BCB         : " << cfg.bcb_url;
+    BOOST_LOG_SEV(lg(), info) << "Banxico     : " << cfg.banxico_url;
     BOOST_LOG_SEV(lg(), info) << "Sources     : " << cfg.sources.size();
     BOOST_LOG_SEV(lg(), info) << "Backfill    : " << cfg.backfill_days << " days";
     BOOST_LOG_SEV(lg(), info) << "Poll        : every " << cfg.poll_minutes << " minutes";
@@ -78,17 +81,35 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     domain::boc_fetcher boc(transport, cfg.boc_url);
     domain::boj_fetcher boj(transport, cfg.boj_url);
     domain::norges_bank_fetcher norges_bank(transport, cfg.norges_bank_url);
-    domain::riksbank_fetcher riksbank(transport, cfg.riksbank_url);
+    auto riksbank_key = domain::resolve_secret("env:ORES_MARKETDATA_RIKSBANK_API_KEY");
+    if (!riksbank_key)
+        BOOST_LOG_SEV(lg(), info) << "The Riksbank is read without a key, at its lower quota: "
+                                  << riksbank_key.error();
+    domain::riksbank_fetcher riksbank(
+        transport,
+        cfg.riksbank_url,
+        riksbank_key ? std::optional<std::string>(std::move(*riksbank_key)) : std::nullopt);
     domain::rba_fetcher rba(transport, cfg.rba_url);
     domain::bcb_fetcher bcb(transport, cfg.bcb_url);
+    domain::banxico_fetcher banxico(
+        transport, cfg.banxico_url, domain::resolve_secret("env:ORES_MARKETDATA_BANXICO_API_KEY"));
     adapter_timing timing;
     timing.poll_interval = std::chrono::minutes(cfg.poll_minutes);
-    official_adapter adapter(
-        nats,
-        cfg.sources,
-        {&frankfurter, &nyfed, &ecb, &boe, &boc, &boj, &norges_bank, &riksbank, &rba, &bcb},
-        static_cast<int>(cfg.backfill_days),
-        timing);
+    official_adapter adapter(nats,
+                             cfg.sources,
+                             {&frankfurter,
+                              &nyfed,
+                              &ecb,
+                              &boe,
+                              &boc,
+                              &boj,
+                              &norges_bank,
+                              &riksbank,
+                              &rba,
+                              &bcb,
+                              &banxico},
+                             static_cast<int>(cfg.backfill_days),
+                             timing);
 
     // Bound before the await, so no lambda of the call lives in this frame; see run().
     auto service_run = ores::service::service::run(

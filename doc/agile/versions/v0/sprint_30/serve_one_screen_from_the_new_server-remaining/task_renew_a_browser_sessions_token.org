@@ -8,12 +8,12 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/renew-a-browser-sessions-token
-#+pr:
+#+pr: 4615
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A browser session keeps working for as long as IAM allows it, because the gatewa
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -53,6 +53,23 @@ session as a 401, so a browser session ends at its first expiry.
 The gateway's session path is in =ores.http.api=, which knows no NATS, so the
 renewal is a callback the application gives the session store, run before the
 token expires rather than after a refusal, on a worker and not the I/O thread.
+
+** What was built
+
+- =session_store= gains =token_renewal= (renewed, refused, unavailable), the
+  =token_renewer= callback, and =begin_renewal= / =end_renewal=, a claim one
+  request holds while it renews, so a burst renews once.
+- =http_session= renews a cookie session's token once three quarters of its
+  life have passed, on both cookie paths, through the worker pool. The requests
+  that arrive meanwhile go on with the current token, which is still valid. A
+  refusal closes the session, so the request answers 401 and clears the cookie;
+  a renewal that cannot be made keeps the current token for a later request.
+- =session_renewal= in the IAM part sends =iam.v1.ops.refresh= with the
+  session's token as Authorization, which is where IAM reads it, reads a refusal
+  from =X-Error= or the answer, and verifies the new token before it is used.
+  The application gives it to the server.
+- The BFF renewed after a service refused an expired token and retried; the
+  gateway renews before expiry, so no request is refused and retried.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -89,12 +106,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4615][#4615]] | [http] Renew a browser session's token before it expires |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: a delegated forward would carry the gateway's own token as Authorization, which is the header IAM's refresh reads. | =session_renewal.cpp= | Accepted | The renewal sends the session's token as Authorization on the raw transport, as the BFF's client did. |
+| 2 | Local review: renewing after a refusal would make one request fail and retry. | =http_session.cpp= | Accepted | The gateway renews before expiry, at three quarters of the token's life. |
+| 3 | Local review: a renewed token that does not verify. | =session_renewal.cpp= | Accepted | It is not used; the current token is kept and a later request renews again. |
+| 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR review: the renewal claim is not given up when the coroutine is cancelled. | =http_session.cpp= | Accepted | A scope guard gives the claim up on every path out. |
+| 6 | PR review: the old token stays valid after a renewal. | =session_renewal.cpp= | Declined | Tokens are stateless JWTs. IAM's refresh does not revoke the old one, and the gateway no longer sends it. |
+| 7 | PR review: a success that carries no token ends the session. | =session_renewal.cpp= | Accepted | That answer is malformed, so it is now a renewal that cannot be made now, and the current token is kept. |
+| 8 | PR review: an IAM outage makes every request try to renew. | =session_store.cpp= | Accepted | A failed renewal holds the next attempt for the session back for 30 seconds. |
+| 9 | PR review: a token with no positive lifetime is renewed on every request. | =http_session.cpp= | Accepted | Renewal is skipped when the lifetime is not positive. |
+| 10 | PR review: minor points (misplaced cookie comment, refusal not logged, captured client lifetime). | =http_server.hpp=, =session_renewal.cpp= | Accepted | The comment is back on =set_cookie_settings=, the X-Error value is logged at info, and the capture is commented. |
 
 * Result
+
+A browser session in the C++ gateway keeps working past its first token: the
+gateway renews the token through IAM once three quarters of its life have
+passed, once however many requests arrive together, and a refusal ends the
+session and clears the cookie. Tests prove the renewal, the single flight, the
+refusal and a renewal that cannot be made, through the real server.

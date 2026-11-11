@@ -38,6 +38,7 @@
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
 #include "ores.http/routes/iam/browser_session_routes.hpp"
 #include "ores.http/routes/iam/iam_routes.hpp"
+#include "ores.http/routes/iam/session_renewal.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.http/routes/synthetic/synthetic_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
@@ -213,6 +214,9 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     session_cookie.secure = cfg.server.enable_ssl;
     session_cookie.path = cfg.web_session_path;
     server.set_cookie_settings(session_cookie);
+    // A browser session outlives its first token: the gateway renews it before it expires.
+    server.set_token_renewer(http::routes::iam::session_renewal::renewer(
+        service_nats, [&server] { return server.verifier(); }));
 
     /*
      * The door finds the verifier when a sign-in needs it. The runner installs the

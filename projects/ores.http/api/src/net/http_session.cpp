@@ -110,6 +110,26 @@ struct discard_unless_published final {
     }
 };
 
+/// Gives up a renewal claim on every path out, cancellation included.
+struct renewal_claim final {
+    domain::session_store& store;
+    const std::string& identifier;
+    bool failed = true;
+    ~renewal_claim() {
+        store.end_renewal(identifier, failed);
+    }
+};
+
+/// A session's renewal, as the worker pool runs it: it blocks on IAM.
+struct run_token_renewal final {
+    const domain::token_renewer& renew;
+    const std::string& token;
+
+    asio::awaitable<domain::token_renewal> operator()() const {
+        co_return renew(token);
+    }
+};
+
 /// The route handler, as the worker pool runs it.
 struct run_route_handler final {
     const domain::request_handler& handler;
@@ -143,7 +163,8 @@ http_session::http_session(asio::ip::tcp::socket socket,
                            server_counters* counters,
                            std::shared_ptr<domain::session_store> sessions,
                            domain::cookie_settings cookie,
-                           std::shared_ptr<rate_limiting> limits)
+                           std::shared_ptr<rate_limiting> limits,
+                           domain::token_renewer renewer)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
@@ -153,7 +174,8 @@ http_session::http_session(asio::ip::tcp::socket socket,
     , counters_(counters)
     , sessions_(std::move(sessions))
     , cookie_(std::move(cookie))
-    , limits_(std::move(limits)) {
+    , limits_(std::move(limits))
+    , renewer_(std::move(renewer)) {
 
     auto endpoint = stream_.socket().remote_endpoint();
     peer_ = endpoint.address();
@@ -372,6 +394,52 @@ asio::awaitable<void> http_session::refuse_rate_limited(unsigned version,
     co_await write_response(rate_limited(policy, decision), version, keep_alive, true);
 }
 
+asio::awaitable<bool> http_session::renew_if_due(const std::string& identifier,
+                                                 domain::session_record& record) {
+    if (!renewer_)
+        co_return true;
+    /*
+     * A token is renewed once three quarters of its life have passed, so the
+     * request that renews it, and every request that arrives while it does, still
+     * holds a token that is valid.
+     */
+    const auto now = std::chrono::system_clock::now();
+    const auto lifetime = record.claims.expires_at - record.claims.issued_at;
+    const auto remaining = record.claims.expires_at - now;
+    // A token whose life is not positive states nothing to renew by.
+    if (lifetime <= decltype(lifetime)::zero() || remaining > lifetime / 4 ||
+        !sessions_->begin_renewal(identifier))
+        co_return true;
+
+    renewal_claim claim{*sessions_, identifier};
+    const auto token = record.token;
+    domain::token_renewal renewal;
+    try {
+        renewal = workers_ != nullptr ? co_await workers_->run(run_token_renewal{renewer_, token}) :
+                                        renewer_(token);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "A session's token was not renewed: " << e.what();
+    }
+
+    using outcome = domain::token_renewal::outcome;
+    if (renewal.result == outcome::refused) {
+        BOOST_LOG_SEV(lg(), info) << "IAM refused to renew a session's token; the session ends";
+        claim.failed = false;
+        sessions_->close(identifier);
+        co_return false;
+    }
+    if (renewal.result == outcome::renewed && renewal.claims) {
+        claim.failed = false;
+        sessions_->update(identifier, [&](domain::session_record& r) {
+            r.token = renewal.token;
+            r.claims = *renewal.claims;
+        });
+        record.token = renewal.token;
+        record.claims = *renewal.claims;
+    }
+    co_return true;
+}
+
 asio::awaitable<bool> http_session::refused_failed_credential(unsigned version,
                                                               std::string_view subject,
                                                               bool keep_alive) {
@@ -560,7 +628,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
             const auto identifier =
                 domain::session_cookie::read(domain_req.get_header("cookie"), cookie_);
             if (identifier.has_value()) {
-                if (auto record = sessions_->touch(*identifier); record.has_value()) {
+                auto record = sessions_->touch(*identifier);
+                if (record.has_value() && co_await renew_if_due(*identifier, *record)) {
                     claims = std::move(record->claims);
                     session_proof = true;
                     carry_session_token(domain_req, record->token);
@@ -653,7 +722,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         if (const auto identifier =
                 domain::session_cookie::read(domain_req.get_header("cookie"), cookie_);
             identifier.has_value()) {
-            if (auto record = sessions_->touch(*identifier); record.has_value()) {
+            auto record = sessions_->touch(*identifier);
+            if (record.has_value() && co_await renew_if_due(*identifier, *record)) {
                 domain_req.authenticated_user = std::move(record->claims);
                 carry_session_token(domain_req, record->token);
             }

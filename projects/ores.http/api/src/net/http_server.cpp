@@ -223,7 +223,8 @@ asio::awaitable<void> http_server::accept_connections() {
                                                           &counters_,
                                                           sessions_,
                                                           cookie_,
-                                                          limits_);
+                                                          limits_,
+                                                          renewer_);
 
             asio::co_spawn(
                 io_ctx_,

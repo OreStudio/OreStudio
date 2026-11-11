@@ -24,6 +24,7 @@
 #include "ores.utility/codec/json_codec.hpp"
 #include <algorithm>
 #include <exception>
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -160,6 +161,10 @@ std::string version_json(const ores::history::messaging::entity_history_version&
 
 }
 
+std::span<const std::string_view> history_routes::served_types() {
+    return history_types;
+}
+
 bool history_routes::serves(std::string_view entity_type) {
     return std::ranges::binary_search(history_types, entity_type);
 }
@@ -181,8 +186,10 @@ boost::asio::awaitable<http_response> history_routes::handle_history(const http_
         msg.entity_id = entity_id;
         const auto subject = ores::history::messaging::history_subject_for(entity_type);
         auto reply = ores::http::forwarding::forward_on(req, session, subject, msg);
+        // The BFF answered a history read the service refused as a conflict of the
+        // request, with the service's own words.
         if (!reply.success)
-            rr::refuse(http_status::bad_gateway, "upstream-unavailable", reply.message);
+            rr::refuse(http_status::conflict, "invalid-request", reply.message);
 
         std::ranges::sort(reply.versions,
                           std::ranges::greater{},

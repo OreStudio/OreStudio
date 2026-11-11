@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.history.api/messaging/history_protocol.hpp"
 #include "ores.http.core/routes/history_routes.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "test_suite.hpp"
@@ -26,6 +27,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <initializer_list>
 #include <optional>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -86,4 +88,17 @@ TEST_CASE("history_routes_forwards_a_record_it_serves", "[history_routes]") {
     const auto response = history_run(history_routes::handle_history(
         history_query({{"entityType", "ores.refdata.currency"}, {"entityId", "USD"}}), session));
     CHECK(response.status == http_status::bad_gateway);
+}
+
+TEST_CASE("history_routes_reaches_a_known_owner_for_every_type_it_serves", "[history_routes]") {
+    const std::set<std::string> owners{
+        "analytics", "iam", "marketdata", "refdata", "reporting", "synthetic", "trading"};
+    for (const auto type : history_routes::served_types()) {
+        const auto subject = ores::history::messaging::history_subject_for(type);
+        const auto owner = subject.substr(0, subject.find('.'));
+        INFO(type);
+        CHECK(owners.contains(owner));
+        CHECK(subject == owner + ".v1.history.get");
+    }
+    CHECK(history_routes::served_types().size() == 86);
 }

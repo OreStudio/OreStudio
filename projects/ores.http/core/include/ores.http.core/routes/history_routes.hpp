@@ -28,6 +28,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <memory>
+#include <span>
 #include <string_view>
 
 namespace ores::http::routes {
@@ -48,6 +49,11 @@ public:
     static void register_routes(std::shared_ptr<ores::http::net::router> router,
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                 ores::nats::service::nats_client& session);
+
+    /**
+     * @brief The entity types a screen reads history for, sorted.
+     */
+    [[nodiscard]] static std::span<const std::string_view> served_types();
 
     /**
      * @brief Whether a screen reads history for this entity type.

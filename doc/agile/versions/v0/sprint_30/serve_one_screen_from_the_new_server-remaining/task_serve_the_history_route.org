@@ -94,6 +94,11 @@ via its "Verifies task" field.
 | 2 | Local review: =ores.http.core='s build file is generated. | =component_overview.org= | Accepted | The two new libraries are declared in the model's =extra_dependencies= and the file regenerated, not edited. |
 | 3 | Local build: =is_sorted= over =const char*= compared pointers, so the table's order was not checked at compile time. | =history_routes.cpp= | Accepted | The table holds =std::string_view=, so the order of the text is checked. |
 | 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR #4574 review: confirm the client sends =entityType= and =entityId=. | =client.ts= | No change | It builds =new URLSearchParams({ entityType, entityId })=. |
+| 6 | PR #4574 review: a failed history reply is a 502; check what the BFF did. | =history_routes.cpp= | Accepted | The BFF mapped =OperationFailedError= to 409 =invalid-request= with the service's message. The route now does the same. |
+| 7 | PR #4574 review: prove every served type reaches a subject. | =history_routes_tests.cpp= | Accepted | A test checks each of the 86 types against the history subject of a known owner. The test target declares =ores.history.api= in the model. |
+| 8 | PR #4574 review: confirm =forward= through =forward_on= sends as before. | =forwarding.hpp= | No change | =request_and_decode= with =authenticated= set and =authenticated_request_and_decode= both call =authenticated_request= on the request's subject; =refuse_undecodable= takes a =string_view=. |
+| 9 | PR #4574 review: test =forward_on= with a fake client, and the newest-first order. | — | Declined | No fake client exists to inject a reply; the forward step is covered up to the transport. |
 
 * Result
 

@@ -44,13 +44,7 @@ target_link_libraries(${tests_target_name}
 # a scoped temporary file, a compression helper -- so the component declares
 # them here rather than the profile carrying every component's needs.
 
-target_link_libraries(${tests_target_name}
-    PRIVATE
-        ${lib_target_name}
-        ores.testing.lib
-        Catch2::Catch2
-        ores.openssl_cleanup
-        Threads::Threads)
+
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

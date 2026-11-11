@@ -23,6 +23,7 @@
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.nats/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.nats/service/request_refused_error.hpp"
@@ -54,22 +55,23 @@ namespace ores::http::forwarding {
  * The message is the code itself: a service states a refusal in its reply
  * header as a code alone, and the client's own sentence names the subject.
  */
-[[nodiscard]] ores::http::net::record_routes::refusal refusal_for(std::string_view code);
+[[nodiscard]] ORES_HTTP_NATS_EXPORT ores::http::net::record_routes::refusal
+refusal_for(std::string_view code);
 
 /**
  * @brief Refuse with the HTTP refusal a service's refusal code names.
  */
-[[noreturn]] void refuse_refused(const ores::nats::service::request_refused_error& e);
+[[noreturn]] ORES_HTTP_NATS_EXPORT void refuse_refused(const ores::nats::service::request_refused_error& e);
 
 /**
  * @brief Refuse a reply that does not decode as the response it answers.
  */
-[[noreturn]] void refuse_undecodable(std::string_view subject, const std::string& detail);
+[[noreturn]] ORES_HTTP_NATS_EXPORT void refuse_undecodable(std::string_view subject, const std::string& detail);
 
 /**
  * @brief Refuse a session the service could not renew.
  */
-[[noreturn]] void refuse_lapsed(const ores::nats::service::session_expired_error& e);
+[[noreturn]] ORES_HTTP_NATS_EXPORT void refuse_lapsed(const ores::nats::service::session_expired_error& e);
 
 /**
  * @brief Send one canonical request as the caller on a subject named at run time.
@@ -114,8 +116,8 @@ typename Request::response_type forward(const ores::http::domain::http_request& 
 /**
  * @brief The response a failure that is not a refusal states, its detail logged.
  */
-[[nodiscard]] ores::http::domain::http_response unanswered(std::string_view subject,
-                                                           const std::exception& e);
+[[nodiscard]] ORES_HTTP_NATS_EXPORT ores::http::domain::http_response
+unanswered(std::string_view subject, const std::exception& e);
 
 /**
  * @brief Forward one canonical request and answer the reply as JSON.

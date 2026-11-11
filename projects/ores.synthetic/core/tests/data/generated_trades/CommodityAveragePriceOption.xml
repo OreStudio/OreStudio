@@ -6,12 +6,14 @@
       <OptionData>
         <LongShort>Long</LongShort>
         <OptionType>Put</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2027-11-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Name>NYMEX:CL</Name>
-      <Currency>EUR</Currency>
+      <Currency>USD</Currency>
       <Quantity>19661.53</Quantity>
       <Strike>93.62</Strike>
       <PriceType>FutureSettlement</PriceType>
@@ -27,14 +29,16 @@
     <TradeType>CommodityAveragePriceOption</TradeType>
     <CommodityAveragePriceOptionData>
       <OptionData>
-        <LongShort>Long</LongShort>
+        <LongShort>Short</LongShort>
         <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
         <ExerciseDates>
           <ExerciseDate>2031-10-02</ExerciseDate>
         </ExerciseDates>
       </OptionData>
       <Name>NYMEX:NG</Name>
-      <Currency>EUR</Currency>
+      <Currency>USD</Currency>
       <Quantity>40102.33</Quantity>
       <Strike>116.49</Strike>
       <PriceType>FutureSettlement</PriceType>

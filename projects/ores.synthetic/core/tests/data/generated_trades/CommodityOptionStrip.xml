@@ -6,12 +6,18 @@
       <LegData>
         <Payer>false</Payer>
         <LegType>CommodityFloating</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
+        <PaymentConvention>Following</PaymentConvention>
+        <PaymentLag>5</PaymentLag>
+        <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
             <StartDate>2025-09-02</StartDate>
+            <EndDate>2029-09-02</EndDate>
             <Tenor>1M</Tenor>
-            <Convention>MF</Convention>
+            <Calendar>NullCalendar</Calendar>
+            <Convention>Unadjusted</Convention>
+            <Rule>Backward</Rule>
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
@@ -22,6 +28,14 @@
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
+      <Puts>
+        <LongShorts>
+          <LongShort>Short</LongShort>
+        </LongShorts>
+        <Strikes>
+          <Strike>65.85</Strike>
+        </Strikes>
+      </Puts>
     </CommodityOptionStripData>
   </Trade>
   <Trade id="549928d6-6734-552e-b88d-6dfc7ff450e1">
@@ -30,12 +44,18 @@
       <LegData>
         <Payer>false</Payer>
         <LegType>CommodityFloating</LegType>
-        <Currency>EUR</Currency>
+        <Currency>USD</Currency>
+        <PaymentConvention>Following</PaymentConvention>
+        <PaymentLag>5</PaymentLag>
+        <PaymentCalendar>US-NYSE</PaymentCalendar>
         <ScheduleData>
           <Rules>
             <StartDate>2025-08-02</StartDate>
+            <EndDate>2026-08-02</EndDate>
             <Tenor>1M</Tenor>
-            <Convention>MF</Convention>
+            <Calendar>NullCalendar</Calendar>
+            <Convention>Unadjusted</Convention>
+            <Rule>Backward</Rule>
           </Rules>
         </ScheduleData>
         <CommodityFloatingLegData>
@@ -46,6 +66,14 @@
           </Quantities>
         </CommodityFloatingLegData>
       </LegData>
+      <Puts>
+        <LongShorts>
+          <LongShort>Short</LongShort>
+        </LongShorts>
+        <Strikes>
+          <Strike>142.12</Strike>
+        </Strikes>
+      </Puts>
     </CommodityOptionStripData>
   </Trade>
 </Portfolio>

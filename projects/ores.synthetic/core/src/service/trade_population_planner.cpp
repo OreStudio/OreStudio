@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.trading.api/builders/bond_builders.hpp"
+#include "ores.trading.api/builders/commodity_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
 #include "ores.trading.api/builders/equity_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
@@ -777,6 +778,146 @@ construct_commodity_batch(const std::string& trade_type_code,
     return batch;
 }
 
+/// The oresmd address of a commodity the catalogue names, which the projection writes as ORE names
+/// it.
+ores::marketdata::datum::market_reference commodity_address_of(const std::string& code) {
+    namespace md = ores::marketdata::datum;
+    auto index = md::market_index::make(md::index_family::commodity, code, {});
+    if (!index)
+        throw trade_population_error("The commodity " + code + " has no address: " + index.error());
+    auto reference = md::market_reference::of(std::move(*index));
+    if (!reference)
+        throw trade_population_error("The commodity " + code +
+                                     " has no address: " + reference.error());
+    return std::move(*reference);
+}
+
+/*
+ * The commodity types a builder states. A type that is not built here keeps
+ * its constructor until the projection writes it; the builders task deletes
+ * that path when the last type moves.
+ */
+std::optional<ores::trading::domain::instrument_batch>
+built_commodity_trade(const domain::trade_generation_scope& scope,
+                      const domain::trade_population_slot& entry,
+                      const domain::commodity_terms& drawn,
+                      const std::string& currency) {
+    namespace tb = ores::trading::builders;
+    using ores::utility::decimal::decimal;
+    const auto money = [](double value) {
+        return decimal::from_double(std::round(value * 100.0) / 100.0).value();
+    };
+    const auto& type = entry.trade_type_code;
+    const auto name = slot_name(scope, entry.slot);
+    const auto underlying = commodity_address_of(drawn.commodity_code);
+    const auto quantity = money(drawn.quantity);
+    const auto start = drawn.start_date;
+    const auto end = drawn.maturity_date;
+    const auto position =
+        draw(name, 9) < 0.5 ? tb::option_position::long_option : tb::option_position::short_option;
+    const auto kind = drawn.option_type == "Put" ? tb::option_kind::put : tb::option_kind::call;
+    const auto strike = money(drawn.strike_price.value_or(0.0));
+    // A swaption's fixed price is its strike.
+    const auto price = money(drawn.fixed_price.value_or(drawn.strike_price.value_or(0.0)));
+    const auto built = [&](tb::commodity_result result) {
+        if (!result)
+            throw trade_population_error("The " + type + " builder refuses the drawn " +
+                                         result.error().term + ": " + result.error().message);
+        ores::trading::domain::instrument_batch batch;
+        ores::trading::domain::append_instrument(
+            batch, ores::trading::domain::trade_instrument{std::move(*result)});
+        return batch;
+    };
+    const tb::commodity_option_terms option{.underlying = underlying,
+                                            .currency = currency,
+                                            .quantity = quantity,
+                                            .kind = kind,
+                                            .strike = strike,
+                                            .expiry = end,
+                                            .position = position,
+                                            .unit = drawn.unit};
+    const auto swap_from = [&](year_month_day swap_start) {
+        return tb::commodity_swap_terms{.underlying = underlying,
+                                        .currency = currency,
+                                        .quantity = quantity,
+                                        .price = price,
+                                        .start = swap_start,
+                                        .maturity = end,
+                                        .fixed_side = draw(name, 10) < 0.5 ? tb::side::pay :
+                                                                             tb::side::receive,
+                                        .unit = drawn.unit};
+    };
+
+    if (type == "CommodityForward")
+        return built(tb::commodity_forward_builder({.underlying = underlying,
+                                                    .currency = currency,
+                                                    .quantity = quantity,
+                                                    .price = price,
+                                                    .maturity = end,
+                                                    .position = position,
+                                                    .unit = drawn.unit})
+                         .build());
+    if (type == "CommodityOption")
+        return built(tb::commodity_option_builder(option).build());
+    if (type == "CommodityAveragePriceOption")
+        return built(
+            tb::commodity_average_price_option_builder({.option = option, .averaging_start = start})
+                .build());
+    if (type == "CommodityOptionStrip")
+        return built(tb::commodity_option_strip_builder({.underlying = underlying,
+                                                         .currency = currency,
+                                                         .quantity = quantity,
+                                                         .kind = kind,
+                                                         .strike = strike,
+                                                         .start = start,
+                                                         .maturity = end,
+                                                         .roll_tenor = std::string("1M"),
+                                                         .position = position,
+                                                         .unit = drawn.unit})
+                         .build());
+    if (type == "CommoditySwap")
+        return built(tb::commodity_swap_builder(swap_from(start)).build());
+    if (type == "CommoditySwaption") {
+        // The swaption expires six months in, and the swap it enters starts then.
+        const auto expiry = add_months(start, 6);
+        return built(tb::commodity_swaption_builder(
+                         {.swap = swap_from(expiry), .expiry = expiry, .position = position})
+                         .build());
+    }
+    if (type == "CommodityVarianceSwap")
+        return built(tb::commodity_variance_swap_builder(
+                         {.underlying = underlying,
+                          .currency = currency,
+                          .notional = quantity,
+                          .variance_strike = drawn.variance_strike.value_or(0.04),
+                          .start = start,
+                          .maturity = end,
+                          .unit = drawn.unit})
+                         .build());
+    if (type == "CommodityBasketOption") {
+        std::vector<tb::commodity_basket_member> basket;
+        for (const auto& member : drawn.basket)
+            if (std::ranges::none_of(basket, [&](const auto& held) {
+                    return held.underlying == commodity_address_of(member.code);
+                }))
+                basket.push_back({commodity_address_of(member.code), 0.0});
+        if (basket.size() < 2)
+            throw trade_population_error("A commodity basket names two distinct commodities, and "
+                                         "the tenant holds fewer than two.");
+        for (auto& member : basket)
+            member.weight = 1.0 / static_cast<double>(basket.size());
+        return built(tb::commodity_basket_option_builder({.basket = std::move(basket),
+                                                          .currency = currency,
+                                                          .notional = quantity,
+                                                          .kind = kind,
+                                                          .strike = strike,
+                                                          .expiry = end,
+                                                          .position = position})
+                         .build());
+    }
+    return std::nullopt;
+}
+
 struct commodity_type final {
     std::string_view code;
     commodity_shape shape;
@@ -966,7 +1107,13 @@ commodity_trade_planner::plan(const domain::trade_generation_scope& scope) const
          * The commodity family states its rows here, where it draws them, and
          * the plan carries no bag for it.
          */
-        entry.instruments = construct_commodity_batch(entry.trade_type_code, terms, entry.currency);
+        // A commodity trade is in the currency its commodity is quoted in.
+        const auto currency =
+            commodity.quotation_currency.empty() ? entry.currency : commodity.quotation_currency;
+        auto built = built_commodity_trade(scope, entry, terms, currency);
+        entry.instruments = built ?
+                                std::move(*built) :
+                                construct_commodity_batch(entry.trade_type_code, terms, currency);
 
         plan.slots.push_back(std::move(entry));
     }

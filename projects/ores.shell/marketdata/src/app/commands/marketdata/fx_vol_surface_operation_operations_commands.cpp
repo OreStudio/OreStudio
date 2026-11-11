@@ -71,6 +71,13 @@ void fx_vol_surface_operation_operations_commands::register_commands(cli::Menu& 
         },
         "get-fx-vol-surface-publish-subject <approval_request_id>");
 
+    menu->Insert(
+        "get-published-fx-vol-surface",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_get_published_fx_vol_surface(std::ref(out), std::ref(session), std::move(args));
+        },
+        "get-published-fx-vol-surface <blueprint_id> <as_of> [--expiry <v>] [--strike <v>]");
+
     ores::shell::app::insert_menu(root_menu, std::move(menu));
 }
 
@@ -244,6 +251,72 @@ void fx_vol_surface_operation_operations_commands::process_get_fx_vol_surface_pu
         result =
             do_request<ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response>(
                 out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void fx_vol_surface_operation_operations_commands::process_get_published_fx_vol_surface(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get-published-fx-vol-surface request.";
+
+    using request_type = ores::marketdata::messaging::get_published_fx_vol_surface_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run get-published-fx-vol-surface." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "expiry", .requires_value = true, .default_value = ""},
+        {.name = "strike", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 2;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.blueprint_id = parsed->positionals[next++];
+        req.as_of = ores::shell::app::from_token<std::chrono::system_clock::time_point>(
+            parsed->positionals[next++], "as_of");
+        if (const auto& raw_expiry = parsed->flag("expiry"); !raw_expiry.empty()) {
+            req.expiry = raw_expiry;
+        }
+        if (const auto& raw_strike = parsed->flag("strike"); !raw_strike.empty()) {
+            req.strike = raw_strike;
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::marketdata::messaging::get_published_fx_vol_surface_response> result;
+    if constexpr (request_type::requires_session) {
+        result =
+            do_auth_request<ores::marketdata::messaging::get_published_fx_vol_surface_response>(
+                out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::marketdata::messaging::get_published_fx_vol_surface_response>(
+            out, session, std::string(req.nats_subject), req);
     }
     if (!result)
         return;

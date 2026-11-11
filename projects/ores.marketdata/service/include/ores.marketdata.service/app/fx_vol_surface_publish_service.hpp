@@ -45,6 +45,11 @@ public:
     publish(ores::database::context ctx,
             const ores::marketdata::messaging::publish_fx_vol_surface_request& request);
 
+    /// The published surface of a blueprint at an as-of, or a slice of it. Never a candidate.
+    [[nodiscard]] static ores::marketdata::messaging::get_published_fx_vol_surface_response
+    read_published(ores::database::context ctx,
+                   const ores::marketdata::messaging::get_published_fx_vol_surface_request& request);
+
     [[nodiscard]] static ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response
     read(ores::database::context ctx,
          const ores::marketdata::messaging::get_fx_vol_surface_publish_subject_request& request);

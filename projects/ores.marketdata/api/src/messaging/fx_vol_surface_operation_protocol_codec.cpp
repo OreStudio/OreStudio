@@ -257,4 +257,77 @@ wire_traits<ores::marketdata::messaging::get_fx_vol_surface_publish_subject_resp
         ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response>(data);
 }
 
+std::string wire_traits<ores::marketdata::messaging::fx_vol_surface_point>::write_json(
+    const ores::marketdata::messaging::fx_vol_surface_point& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::fx_vol_surface_point
+wire_traits<ores::marketdata::messaging::fx_vol_surface_point>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::fx_vol_surface_point>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::fx_vol_surface_point>::write_msgpack(
+    const ores::marketdata::messaging::fx_vol_surface_point& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::fx_vol_surface_point
+wire_traits<ores::marketdata::messaging::fx_vol_surface_point>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::fx_vol_surface_point>(data);
+}
+
+std::string
+wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_request>::write_json(
+    const ores::marketdata::messaging::get_published_fx_vol_surface_request& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_published_fx_vol_surface_request
+wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_published_fx_vol_surface_request>(
+        text);
+}
+
+std::string
+wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_request>::write_msgpack(
+    const ores::marketdata::messaging::get_published_fx_vol_surface_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_published_fx_vol_surface_request
+wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_published_fx_vol_surface_request>(
+        data);
+}
+
+std::string
+wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_response>::write_json(
+    const ores::marketdata::messaging::get_published_fx_vol_surface_response& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_published_fx_vol_surface_response
+wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_published_fx_vol_surface_response>(
+        text);
+}
+
+std::string
+wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_response>::write_msgpack(
+    const ores::marketdata::messaging::get_published_fx_vol_surface_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_published_fx_vol_surface_response
+wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_published_fx_vol_surface_response>(
+        data);
+}
+
 }

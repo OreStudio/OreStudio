@@ -84,6 +84,13 @@ public:
     process_get_fx_vol_surface_publish_subject(std::ostream& out,
                                                ores::nats::service::nats_client& session,
                                                const std::vector<std::string>& args);
+
+    /**
+     * @brief get-published-fx-vol-surface <blueprint_id> <as_of> [--expiry <v>] [--strike <v>]
+     */
+    static void process_get_published_fx_vol_surface(std::ostream& out,
+                                                     ores::nats::service::nats_client& session,
+                                                     const std::vector<std::string>& args);
 };
 
 }

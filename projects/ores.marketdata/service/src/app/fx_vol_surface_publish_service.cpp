@@ -20,10 +20,15 @@
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_calibration_repository.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
+#include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_grid.hpp"
+#include "ores.platform/numeric/floating_point.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/fx_vol_surface_blueprint_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -31,6 +36,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <optional>
 #include <stdexcept>
 
@@ -310,6 +316,62 @@ fx_vol_surface_publish_service::read(context ctx, const msg::get_fx_vol_surface_
         out.superseded_at = record->superseded_at;
         if (record->superseded_by_request_id)
             out.superseded_by_request_id = boost::uuids::to_string(*record->superseded_by_request_id);
+    } catch (const std::exception& e) {
+        out.success = false;
+        out.message = e.what();
+    }
+    return out;
+}
+
+msg::get_published_fx_vol_surface_response
+fx_vol_surface_publish_service::read_published(context ctx, const msg::get_published_fx_vol_surface_request& req) {
+    msg::get_published_fx_vol_surface_response out;
+    try {
+        const auto party = ores::service::messaging::session_party(ctx, "A surface");
+        const auto blueprint = blueprint_of(ctx, req.blueprint_id);
+        if (blueprint.party_id != party)
+            throw std::invalid_argument("The surface " + blueprint.name + " belongs to another party.");
+        out.blueprint_name = blueprint.name;
+        const auto sets =
+            repository::fx_vol_surface_publish_repository{}.read_published_for_blueprint(ctx, blueprint.id);
+        const auto found = std::ranges::find_if(sets, [&](const auto& s) { return s.as_of <= req.as_of; });
+        if (found == sets.end()) {
+            out.message = "No surface of " + blueprint.name + " is published at or before " +
+                          datetime::to_iso8601_utc(req.as_of) + ".";
+            return out;
+        }
+        std::vector<surface_grid_point> points;
+        for (const auto& obs : repository::market_observation_repository{}.read_as_of(
+                 ctx, found->output_series_id, found->as_of)) {
+            if (obs.observation_datetime != found->as_of)
+                continue;
+            const auto named = datum::oresmd_uri_codec::read(obs.oresmd_uri);
+            const auto value = ores::platform::numeric::parse_double(obs.value);
+            if (!named || !value) {
+                BOOST_LOG_SEV(publish_log(), ores::logging::warn)
+                    << "Skipping a point of the published surface of " << blueprint.name
+                    << " that does not read: " << obs.oresmd_uri;
+                continue;
+            }
+            const auto* expiry = named->get<datum::field::expiry>();
+            const auto* strike = named->get<datum::field::strike>();
+            if (expiry && strike)
+                points.push_back({expiry->text(), strike->text(), *value});
+        }
+        auto grid = surface_grid_of(std::move(points), split_blueprint_list(blueprint.output_strikes),
+                                    req.expiry, req.strike);
+        if (!grid)
+            throw std::invalid_argument("The published surface of " + blueprint.name + ": " + grid.error() + ".");
+        out.success = true;
+        out.publish_request_id = boost::uuids::to_string(found->request_id);
+        out.as_of = found->as_of;
+        out.published_at = found->published_at;
+        out.published_by = found->published_by;
+        out.superseded_at = found->superseded_at;
+        out.expiries = std::move(grid->expiries);
+        out.strikes = std::move(grid->strikes);
+        for (auto& p : grid->points)
+            out.points.push_back({.expiry = std::move(p.expiry), .strike = std::move(p.strike), .volatility = p.volatility});
     } catch (const std::exception& e) {
         out.success = false;
         out.message = e.what();

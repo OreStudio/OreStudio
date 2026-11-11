@@ -222,6 +222,9 @@ public:
     std::vector<domain::fx_vol_surface_publish>
     read_live_for_series(context ctx, const boost::uuids::uuid& series_id);
 
+    std::vector<domain::fx_vol_surface_publish>
+    read_published_for_blueprint(context ctx, const boost::uuids::uuid& blueprint_id);
+
 private:
     /**
      * @brief The claim a replace makes: the version the row carries now, or

@@ -478,6 +478,49 @@ fx_vol_surface_publish_repository::read_live_for_series(context ctx,
 }
 #+end_src
 
+*** read_published_for_blueprint
+:PROPERTIES:
+:ID: 6FBF1BBB-0B2C-4377-9666-475E4F9FB063
+:END:
+
+Every published surface of one blueprint, newest as-of first, superseded ones included. A
+reader at an as-of takes the first one at or before it.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::fx_vol_surface_publish>
+read_published_for_blueprint(context ctx, const boost::uuids::uuid& blueprint_id);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <boost/uuid/uuid_io.hpp>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::fx_vol_surface_publish>
+fx_vol_surface_publish_repository::read_published_for_blueprint(context ctx,
+                                                               const boost::uuids::uuid& blueprint_id) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto bid = boost::uuids::to_string(blueprint_id);
+    const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "blueprint_id"_c == bid &&
+                                            "valid_to"_c == max);
+    auto rows = query_builder::execute_read_query<fx_vol_surface_publish_entity,
+                                                  domain::fx_vol_surface_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return fx_vol_surface_publish_mapper::map(entities); },
+        lg(),
+        "Reading the published surfaces of a blueprint.");
+    std::erase_if(rows, [](const auto& r) { return !r.published_at.has_value(); });
+    std::ranges::sort(rows, [](const auto& a, const auto& b) { return a.as_of > b.as_of; });
+    return rows;
+}
+#+end_src
+
 ** Domain includes
 
 #+begin_src cpp :name includes

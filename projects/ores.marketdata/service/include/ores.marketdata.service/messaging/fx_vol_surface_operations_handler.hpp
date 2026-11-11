@@ -114,6 +114,28 @@ public:
         reply(nats_, msg, ores::marketdata::service::app::fx_vol_surface_publish_service::publish(*req_ctx, *req));
     }
 
+    void read_published(ores::nats::message msg) {
+        using namespace ores::logging;
+        using namespace ores::service::messaging;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(fx_vol_surface_operations_handler_lg(), msg);
+        auto req_ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx) {
+            error_reply(nats_, msg, req_ctx.error());
+            return;
+        }
+        if (!has_permission(*req_ctx, "marketdata::market_observations:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        const auto req = decode<get_published_fx_vol_surface_request>(msg);
+        if (!req) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        reply(nats_, msg, ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(*req_ctx, *req));
+    }
+
     void read_publish(ores::nats::message msg) {
         using namespace ores::logging;
         using namespace ores::service::messaging;

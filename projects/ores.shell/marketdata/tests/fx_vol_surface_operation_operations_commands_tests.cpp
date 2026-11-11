@@ -62,10 +62,11 @@ TEST_CASE("fx_vol_surface_operation_operations_registers_every_declared_command"
              std::string{"calibrate-fx-vol-surface"},
              std::string{"publish-fx-vol-surface"},
              std::string{"get-fx-vol-surface-publish-subject"},
+             std::string{"get-published-fx-vol-surface"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 3 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 4 command(s).";
 }
 
 TEST_CASE("fx_vol_surface_operation_operations_process_calibrate_fx_vol_surface_requires_a_session",
@@ -267,6 +268,77 @@ TEST_CASE("fx_vol_surface_operation_operations_process_get_fx_vol_surface_publis
         session,
         std::vector<std::string>{
             "sample",
+        });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();
+    // Whether the command carries a token or not, everything ahead of the
+    // transport is satisfied, which is what the absence of a connection proves.
+    CHECK(out.str().find("Not connected to NATS") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE(
+    "fx_vol_surface_operation_operations_process_get_published_fx_vol_surface_requires_a_session",
+    "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_vol_surface_operation_operations_commands::process_get_published_fx_vol_surface(
+        out,
+        session,
+        std::vector<std::string>{
+            "sample",
+            "2026-01-01T00:00:00Z",
+        });
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("fx_vol_surface_operation_operations_process_get_published_fx_vol_surface_reports_the_"
+          "expected_count",
+          "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_vol_surface_operation_operations_commands::process_get_published_fx_vol_surface(
+        out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    CHECK(out.str().find("Expected 2 arguments, got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("fx_vol_surface_operation_operations_process_get_published_fx_vol_surface_reaches_the_"
+          "transport",
+          "[commands]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    nats_client::login_info info;
+    info.username = "tester";
+    info.jwt = "token";
+    session.set_auth(std::move(info));
+    std::ostringstream out;
+
+    command_feedback::reset();
+    fx_vol_surface_operation_operations_commands::process_get_published_fx_vol_surface(
+        out,
+        session,
+        std::vector<std::string>{
+            "sample",
+            "2026-01-01T00:00:00Z",
         });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();

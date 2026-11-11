@@ -156,11 +156,63 @@ export interface GetFxVolSurfacePublishSubjectResponse {
     superseded_by_request_id: string;
 }
 
+/**
+ * @brief One point of a published surface: its expiry, its strike and its volatility.
+ */
+export interface FxVolSurfacePoint {
+    expiry: string;
+    strike: string;
+    volatility: number;
+}
+
+/**
+ * @brief Reads the published surface of a blueprint of the caller's party: the newest published set at or before the as-of, exactly as it was published. Naming an expiry reads that expiry across the strikes; naming a strike reads that strike across the expiries. A candidate is never read.
+ */
+export interface GetPublishedFxVolSurfaceRequest {
+    blueprint_id: string;
+    as_of: string;
+    /**
+     * @brief The expiry to slice at, such as 3M, or empty for every expiry.
+     */
+    expiry: string;
+    /**
+     * @brief The strike to slice at, such as ATM or DEL/Spot/Put/25, or empty for every strike.
+     */
+    strike: string;
+}
+
+/**
+ * @brief The published surface, or the slice of it asked for, and the publish it answers from.
+ */
+export interface GetPublishedFxVolSurfaceResponse {
+    success: boolean;
+    message: string;
+    blueprint_name: string;
+    publish_request_id: string;
+    as_of: string;
+    published_at: string | null;
+    published_by: string;
+    superseded_at: string | null;
+    /**
+     * @brief The expiries the answer holds, shortest first.
+     */
+    expiries: string[];
+    /**
+     * @brief The strikes the answer holds, in the blueprint's order.
+     */
+    strikes: string[];
+    /**
+     * @brief The points, expiry by expiry, each expiry's strikes in order.
+     */
+    points: FxVolSurfacePoint[];
+}
+
 export const subjects = {
     calibrate_fx_vol_surface_request: 'marketdata.v1.ops.calibrate_fx_vol_surface',
     publish_fx_vol_surface_request: 'marketdata.v1.ops.publish_fx_vol_surface',
     get_fx_vol_surface_publish_subject_request:
         'marketdata.v1.ops.get_fx_vol_surface_publish_subject',
+    get_published_fx_vol_surface_request: 'marketdata.v1.ops.get_published_fx_vol_surface',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -171,4 +223,5 @@ export const requiresSession = {
     calibrate_fx_vol_surface_request: true,
     publish_fx_vol_surface_request: true,
     get_fx_vol_surface_publish_subject_request: true,
+    get_published_fx_vol_surface_request: true,
 } as const;

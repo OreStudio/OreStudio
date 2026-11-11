@@ -164,18 +164,24 @@ TEST_CASE("a_worst_of_basket_states_its_members_as_equities", equity_tags) {
     REQUIRE(other);
     auto ndx = md::market_reference::of(std::move(*other));
     REQUIRE(ndx);
-    const auto basket = equity_worst_of_basket_swap_builder(
-                            {.basket = std::vector<md::market_reference>{spx(), *ndx},
-                             .currency = std::string("USD"),
-                             .notional = equity_amount("1000000"),
-                             .start = 2026y / 1 / 5,
-                             .maturity = 2027y / 1 / 5,
-                             .position = option_position::long_option})
-                            .build();
+    const auto basket =
+        equity_worst_of_basket_swap_builder(
+            {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
+                                                         {*ndx, equity_amount("18000")}},
+             .observation_dates = std::vector<year_month_day>{2026y / 4 / 5},
+             .currency = std::string("USD"),
+             .notional = equity_amount("1000000"),
+             .start = 2026y / 1 / 5,
+             .maturity = 2027y / 1 / 5,
+             .position = option_position::long_option})
+            .build();
     REQUIRE(basket.has_value());
     REQUIRE(basket->basket_constituents.size() == 2);
     for (const auto& member : basket->basket_constituents)
         CHECK(member.underlying_kind == "Equity");
+    // The store resolves a member by its catalogue code.
+    CHECK(basket->basket_constituents[0].underlying_name == ".SPX");
+    CHECK(basket->periods.size() == 1);
 }
 
 TEST_CASE("an_equity_swap_pays_the_equity_against_a_floating_leg", equity_tags) {
@@ -236,4 +242,41 @@ TEST_CASE("the_registry_names_every_equity_builder", equity_tags) {
                              "EquityPosition",
                              "EquityOptionPosition"})
         CHECK(types.contains(type));
+}
+
+TEST_CASE("a_basket_holding_one_equity_twice_fails_and_names_the_term", equity_tags) {
+    const auto basket =
+        equity_worst_of_basket_swap_builder(
+            {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
+                                                         {spx(), equity_amount("5000")}},
+             .observation_dates = std::vector<year_month_day>{2026y / 4 / 5},
+             .currency = std::string("USD"),
+             .notional = equity_amount("1000000"),
+             .start = 2026y / 1 / 5,
+             .maturity = 2027y / 1 / 5,
+             .position = option_position::long_option})
+            .build();
+    REQUIRE_FALSE(basket.has_value());
+    CHECK(basket.error().term == "basket");
+}
+
+TEST_CASE("a_double_barrier_with_its_levels_reversed_fails", equity_tags) {
+    const auto option =
+        equity_barrier_option_builder<equity_barrier_product::double_barrier>(
+            {.option = spx_call(),
+             .barrier_type = std::string("KnockOut"),
+             .levels = std::vector<decimal>{equity_amount("5500"), equity_amount("4500")}})
+            .build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "barrier");
+}
+
+TEST_CASE("a_barrier_at_zero_fails", equity_tags) {
+    const auto option = equity_barrier_option_builder<equity_barrier_product::barrier>(
+                            {.option = spx_call(),
+                             .barrier_type = std::string("DownAndOut"),
+                             .levels = std::vector<decimal>{decimal{}}})
+                            .build();
+    REQUIRE_FALSE(option.has_value());
+    CHECK(option.error().term == "barrier");
 }

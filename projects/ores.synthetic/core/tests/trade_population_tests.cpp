@@ -476,7 +476,13 @@ TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_popu
 
     // Every underlying the scope states is drawn, and no other is invented.
     REQUIRE(named.size() == 4u);
-    REQUIRE((named.contains(".SPX") && named.contains("MSFT.O")));
+    // A name is an equity address, or a basket member's catalogue code.
+    const auto drawn = [&](const std::string& code) {
+        return std::ranges::any_of(named, [&](const std::string& name) {
+            return name == code || name.find("/" + code + "?") != std::string::npos;
+        });
+    };
+    REQUIRE((drawn(".SPX") && drawn("MSFT.O")));
 }
 
 TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods", "[trade_population]") {

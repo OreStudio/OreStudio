@@ -121,14 +121,20 @@ domain::instrument_option option_row(option_position position,
 }
 
 std::optional<build_error>
-barrier_refusal(std::string_view type, std::size_t levels, bool double_barrier) {
+barrier_refusal(std::string_view type, const std::vector<decimal>& levels, bool double_barrier) {
     const bool single_type =
         type == "UpAndIn" || type == "UpAndOut" || type == "DownAndIn" || type == "DownAndOut";
     const bool double_type = type == "KnockIn" || type == "KnockOut";
-    if (double_barrier ? !(double_type && levels == 2) : !(single_type && levels == 1))
+    if (double_barrier ? !(double_type && levels.size() == 2) :
+                         !(single_type && levels.size() == 1))
         return build_error{"barrier",
                            double_barrier ? "must be KnockIn or KnockOut with two levels" :
                                             "must be one UpAnd or DownAnd level"};
+    for (const auto& level : levels)
+        if (level <= decimal{})
+            return build_error{"barrier", "levels must be positive"};
+    if (double_barrier && !(levels.front() < levels.back()))
+        return build_error{"barrier", "the lower level must be below the upper"};
     return std::nullopt;
 }
 
@@ -239,6 +245,7 @@ equity_result equity_digital_option_builder::build() const {
     row.expiry_date = option.expiry.get();
     row.long_short = long_short_of(option.position.get());
     row.payout_amount = terms_.payout.get();
+    row.quantity = option.quantity.get().to_double();
     domain::equity_instrument_data out;
     out.instrument = std::move(row);
     out.options.push_back(equity_detail::option_row(option.position.get(), "European"));
@@ -253,7 +260,8 @@ equity_result equity_touch_option_builder::build() const {
         return std::unexpected(build_error{"payout", "must be positive"});
     if (terms_.level.get() <= decimal{})
         return std::unexpected(build_error{"level", "must be positive"});
-    if (auto refusal = equity_detail::barrier_refusal(terms_.barrier_type.get(), 1, false))
+    if (auto refusal =
+            equity_detail::barrier_refusal(terms_.barrier_type.get(), {terms_.level.get()}, false))
         return std::unexpected(std::move(*refusal));
     domain::equity_digital_option_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
@@ -278,6 +286,8 @@ equity_forward_builder::equity_forward_builder(equity_forward_terms terms)
     : terms_(std::move(terms)) {}
 
 equity_result equity_forward_builder::build() const {
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must not be empty"});
     if (!(terms_.quantity.get() > 0.0))
         return std::unexpected(build_error{"quantity", "must be positive"});
     if (terms_.forward_price.get() <= decimal{})
@@ -340,7 +350,7 @@ equity_result equity_swap_builder::build() const {
             out.leg_rates.push_back(std::move(rate));
         }
     for (const auto& schedule : swap->schedules)
-        if (schedule.owner_number == 2) {
+        if (schedule.owner_number == 2 && schedule.schedule_role == "schedule") {
             auto floating = schedule;
             floating.owner_number = 1;
             out.schedules.push_back(floating);
@@ -369,10 +379,22 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
     const auto& basket = terms_.basket.get();
     if (basket.size() < 2)
         return std::unexpected(build_error{"basket", "must hold at least two equities"});
+    for (std::size_t i = 0; i < basket.size(); ++i) {
+        if (basket[i].initial_price <= decimal{})
+            return std::unexpected(build_error{"basket", "initial prices must be positive"});
+        for (std::size_t j = i + 1; j < basket.size(); ++j)
+            if (basket[i].underlying == basket[j].underlying)
+                return std::unexpected(build_error{"basket", "must not hold an equity twice"});
+    }
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must not be empty"});
     if (terms_.notional.get() <= decimal{})
         return std::unexpected(build_error{"notional", "must be positive"});
     if (auto refusal = refusals::period(terms_.start.get(), terms_.maturity.get()))
         return std::unexpected(std::move(*refusal));
+    if (terms_.observation_dates.get().empty())
+        return std::unexpected(build_error{"observation_dates", "must state at least one date"});
+
     domain::equity_swap_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
     row.currency = terms_.currency.get();
@@ -388,11 +410,27 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
     for (const auto& member : basket) {
         domain::equity_basket_constituent constituent{};
         constituent.sequence_number = ++number;
-        constituent.underlying_name = member.uri();
+        /*
+         * The store resolves a constituent against the equity catalogue by its
+         * code, so a member is stored by the code its address names until that
+         * check reads addresses; the projection writes a code as stated.
+         */
+        const auto* index = member.underlying.index();
+        constituent.underlying_name = index != nullptr ? index->subject() : member.underlying.uri();
         // ORE's type for an equity underlying; the store reads the kind case-insensitively.
         constituent.underlying_kind = "Equity";
         constituent.weight = 1.0 / static_cast<double>(basket.size());
+        constituent.initial_price = member.initial_price;
         out.basket_constituents.push_back(std::move(constituent));
+    }
+    number = 0;
+    for (const auto& when : terms_.observation_dates.get()) {
+        domain::equity_swap_period period{};
+        period.sequence_number = ++number;
+        period.period_date = when;
+        period.knock_out_level = 1.0;
+        period.fixed_trigger_level = 0.75;
+        out.periods.push_back(std::move(period));
     }
     return out;
 }
@@ -403,6 +441,8 @@ equity_variance_swap_builder::equity_variance_swap_builder(equity_variance_swap_
 equity_result equity_variance_swap_builder::build() const {
     if (auto refusal = refusals::period(terms_.start.get(), terms_.maturity.get()))
         return std::unexpected(std::move(*refusal));
+    if (terms_.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must not be empty"});
     if (!(terms_.variance_strike.get() > 0.0))
         return std::unexpected(build_error{"variance_strike", "must be positive"});
     if (terms_.notional.get() <= decimal{})
@@ -496,6 +536,8 @@ equity_result equity_tarf_builder::build() const {
 namespace {
 
 equity_result equity_position_of(std::string_view trade_type, const equity_position_terms& terms) {
+    if (terms.currency.get().empty())
+        return std::unexpected(build_error{"currency", "must not be empty"});
     if (!(terms.quantity.get() > 0.0))
         return std::unexpected(build_error{"quantity", "must be positive"});
     if (terms.price.get() <= decimal{})

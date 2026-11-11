@@ -31,8 +31,10 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <chrono>
 #include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 /**
@@ -131,7 +133,9 @@ option_row(option_position position,
            std::optional<std::string> pay_off_at_expiry = {});
 
 [[nodiscard]] ORES_TRADING_API_EXPORT std::optional<build_error>
-barrier_refusal(std::string_view type, std::size_t levels, bool double_barrier);
+barrier_refusal(std::string_view type,
+                const std::vector<utility::decimal::decimal>& levels,
+                bool double_barrier);
 
 }
 
@@ -158,8 +162,8 @@ public:
             return std::unexpected(std::move(*refusal));
         const auto& levels = terms_.levels.get();
         constexpr bool double_barrier = Product == equity_barrier_product::double_barrier;
-        if (auto refusal = equity_detail::barrier_refusal(
-                terms_.barrier_type.get(), levels.size(), double_barrier))
+        if (auto refusal =
+                equity_detail::barrier_refusal(terms_.barrier_type.get(), levels, double_barrier))
             return std::unexpected(std::move(*refusal));
 
         domain::equity_barrier_option_instrument row{};
@@ -273,9 +277,20 @@ private:
     equity_swap_terms terms_;
 };
 
-/// A swap on the worst performer of a basket of equities.
+/// One equity of a basket and the price its performance is measured from.
+struct equity_basket_member final {
+    marketdata::datum::market_reference underlying;
+    utility::decimal::decimal initial_price;
+};
+
+/**
+ * @brief A swap on the worst performer of a basket of distinct equities,
+ * observed on its dates against a knock out at par and a trigger at three
+ * quarters.
+ */
 struct equity_worst_of_basket_swap_terms final {
-    required<std::vector<marketdata::datum::market_reference>> basket;
+    required<std::vector<equity_basket_member>> basket;
+    required<std::vector<std::chrono::year_month_day>> observation_dates;
     required<std::string> currency;
     required<utility::decimal::decimal> notional;
     required<std::chrono::year_month_day> start;

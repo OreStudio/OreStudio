@@ -2190,13 +2190,14 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                                       .position = position})
                          .build());
     if (type == "EquityForward")
-        return built(tb::equity_forward_builder({.underlying = address,
-                                                 .currency = currency,
-                                                 .quantity = std::round(notional / level),
-                                                 .forward_price = money(level),
-                                                 .maturity = end,
-                                                 .position = position})
-                         .build());
+        return built(
+            tb::equity_forward_builder({.underlying = address,
+                                        .currency = currency,
+                                        .quantity = std::max(1.0, std::round(notional / level)),
+                                        .forward_price = money(level),
+                                        .maturity = end,
+                                        .position = position})
+                .build());
     if (type == "EquitySwap") {
         /*
          * The funding leg is in the equity's own currency, so the swap draws
@@ -2216,18 +2217,18 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                     index->index()->get("tenor") == nullptr ||
                     index->index()->subject() != candidate_currency)
                     continue;
-                return built(
-                    tb::equity_swap_builder(conventions,
-                                            {.underlying = equity_address_of(candidate.code),
-                                             .quantity = std::round(notional / level),
-                                             .funding = {.notional = money(notional),
-                                                         .currency = candidate_currency,
-                                                         .start = start,
-                                                         .maturity = end,
-                                                         .fixed_rate = money(0.0),
-                                                         .index = std::move(*index),
-                                                         .fixed_side = tb::side::pay}})
-                        .build());
+                return built(tb::equity_swap_builder(
+                                 conventions,
+                                 {.underlying = equity_address_of(candidate.code),
+                                  .quantity = std::max(1.0, std::round(notional / level)),
+                                  .funding = {.notional = money(notional),
+                                              .currency = candidate_currency,
+                                              .start = start,
+                                              .maturity = end,
+                                              .fixed_rate = money(0.0),
+                                              .index = std::move(*index),
+                                              .fixed_side = tb::side::pay}})
+                                 .build());
             }
         }
         throw trade_population_error("No equity underlying of the tenant is in a currency its "
@@ -2235,16 +2236,26 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                      "state its funding leg.");
     }
     if (type == "EquityWorstOfBasketSwap") {
-        std::vector<ores::marketdata::datum::market_reference> basket;
+        if (scope.equity_underlyings.size() < 2)
+            throw trade_population_error("A worst-of basket names two distinct equities, and the "
+                                         "tenant holds fewer than two equity underlyings.");
+        std::vector<tb::equity_basket_member> basket;
         for (std::uint32_t member = 0; member < 2; ++member)
-            basket.push_back(equity_address_of(equity_for(scope, slot + member).code));
-        return built(tb::equity_worst_of_basket_swap_builder({.basket = std::move(basket),
-                                                              .currency = currency,
-                                                              .notional = money(notional),
-                                                              .start = start,
-                                                              .maturity = end,
-                                                              .position = position})
-                         .build());
+            basket.push_back(
+                {.underlying = equity_address_of(equity_for(scope, slot + member).code),
+                 .initial_price = money(level * (1.0 + 0.1 * member))});
+        std::vector<year_month_day> observations;
+        for (int period = 0; period < 4; ++period)
+            observations.push_back(add_months(start, period));
+        return built(
+            tb::equity_worst_of_basket_swap_builder({.basket = std::move(basket),
+                                                     .observation_dates = std::move(observations),
+                                                     .currency = currency,
+                                                     .notional = money(notional),
+                                                     .start = start,
+                                                     .maturity = end,
+                                                     .position = position})
+                .build());
     }
     if (type == "EquityVarianceSwap")
         return built(tb::equity_variance_swap_builder({.underlying = address,
@@ -2276,16 +2287,18 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                                               .position = position})
                          .build());
     if (type == "EquityPosition")
-        return built(tb::equity_position_builder({.underlying = address,
-                                                  .currency = currency,
-                                                  .quantity = std::round(notional / level),
-                                                  .price = money(level)})
-                         .build());
+        return built(
+            tb::equity_position_builder({.underlying = address,
+                                         .currency = currency,
+                                         .quantity = std::max(1.0, std::round(notional / level)),
+                                         .price = money(level)})
+                .build());
     if (type == "EquityOptionPosition")
-        return built(tb::equity_option_position_builder({.underlying = address,
-                                                         .currency = currency,
-                                                         .quantity = std::round(notional / level),
-                                                         .price = money(level)})
+        return built(tb::equity_option_position_builder(
+                         {.underlying = address,
+                          .currency = currency,
+                          .quantity = std::max(1.0, std::round(notional / level)),
+                          .price = money(level)})
                          .build());
     throw trade_population_error("The equity trade type " + type +
                                  " states no builder this planner knows.");

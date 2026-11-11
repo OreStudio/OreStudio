@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-access-writes-and-profile-routes
-#+pr:
+#+pr: 4583
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4583][#4583]] | [http] Serve the account list, one account and the default party |
 
 * Review
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 0BA78447-4EB6-4655-87EA-5CF45B0581A9
 :END:
-#+title: Task: Serve the access profiles, contacts, locks and role writes
+#+title: Task: Serve the role grants, role edits and account locks
 #+description: Twenty access routes remain at the BFF's addresses: pictures, own and account profiles, own and account contact information, the reporting line and tree, locks, role grants, role edits, role permission writes and the ways to hold a permission.
 #+type: task
 #+level: s1
@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve the remaining 20 access routes ores.web calls at the BFF's own addresses a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -41,9 +41,20 @@ Serve the remaining 20 access routes ores.web calls at the BFF's own addresses a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Serve the access screens' role and lock writes at the BFF's addresses, in a
+hand-written unit, =role_write_routes=: a role given to an account or taken
+away, an account locked or unlocked, the tenant's roles with what each grants,
+the permission catalogue, a role made, edited or removed, and the permissions a
+role grants written whole or changed by what to add and remove. Each body is
+read within the BFF's limits and refused with its message before the forward,
+and a refused write answers as the BFF did: a role write as a conflict, a lock
+as an invalid request.
+
+The helpers the access units share, a refusal, a guarded forward and the length
+of a text in characters, move into one header, =access_screen_answers=, rather
+than one copy per unit.
+
+The last nine routes move to [[id:0BD277CC-A6E2-4C34-BECD-8A81E8FD672C][Serve the access profiles, contacts and reporting tree]].
 
 * Measurements
 
@@ -85,3 +96,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The C++ server answers 11 access writes and catalogues at the addresses ores.web
+calls, each paired with its BFF route in the inventory. The tests prove each
+body's limits, the refusals before forwarding, how changes apply to what a role
+grants, and the shape of each catalogue.

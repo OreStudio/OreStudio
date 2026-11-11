@@ -23,6 +23,7 @@
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <tuple>
@@ -139,6 +140,73 @@ struct default_party_body final {
     return std::tuple{field{"partyId", &default_party_body::partyId}};
 }
 
+
+/**
+ * @brief A role given to an account: the role, the reason and a note.
+ */
+struct give_role_body final {
+    std::string roleId;
+    std::string reasonCode;
+    std::optional<std::string> note;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<give_role_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"roleId", &give_role_body::roleId},
+                      field{"reasonCode", &give_role_body::reasonCode},
+                      field{"note", &give_role_body::note}};
+}
+
+/**
+ * @brief A role as the editor states it: a new one names itself, an edited one
+ * also the version it was read at and its two flags.
+ */
+struct role_body final {
+    std::string name;
+    std::optional<std::string> description;
+    std::optional<std::int64_t> version;
+    std::optional<bool> registrationDefault;
+    std::optional<bool> requestable;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<role_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"name", &role_body::name},
+                      field{"description", &role_body::description},
+                      field{"version", &role_body::version},
+                      field{"registrationDefault", &role_body::registrationDefault},
+                      field{"requestable", &role_body::requestable}};
+}
+
+/**
+ * @brief Every permission a role grants, and why.
+ */
+struct permission_bundle_body final {
+    std::vector<std::string> codes;
+    std::optional<std::string> note;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_bundle_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"codes", &permission_bundle_body::codes},
+                      field{"note", &permission_bundle_body::note}};
+}
+
+/**
+ * @brief Permissions to add to a role and to remove from it, and why.
+ */
+struct permission_changes_body final {
+    std::optional<std::vector<std::string>> add;
+    std::optional<std::vector<std::string>> remove;
+    std::string note;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<permission_changes_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"add", &permission_changes_body::add},
+                      field{"remove", &permission_changes_body::remove},
+                      field{"note", &permission_changes_body::note}};
+}
 
 }
 

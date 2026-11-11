@@ -54,7 +54,7 @@ every access route reads and writes: the unity build check found two units of
 the part each defining =wire_fields= for its own shapes, and the shapes are one
 vocabulary.
 
-The other 20 routes move to [[id:0BA78447-4EB6-4655-87EA-5CF45B0581A9][Serve the access profiles, contacts, locks and role writes]].
+The other 20 routes move to [[id:0BA78447-4EB6-4655-87EA-5CF45B0581A9][Serve the role grants, role edits and account locks]].
 
 * Measurements
 

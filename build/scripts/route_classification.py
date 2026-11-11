@@ -723,7 +723,7 @@ RULES = (
          " personal data."),
 
     Rule("an access screen's route",
-         ("regex", r"^(GET|POST|PUT|DELETE) /api/(me|accounts|roles|reporting-tree)(/.*)?$"),
+         ("regex", r"^(GET|POST|PUT|DELETE) /api/(me|accounts|roles|permissions|reporting-tree)(/.*)?$"),
          CPP, RESOURCE, "access",
          "An access screen's read or write at the address and in the shape the BFF answered,"
          " forwarded to IAM as the caller, kept so the screens work when the BFF goes."),

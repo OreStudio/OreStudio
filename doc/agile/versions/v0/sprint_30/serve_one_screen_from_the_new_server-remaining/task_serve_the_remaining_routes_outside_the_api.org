@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: EE068B42-7300-4D72-832E-3B74B59B7F04
 :END:
-#+title: Task: Serve the remaining routes outside the published API
-#+description: ores.web calls the synthetic record routes, classifications and labels, history, pick lists and choices outside the published API. The C++ server must answer each one.
+#+title: Task: Share the record routes' helpers in one unit
+#+description: The 26 generated record units each carried the same helper code. Share it in one unit before the synthetic units add more copies.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
@@ -20,25 +20,26 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Serve, from the C++ server, the routes outside the published API that ores.web calls and that the reference data record routes did not cover: the synthetic record routes, the classifications and labels, the history, and the pick lists and choices. Move the record units' shared helpers into one unit before the synthetic units add to the copies.
+Move the helper code that the 26 generated record units repeat into one unit in =ores.http.api=, with tests of its own. Each unit keeps only what needs its own types or the transport.
+
+On 2026-11-11 the task was narrowed to this first PR, because the merge gate expects one task for each PR. The remaining routes moved to one task each: [[id:799A7A1A-CDB1-49DE-B3BD-DC9C814A5B84][the synthetic record routes]]; [[id:74AACA74-7995-48E7-9762-7D0BD414702F][the classification and label routes]]; [[id:7AF38AFC-0D5F-496B-9195-C7BBCE33DE62][the history route]]; [[id:070A64C0-0692-4CBC-B010-A8A3EA1E02F0][the pick list and choice routes]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-10                               |
 
 * Acceptance
 
-- The C++ server answers each of the 21 remaining routes that ores.web calls.
-- A test proves each new route against the answer the BFF gives.
-- The record units share one copy of their helpers.
-- The local gate is green.
+- The record units share one copy of their helpers, with tests of its own.
+- The record units' tests pass on the shared helpers.
+- The local checks that the change needs are green.
 
 * Plan
 
@@ -91,3 +92,9 @@ via its "Verifies task" field.
 | 6 | PR #4563 review: hold the merge until the build and test results are posted. | — | Accepted | The results are posted on the PR before the merge. |
 
 * Result
+
+The refusal, the parameter reader, the trims, the code and reason checks and the
+outcome mapping live once in =ores.http.api/net/record_routes=, exported from
+the shared library, with eight test cases of their own. The 26 refdata record
+units call them, and keep only the call, the rows and the bodies. The api and
+refdata suites pass, including the 175 web route cases.

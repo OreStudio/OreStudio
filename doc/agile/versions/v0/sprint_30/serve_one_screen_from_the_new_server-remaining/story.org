@@ -76,7 +76,11 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | [[id:068865A5-2C31-4735-873E-2CB04A134EF2][Serve the tenor catalogue composed view]] | BACKLOG | | | The tenor catalogue view is answered only by the BFF. |
 | [[id:AFEBA9C6-F105-490A-AD80-34AACB4CC9BB][Switch ores.web to the C++ server and test it]] | BACKLOG | | | When the C++ server answers every route ores.web calls, move the switch and test ores.web. If ores.web breaks, move the switch back and keep the BFF until the fault is fixed. |
 | [[id:65EDEBB1-0A24-46C3-85C1-2A51780EB659][Scaffold the tasks of the BFF port]] | DONE | 2026-11-09 | 2026-11-09 | Task scaffolding rides this task: the task documents, the two recorded decisions, the design amendment and the scaffold PR. |
-| [[id:EE068B42-7300-4D72-832E-3B74B59B7F04][Serve the remaining routes outside the published API]] | STARTED | 2026-11-10 | | ores.web calls the synthetic record routes, classifications and labels, history, pick lists and choices outside the published API. The C++ server must answer each one. |
+| [[id:EE068B42-7300-4D72-832E-3B74B59B7F04][Share the record routes' helpers in one unit]] | DONE | 2026-11-10 | 2026-11-11 | The 26 generated record units each carried the same helper code. Share it in one unit before the synthetic units add more copies. |
+| [[id:799A7A1A-CDB1-49DE-B3BD-DC9C814A5B84][Serve the synthetic record routes]] | BACKLOG | | | ores.web reads and writes the 16 synthetic resources through the BFF's generic routes under /api/synthetic. The C++ server must answer them. |
+| [[id:74AACA74-7995-48E7-9762-7D0BD414702F][Serve the classification and label routes]] | BACKLOG | | | ores.web reads and edits the code lists through seven classification routes and reads every label through /api/labels. The C++ server must answer them. |
+| [[id:7AF38AFC-0D5F-496B-9195-C7BBCE33DE62][Serve the history route]] | BACKLOG | | | ores.web reads every entity's history through GET /api/history, named by an entity type string. The C++ server must answer it. |
+| [[id:070A64C0-0692-4CBC-B010-A8A3EA1E02F0][Serve the pick list and choice routes]] | BACKLOG | | | ores.web reads four pick lists and two choice lists for its forms. The C++ server must answer them. |
 
 * Decisions
 

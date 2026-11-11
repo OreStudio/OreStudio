@@ -90,7 +90,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4587 review: a non-finite average prints as =nan= or =inf=, which is not JSON. | =audit_routes.cpp= | Accepted | Written as null, as the BFF's =JSON.stringify= wrote it; a test pins it. |
+| 2 | PR #4587 review: the header uses =std::uint32_t= without =<cstdint>=. | =audit_routes.hpp= | Accepted | Included. |
+| 3 | PR #4587 review: a refused lookup or end answers 409. | =audit_routes.cpp= | No change | The BFF answered a failed operation with 409. |
+| 4 | PR #4587 review: the lookup refuses an empty address; the offset has no bound; the forward blocks. | =audit_routes.cpp= | No change | As the BFF's schema and every C++ route. |
+| 5 | PR #4587 review: cover the window's edges. | tests | Accepted | 64 against 65 characters, a zero limit and a non-numeric offset join the cases. |
 
 * Result
 

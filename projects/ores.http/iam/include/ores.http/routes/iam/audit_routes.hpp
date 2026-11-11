@@ -27,6 +27,7 @@
 #include "ores.iam.api/messaging/session_statistics_operations_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <chrono>
+#include <cstdint>
 #include <initializer_list>
 #include <memory>
 #include <optional>

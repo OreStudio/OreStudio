@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <limits>
 #include <map>
 #include <memory>
 #include <optional>
@@ -156,4 +157,21 @@ TEST_CASE("audit_routes_forward_an_accepted_request", "[audit]") {
         audit_call(
             session, http_method::get, "/api/geo/country", audit_request({{"address", "1.2.3.4"}}))
             .status == http_status::bad_gateway);
+}
+
+TEST_CASE("audit_routes_bound_the_window_and_state_no_number_json_cannot_hold", "[audit]") {
+    const auto now = std::chrono::system_clock::now();
+    CHECK(audit_routes::read_query(
+        audit_request({{"accountId", std::string(64, 'a')}}), window_keys, now));
+    CHECK_FALSE(audit_routes::read_query(audit_request({{"limit", "0"}}), window_keys, now));
+    CHECK_FALSE(audit_routes::read_query(audit_request({{"offset", "x"}}), window_keys, now));
+
+    ores::iam::messaging::get_session_statistics_response stats;
+    ores::iam::messaging::session_statistics_row row;
+    row.avg_bytes_sent = std::numeric_limits<double>::quiet_NaN();
+    row.avg_bytes_received = std::numeric_limits<double>::infinity();
+    stats.rows.push_back(row);
+    const auto text = audit_routes::statistics_json(stats);
+    CHECK(text.find("\"avgBytesSent\":null") != std::string::npos);
+    CHECK(text.find("\"avgBytesReceived\":null") != std::string::npos);
 }

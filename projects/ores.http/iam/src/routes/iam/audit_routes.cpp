@@ -30,6 +30,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <algorithm>
 #include <charconv>
+#include <cmath>
 #include <cstdint>
 #include <format>
 #include <functional>
@@ -64,8 +65,10 @@ std::optional<std::uint32_t> page_number(const http_request& req,
     return value;
 }
 
+/// A number as JSON states it: a value JSON cannot hold, such as an average over
+/// no sessions, is null, as the BFF's JSON.stringify wrote it.
 std::string number_text(double value) {
-    return std::format("{}", value);
+    return std::isfinite(value) ? std::format("{}", value) : std::string("null");
 }
 
 }

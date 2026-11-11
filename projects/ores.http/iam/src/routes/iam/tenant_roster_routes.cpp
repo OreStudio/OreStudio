@@ -220,14 +220,6 @@ tenant_by_code(const http_request& req, nats_client& session, const std::string&
     return reply.tenant;
 }
 
-/// One tenant by its code, refused as not found when no tenant holds it.
-tenant known_tenant(const http_request& req, nats_client& session, const std::string& code) {
-    auto found = tenant_by_code(req, session, code);
-    if (!found)
-        throw rr::refusal{http_status::not_found, "not-found", "No tenant has this code."};
-    return *found;
-}
-
 std::string setup_json(const std::optional<tenant_roster_routes::tenant_setup>& setup) {
     if (!setup)
         return "null";
@@ -257,6 +249,15 @@ std::string flag_json(bool value) {
     return value ? "true" : "false";
 }
 
+}
+
+tenant tenant_roster_routes::known_tenant(const http_request& req,
+                                          nats_client& session,
+                                          const std::string& code) {
+    auto found = tenant_by_code(req, session, code);
+    if (!found)
+        throw rr::refusal{http_status::not_found, "not-found", "No tenant has this code."};
+    return *found;
 }
 
 std::optional<tenant_roster_routes::roster_query>
@@ -540,7 +541,8 @@ void tenant_roster_routes::register_routes(
         [&session](const http_request& req) {
             return guarded<messaging::get_tenant_request>([&] {
                 deployment_access::require_read(req, session, "A tenant of the deployment");
-                const auto t = known_tenant(req, session, req.get_path_param("code"));
+                const auto t =
+                    tenant_roster_routes::known_tenant(req, session, req.get_path_param("code"));
                 std::optional<tenant_setup> setup;
                 bool setup_unavailable = false;
                 try {
@@ -569,7 +571,7 @@ void tenant_roster_routes::register_routes(
                     return rr::refused(http_status::bad_request,
                                        "invalid-request",
                                        "Type the tenant code to confirm the removal.");
-                const auto t = known_tenant(req, session, code);
+                const auto t = tenant_roster_routes::known_tenant(req, session, code);
                 if (boost::uuids::to_string(t.id) == rr::system_tenant_id)
                     return rr::refused(
                         http_status::conflict,

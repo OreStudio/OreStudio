@@ -131,6 +131,16 @@ public:
     read_roster_query(const ores::http::domain::http_request& req);
 
     /**
+     * @brief One tenant by its code.
+     *
+     * @throws record_routes::refusal, not found, when no tenant holds the code.
+     */
+    [[nodiscard]] static ores::iam::domain::tenant
+    known_tenant(const ores::http::domain::http_request& req,
+                 ores::nats::service::nats_client& session,
+                 const std::string& code);
+
+    /**
      * @brief One tenant as a roster reads it, with its run or null.
      */
     [[nodiscard]] static std::string summary_json(const ores::iam::domain::tenant& t,

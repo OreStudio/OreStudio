@@ -21,6 +21,7 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http/routes/iam/provisioning_routes.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "route_answer.hpp"
 #include "test_suite.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
@@ -44,25 +45,11 @@ using ores::nats::service::nats_client;
 
 namespace {
 
-http_response answer_of(http_method method, const std::string& pattern, std::string body = {}) {
-    nats_client session;
-    auto table = std::make_shared<router>();
-    provisioning_routes::register_routes(table, std::make_shared<endpoint_registry>(), session);
-    const auto route = std::ranges::find_if(
-        table->routes(), [&](const auto& r) { return r.method == method && r.pattern == pattern; });
-    REQUIRE(route != table->routes().end());
-    REQUIRE(route->requires_auth);
+http_response
+provisioning_answer(http_method method, const std::string& pattern, std::string body = {}) {
     http_request req;
     req.body = std::move(body);
-    boost::asio::io_context io;
-    std::optional<http_response> answer;
-    boost::asio::co_spawn(
-        io,
-        [&]() -> boost::asio::awaitable<void> { answer = co_await route->handler(req); },
-        boost::asio::detached);
-    io.run();
-    REQUIRE(answer.has_value());
-    return *answer;
+    return ores::http::iam::tests::route_answer<provisioning_routes>(method, pattern, req);
 }
 
 provisioning_routes::seed_profile_reads profile_of(std::string code, int order) {
@@ -166,18 +153,20 @@ TEST_CASE("provisioning_routes_place_a_party_under_the_tenant_root", "[provision
 }
 
 TEST_CASE("provisioning_routes_refuse_before_forwarding", "[provisioning]") {
-    const auto tenant = answer_of(http_method::post, "/api/provision-tenant", "{}");
+    const auto tenant = provisioning_answer(http_method::post, "/api/provision-tenant", "{}");
     CHECK(tenant.status == http_status::bad_request);
     CHECK(tenant.body.find("administrator fields are required") != std::string::npos);
-    const auto party =
-        answer_of(http_method::post, "/api/provision-party", R"({"fullName":"","shortCode":"X"})");
+    const auto party = provisioning_answer(
+        http_method::post, "/api/provision-party", R"({"fullName":"","shortCode":"X"})");
     CHECK(party.status == http_status::bad_request);
     CHECK(party.body.find("legal name and a short code") != std::string::npos);
     // The client is not connected, so an accepted request fails at the forward step.
-    CHECK(answer_of(http_method::get, "/api/seed-profiles").status == http_status::bad_gateway);
-    CHECK(answer_of(http_method::post, "/api/provision-tenant", full_tenant + "}").status ==
+    CHECK(provisioning_answer(http_method::get, "/api/seed-profiles").status ==
           http_status::bad_gateway);
     CHECK(
-        answer_of(http_method::post, "/api/provision-party", R"({"fullName":"A","shortCode":"A"})")
-            .status == http_status::bad_gateway);
+        provisioning_answer(http_method::post, "/api/provision-tenant", full_tenant + "}").status ==
+        http_status::bad_gateway);
+    CHECK(provisioning_answer(
+              http_method::post, "/api/provision-party", R"({"fullName":"A","shortCode":"A"})")
+              .status == http_status::bad_gateway);
 }

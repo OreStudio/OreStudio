@@ -1,36 +1,36 @@
 :PROPERTIES:
 :ID: 76115CCB-0D67-4833-8A6B-050F744C1677
 :END:
-#+title: Task: Serve the reads inside a tenant and the bootstrap routes
-#+description: Nine tenancy routes remain at the BFF's addresses: the bootstrap and the tenant setup, the registration policy, and a tenant's parties, people, sign-ins and images read from system administration.
+#+title: Task: Serve the reads inside a tenant
+#+description: System administration reads a tenant's parties, people, one account's sign-ins, and its pictures and flags, inside the tenant, through the BFF. The C++ server must answer them.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-tenant-reads-and-bootstrap-routes
-#+pr:
+#+pr: 4598
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Serve the reads inside a tenant, and the bootstrap and setup routes, at the BFF's own addresses and shapes.
+Serve the reads inside a tenant at the BFF's own addresses and shapes.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -55,9 +55,24 @@ The routes fall into two groups, each a reviewable unit:
 The bootstrap read states whether the browser holds a session, so it may
 wait for [[id:D4275B6D-BF22-4A77-9F00-018D776966CB][Serve the browser's session routes, sign-up and password]].
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+On 2026-11-11 the task served the reads inside a tenant, and the bootstrap
+and setup routes moved to [[id:1BFF30C8-F1D4-4917-99B1-F6F6F3069D02][Serve the bootstrap and setup routes]].
+
+- =tenant_inside_routes= is a new unit in the IAM part. =read_inside= checks
+  the deployment read, finds the tenant by its code, and reads as the caller
+  when the tenant is the caller's own. Otherwise it enters the tenant, reads
+  with a copy of the request that carries the tenant's token, and leaves,
+  logging an exit that cannot be recorded. Only a refused entry is a refusal,
+  forbidden; a read that fails inside fails as itself.
+- The reads reuse what the caller's own screens use: the refdata part's party
+  page (the IAM part now links =ores.http.refdata=), the account page writer,
+  the sign-in history reader (extracted as =sign_in_routes::sign_ins_json=), and
+  =image_answer=.
+- The BFF kept a cache of a tenant's images, filled when a page named them.
+  The C++ route reads each image inside the tenant when the browser asks, which
+  the browser caches for five minutes.
+- A test helper, =route_answer=, runs one registered route on a client that is
+  not connected. The provisioning and inside-tenant tests share it.
 
 * Measurements
 
@@ -90,12 +105,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4598][#4598]] | [http] Serve the reads inside a tenant from C++ |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the BFF kept a cache of a tenant's images. | =tenant_inside_routes.cpp= | Declined | Each image is read inside the tenant when asked, and the browser caches it. A cache in the server is a change of its own if the reads prove slow. The plan states it. |
+| 2 | Local review: the page bound tested the parameter's name to set its least value. | =tenant_inside_routes.cpp= | Accepted | The bound takes its least value as an argument. |
+| 3 | =unity-collisions=: =answer_of= in two test files. | =provisioning_routes_tests.cpp=, =tenant_inside_routes_tests.cpp= | Accepted | Running one registered route is shared test logic, so it is =route_answer= in one test header, and each file's wrapper is named for its unit. |
+| 4 | Local review: the entry and exit cannot be tested without a live service. | =tenant_inside_routes.cpp= | Declined | The tests prove the token swap and every refusal before the entry; the PR states the limit. |
+| 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | PR review: the copy keeps the caller's claims, which name the caller's tenant. | =tenant_inside_routes.cpp= | Accepted | No reader on the inside path reads the claims today. The copy now states what its token says: the entered tenant, and the tenant the caller acts from. A test proves it. |
+| 7 | PR review: the own-tenant check compares UUID text. | =tenant_inside_routes.cpp= | Accepted | A comment says both ids are canonical lowercase text. |
+| 8 | PR review: the entry, the exit on failure and the 403 are not tested. | =tenant_inside_routes.cpp= | Declined | They need a live service or a seam no other route has; the PR states the limit. |
+| 9 | PR review: cookie sessions do not yet carry their token. | =http_session.cpp= | Accepted | The task "Carry a browser session's token to the services" tracks it, and its PR follows this one. |
+| 10 | PR review: two bound readers for one rule. | =tenant_inside_routes.cpp= | Declined | Each matches its BFF schema; the parties read already reuses the party page's reader. |
 
 * Result
+
+The C++ server answers a tenant's parties, people, one account's sign-ins and
+its images, read inside the tenant, at the BFF's addresses and in its shapes,
+and the inventory pairs each. Tests prove the tenant token replaces only the
+caller's, the page refusals come before entering, and each accepted read
+forwards. The bootstrap and setup routes moved to their own task.

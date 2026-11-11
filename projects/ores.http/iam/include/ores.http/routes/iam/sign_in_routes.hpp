@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
 #include <utility>
 
 namespace ores::http::routes::iam {
@@ -63,6 +64,20 @@ public:
      */
     [[nodiscard]] static std::optional<std::pair<std::uint32_t, std::uint32_t>>
     read_sign_ins_page(const ores::http::domain::http_request& req);
+
+    /**
+     * @brief One account with its sign-in state and one page of its sessions,
+     * newest first, read with the request's token, or nothing when no account
+     * has the username.
+     *
+     * The token decides the tenant, so a read inside another tenant passes a
+     * request that carries that tenant's token.
+     */
+    [[nodiscard]] static std::optional<std::string>
+    sign_ins_json(const ores::http::domain::http_request& req,
+                  ores::nats::service::nats_client& session,
+                  const std::string& username,
+                  std::pair<std::uint32_t, std::uint32_t> page);
 };
 
 }

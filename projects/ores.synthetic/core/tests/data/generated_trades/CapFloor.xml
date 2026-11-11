@@ -3,34 +3,39 @@
   <Trade id="1af56dfc-edd0-56cb-8129-3f0283dd648c">
     <TradeType>CapFloor</TradeType>
     <CapFloorData>
-      <LongShort>Long</LongShort>
+      <LongShort>Short</LongShort>
       <LegData>
         <Payer>false</Payer>
         <LegType>Floating</LegType>
         <Currency>EUR</Currency>
         <DayCounter>A360</DayCounter>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <PaymentConvention>MF</PaymentConvention>
         <Notionals>
-          <Notional startDate="2025-10-02">6765247.42</Notional>
+          <Notional>6765247.42</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2025-10-02</StartDate>
             <EndDate>2028-10-02</EndDate>
             <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FloatingLegData>
           <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread startDate="2025-10-02">0.0046</Spread>
+            <Spread>0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
-      <Caps>
-        <Cap>0.0151</Cap>
-      </Caps>
+      <Floors>
+        <Floor>0.0116</Floor>
+      </Floors>
     </CapFloorData>
   </Trade>
   <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
@@ -42,27 +47,32 @@
         <LegType>Floating</LegType>
         <Currency>EUR</Currency>
         <DayCounter>A360</DayCounter>
-        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <PaymentConvention>MF</PaymentConvention>
         <Notionals>
-          <Notional startDate="2026-01-02">3895254.25</Notional>
+          <Notional>3895254.25</Notional>
         </Notionals>
         <ScheduleData>
           <Rules>
             <StartDate>2026-01-02</StartDate>
             <EndDate>2036-01-02</EndDate>
             <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
             <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
           </Rules>
         </ScheduleData>
         <FloatingLegData>
           <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
           <Spreads>
-            <Spread startDate="2026-01-02">0.0045</Spread>
+            <Spread>0</Spread>
           </Spreads>
         </FloatingLegData>
       </LegData>
       <Caps>
-        <Cap>0.0532</Cap>
+        <Cap>0.0568</Cap>
       </Caps>
     </CapFloorData>
   </Trade>

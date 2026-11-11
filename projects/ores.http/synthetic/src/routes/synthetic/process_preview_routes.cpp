@@ -116,7 +116,11 @@ void require_preview(bool success, const std::string& message) {
         rr::invalid(message);
 }
 
-/// The engines an FX feed runs, which a conversion reads between.
+/**
+ * The engines an FX feed runs, which a conversion reads between. The service
+ * publishes no list of them, so they are stated here, as the BFF stated them;
+ * an engine the service adds is refused here until it is named.
+ */
 bool is_fx_engine(const std::string& engine) {
     static const std::set<std::string, std::less<>> engines{
         "geometric", "arithmetic", "ornstein_uhlenbeck"};
@@ -261,18 +265,19 @@ void process_preview_routes::register_routes(
                 co_return guarded<synthetic_messaging::convert_ir_parameters_request>([&] {
                     const std::string sentence =
                         "A conversion names the process by its code, the way to convert, and "
-                        "each parameter's value by a name of up to 100 characters.";
+                        "up to 100 parameter values, each by a name of 1 to 100 characters.";
                     const auto body = body_of<process_preview::ir_convert_body>(req, sentence);
                     const auto process = code_of(body.process_type);
-                    if (!process)
+                    if (!process || body.values.size() > preview_most_members)
                         rr::invalid(sentence);
                     synthetic_messaging::convert_ir_parameters_request msg;
                     msg.process_type = *process;
                     msg.to_simple = body.to_simple;
-                    for (const auto& [name, value] : body.values) {
-                        if (rr::characters_of(name) > 100)
+                    for (const auto& [raw, value] : body.values) {
+                        const auto name = code_of(raw);
+                        if (!name)
                             rr::invalid(sentence);
-                        msg.parameter_names.push_back(name);
+                        msg.parameter_names.push_back(*name);
                         msg.parameter_values.push_back(value);
                     }
                     const auto reply = forwarding::forward(req, session, msg);

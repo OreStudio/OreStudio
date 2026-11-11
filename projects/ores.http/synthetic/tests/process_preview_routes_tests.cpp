@@ -98,6 +98,14 @@ TEST_CASE("process_previews_refuse_a_malformed_request", "[process_preview]") {
                          R"({"process_type":"vasicek","to_simple":true,"values":{"a":"x"}})") ==
           http_status::bad_request);
 
+    CHECK(preview_status(ir_convert,
+                         R"({"process_type":"vasicek","to_simple":true,"values":{" ":0.1}})") ==
+          http_status::bad_request);
+    std::string many = R"({"process_type":"vasicek","to_simple":true,"values":{)";
+    for (int i = 0; i <= 100; ++i)
+        many += (i == 0 ? "" : ",") + std::string(R"("p)") + std::to_string(i) + R"(":0.1)";
+    CHECK(preview_status(ir_convert, many + "}}") == http_status::bad_request);
+
     CHECK(preview_status(ir_paths,
                          R"({"process_type":"vasicek","parameters":[{"parameter_name":"",)"
                          R"("parameter_value":1}],"num_ticks":10,"num_paths":2,"seed":1})") ==

@@ -193,7 +193,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
             });
         BOOST_LOG_SEV(lg(), info) << "Serving site environment " << site->served.id << " from "
                                   << site->source;
-    } catch (const http::site::site_configuration_error& e) {
+    } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "No site routes: " << e.what();
     }
     ores::http::routes::site_routes::register_routes(router, registry, std::move(site));

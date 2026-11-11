@@ -98,7 +98,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local check: the pick list routes had dropped out of the route inventory. | =pick_list_routes.cpp= | Accepted | Each address is a literal at its registration again. |
+| 2 | Local check: the server's options header is generated. | options model | Accepted | The two site options are stated in the field group model. |
+| 3 | Local check: =write_file= collided with the storage test's in the unity build. | =site_routes_tests.cpp= | Accepted | The fixture is named =site_file=, for what it writes. |
+| 4 | PR #4580 review: the client log can forge journal lines and repeat the server's keys. | =site_routes.cpp= | Accepted | Control characters in the text are escaped when the entry is read, and =session_id=, =account= and =client_time= are reserved. A test pins both. |
+| 5 | PR #4580 review: only a site configuration error is caught at startup. | =application.cpp=, loader | Accepted | The server catches any failure and serves no site routes; the loader resolves the path without throwing. |
+| 6 | PR #4580 review: a large unsigned field wraps. | =site_routes.cpp= | Accepted | Read as unsigned. |
+| 7 | PR #4580 review: =ORES_WEB_ENV= is read twice. | loader | Accepted | Read once. |
+| 8 | PR #4580 review: the regexes run per request. | =site_routes.cpp= | Declined | They compile once, and a request holds at most 100 entries. |
+| 9 | PR #4580 review: =/api/site= shows test accounts when the developer surface is on. | — | No change | As the BFF does; the surface is off unless a deployment turns it on. |
+| 10 | PR #4580 review: run the routes on a server. | — | Done | =/api/health= answered 200 on the running server. The service unit sets no site configuration, so the site routes were absent and the log said why; the switch-over task sets it. |
 
 * Result
 

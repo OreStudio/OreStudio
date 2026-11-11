@@ -97,9 +97,38 @@ struct deployment_view final {
                       field{"available", &deployment_view::available}};
 }
 
-/// The keys a journal record already uses, which a browser fact may not replace.
-constexpr std::array<std::string_view, 9> reserved{
-    "level", "time", "msg", "name", "pid", "hostname", "req", "res", "err"};
+/// The keys a journal record already uses or the server adds, which a browser
+/// fact may not replace.
+constexpr std::array<std::string_view, 12> reserved{"level",
+                                                    "time",
+                                                    "msg",
+                                                    "name",
+                                                    "pid",
+                                                    "hostname",
+                                                    "req",
+                                                    "res",
+                                                    "err",
+                                                    "session_id",
+                                                    "account",
+                                                    "client_time"};
+
+/// The text as one journal line holds it: a control character is escaped, so
+/// a browser cannot start a line of its own.
+std::string one_line(std::string_view text) {
+    std::string out;
+    out.reserve(text.size());
+    for (const char c : text) {
+        if (c == '\n')
+            out += "\\n";
+        else if (c == '\r')
+            out += "\\r";
+        else if (static_cast<unsigned char>(c) < 0x20 || c == 0x7f)
+            out += std::format("\\x{:02x}", static_cast<unsigned char>(c));
+        else
+            out += c;
+    }
+    return out;
+}
 
 ores::logging::boost_severity severity_of(const std::string& level) {
     using enum ores::logging::boost_severity;
@@ -116,10 +145,12 @@ ores::logging::boost_severity severity_of(const std::string& level) {
 
 std::string text_of(yyjson_val* v) {
     if (yyjson_is_str(v))
-        return std::string(yyjson_get_str(v), yyjson_get_len(v));
+        return one_line(std::string_view(yyjson_get_str(v), yyjson_get_len(v)));
     if (yyjson_is_bool(v))
         return yyjson_get_bool(v) ? "true" : "false";
-    if (yyjson_is_int(v))
+    if (yyjson_is_uint(v))
+        return std::to_string(yyjson_get_uint(v));
+    if (yyjson_is_sint(v))
         return std::to_string(yyjson_get_sint(v));
     return std::format("{}", yyjson_get_num(v));
 }
@@ -144,7 +175,7 @@ std::optional<site_routes::client_entry> entry_of(yyjson_val* v) {
     if (!at || !level || !logger || !message || std::ranges::find(levels, *level) == levels.end() ||
         !std::regex_match(*logger, logger_form))
         return std::nullopt;
-    site_routes::client_entry entry{*at, *level, *logger, *message, {}};
+    site_routes::client_entry entry{one_line(*at), *level, *logger, one_line(*message), {}};
     if (auto* fields = yyjson_obj_get(v, "fields")) {
         if (!yyjson_is_obj(fields))
             return std::nullopt;

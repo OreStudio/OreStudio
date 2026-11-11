@@ -205,3 +205,15 @@ TEST_CASE("site_routes_register_the_liveness_answer_without_a_site", "[site]") {
     CHECK(has("/api/client-log", true));
     CHECK_FALSE(has("/api/site", false));
 }
+
+TEST_CASE("site_routes_client_log_keeps_each_entry_on_one_journal_line", "[site]") {
+    const auto entries = site_routes::read_client_log(
+        R"({"entries":[{"at":"t\r","level":"info","logger":"ores.web.client",)"
+        R"("message":"a\nlevel=error forged","fields":{"note":"x\ny","big":18446744073709551615}}]})");
+    REQUIRE(entries);
+    const auto& entry = entries->front();
+    CHECK(entry.message == R"(a\nlevel=error forged)");
+    CHECK(entry.at == R"(t\r)");
+    CHECK(entry.fields[0].second == R"(x\ny)");
+    CHECK(entry.fields[1].second == "18446744073709551615");
+}

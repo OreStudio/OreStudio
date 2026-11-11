@@ -25,6 +25,7 @@
 #include <regex>
 #include <set>
 #include <sstream>
+#include <system_error>
 
 namespace ores::http::site {
 
@@ -92,7 +93,12 @@ loaded_site load_site(const std::string& path,
     if (!source_path)
         throw site_configuration_error("No site configuration: pass one, or set " +
                                        std::string(site_config_variable) + ".");
-    const auto source = std::filesystem::absolute(*source_path).string();
+    std::error_code failed;
+    const auto absolute = std::filesystem::absolute(*source_path, failed);
+    if (failed)
+        throw site_configuration_error("Cannot resolve the site configuration path " +
+                                       *source_path + ": " + failed.message());
+    const auto source = absolute.string();
 
     std::ifstream in(source);
     if (!in)
@@ -104,12 +110,13 @@ loaded_site load_site(const std::string& path,
     auto checkout = non_empty(lookup("ORES_ENV_NAME"));
     if (checkout)
         std::ranges::replace(*checkout, '-', '_');
+    const auto web_env = non_empty(lookup("ORES_WEB_ENV"));
     std::optional<std::string> requested =
-        !environment_id.empty()           ? std::optional<std::string>(environment_id) :
-        non_empty(lookup("ORES_WEB_ENV")) ? non_empty(lookup("ORES_WEB_ENV")) :
-        checkout                          ? checkout :
-        !configuration.active.empty()     ? std::optional<std::string>(configuration.active) :
-                                            std::nullopt;
+        !environment_id.empty()       ? std::optional<std::string>(environment_id) :
+        web_env                       ? web_env :
+        checkout                      ? checkout :
+        !configuration.active.empty() ? std::optional<std::string>(configuration.active) :
+                                        std::nullopt;
 
     const auto& environments = configuration.environments;
     const auto chosen = requested ? std::ranges::find(environments, *requested, &environment::id) :

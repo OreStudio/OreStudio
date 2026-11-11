@@ -21,6 +21,7 @@
 #define ORES_SERVICE_MESSAGING_STEP_COMMAND_STREAM_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/concurrency/stoppable_thread.hpp"
@@ -172,7 +173,7 @@ public:
     step_routes& operator=(step_routes&&) = default;
 
     /// Adds one subject and the call that serves it.
-    step_routes& on(std::string_view subject, ores::nats::message_handler handler) {
+    step_routes& on(std::string_view subject, ores::nats::delivery_handler handler) {
         subjects_.emplace_back(subject);
         handlers_.push_back(std::move(handler));
         return *this;
@@ -186,14 +187,14 @@ public:
         return subjects_;
     }
 
-    [[nodiscard]] const std::vector<ores::nats::message_handler>& handlers() const noexcept {
+    [[nodiscard]] const std::vector<ores::nats::delivery_handler>& handlers() const noexcept {
         return handlers_;
     }
 
 private:
     std::string group_;
     std::vector<std::string> subjects_;
-    std::vector<ores::nats::message_handler> handlers_;
+    std::vector<ores::nats::delivery_handler> handlers_;
 };
 
 /**
@@ -223,10 +224,11 @@ private:
  * command stays in the stream until the day expires, unreadable by that
  * consumer for ever.
  *
- * The handler answers the delivery itself, with @c ores::nats::ack_guard, so
- * that a handler which records no outcome is redelivered. Passing a handler
- * that cannot answer is what makes at-least-once delivery a promise the code
- * does not keep.
+ * Each handler takes the @c ores::nats::delivery and settles it, so a handler
+ * that records no outcome drops it unsettled and it is redelivered. A command
+ * that does not reach a handler is settled here: one whose step is busy or
+ * cannot be claimed comes back later, one whose step is done is committed, and
+ * one that names no step is rejected.
  *
  * @throws std::invalid_argument when the service declares no subjects, and
  *         std::runtime_error when the stream cannot be created. For a service
@@ -250,7 +252,7 @@ private:
     // prefixed one, so the dispatch table is built on the same prefixing.
     const auto& handlers = routes.handlers();
     auto by_subject =
-        std::make_shared<std::vector<std::pair<std::string, ores::nats::message_handler>>>();
+        std::make_shared<std::vector<std::pair<std::string, ores::nats::delivery_handler>>>();
     by_subject->reserve(subjects.size());
     for (std::size_t i = 0; i < subjects.size(); ++i)
         by_subject->emplace_back(nats.make_subject(subjects[i]), handlers[i]);
@@ -274,7 +276,8 @@ private:
         filters,
         durable,
         service_name,
-        [by_subject, &nats, claim_owner](ores::nats::message msg) {
+        [by_subject, &nats, claim_owner](ores::nats::delivery delivery) {
+            const auto& msg = delivery.msg();
             for (const auto& [subject, handler] : *by_subject) {
                 if (msg.subject != subject)
                     continue;
@@ -290,126 +293,125 @@ private:
                  * and it goes straight to its handler.
                  */
                 std::string claimed_step;
-                std::string claimed_tenant;
                 if (const auto wf = workflow_step_context::from_message(nats, msg)) {
                     const auto outcome = claim_step(nats, wf->step_id, wf->tenant_id, claim_owner);
+                    if (outcome == step_claim_outcome::busy) {
+                        // Another delivery holds a live lease, so the work is
+                        // running elsewhere. Come back rather than do it twice,
+                        // and come back after a pause: an immediate redelivery
+                        // lands on the same live lease, loses the same race,
+                        // and spends the delivery budget in a loop.
+                        BOOST_LOG_SEV(detail::lg(), info)
+                            << "Step " << wf->step_id << " is held by another delivery; retrying "
+                            << msg.subject << " in "
+                            << ores::workflow::messaging::step_claim_hold_off.count() << "ms";
+                        std::move(delivery).rollback_after(
+                            ores::workflow::messaging::step_claim_hold_off);
+                        return;
+                    }
+                    if (outcome == step_claim_outcome::not_in_progress) {
+                        // The step is already done or already failed, so its
+                        // state refuses this replay and there is nothing here
+                        // for this delivery to do.
+                        std::move(delivery).commit();
+                        return;
+                    }
+                    if (outcome == step_claim_outcome::unknown) {
+                        // No such step, and nothing can ever serve it.
+                        BOOST_LOG_SEV(detail::lg(), warn)
+                            << "Step " << wf->step_id << " is not a workflow step; rejecting "
+                            << msg.subject;
+                        std::move(delivery).reject();
+                        return;
+                    }
                     if (outcome != step_claim_outcome::claimed) {
-                        // The handler answers the delivery itself, so every path
-                        // that does not reach it is answered here.
-                        ores::nats::ack_guard ack(msg);
-                        if (outcome == step_claim_outcome::busy) {
-                            // Another delivery holds a live lease, so the work is
-                            // running elsewhere. Come back rather than do it twice,
-                            // and come back after a pause: an immediate redelivery
-                            // lands on the same live lease, loses the same race,
-                            // and spends the delivery budget in a loop.
-                            BOOST_LOG_SEV(detail::lg(), info)
-                                << "Step " << wf->step_id
-                                << " is held by another delivery; retrying " << msg.subject
-                                << " in " << ores::workflow::messaging::step_claim_hold_off.count()
-                                << "ms";
-                            ack.retry_after(ores::workflow::messaging::step_claim_hold_off);
-                        } else if (outcome == step_claim_outcome::not_in_progress) {
-                            // The step is already done or already failed, so its
-                            // state refuses this replay and there is nothing here
-                            // for this delivery to do.
-                            ack.accept();
-                        } else if (outcome == step_claim_outcome::unknown) {
-                            // No such step, and nothing can ever serve it.
-                            BOOST_LOG_SEV(detail::lg(), warn)
-                                << "Step " << wf->step_id << " is not a workflow step; rejecting "
-                                << msg.subject;
-                            ack.reject();
-                        } else {
-                            // The engine could not be reached or could not decide.
-                            // Failing closed is deliberate: running the work
-                            // unclaimed is what the claim exists to prevent.
-                            // Come back after a pause, not at once: an immediate
-                            // retry burns the whole delivery budget in a burst,
-                            // so the bound would be seconds rather than the
-                            // minutes it is written to be.
-                            BOOST_LOG_SEV(detail::lg(), warn)
-                                << "Could not claim step " << wf->step_id << " for " << msg.subject
-                                << "; retrying in "
-                                << ores::workflow::messaging::step_claim_hold_off.count()
-                                << "ms rather than running it unclaimed.";
-                            ack.retry_after(ores::workflow::messaging::step_claim_hold_off);
-                        }
+                        // The engine could not be reached or could not decide.
+                        // Failing closed is deliberate: running the work
+                        // unclaimed is what the claim exists to prevent.
+                        // Come back after a pause, not at once: an immediate
+                        // retry burns the whole delivery budget in a burst,
+                        // so the bound would be seconds rather than the
+                        // minutes it is written to be.
+                        BOOST_LOG_SEV(detail::lg(), warn)
+                            << "Could not claim step " << wf->step_id << " for " << msg.subject
+                            << "; retrying in "
+                            << ores::workflow::messaging::step_claim_hold_off.count()
+                            << "ms rather than running it unclaimed.";
+                        std::move(delivery).rollback_after(
+                            ores::workflow::messaging::step_claim_hold_off);
                         return;
                     }
                     claimed_step = wf->step_id;
-                    claimed_tenant = wf->tenant_id;
                     BOOST_LOG_SEV(detail::lg(), info)
                         << "Step " << claimed_step << " claimed by " << claim_owner
                         << "; running its handler for " << msg.subject;
-                }
 
-                const auto started = std::chrono::steady_clock::now();
-                const auto served = msg.subject;
-                /*
-                 * A handler can outlive the claim's lease. While it runs, the claim is renewed
-                 * and the server is told the delivery is still being worked on, so no
-                 * redelivery takes the step over from a holder that is still working. A holder
-                 * that dies stops renewing, and its lease ends as before.
-                 */
-                std::optional<ores::platform::concurrency::jthread> renewer;
-                if (!claimed_step.empty())
-                    renewer.emplace([&nats,
-                                     step = claimed_step,
-                                     tenant = claimed_tenant,
-                                     owner = claim_owner,
-                                     ack = msg.ack,
-                                     started](ores::platform::concurrency::stop_token stop) {
-                        using ores::workflow::messaging::step_claim_renew_interval;
-                        while (!ores::platform::concurrency::wait_for(stop,
-                                                                      step_claim_renew_interval)) {
-                            if (ack)
-                                ack->working();
+                    /*
+                     * A handler can outlive the claim's lease. Until the
+                     * delivery is settled, the claim is renewed and the server
+                     * is told the delivery is still being worked on, so no
+                     * redelivery takes the step over from a holder that is
+                     * still working. A holder that dies stops renewing, and
+                     * its lease ends as before.
+                     */
+                    const auto claimed_at = std::chrono::steady_clock::now();
+                    delivery.keep_alive(
+                        ores::workflow::messaging::step_claim_renew_interval,
+                        [&nats,
+                         step = wf->step_id,
+                         tenant = wf->tenant_id,
+                         owner = claim_owner,
+                         claimed_at] {
+                            using ores::workflow::messaging::step_claim_renew_interval;
                             std::string state;
                             const auto outcome = renew_step_claim(nats, step, tenant, owner, state);
                             const auto held = std::chrono::duration<double>(
-                                                  std::chrono::steady_clock::now() - started)
+                                                  std::chrono::steady_clock::now() - claimed_at)
                                                   .count();
                             if (outcome == step_renewal_outcome::renewed) {
                                 BOOST_LOG_SEV(detail::lg(), info)
                                     << "Step " << step << " still running after " << held
                                     << "s; its claim's lease is renewed";
-                            } else if (outcome == step_renewal_outcome::lost) {
+                                return true;
+                            }
+                            if (outcome == step_renewal_outcome::lost) {
                                 BOOST_LOG_SEV(detail::lg(), error)
                                     << "Step " << step << " lost its claim after " << held
                                     << "s while its handler still runs (" << state
                                     << "); another delivery may now run its work";
-                                return;
-                            } else {
-                                BOOST_LOG_SEV(detail::lg(), warn)
-                                    << "Step " << step << " could not renew its claim after "
-                                    << held << "s (" << state << "); trying again in "
-                                    << step_claim_renew_interval.count() << "s";
+                                return false;
                             }
-                        }
-                    });
+                            BOOST_LOG_SEV(detail::lg(), warn)
+                                << "Step " << step << " could not renew its claim after " << held
+                                << "s (" << state << "); trying again in "
+                                << step_claim_renew_interval.count() << "s";
+                            return true;
+                        });
+                }
+
+                const auto started = std::chrono::steady_clock::now();
+                const auto served = msg.subject;
                 const auto ran_for = [&started] {
                     return std::chrono::duration<double>(std::chrono::steady_clock::now() - started)
                         .count();
                 };
+                // The handler takes the delivery, and with it the keep-alive,
+                // which ends when the handler settles or drops it.
                 try {
-                    handler(std::move(msg));
+                    handler(std::move(delivery));
                 } catch (const std::exception& e) {
-                    renewer.reset();
                     if (!claimed_step.empty())
                         BOOST_LOG_SEV(detail::lg(), error)
                             << "Step " << claimed_step << " handler for " << served
                             << " threw after " << ran_for() << "s: " << e.what();
                     throw;
                 } catch (...) {
-                    renewer.reset();
                     if (!claimed_step.empty())
                         BOOST_LOG_SEV(detail::lg(), error)
                             << "Step " << claimed_step << " handler for " << served
                             << " threw a non-standard exception after " << ran_for() << "s";
                     throw;
                 }
-                renewer.reset();
                 if (!claimed_step.empty())
                     BOOST_LOG_SEV(detail::lg(), info)
                         << "Step " << claimed_step << " handler for " << served
@@ -417,13 +419,12 @@ private:
                 return;
             }
             // The consumer filters exactly the declared subjects, so a delivery
-            // that matches none is a programming error. Answer it, because
+            // that matches none is a programming error. Reject it, because
             // nothing can ever serve it and the server would otherwise
             // redeliver it until the bound.
-            ores::nats::ack_guard ack(msg);
             BOOST_LOG_SEV(detail::lg(), error)
                 << "No step-command handler for delivered subject " << msg.subject;
-            ack.reject();
+            std::move(delivery).reject();
         },
         stream,
         step_max_deliver,

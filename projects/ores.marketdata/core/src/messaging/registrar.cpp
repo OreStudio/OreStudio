@@ -347,11 +347,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         ores::service::messaging::step_routes routes;
         routes.on(publish_market_data_observations_from_dq_request::nats_subject,
-                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         routes.on(publish_adapters_from_dq_request::nats_subject,
-                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         routes.on(publish_suppliers_from_dq_request::nats_subject,
-                  [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         subs.push_back(ores::service::messaging::serve_step_commands(nats, queue, routes));
     }
 

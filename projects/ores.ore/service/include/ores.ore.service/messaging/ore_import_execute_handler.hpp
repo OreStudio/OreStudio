@@ -21,6 +21,7 @@
 #define ORES_ORE_SERVICE_MESSAGING_ORE_IMPORT_EXECUTE_HANDLER_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -44,9 +45,9 @@ namespace ores::ore::service::messaging {
  * original caller's identity to downstream domain services (save_currency,
  * save_trade, etc.).
  *
- * Each method answers its own durable delivery: @c ack.accept() once it has
- * published the step's outcome, and no answer on any other exit, which leaves
- * the delivery to be retried.
+ * Each method settles its own durable delivery: it commits once it has
+ * published the step's outcome, and on any other exit drops it unsettled,
+ * which rolls it back to be retried.
  */
 class ore_import_execute_handler {
 private:
@@ -72,7 +73,7 @@ public:
      * import plan, saves all currencies/portfolios/books/trades, and calls
      * publish_step_completion with an ore_import_execute_result payload.
      */
-    void execute(ores::nats::message msg);
+    void execute(ores::nats::delivery delivery);
 
     /**
      * @brief Handles ore.v1.ops.ore_import_rollback.
@@ -80,7 +81,7 @@ public:
      * Deletes all entities saved by a prior execute step (trades → books →
      * portfolios → currencies) and calls publish_step_completion.
      */
-    void rollback(ores::nats::message msg);
+    void rollback(ores::nats::delivery delivery);
 
 private:
     ores::nats::service::client& nats_;

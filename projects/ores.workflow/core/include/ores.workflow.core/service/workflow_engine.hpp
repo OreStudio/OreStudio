@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.platform/concurrency/stoppable_thread.hpp"
@@ -121,7 +122,7 @@ public:
      * Fire-and-forget: no reply is sent. Advances the workflow to the next
      * step, or begins compensation if the step failed.
      */
-    void on_step_completed(ores::nats::message msg);
+    void on_step_completed(ores::nats::delivery delivery);
 
     /**
      * @brief Handles a start-workflow message.
@@ -129,7 +130,7 @@ public:
      * Creates a new workflow_instance record, persists and dispatches step 0.
      * Fire-and-forget: no reply is sent.
      */
-    void on_start_workflow(ores::nats::message msg);
+    void on_start_workflow(ores::nats::delivery delivery);
 
     /**
      * @brief Recovers all in-progress workflows on service startup.

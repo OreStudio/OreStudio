@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: DCF819F8-23C0-49A7-8317-8D406B12317D
+:END:
+#+title: Task: Own each durable NATS delivery with one RAII transaction
+#+description: Replace the shared ack handle and ack_guard with a move-only delivery that durable handlers settle once, and make cnats leave the message to it.
+#+type: task
+#+level: s1
+#+filetags: :own_each_durable_nats_delivery:sprint_30:v0:
+#+owner: marco
+#+branch: feature/own-each-durable-nats-delivery
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:229811EA-0DC9-462B-93BA-AB3B438813D3][Own each durable NATS delivery with one RAII transaction]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every durable NATS handler takes an =ores::nats::delivery= and settles it
+once. The transport asks cnats for manual acks, so the delivery is the only
+owner of its cnats message. A subscription is destroyed only after its open
+deliveries end. =ack_guard=, =ack_handle= and the =ack= field of =message= are
+gone.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:229811EA-0DC9-462B-93BA-AB3B438813D3][Own each durable NATS delivery with one RAII transaction]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- =delivery= is move-only. =commit=, =rollback=, =rollback_after= and =reject=
+  are rvalue-qualified, and the destructor rolls back an unsettled delivery.
+- =keep_alive= reports progress on a thread the delivery owns, and the thread
+  ends before the delivery is settled or freed.
+- Both durable subscribe calls build their options in one function, which sets
+  =ManualAck=.
+- =drain_and_release= waits for the subscription's open deliveries before it
+  destroys the subscription.
+- The 37 durable registrations and their handlers take a delivery. The two
+  core claim handlers lose their no-op guards.
+- Unit tests pin the settlement rules with a fake settler. An integration test
+  keeps a delivery past its callback and settles it on another thread.
+
+* Plan
+
+1. Add =delivery= and =delivery_settler= to =ores.nats/domain=. The keep-alive
+   thread lives behind a private implementation, so the header carries no
+   thread type.
+2. In the client, replace =ack_sink= with =jetstream_settler=, which owns the
+   cnats message and one count of its subscription's open deliveries. The
+   callback builds a delivery for a durable subscription and a plain message
+   for a core one, from a =std::variant= of the two handler types.
+3. Move =serve_step_commands= to deliveries. The claim renewer becomes the
+   delivery's keep-alive.
+4. Migrate the registrations and the handlers with two scripts, one for the
+   registration lambdas and one for the handler signatures, guards and
+   answers. Remove each comment that introduced a removed guard.
+5. Update the pattern pages /Acknowledge What Was Handled/ and /At Least Once
+   Prerequisites/.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

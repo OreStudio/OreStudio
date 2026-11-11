@@ -50,9 +50,9 @@ engine_settings_proposal_registrar::register_handlers(
 
     auto steps = std::make_shared<engine_settings_apply_step_handler>(nats, ctx);
     routes.on(workflow::recheck_engine_settings_changes_subject,
-              [steps](ores::nats::message msg) { steps->recheck(std::move(msg)); });
+              [steps](ores::nats::delivery delivery) { steps->recheck(std::move(delivery)); });
     routes.on(workflow::apply_engine_settings_changes_subject,
-              [steps](ores::nats::message msg) { steps->apply(std::move(msg)); });
+              [steps](ores::nats::delivery delivery) { steps->apply(std::move(delivery)); });
 
     subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
 

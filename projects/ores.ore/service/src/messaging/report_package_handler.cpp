@@ -19,6 +19,7 @@
  */
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.iam.client/client/run_token_minter.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/log/engine_log.hpp"
@@ -92,12 +93,12 @@ report_package_handler::report_package_handler(ores::nats::service::client& nats
     , service_nats_(std::move(service_nats))
     , run_tokens_(ores::iam::client::make_run_token_minter(service_nats_)) {}
 
-void report_package_handler::prepare_package(ores::nats::message msg) {
-    ores::nats::ack_guard ack(msg);
+void report_package_handler::prepare_package(ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
 
     auto wf = workflow_step_context::from_message(nats_, msg);
     if (!wf) {
-        ack.reject();
+        std::move(delivery).reject();
         return;
     }
 
@@ -105,7 +106,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
     auto parsed = ores::utility::codec::json::try_read<prepare_ore_package_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode prepare_ore_package_request");
-        ack.accept();
+        std::move(delivery).commit();
         return;
     }
     const auto& req = *parsed;
@@ -116,17 +117,17 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
     try {
         if (req.definition_id.empty()) {
             wf->fail("prepare_ore_package: definition_id is missing");
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
         if (req.trades_storage_key.empty()) {
             wf->fail("prepare_ore_package: trades_storage_key is missing");
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
         if (req.market_data_storage_key.empty()) {
             wf->fail("prepare_ore_package: market_data_storage_key is missing");
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -138,7 +139,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         if (run_token.empty()) {
             wf->fail("prepare_ore_package: the run has no run token; its grant is missing or "
                      "IAM refused the exchange");
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -227,7 +228,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             wf->fail("prepare_ore_package: the run document names no portfolio file, so the "
                      "gathered trades have nowhere to go for run " +
                      req.report_instance_id);
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -244,13 +245,13 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             wf->fail("prepare_ore_package: the gathered trades are not a readable trade "
                      "export: " +
                      std::string(e.what()));
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
         if (!rows.success) {
             wf->fail("prepare_ore_package: the gather step stored a failed trade export: " +
                      rows.message);
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -273,7 +274,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                 (requested_date.empty() ? std::string("no particular date") : requested_date) +
                 ", the package carries " + std::to_string(rows.items.size()) +
                 " trade(s): " + named);
-            ack.accept();
+            std::move(delivery).commit();
             return;
         }
 
@@ -371,11 +372,11 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                                   << req.report_instance_id << " tarball=" << tarball_key;
 
         wf->complete(ores::utility::codec::json::write(result));
-        ack.accept();
+        std::move(delivery).commit();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "prepare_ore_package failed: " << e.what();
         wf->fail(e.what());
-        ack.accept();
+        std::move(delivery).commit();
     }
 }
 

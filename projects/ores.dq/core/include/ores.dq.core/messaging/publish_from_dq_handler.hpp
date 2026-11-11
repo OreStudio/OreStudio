@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.core/export.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 
@@ -39,7 +40,7 @@ class ORES_DQ_CORE_EXPORT publish_from_dq_handler {
 public:
     publish_from_dq_handler(ores::nats::service::client& nats, ores::database::context ctx);
 
-    void handle(ores::nats::message msg);
+    void handle(ores::nats::delivery delivery);
 
 private:
     ores::nats::service::client& nats_;

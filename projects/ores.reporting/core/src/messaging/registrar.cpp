@@ -672,23 +672,29 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ores::service::messaging::step_routes execution_routes{"execution"};
     execution_routes
         .on(gather_trades_request::nats_subject,
-            [reh](ores::nats::message msg) { reh->gather_trades(std::move(msg)); })
+            [reh](ores::nats::delivery delivery) { reh->gather_trades(std::move(delivery)); })
         .on(gather_market_data_request::nats_subject,
-            [reh](ores::nats::message msg) { reh->gather_market_data(std::move(msg)); })
+            [reh](ores::nats::delivery delivery) { reh->gather_market_data(std::move(delivery)); })
         .on(assemble_bundle_request::nats_subject,
-            [reh](ores::nats::message msg) { reh->assemble_bundle(std::move(msg)); })
+            [reh](ores::nats::delivery delivery) { reh->assemble_bundle(std::move(delivery)); })
         .on(resolve_prepared_input_request::nats_subject,
-            [reh](ores::nats::message msg) { reh->resolve_prepared_input(std::move(msg)); })
+            [reh](ores::nats::delivery delivery) {
+                reh->resolve_prepared_input(std::move(delivery));
+            })
         .on(collect_compute_results_request::nats_subject,
-            [reh](ores::nats::message msg) { reh->collect_results(std::move(msg)); })
+            [reh](ores::nats::delivery delivery) { reh->collect_results(std::move(delivery)); })
         .on(post_process_results_request::nats_subject,
-            [reh](ores::nats::message msg) { reh->post_process_results(std::move(msg)); })
+            [reh](ores::nats::delivery delivery) {
+                reh->post_process_results(std::move(delivery));
+            })
         .on(ignore_compute_results_request::nats_subject,
-            [reh](ores::nats::message msg) { reh->ignore_compute_results(std::move(msg)); })
+            [reh](ores::nats::delivery delivery) {
+                reh->ignore_compute_results(std::move(delivery));
+            })
         .on(finalise_report_request::nats_subject,
-            [reh](ores::nats::message msg) { reh->finalise(std::move(msg)); })
+            [reh](ores::nats::delivery delivery) { reh->finalise(std::move(delivery)); })
         .on(fail_report_request::nats_subject,
-            [reh](ores::nats::message msg) { reh->fail(std::move(msg)); });
+            [reh](ores::nats::delivery delivery) { reh->fail(std::move(delivery)); });
     subs.push_back(
         ores::service::messaging::serve_step_commands(nats, queue_group, execution_routes));
 
@@ -709,7 +715,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         };
         ores::service::messaging::step_routes routes;
         for (const auto subject : publish_subjects)
-            routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+            routes.on(subject,
+                      [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
     }
 

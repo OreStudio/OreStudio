@@ -719,7 +719,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_tenor_schedules_from_dq_request::nats_subject};
         ores::service::messaging::step_routes routes;
         for (const auto subject : publish_subjects)
-            routes.on(subject, [h](ores::nats::message msg) { h->handle(std::move(msg)); });
+            routes.on(subject,
+                      [h](ores::nats::delivery delivery) { h->handle(std::move(delivery)); });
 
         subs.push_back(
             ores::service::messaging::serve_step_commands(nats, registrar_queue_group, routes));

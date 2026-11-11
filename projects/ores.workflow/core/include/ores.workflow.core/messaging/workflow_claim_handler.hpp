@@ -68,9 +68,8 @@ public:
      * @brief Answers a claim_step_request, on workflow.v1.ops.claim_step.
      *
      * Decodes the request, reads the step it names inside the tenant it names,
-     * and replies with a claim_step_response. The delivery is answered with an
-     * ack_guard on every path, so a request this handler cannot decide is
-     * redelivered rather than dropped.
+     * and replies with a claim_step_response on every path, so a caller never
+     * waits out its deadline for an answer this handler could have given.
      */
     void claim_step(ores::nats::message msg);
 

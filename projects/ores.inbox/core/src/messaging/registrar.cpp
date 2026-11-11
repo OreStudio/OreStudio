@@ -126,7 +126,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         auto steps = std::make_shared<apply_step_handler>(nats, ctx);
         ores::service::messaging::step_routes routes;
         routes.on(ores::inbox::workflow::tell_apply_result_subject,
-                  [steps](ores::nats::message msg) { steps->tell(std::move(msg)); });
+                  [steps](ores::nats::delivery delivery) { steps->tell(std::move(delivery)); });
         subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
     }
 

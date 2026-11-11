@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -51,10 +52,10 @@ namespace ores::reporting::messaging {
  *  reporting.v1.ops.finalise_report                — marks instance as completed
  *  reporting.v1.ops.fail_report                    — marks instance as failed (compensation)
  *
- * One durable consumer carries the whole family, so each method answers its own
- * delivery: @c ack.accept() once it has recorded the step's outcome, @c
- * ack.reject() for a delivery that carries no step context, and no answer on
- * any other exit, which leaves the delivery to be retried.
+ * One durable consumer carries the whole family, so each method settles its own
+ * delivery: it commits once it has recorded the step's outcome, rejects a
+ * delivery that carries no step context, and on any other exit drops it
+ * unsettled, which rolls it back to be retried.
  */
 class ORES_REPORTING_CORE_EXPORT report_execution_handler {
 private:
@@ -74,11 +75,11 @@ public:
                              ores::workflow::service::fsm_state_map instance_states,
                              std::string http_base_url);
 
-    void gather_trades(ores::nats::message msg);
-    void gather_market_data(ores::nats::message msg);
-    void assemble_bundle(ores::nats::message msg);
-    void collect_results(ores::nats::message msg);
-    void resolve_prepared_input(ores::nats::message msg);
+    void gather_trades(ores::nats::delivery delivery);
+    void gather_market_data(ores::nats::delivery delivery);
+    void assemble_bundle(ores::nats::delivery delivery);
+    void collect_results(ores::nats::delivery delivery);
+    void resolve_prepared_input(ores::nats::delivery delivery);
     /**
      * @brief Loads the canonical rows the run's node marshalled into the result table.
      *
@@ -87,10 +88,10 @@ public:
      * the loader's contract, and written in one statement, so a run's rows arrive
      * together or not at all.
      */
-    void post_process_results(ores::nats::message msg);
-    void ignore_compute_results(ores::nats::message msg);
-    void finalise(ores::nats::message msg);
-    void fail(ores::nats::message msg);
+    void post_process_results(ores::nats::delivery delivery);
+    void ignore_compute_results(ores::nats::delivery delivery);
+    void finalise(ores::nats::delivery delivery);
+    void fail(ores::nats::delivery delivery);
 
 private:
     void mark_instance_failed(const std::string& tenant_id,

@@ -26,6 +26,7 @@
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -71,14 +72,12 @@ public:
     /**
      * @brief Serves inbox.v1.steps.tell_apply_result.
      */
-    void tell(ores::nats::message msg) {
-        // A durable consumer answers every delivery, so each path below states
-        // the outcome; the guard retries a path that returns without deciding.
-        ores::nats::ack_guard ack(msg);
+    void tell(ores::nats::delivery delivery) {
+        const auto& msg = delivery.msg();
 
         auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
         if (!wf) {
-            ack.reject();
+            std::move(delivery).reject();
             return;
         }
         try {
@@ -91,7 +90,7 @@ public:
                                                                   cached->result_json,
                                                                   cached->error_message,
                                                                   cached->log);
-                ack.accept();
+                std::move(delivery).commit();
                 return;
             }
 
@@ -99,7 +98,7 @@ public:
                 ores::service::messaging::decode<ores::inbox::workflow::apply_step_command>(msg);
             if (!command || command->request_id.empty()) {
                 wf->fail("The command names no request.");
-                ack.accept();
+                std::move(delivery).commit();
                 return;
             }
 
@@ -112,7 +111,7 @@ public:
             const auto request = lifecycle.request(command->request_id);
             if (!request) {
                 wf->fail("No such request.");
-                ack.accept();
+                std::move(delivery).commit();
                 return;
             }
             const auto kind = lifecycle.kind(request->kind_code);
@@ -128,12 +127,12 @@ public:
                     << request->kind_code << ", so the person who asked was not told.";
             }
             wf->complete("{}");
-            ack.accept();
+            std::move(delivery).commit();
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), ores::logging::error)
                 << "Step " << wf->step_id << " failed: " << e.what();
             wf->fail(e.what());
-            ack.accept();
+            std::move(delivery).commit();
         }
     }
 

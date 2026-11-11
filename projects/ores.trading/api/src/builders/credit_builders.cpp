@@ -20,6 +20,7 @@
 #include "ores.trading.api/builders/credit_builders.hpp"
 #include "leg_rows.hpp"
 #include "ores.trading.api/builders/cadence.hpp"
+#include "ores.trading.api/builders/day_count.hpp"
 #include <algorithm>
 #include <optional>
 #include <utility>
@@ -73,6 +74,11 @@ premium_conventions_of(const convention_lookup& conventions, const std::string& 
     if (!period)
         return std::unexpected(
             build_error{"convention", id + ": no tenor for " + found->frequency});
+    const auto day_count = trade_day_count_of(found->day_count_fraction);
+    if (!day_count)
+        return std::unexpected(build_error{
+            "convention", id + ": no trade day count for " + found->day_count_fraction});
+    found->day_count_fraction = std::string(*day_count);
     return premium_conventions{std::move(*found), std::string(period->tenor)};
 }
 

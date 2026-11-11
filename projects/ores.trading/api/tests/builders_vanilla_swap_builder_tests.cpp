@@ -21,6 +21,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/builders/builder_registry.hpp"
 #include "ores.trading.api/builders/cadence.hpp"
+#include "ores.trading.api/builders/day_count.hpp"
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -237,4 +238,13 @@ TEST_CASE("a_text_that_is_neither_a_frequency_nor_a_period_has_no_cadence", "[bu
     CHECK_FALSE(cadence_of("0M").has_value());
     CHECK_FALSE(cadence_of("3X").has_value());
     CHECK_FALSE(cadence_of("Fortnightly").has_value());
+}
+
+TEST_CASE("a_convention_day_count_reads_as_the_code_a_trade_leg_states", "[builders][day_count]") {
+    using ores::trading::builders::trade_day_count_of;
+    CHECK(trade_day_count_of("ACT/365.FIXED") == "A365F");
+    CHECK(trade_day_count_of("ACT/360") == "A360");
+    CHECK(trade_day_count_of("BUS/252") == "Business252");
+    CHECK(trade_day_count_of("A365F") == "A365F");
+    CHECK_FALSE(trade_day_count_of("ACT/364").has_value());
 }

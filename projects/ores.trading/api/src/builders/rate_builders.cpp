@@ -19,6 +19,7 @@
  */
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "leg_rows.hpp"
+#include "ores.trading.api/builders/day_count.hpp"
 #include <algorithm>
 #include <array>
 #include <utility>
@@ -360,12 +361,18 @@ swap_result inflation_swap_builder::build() const {
         return std::unexpected(
             build_error{"index", convention.error().reference + ": " + convention.error().reason});
 
+    const auto day_count = trade_day_count_of(convention->day_count_fraction);
+    if (!day_count)
+        return std::unexpected(build_error{"index",
+                                           convention->id + ": no trade day count for " +
+                                               convention->day_count_fraction});
+
     const auto start = terms_.start.get();
     const auto maturity = terms_.maturity.get();
     const bool fixed_pays = terms_.fixed_side.get() == side::pay;
     const auto leg_of = [&](int number, bool payer, std::string type) {
         auto row = rows::swap_leg(number, payer, std::move(type), terms_.currency.get());
-        row.day_count_fraction_code = convention->day_count_fraction;
+        row.day_count_fraction_code = std::string(*day_count);
         row.business_day_convention_code = convention->fix_convention;
         row.payment_frequency_code = "Once";
         return row;

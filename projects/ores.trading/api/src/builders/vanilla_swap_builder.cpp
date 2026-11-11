@@ -20,6 +20,7 @@
 #include "ores.trading.api/builders/vanilla_swap_builder.hpp"
 #include "leg_rows.hpp"
 #include "ores.trading.api/builders/cadence.hpp"
+#include "ores.trading.api/builders/day_count.hpp"
 #include <optional>
 #include <string_view>
 #include <utility>
@@ -144,13 +145,24 @@ std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::b
         swap->fixed_calendar.value_or(floating.calendar),
         fixed_adjustment_.value_or(swap->fixed_convention.value_or(floating.adjustment))};
 
+    const auto fixed_count = trade_day_count_of(fixed.day_count);
+    if (!fixed_count)
+        return std::unexpected(
+            build_error{"index", swap->id + ": no trade day count for " + fixed.day_count});
+    const auto floating_count = trade_day_count_of(floating.day_count);
+    if (!floating_count)
+        return std::unexpected(
+            build_error{"index", swap->id + ": no trade day count for " + floating.day_count});
+
     const bool fixed_pays = terms_.fixed_side.get() == side::pay;
     domain::swap_instrument_data out{};
     out.header.start_date = terms_.start.get();
     out.header.maturity_date = terms_.maturity.get();
     out.facts = domain::vanilla_swap_instrument{};
     out.legs.push_back(conventional_leg(1, fixed_pays, "Fixed", terms_, fixed));
+    out.legs.back().day_count_fraction_code = std::string(*fixed_count);
     auto floating_leg = conventional_leg(2, !fixed_pays, "Floating", terms_, floating);
+    floating_leg.day_count_fraction_code = std::string(*floating_count);
     floating_leg.floating_index_code = terms_.index.get().uri();
     floating_leg.fixing_days = fixing_days;
     floating_leg.is_in_arrears = false;

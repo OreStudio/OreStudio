@@ -26,11 +26,11 @@ Serve the six synthetic record routes and the catalogue from the C++ server, in 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -111,3 +111,11 @@ via its "Verifies task" field.
 | 6 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
 
 * Result
+
+The C++ server answers the six synthetic record routes and the catalogue for
+the 16 resources of the BFF's registry: 13 synthetic units and the three
+reference data lookups, which stay in the refdata part and answer under
+=/api/synthetic=. The two feed key reads are hand-written composed views. The
+generated tests check the refusals, the read-only rules and the accepted pages
+of every unit. The work also fixed a defect PR #4560 shipped: a filtered
+junction page wrote through an emptied filter.

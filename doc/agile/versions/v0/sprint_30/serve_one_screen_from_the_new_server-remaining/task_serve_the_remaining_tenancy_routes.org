@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 6B079A05-65D0-41B0-A725-8AD9DA84D5BE
 :END:
-#+title: Task: Serve the remaining tenancy routes
-#+description: Eighteen tenancy routes remain at the BFF's addresses: the bootstrap and the tenant setup, the registration policy, the tenants and their parties, people, sign-ins and images, party and tenant provisioning, the overview, the seed profiles, the parties page and the caller's parties.
+#+title: Task: Serve the party reads
+#+description: ores.web reads the parties page of the session's own tenant and the parties the caller works in. The C++ server must answer them.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
@@ -13,24 +13,24 @@
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Serve the remaining tenancy routes ores.web calls at the BFF's own addresses and shapes.
+Serve the parties page of the session's own tenant and the parties the caller works in at the BFF's own addresses and shapes.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -41,9 +41,23 @@ Serve the remaining tenancy routes ores.web calls at the BFF's own addresses and
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task began with eighteen tenancy routes. On 2026-11-11 the sixteen that
+need the roster, the setup state, a read inside another tenant or a
+provisioning journey moved to [[id:169CA9EA-6515-45B6-9F9F-7385FCF53C98][Serve the tenant roster, setup and provisioning routes]],
+so this task serves the two party reads.
+
+- =GET /api/me/parties= joins the account screen routes in the IAM part: it is
+  the caller's own read, answered as the BFF named each party.
+- =GET /api/parties= is a new unit in the refdata part, =party_page_routes=. It
+  refuses a system administration session, as the BFF did, because the system
+  tenant's party policy reads every tenant's parties. It names each parent,
+  reading parents on other pages in one call, and paints each row with its
+  business centre's flag. A flag read that fails leaves the flags out.
+- =party_page_routes::read_page= reads with the request's token, so the read
+  inside a tenant can reuse it with a request that carries that tenant's token.
+- Seven routes refused a failed operation by hand as the BFF did, a 409 named
+  =invalid-request=. That rule is now =record_routes::require_done=, and the
+  seven sites use it.
 
 * Measurements
 
@@ -82,6 +96,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: seven routes refuse a failed operation by hand, the same way. | =account_screen_routes.cpp=, =image_screen_routes.cpp= | Accepted | =record_routes::require_done= states the rule once and the seven sites use it. |
+| 2 | Local review: a refusal is not a =std::exception=, so a failed flag read would fail the page. | =party_page_routes.cpp= | Accepted | =flags_or_none= catches both, so the page goes out without flags, as the BFF sent it. |
+| 3 | =route-auth=: the site routes, from main, pass each route through a helper the checker cannot follow. | =site_routes.cpp= | Accepted | Each site route is named and registered where it is built, so the checker reads its chain. |
+| 4 | =format=: an include out of order. | =refdata_routes.cpp= | Accepted | =clang-format= applied. |
+| 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
 
 * Result
+
+The C++ server answers =GET /api/parties= and =GET /api/me/parties= at the
+BFF's addresses and in its shapes, and the inventory pairs each. Tests compare
+exact JSON for each shape, the query bounds, and the refusals before a forward.
+The other sixteen tenancy routes moved to their own task.

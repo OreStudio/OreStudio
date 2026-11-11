@@ -98,6 +98,11 @@ void require_ok(const ores::utility::domain::result& result) {
     }
 }
 
+void require_done(const ores::utility::domain::result& result) {
+    if (result.outcome != ores::utility::domain::outcome::ok)
+        refuse(http_status::conflict, "invalid-request", result.message);
+}
+
 namespace {
 
 /// Adds each default the write object leaves out, parsed from its JSON literal.

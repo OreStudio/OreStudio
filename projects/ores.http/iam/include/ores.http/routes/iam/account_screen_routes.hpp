@@ -73,6 +73,13 @@ public:
     tree_json(const ores::iam::messaging::get_reporting_tree_response& reply);
 
     /**
+     * @brief The parties the caller works in and the party quick sign-in uses,
+     * as the member's own screen reads them.
+     */
+    [[nodiscard]] static std::string
+    my_parties_json(const ores::iam::messaging::get_my_parties_response& reply);
+
+    /**
      * @brief One picture as the browser shows it: its bytes, kept privately for
      * five minutes and never run as a document.
      */

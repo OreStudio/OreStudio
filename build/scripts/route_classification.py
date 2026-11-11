@@ -733,10 +733,10 @@ RULES = (
          "An image screen's read or upload at the address and in the shape the BFF answered,"
          " forwarded to the assets service as the caller."),
     Rule("a tenancy screen's route",
-         ("regex", r"^GET /api/(tenant-statuses|tenant-types|lei-entities)$"),
+         ("regex", r"^GET /api/(tenant-statuses|tenant-types|lei-entities|parties)$"),
          CPP, RESOURCE, "tenancy",
-         "A tenancy screen's catalogue at the address and in the shape the BFF answered, each"
-         " status and type painted with its badge, forwarded as the caller."),
+         "A tenancy screen's catalogue or page at the address and in the shape the BFF"
+         " answered, forwarded as the caller."),
     Rule("the account collection",
          ("exact", "GET /api/accounts"),
          BFF, RESOURCE, "access",

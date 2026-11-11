@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-history-route
-#+pr:
+#+pr: 4574
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4574][#4574]] | [http] Serve the history read from C++ |
 
 * Review
 

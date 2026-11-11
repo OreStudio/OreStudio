@@ -116,3 +116,14 @@ via its "Verifies task" field.
 | 11 | PR #4616: duplicate ids, and a whole read with no bound. | =counterparty_screen_routes.cpp= | Accepted | Each id is named once; a whole read stops with an error after 1000 pages. |
 
 * Result
+
+The task is delivered in five pull requests, one per group of the plan. Each
+row below records a group that has merged; the task closes when all five have.
+
+| Group | PR | Routes | State |
+|-------+----+--------+-------|
+| Counterparties | #4616 | 6 | Merged |
+| Conventions | | 5 | Open |
+| Curve configurations | | 3 | Open |
+| Tenors | | 9 | Open |
+| Records, calendars and ORE currency | | 10 | Open |

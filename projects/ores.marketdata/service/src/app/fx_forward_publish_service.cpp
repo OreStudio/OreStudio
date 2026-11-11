@@ -18,7 +18,6 @@
  *
  */
 #include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
-#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/repository/approval_decision_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
@@ -34,6 +33,7 @@
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -149,12 +149,12 @@ void write_candidate(const context& ctx,
 }
 
 /// Publishes the candidate an approved request authorises, or says why it may not.
-void apply(const context& ctx,
-           const std::string& request_id,
-           const boost::uuids::uuid& party,
-           const std::string& pair_code,
-           time_point as_of,
-           msg::publish_fx_forward_response& resp) {
+void apply_forward_publish(const context& ctx,
+                           const std::string& request_id,
+                           const boost::uuids::uuid& party,
+                           const std::string& pair_code,
+                           time_point as_of,
+                           msg::publish_fx_forward_response& resp) {
     resp.approval_request_id = request_id;
     std::optional<ores::inbox::domain::approval_request> request;
     try {
@@ -309,7 +309,7 @@ fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_r
                 "one set.");
 
         if (!req.approval_request_id.empty()) {
-            apply(ctx, req.approval_request_id, party, req.pair_code, as_of, resp);
+            apply_forward_publish(ctx, req.approval_request_id, party, req.pair_code, as_of, resp);
             return resp;
         }
 
@@ -343,7 +343,7 @@ fx_forward_publish_service::publish(context ctx, const msg::publish_fx_forward_r
             resp.message = "Raised. The publish waits on the decision.";
             return resp;
         }
-        apply(ctx, id, party, req.pair_code, as_of, resp);
+        apply_forward_publish(ctx, id, party, req.pair_code, as_of, resp);
     } catch (const std::exception& e) {
         resp.success = false;
         resp.message = e.what();

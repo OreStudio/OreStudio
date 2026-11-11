@@ -251,6 +251,11 @@ RULES = (
          "One history route for every entity type, named by an opaque entityType string, so"
          " the payload has no per-entity schema; ores.http already serves /versions for each"
          " versioned collection."),
+    Rule("a form's pick lists route",
+         ("regex", r"^GET /api/(books|conventions|counterparties|tenors)/pick-lists$"),
+         CPP, NOT_API, NO_AREA,
+         "The option lists the BFF answered for each reference data form, keyed by the"
+         " control's name, kept so the forms work when the BFF goes."),
     Rule("a form's pick lists",
          ("regex", r"^GET /api/(books|conventions|counterparties|tenors)/pick-lists$"),
          BFF, NOT_API, NO_AREA,

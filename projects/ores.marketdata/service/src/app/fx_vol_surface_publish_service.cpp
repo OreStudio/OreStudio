@@ -31,7 +31,6 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
 #include <optional>
 #include <stdexcept>
 
@@ -76,8 +75,9 @@ int violation_count_of(const domain::fx_vol_surface_calibration& calibration) {
     return violations ? static_cast<int>(violations->size()) : 0;
 }
 
-/// Publishes the record and ends every live surface of its series, in one act, then tells.
-void record_publication(const context& ctx, domain::fx_vol_surface_publish record) {
+/// Publishes the record and ends every live surface of its series, in one act, then tells. Refuses
+/// a surface older than the one live, which would put older data in its place.
+domain::fx_vol_surface_publish record_publication(const context& ctx, domain::fx_vol_surface_publish record) {
     const auto publisher = ores::service::messaging::delegated_actor(ctx);
     record.published_at = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
     record.published_by = publisher;
@@ -93,7 +93,14 @@ void record_publication(const context& ctx, domain::fx_vol_surface_publish recor
     ores::database::repository::unit_of_work uow(ctx);
     const auto& tx = uow.ctx();
     repository::fx_vol_surface_publish_repository repo;
-    for (auto previous : repo.read_live_for_series(tx, record.output_series_id)) {
+    const auto live = repo.read_live_for_series(tx, record.output_series_id);
+    for (const auto& previous : live)
+        if (previous.id != record.id && previous.as_of > record.as_of)
+            throw std::invalid_argument("The surface as of " + datetime::to_iso8601_utc(previous.as_of) +
+                                        " is live, and this one is older, as of " +
+                                        datetime::to_iso8601_utc(record.as_of) +
+                                        ". Publish a calibration at or after the live one.");
+    for (auto previous : live) {
         if (previous.id == record.id)
             continue;
         if (!replaced || previous.as_of > *replaced)
@@ -117,9 +124,14 @@ void record_publication(const context& ctx, domain::fx_vol_surface_publish recor
                {ores::utility::domain::precondition_kind::must_match_version,
                 static_cast<std::uint32_t>(record.version)});
     uow.commit();
+    record.version += 1;
+    BOOST_LOG_SEV(publish_log(), ores::logging::info)
+        << "Published the surface of series " << record.output_series_id << " as of "
+        << datetime::to_iso8601_utc(record.as_of) << " under request " << record.request_id;
 
     // Telling never unmoves the surface: a notice that fails is logged by the announcer.
     announce_surface_publish(ctx, record, replaced);
+    return record;
 }
 
 /// Publishes the calibration an approved request authorises, or says why it may not.
@@ -130,13 +142,7 @@ void apply(const context& ctx,
            time_point as_of,
            msg::publish_fx_vol_surface_response& resp) {
     resp.approval_request_id = request_id;
-    std::optional<ores::inbox::domain::approval_request> request;
-    try {
-        request = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(publish_log(), ores::logging::warn)
-            << "Reading approval request " << request_id << ": " << e.what();
-    }
+    const auto request = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
     if (!request) {
         resp.message = "No approval request has the id " + request_id + ".";
         return;
@@ -174,14 +180,11 @@ void apply(const context& ctx,
                        "decision does not cover the surface it now holds. Raise a request for it.";
         return;
     }
-    record_publication(ctx, *record);
-    const auto published = repository::fx_vol_surface_publish_repository{}.read_latest_by_request(ctx, request_id);
+    const auto published = record_publication(ctx, *record);
     resp.success = true;
     resp.message = "Published.";
-    if (published) {
-        resp.published_at = published->published_at;
-        resp.published_by = published->published_by;
-    }
+    resp.published_at = published.published_at;
+    resp.published_by = published.published_by;
 }
 
 }
@@ -211,7 +214,22 @@ fx_vol_surface_publish_service::publish(context ctx, const msg::publish_fx_vol_s
             throw std::invalid_argument("The blueprint " + blueprint.name + " has no calibration as of " +
                                         datetime::to_iso8601_utc(as_of) + ". Calibrate it first.");
 
-        ores::inbox::service::approval_lifecycle lifecycle(ctx);
+        // One raise at a time: a second request for the same calibration would publish it twice.
+        for (const auto& pending : repository::fx_vol_surface_publish_repository{}.read_latest(ctx)) {
+            if (pending.blueprint_id != blueprint.id || pending.as_of != as_of || pending.published_at)
+                continue;
+            const auto open = ores::inbox::service::approval_lifecycle(ctx).request(
+                boost::uuids::to_string(pending.request_id));
+            if (open && (open->state_code == "waiting" || open->state_code == "approved"))
+                throw std::invalid_argument("Request " + boost::uuids::to_string(pending.request_id) +
+                                            " already asks to publish this calibration and is " +
+                                            open->state_code + ".");
+        }
+
+        // The request and its subject are one act, so no request ever names no surface.
+        ores::database::repository::unit_of_work uow(ctx);
+        const auto& tx = uow.ctx();
+        ores::inbox::service::approval_lifecycle lifecycle(tx);
         const auto kind = lifecycle.kind(std::string(fx_vol_surface_publish_kind_code));
         if (!kind)
             throw std::runtime_error("No such kind of request: " + std::string(fx_vol_surface_publish_kind_code) + ".");
@@ -238,7 +256,8 @@ fx_vol_surface_publish_service::publish(context ctx, const msg::publish_fx_vol_s
         record.performed_by = ctx.service_account();
         record.change_reason_code = "system.new_record";
         record.change_commentary = "Subject of approval request " + boost::uuids::to_string(raised.id);
-        repository::fx_vol_surface_publish_repository{}.write(ctx, record);
+        repository::fx_vol_surface_publish_repository{}.write(tx, record);
+        uow.commit();
 
         resp.approval_request_id = boost::uuids::to_string(raised.id);
         resp.state_code = raised.state_code;
@@ -267,8 +286,13 @@ fx_vol_surface_publish_service::read(context ctx, const msg::get_fx_vol_surface_
             return out;
         }
         const auto request = ores::inbox::service::approval_lifecycle(ctx).request(req.approval_request_id);
+        if (!request) {
+            out.message = "The approval request " + req.approval_request_id +
+                          " is gone, so its subject authorises nothing.";
+            return out;
+        }
         out.success = true;
-        out.state_code = request ? request->state_code : std::string("unknown");
+        out.state_code = request->state_code;
         const auto blueprints = ores::refdata::repository::fx_vol_surface_blueprint_repository{}.read_latest(
             ctx, boost::uuids::to_string(record->blueprint_id));
         out.blueprint_name = blueprints.empty() ? boost::uuids::to_string(record->blueprint_id) :

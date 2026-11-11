@@ -72,6 +72,7 @@
 #include "ores.http/routes/refdata/party_id_scheme_web_routes.hpp"
 #include "ores.http/routes/refdata/party_identifier_routes.hpp"
 #include "ores.http/routes/refdata/party_identifier_web_routes.hpp"
+#include "ores.http/routes/refdata/party_page_routes.hpp"
 #include "ores.http/routes/refdata/party_routes.hpp"
 #include "ores.http/routes/refdata/party_web_routes.hpp"
 #include "ores.http/routes/refdata/payment_frequency_web_routes.hpp"
@@ -190,6 +191,7 @@ void refdata_routes::register_routes(
 
     // The option lists the reference data forms offer, one read per form.
     pick_list_routes::register_routes(router, registry, session);
+    party_page_routes::register_routes(router, registry, session);
 
     // The reference data lookups the synthetic screens read, under /api/synthetic.
     tenor_web_routes::register_routes(router, registry, session);

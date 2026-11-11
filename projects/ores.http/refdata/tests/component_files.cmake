@@ -90,6 +90,7 @@ set(files
     "party_id_scheme_web_routes_tests.cpp"
     "party_identifier_routes_tests.cpp"
     "party_identifier_web_routes_tests.cpp"
+    "party_page_routes_tests.cpp"
     "party_routes_tests.cpp"
     "party_status_classification_routes_tests.cpp"
     "party_type_classification_routes_tests.cpp"

@@ -92,7 +92,8 @@ PAIRS = {
     ("GET", "/api/tenant-types"): ("GET", "/api/tenant-types"),
     ("GET", "/api/seed-profiles"): ("GET", f"{TENANCY}/seed_profiles"),
     ("POST", "/api/bootstrap/administrator"): ("POST", f"{IAM_OPS}/create_initial_admin"),
-    ("GET", "/api/parties"): ("GET", f"{REFDATA}/parties"),
+    ("GET", "/api/parties"): ("GET", "/api/parties"),
+    ("GET", "/api/me/parties"): ("GET", "/api/me/parties"),
 
     # reference data
     ("GET", "/api/refdata"): ("GET", "/api/refdata"),

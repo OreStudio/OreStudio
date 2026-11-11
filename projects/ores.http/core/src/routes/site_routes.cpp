@@ -271,42 +271,53 @@ http_response site_routes::handle_client_log(const http_request& req) {
 void site_routes::register_routes(std::shared_ptr<ores::http::net::router> router,
                                   std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
                                   std::optional<loaded_site> site) {
-    const auto add = [&](auto builder) {
-        const auto built = builder.build();
-        router->add_route(built);
-        registry->register_route(built);
-    };
-    add(router->get("/api/health")
+    const auto health =
+        router->get("/api/health")
             .summary("Answer that the server is alive")
             .tags({"site"})
             .auth_optional()
             .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
                 co_return http_response::json(R"({"status":"ok"})");
-            }));
-    add(router->post("/api/client-log")
+            })
+            .build();
+    router->add_route(health);
+    registry->register_route(health);
+    const auto client_log =
+        router->post("/api/client-log")
             .summary("Write the browser's trail into the journal")
             .tags({"site"})
             .auth_required()
             .handler([](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return handle_client_log(req);
-            }));
+            })
+            .build();
+    router->add_route(client_log);
+    registry->register_route(client_log);
     if (!site)
         return;
     const auto shared = std::make_shared<const loaded_site>(std::move(*site));
-    add(router->get("/api/site")
+    const auto site_read =
+        router->get("/api/site")
             .summary("Read what the client needs to render itself")
             .tags({"site"})
             .auth_optional()
             .handler([shared](const http_request&) -> boost::asio::awaitable<http_response> {
                 co_return site_state(*shared);
-            }));
-    add(router->get("/api/site/deployment")
+            })
+            .build();
+    router->add_route(site_read);
+    registry->register_route(site_read);
+    const auto deployment_read =
+        router->get("/api/site/deployment")
             .summary("Read the deployment's plumbing, where the developer surface is offered")
             .tags({"site"})
             .auth_optional()
             .handler([shared](const http_request&) -> boost::asio::awaitable<http_response> {
                 co_return deployment(*shared);
-            }));
+            })
+            .build();
+    router->add_route(deployment_read);
+    registry->register_route(deployment_read);
 }
 
 }

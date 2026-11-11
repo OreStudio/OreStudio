@@ -211,3 +211,18 @@ TEST_CASE("account_screen_routes_refuse_a_reporting_line_with_no_target", "[acco
     CHECK(answer->status == http_status::bad_request);
     CHECK(answer->body.find("A reportsToAccountId is required.") != std::string::npos);
 }
+
+TEST_CASE("account_screen_routes_answer_the_callers_parties_in_the_screen_shape",
+          "[account_screen]") {
+    ores::iam::messaging::get_my_parties_response reply;
+    CHECK(account_screen_routes::my_parties_json(reply) == R"({"defaultPartyId":"","parties":[]})");
+    reply.default_party_id = "p-1";
+    reply.parties.push_back({"p-1", "Acme \"UK\"", "ACME", "Operational", "GBLO"});
+    reply.parties.push_back({"p-2", "", "", "", ""});
+    CHECK(
+        account_screen_routes::my_parties_json(reply) ==
+        R"({"defaultPartyId":"p-1","parties":[)"
+        R"({"partyId":"p-1","name":"Acme \"UK\"","shortCode":"ACME",)"
+        R"("partyCategory":"Operational","businessCenterCode":"GBLO"},)"
+        R"({"partyId":"p-2","name":"","shortCode":"","partyCategory":"","businessCenterCode":""}]})");
+}

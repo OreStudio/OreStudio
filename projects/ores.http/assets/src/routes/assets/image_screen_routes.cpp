@@ -68,10 +68,6 @@ bool is_uuid(const std::string& text) {
     return std::regex_match(text, form);
 }
 
-http_response failed_operation(const std::string& message) {
-    return refused(http_status::conflict, "invalid-request", message);
-}
-
 }
 
 std::optional<image_screen_routes::image_page>
@@ -143,8 +139,7 @@ void image_screen_routes::register_routes(
                 if (!page->search.empty())
                     list.filter = messaging::images_filter{std::nullopt, page->search};
                 const auto reply = ores::http::forwarding::forward(req, session, list);
-                if (reply.result.outcome != ores::utility::domain::outcome::ok)
-                    return failed_operation(reply.result.message);
+                rr::require_done(reply.result);
                 std::string out = "{\"images\":[";
                 for (std::size_t i = 0; i < reply.images.size(); ++i) {
                     const auto& image = reply.images[i];
@@ -172,8 +167,7 @@ void image_screen_routes::register_routes(
                     std::vector<boost::uuids::uuid>{boost::uuids::string_generator()(id)},
                     std::nullopt};
                 const auto reply = ores::http::forwarding::forward(req, session, list);
-                if (reply.result.outcome != ores::utility::domain::outcome::ok)
-                    return failed_operation(reply.result.message);
+                rr::require_done(reply.result);
                 if (reply.images.empty())
                     return refused(
                         http_status::not_found, "not-found", "No image has this identifier.");
@@ -189,8 +183,7 @@ void image_screen_routes::register_routes(
             return guarded<messaging::get_image_upload_policy_request>([&] {
                 const auto reply = ores::http::forwarding::forward(
                     req, session, messaging::get_image_upload_policy_request{});
-                if (reply.result.outcome != ores::utility::domain::outcome::ok)
-                    return failed_operation(reply.result.message);
+                rr::require_done(reply.result);
                 return http_response::json(
                     "{\"formats\":" + json::write(reply.formats) +
                     ",\"maxSizeBytes\":" + std::to_string(reply.max_size_bytes) +

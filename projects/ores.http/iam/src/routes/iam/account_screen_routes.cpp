@@ -86,8 +86,7 @@ account_or_own(const http_request& req, nats_client& session, const std::string&
     if (is_own_account(req, username)) {
         const auto reply =
             ores::http::forwarding::forward(req, session, messaging::get_my_account_request{});
-        if (reply.result.outcome != ores::utility::domain::outcome::ok)
-            throw rr::refusal{http_status::conflict, "invalid-request", reply.result.message};
+        rr::require_done(reply.result);
         return reply.account;
     }
     return ores::http::forwarding::forward(
@@ -151,6 +150,22 @@ std::string account_screen_routes::tree_json(const messaging::get_reporting_tree
     return out + "]}";
 }
 
+std::string
+account_screen_routes::my_parties_json(const messaging::get_my_parties_response& reply) {
+    std::string out =
+        "{\"defaultPartyId\":" + json::write(reply.default_party_id) + ",\"parties\":[";
+    for (std::size_t i = 0; i < reply.parties.size(); ++i) {
+        const auto& p = reply.parties[i];
+        out += (i == 0 ? "{" : ",{");
+        out += "\"partyId\":" + json::write(p.party_id);
+        out += ",\"name\":" + json::write(p.name);
+        out += ",\"shortCode\":" + json::write(p.short_code);
+        out += ",\"partyCategory\":" + json::write(p.party_category);
+        out += ",\"businessCenterCode\":" + json::write(p.business_center_code) + "}";
+    }
+    return out + "]}";
+}
+
 http_response account_screen_routes::picture_of(const ores::assets::domain::image& image) {
     return ores::http::net::image_answer(image.mime_type,
                                          std::string(image.data.begin(), image.data.end()));
@@ -210,6 +225,17 @@ void account_screen_routes::register_routes(
             });
         });
 
+    add(router->get("/api/me/parties"),
+        "Read the parties the caller works in",
+        [&session](const http_request& req) {
+            return guarded<messaging::get_my_parties_request>([&] {
+                const auto reply = ores::http::forwarding::forward(
+                    req, session, messaging::get_my_parties_request{});
+                rr::require_done(reply.result);
+                return http_response::json(my_parties_json(reply));
+            });
+        });
+
     add(router->post("/api/me/default-party"),
         "Set or clear the party quick sign-in uses",
         [&session](const http_request& req) {
@@ -242,8 +268,7 @@ void account_screen_routes::register_routes(
                 list.filter = assets::images_filter{
                     std::vector<boost::uuids::uuid>{*account->image_id}, std::nullopt};
                 const auto reply = ores::http::forwarding::forward(req, session, list);
-                if (reply.result.outcome != ores::utility::domain::outcome::ok)
-                    return refused(http_status::conflict, "invalid-request", reply.result.message);
+                rr::require_done(reply.result);
                 if (reply.images.empty())
                     return refused(
                         http_status::not_found, "not-found", "This account has no picture.");
@@ -269,8 +294,7 @@ void account_screen_routes::register_routes(
                                                           body->expectedVersion.value_or(""),
                                                           body->reasonCode.value_or(""),
                                                           body->commentary.value_or("")});
-                if (reply.result.outcome != ores::utility::domain::outcome::ok)
-                    return refused(http_status::conflict, "invalid-request", reply.result.message);
+                rr::require_done(reply.result);
                 if (!reply.account)
                     return refused(http_status::conflict,
                                    "invalid-request",
@@ -287,8 +311,7 @@ void account_screen_routes::register_routes(
                     req,
                     session,
                     messaging::get_reporting_tree_request{req.get_query_param("root")});
-                if (reply.result.outcome != ores::utility::domain::outcome::ok)
-                    return refused(http_status::conflict, "invalid-request", reply.result.message);
+                rr::require_done(reply.result);
                 return http_response::json(tree_json(reply));
             });
         });

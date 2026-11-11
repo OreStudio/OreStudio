@@ -139,6 +139,14 @@ ORES_HTTP_API_EXPORT bool has_reason(const std::string& reason);
 ORES_HTTP_API_EXPORT void require_ok(const ores::utility::domain::result& result);
 
 /**
+ * @brief Refuse a failed outcome as the BFF refused a failed operation: a
+ * conflict whose code is invalid-request and whose words are the service's.
+ *
+ * A route that keeps the BFF's answer uses this, whatever the outcome names.
+ */
+ORES_HTTP_API_EXPORT void require_done(const ores::utility::domain::result& result);
+
+/**
  * @brief The body with each default added where a write leaves its member out.
  *
  * A write is the body's =write= object, or the =write= of each item of its

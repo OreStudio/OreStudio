@@ -104,7 +104,7 @@ TEST_CASE("country_web_routes_registers_the_screen_addresses", "[routes][web]") 
 }
 
 TEST_CASE("country_web_routes_names_the_resource_in_its_catalogue_entry", "[routes][web]") {
-    const std::string entry{country_web_routes::catalogue_entry()};
+    const auto entry = country_web_routes::catalogue_entry(country_web_request({}));
     CHECK(entry.find("\"key\":\"countries\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"ores.refdata.country\"") != std::string::npos);
     CHECK(entry.find("\"writePermission\":\"refdata::countries:write\"") != std::string::npos);
@@ -155,6 +155,8 @@ TEST_CASE("country_web_routes_refuses_a_write_that_states_no_reason", "[routes][
     nats_client session;
     const auto put =
         country_web_run(country_web_routes::handle_put(country_web_request({}, "{}"), session));
+    // A resource no screen writes, and a shared catalogue read from a session
+    // that is not the system tenant's, refuse before they read the body.
     CHECK(put.status == http_status::forbidden);
 
     const auto removal =

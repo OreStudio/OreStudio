@@ -2,10 +2,16 @@
 :ID: 9CCB36D2-D297-478D-8968-41FE16623FBC
 :ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.fx_spot_generation_config
 #+description: Codegen entity model for the synthetic fx_spot_generation_config table; configuration for generating synthetic FX spot observations.
 #+type: ores.codegen.entity
+#+web_resource: fx-feeds
+#+web_writes: many
+#+web_key_read: hand-written
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: fx_spot_generation_config

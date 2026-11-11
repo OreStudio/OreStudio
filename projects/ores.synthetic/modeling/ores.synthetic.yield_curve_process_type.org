@@ -6,6 +6,9 @@
 #+title: ores.synthetic.yield_curve_process_type
 #+description: Reference data table classifying which short-rate process engine (vasicek, cox_ingersoll_ross, hull_white) an ir_curve_generation_config uses to drive its curve.
 #+type: ores.codegen.entity
+#+web_resource: process-types
+#+web_writes: many
+#+web_system_owned: true
 #+http_area: simulation
 #+component: synthetic
 #+filetags: :model:entity:synthetic:

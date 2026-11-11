@@ -139,74 +139,47 @@ ir_curve_bootstrap_pillar_web_page(std::uint32_t offset, std::uint32_t limit) {
     return msg;
 }
 
-}
+using ir_curve_bootstrap_pillar_web_write_body =
+    rr::write_body<messaging::ir_curve_bootstrap_pillar_write>;
+using ir_curve_bootstrap_pillar_web_removal_body =
+    rr::removal_body<messaging::ir_curve_bootstrap_pillar_key>;
 
 /**
- * @brief The bodies the screens send, with their wire fields.
+ * @brief Why this session may not write the resource, or nothing when it may.
  *
- * They live in a namespace of the unit's own, so the wire_fields overloads of two
- * units in one unity build carry different qualified names.
+ * A catalogue every tenant shares is written only from the system tenant, so a
+ * tenant's write would not change every tenant's rows.
  */
-namespace ir_curve_bootstrap_pillar_web_bodies {
-
-/// What a write states: the row, the version it was read at, and why.
-struct ir_curve_bootstrap_pillar_web_write_body final {
-    messaging::ir_curve_bootstrap_pillar_write write;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto
-wire_fields(std::type_identity<ir_curve_bootstrap_pillar_web_write_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"write", &ir_curve_bootstrap_pillar_web_write_body::write},
-                      field{"version", &ir_curve_bootstrap_pillar_web_write_body::version},
-                      field{"reasonCode", &ir_curve_bootstrap_pillar_web_write_body::reasonCode},
-                      field{"commentary", &ir_curve_bootstrap_pillar_web_write_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<ir_curve_bootstrap_pillar_web_write_body>());
-
-/// What a removal states: the row's key, the version it was read at, and why.
-struct ir_curve_bootstrap_pillar_web_removal_body final {
-    messaging::ir_curve_bootstrap_pillar_key key;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto
-wire_fields(std::type_identity<ir_curve_bootstrap_pillar_web_removal_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"key", &ir_curve_bootstrap_pillar_web_removal_body::key},
-                      field{"version", &ir_curve_bootstrap_pillar_web_removal_body::version},
-                      field{"reasonCode", &ir_curve_bootstrap_pillar_web_removal_body::reasonCode},
-                      field{"commentary", &ir_curve_bootstrap_pillar_web_removal_body::commentary}};
-}
-static_assert(
-    ores::utility::codec::names_every_member<ir_curve_bootstrap_pillar_web_removal_body>());
-
+std::optional<std::string>
+ir_curve_bootstrap_pillar_web_read_only_for([[maybe_unused]] const http_request& req) {
+    return std::nullopt;
 }
 
-namespace {
+/// Refuse a write this session may not make.
+void ir_curve_bootstrap_pillar_web_require_writable(const http_request& req) {
+    if (const auto because = ir_curve_bootstrap_pillar_web_read_only_for(req))
+        rr::refuse(http_status::forbidden,
+                   "forbidden",
+                   std::string("ir-curve-bootstrap-pillars is read only here.") +
+                       (because->empty() ? "" : " " + *because));
+}
 
-using ir_curve_bootstrap_pillar_web_bodies::ir_curve_bootstrap_pillar_web_removal_body;
-using ir_curve_bootstrap_pillar_web_bodies::ir_curve_bootstrap_pillar_web_write_body;
-
-/// A body read as its own shape, or nothing when it states another. An optional member may be left
-/// out.
-template <typename T>
-std::optional<T> ir_curve_bootstrap_pillar_web_body(std::string_view text) {
-    auto value = ores::utility::codec::json::read_expected<T>(text);
-    if (!value)
-        return std::nullopt;
-    return std::move(*value);
+/// The body with the model's default for each write member it leaves out.
+std::string ir_curve_bootstrap_pillar_web_with_defaults(const std::string& body) {
+    return rr::with_write_defaults(body,
+                                   {
+                                       rr::write_default{"sequence_index", R"json(0)json"},
+                                   });
 }
 
 }
 
-std::string_view ir_curve_bootstrap_pillar_web_routes::catalogue_entry() {
-    return R"json({"key":"ir-curve-bootstrap-pillars","entityType":"ores.refdata.ir_curve_bootstrap_pillar","keyFields":["id"],"versioned":true,"writable":true,"search":false,"sortable":[],"events":{"component":"refdata","entity":"ir_curve_bootstrap_pillars"},"writePermission":"refdata::ir_curve_bootstrap_pillars:write","deletePermission":"refdata::ir_curve_bootstrap_pillars:delete"})json";
+std::string ir_curve_bootstrap_pillar_web_routes::catalogue_entry(const http_request& req) {
+    const auto because = ir_curve_bootstrap_pillar_web_read_only_for(req);
+    return std::string(
+               R"json({"key":"ir-curve-bootstrap-pillars","entityType":"ores.refdata.ir_curve_bootstrap_pillar","keyFields":["id"],"versioned":true,"writable":)json") +
+           (because ? "false" : "true") +
+           R"json(,"search":false,"sortable":[],"events":{"component":"refdata","entity":"ir_curve_bootstrap_pillars"},"writePermission":"refdata::ir_curve_bootstrap_pillars:write","deletePermission":"refdata::ir_curve_bootstrap_pillars:delete"})json";
 }
 
 boost::asio::awaitable<http_response>
@@ -325,8 +298,9 @@ ir_curve_bootstrap_pillar_web_routes::handle_key(const http_request& req, nats_c
 boost::asio::awaitable<http_response>
 ir_curve_bootstrap_pillar_web_routes::handle_put(const http_request& req, nats_client& session) {
     try {
-        const auto body =
-            ir_curve_bootstrap_pillar_web_body<ir_curve_bootstrap_pillar_web_write_body>(req.body);
+        ir_curve_bootstrap_pillar_web_require_writable(req);
+        const auto body = rr::read_body<ir_curve_bootstrap_pillar_web_write_body>(
+            ir_curve_bootstrap_pillar_web_with_defaults(req.body));
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A write needs the row, the version it was read at, and a reason.");
         messaging::put_ir_curve_bootstrap_pillar_request msg;
@@ -352,9 +326,8 @@ ir_curve_bootstrap_pillar_web_routes::handle_put(const http_request& req, nats_c
 boost::asio::awaitable<http_response>
 ir_curve_bootstrap_pillar_web_routes::handle_delete(const http_request& req, nats_client& session) {
     try {
-        const auto body =
-            ir_curve_bootstrap_pillar_web_body<ir_curve_bootstrap_pillar_web_removal_body>(
-                req.body);
+        ir_curve_bootstrap_pillar_web_require_writable(req);
+        const auto body = rr::read_body<ir_curve_bootstrap_pillar_web_removal_body>(req.body);
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A removal names the row by id, and a reason.");
         messaging::delete_ir_curve_bootstrap_pillar_request msg;

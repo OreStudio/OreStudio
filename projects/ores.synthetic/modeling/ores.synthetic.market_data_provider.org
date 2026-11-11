@@ -2,10 +2,17 @@
 :ID: EF5CF958-03A0-45D1-AB2D-7DE9C35D8869
 :ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.market_data_provider
 #+description: Reference data table of the simulated market data providers a synthetic feed can stand for: data vendors such as Bloomberg and LSEG, exchanges such as CME and LSE, brokers, and reference sets such as the ORE examples.
 #+type: ores.codegen.entity
+#+web_resource: providers
+#+web_writes: many
+#+web_read_only_because: The providers are the installation's catalogue, seeded with it.
+#+web_system_owned: true
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: market_data_provider

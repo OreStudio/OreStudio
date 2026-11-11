@@ -108,17 +108,17 @@ TEST_CASE("{{unit}}_routes_registers_the_screen_addresses", "[routes][web]") {
     CHECK(has(http_method::get, "{{base}}"));
     CHECK(has(http_method::put, "{{base}}"));
     CHECK(has(http_method::delete_, "{{base}}"));
-{{#single_key}}
+{{#has_key_route}}
     CHECK(has(http_method::get, "{{base}}/key/{key}"));
-{{/single_key}}
-{{#list_by}}
+{{/has_key_route}}
+{{#has_by}}
     CHECK(has(http_method::get, "{{base}}/by/{parent}"));
-{{/list_by}}
+{{/has_by}}
     BOOST_LOG_SEV(lg, debug) << "Registered " << routes.size() << " route(s).";
 }
 
 TEST_CASE("{{unit}}_routes_names_the_resource_in_its_catalogue_entry", "[routes][web]") {
-    const std::string entry{ {{unit}}_routes::catalogue_entry() };
+    const auto entry = {{unit}}_routes::catalogue_entry({{unit}}_request({}));
     CHECK(entry.find("\"key\":\"{{key}}\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"{{entity_type}}\"") != std::string::npos);
     CHECK(entry.find("\"writePermission\":\"{{write_permission}}\"") != std::string::npos);
@@ -176,12 +176,14 @@ TEST_CASE("{{unit}}_routes_accepts_every_order_and_filter_it_declares", "[routes
 TEST_CASE("{{unit}}_routes_refuses_a_write_that_states_no_reason", "[routes][web]") {
     nats_client session;
     const auto put = {{unit}}_run({{unit}}_routes::handle_put({{unit}}_request({}, "{}"), session));
-    CHECK(put.status == {{#writable}}http_status::bad_request{{/writable}}{{^writable}}http_status::forbidden{{/writable}});
+    // A resource no screen writes, and a shared catalogue read from a session
+    // that is not the system tenant's, refuse before they read the body.
+    CHECK(put.status == {{#writable}}{{^system_owned}}http_status::bad_request{{/system_owned}}{{#system_owned}}http_status::forbidden{{/system_owned}}{{/writable}}{{^writable}}http_status::forbidden{{/writable}});
 
     const auto removal = {{unit}}_run({{unit}}_routes::handle_delete({{unit}}_request({}, "{}"), session));
-    CHECK(removal.status == {{#writable}}http_status::bad_request{{/writable}}{{^writable}}http_status::forbidden{{/writable}});
+    CHECK(removal.status == {{#writable}}{{^system_owned}}http_status::bad_request{{/system_owned}}{{#system_owned}}http_status::forbidden{{/system_owned}}{{/writable}}{{^writable}}http_status::forbidden{{/writable}});
 }
-{{#single_key}}
+{{#has_key_route}}
 
 TEST_CASE("{{unit}}_routes_refuses_a_key_that_names_nothing", "[routes][web]") {
     nats_client session;
@@ -191,7 +193,7 @@ TEST_CASE("{{unit}}_routes_refuses_a_key_that_names_nothing", "[routes][web]") {
     CHECK(response.status == http_status::bad_request);
     CHECK({{unit}}_says(response, "invalid-request"));
 }
-{{/single_key}}
+{{/has_key_route}}
 {{/web_records}}
 {{/domain_entity}}
 #+end_src

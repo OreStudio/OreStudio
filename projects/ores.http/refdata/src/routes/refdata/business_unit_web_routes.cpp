@@ -134,71 +134,42 @@ messaging::list_business_units_request business_unit_web_page(std::uint32_t offs
     return msg;
 }
 
-}
+using business_unit_web_write_body = rr::write_body<messaging::business_unit_write>;
+using business_unit_web_removal_body = rr::removal_body<messaging::business_unit_key>;
 
 /**
- * @brief The bodies the screens send, with their wire fields.
+ * @brief Why this session may not write the resource, or nothing when it may.
  *
- * They live in a namespace of the unit's own, so the wire_fields overloads of two
- * units in one unity build carry different qualified names.
+ * A catalogue every tenant shares is written only from the system tenant, so a
+ * tenant's write would not change every tenant's rows.
  */
-namespace business_unit_web_bodies {
-
-/// What a write states: the row, the version it was read at, and why.
-struct business_unit_web_write_body final {
-    messaging::business_unit_write write;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<business_unit_web_write_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"write", &business_unit_web_write_body::write},
-                      field{"version", &business_unit_web_write_body::version},
-                      field{"reasonCode", &business_unit_web_write_body::reasonCode},
-                      field{"commentary", &business_unit_web_write_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<business_unit_web_write_body>());
-
-/// What a removal states: the row's key, the version it was read at, and why.
-struct business_unit_web_removal_body final {
-    messaging::business_unit_key key;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<business_unit_web_removal_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"key", &business_unit_web_removal_body::key},
-                      field{"version", &business_unit_web_removal_body::version},
-                      field{"reasonCode", &business_unit_web_removal_body::reasonCode},
-                      field{"commentary", &business_unit_web_removal_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<business_unit_web_removal_body>());
-
+std::optional<std::string>
+business_unit_web_read_only_for([[maybe_unused]] const http_request& req) {
+    return std::nullopt;
 }
 
-namespace {
+/// Refuse a write this session may not make.
+void business_unit_web_require_writable(const http_request& req) {
+    if (const auto because = business_unit_web_read_only_for(req))
+        rr::refuse(http_status::forbidden,
+                   "forbidden",
+                   std::string("business-units is read only here.") +
+                       (because->empty() ? "" : " " + *because));
+}
 
-using business_unit_web_bodies::business_unit_web_removal_body;
-using business_unit_web_bodies::business_unit_web_write_body;
-
-/// A body read as its own shape, or nothing when it states another. An optional member may be left
-/// out.
-template <typename T>
-std::optional<T> business_unit_web_body(std::string_view text) {
-    auto value = ores::utility::codec::json::read_expected<T>(text);
-    if (!value)
-        return std::nullopt;
-    return std::move(*value);
+/// The body with the model's default for each write member it leaves out.
+std::string business_unit_web_with_defaults(const std::string& body) {
+    return body;
 }
 
 }
 
-std::string_view business_unit_web_routes::catalogue_entry() {
-    return R"json({"key":"business-units","entityType":"ores.refdata.business_unit","keyFields":["id"],"versioned":true,"writable":true,"search":false,"sortable":[],"events":{"component":"refdata","entity":"business_units"},"writePermission":"refdata::business_units:write","deletePermission":"refdata::business_units:delete"})json";
+std::string business_unit_web_routes::catalogue_entry(const http_request& req) {
+    const auto because = business_unit_web_read_only_for(req);
+    return std::string(
+               R"json({"key":"business-units","entityType":"ores.refdata.business_unit","keyFields":["id"],"versioned":true,"writable":)json") +
+           (because ? "false" : "true") +
+           R"json(,"search":false,"sortable":[],"events":{"component":"refdata","entity":"business_units"},"writePermission":"refdata::business_units:write","deletePermission":"refdata::business_units:delete"})json";
 }
 
 boost::asio::awaitable<http_response> business_unit_web_routes::handle_list(const http_request& req,
@@ -344,7 +315,9 @@ boost::asio::awaitable<http_response> business_unit_web_routes::handle_by(const 
 boost::asio::awaitable<http_response> business_unit_web_routes::handle_put(const http_request& req,
                                                                            nats_client& session) {
     try {
-        const auto body = business_unit_web_body<business_unit_web_write_body>(req.body);
+        business_unit_web_require_writable(req);
+        const auto body =
+            rr::read_body<business_unit_web_write_body>(business_unit_web_with_defaults(req.body));
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A write needs the row, the version it was read at, and a reason.");
         messaging::put_business_unit_request msg;
@@ -370,7 +343,8 @@ boost::asio::awaitable<http_response> business_unit_web_routes::handle_put(const
 boost::asio::awaitable<http_response>
 business_unit_web_routes::handle_delete(const http_request& req, nats_client& session) {
     try {
-        const auto body = business_unit_web_body<business_unit_web_removal_body>(req.body);
+        business_unit_web_require_writable(req);
+        const auto body = rr::read_body<business_unit_web_removal_body>(req.body);
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A removal names the row by id, and a reason.");
         messaging::delete_business_unit_request msg;
@@ -424,7 +398,7 @@ void business_unit_web_routes::register_routes(
     auto by_route =
         router->get("/api/refdata/business-units/by/{parent}")
             .summary("List one parent's business-units for a screen")
-            .description("Every row whose party_id is the parent.")
+            .description("Every row of one parent.")
             .tags({"refdata"})
             .auth_required()
             .handler([&session](const http_request& req) { return handle_by(req, session); });

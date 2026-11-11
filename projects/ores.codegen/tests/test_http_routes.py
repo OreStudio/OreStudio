@@ -552,13 +552,21 @@ class TestTheWebRecordRoutes:
 
     def test_a_read_only_resource_refuses_every_write(self):
         text = _rendered_web(_web(web_read_only=True))
-        assert text.count('"widgets is read only here."') == 2
-        assert '"writable":false' in text
+        assert 'return std::string("");' in text
+        assert text.count("widget_web_require_writable(req);") == 2
 
-    def test_a_writable_resource_states_no_refusal_of_its_own(self):
+    def test_a_reason_is_the_sentence_a_read_only_resource_gives(self):
+        text = _rendered_web(_web(web_read_only_because='Kept "as read".'))
+        assert 'return std::string("Kept \\"as read\\".");' in text
+
+    def test_a_writable_resource_is_refused_by_nothing_of_its_own(self):
         text = _rendered_web(_web())
-        assert "read only here" not in text
-        assert '"writable":true' in text
+        assert "return std::nullopt;" in text
+        assert 'return std::string("' not in text
+
+    def test_a_shared_catalogue_is_written_from_the_system_tenant_alone(self):
+        text = _rendered_web(_web(web_system_owned=True))
+        assert "*user->tenant_id != rr::system_tenant_id" in text
 
     def test_a_row_without_versions_carries_version_zero(self):
         # The screens read a version on every row, and a junction keeps none.
@@ -594,8 +602,8 @@ class TestTheWebRecordRoutes:
         import json
         import re
         text = _rendered_web(_web())
-        entry = re.search(r'R"json\((.*)\)json"', text).group(1)
-        parsed = json.loads(entry)
+        pieces = re.findall(r'R"json\((.*?)\)json"', text)
+        parsed = json.loads(pieces[0] + "true" + pieces[1])
         assert parsed["key"] == "widgets"
         assert parsed["keyFields"] == ["type"]
         assert parsed["writePermission"] == "demo::widgets:write"
@@ -607,3 +615,57 @@ class TestTheWebRecordRoutes:
                                 for op in entity["operations"]]
         with pytest.raises(ValueError, match="does not name its resource"):
             entity_web_records_plan(entity)
+
+    def test_a_batch_resource_writes_through_the_many_subjects(self):
+        text = _rendered_web(_web(web_writes="many"))
+        assert "messaging::put_many_widgets_request msg;" in text
+        assert "messaging::delete_many_widgets_request msg;" in text
+        assert '"keyField":"type"' in text
+        assert '"readPermission":"demo::widgets:read"' in text
+
+    def test_a_one_row_resource_states_no_batch(self):
+        text = _rendered_web(_web())
+        assert "put_many_widgets_request" not in text
+
+    def test_an_area_moves_the_address_and_the_part(self):
+        plan = entity_web_records_plan(_web(web_area="synthetic"))
+        assert plan["base"] == "/api/synthetic/widgets"
+        assert plan["write_permission"] == "demo::widgets:write"
+
+    def test_a_hand_written_key_read_has_no_generated_key_route(self):
+        text = _rendered_web(_web(web_key_read="hand-written"))
+        assert "/key/{key}" not in text
+        assert "handle_key" not in text
+
+    def test_a_parent_filter_must_be_an_equals_member(self):
+        import pytest
+        with pytest.raises(ValueError, match="web_parent_filter"):
+            entity_web_records_plan(_web(web_parent_filter="nothing"))
+
+    def test_a_write_takes_the_model_default_for_a_member_it_leaves_out(self):
+        entity = _web()
+        entity["columns"] = [{"name": "kind", "cpp_type": "std::string", "type": "text",
+                              "default_value": "'fx'"},
+                             {"name": "decay", "cpp_type": "double", "default_value": "1.0"},
+                             {"name": "note", "cpp_type": "std::optional<std::string>",
+                              "default_value": "'x'"}]
+        defaults = entity_web_records_plan(entity)["write_defaults"]
+        assert {"name": "kind", "json": '"fx"'} in defaults
+        assert {"name": "decay", "json": "1.0"} in defaults
+        assert all(d["name"] != "note" for d in defaults)
+
+    def test_a_filtered_page_names_the_filter_record_it_fills(self):
+        # A junction carries no filter_type, and an unnamed brace reset the
+        # optional before the member was written through it.
+        entity = _web()
+        entity.pop("filter_type", None)
+        text = _rendered_web(entity)
+        assert "msg.filter = {};" not in text
+        assert "msg.filter = messaging::widgets_filter{};" in text
+
+    def test_an_area_moves_the_address_but_not_the_unit(self):
+        from codegen.core import resolve_output_path
+        entity = _web(web_area="synthetic")
+        pattern = "projects/ores.http/{component}/src/routes/{component}/{web_entity}_routes.cpp"
+        assert (resolve_output_path(pattern, {"domain_entity": entity}, "domain_entity")
+                == "projects/ores.http/demo/src/routes/demo/widget_web_routes.cpp")

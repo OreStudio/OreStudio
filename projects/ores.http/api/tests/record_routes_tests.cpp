@@ -120,3 +120,16 @@ TEST_CASE("record_routes_reads_text_verbatim_and_false_as_false", "[record_route
     CHECK(rr::read<std::string>(" as given ", "name") == " as given ");
     CHECK_FALSE(rr::read<bool>("false", "flag"));
 }
+
+TEST_CASE("record_routes_adds_a_default_only_where_a_write_leaves_the_member_out",
+          "[record_routes]") {
+    const auto one = rr::with_write_defaults(R"({"write":{"a":"set","c":null},"version":null})",
+                                             {{"a", R"("fx")"}, {"b", "1.0"}, {"c", "2"}});
+    CHECK(one == R"({"write":{"a":"set","c":null,"b":1.0},"version":null})");
+
+    const auto many =
+        rr::with_write_defaults(R"({"changes":[{"write":{}},{"write":{"b":3}}]})", {{"b", "1.0"}});
+    CHECK(many == R"({"changes":[{"write":{"b":1.0}},{"write":{"b":3}}]})");
+
+    CHECK(rr::with_write_defaults("not json", {{"b", "1"}}) == "not json");
+}

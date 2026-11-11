@@ -106,7 +106,8 @@ TEST_CASE("party_counterparty_web_routes_registers_the_screen_addresses", "[rout
 
 TEST_CASE("party_counterparty_web_routes_names_the_resource_in_its_catalogue_entry",
           "[routes][web]") {
-    const std::string entry{party_counterparty_web_routes::catalogue_entry()};
+    const auto entry =
+        party_counterparty_web_routes::catalogue_entry(party_counterparty_web_request({}));
     CHECK(entry.find("\"key\":\"party-counterparties\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"ores.refdata.party_counterparty\"") != std::string::npos);
     CHECK(entry.find("\"writePermission\":\"refdata::party_counterparties:write\"") !=
@@ -172,6 +173,8 @@ TEST_CASE("party_counterparty_web_routes_refuses_a_write_that_states_no_reason",
     nats_client session;
     const auto put = party_counterparty_web_run(party_counterparty_web_routes::handle_put(
         party_counterparty_web_request({}, "{}"), session));
+    // A resource no screen writes, and a shared catalogue read from a session
+    // that is not the system tenant's, refuse before they read the body.
     CHECK(put.status == http_status::bad_request);
 
     const auto removal = party_counterparty_web_run(party_counterparty_web_routes::handle_delete(

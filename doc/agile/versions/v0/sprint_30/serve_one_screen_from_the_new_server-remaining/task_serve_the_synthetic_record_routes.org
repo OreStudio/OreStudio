@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Serve the six synthetic record routes and the catalogue from the C++ server, in 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,30 @@ Serve the six synthetic record routes and the catalogue from the C++ server, in 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Extend the record route generator from the reference data PR, rather than
+write a second one. The synthetic registry differs from the reference data one
+in five ways, and each becomes a model declaration:
+
+- =#+web_area:= names the address the resource is served under, so the three
+  reference data lookups the synthetic screens read (tenors, instrument codes
+  and payment frequencies) answer under =/api/synthetic= with =refdata::=
+  permissions.
+- =#+web_writes: many= switches the write and the removal to the BFF's batch
+  bodies: =changes= through the put-many subject, answered with the rows as
+  written, and =removals= through the remove subject for one row or the
+  remove-many subject, unconditional, for many.
+- =#+web_parent_filter:= names the filter member a parent's rows are read by,
+  where the BFF read a parent through the list filter and not a list-by
+  request.
+- =#+web_read_only_because:= states the sentence the catalogue shows for a
+  resource no screen writes, and =#+web_system_owned: true= marks a catalogue
+  every tenant shares, which only a system tenant session writes.
+- The catalogue entry takes the request, so the synthetic catalogue states
+  whether this session may write each resource.
+
+The two feed resources read one row with its collection's provider, whether it
+runs and where its run started. That is a composed view, so their key read is
+hand-written and the generator does not register one for them.
 
 * Measurements
 
@@ -82,6 +103,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local build: a messaging alias clashed in the unity build when the three refdata lookups sat in the synthetic part. | =core.py=, templates | Accepted | A modelling error, not a naming one. The units stay in their own component's part, and =#+web_area:= moves only the address. |
+| 2 | User review: the per-unit body namespace from PR #4560 hid duplicated body structs. | =record_routes.hpp= | Accepted | The bodies are class templates shared by every unit, and the namespace is gone. |
+| 3 | Local build: a filtered junction page wrote through an emptied filter, a defect PR #4560 shipped. | templates, =org_loader.py= | Accepted | The plan names the filter record for an entity and a junction alike, and a test pins it. |
+| 4 | =unity-collisions= read =decltype= as a name, from the intent parameter of the batch bodies. | =record_routes.hpp= | Accepted | Every request states the same =change_intent=, so the parameter modelled nothing and is gone. |
+| 5 | Every unit keeps its own forwarding helper. | templates | Deferred | [[id:942D892C-FB59-46D7-BFF6-04DDECC67C3B][Share the gateway's forwarding step]] takes it. |
+| 6 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
 
 * Result

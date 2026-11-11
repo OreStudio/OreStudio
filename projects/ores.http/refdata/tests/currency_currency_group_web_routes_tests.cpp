@@ -106,7 +106,8 @@ TEST_CASE("currency_currency_group_web_routes_registers_the_screen_addresses", "
 
 TEST_CASE("currency_currency_group_web_routes_names_the_resource_in_its_catalogue_entry",
           "[routes][web]") {
-    const std::string entry{currency_currency_group_web_routes::catalogue_entry()};
+    const auto entry = currency_currency_group_web_routes::catalogue_entry(
+        currency_currency_group_web_request({}));
     CHECK(entry.find("\"key\":\"currency-memberships\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"ores.refdata.currency_currency_group\"") !=
           std::string::npos);
@@ -178,6 +179,8 @@ TEST_CASE("currency_currency_group_web_routes_refuses_a_write_that_states_no_rea
     nats_client session;
     const auto put = currency_currency_group_web_run(currency_currency_group_web_routes::handle_put(
         currency_currency_group_web_request({}, "{}"), session));
+    // A resource no screen writes, and a shared catalogue read from a session
+    // that is not the system tenant's, refuse before they read the body.
     CHECK(put.status == http_status::bad_request);
 
     const auto removal =

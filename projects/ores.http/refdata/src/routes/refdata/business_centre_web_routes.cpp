@@ -136,71 +136,42 @@ messaging::list_business_centres_request business_centre_web_page(std::uint32_t 
     return msg;
 }
 
-}
+using business_centre_web_write_body = rr::write_body<messaging::business_centre_write>;
+using business_centre_web_removal_body = rr::removal_body<messaging::business_centre_key>;
 
 /**
- * @brief The bodies the screens send, with their wire fields.
+ * @brief Why this session may not write the resource, or nothing when it may.
  *
- * They live in a namespace of the unit's own, so the wire_fields overloads of two
- * units in one unity build carry different qualified names.
+ * A catalogue every tenant shares is written only from the system tenant, so a
+ * tenant's write would not change every tenant's rows.
  */
-namespace business_centre_web_bodies {
-
-/// What a write states: the row, the version it was read at, and why.
-struct business_centre_web_write_body final {
-    messaging::business_centre_write write;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_web_write_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"write", &business_centre_web_write_body::write},
-                      field{"version", &business_centre_web_write_body::version},
-                      field{"reasonCode", &business_centre_web_write_body::reasonCode},
-                      field{"commentary", &business_centre_web_write_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<business_centre_web_write_body>());
-
-/// What a removal states: the row's key, the version it was read at, and why.
-struct business_centre_web_removal_body final {
-    messaging::business_centre_key key;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<business_centre_web_removal_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"key", &business_centre_web_removal_body::key},
-                      field{"version", &business_centre_web_removal_body::version},
-                      field{"reasonCode", &business_centre_web_removal_body::reasonCode},
-                      field{"commentary", &business_centre_web_removal_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<business_centre_web_removal_body>());
-
+std::optional<std::string>
+business_centre_web_read_only_for([[maybe_unused]] const http_request& req) {
+    return std::string("");
 }
 
-namespace {
+/// Refuse a write this session may not make.
+void business_centre_web_require_writable(const http_request& req) {
+    if (const auto because = business_centre_web_read_only_for(req))
+        rr::refuse(http_status::forbidden,
+                   "forbidden",
+                   std::string("business-centres is read only here.") +
+                       (because->empty() ? "" : " " + *because));
+}
 
-using business_centre_web_bodies::business_centre_web_removal_body;
-using business_centre_web_bodies::business_centre_web_write_body;
-
-/// A body read as its own shape, or nothing when it states another. An optional member may be left
-/// out.
-template <typename T>
-std::optional<T> business_centre_web_body(std::string_view text) {
-    auto value = ores::utility::codec::json::read_expected<T>(text);
-    if (!value)
-        return std::nullopt;
-    return std::move(*value);
+/// The body with the model's default for each write member it leaves out.
+std::string business_centre_web_with_defaults(const std::string& body) {
+    return body;
 }
 
 }
 
-std::string_view business_centre_web_routes::catalogue_entry() {
-    return R"json({"key":"business-centres","entityType":"ores.refdata.business_centre","keyFields":["code"],"versioned":true,"writable":false,"search":false,"sortable":[],"events":{"component":"refdata","entity":"business_centres"},"writePermission":"refdata::business_centres:write","deletePermission":"refdata::business_centres:delete"})json";
+std::string business_centre_web_routes::catalogue_entry(const http_request& req) {
+    const auto because = business_centre_web_read_only_for(req);
+    return std::string(
+               R"json({"key":"business-centres","entityType":"ores.refdata.business_centre","keyFields":["code"],"versioned":true,"writable":)json") +
+           (because ? "false" : "true") +
+           R"json(,"search":false,"sortable":[],"events":{"component":"refdata","entity":"business_centres"},"writePermission":"refdata::business_centres:write","deletePermission":"refdata::business_centres:delete"})json";
 }
 
 boost::asio::awaitable<http_response>
@@ -307,8 +278,9 @@ business_centre_web_routes::handle_key(const http_request& req, nats_client& ses
 boost::asio::awaitable<http_response>
 business_centre_web_routes::handle_put(const http_request& req, nats_client& session) {
     try {
-        rr::refuse(http_status::forbidden, "forbidden", "business-centres is read only here.");
-        const auto body = business_centre_web_body<business_centre_web_write_body>(req.body);
+        business_centre_web_require_writable(req);
+        const auto body = rr::read_body<business_centre_web_write_body>(
+            business_centre_web_with_defaults(req.body));
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A write needs the row, the version it was read at, and a reason.");
         messaging::put_business_centre_request msg;
@@ -334,8 +306,8 @@ business_centre_web_routes::handle_put(const http_request& req, nats_client& ses
 boost::asio::awaitable<http_response>
 business_centre_web_routes::handle_delete(const http_request& req, nats_client& session) {
     try {
-        rr::refuse(http_status::forbidden, "forbidden", "business-centres is read only here.");
-        const auto body = business_centre_web_body<business_centre_web_removal_body>(req.body);
+        business_centre_web_require_writable(req);
+        const auto body = rr::read_body<business_centre_web_removal_body>(req.body);
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A removal names the row by code, and a reason.");
         messaging::delete_business_centre_request msg;

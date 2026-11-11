@@ -27,7 +27,8 @@ The template reads ={{web_records}}=, which =entity_web_records_plan= builds
 from the model. ={{unit}}= is the class stem, =<entity>_web=. ={{base}}= is the
 resource's address, and ={{single_key}}= and ={{list_by}}= say whether the
 resource is read by one key and by a parent, so the header declares only the
-handlers the unit has.
+handlers the unit has. A resource whose key read is hand-written has no key
+handler here, and its by handler reads a list-by request or a parent filter.
 
 * Template
 
@@ -51,6 +52,7 @@ The full template source. Edit here and re-tangle with
 #include "ores.nats/service/nats_client.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <memory>
+#include <string>
 #include <string_view>
 
 namespace ores::http::routes::{{component}} {
@@ -83,8 +85,11 @@ public:
 
     /**
      * @brief The resource as the catalogue of resources describes it, as JSON.
+     *
+     * Whether the resource is writable depends on the session for a catalogue
+     * every tenant shares, so the entry is stated for the request.
      */
-    static std::string_view catalogue_entry();
+    static std::string catalogue_entry(const ores::http::domain::http_request& req);
 
     /**
      * @brief GET {{base}} — one page with its total, or every row.
@@ -92,7 +97,7 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_list(const ores::http::domain::http_request& req,
                 ores::nats::service::nats_client& session);
-{{#single_key}}
+{{#has_key_route}}
 
     /**
      * @brief GET {{base}}/key/{key} — one row, named by its key.
@@ -100,8 +105,8 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_key(const ores::http::domain::http_request& req,
                ores::nats::service::nats_client& session);
-{{/single_key}}
-{{#list_by}}
+{{/has_key_route}}
+{{#has_by}}
 
     /**
      * @brief GET {{base}}/by/{parent} — every row of one parent.
@@ -109,7 +114,7 @@ public:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_by(const ores::http::domain::http_request& req,
               ores::nats::service::nats_client& session);
-{{/list_by}}
+{{/has_by}}
 
     /**
      * @brief PUT {{base}} — writes one row.

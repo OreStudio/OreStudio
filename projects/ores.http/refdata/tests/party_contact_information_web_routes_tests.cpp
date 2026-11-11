@@ -107,7 +107,8 @@ TEST_CASE("party_contact_information_web_routes_registers_the_screen_addresses",
 
 TEST_CASE("party_contact_information_web_routes_names_the_resource_in_its_catalogue_entry",
           "[routes][web]") {
-    const std::string entry{party_contact_information_web_routes::catalogue_entry()};
+    const auto entry = party_contact_information_web_routes::catalogue_entry(
+        party_contact_information_web_request({}));
     CHECK(entry.find("\"key\":\"party-contacts\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"ores.refdata.party_contact_information\"") !=
           std::string::npos);
@@ -180,6 +181,8 @@ TEST_CASE("party_contact_information_web_routes_refuses_a_write_that_states_no_r
     const auto put =
         party_contact_information_web_run(party_contact_information_web_routes::handle_put(
             party_contact_information_web_request({}, "{}"), session));
+    // A resource no screen writes, and a shared catalogue read from a session
+    // that is not the system tenant's, refuse before they read the body.
     CHECK(put.status == http_status::bad_request);
 
     const auto removal =

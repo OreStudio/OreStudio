@@ -2,10 +2,17 @@
 :ores.cpp.wire-codec.enabled: true
 :ID: B4559030-A5E9-4E4D-890C-8B817AC99EE5
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.refdata.payment_frequency
 #+description: Codegen entity model for the refdata payment_frequency table: ORE's canonical frequencyType enumeration (external/ore/xsd/ore_types.xsd), used to derive a swap fixed leg's payment schedule.
 #+type: ores.codegen.entity
+#+web_resource: payment-frequencies
+#+web_writes: many
+#+web_area: synthetic
+#+web_read_only_because: These are reference data of the refdata service. A synthetic screen offers their codes and does not write them.
 #+component: refdata
 #+filetags: :model:entity:refdata:
 #+entity_singular: payment_frequency

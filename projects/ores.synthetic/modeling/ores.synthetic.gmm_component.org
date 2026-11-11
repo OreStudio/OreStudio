@@ -2,10 +2,16 @@
 :ID: 0F0FB279-A707-4BA5-A1A2-40F46E591EB6
 :ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.gmm_component
 #+description: Codegen entity model for the synthetic gmm_component table; one weighted Gaussian component of an FX spot GMM price process.
 #+type: ores.codegen.entity
+#+web_resource: gmm-components
+#+web_writes: many
+#+web_parent_filter: fx_spot_config_id
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: gmm_component

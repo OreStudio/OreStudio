@@ -2,10 +2,16 @@
 :ID: 8B840E8D-2763-4A1F-8BC2-6C9E354DB673
 :ores.cpp.wire-codec.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.ir_curve_generation_config
 #+description: Codegen entity model for the synthetic ir_curve_generation_config table; configuration for generating a synthetic IR curve from a short-rate process.
 #+type: ores.codegen.entity
+#+web_resource: ir-curve-feeds
+#+web_writes: many
+#+web_key_read: hand-written
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: ir_curve_generation_config

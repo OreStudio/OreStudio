@@ -175,6 +175,17 @@ RULES = (
          "The generic router's addresses, one generated unit per resource in the BFF's"
          " shapes, kept so the screens work when the BFF goes; the published collection"
          " per resource is the API."),
+    Rule("the synthetic resource catalogue route",
+         ("exact", "GET /api/synthetic"),
+         CPP, NOT_API, NO_AREA,
+         "The catalogue the BFF answered, built from each record unit's own entry for the"
+         " session, so the screens keep reading the resources they may name when the BFF goes."),
+    Rule("the synthetic record routes",
+         ("regex", r"^(GET|PUT|DELETE) /api/synthetic/[a-z-]+(/key/\{key\}|/by/\{parent\})?$"),
+         CPP, NOT_API, NO_AREA,
+         "The generic router's addresses, one generated unit per resource in the BFF's"
+         " shapes and two hand-written feed key reads, kept so the screens work when the BFF"
+         " goes."),
     Rule("the synthetic resource catalogue",
          ("exact", "GET /api/synthetic"),
          BFF, NOT_API, NO_AREA,

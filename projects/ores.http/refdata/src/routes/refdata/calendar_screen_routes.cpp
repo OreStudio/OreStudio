@@ -106,16 +106,16 @@ void calendar_screen_routes::register_routes(
                 co_return guarded<messaging::list_by_calendar_code_calendar_dates_request>([&] {
                     const auto code = calendar_code_of(req);
                     const auto raw = req.get_query_param("year");
-                    int year = 0;
+                    int requested_year = 0;
                     const auto [end, error] =
-                        std::from_chars(raw.data(), raw.data() + raw.size(), year);
+                        std::from_chars(raw.data(), raw.data() + raw.size(), requested_year);
                     if (raw.empty() || error != std::errc{} || end != raw.data() + raw.size() ||
-                        !is_calendar_year(year))
+                        !is_calendar_year(requested_year))
                         rr::invalid("The days are read one year at a time, between 1900 and 2200.");
 
                     using namespace std::chrono;
-                    const year_month_day first{std::chrono::year{year}, January, day{1}};
-                    const year_month_day last{std::chrono::year{year}, December, day{31}};
+                    const year_month_day first{std::chrono::year{requested_year}, January, day{1}};
+                    const year_month_day last{std::chrono::year{requested_year}, December, day{31}};
                     messaging::list_by_calendar_code_calendar_dates_request msg;
                     msg.calendar_code = code;
                     msg.scope = ores::utility::domain::scope::direct;

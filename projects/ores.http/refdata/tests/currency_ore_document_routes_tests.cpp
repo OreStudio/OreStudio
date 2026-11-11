@@ -67,6 +67,11 @@ TEST_CASE("currency_ore_import_refuses_a_malformed_request", "[currency_ore_docu
           http_status::bad_request);
     CHECK(posted(import_path, import_of(R"([{"iso_code":"ABCDEFGHIJK","action":"take"}])", "x"))
               .status == http_status::bad_request);
+    CHECK(posted(import_path,
+                 import_of(R"([{"iso_code":"USD","action":"take"},)"
+                           R"({"iso_code":" USD","action":"delete"}])",
+                           "x"))
+              .status == http_status::bad_request);
     CHECK(posted(import_path, R"({"content":"","choices":[],"reasonCode":"x","commentary":""})")
               .status == http_status::bad_request);
 }

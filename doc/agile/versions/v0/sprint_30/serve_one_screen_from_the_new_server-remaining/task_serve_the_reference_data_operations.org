@@ -195,6 +195,10 @@ via its "Verifies task" field.
 | 29 | PR #4619: =question_sentence= has a static initialiser. | =tenor_screen_routes.cpp= | Accepted | It is a =constexpr std::string_view=. |
 | 30 | Local review: a generic BFF route has no single C++ route to pair with. | =route_pairing.py=, =route_inventory.py= | Accepted | Families pair it with one address per registry resource; four tests prove the registry read and the check that names a missing address. |
 | 31 | Local review: =/api/change-reasons= was a reference data gap outside the plan. | =change_reason_routes.cpp= | Accepted | Ported in this group, with a test of its page bounds. |
+| 32 | PR #4620: a year's days are read by paging from the calendar's first day. | =calendar_screen_routes.cpp= | Deferred | The dates filter has no date range, so the fix is on the refdata service; captured as [[id:8F6F0248-B10D-4BB6-A402-BF262F7589E8][A calendar year read pages from the calendar's first day]]. |
+| 33 | PR #4620: two import choices may name one currency. | =currency_ore_document_routes.cpp= | Accepted | The service takes the last one, so the order would decide; the gateway refuses a repeated currency, with a test. |
+| 34 | PR #4620: a failed days read answers 409. | =calendar_screen_routes.cpp= | Declined | The BFF answered 409, and the screen reads it so. |
+| 35 | PR #4620: small notes. | =calendar_screen_routes.cpp=, =currency_ore_document_routes.cpp= | Partly accepted | The local =year= is now =requested_year=. The preview body keeps the server's 1 MB default limit, which holds a currency file. |
 
 * Result
 
@@ -215,7 +219,7 @@ serves it.
 | Counterparties | #4616 | 6 | Merged |
 | Conventions: families, page and write | #4618 | 3 | Merged |
 | Tenors | #4619 | 8 | Merged |
-| Records, calendars, ORE currency and change reasons | this PR | 6 and 5 families | Raised |
+| Records, calendars, ORE currency and change reasons | #4620 | 6 and 5 families | Merged |
 | Conventions: document and terms | | 2 | Moved to the reporting part task |
 | Curve configurations | | 3 | Moved to the reporting part task |
 | Tenor catalogue view | | 1 | Moved to the tenor catalogue view task |

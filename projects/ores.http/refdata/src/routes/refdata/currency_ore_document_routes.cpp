@@ -122,12 +122,17 @@ void currency_ore_document_routes::register_routes(
                              body->choices.size() <= currency_import_most_choices &&
                              rr::has_reason(body->reasonCode) &&
                              rr::characters_of(body->commentary) <= 2000;
+                // The service takes the last choice for a currency, so two choices
+                // for one currency would decide by their order; they are refused.
+                std::set<std::string, std::less<>> chosen;
                 for (std::size_t i = 0; valid && i < body->choices.size(); ++i)
-                    valid = is_choice(body->choices[i]);
+                    valid = is_choice(body->choices[i]) &&
+                            chosen.insert(body->choices[i].iso_code).second;
                 if (!valid)
                     co_return rr::refused(ores::http::domain::http_status::bad_request,
                                           "invalid-request",
-                                          "An import needs the file, the choices and a reason.");
+                                          "An import needs the file, one choice for each currency "
+                                          "at most, and a reason.");
                 ore_messaging::import_currency_config_request msg;
                 msg.content = std::move(body->content);
                 msg.choices = std::move(body->choices);

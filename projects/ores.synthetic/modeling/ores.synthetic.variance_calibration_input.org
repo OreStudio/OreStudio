@@ -1,10 +1,17 @@
 :PROPERTIES:
 :ID: 97E3E3C7-98D2-4DDC-B062-8F04CA2850E5
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.variance_calibration_input
 #+description: Codegen entity model for the synthetic variance_calibration_input table; the stored fixings a GJR-GARCH variance calibration is fitted from.
 #+type: ores.codegen.entity
+#+web_resource: variance-calibration-inputs
+#+web_writes: many
+#+web_read_only_because: An input is the fixings a calibration run captured, kept as read.
+#+web_system_owned: true
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: variance_calibration_input

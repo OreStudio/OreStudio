@@ -1,10 +1,18 @@
 :PROPERTIES:
 :ID: BEEFE7C7-3B6A-4204-A110-A0DE54345194
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.variance_calibration_input_point
 #+description: Codegen entity model for the synthetic variance_calibration_input_point table; one fixing date of a variance calibration input, used or left out with its reason.
 #+type: ores.codegen.entity
+#+web_resource: variance-calibration-input-points
+#+web_writes: many
+#+web_read_only_because: A point is one fixing a calibration run captured, kept as read.
+#+web_system_owned: true
+#+web_parent_filter: input_id
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: variance_calibration_input_point

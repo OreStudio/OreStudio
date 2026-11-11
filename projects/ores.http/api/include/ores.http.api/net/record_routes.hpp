@@ -23,13 +23,21 @@
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/domain/http_status.hpp"
 #include "ores.http.api/export.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
+#include <cstdint>
 #include <exception>
+#include <initializer_list>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <type_traits>
+#include <utility>
+#include <vector>
 
 /**
  * @brief What every record route a screen reads shares.
@@ -58,6 +66,19 @@ struct ORES_HTTP_API_EXPORT refusal final {
  * The detail goes to the log, so the browser sees no library's own words.
  */
 inline constexpr std::string_view unanswered = "The service could not answer this request.";
+
+/**
+ * @brief The system tenant's id, the one tenant that writes a catalogue every tenant shares.
+ */
+inline constexpr std::string_view system_tenant_id = "ffffffff-ffff-ffff-ffff-ffffffffffff";
+
+/**
+ * @brief One write member's default, as a JSON literal.
+ */
+struct write_default final {
+    std::string_view name;
+    std::string_view json;
+};
 
 /**
  * @brief Refuse with this status, code and message.
@@ -103,6 +124,137 @@ ORES_HTTP_API_EXPORT bool has_reason(const std::string& reason);
  * A conflict the service states no words for says what it means.
  */
 ORES_HTTP_API_EXPORT void require_ok(const ores::utility::domain::result& result);
+
+/**
+ * @brief The body with each default added where a write leaves its member out.
+ *
+ * A write is the body's =write= object, or the =write= of each item of its
+ * =changes= array. A member the write states is kept, even when it is null.
+ * A body that is not JSON comes back as it was, so the read that follows
+ * refuses it. The body is written again through the JSON library, so a number
+ * keeps only what 64 bits hold; no write member is wider.
+ */
+ORES_HTTP_API_EXPORT std::string with_write_defaults(std::string_view body,
+                                                     std::initializer_list<write_default> defaults);
+
+/**
+ * @brief What a one-row write states: the row, the version it was read at, and why.
+ *
+ * Every resource's write has this shape and differs only in its row, so one
+ * template serves every record unit.
+ */
+template <typename Write>
+struct write_body final {
+    Write write;
+    std::optional<std::uint32_t> version;
+    std::string reasonCode;
+    std::string commentary;
+};
+
+template <typename Write>
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<write_body<Write>>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"write", &write_body<Write>::write},
+                      field{"version", &write_body<Write>::version},
+                      field{"reasonCode", &write_body<Write>::reasonCode},
+                      field{"commentary", &write_body<Write>::commentary}};
+}
+
+/**
+ * @brief What a one-row removal states: the row's key, the version it was read at, and why.
+ */
+template <typename Key>
+struct removal_body final {
+    Key key;
+    std::optional<std::uint32_t> version;
+    std::string reasonCode;
+    std::string commentary;
+};
+
+template <typename Key>
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<removal_body<Key>>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"key", &removal_body<Key>::key},
+                      field{"version", &removal_body<Key>::version},
+                      field{"reasonCode", &removal_body<Key>::reasonCode},
+                      field{"commentary", &removal_body<Key>::commentary}};
+}
+
+/**
+ * @brief One row of a batch write: the row and the version it was read at.
+ */
+template <typename Write>
+struct change_body final {
+    Write write;
+    std::optional<std::uint32_t> version;
+};
+
+template <typename Write>
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<change_body<Write>>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"write", &change_body<Write>::write},
+                      field{"version", &change_body<Write>::version}};
+}
+
+/**
+ * @brief What a batch write states: why, and each row with its version.
+ *
+ * Every write states its reason as the same change intent, so only the row varies.
+ */
+template <typename Write>
+struct save_body final {
+    ores::utility::domain::change_intent intent;
+    std::vector<change_body<Write>> changes;
+};
+
+template <typename Write>
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<save_body<Write>>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"intent", &save_body<Write>::intent},
+                      field{"changes", &save_body<Write>::changes}};
+}
+
+/**
+ * @brief One row of a batch removal: its key as the address names it, and its version.
+ */
+struct removal_item final {
+    std::string key;
+    std::optional<std::uint32_t> version;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<removal_item>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"key", &removal_item::key}, field{"version", &removal_item::version}};
+}
+
+/**
+ * @brief What a batch removal states: why, and each row by its key.
+ *
+ * The keys arrive as the address names them, so one shape serves every resource.
+ */
+struct remove_body final {
+    ores::utility::domain::change_intent intent;
+    std::vector<removal_item> removals;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<remove_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"intent", &remove_body::intent},
+                      field{"removals", &remove_body::removals}};
+}
+
+/**
+ * @brief A body read as its own shape, or nothing when it states another.
+ *
+ * An optional member may be left out.
+ */
+template <typename T>
+std::optional<T> read_body(std::string_view text) {
+    auto value = ores::utility::codec::json::read_expected<T>(text);
+    if (!value)
+        return std::nullopt;
+    return std::move(*value);
+}
 
 /**
  * @brief One parameter read as the member's own type, refused by name when malformed.

@@ -106,7 +106,8 @@ TEST_CASE("business_unit_type_web_routes_registers_the_screen_addresses", "[rout
 
 TEST_CASE("business_unit_type_web_routes_names_the_resource_in_its_catalogue_entry",
           "[routes][web]") {
-    const std::string entry{business_unit_type_web_routes::catalogue_entry()};
+    const auto entry =
+        business_unit_type_web_routes::catalogue_entry(business_unit_type_web_request({}));
     CHECK(entry.find("\"key\":\"business-unit-types\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"ores.refdata.business_unit_type\"") != std::string::npos);
     CHECK(entry.find("\"writePermission\":\"refdata::business_unit_types:write\"") !=
@@ -160,6 +161,8 @@ TEST_CASE("business_unit_type_web_routes_refuses_a_write_that_states_no_reason",
     nats_client session;
     const auto put = business_unit_type_web_run(business_unit_type_web_routes::handle_put(
         business_unit_type_web_request({}, "{}"), session));
+    // A resource no screen writes, and a shared catalogue read from a session
+    // that is not the system tenant's, refuse before they read the body.
     CHECK(put.status == http_status::forbidden);
 
     const auto removal = business_unit_type_web_run(business_unit_type_web_routes::handle_delete(

@@ -54,6 +54,7 @@
 #include "ores.http/routes/refdata/currency_pair_web_routes.hpp"
 #include "ores.http/routes/refdata/currency_routes.hpp"
 #include "ores.http/routes/refdata/currency_web_routes.hpp"
+#include "ores.http/routes/refdata/instrument_code_web_routes.hpp"
 #include "ores.http/routes/refdata/ir_curve_bootstrap_config_routes.hpp"
 #include "ores.http/routes/refdata/ir_curve_bootstrap_config_web_routes.hpp"
 #include "ores.http/routes/refdata/ir_curve_bootstrap_pillar_routes.hpp"
@@ -72,6 +73,8 @@
 #include "ores.http/routes/refdata/party_identifier_web_routes.hpp"
 #include "ores.http/routes/refdata/party_routes.hpp"
 #include "ores.http/routes/refdata/party_web_routes.hpp"
+#include "ores.http/routes/refdata/payment_frequency_web_routes.hpp"
+#include "ores.http/routes/refdata/tenor_web_routes.hpp"
 #include <string>
 #include <string_view>
 
@@ -80,34 +83,34 @@ namespace ores::http::routes::refdata {
 namespace {
 
 /// The catalogue of the resources the screens name, built from each unit's own entry.
-std::string catalogue_body() {
-    const std::string_view entries[] = {
-        business_centre_web_routes::catalogue_entry(),
-        business_unit_web_routes::catalogue_entry(),
-        business_unit_type_web_routes::catalogue_entry(),
-        calendar_web_routes::catalogue_entry(),
-        calendar_event_web_routes::catalogue_entry(),
-        calendar_exception_web_routes::catalogue_entry(),
-        calendar_rule_web_routes::catalogue_entry(),
-        counterparty_web_routes::catalogue_entry(),
-        country_web_routes::catalogue_entry(),
-        currency_web_routes::catalogue_entry(),
-        currency_calendar_web_routes::catalogue_entry(),
-        currency_country_web_routes::catalogue_entry(),
-        currency_currency_group_web_routes::catalogue_entry(),
-        currency_group_web_routes::catalogue_entry(),
-        currency_pair_web_routes::catalogue_entry(),
-        currency_pair_convention_web_routes::catalogue_entry(),
-        currency_pair_convention_calendar_web_routes::catalogue_entry(),
-        ir_curve_bootstrap_config_web_routes::catalogue_entry(),
-        ir_curve_bootstrap_pillar_web_routes::catalogue_entry(),
-        party_web_routes::catalogue_entry(),
-        party_contact_information_web_routes::catalogue_entry(),
-        party_counterparty_web_routes::catalogue_entry(),
-        party_country_web_routes::catalogue_entry(),
-        party_currency_web_routes::catalogue_entry(),
-        party_id_scheme_web_routes::catalogue_entry(),
-        party_identifier_web_routes::catalogue_entry(),
+std::string catalogue_body(const ores::http::domain::http_request& req) {
+    const std::string entries[] = {
+        business_centre_web_routes::catalogue_entry(req),
+        business_unit_web_routes::catalogue_entry(req),
+        business_unit_type_web_routes::catalogue_entry(req),
+        calendar_web_routes::catalogue_entry(req),
+        calendar_event_web_routes::catalogue_entry(req),
+        calendar_exception_web_routes::catalogue_entry(req),
+        calendar_rule_web_routes::catalogue_entry(req),
+        counterparty_web_routes::catalogue_entry(req),
+        country_web_routes::catalogue_entry(req),
+        currency_web_routes::catalogue_entry(req),
+        currency_calendar_web_routes::catalogue_entry(req),
+        currency_country_web_routes::catalogue_entry(req),
+        currency_currency_group_web_routes::catalogue_entry(req),
+        currency_group_web_routes::catalogue_entry(req),
+        currency_pair_web_routes::catalogue_entry(req),
+        currency_pair_convention_web_routes::catalogue_entry(req),
+        currency_pair_convention_calendar_web_routes::catalogue_entry(req),
+        ir_curve_bootstrap_config_web_routes::catalogue_entry(req),
+        ir_curve_bootstrap_pillar_web_routes::catalogue_entry(req),
+        party_web_routes::catalogue_entry(req),
+        party_contact_information_web_routes::catalogue_entry(req),
+        party_counterparty_web_routes::catalogue_entry(req),
+        party_country_web_routes::catalogue_entry(req),
+        party_currency_web_routes::catalogue_entry(req),
+        party_id_scheme_web_routes::catalogue_entry(req),
+        party_identifier_web_routes::catalogue_entry(req),
     };
     std::string out = "{\"resources\":[";
     for (std::size_t i = 0; i < std::size(entries); ++i) {
@@ -180,6 +183,11 @@ void refdata_routes::register_routes(
     party_id_scheme_web_routes::register_routes(router, registry, session);
     party_identifier_web_routes::register_routes(router, registry, session);
 
+    // The reference data lookups the synthetic screens read, under /api/synthetic.
+    tenor_web_routes::register_routes(router, registry, session);
+    instrument_code_web_routes::register_routes(router, registry, session);
+    payment_frequency_web_routes::register_routes(router, registry, session);
+
     // The screens read which resources they may name, and what each states,
     // from one catalogue rather than from a list of their own.
     auto catalogue = router->get("/api/refdata")
@@ -188,9 +196,9 @@ void refdata_routes::register_routes(
                                       "fields, events and permissions.")
                          .tags({"refdata"})
                          .auth_required()
-                         .handler([](const ores::http::domain::http_request&)
+                         .handler([](const ores::http::domain::http_request& req)
                                       -> boost::asio::awaitable<ores::http::domain::http_response> {
-                             co_return ores::http::domain::http_response::json(catalogue_body());
+                             co_return ores::http::domain::http_response::json(catalogue_body(req));
                          });
     const auto catalogue_built = catalogue.build();
     router->add_route(catalogue_built);

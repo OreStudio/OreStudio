@@ -33,6 +33,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <memory>
+#include <string>
 #include <string_view>
 
 namespace ores::http::routes::refdata {
@@ -66,8 +67,11 @@ public:
 
     /**
      * @brief The resource as the catalogue of resources describes it, as JSON.
+     *
+     * Whether the resource is writable depends on the session for a catalogue
+     * every tenant shares, so the entry is stated for the request.
      */
-    static std::string_view catalogue_entry();
+    static std::string catalogue_entry(const ores::http::domain::http_request& req);
 
     /**
      * @brief GET /api/refdata/pair-calendars — one page with its total, or every row.

@@ -104,7 +104,7 @@ TEST_CASE("counterparty_web_routes_registers_the_screen_addresses", "[routes][we
 }
 
 TEST_CASE("counterparty_web_routes_names_the_resource_in_its_catalogue_entry", "[routes][web]") {
-    const std::string entry{counterparty_web_routes::catalogue_entry()};
+    const auto entry = counterparty_web_routes::catalogue_entry(counterparty_web_request({}));
     CHECK(entry.find("\"key\":\"counterparties\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"ores.refdata.counterparty\"") != std::string::npos);
     CHECK(entry.find("\"writePermission\":\"refdata::counterparties:write\"") != std::string::npos);
@@ -155,6 +155,8 @@ TEST_CASE("counterparty_web_routes_refuses_a_write_that_states_no_reason", "[rou
     nats_client session;
     const auto put = counterparty_web_run(
         counterparty_web_routes::handle_put(counterparty_web_request({}, "{}"), session));
+    // A resource no screen writes, and a shared catalogue read from a session
+    // that is not the system tenant's, refuse before they read the body.
     CHECK(put.status == http_status::forbidden);
 
     const auto removal = counterparty_web_run(

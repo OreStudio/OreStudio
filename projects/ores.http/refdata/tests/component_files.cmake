@@ -54,6 +54,7 @@ set(files
     "currency_pair_web_routes_tests.cpp"
     "currency_routes_tests.cpp"
     "currency_web_routes_tests.cpp"
+    "instrument_code_web_routes_tests.cpp"
     "ir_curve_bootstrap_config_routes_tests.cpp"
     "ir_curve_bootstrap_config_web_routes_tests.cpp"
     "ir_curve_bootstrap_pillar_routes_tests.cpp"
@@ -73,4 +74,6 @@ set(files
     "party_identifier_web_routes_tests.cpp"
     "party_routes_tests.cpp"
     "party_web_routes_tests.cpp"
+    "payment_frequency_web_routes_tests.cpp"
+    "tenor_web_routes_tests.cpp"
 )

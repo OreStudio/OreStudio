@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 942D892C-FB59-46D7-BFF6-04DDECC67C3B
+:END:
+#+title: Task: Share the gateway's forwarding step
+#+description: Every HTTP route unit carries its own copy of the step that forwards an HTTP request to a service over NATS. Share it: the typed NATS call in ores.nats, the HTTP mapping in a new ores.http.nats part.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/share-the-gateway-forwarding-step
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Move the NATS half of the forwarding step into ores.nats as a typed call that returns the decoded response or a NATS-level refusal, and the HTTP half into a new ores.http.nats part with one forward function. The record units, the typed route units and the feed key routes use it, and their per-unit copies go. ores.http.api stays free of NATS.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- ores.nats offers a typed call that returns the decoded response or a NATS-level refusal, with tests.
+- ores.http.nats holds one forward function that maps a refusal to an HTTP error, with tests.
+- No route unit keeps its own forwarding helper.
+- ores.http.api does not depend on ores.nats.
+- The local checks that the change needs are green.
+
+* Plan
+
+The forwarding step has two halves, and each goes to the layer that owns it.
+
+The NATS half goes in =ores.nats=. A typed call sends a canonical request on
+its subject, waits the default timeout and decodes the reply. It answers the
+decoded response or one refusal from a closed set:
+
+| Refusal | What the service or the transport said |
+|---------+----------------------------------------|
+| =forbidden= | the reply's =X-Error= header is =forbidden= |
+| =bad_request= | the header is =bad_request= |
+| =unauthenticated= | the header is =unauthorized=, =token_expired= or =max_session_exceeded= |
+| =session_expired= | the client could not renew the session |
+| =unanswered= | the transport failed, or the header names a code the call does not know |
+| =undecodable= | the reply is not the response type |
+
+The header's meaning is a pure function of its text, so it is tested without
+a server.
+
+The HTTP half goes in a new =ores.http.nats= part, which links
+=ores.http.api= and =ores.nats=. One =forward= function delegates the
+caller's token, makes the typed call and maps each refusal to an HTTP status
+and code through one table. =ores.http.api= keeps no dependency on NATS, so
+an HTTP client of the API does not pull NATS in.
+
+The record units, the typed route units and the feed key routes call
+=forward=, and their own copies go in the same change. The typed units then
+answer a refusal with the ={code, message}= body the browser reads, which the
+switch-over needs.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

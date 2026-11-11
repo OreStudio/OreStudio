@@ -54,6 +54,7 @@ set(files
     "routes/refdata/currency_pair_web_routes.cpp"
     "routes/refdata/currency_routes.cpp"
     "routes/refdata/currency_web_routes.cpp"
+    "routes/refdata/instrument_code_web_routes.cpp"
     "routes/refdata/ir_curve_bootstrap_config_routes.cpp"
     "routes/refdata/ir_curve_bootstrap_config_web_routes.cpp"
     "routes/refdata/ir_curve_bootstrap_pillar_routes.cpp"
@@ -72,7 +73,9 @@ set(files
     "routes/refdata/party_identifier_web_routes.cpp"
     "routes/refdata/party_routes.cpp"
     "routes/refdata/party_web_routes.cpp"
+    "routes/refdata/payment_frequency_web_routes.cpp"
     "routes/refdata/refdata_routes.cpp"
+    "routes/refdata/tenor_web_routes.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -112,6 +115,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/currency_pair_web_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/currency_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/currency_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/instrument_code_web_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/ir_curve_bootstrap_config_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/ir_curve_bootstrap_config_web_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/ir_curve_bootstrap_pillar_routes.hpp"
@@ -130,5 +134,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/party_identifier_web_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/party_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/party_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/payment_frequency_web_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/refdata_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_web_routes.hpp"
 )

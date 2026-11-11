@@ -115,70 +115,70 @@ messaging::{{list_request}} {{unit}}_page(std::uint32_t offset, std::uint32_t li
     return msg;
 }
 
-}
+{{^writes_many}}
+using {{unit}}_write_body = rr::write_body<messaging::{{entity_singular}}_write>;
+using {{unit}}_removal_body = rr::removal_body<messaging::{{entity_singular}}_key>;
+{{/writes_many}}
+{{#writes_many}}
+using {{unit}}_save_body = rr::save_body<messaging::{{entity_singular}}_write>;
+{{/writes_many}}
 
 /**
- * @brief The bodies the screens send, with their wire fields.
+ * @brief Why this session may not write the resource, or nothing when it may.
  *
- * They live in a namespace of the unit's own, so the wire_fields overloads of two
- * units in one unity build carry different qualified names.
+ * A catalogue every tenant shares is written only from the system tenant, so a
+ * tenant's write would not change every tenant's rows.
  */
-namespace {{unit}}_bodies {
-
-/// What a write states: the row, the version it was read at, and why.
-struct {{unit}}_write_body final {
-    messaging::{{entity_singular}}_write write;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{unit}}_write_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"write", &{{unit}}_write_body::write},
-                      field{"version", &{{unit}}_write_body::version},
-                      field{"reasonCode", &{{unit}}_write_body::reasonCode},
-                      field{"commentary", &{{unit}}_write_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<{{unit}}_write_body>());
-
-/// What a removal states: the row's key, the version it was read at, and why.
-struct {{unit}}_removal_body final {
-    messaging::{{entity_singular}}_key key;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<{{unit}}_removal_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"key", &{{unit}}_removal_body::key},
-                      field{"version", &{{unit}}_removal_body::version},
-                      field{"reasonCode", &{{unit}}_removal_body::reasonCode},
-                      field{"commentary", &{{unit}}_removal_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<{{unit}}_removal_body>());
-
+std::optional<std::string> {{unit}}_read_only_for([[maybe_unused]] const http_request& req) {
+{{^writable}}
+    return std::string({{{read_only_because_json}}});
+{{/writable}}
+{{#writable}}
+{{#system_owned}}
+    const auto& user = req.authenticated_user;
+    if (!user || !user->tenant_id || *user->tenant_id != rr::system_tenant_id)
+        return std::string("Every tenant shares this catalogue, so only the system tenant changes it.");
+{{/system_owned}}
+    return std::nullopt;
+{{/writable}}
 }
 
-namespace {
+/// Refuse a write this session may not make.
+void {{unit}}_require_writable(const http_request& req) {
+    if (const auto because = {{unit}}_read_only_for(req))
+        rr::refuse(http_status::forbidden, "forbidden",
+                   std::string("{{key}} is read only here.") + (because->empty() ? "" : " " + *because));
+}
 
-using {{unit}}_bodies::{{unit}}_removal_body;
-using {{unit}}_bodies::{{unit}}_write_body;
-
-/// A body read as its own shape, or nothing when it states another. An optional member may be left out.
-template <typename T>
-std::optional<T> {{unit}}_body(std::string_view text) {
-    auto value = ores::utility::codec::json::read_expected<T>(text);
-    if (!value)
-        return std::nullopt;
-    return std::move(*value);
+/// The body with the model's default for each write member it leaves out.
+std::string {{unit}}_with_defaults(const std::string& body) {
+{{#has_write_defaults}}
+    return rr::with_write_defaults(body, {
+{{#write_defaults}}
+        rr::write_default{"{{name}}", R"json({{{json}}})json"},
+{{/write_defaults}}
+    });
+{{/has_write_defaults}}
+{{^has_write_defaults}}
+    return body;
+{{/has_write_defaults}}
 }
 
 }
 
-std::string_view {{unit}}_routes::catalogue_entry() {
-    return R"json({"key":"{{key}}","entityType":"{{entity_type}}","keyFields":[{{#key_fields}}"{{name}}"{{^last}},{{/last}}{{/key_fields}}],"versioned":{{#versioned}}true{{/versioned}}{{^versioned}}false{{/versioned}},"writable":{{#writable}}true{{/writable}}{{^writable}}false{{/writable}},"search":{{#search}}true{{/search}}{{^search}}false{{/search}},"sortable":[{{#sortable}}"{{name}}"{{^last}},{{/last}}{{/sortable}}],"events":{"component":"{{events_component}}","entity":"{{resource_name}}"},"writePermission":"{{write_permission}}","deletePermission":"{{delete_permission}}"})json";
+std::string {{unit}}_routes::catalogue_entry(const http_request& req) {
+    const auto because = {{unit}}_read_only_for(req);
+{{^writes_many}}
+    return std::string(R"json({"key":"{{key}}","entityType":"{{entity_type}}","keyFields":[{{#key_fields}}"{{name}}"{{^last}},{{/last}}{{/key_fields}}],"versioned":{{#versioned}}true{{/versioned}}{{^versioned}}false{{/versioned}},"writable":)json") +
+           (because ? "false" : "true") +
+           R"json(,"search":{{#search}}true{{/search}}{{^search}}false{{/search}},"sortable":[{{#sortable}}"{{name}}"{{^last}},{{/last}}{{/sortable}}],"events":{"component":"{{events_component}}","entity":"{{resource_name}}"},"writePermission":"{{write_permission}}","deletePermission":"{{delete_permission}}"})json";
+{{/writes_many}}
+{{#writes_many}}
+    return std::string(R"json({"key":"{{key}}","entityType":"{{entity_type}}","keyField":"{{key_field}}","writable":)json") +
+           (because ? "false" : "true") + R"json(,"readOnlyBecause":)json" +
+           (because ? ores::utility::codec::json::write(*because) : std::string("null")) +
+           R"json(,"search":{{#search}}true{{/search}}{{^search}}false{{/search}},"sortable":[{{#sortable}}"{{name}}"{{^last}},{{/last}}{{/sortable}}],"readPermission":"{{read_permission}}","writePermission":"{{write_permission}}","deletePermission":"{{delete_permission}}"})json";
+{{/writes_many}}
 }
 
 boost::asio::awaitable<http_response> {{unit}}_routes::handle_list(const http_request& req,
@@ -230,7 +230,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_list(const http_re
         const auto search = req.get_query_param("search");
 {{#search}}
         if (!search.empty()) {
-            msg.filter = {{{filter_type}}}{};
+            msg.filter = messaging::{{filter_name}}{};
             msg.filter->search = search;
         }
 {{/search}}
@@ -250,7 +250,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_list(const http_re
 {{#filters}}
         if (const auto raw = req.get_query_param("f.{{member}}"); !raw.empty()) {
             if (!msg.filter)
-                msg.filter = {{{filter_type}}}{};
+                msg.filter = messaging::{{filter_name}}{};
             msg.filter->{{member}} = rr::read<{{{read_type}}}>(raw, "f.{{member}}");
         }
 {{/filters}}
@@ -267,6 +267,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_list(const http_re
                                            std::string(rr::unanswered));
     }
 }
+{{#has_key_route}}
 {{#single_key}}
 
 boost::asio::awaitable<http_response> {{unit}}_routes::handle_key(const http_request& req,
@@ -275,13 +276,13 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_key(const http_req
         const auto key = rr::code(req.get_path_param("key"),
                                        "A record is named by a code of 1 to 100 characters.");
         auto msg = {{unit}}_page(0, 1);
-        msg.filter = {{{filter_type}}}{};
+        msg.filter = messaging::{{filter_name}}{};
         msg.filter->{{member}} = std::vector<{{{read_type}}}>{ rr::read<{{{read_type}}}>(key, "key") };
         const auto reply = {{unit}}_call(req, session, msg);
         rr::require_ok(reply.result);
         if (reply.{{rows_member}}.empty())
             rr::refuse(http_status::not_found, "not-found",
-                            "There is no {{key}} record " + key + ".");
+                       "There is no {{key}} {{#writes_many}}row{{/writes_many}}{{^writes_many}}record{{/writes_many}} " + key + ".");
         co_return http_response::json("{\"row\":" + {{unit}}_row(reply.{{rows_member}}.front()) + "}");
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
@@ -292,7 +293,8 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_key(const http_req
     }
 }
 {{/single_key}}
-{{#list_by}}
+{{/has_key_route}}
+{{#has_by}}
 
 boost::asio::awaitable<http_response> {{unit}}_routes::handle_by(const http_request& req,
                                                                  nats_client& session) {
@@ -301,6 +303,7 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_by(const http_requ
                                           "A parent is named by a code of 1 to 100 characters.");
         std::vector<{{{row_type}}}> rows;
         for (std::uint32_t offset = 0;;) {
+{{#list_by}}
             messaging::{{request}} msg;
             msg.{{member}} = rr::read<{{{read_type}}}>(parent, "parent");
             msg.scope = ores::utility::domain::scope::direct;
@@ -308,6 +311,12 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_by(const http_requ
             msg.limit = {{unit}}_page_size;
             msg.order.field = "";
             msg.order.descending = false;
+{{/list_by}}
+{{#parent_filter}}
+            auto msg = {{unit}}_page(offset, {{unit}}_page_size);
+            msg.filter = messaging::{{filter_name}}{};
+            msg.filter->{{member}} = rr::read<{{{read_type}}}>(parent, "parent");
+{{/parent_filter}}
             const auto reply = {{unit}}_call(req, session, msg);
             rr::require_ok(reply.result);
             const auto& got = reply.{{rows_member}};
@@ -325,15 +334,14 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_by(const http_requ
                                            std::string(rr::unanswered));
     }
 }
-{{/list_by}}
+{{/has_by}}
 
 boost::asio::awaitable<http_response> {{unit}}_routes::handle_put(const http_request& req,
                                                                   nats_client& session) {
     try {
-{{^writable}}
-        rr::refuse(http_status::forbidden, "forbidden", "{{key}} is read only here.");
-{{/writable}}
-        const auto body = {{unit}}_body<{{unit}}_write_body>(req.body);
+        {{unit}}_require_writable(req);
+{{^writes_many}}
+        const auto body = rr::read_body<{{unit}}_write_body>({{unit}}_with_defaults(req.body));
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A write needs the row, the version it was read at, and a reason.");
         messaging::{{put_request}} msg;
@@ -347,6 +355,31 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_put(const http_req
         const auto reply = {{unit}}_call(req, session, msg);
         rr::require_ok(reply.result);
         co_return rr::no_content();
+{{/writes_many}}
+{{#writes_many}}
+        const auto body = rr::read_body<{{unit}}_save_body>({{unit}}_with_defaults(req.body));
+        if (!body || body->changes.empty() || body->changes.size() > 1000 ||
+            !rr::has_reason(body->intent.reason_code) || body->intent.commentary.size() > 2000)
+            rr::invalid("A save names one to a thousand rows, each with the version it was read at, and a reason.");
+        messaging::{{put_many_request}} msg;
+        std::vector<decltype(body->changes.front().write.{{key_field}})> keys;
+        for (const auto& change : body->changes) {
+            auto& item = msg.changes.emplace_back();
+            item.write = change.write;
+            item.precondition.kind =
+                change.version ? ores::utility::domain::precondition_kind::must_match_version
+                               : ores::utility::domain::precondition_kind::must_not_exist;
+            item.precondition.version = change.version;
+            keys.push_back(change.write.{{key_field}});
+        }
+        std::sort(keys.begin(), keys.end());
+        if (std::adjacent_find(keys.begin(), keys.end()) != keys.end())
+            rr::invalid("A save names each row once.");
+        msg.intent = body->intent;
+        const auto reply = {{unit}}_call(req, session, msg);
+        rr::require_ok(reply.result);
+        co_return http_response::json("{\"rows\":" + {{unit}}_rows(reply.{{rows_member}}) + "}");
+{{/writes_many}}
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
@@ -359,10 +392,9 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_put(const http_req
 boost::asio::awaitable<http_response> {{unit}}_routes::handle_delete(const http_request& req,
                                                                      nats_client& session) {
     try {
-{{^writable}}
-        rr::refuse(http_status::forbidden, "forbidden", "{{key}} is read only here.");
-{{/writable}}
-        const auto body = {{unit}}_body<{{unit}}_removal_body>(req.body);
+        {{unit}}_require_writable(req);
+{{^writes_many}}
+        const auto body = rr::read_body<{{unit}}_removal_body>(req.body);
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid(
                 "A removal names the row by {{#key_fields}}{{name}}{{^last}} and {{/last}}{{/key_fields}}, and a reason.");
@@ -377,6 +409,52 @@ boost::asio::awaitable<http_response> {{unit}}_routes::handle_delete(const http_
         const auto reply = {{unit}}_call(req, session, msg);
         rr::require_ok(reply.result);
         co_return rr::no_content();
+{{/writes_many}}
+{{#writes_many}}
+        const auto body = rr::read_body<rr::remove_body>(req.body);
+        if (!body || body->removals.empty() || body->removals.size() > 1000 ||
+            !rr::has_reason(body->intent.reason_code) || body->intent.commentary.size() > 2000)
+            rr::invalid("A removal names one to a thousand rows by {{removal_key_field}}, and a reason.");
+        std::vector<std::string> named;
+        for (const auto& removal : body->removals)
+            named.push_back(removal.key);
+        std::sort(named.begin(), named.end());
+        if (std::adjacent_find(named.begin(), named.end()) != named.end())
+            rr::invalid("A removal names each row once.");
+        const auto key_of = [](const std::string& raw) {
+            return rr::read<{{{removal_key_type}}}>(
+                rr::code(raw, "A row is named by a code of 1 to 100 characters."), "key");
+        };
+        if (body->removals.size() == 1) {
+            const auto& removal = body->removals.front();
+            messaging::{{delete_request}} msg;
+            msg.removal.key.{{removal_key_field}} = key_of(removal.key);
+            msg.removal.precondition.kind =
+                removal.version ? ores::utility::domain::precondition_kind::must_match_version
+                                : ores::utility::domain::precondition_kind::any;
+            msg.removal.precondition.version = removal.version;
+            msg.intent.reason_code = body->intent.reason_code;
+            msg.intent.commentary = body->intent.commentary;
+            const auto reply = {{unit}}_call(req, session, msg);
+            rr::require_ok(reply.result);
+            co_return rr::no_content();
+        }
+        for (const auto& removal : body->removals) {
+            if (removal.version)
+                rr::invalid("A removal of many rows is unconditional: it names no version. "
+                            "Remove one row to name its version.");
+        }
+        messaging::{{delete_many_request}} msg;
+        for (const auto& removal : body->removals) {
+            auto& item = msg.removals.emplace_back();
+            item.key.{{removal_key_field}} = key_of(removal.key);
+            item.precondition.kind = ores::utility::domain::precondition_kind::any;
+        }
+        msg.intent = body->intent;
+        const auto reply = {{unit}}_call(req, session, msg);
+        rr::require_ok(reply.result);
+        co_return rr::no_content();
+{{/writes_many}}
     } catch (const rr::refusal& refusal) {
         co_return rr::answer(refusal);
     } catch (const std::exception& e) {
@@ -401,7 +479,7 @@ void {{unit}}_routes::register_routes(
     const auto list_built = list_route.build();
     router->add_route(list_built);
     registry->register_route(list_built);
-{{#single_key}}
+{{#has_key_route}}
 
     auto key_route = router->get("{{base}}/key/{key}")
                    .summary("Read one {{key}} record for a screen")
@@ -412,19 +490,19 @@ void {{unit}}_routes::register_routes(
     const auto key_built = key_route.build();
     router->add_route(key_built);
     registry->register_route(key_built);
-{{/single_key}}
-{{#list_by}}
+{{/has_key_route}}
+{{#has_by}}
 
     auto by_route = router->get("{{base}}/by/{parent}")
                   .summary("List one parent's {{key}} for a screen")
-                  .description("Every row whose {{member}} is the parent.")
+                  .description("Every row of one parent.")
                   .tags({"{{component}}"})
                   .auth_required()
                   .handler([&session](const http_request& req) { return handle_by(req, session); });
     const auto by_built = by_route.build();
     router->add_route(by_built);
     registry->register_route(by_built);
-{{/list_by}}
+{{/has_by}}
 
     auto put_route = router->put("{{base}}")
                    .summary("Write one {{key}} record for a screen")

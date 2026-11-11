@@ -134,71 +134,42 @@ messaging::list_counterparties_request counterparty_web_page(std::uint32_t offse
     return msg;
 }
 
-}
+using counterparty_web_write_body = rr::write_body<messaging::counterparty_write>;
+using counterparty_web_removal_body = rr::removal_body<messaging::counterparty_key>;
 
 /**
- * @brief The bodies the screens send, with their wire fields.
+ * @brief Why this session may not write the resource, or nothing when it may.
  *
- * They live in a namespace of the unit's own, so the wire_fields overloads of two
- * units in one unity build carry different qualified names.
+ * A catalogue every tenant shares is written only from the system tenant, so a
+ * tenant's write would not change every tenant's rows.
  */
-namespace counterparty_web_bodies {
-
-/// What a write states: the row, the version it was read at, and why.
-struct counterparty_web_write_body final {
-    messaging::counterparty_write write;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_web_write_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"write", &counterparty_web_write_body::write},
-                      field{"version", &counterparty_web_write_body::version},
-                      field{"reasonCode", &counterparty_web_write_body::reasonCode},
-                      field{"commentary", &counterparty_web_write_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<counterparty_web_write_body>());
-
-/// What a removal states: the row's key, the version it was read at, and why.
-struct counterparty_web_removal_body final {
-    messaging::counterparty_key key;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<counterparty_web_removal_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"key", &counterparty_web_removal_body::key},
-                      field{"version", &counterparty_web_removal_body::version},
-                      field{"reasonCode", &counterparty_web_removal_body::reasonCode},
-                      field{"commentary", &counterparty_web_removal_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<counterparty_web_removal_body>());
-
+std::optional<std::string>
+counterparty_web_read_only_for([[maybe_unused]] const http_request& req) {
+    return std::string("");
 }
 
-namespace {
+/// Refuse a write this session may not make.
+void counterparty_web_require_writable(const http_request& req) {
+    if (const auto because = counterparty_web_read_only_for(req))
+        rr::refuse(http_status::forbidden,
+                   "forbidden",
+                   std::string("counterparties is read only here.") +
+                       (because->empty() ? "" : " " + *because));
+}
 
-using counterparty_web_bodies::counterparty_web_removal_body;
-using counterparty_web_bodies::counterparty_web_write_body;
-
-/// A body read as its own shape, or nothing when it states another. An optional member may be left
-/// out.
-template <typename T>
-std::optional<T> counterparty_web_body(std::string_view text) {
-    auto value = ores::utility::codec::json::read_expected<T>(text);
-    if (!value)
-        return std::nullopt;
-    return std::move(*value);
+/// The body with the model's default for each write member it leaves out.
+std::string counterparty_web_with_defaults(const std::string& body) {
+    return body;
 }
 
 }
 
-std::string_view counterparty_web_routes::catalogue_entry() {
-    return R"json({"key":"counterparties","entityType":"ores.refdata.counterparty","keyFields":["id"],"versioned":true,"writable":false,"search":false,"sortable":[],"events":{"component":"refdata","entity":"counterparties"},"writePermission":"refdata::counterparties:write","deletePermission":"refdata::counterparties:delete"})json";
+std::string counterparty_web_routes::catalogue_entry(const http_request& req) {
+    const auto because = counterparty_web_read_only_for(req);
+    return std::string(
+               R"json({"key":"counterparties","entityType":"ores.refdata.counterparty","keyFields":["id"],"versioned":true,"writable":)json") +
+           (because ? "false" : "true") +
+           R"json(,"search":false,"sortable":[],"events":{"component":"refdata","entity":"counterparties"},"writePermission":"refdata::counterparties:write","deletePermission":"refdata::counterparties:delete"})json";
 }
 
 boost::asio::awaitable<http_response> counterparty_web_routes::handle_list(const http_request& req,
@@ -306,8 +277,9 @@ boost::asio::awaitable<http_response> counterparty_web_routes::handle_key(const 
 boost::asio::awaitable<http_response> counterparty_web_routes::handle_put(const http_request& req,
                                                                           nats_client& session) {
     try {
-        rr::refuse(http_status::forbidden, "forbidden", "counterparties is read only here.");
-        const auto body = counterparty_web_body<counterparty_web_write_body>(req.body);
+        counterparty_web_require_writable(req);
+        const auto body =
+            rr::read_body<counterparty_web_write_body>(counterparty_web_with_defaults(req.body));
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A write needs the row, the version it was read at, and a reason.");
         messaging::put_counterparty_request msg;
@@ -333,8 +305,8 @@ boost::asio::awaitable<http_response> counterparty_web_routes::handle_put(const 
 boost::asio::awaitable<http_response>
 counterparty_web_routes::handle_delete(const http_request& req, nats_client& session) {
     try {
-        rr::refuse(http_status::forbidden, "forbidden", "counterparties is read only here.");
-        const auto body = counterparty_web_body<counterparty_web_removal_body>(req.body);
+        counterparty_web_require_writable(req);
+        const auto body = rr::read_body<counterparty_web_removal_body>(req.body);
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A removal names the row by id, and a reason.");
         messaging::delete_counterparty_request msg;

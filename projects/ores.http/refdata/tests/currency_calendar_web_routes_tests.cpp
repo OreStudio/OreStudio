@@ -106,7 +106,8 @@ TEST_CASE("currency_calendar_web_routes_registers_the_screen_addresses", "[route
 
 TEST_CASE("currency_calendar_web_routes_names_the_resource_in_its_catalogue_entry",
           "[routes][web]") {
-    const std::string entry{currency_calendar_web_routes::catalogue_entry()};
+    const auto entry =
+        currency_calendar_web_routes::catalogue_entry(currency_calendar_web_request({}));
     CHECK(entry.find("\"key\":\"currency-calendars\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"ores.refdata.currency_calendar\"") != std::string::npos);
     CHECK(entry.find("\"writePermission\":\"refdata::currency_calendars:write\"") !=
@@ -167,6 +168,8 @@ TEST_CASE("currency_calendar_web_routes_refuses_a_write_that_states_no_reason", 
     nats_client session;
     const auto put = currency_calendar_web_run(
         currency_calendar_web_routes::handle_put(currency_calendar_web_request({}, "{}"), session));
+    // A resource no screen writes, and a shared catalogue read from a session
+    // that is not the system tenant's, refuse before they read the body.
     CHECK(put.status == http_status::bad_request);
 
     const auto removal = currency_calendar_web_run(currency_calendar_web_routes::handle_delete(

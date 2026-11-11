@@ -136,71 +136,42 @@ messaging::list_party_currencies_request party_currency_web_page(std::uint32_t o
     return msg;
 }
 
-}
+using party_currency_web_write_body = rr::write_body<messaging::party_currency_write>;
+using party_currency_web_removal_body = rr::removal_body<messaging::party_currency_key>;
 
 /**
- * @brief The bodies the screens send, with their wire fields.
+ * @brief Why this session may not write the resource, or nothing when it may.
  *
- * They live in a namespace of the unit's own, so the wire_fields overloads of two
- * units in one unity build carry different qualified names.
+ * A catalogue every tenant shares is written only from the system tenant, so a
+ * tenant's write would not change every tenant's rows.
  */
-namespace party_currency_web_bodies {
-
-/// What a write states: the row, the version it was read at, and why.
-struct party_currency_web_write_body final {
-    messaging::party_currency_write write;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_currency_web_write_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"write", &party_currency_web_write_body::write},
-                      field{"version", &party_currency_web_write_body::version},
-                      field{"reasonCode", &party_currency_web_write_body::reasonCode},
-                      field{"commentary", &party_currency_web_write_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<party_currency_web_write_body>());
-
-/// What a removal states: the row's key, the version it was read at, and why.
-struct party_currency_web_removal_body final {
-    messaging::party_currency_key key;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<party_currency_web_removal_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"key", &party_currency_web_removal_body::key},
-                      field{"version", &party_currency_web_removal_body::version},
-                      field{"reasonCode", &party_currency_web_removal_body::reasonCode},
-                      field{"commentary", &party_currency_web_removal_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<party_currency_web_removal_body>());
-
+std::optional<std::string>
+party_currency_web_read_only_for([[maybe_unused]] const http_request& req) {
+    return std::nullopt;
 }
 
-namespace {
+/// Refuse a write this session may not make.
+void party_currency_web_require_writable(const http_request& req) {
+    if (const auto because = party_currency_web_read_only_for(req))
+        rr::refuse(http_status::forbidden,
+                   "forbidden",
+                   std::string("party-currencies is read only here.") +
+                       (because->empty() ? "" : " " + *because));
+}
 
-using party_currency_web_bodies::party_currency_web_removal_body;
-using party_currency_web_bodies::party_currency_web_write_body;
-
-/// A body read as its own shape, or nothing when it states another. An optional member may be left
-/// out.
-template <typename T>
-std::optional<T> party_currency_web_body(std::string_view text) {
-    auto value = ores::utility::codec::json::read_expected<T>(text);
-    if (!value)
-        return std::nullopt;
-    return std::move(*value);
+/// The body with the model's default for each write member it leaves out.
+std::string party_currency_web_with_defaults(const std::string& body) {
+    return body;
 }
 
 }
 
-std::string_view party_currency_web_routes::catalogue_entry() {
-    return R"json({"key":"party-currencies","entityType":"ores.refdata.party_currency","keyFields":["party_id","currency_iso_code"],"versioned":false,"writable":true,"search":false,"sortable":[],"events":{"component":"refdata","entity":"party_currencies"},"writePermission":"refdata::party_currencies:write","deletePermission":"refdata::party_currencies:delete"})json";
+std::string party_currency_web_routes::catalogue_entry(const http_request& req) {
+    const auto because = party_currency_web_read_only_for(req);
+    return std::string(
+               R"json({"key":"party-currencies","entityType":"ores.refdata.party_currency","keyFields":["party_id","currency_iso_code"],"versioned":false,"writable":)json") +
+           (because ? "false" : "true") +
+           R"json(,"search":false,"sortable":[],"events":{"component":"refdata","entity":"party_currencies"},"writePermission":"refdata::party_currencies:write","deletePermission":"refdata::party_currencies:delete"})json";
 }
 
 boost::asio::awaitable<http_response>
@@ -267,7 +238,7 @@ party_currency_web_routes::handle_list(const http_request& req, nats_client& ses
         }
         if (const auto raw = req.get_query_param("f.party_id"); !raw.empty()) {
             if (!msg.filter)
-                msg.filter = {};
+                msg.filter = messaging::party_currencies_filter{};
             msg.filter->party_id = rr::read<boost::uuids::uuid>(raw, "f.party_id");
         }
 
@@ -321,7 +292,9 @@ boost::asio::awaitable<http_response> party_currency_web_routes::handle_by(const
 boost::asio::awaitable<http_response> party_currency_web_routes::handle_put(const http_request& req,
                                                                             nats_client& session) {
     try {
-        const auto body = party_currency_web_body<party_currency_web_write_body>(req.body);
+        party_currency_web_require_writable(req);
+        const auto body = rr::read_body<party_currency_web_write_body>(
+            party_currency_web_with_defaults(req.body));
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A write needs the row, the version it was read at, and a reason.");
         messaging::put_party_currency_request msg;
@@ -347,7 +320,8 @@ boost::asio::awaitable<http_response> party_currency_web_routes::handle_put(cons
 boost::asio::awaitable<http_response>
 party_currency_web_routes::handle_delete(const http_request& req, nats_client& session) {
     try {
-        const auto body = party_currency_web_body<party_currency_web_removal_body>(req.body);
+        party_currency_web_require_writable(req);
+        const auto body = rr::read_body<party_currency_web_removal_body>(req.body);
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A removal names the row by party_id and currency_iso_code, and a reason.");
         messaging::delete_party_currency_request msg;
@@ -390,7 +364,7 @@ void party_currency_web_routes::register_routes(
     auto by_route =
         router->get("/api/refdata/party-currencies/by/{parent}")
             .summary("List one parent's party-currencies for a screen")
-            .description("Every row whose party_id is the parent.")
+            .description("Every row of one parent.")
             .tags({"refdata"})
             .auth_required()
             .handler([&session](const http_request& req) { return handle_by(req, session); });

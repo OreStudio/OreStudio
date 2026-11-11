@@ -133,71 +133,47 @@ messaging::list_currencies_request currency_web_page(std::uint32_t offset, std::
     return msg;
 }
 
-}
+using currency_web_write_body = rr::write_body<messaging::currency_write>;
+using currency_web_removal_body = rr::removal_body<messaging::currency_key>;
 
 /**
- * @brief The bodies the screens send, with their wire fields.
+ * @brief Why this session may not write the resource, or nothing when it may.
  *
- * They live in a namespace of the unit's own, so the wire_fields overloads of two
- * units in one unity build carry different qualified names.
+ * A catalogue every tenant shares is written only from the system tenant, so a
+ * tenant's write would not change every tenant's rows.
  */
-namespace currency_web_bodies {
-
-/// What a write states: the row, the version it was read at, and why.
-struct currency_web_write_body final {
-    messaging::currency_write write;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_web_write_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"write", &currency_web_write_body::write},
-                      field{"version", &currency_web_write_body::version},
-                      field{"reasonCode", &currency_web_write_body::reasonCode},
-                      field{"commentary", &currency_web_write_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<currency_web_write_body>());
-
-/// What a removal states: the row's key, the version it was read at, and why.
-struct currency_web_removal_body final {
-    messaging::currency_key key;
-    std::optional<std::uint32_t> version;
-    std::string reasonCode;
-    std::string commentary;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<currency_web_removal_body>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"key", &currency_web_removal_body::key},
-                      field{"version", &currency_web_removal_body::version},
-                      field{"reasonCode", &currency_web_removal_body::reasonCode},
-                      field{"commentary", &currency_web_removal_body::commentary}};
-}
-static_assert(ores::utility::codec::names_every_member<currency_web_removal_body>());
-
+std::optional<std::string> currency_web_read_only_for([[maybe_unused]] const http_request& req) {
+    return std::nullopt;
 }
 
-namespace {
+/// Refuse a write this session may not make.
+void currency_web_require_writable(const http_request& req) {
+    if (const auto because = currency_web_read_only_for(req))
+        rr::refuse(http_status::forbidden,
+                   "forbidden",
+                   std::string("currencies is read only here.") +
+                       (because->empty() ? "" : " " + *because));
+}
 
-using currency_web_bodies::currency_web_removal_body;
-using currency_web_bodies::currency_web_write_body;
-
-/// A body read as its own shape, or nothing when it states another. An optional member may be left
-/// out.
-template <typename T>
-std::optional<T> currency_web_body(std::string_view text) {
-    auto value = ores::utility::codec::json::read_expected<T>(text);
-    if (!value)
-        return std::nullopt;
-    return std::move(*value);
+/// The body with the model's default for each write member it leaves out.
+std::string currency_web_with_defaults(const std::string& body) {
+    return rr::with_write_defaults(body,
+                                   {
+                                       rr::write_default{"fractions_per_unit", R"json(0)json"},
+                                       rr::write_default{"rounding_precision", R"json(0)json"},
+                                       rr::write_default{"spot_days", R"json(0)json"},
+                                       rr::write_default{"base_precedence", R"json(0)json"},
+                                   });
 }
 
 }
 
-std::string_view currency_web_routes::catalogue_entry() {
-    return R"json({"key":"currencies","entityType":"ores.refdata.currency","keyFields":["iso_code"],"versioned":true,"writable":true,"search":true,"sortable":["iso_code","name","monetary_nature","market_tier"],"events":{"component":"refdata","entity":"currencies"},"writePermission":"refdata::currencies:write","deletePermission":"refdata::currencies:delete"})json";
+std::string currency_web_routes::catalogue_entry(const http_request& req) {
+    const auto because = currency_web_read_only_for(req);
+    return std::string(
+               R"json({"key":"currencies","entityType":"ores.refdata.currency","keyFields":["iso_code"],"versioned":true,"writable":)json") +
+           (because ? "false" : "true") +
+           R"json(,"search":true,"sortable":["iso_code","name","monetary_nature","market_tier"],"events":{"component":"refdata","entity":"currencies"},"writePermission":"refdata::currencies:write","deletePermission":"refdata::currencies:delete"})json";
 }
 
 boost::asio::awaitable<http_response> currency_web_routes::handle_list(const http_request& req,
@@ -306,7 +282,9 @@ boost::asio::awaitable<http_response> currency_web_routes::handle_key(const http
 boost::asio::awaitable<http_response> currency_web_routes::handle_put(const http_request& req,
                                                                       nats_client& session) {
     try {
-        const auto body = currency_web_body<currency_web_write_body>(req.body);
+        currency_web_require_writable(req);
+        const auto body =
+            rr::read_body<currency_web_write_body>(currency_web_with_defaults(req.body));
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A write needs the row, the version it was read at, and a reason.");
         messaging::put_currency_request msg;
@@ -332,7 +310,8 @@ boost::asio::awaitable<http_response> currency_web_routes::handle_put(const http
 boost::asio::awaitable<http_response> currency_web_routes::handle_delete(const http_request& req,
                                                                          nats_client& session) {
     try {
-        const auto body = currency_web_body<currency_web_removal_body>(req.body);
+        currency_web_require_writable(req);
+        const auto body = rr::read_body<currency_web_removal_body>(req.body);
         if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
             rr::invalid("A removal names the row by iso_code, and a reason.");
         messaging::delete_currency_request msg;

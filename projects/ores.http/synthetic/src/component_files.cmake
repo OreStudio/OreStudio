@@ -20,13 +20,41 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "routes/synthetic/feed_key_routes.cpp"
+    "routes/synthetic/folder_web_routes.cpp"
+    "routes/synthetic/fx_spot_generation_config_web_routes.cpp"
+    "routes/synthetic/gmm_component_web_routes.cpp"
+    "routes/synthetic/ir_curve_generation_config_process_parameter_value_web_routes.cpp"
+    "routes/synthetic/ir_curve_generation_config_web_routes.cpp"
+    "routes/synthetic/ir_curve_template_entry_web_routes.cpp"
+    "routes/synthetic/market_data_generation_config_web_routes.cpp"
+    "routes/synthetic/market_data_provider_web_routes.cpp"
     "routes/synthetic/synthetic_routes.cpp"
+    "routes/synthetic/variance_calibration_input_point_web_routes.cpp"
+    "routes/synthetic/variance_calibration_input_web_routes.cpp"
+    "routes/synthetic/variance_calibration_web_routes.cpp"
+    "routes/synthetic/yield_curve_process_parameter_definition_web_routes.cpp"
     "routes/synthetic/yield_curve_process_type_routes.cpp"
+    "routes/synthetic/yield_curve_process_type_web_routes.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.synthetic.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/feed_key_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/folder_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/fx_spot_generation_config_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/gmm_component_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/ir_curve_generation_config_process_parameter_value_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/ir_curve_generation_config_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/ir_curve_template_entry_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/market_data_generation_config_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/market_data_provider_web_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/synthetic_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/variance_calibration_input_point_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/variance_calibration_input_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/variance_calibration_web_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/yield_curve_process_parameter_definition_web_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/yield_curve_process_type_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/synthetic/yield_curve_process_type_web_routes.hpp"
 )

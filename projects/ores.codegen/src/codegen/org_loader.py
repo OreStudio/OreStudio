@@ -26,6 +26,7 @@ Output is a dict with the same top-level shape as the JSON entity loader:
 """
 from __future__ import annotations
 
+import json
 import re
 import uuid
 from dataclasses import dataclass, field
@@ -1409,14 +1410,16 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
     fm = doc.frontmatter
     for k in (
         "brief", "entity_singular", "entity_plural", "entity_title",
-        "http_area", "web_resource", "web_list_by",
+        "http_area", "web_resource", "web_list_by", "web_area", "web_writes",
+        "web_parent_filter", "web_read_only_because", "web_key_read",
     ):
         if k in fm:
             de[k] = fm[k]
 
     # Boolean + string scalars carried in the frontmatter of unified entity
     # org files (these keys come from the table pathway during Step 5 migration).
-    for k in ("has_tenant_id", "image_id", "has_artefact_insert_fn", "web_read_only"):
+    for k in ("has_tenant_id", "image_id", "has_artefact_insert_fn", "web_read_only",
+              "web_system_owned"):
         if k in fm:
             de[k] = _parse_typed(fm[k])
     if "coding_scheme" in fm:
@@ -5775,6 +5778,11 @@ def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+_JSON_NUMBER_TYPES = frozenset({
+    "int", "double", "float", "std::int32_t", "std::int64_t", "std::uint32_t",
+    "std::uint64_t", "std::int16_t", "std::uint16_t", "long", "unsigned int"})
+
+
 def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
     """The record routes a screen reads one resource through, or None.
 
@@ -5786,7 +5794,19 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
     derived. Everything else the registry said is read from the model: the key
     fields, the search, the sortable columns, the filters, the parent a
     junction is read by and the as-of read. A resource the screen reads but
-    does not write states ``#+web_read_only: true``.
+    does not write states ``#+web_read_only: true``, or the sentence the
+    catalogue shows with ``#+web_read_only_because:``.
+
+    A screen area may read resources another component owns, so
+    ``#+web_area:`` names the area the routes answer under. The unit stays
+    in its own component's HTTP part, beside the protocol it speaks. ``#+web_writes: many`` gives the write and the removal
+    the batch bodies the synthetic screens send. ``#+web_parent_filter:``
+    names the filter member a parent's rows are read by, where the entity has
+    no list-by request. ``#+web_system_owned: true`` marks a catalogue every
+    tenant shares, which only a system tenant session writes, and
+    ``#+web_key_read: hand-written`` leaves the key route to a hand-written
+    unit. A write member the browser may leave out takes the model's
+    ``:default_value:``.
 
     Raises:
         ValueError: if the entity has more than one parent relation and does
@@ -5816,6 +5836,14 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
     if paged is None or put is None or delete is None:
         raise ValueError(
             f"{singular}: #+web_resource: needs a paged list, a put and a delete")
+    writes = (entity.get("web_writes") or "one").strip()
+    if writes not in ("one", "many"):
+        raise ValueError(f"{singular}: #+web_writes: is one or many, not '{writes}'")
+    put_many = _command("put_many")
+    delete_many = _command("delete_many")
+    if writes == "many" and (put_many is None or delete_many is None):
+        raise ValueError(
+            f"{singular}: #+web_writes: many needs a put-many and a delete-many")
 
     list_by_commands = [c for c in commands if c["kind"] == "list_by"]
     wanted = (entity.get("web_list_by") or "").strip()
@@ -5843,6 +5871,24 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
                            if m.get("is_one_of") and m.get("is_key")), None)
     filters = [{"member": m["member"], "read_type": m["read_type"]}
                for m in members if m.get("is_equals")]
+    parent_name = (entity.get("web_parent_filter") or "").strip()
+    parent_filter = None
+    if parent_name:
+        if list_by is not None:
+            raise ValueError(
+                f"{singular}: #+web_parent_filter: and a list-by request both name "
+                "the parent; keep one")
+        parent_filter = next((f for f in filters if f["member"] == parent_name), None)
+        if parent_filter is None:
+            raise ValueError(
+                f"{singular}: #+web_parent_filter: names '{parent_name}', which is "
+                "not an equals filter member")
+    key_read = (entity.get("web_key_read") or "generated").strip()
+    if key_read not in ("generated", "hand-written"):
+        raise ValueError(
+            f"{singular}: #+web_key_read: is generated or hand-written, not '{key_read}'")
+    because = (entity.get("web_read_only_because") or "").strip()
+    area = (entity.get("web_area") or "").strip() or component
     sortable = [f["name"] for f in entity.get("sortable_fields") or []]
     subject_parts = put["subject"].split(".")
     if len(subject_parts) < 4:
@@ -5852,6 +5898,37 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
     resource_name = subject_parts[2]
     unit = f"{singular}_web"
 
+    def _json_default(column: dict[str, Any]) -> str | None:
+        raw = column.get("default_value")
+        cpp_type = column.get("cpp_type") or ""
+        if raw is None or "::" in str(raw) or cpp_type.startswith("std::optional"):
+            return None
+        text = str(raw).strip()
+        if len(text) >= 2 and text[0] == text[-1] and text[0] in "'\"":
+            text = text[1:-1]
+        if cpp_type == "std::string":
+            return json.dumps(text)
+        try:
+            value = json.loads(text)
+        except ValueError:
+            return None
+        # A default of the wrong JSON type would make every write that omits
+        # the member fail to decode, so the model is refused when it is built.
+        expected = (bool if cpp_type == "bool"
+                    else (int, float) if cpp_type in _JSON_NUMBER_TYPES else None)
+        if expected is not None and (not isinstance(value, expected)
+                                     or (expected is not bool and isinstance(value, bool))):
+            raise ValueError(
+                f"{singular}: the default of {_column_name(column)} is {text}, "
+                f"which is not a {cpp_type}")
+        return text
+
+    write_defaults = []
+    for column in write_record_columns(entity):
+        literal = _json_default(column)
+        if literal is not None:
+            write_defaults.append({"name": _column_name(column), "json": literal})
+
     def _quoted(names: list[str]) -> list[dict[str, Any]]:
         return [{"name": name, "last": index == len(names) - 1}
                 for index, name in enumerate(names)]
@@ -5859,13 +5936,35 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
     return {
         "key": key,
         "unit": unit,
-        "base": f"/api/{component}/{key}",
+        "base": f"/api/{area}/{key}",
+        "area": area,
+        # The list's filter record, named as the protocol names it for an entity
+        # and a junction alike.
+        "filter_name": f"{plural}_filter",
         "entity_type": f"ores.{component}.{singular}",
         "rows_member": entity.get("entity_plural_short") or plural,
         "row_type": f"ores::{component}::domain::{singular}",
         "versioned": not bool((entity.get("sql") or {}).get("current_state")
                               or entity.get("current_state")),
-        "writable": entity.get("web_read_only") is not True,
+        "writable": entity.get("web_read_only") is not True and not because,
+        "read_only_because": because,
+        "read_only_because_json": json.dumps(because),
+        "system_owned": entity.get("web_system_owned") is True,
+        "writes_many": writes == "many",
+        "put_many_request": put_many["request"] if put_many else "",
+        "delete_many_request": delete_many["request"] if delete_many else "",
+        "parent_filter": parent_filter,
+        "has_by": list_by is not None or parent_filter is not None,
+        "has_key_route": single_key is not None and key_read == "generated",
+        "key_field": key_fields[0] if len(key_fields) == 1 else "",
+        "key_read_type": single_key["read_type"] if single_key else "",
+        # The removal names the row by the key the model declares, which can be
+        # another field than the storage key the screens address the row by.
+        "removal_key_field": (key_record_fields(entity) or [{}])[0].get("name", ""),
+        "removal_key_type": _strip_optional(
+            (key_record_fields(entity) or [{}])[0].get("cpp_type", "std::string")),
+        "write_defaults": write_defaults,
+        "has_write_defaults": bool(write_defaults),
         "search": bool(entity.get("has_search")),
         "key_fields": _quoted(key_fields),
         "sortable": _quoted(sortable),
@@ -5883,6 +5982,7 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
         },
         "events_component": put["subject"].split(".")[0],
         "resource_name": resource_name,
+        "read_permission": f"{component}::{resource_name}:read",
         "write_permission": f"{component}::{resource_name}:write",
         "delete_permission": f"{component}::{resource_name}:delete",
     }

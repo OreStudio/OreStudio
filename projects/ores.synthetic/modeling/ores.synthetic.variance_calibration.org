@@ -1,10 +1,17 @@
 :PROPERTIES:
 :ID: 84902B7E-58F4-4127-86CB-129EBEDABE95
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.web_records_header.enabled: true
+:ores.cpp.http-route.web_records_implementation.enabled: true
+:ores.cpp.http-route.web_records_tests.enabled: true
 :END:
 #+title: ores.synthetic.variance_calibration
 #+description: Codegen entity model for the synthetic variance_calibration table; one GJR-GARCH shape for a pair, fitted from a stored input or authored, and its review.
 #+type: ores.codegen.entity
+#+web_resource: variance-calibrations
+#+web_writes: many
+#+web_read_only_because: A calibration is written by a calibration run and decided by a review, never edited.
+#+web_system_owned: true
 #+component: synthetic
 #+filetags: :model:entity:synthetic:
 #+entity_singular: variance_calibration

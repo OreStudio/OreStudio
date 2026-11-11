@@ -109,7 +109,8 @@ TEST_CASE("currency_pair_convention_calendar_web_routes_registers_the_screen_add
 
 TEST_CASE("currency_pair_convention_calendar_web_routes_names_the_resource_in_its_catalogue_entry",
           "[routes][web]") {
-    const std::string entry{currency_pair_convention_calendar_web_routes::catalogue_entry()};
+    const auto entry = currency_pair_convention_calendar_web_routes::catalogue_entry(
+        currency_pair_convention_calendar_web_request({}));
     CHECK(entry.find("\"key\":\"pair-calendars\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"ores.refdata.currency_pair_convention_calendar\"") !=
           std::string::npos);
@@ -187,6 +188,8 @@ TEST_CASE("currency_pair_convention_calendar_web_routes_refuses_a_write_that_sta
     const auto put = currency_pair_convention_calendar_web_run(
         currency_pair_convention_calendar_web_routes::handle_put(
             currency_pair_convention_calendar_web_request({}, "{}"), session));
+    // A resource no screen writes, and a shared catalogue read from a session
+    // that is not the system tenant's, refuse before they read the body.
     CHECK(put.status == http_status::bad_request);
 
     const auto removal = currency_pair_convention_calendar_web_run(

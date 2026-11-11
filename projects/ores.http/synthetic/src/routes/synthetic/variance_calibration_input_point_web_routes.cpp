@@ -1,0 +1,495 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_http_route_web_records.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#include "ores.http/routes/synthetic/variance_calibration_input_point_web_routes.hpp"
+#include "ores.http.api/net/record_routes.hpp"
+#include "ores.nats/domain/headers.hpp"
+#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/session_expired_error.hpp"
+#include "ores.nats/service/timeouts.hpp"
+#include "ores.synthetic.api/domain/variance_calibration_input_point_codec.hpp"
+#include "ores.synthetic.api/messaging/variance_calibration_input_point_protocol.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/codec/member_count.hpp"
+#include "ores.utility/codec/wire_fields.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <cstdint>
+#include <exception>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <utility>
+#include <vector>
+
+namespace ores::http::routes::synthetic {
+
+using namespace logging;
+using ores::http::domain::http_request;
+using ores::http::domain::http_response;
+using ores::http::domain::http_status;
+using ores::nats::service::nats_client;
+namespace messaging = ores::synthetic::messaging;
+namespace rr = ores::http::net::record_routes;
+
+namespace {
+
+/// The unit's logger, for the detail a refusal does not show the browser.
+auto& variance_calibration_input_point_web_lg() {
+    static auto instance =
+        make_logger("ores.http.routes.synthetic.variance_calibration_input_point_web_routes");
+    return instance;
+}
+
+/// How many rows a whole read asks for at a time.
+constexpr std::uint32_t variance_calibration_input_point_web_page_size = 1000;
+
+/**
+ * @brief Forward one canonical request with the caller's token, and decode the reply.
+ *
+ * A refusal the service states in its reply header becomes the status it
+ * names. An expired session is the caller's to renew.
+ */
+template <typename Request>
+typename Request::response_type variance_calibration_input_point_web_call(const http_request& req,
+                                                                          nats_client& session,
+                                                                          const Request& msg) {
+    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
+    try {
+        const auto reply =
+            delegated.authenticated_request(msg.nats_subject,
+                                            ores::nats::default_wire_codec().encode(msg),
+                                            ores::nats::service::default_request_timeout);
+        if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
+            it != reply.headers.end()) {
+            if (it->second == "forbidden")
+                rr::refuse(http_status::forbidden, "forbidden", it->second);
+            if (it->second == "bad_request")
+                rr::invalid(it->second);
+            if (it->second == "unauthorized" || it->second == "token_expired" ||
+                it->second == "max_session_exceeded")
+                rr::refuse(http_status::unauthorized, "not-authenticated", it->second);
+            BOOST_LOG_SEV(variance_calibration_input_point_web_lg(), warn)
+                << "Unknown service error: " << it->second;
+            rr::refuse(
+                http_status::bad_gateway, "upstream-unavailable", std::string(rr::unanswered));
+        }
+        auto decoded =
+            ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
+        if (!decoded) {
+            BOOST_LOG_SEV(variance_calibration_input_point_web_lg(), error)
+                << "Failed to decode response: " << decoded.error().what();
+            rr::refuse(http_status::bad_gateway, "internal", std::string(rr::unanswered));
+        }
+        return std::move(*decoded);
+    } catch (const ores::nats::service::session_expired_error& e) {
+        rr::refuse(http_status::unauthorized, "session-expired", e.what());
+    }
+}
+
+/// One row as the service sends it, with the version the screens read on every row.
+std::string variance_calibration_input_point_web_row(
+    const ores::synthetic::domain::variance_calibration_input_point& row) {
+    auto text = ores::utility::codec::json::write(row);
+    return text;
+}
+
+std::string variance_calibration_input_point_web_rows(
+    const std::vector<ores::synthetic::domain::variance_calibration_input_point>& rows) {
+    std::string out = "[";
+    for (std::size_t i = 0; i < rows.size(); ++i) {
+        if (i != 0)
+            out += ",";
+        out += variance_calibration_input_point_web_row(rows[i]);
+    }
+    return out + "]";
+}
+
+/// A page request that states no order and no filter.
+messaging::list_variance_calibration_input_points_request
+variance_calibration_input_point_web_page(std::uint32_t offset, std::uint32_t limit) {
+    messaging::list_variance_calibration_input_points_request msg;
+    msg.offset = offset;
+    msg.limit = limit;
+    msg.order.field = "";
+    msg.order.descending = false;
+    return msg;
+}
+
+using variance_calibration_input_point_web_save_body =
+    rr::save_body<messaging::variance_calibration_input_point_write>;
+
+/**
+ * @brief Why this session may not write the resource, or nothing when it may.
+ *
+ * A catalogue every tenant shares is written only from the system tenant, so a
+ * tenant's write would not change every tenant's rows.
+ */
+std::optional<std::string>
+variance_calibration_input_point_web_read_only_for([[maybe_unused]] const http_request& req) {
+    return std::string("A point is one fixing a calibration run captured, kept as read.");
+}
+
+/// Refuse a write this session may not make.
+void variance_calibration_input_point_web_require_writable(const http_request& req) {
+    if (const auto because = variance_calibration_input_point_web_read_only_for(req))
+        rr::refuse(http_status::forbidden,
+                   "forbidden",
+                   std::string("variance-calibration-input-points is read only here.") +
+                       (because->empty() ? "" : " " + *because));
+}
+
+/// The body with the model's default for each write member it leaves out.
+std::string variance_calibration_input_point_web_with_defaults(const std::string& body) {
+    return rr::with_write_defaults(body,
+                                   {
+                                       rr::write_default{"used", R"json(true)json"},
+                                       rr::write_default{"exclusion_reason", R"json("")json"},
+                                   });
+}
+
+}
+
+std::string variance_calibration_input_point_web_routes::catalogue_entry(const http_request& req) {
+    const auto because = variance_calibration_input_point_web_read_only_for(req);
+    return std::string(
+               R"json({"key":"variance-calibration-input-points","entityType":"ores.synthetic.variance_calibration_input_point","keyField":"id","writable":)json") +
+           (because ? "false" : "true") + R"json(,"readOnlyBecause":)json" +
+           (because ? ores::utility::codec::json::write(*because) : std::string("null")) +
+           R"json(,"search":false,"sortable":["fixing_date"],"readPermission":"synthetic::variance_calibration_input_points:read","writePermission":"synthetic::variance_calibration_input_points:write","deletePermission":"synthetic::variance_calibration_input_points:delete"})json";
+}
+
+boost::asio::awaitable<http_response>
+variance_calibration_input_point_web_routes::handle_list(const http_request& req,
+                                                         nats_client& session) {
+    try {
+        if (req.query_params.find("limit") == req.query_params.end()) {
+            std::vector<ores::synthetic::domain::variance_calibration_input_point> rows;
+            // A service may cap a page below the size asked for, so the read
+            // advances by the rows that arrived and ends on an empty page, or on
+            // a short one once it holds the total.
+            for (std::uint32_t offset = 0;;) {
+                const auto reply = variance_calibration_input_point_web_call(
+                    req,
+                    session,
+                    variance_calibration_input_point_web_page(
+                        offset, variance_calibration_input_point_web_page_size));
+                rr::require_ok(reply.result);
+                const auto& got = reply.variance_calibration_input_points;
+                rows.insert(rows.end(), got.begin(), got.end());
+                offset += static_cast<std::uint32_t>(got.size());
+                if (got.empty() || (got.size() < variance_calibration_input_point_web_page_size &&
+                                    rows.size() >= reply.total))
+                    break;
+            }
+            co_return http_response::json(
+                "{\"rows\":" + variance_calibration_input_point_web_rows(rows) + "}");
+        }
+
+        const std::string page_sentence = "A page names an offset and a limit of 1 to 1000.";
+        const auto raw_offset = req.get_query_param("offset");
+        std::uint32_t offset = 0;
+        std::uint32_t limit = 0;
+        try {
+            offset = raw_offset.empty() ? 0 : boost::lexical_cast<std::uint32_t>(raw_offset);
+            limit = boost::lexical_cast<std::uint32_t>(req.get_query_param("limit"));
+        } catch (const std::exception&) {
+            rr::invalid(page_sentence);
+        }
+        if (limit < 1 || limit > 1000)
+            rr::invalid(page_sentence);
+
+        auto msg = variance_calibration_input_point_web_page(offset, limit);
+        const auto sort = req.get_query_param("sort");
+        if (!sort.empty()) {
+            constexpr std::string_view sortable[] = {"fixing_date", ""};
+            if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
+                std::end(sortable) - 1)
+                rr::invalid("variance-calibration-input-points cannot be ordered by " + sort + ".");
+            msg.order.field = sort;
+        }
+        const auto descending = req.get_query_param("descending");
+        if (!descending.empty() && descending != "true" && descending != "false")
+            rr::invalid(page_sentence);
+        msg.order.descending = descending == "true";
+
+        const auto search = req.get_query_param("search");
+        if (!search.empty())
+            rr::invalid("variance-calibration-input-points cannot be searched.");
+
+        for (const auto& [name, value] : req.query_params) {
+            if (!name.starts_with("f."))
+                continue;
+            const auto member = name.substr(2);
+            constexpr std::string_view filters[] = {"input_id", ""};
+            if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
+                std::end(filters) - 1)
+                rr::invalid("variance-calibration-input-points cannot be filtered by " + member +
+                            ".");
+        }
+        if (const auto raw = req.get_query_param("f.input_id"); !raw.empty()) {
+            if (!msg.filter)
+                msg.filter = messaging::variance_calibration_input_points_filter{};
+            msg.filter->input_id = rr::read<boost::uuids::uuid>(raw, "f.input_id");
+        }
+
+        const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+        rr::require_ok(reply.result);
+        co_return http_response::json(
+            "{\"rows\":" +
+            variance_calibration_input_point_web_rows(reply.variance_calibration_input_points) +
+            ",\"total\":" + std::to_string(reply.total) + "}");
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
+    }
+}
+
+boost::asio::awaitable<http_response>
+variance_calibration_input_point_web_routes::handle_key(const http_request& req,
+                                                        nats_client& session) {
+    try {
+        const auto key = rr::code(req.get_path_param("key"),
+                                  "A record is named by a code of 1 to 100 characters.");
+        auto msg = variance_calibration_input_point_web_page(0, 1);
+        msg.filter = messaging::variance_calibration_input_points_filter{};
+        msg.filter->id_one_of =
+            std::vector<boost::uuids::uuid>{rr::read<boost::uuids::uuid>(key, "key")};
+        const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+        rr::require_ok(reply.result);
+        if (reply.variance_calibration_input_points.empty())
+            rr::refuse(http_status::not_found,
+                       "not-found",
+                       "There is no variance-calibration-input-points row " + key + ".");
+        co_return http_response::json("{\"row\":" +
+                                      variance_calibration_input_point_web_row(
+                                          reply.variance_calibration_input_points.front()) +
+                                      "}");
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
+    }
+}
+
+boost::asio::awaitable<http_response>
+variance_calibration_input_point_web_routes::handle_by(const http_request& req,
+                                                       nats_client& session) {
+    try {
+        const auto parent = rr::code(req.get_path_param("parent"),
+                                     "A parent is named by a code of 1 to 100 characters.");
+        std::vector<ores::synthetic::domain::variance_calibration_input_point> rows;
+        for (std::uint32_t offset = 0;;) {
+            auto msg = variance_calibration_input_point_web_page(
+                offset, variance_calibration_input_point_web_page_size);
+            msg.filter = messaging::variance_calibration_input_points_filter{};
+            msg.filter->input_id = rr::read<boost::uuids::uuid>(parent, "parent");
+            const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+            rr::require_ok(reply.result);
+            const auto& got = reply.variance_calibration_input_points;
+            rows.insert(rows.end(), got.begin(), got.end());
+            offset += static_cast<std::uint32_t>(got.size());
+            if (got.empty() || (got.size() < variance_calibration_input_point_web_page_size &&
+                                rows.size() >= reply.total))
+                break;
+        }
+        co_return http_response::json(
+            "{\"rows\":" + variance_calibration_input_point_web_rows(rows) + "}");
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
+    }
+}
+
+boost::asio::awaitable<http_response>
+variance_calibration_input_point_web_routes::handle_put(const http_request& req,
+                                                        nats_client& session) {
+    try {
+        variance_calibration_input_point_web_require_writable(req);
+        const auto body = rr::read_body<variance_calibration_input_point_web_save_body>(
+            variance_calibration_input_point_web_with_defaults(req.body));
+        if (!body || body->changes.empty() || body->changes.size() > 1000 ||
+            !rr::has_reason(body->intent.reason_code) || body->intent.commentary.size() > 2000)
+            rr::invalid("A save names one to a thousand rows, each with the version it was read "
+                        "at, and a reason.");
+        messaging::put_many_variance_calibration_input_points_request msg;
+        std::vector<decltype(body->changes.front().write.id)> keys;
+        for (const auto& change : body->changes) {
+            auto& item = msg.changes.emplace_back();
+            item.write = change.write;
+            item.precondition.kind =
+                change.version ? ores::utility::domain::precondition_kind::must_match_version :
+                                 ores::utility::domain::precondition_kind::must_not_exist;
+            item.precondition.version = change.version;
+            keys.push_back(change.write.id);
+        }
+        std::sort(keys.begin(), keys.end());
+        if (std::adjacent_find(keys.begin(), keys.end()) != keys.end())
+            rr::invalid("A save names each row once.");
+        msg.intent = body->intent;
+        const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+        rr::require_ok(reply.result);
+        co_return http_response::json(
+            "{\"rows\":" +
+            variance_calibration_input_point_web_rows(reply.variance_calibration_input_points) +
+            "}");
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
+    }
+}
+
+boost::asio::awaitable<http_response>
+variance_calibration_input_point_web_routes::handle_delete(const http_request& req,
+                                                           nats_client& session) {
+    try {
+        variance_calibration_input_point_web_require_writable(req);
+        const auto body = rr::read_body<rr::remove_body>(req.body);
+        if (!body || body->removals.empty() || body->removals.size() > 1000 ||
+            !rr::has_reason(body->intent.reason_code) || body->intent.commentary.size() > 2000)
+            rr::invalid("A removal names one to a thousand rows by id, and a reason.");
+        std::vector<std::string> named;
+        for (const auto& removal : body->removals)
+            named.push_back(removal.key);
+        std::sort(named.begin(), named.end());
+        if (std::adjacent_find(named.begin(), named.end()) != named.end())
+            rr::invalid("A removal names each row once.");
+        const auto key_of = [](const std::string& raw) {
+            return rr::read<boost::uuids::uuid>(
+                rr::code(raw, "A row is named by a code of 1 to 100 characters."), "key");
+        };
+        if (body->removals.size() == 1) {
+            const auto& removal = body->removals.front();
+            messaging::delete_variance_calibration_input_point_request msg;
+            msg.removal.key.id = key_of(removal.key);
+            msg.removal.precondition.kind =
+                removal.version ? ores::utility::domain::precondition_kind::must_match_version :
+                                  ores::utility::domain::precondition_kind::any;
+            msg.removal.precondition.version = removal.version;
+            msg.intent.reason_code = body->intent.reason_code;
+            msg.intent.commentary = body->intent.commentary;
+            const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+            rr::require_ok(reply.result);
+            co_return rr::no_content();
+        }
+        for (const auto& removal : body->removals) {
+            if (removal.version)
+                rr::invalid("A removal of many rows is unconditional: it names no version. "
+                            "Remove one row to name its version.");
+        }
+        messaging::delete_many_variance_calibration_input_points_request msg;
+        for (const auto& removal : body->removals) {
+            auto& item = msg.removals.emplace_back();
+            item.key.id = key_of(removal.key);
+            item.precondition.kind = ores::utility::domain::precondition_kind::any;
+        }
+        msg.intent = body->intent;
+        const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+        rr::require_ok(reply.result);
+        co_return rr::no_content();
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << e.what();
+        co_return http_response::api_error(
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
+    }
+}
+
+void variance_calibration_input_point_web_routes::register_routes(
+    std::shared_ptr<ores::http::net::router> router,
+    std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
+    nats_client& session) {
+    BOOST_LOG_SEV(lg(), info) << "Registering variance-calibration-input-points record routes";
+
+    auto list_route =
+        router->get("/api/synthetic/variance-calibration-input-points")
+            .summary("List variance-calibration-input-points for a screen")
+            .description("One page with its total, or every row when no limit is named.")
+            .tags({"synthetic"})
+            .auth_required()
+            .handler([&session](const http_request& req) { return handle_list(req, session); });
+    const auto list_built = list_route.build();
+    router->add_route(list_built);
+    registry->register_route(list_built);
+
+    auto key_route =
+        router->get("/api/synthetic/variance-calibration-input-points/key/{key}")
+            .summary("Read one variance-calibration-input-points record for a screen")
+            .description("One row, named by its key.")
+            .tags({"synthetic"})
+            .auth_required()
+            .handler([&session](const http_request& req) { return handle_key(req, session); });
+    const auto key_built = key_route.build();
+    router->add_route(key_built);
+    registry->register_route(key_built);
+
+    auto by_route =
+        router->get("/api/synthetic/variance-calibration-input-points/by/{parent}")
+            .summary("List one parent's variance-calibration-input-points for a screen")
+            .description("Every row of one parent.")
+            .tags({"synthetic"})
+            .auth_required()
+            .handler([&session](const http_request& req) { return handle_by(req, session); });
+    const auto by_built = by_route.build();
+    router->add_route(by_built);
+    registry->register_route(by_built);
+
+    auto put_route =
+        router->put("/api/synthetic/variance-calibration-input-points")
+            .summary("Write one variance-calibration-input-points record for a screen")
+            .description("A new row with no version, else a correction of the version read.")
+            .tags({"synthetic"})
+            .auth_required()
+            .handler([&session](const http_request& req) { return handle_put(req, session); });
+    const auto put_built = put_route.build();
+    router->add_route(put_built);
+    registry->register_route(put_built);
+
+    auto remove_route =
+        router->delete_("/api/synthetic/variance-calibration-input-points")
+            .summary("Remove one variance-calibration-input-points record for a screen")
+            .description("Removes the row the body's key names.")
+            .tags({"synthetic"})
+            .auth_required()
+            .handler([&session](const http_request& req) { return handle_delete(req, session); });
+    const auto remove_built = remove_route.build();
+    router->add_route(remove_built);
+    registry->register_route(remove_built);
+}
+
+}

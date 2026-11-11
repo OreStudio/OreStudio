@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/project-the-single-commodity-scripted-products
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ The scripted commodity products on one commodity are written and read by the pro
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,33 @@ The scripted commodity products on one commodity are written and read by the pro
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+ORE reads each of these types from a =<TradeType>Data= element, as the
+engine's =fromXML= shows. The equity accumulator, TaRF and Asian option
+already state the same shapes, so the commodity writers and readers mirror
+them and use the same shared blocks.
+
+1. Give the commodity carrier the range bounds, in the shared range bound
+   rows the FX and equity accumulators use, and add its entry to the batch
+   mapper.
+2. Add the columns the forward volatility agreement and the strike
+   resettable option state flat, through codegen: the FVA date, the premium
+   date, the settlement date, the implied volatility strike, the reset
+   strike, the trigger type, the trigger price and the premium amount. They
+   land through the scalar terms table by their ORE elements. The option
+   expiry is the maturity date, and the underlying strike is the strike.
+3. Add the six types to the projection's table of products. Add commodity
+   tables for barrier holders and product schedules, as the equity
+   projection has, and read and write the range bounds of the accumulator
+   and the TaRF.
+4. Add a builder for each type, register it, and call it from the planner.
+5. Record the generated trades, run the ORE engine test, and update the
+   known lists.
+
+The window barrier option stays out of this task. ORE's engine reads
+=CommodityWindowBarrierOptionData=, but ORE's XSD does not declare it, so
+the generated schema refuses to write it. The bindings generator has no way
+to supplement ORE's schemas. That mechanism is a design of its own, so it
+goes in a task of its own, and the type stays a passthrough until then.
 
 * Measurements
 

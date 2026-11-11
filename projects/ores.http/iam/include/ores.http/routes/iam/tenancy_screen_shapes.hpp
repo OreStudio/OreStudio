@@ -28,7 +28,7 @@
 #include <type_traits>
 
 /**
- * @brief The bodies the tenancy screens send, as the BFF stated them.
+ * @brief The bodies the tenancy and setup screens send, as the BFF stated them.
  *
  * The screens name every field in camelCase, where IAM's protocol names them in
  * snake_case, so each body is read in the screen's own shape. The shapes are
@@ -93,6 +93,22 @@ struct confirm_removal_body final {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<confirm_removal_body>) {
     using ores::utility::codec::field;
     return std::tuple{field{"confirmCode", &confirm_removal_body::confirmCode}};
+}
+
+/**
+ * @brief The first administrator: a username, a password and an email address.
+ */
+struct initial_administrator_body final {
+    std::string principal;
+    std::string password;
+    std::string email;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<initial_administrator_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"principal", &initial_administrator_body::principal},
+                      field{"password", &initial_administrator_body::password},
+                      field{"email", &initial_administrator_body::email}};
 }
 
 }

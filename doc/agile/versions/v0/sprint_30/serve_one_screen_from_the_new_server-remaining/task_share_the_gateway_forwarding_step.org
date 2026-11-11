@@ -113,6 +113,11 @@ via its "Verifies task" field.
 | 2 | Local review: a namespace =ores::http::nats= would hide =ores::nats= for any unqualified =nats::= inside =ores::http=. | =forwarding.hpp= | Accepted | The part is =ores.http.nats= and its namespace is =ores::http::forwarding=, named for what it does. |
 | 3 | Local review: three generator tests pinned text that moved into the shared step. | =test_http_routes.py=, =test_http_operation_routes.py=, =test_http_route_wire_codec_gate.py= | Accepted | Each asserts its property where it now lives: the unit hands the caller's request to =respond= and sends nothing on NATS; the shared step delegates the caller's token; the reply is written through the response's own =wire_traits=. |
 | 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR #4571 review: a refusal's message is reduced to its code. | =forwarding.hpp= | Accepted as a comment | A service states a refusal as a code alone in its =X-Error= header, and =request_refused_error='s sentence names the subject, so the code is the message. The declaration says so. |
+| 6 | PR #4571 review: map the codes the services send, so only unknown ones are 502. | =forwarding.cpp= | No change | The services send =forbidden=, =bad_request=, =unauthorized=, =token_expired= and =max_session_exceeded=. The client handles the two expiry codes, and the table maps the rest. |
+| 7 | PR #4571 review: two codes for a 502. | =forwarding.cpp= | No change | They follow the BFF: =upstream-unavailable= for an outcome it cannot name, =internal= for a reply it cannot read. |
+| 8 | PR #4571 review: =forward= relies on =[[noreturn]]=, =respond= catches every standard exception, and no early 401 without a token. | =forwarding.hpp= | No change | The review rates each correct; the service refuses a missing token, as the BFF's path did. |
+| 9 | PR #4571 review: confirm the tests cover the table, the fallback and each refusal, and that the three failures were the three updated tests. | =forwarding_tests.cpp= | No change | They do, and they were. |
 
 * Result
 

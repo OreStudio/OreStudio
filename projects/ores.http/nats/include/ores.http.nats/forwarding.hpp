@@ -51,6 +51,8 @@ namespace ores::http::forwarding {
  * One table decides it: =forbidden= is 403, =bad_request= is 400 and
  * =unauthorized= is 401. A code the table does not name is 502, because the
  * gateway cannot say what the service meant.
+ * The message is the code itself: a service states a refusal in its reply
+ * header as a code alone, and the client's own sentence names the subject.
  */
 [[nodiscard]] ores::http::net::record_routes::refusal refusal_for(std::string_view code);
 

@@ -91,6 +91,9 @@ struct commodity_instrument_entity {
     std::optional<int> future_month_offset;
     std::optional<bool> include_period_end;
     std::optional<std::string> position;
+    std::optional<std::chrono::year_month_day> delivery_date;
+    std::optional<int> delivery_start;
+    std::optional<int> delivery_end;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -145,6 +148,9 @@ struct commodity_instrument_entity {
                query_builder::bind("future_month_offset", &e::future_month_offset) |
                query_builder::bind("include_period_end", &e::include_period_end) |
                query_builder::bind("position", &e::position) |
+               query_builder::bind("delivery_date", &e::delivery_date) |
+               query_builder::bind("delivery_start", &e::delivery_start) |
+               query_builder::bind("delivery_end", &e::delivery_end) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

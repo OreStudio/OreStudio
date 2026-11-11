@@ -68,6 +68,9 @@ export interface CommodityInstrument {
     future_month_offset: number | null;
     include_period_end: boolean | null;
     position: string | null;
+    delivery_date: string | null;
+    delivery_start: number | null;
+    delivery_end: number | null;
     description: string;
     audit: AuditRecord;
 }

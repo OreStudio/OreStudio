@@ -1,14 +1,14 @@
 :PROPERTIES:
 :ID: 0831C742-E84E-4943-9126-BDDB21B41B0A
 :END:
-#+title: Task: Project and build the remaining commodity products
-#+description: The commodity types the ORE projection does not yet write get a writer, a reader and a builder, and ORE builds each one.
+#+title: Task: Project and build the native commodity products
+#+description: The digital, digital average price, position, spread option and intraday power forward types get a writer, a reader and a builder, and ORE builds each one.
 #+type: task
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/project-the-remaining-commodity-products
+#+pr: 4626
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -20,32 +20,56 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every commodity type the generator books that the projection does not yet write gets a projection writer and reader and a trade builder, and the ORE engine test builds each one.
+The commodity types ORE builds with their own classes, rather than as
+scripted trades, are written and read by the projection and built by their
+builders, and the ORE engine test builds each one.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
 
-- The projection writes and reads the accumulator, TaRF, worst-of basket swap, rainbow, best entry, generic and window barrier, strike resettable, basket variance swap, Asian, digital and digital average price options, the forward volatility agreement, the position, the spread option and the intraday power forward.
-- Each of those types is built by its builder, and the planner calls it.
-- CommodityPairwiseVarianceSwap leaves the generator with its reason recorded, because ORE has no builder for it.
-- The construct_commodity_* functions, their terms and the plan's commodity_terms are deleted.
-- The commodity entries leave the known lists, or stay with a market data reason.
+- The projection writes and reads the digital option, the digital average
+  price option, the position, the spread option and the intraday power
+  forward.
+- Each of them is built by its builder, and the planner calls it.
+- The commodity row gains the columns these products state, through the
+  codegen model.
+- Their entries leave the known lists, or stay with a market data reason.
+- The rest of the commodity work is in three tasks:
+  - [[id:00D52EE5-E337-493E-8442-280910E072B5][Project and build the single commodity scripted products]]
+  - [[id:4A8E426E-9DC6-4864-80C1-4F73799DCEAF][Project and build the commodity basket scripted products]]
+  - [[id:1F6D904E-2BCA-4336-94F7-3EFD4805CABF][Close out the commodity constructors]]
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add the columns the products state to the commodity model, through
+   codegen. Only the intraday power forward needs new ones: the delivery
+   date, and the delivery start and end as seconds of that day.
+2. Keep a digital option's cash payoff in the row's quantity, as the equity
+   digital option keeps its payoff in its notional. A payoff column of its
+   own would state the same amount twice.
+3. Keep the spread option's strike in the strike column and its two legs in
+   the shared leg rows. The row names the first leg's commodity and keeps
+   the second leg's as the spread commodity.
+4. Replace the projection's three lists of trade types, option data
+   elements and readers and writers with one table of products, and add the
+   five types to it. The delivery terms land through the scalar terms
+   table, and the position's commodities through the shared underlying
+   rows.
+5. Add a builder for each type, register it, and call it from the planner.
+   A spread option draws a second commodity quoted in the first one's
+   currency, because ORE requires one currency.
+6. Record the generated trades, run the ORE engine test, and update the
+   known lists.
 
 * Measurements
 
@@ -59,9 +83,22 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading API tests | 4406 test cases pass | =ores.trading.api.tests -r compact= | =e4dd30fda9= |
+| Synthetic tests against ORE | 130 test cases pass | =ores.synthetic.core.tests -r compact=, with the ORE engine set | =8866f2bad4= |
+| Of the five types, the ones ORE builds | 3 | =ores.synthetic.core.tests '[generated]'= | =8866f2bad4= |
 
 * Notes
+
+Two of the five types parse in ORE and still do not build. Both reasons are
+market data, which the story's market data task owns.
+
+- The spread option needs a correlation curve for its two commodities,
+  =COMM-NYMEX:CL/COMM-NYMEX:NG=.
+- The intraday power forward needs an intraday power index. The tenant's
+  commodity catalogue holds no power commodity, so the planner names crude or
+  gas. The commodity row has no category column, so the planner cannot pick
+  a power commodity yet. The market data task seeds one and the index it
+  needs.
 
 * Test Scenarios
 
@@ -78,12 +115,29 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4626][#4626]] | [ore,trading,synthetic] Project and build the native commodity products |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A spread option with no second commodity in its currency fails the whole plan | =trade_population_planner.cpp= | Declined | The planner refuses with a clear message, as the basket draw does. A silent skip breaks the claim that a population states every booked type. |
+| 2 | The spread option writer may always state =LongShort= as Long | =commodity_instrument_projection.cpp= | Declined | The recorded spread options state =Short=, and the roundtrip test passes on them. |
+| 3 | The power forward writer hard-codes the position | =commodity_instrument_projection.cpp= | Accepted | A comment says the scalar terms write the row's position over it. |
+| 4 | The digital and average price readers use different strike helpers | =commodity_instrument_projection.cpp= | Accepted | Both read the strike as optional. |
+| 5 | A position read from ORE has no currency | =commodity_builders.hpp= | Accepted | The terms' documentation says so. |
+| 6 | The day length constant | =commodity_builders.cpp= | No change | The review states it is correct. |
+| 7 | The new columns need a migration | =trading_commodity_instruments_create.sql= | Declined | The project rebuilds databases from the create scripts and has no migrations. |
+| 8 | CI may flag the format of lines 90 to 115 | =commodity_instrument_projection.cpp= | Declined | GitHub runs no checks on a PR. The lines are unchanged from main. |
+| 9 | Add negative tests for the spread and power forward refusals | =builders_commodity_builders_tests.cpp= | No change | The tests exist for the same underlying, the end before the start, the delivery past the day and the delivery before the maturity. |
 
 * Result
+
+The projection now writes and reads the five native commodity products from
+one table of products, which replaces the three lists of trade types. Each
+type has a builder, the registry holds it, and the planner calls it. The
+commodity row gained the delivery date, start and end through the codegen
+model. ORE now parses all five types and builds the digital option, the
+digital average price option and the position. The spread option and the
+intraday power forward stay in the known errors for the market data reasons
+in the notes.

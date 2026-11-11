@@ -546,8 +546,13 @@ TEST_CASE("a_commodity_slot_states_its_own_rows_and_names_a_catalogue_commodity"
         REQUIRE(slot.instruments.commodity_instruments.size() == 1u);
         const auto& row = slot.instruments.commodity_instruments.front();
         REQUIRE_FALSE(row.commodity_code.empty());
-        // A basket's members may count different units, so a basket row states none.
-        if (row.identity.trade_type_code != "CommodityBasketOption")
+        /*
+         * A basket's members may count different units, so a basket row states
+         * none. A digital's quantity is the cash it pays, which counts none.
+         */
+        const auto& type = row.identity.trade_type_code;
+        if (type != "CommodityBasketOption" && type != "CommodityDigitalOption" &&
+            type != "CommodityDigitalAveragePriceOption")
             REQUIRE_FALSE(row.unit.empty());
         // A built row names its commodity by address, a constructed one by code.
         const auto query = row.commodity_code.find('?');

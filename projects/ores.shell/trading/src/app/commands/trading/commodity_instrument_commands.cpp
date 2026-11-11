@@ -146,8 +146,8 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
         "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
-        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> <description> "
-        "<reason> <commentary>");
+        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
+        "<delivery_date> <delivery_start> <delivery_end> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -161,8 +161,9 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
         "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
-        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> <description> "
-        "<reason> <commentary> [--version <n>]");
+        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
+        "<delivery_date> <delivery_start> <delivery_end> <description> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -176,8 +177,8 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu, nats
         "<accumulation_amount> <knock_out_barrier> <barrier_type> <lower_barrier> <upper_barrier> "
         "<day_count_fraction_code> <payment_frequency_code> <swaption_expiry_date> <calendar> "
         "<moment_type> <add_past_dividends> <pay_relative_to> <quantity_frequency> "
-        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> <description> "
-        "<reason> <commentary>");
+        "<delivery_roll_days> <future_month_offset> <include_period_end> <position> "
+        "<delivery_date> <delivery_start> <delivery_end> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -378,8 +379,8 @@ void commodity_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 38 + 2) {
-            fail(out) << "Expected " << (38 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 41 + 2) {
+            fail(out) << "Expected " << (41 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -464,6 +465,12 @@ void commodity_instrument_commands::process_add(std::ostream& out,
             req.change.write.include_period_end, parsed->positionals[next++], "include_period_end");
         commodity_instrument_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
+        commodity_instrument_read_token(
+            req.change.write.delivery_date, parsed->positionals[next++], "delivery_date");
+        commodity_instrument_read_token(
+            req.change.write.delivery_start, parsed->positionals[next++], "delivery_start");
+        commodity_instrument_read_token(
+            req.change.write.delivery_end, parsed->positionals[next++], "delivery_end");
         commodity_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -510,8 +517,8 @@ void commodity_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 38 + 2) {
-            fail(out) << "Expected " << (38 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 41 + 2) {
+            fail(out) << "Expected " << (41 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -596,6 +603,12 @@ void commodity_instrument_commands::process_set(std::ostream& out,
             req.change.write.include_period_end, parsed->positionals[next++], "include_period_end");
         commodity_instrument_read_token(
             req.change.write.position, parsed->positionals[next++], "position");
+        commodity_instrument_read_token(
+            req.change.write.delivery_date, parsed->positionals[next++], "delivery_date");
+        commodity_instrument_read_token(
+            req.change.write.delivery_start, parsed->positionals[next++], "delivery_start");
+        commodity_instrument_read_token(
+            req.change.write.delivery_end, parsed->positionals[next++], "delivery_end");
         commodity_instrument_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
@@ -654,8 +667,8 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 38 + 2) {
-            fail(out) << "Expected " << (change_count * 38 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 41 + 2) {
+            fail(out) << "Expected " << (change_count * 41 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -742,6 +755,12 @@ void commodity_instrument_commands::process_put_many(std::ostream& out,
                 change.write.include_period_end, parsed->positionals[next++], "include_period_end");
             commodity_instrument_read_token(
                 change.write.position, parsed->positionals[next++], "position");
+            commodity_instrument_read_token(
+                change.write.delivery_date, parsed->positionals[next++], "delivery_date");
+            commodity_instrument_read_token(
+                change.write.delivery_start, parsed->positionals[next++], "delivery_start");
+            commodity_instrument_read_token(
+                change.write.delivery_end, parsed->positionals[next++], "delivery_end");
             commodity_instrument_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

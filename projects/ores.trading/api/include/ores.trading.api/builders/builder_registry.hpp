@@ -99,7 +99,12 @@ using all_builders =
                commodity_swap_builder,
                commodity_swaption_builder,
                commodity_variance_swap_builder,
-               commodity_basket_option_builder>;
+               commodity_basket_option_builder,
+               commodity_digital_option_builder,
+               commodity_digital_average_price_option_builder,
+               commodity_position_builder,
+               commodity_spread_option_builder,
+               intraday_power_forward_builder>;
 
 namespace detail {
 

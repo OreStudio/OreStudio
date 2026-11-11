@@ -2,8 +2,30 @@
 <Portfolio>
   <Trade id="60df601a-7488-5d36-99b7-ea62af9db083">
     <TradeType>IntradayPowerForward</TradeType>
+    <IntradayPowerForwardData>
+      <Position>Long</Position>
+      <Maturity>2030-12-02</Maturity>
+      <Name>NYMEX:NG</Name>
+      <Currency>USD</Currency>
+      <Strike>151.91</Strike>
+      <Quantity>92764.56</Quantity>
+      <DeliveryDate>2030-12-09</DeliveryDate>
+      <DeliveryStart>68400</DeliveryStart>
+      <DeliveryEnd>72000</DeliveryEnd>
+    </IntradayPowerForwardData>
   </Trade>
   <Trade id="f262704e-0db6-5eb8-834a-a9b463b23010">
     <TradeType>IntradayPowerForward</TradeType>
+    <IntradayPowerForwardData>
+      <Position>Short</Position>
+      <Maturity>2028-11-02</Maturity>
+      <Name>NYMEX:CL</Name>
+      <Currency>USD</Currency>
+      <Strike>107.66</Strike>
+      <Quantity>75504.34</Quantity>
+      <DeliveryDate>2028-11-09</DeliveryDate>
+      <DeliveryStart>64800</DeliveryStart>
+      <DeliveryEnd>68400</DeliveryEnd>
+    </IntradayPowerForwardData>
   </Trade>
 </Portfolio>

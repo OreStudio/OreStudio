@@ -6,14 +6,10 @@ CommodityAccumulator
 CommodityAsianOption
 CommodityBasketVarianceSwap
 CommodityBestEntryOption
-CommodityDigitalAveragePriceOption
-CommodityDigitalOption
 CommodityForwardVolatilityAgreement
 CommodityGenericBarrierOption
 CommodityPairwiseVarianceSwap
-CommodityPosition
 CommodityRainbowOption
-CommoditySpreadOption
 CommodityStrikeResettableOption
 CommodityTaRF
 CommodityWindowBarrierOption
@@ -47,7 +43,6 @@ FxRainbowOption
 FxStrikeResettableOption
 FxWindowBarrierOption
 FxWorstOfBasketSwap
-IntradayPowerForward
 PerformanceOption_01
 RateDigitalOption
 ScriptedTrade

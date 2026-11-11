@@ -43,6 +43,8 @@ PAIRS = {
     ("GET", "/api/me/ways-to-hold"): ("GET", "/api/me/ways-to-hold"),
     ("GET", "/api/me/sessions"): ("GET", "/api/me/sessions"),
     ("GET", "/api/accounts/:username/sign-ins"): ("GET", "/api/accounts/{username}/sign-ins"),
+    ("GET", "/api/images/:id"): ("GET", "/api/images/{id}"),
+    ("GET", "/api/image-upload-policy"): ("GET", "/api/image-upload-policy"),
     ("GET", "/api/me/access"): ("GET", "/api/me/access"),
     ("GET", "/api/me/permissions"): ("GET", "/api/me/permissions"),
     ("GET", "/api/accounts/:accountId/permissions"): ("GET", "/api/accounts/{accountId}/permissions"),
@@ -74,8 +76,8 @@ PAIRS = {
     ("GET", "/api/geo/country"): ("GET", "/api/geo/country"),
 
     # assets
-    ("GET", "/api/images"): ("GET", "/api/v1/assets/images"),
-    ("POST", "/api/images"): ("POST", "/api/v1/assets/images"),
+    ("GET", "/api/images"): ("GET", "/api/images"),
+    ("POST", "/api/images"): ("POST", "/api/images"),
 
     # changes
     ("GET", "/api/events"): ("GET", "/api/events"),

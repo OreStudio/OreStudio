@@ -20,7 +20,6 @@
 #include "ores.http/routes/iam/access_read_routes.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.http/routes/iam/access_screen_answers.hpp"
 #include "ores.http/routes/iam/access_screen_shapes.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -80,7 +79,7 @@ std::optional<bool> flag_of(const http_request& req, const std::string& name) {
 std::optional<std::string>
 text_of(const http_request& req, const std::string& name, std::size_t most) {
     auto text = req.get_query_param(name);
-    if (access_screen_answers::characters_of(text) > most)
+    if (ores::http::net::record_routes::characters_of(text) > most)
         return std::nullopt;
     return text;
 }

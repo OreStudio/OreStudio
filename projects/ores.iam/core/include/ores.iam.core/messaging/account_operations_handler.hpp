@@ -544,7 +544,11 @@ public:
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_handler_lg(), error) << msg.subject << " failed: " << e.what();
-            reply(nats_, msg, change_password_response{.success = false, .message = e.what()});
+            // The caller is told the change failed, never the exception's own text.
+            reply(nats_,
+                  msg,
+                  change_password_response{.success = false,
+                                           .message = "The password could not be changed."});
         }
     }
 

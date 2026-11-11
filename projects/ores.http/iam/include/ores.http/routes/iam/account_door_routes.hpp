@@ -25,9 +25,11 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.iam.api/messaging/password_policy_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace ores::http::routes::iam {
 
@@ -40,6 +42,15 @@ namespace ores::http::routes::iam {
  * against the same accounts.
  */
 class account_door_routes final {
+private:
+    inline static std::string_view logger_name = "ores.http.routes.iam.account_door_routes";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     /**
      * @brief A refused registration, its status and code chosen by the

@@ -153,6 +153,12 @@ TEST_CASE("browser_session_routes_answer_a_login_as_the_bff_did", "[browser_sess
               R"(","name":"Trading","partyCategory":"Operational","businessCenterCode":"GBLO"}],)"
               R"("defaultPartyId":")" +
               trading_party + R"(","passwordResetRequired":true,"accessLifetimeSeconds":1800})");
+    // A selected party the login does not list leaves the choice to the browser.
+    auto unlisted = a_login(true);
+    unlisted.selected_party_id = "00000000-0000-0000-0000-0000000000ff";
+    CHECK_FALSE(ores::http::routes::iam::session_of(unlisted).party.has_value());
+    CHECK(
+        browser_session_routes::login_json(unlisted).starts_with(R"({"outcome":"party-required")"));
     auto system = a_login(true);
     system.tenant_id = "ffffffff-ffff-ffff-ffff-ffffffffffff";
     CHECK(ores::http::routes::iam::session_of(system).mode == "system-administration");

@@ -123,6 +123,13 @@ via its "Verifies task" field.
 | 3 | Local review: the browser's session fields would put IAM's vocabulary into =ores.http.api=. | =session_store.hpp= | Accepted | The record holds them as opaque JSON that the IAM routes own. |
 | 4 | Local review: the switch's party reader repeated provisioning's. | =tenant_parties.*= | Accepted | One shared reader. |
 | 5 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 6 | PR review: the session read wrote its whole snapshot back after a network read, which could undo a party chosen meanwhile. | =browser_session_routes.cpp= | Accepted | It now changes only the flag, read again under the store's lock. The party moves write token, claims and view together, which a comment states. |
+| 7 | PR review: a sign-in left the browser's previous session alive. | =browser_session_routes.cpp= | Accepted | A sign-in closes the session the cookie named before it opens the next. |
+| 8 | PR review: an unreadable view sends the browser to sign in with no trace. | =browser_session_routes.cpp= | Accepted | It is logged as a warning. |
+| 9 | PR review: a selected party the login does not list is untested. | =browser_session_routes_tests.cpp= | Accepted | A test proves the login then answers the party choice. |
+| 10 | PR review: does ores.web handle a 429 on sign-in? | =SignInPage.tsx= | Declined | The page shows the server's own message, which says to wait a minute. |
+| 11 | PR review: a failed password change is 409; a party chosen twice replaces the first. | =browser_session_routes.cpp= | Declined | The BFF answered a failed operation with 409, and IAM refuses a second selection, since only the login's single-use token may choose. |
+| 12 | PR review: does the shared party reader page to the end? | =tenant_parties.cpp= | Declined | It reads pages until it holds the total or a page is empty. |
 
 * Result
 

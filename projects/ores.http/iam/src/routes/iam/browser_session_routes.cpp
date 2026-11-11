@@ -135,6 +135,9 @@ http_response browser_session_routes::sign_in(const http_request& req) {
                 << "Signing in failed: the token IAM minted does not verify";
             return http_response::internal_error("The token could not be read");
         }
+        // A sign-in replaces whatever session the browser held, so the old one ends now.
+        if (const auto previous = identifier_of(req))
+            sessions_->close(*previous);
         session_record record;
         record.token = login.token;
         record.claims = std::move(*claims);
@@ -150,6 +153,9 @@ http_response browser_session_routes::read(const http_request& req) {
     const auto id = identifier_of(req);
     const auto record = id ? sessions_->find(*id) : std::nullopt;
     auto view = record ? view_of(*record) : std::nullopt;
+    if (record && !view)
+        BOOST_LOG_SEV(lg(), ores::logging::warn)
+            << "A live session holds a view that cannot be read; the browser is sent to sign in";
     // A login that still waits on a party has no session to show yet.
     if (!view || !view->party)
         return not_signed_in();
@@ -167,8 +173,14 @@ http_response browser_session_routes::read(const http_request& req) {
             if (reply.success && !reply.instances.empty() &&
                 reply.instances.front().status == "completed") {
                 view->tenantBootstrapping = false;
-                const auto updated = json::write(*view);
-                sessions_->update(*id, [&](session_record& r) { r.view = updated; });
+                // Only the flag changes, read again under the lock, so a party
+                // chosen while the run was read is not written back over.
+                sessions_->update(*id, [](session_record& r) {
+                    if (auto current = view_of(r)) {
+                        current->tenantBootstrapping = false;
+                        r.view = json::write(*current);
+                    }
+                });
             }
         } catch (const rr::refusal&) {
         } catch (const std::exception& e) {
@@ -226,6 +238,9 @@ http_response browser_session_routes::choose_party(const http_request& req) {
             view->username = reply.username;
         view->accessLifetimeSeconds = reply.access_lifetime_s;
         const auto updated = json::write(*view);
+        // The token, its claims and the view are written together, so two moves at
+        // once leave the last one whole rather than a token for one party and a
+        // view for another.
         const auto kept = sessions_->update(*id, [&](session_record& r) {
             r.token = reply.token;
             r.claims = *claims;
@@ -272,6 +287,9 @@ http_response browser_session_routes::switch_party(const http_request& req) {
         view->party = summary;
         view->accessLifetimeSeconds = reply.access_lifetime_s;
         const auto updated = json::write(*view);
+        // The token, its claims and the view are written together, so two moves at
+        // once leave the last one whole rather than a token for one party and a
+        // view for another.
         const auto kept = sessions_->update(*id, [&](session_record& r) {
             r.token = reply.token;
             r.claims = *claims;

@@ -32,6 +32,7 @@
 #include <charconv>
 #include <optional>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -155,6 +156,20 @@ int whole_of(
     return value;
 }
 
+/// The answer of a start or stop that states only the service's words.
+http_response message_answer(const std::string& message) {
+    return http_response::json("{\"message\":" + json::write(message) + "}");
+}
+
+/// A feed's row, written as an object, with whether it runs added as its last member.
+std::string with_running(std::string row, bool running) {
+    const std::string member = std::string("\"running\":") + (running ? "true" : "false");
+    if (row.size() < 2 || row.back() != '}')
+        throw std::logic_error("A feed row is not written as an object.");
+    row.pop_back();
+    return row + (row.size() == 1 ? "" : ",") + member + "}";
+}
+
 /// The feed or folder the address names.
 std::string id_of(const http_request& req) {
     auto id = req.get_path_param("id");
@@ -222,7 +237,7 @@ void feed_operation_routes::register_routes(
                     msg.config_id = id_of(req);
                     const auto reply = forwarding::forward(req, session, msg);
                     require_done(reply.success, reply.message);
-                    return http_response::json("{\"message\":" + json::write(reply.message) + "}");
+                    return message_answer(reply.message);
                 });
             }));
 
@@ -234,7 +249,7 @@ void feed_operation_routes::register_routes(
                     msg.config_id = id_of(req);
                     const auto reply = forwarding::forward(req, session, msg);
                     require_done(reply.success, reply.message);
-                    return http_response::json("{\"message\":" + json::write(reply.message) + "}");
+                    return message_answer(reply.message);
                 });
             }));
 
@@ -320,11 +335,8 @@ void feed_operation_routes::register_routes(
 
                     std::string feeds = "[";
                     for (const auto& feed : page.feeds) {
-                        auto row = json::write(feed);
-                        row.pop_back();
-                        row += std::string(",\"running\":") +
-                               (runs.contains(feed.source_name) ? "true" : "false") + "}";
-                        feeds += (feeds.size() == 1 ? "" : ",") + row;
+                        feeds += (feeds.size() == 1 ? "" : ",") +
+                                 with_running(json::write(feed), runs.contains(feed.source_name));
                     }
                     return http_response::json("{\"total\":" + std::to_string(page.total) +
                                                ",\"feeds\":" + feeds + "]}");

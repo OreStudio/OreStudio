@@ -122,6 +122,11 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | Local review: the synthetic registry spreads three lookups whose members a map adds. | =route_inventory.py= | Accepted | The reader takes the spread entries with the map's members; a test proves both forms and that a nested member is not the entry's own. |
 | 2 | Local review: a third suite needed a route answer helper. | =synthetic/tests/route_answer.hpp= | Accepted | The same helper as the refdata suite's, in the synthetic suite's namespace; a shared test library would need a home outside the parts. |
+| 3 | PR #4621: the feed page's row splice assumed a non-empty object. | =feed_operation_routes.cpp= | Accepted | =with_running= adds the member to an empty object too, and refuses a row that is not an object. |
+| 4 | PR #4621: each page also reads the running feeds, and the two failures answer 400 and 502. | =feed_operation_routes.cpp= | Declined | The BFF read the running set on every page, and answered a refused page 400 and an unread running set 502. |
+| 5 | PR #4621: selection ids are not checked as identifiers. | =feed_operation_routes.cpp= | Declined | The BFF capped each at 40 characters and left the rest to the service. |
+| 6 | PR #4621: a single start answers 409, a selection 400; =from_chars= refuses a sign. | =feed_operation_routes.cpp= | Declined | Both statuses are the BFF's. A signed number is refused rather than read, which no screen sends. |
+| 7 | PR #4621: the message answer repeated. | =feed_operation_routes.cpp= | Accepted | One =message_answer= helper. |
 
 * Result
 
@@ -130,7 +135,7 @@ row below records a group; the task closes when all five have merged.
 
 | Group | PR | Routes | State |
 |-------+----+--------+-------|
-| Feed and folder operations, and the synthetic families | | 7 and 5 families | Raised |
+| Feed and folder operations, and the synthetic families | #4621 | 7 and 5 families | Merged |
 | Feed ticks and the raster | | 2 | Open |
 | Simulation and conversion | | 6 | Open |
 | Calibration | | 6 | Open |

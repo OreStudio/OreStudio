@@ -86,6 +86,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The pair prefix loop is fragile | =ore_export_service.cpp= | Fixed | A plain index loop; a key with no pair gives nothing. |
+| 2 | The erase is O(data x pairs) | =ore_export_service.cpp= | Fixed | A set lookup on each option key's pair. |
+| 3 | Other quote types of the pair | =ore_export_service.cpp= | No change | Only option quotes of a surfaced pair are dropped, as intended. |
+| 4 | Skipped surfaces are silent | =ore_export_service.cpp= | Fixed | Logged at debug level. |
+| 5 | One bad point aborts the export | =ore_export_service.cpp= | Kept | The file's data-integrity rule: a point that does not read names itself. |
+| 6 | Anything not a call becomes a put | =ore_export_service.cpp= | Fixed | A strike that is neither is refused. |
+| 7 | Tests for a raw quote, an early date and two sets | =service_ore_export_tests.cpp= | Fixed in part | A raw EUR/USD option quote is shown dropped, and an earlier date leaves the surface out. Two sets: the repository orders them, and the live read evidence picks the newest. |
 
 * Result

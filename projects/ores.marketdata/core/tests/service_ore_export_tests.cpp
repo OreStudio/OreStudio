@@ -611,6 +611,9 @@ TEST_CASE("export_writes_a_published_surface_as_fx_option_quotes", "[service][or
     const auto blueprint = boost::uuids::random_generator{}();
     const auto series = write_surface(t, blueprint);
     publish_surface(t, blueprint, series);
+    write_fx_row(t,
+                 "oresmd://fx/EUR?type=series&instrument=fx_option&quote=rate_lnvol&ccy=USD",
+                 "oresmd://fx/EUR?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=USD&expiry=1Y&strike_label=ATM");
 
     const ore_export_service exporter(t.ctx);
     const auto result = exporter.write_all(std::string("2026-11-11"));
@@ -625,4 +628,17 @@ TEST_CASE("export_writes_a_published_surface_as_fx_option_quotes", "[service][or
         if (line.contains("FX_OPTION/RATE_LNVOL/EUR/USD/1Y/ATM"))
             atm_line = line;
     CHECK(atm_line.ends_with("0.0551"));
+}
+
+TEST_CASE("export_at_a_date_before_the_publish_leaves_the_surface_out", "[service][ore_export]") {
+    auto lg(make_logger(test_suite));
+
+    export_tenant t;
+    const auto blueprint = boost::uuids::random_generator{}();
+    const auto series = write_surface(t, blueprint);
+    publish_surface(t, blueprint, series);
+
+    const ore_export_service exporter(t.ctx);
+    const auto result = exporter.write_all(std::string("2026-11-10"));
+    CHECK_FALSE(result.market_data.contains("FX_OPTION/RATE_LNVOL/EUR/USD/1Y/25P"));
 }

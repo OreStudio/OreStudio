@@ -92,6 +92,8 @@ std::expected<datum::market_datum, std::string> fx_option_quote_of(const datum::
     if (std::holds_alternative<datum::atm_strike>(strike->which())) {
         label = "ATM";
     } else if (const auto* delta = std::get_if<datum::delta_strike>(&strike->which())) {
+        if (delta->option_type != "Call" && delta->option_type != "Put")
+            return std::unexpected("the strike " + strike->text() + " names neither a call nor a put");
         label = delta->delta.text() + (delta->option_type == "Call" ? "C" : "P");
     } else {
         return std::unexpected("the strike " + strike->text() + " is neither ATM nor a delta");
@@ -102,12 +104,14 @@ std::expected<datum::market_datum, std::string> fx_option_quote_of(const datum::
                                          "&strike_label=" + label);
 }
 
-/// The part of an FX option key up to its pair, such as FX_OPTION/RATE_LNVOL/EUR/USD/.
+/// The part of a key up to its fourth slash, which for an FX option quote is its pair, such as
+/// FX_OPTION/RATE_LNVOL/EUR/USD/. A key with fewer slashes has no pair and gives nothing.
 std::string pair_prefix_of(const std::string& key) {
-    std::size_t at = 0;
-    for (int slash = 0; slash < 4 && at != std::string::npos; ++slash)
-        at = key.find('/', at == 0 ? 0 : at + 1);
-    return at == std::string::npos ? key : key.substr(0, at + 1);
+    int slashes = 0;
+    for (std::size_t i = 0; i < key.size(); ++i)
+        if (key[i] == '/' && ++slashes == 4)
+            return key.substr(0, i + 1);
+    return {};
 }
 
 /**
@@ -218,14 +222,20 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
         if (quote_series->type() == datum::instrument_type::fx_vol_surface) {
             // A surface reaches ORE only as it was published: the newest published set at or before
             // the close, each point an FX option quote. A candidate is never written.
-            if (s.derivation_config_id.is_nil())
+            if (s.derivation_config_id.is_nil()) {
+                BOOST_LOG_SEV(lg(), debug) << "market data export: surface series " << s.id
+                                           << " has no blueprint, so it has no published set";
                 continue;
+            }
             const auto published = surface_repo.read_published_for_blueprint(ctx_, s.derivation_config_id);
             const auto set = std::ranges::find_if(published, [&](const auto& p) {
                 return !date || p.as_of <= close;
             });
-            if (set == published.end())
+            if (set == published.end()) {
+                BOOST_LOG_SEV(lg(), debug) << "market data export: surface series " << s.id
+                                           << " has no published set at or before the close";
                 continue;
+            }
             for (const auto& o : observations) {
                 if (o.observation_datetime != set->as_of)
                     continue;
@@ -273,7 +283,7 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
             data.push_back(to_datum(o, std::nullopt));
     }
     std::erase_if(data, [&](const ores::ore::market::market_datum& d) {
-        return std::ranges::any_of(surface_pairs, [&](const std::string& pair) { return d.key.starts_with(pair); });
+        return d.key.starts_with("FX_OPTION/") && surface_pairs.contains(pair_prefix_of(d.key));
     });
     std::ranges::move(surface_points, std::back_inserter(data));
     BOOST_LOG_SEV(lg(), info) << "market data export: built " << data.size() << " datum(s) and "

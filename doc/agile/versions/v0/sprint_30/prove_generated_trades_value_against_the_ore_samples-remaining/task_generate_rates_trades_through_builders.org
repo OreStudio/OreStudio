@@ -26,11 +26,11 @@ Every interest rate trade type the generator books is built by its trade builder
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -98,3 +98,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every booked rate type and the inflation swap has a builder in
+=rate_builders.hpp=. Each wraps =vanilla_swap_builder= or its floating leg. The
+inflation swap reads its calendar, day count, lag and interpolation from the
+inflation swap convention of its index, which =convention_lookup= now finds
+by the index address. The rates and inflation planners call the builders and
+draw indices from the tenant's swap conventions. The rate constructors, their
+terms and the plan's =rate_terms= and =inflation_terms= are deleted.
+
+The three builder families shared copies of the leg, amount and rate rows, and
+two copies collided in a unity build. They now share =leg_rows.hpp=.
+
+ORE now reads and builds CallableSwap, ForwardRateAgreement, Swaption and
+InflationSwap, which it refused before. Two lines remain for the family. Two
+inflation swaps fail because the Products market has no UKRPIX or USCPIA
+index, which is market data. FlexiSwap has no engine builder for
+LGM/Grid/FlexiSwap in the Products configuration, which is engine
+configuration.
+
+ORE crashes on a balance guaranteed swap when the engine factory has no
+builder for its model, and the crash ends the whole run. The trade now
+exports, so the engine test leaves it out and says why. This is a defect in
+ORE.
+
+The known missing paths gain the optional ORE features the samples state, such
+as amortising notionals, notice periods and exercise fees. They lose the
+elements the builders now state.

@@ -24,6 +24,7 @@
 #include "ores.http/routes/iam/account_operations_routes.hpp"
 #include "ores.http/routes/iam/account_routes.hpp"
 #include "ores.http/routes/iam/account_screen_routes.hpp"
+#include "ores.http/routes/iam/audit_routes.hpp"
 #include "ores.http/routes/iam/auth_event_operations_routes.hpp"
 #include "ores.http/routes/iam/authorization_routes.hpp"
 #include "ores.http/routes/iam/bootstrap_routes.hpp"
@@ -52,6 +53,7 @@ void iam_routes::register_routes(std::shared_ptr<ores::http::net::router> router
     account_screen_routes::register_routes(router, registry, session);
     role_write_routes::register_routes(router, registry, session);
     profile_routes::register_routes(router, registry, session);
+    audit_routes::register_routes(router, registry, session);
     account_credential_routes::register_routes(router, registry, session);
     account_contact_information_routes::register_routes(router, registry, session);
     account_operations_routes::register_routes(router, registry, session);

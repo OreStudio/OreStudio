@@ -66,10 +66,10 @@ PAIRS = {
     ("POST", "/api/signup"): ("POST", f"{IAM_OPS}/signup"),
     ("GET", "/api/sessions"): ("GET", f"{ACCESS}/sessions"),
     ("GET", "/api/sessions/active"): ("POST", f"{IAM_OPS}/get_active_sessions"),
-    ("POST", "/api/sessions/:sessionId/end"): ("POST", f"{IAM_OPS}/end_session"),
-    ("GET", "/api/session-statistics"): ("POST", f"{IAM_OPS}/get_session_statistics"),
-    ("GET", "/api/auth-events"): ("POST", "/api/v1/iam/auth_events/list"),
-    ("GET", "/api/geo/country"): ("POST", f"{IAM_OPS}/lookup_country"),
+    ("POST", "/api/sessions/:sessionId/end"): ("POST", "/api/sessions/{sessionId}/end"),
+    ("GET", "/api/session-statistics"): ("GET", "/api/session-statistics"),
+    ("GET", "/api/auth-events"): ("GET", "/api/auth-events"),
+    ("GET", "/api/geo/country"): ("GET", "/api/geo/country"),
 
     # assets
     ("GET", "/api/images"): ("GET", "/api/v1/assets/images"),

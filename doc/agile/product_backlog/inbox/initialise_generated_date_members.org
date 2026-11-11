@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: B391CA80-B116-4D83-BECA-6F1A7D1FF98D
+:END:
+#+title: Initialise the generated domain types' date members
+#+description: A generated domain type declares a required date with no initializer, so a default-constructed row holds an indeterminate date until a caller sets it.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:domain:valgrind:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give every required =std::chrono::year_month_day= member a generated domain
+type declares an initializer, =std::chrono::year_month_day {{column}}{};=, in
+=cpp_domain_type_entity.hpp.mustache=, and regenerate the domain types.
+
+* Why
+
+A =year_month_day= has no default value: a row built with =T row;= holds an
+indeterminate date until a caller sets one, and code that asks =.ok()= of it
+reads uninitialised memory. The nightly valgrind run found this through the
+ORE projection, whose readers built rows that way and whose writers ask
+=.ok()= to tell a stated date from a missing one. The readers now
+value-initialise their rows, which fixes that path but not the type: any other
+default-constructed row is still exposed.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_domain_type_entity.hpp.mustache=, lines 80, 108, 251 and 263.
+- The valgrind report: =write_equity_swap= in =equity_instrument_projection.cpp=, reached from the round-trip test in =generated_trade_export_tests.cpp=.
+
+* See also
+
+- [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]]

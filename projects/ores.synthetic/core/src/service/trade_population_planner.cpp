@@ -1462,7 +1462,7 @@ ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_gener
                          {.exchange = exchange, .value_date = end, .settles = tb::settlement::cash})
                          .build());
     if (type == "FxSwap")
-        return built(tb::fx_swap_builder({.near = exchange,
+        return built(tb::fx_swap_builder({.near_leg = exchange,
                                           .near_date = start,
                                           .far_date = end,
                                           .far_bought_amount = money(notional * rate),

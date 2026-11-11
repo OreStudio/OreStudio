@@ -110,7 +110,7 @@ void credit_instrument_projection_stamp_row(Row& row) {
 }
 
 auto make_header(std::string_view trade_type_code) -> credit_instrument {
-    credit_instrument r;
+    credit_instrument r{};
     r.identity.trade_type_code = std::string(trade_type_code);
     r.audit.modified_by = std::string(credit_instrument_projection_actor);
     r.audit.performed_by = std::string(credit_instrument_projection_actor);

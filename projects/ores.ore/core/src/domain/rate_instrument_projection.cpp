@@ -104,7 +104,7 @@ void rate_instrument_projection_stamp_row(Row& row) {
 }
 
 auto rate_instrument_projection_make_header(std::string_view trade_type_code) -> rate_instrument {
-    rate_instrument r;
+    rate_instrument r{};
     r.identity.trade_type_code = std::string(trade_type_code);
     r.audit.modified_by = std::string(rate_instrument_projection_actor);
     r.audit.performed_by = std::string(rate_instrument_projection_actor);

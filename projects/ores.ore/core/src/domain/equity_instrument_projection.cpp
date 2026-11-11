@@ -101,7 +101,7 @@ void equity_instrument_projection_stamp_columns(equity_position_option_underlyin
 
 template <typename Row>
 auto equity_instrument_projection_make_row(std::string_view trade_type_code) -> Row {
-    Row r;
+    Row r{};
     r.identity.trade_type_code = std::string(trade_type_code);
     stamp_audit(r);
     return r;

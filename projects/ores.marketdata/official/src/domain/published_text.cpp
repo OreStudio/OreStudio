@@ -19,12 +19,21 @@
  */
 #include "ores.marketdata.official/domain/published_text.hpp"
 #include <algorithm>
+#include <array>
 #include <charconv>
 #include <format>
 #include <iterator>
 #include <utility>
 
 namespace ores::marketdata::official::domain {
+
+namespace {
+
+// Publishers write their months in English whatever the locale, so the table is fixed.
+constexpr std::array<std::string_view, 12> month_names{
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+}
 
 std::string text_of(double value) {
     char buffer[32];
@@ -46,6 +55,34 @@ std::expected<std::chrono::year_month_day, std::string> date_of(std::string_view
     if (!date.ok())
         return std::unexpected("'" + std::string(text) + "' is not a date");
     return date;
+}
+
+std::expected<std::chrono::year_month_day, std::string> date_of_month_name(std::string_view text,
+                                                                           char separator) {
+    const auto refused = [&] {
+        return std::unexpected(std::format(
+            "'{}' is not a date of the form 29{}Oct{}2026", text, separator, separator));
+    };
+    unsigned d = 0;
+    int y = 0;
+    if (text.size() != 11 || text[2] != separator || text[6] != separator ||
+        std::from_chars(text.data(), text.data() + 2, d).ec != std::errc{} ||
+        std::from_chars(text.data() + 7, text.data() + 11, y).ec != std::errc{})
+        return refused();
+    const auto m = std::ranges::find(month_names, text.substr(3, 3));
+    if (m == month_names.end())
+        return refused();
+    const std::chrono::year_month_day date{
+        std::chrono::year{y},
+        std::chrono::month{static_cast<unsigned>(m - month_names.begin()) + 1},
+        std::chrono::day{d}};
+    if (!date.ok())
+        return refused();
+    return date;
+}
+
+std::string_view month_name(std::chrono::month month) {
+    return month_names[static_cast<unsigned>(month) - 1];
 }
 
 std::expected<std::string, std::string> decimal_of_percent(std::string_view text) {

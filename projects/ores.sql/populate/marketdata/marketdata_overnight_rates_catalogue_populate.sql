@@ -65,6 +65,11 @@ values
      'The Swedish krona short-term rate, SWESTR, published by the Riksbank each Swedish business day.',
      34, 'https://www.riksbank.se/en-gb/statistics/swestr/conditions-for-use-and-re-publishing/',
      'Source: Sveriges Riksbank', true, '',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers'),
+    (ores_utility_system_tenant_id_fn(), 'rba', 0, 'Reserve Bank of Australia', 'reference',
+     'The statistical tables of the Reserve Bank of Australia, among them AONIA, the interbank overnight cash rate, published each Australian business day.',
+     35, 'https://www.rba.gov.au/copyright/',
+     'Source: RBA', true, '',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -82,7 +87,8 @@ insert into t_overnight_inventory (provider_code, id_scheme, external_id, field,
     ('boc', 'boc_valet', 'AVG.INTWO', 'v', 'oresmd://ir/CAD?type=fixing&index=ibor&name=CORRA'),
     ('boj', 'boj_stat', 'FM01.STRDCLUCON', 'VALUES', 'oresmd://ir/JPY?type=fixing&index=ibor&name=TONAR'),
     ('norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R', 'OBS_VALUE', 'oresmd://ir/NOK?type=fixing&index=ibor&name=NOWA'),
-    ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR');
+    ('riksbank', 'riksbank_swestr', 'SWESTR', 'rate', 'oresmd://ir/SEK?type=fixing&index=ibor&name=SWESTR'),
+    ('rba', 'rba_table', 'f1.FIRMMCRID', 'value', 'oresmd://ir/AUD?type=fixing&index=ibor&name=AONIA');
 
 insert into ores_marketdata_market_data_vendor_instruments_tbl (
     id, tenant_id, version, provider_code, id_scheme, external_id, field, minted, deviation_note,
@@ -166,6 +172,11 @@ values
      'riksbank', 'riksbank_swestr', 'production', 'https://api.riksbank.se', '',
      '{"url":"https://api.riksbank.se","backfill_days":400,"poll_minutes":60}', true,
      'The session that reads the series of the Riksbank SWESTR API.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions'),
+    ('rba-statistics', ores_utility_system_tenant_id_fn(), 0, 'RBA statistics',
+     'rba', 'rba_table', 'production', 'https://www.rba.gov.au', '',
+     '{"url":"https://www.rba.gov.au","backfill_days":400,"poll_minutes":60}', true,
+     'The session that reads the series of the RBA statistical tables.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates sessions')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -203,6 +214,10 @@ values
     ('0e59f2e7-48d8-5ba2-8433-2ea7726f912c', ores_utility_system_tenant_id_fn(), 0,
      'riksbank-swestr', 'riksbank', 'riksbank-api', 'end_of_day', 'SWESTR', true,
      'SWESTR as the Riksbank publishes it, read from its SWESTR API by the official rates adapter.',
+     current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds'),
+    ('bff157c2-bc49-5ef0-8cf6-745fe868f43c', ores_utility_system_tenant_id_fn(), 0,
+     'rba-aonia', 'rba', 'rba-statistics', 'end_of_day', 'f1.FIRMMCRID', true,
+     'AONIA as the RBA publishes it, read from its statistical table F1 by the official rates adapter.',
      current_user, current_user, 'system.initial_load', 'Initial population of the overnight rates feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -222,7 +237,8 @@ from (values ('nyfed-sofr', 'nyfed', 'nyfed_rate_type', 'SOFR'),
              ('boc-corra', 'boc', 'boc_valet', 'AVG.INTWO'),
              ('boj-tona', 'boj', 'boj_stat', 'FM01.STRDCLUCON'),
              ('norgesbank-nowa', 'norgesbank', 'nb_sdmx', 'SHORT_RATES.B.NOWA.ON.R'),
-             ('riksbank-swestr', 'riksbank', 'riksbank_swestr', 'SWESTR'))
+             ('riksbank-swestr', 'riksbank', 'riksbank_swestr', 'SWESTR'),
+             ('rba-aonia', 'rba', 'rba_table', 'f1.FIRMMCRID'))
      as s(feed, provider, scheme, external_id)
 join ores_marketdata_feeds_tbl f
   on f.tenant_id = ores_utility_system_tenant_id_fn()
@@ -366,5 +382,23 @@ begin
         '0e59f2e7-48d8-5ba2-8433-2ea7726f912c',
         current_user, current_user, 'system.initial_load',
         'The system party reads SWESTR from Sveriges Riksbank'
+    ) on conflict do nothing;
+
+    insert into ores_marketdata_subscriptions_tbl (
+        id, tenant_id, version, party_id, provider_code, display, non_display, derived,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '150c069d-baee-5006-9f5a-8ee72bfe775a', ores_utility_system_tenant_id_fn(), 0, v_party, 'rba',
+        true, true, true, current_user, current_user, 'system.initial_load',
+        'The system party takes AONIA of Reserve Bank of Australia for the calibration'
+    ) on conflict do nothing;
+    insert into ores_marketdata_routes_tbl (
+        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
+        modified_by, performed_by, change_reason_code, change_commentary
+    ) values (
+        '92519b55-ba52-593e-b221-fbd19dc62972', ores_utility_system_tenant_id_fn(), 0, v_party, 'rba', 'interest_rates',
+        'bff157c2-bc49-5ef0-8cf6-745fe868f43c',
+        current_user, current_user, 'system.initial_load',
+        'The system party reads AONIA from Reserve Bank of Australia'
     ) on conflict do nothing;
 end $$;

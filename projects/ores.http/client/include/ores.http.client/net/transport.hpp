@@ -92,7 +92,9 @@ public:
 class ORES_HTTP_CLIENT_EXPORT beast_transport final : public transport {
 public:
     struct options final {
-        std::string user_agent = "ORE Studio";
+        /// It names the project and where to find it, without a version. Some publishers, such
+        /// as the RBA, refuse an agent that gives no address.
+        std::string user_agent = "OREStudio (+https://github.com/OreStudio/OreStudio)";
         /// The authorities to trust, as a PEM file. Without one, the system's are trusted.
         std::optional<std::filesystem::path> trusted_authorities;
     };

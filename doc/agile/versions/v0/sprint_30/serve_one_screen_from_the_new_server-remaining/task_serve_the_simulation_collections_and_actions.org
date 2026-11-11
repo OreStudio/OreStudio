@@ -102,6 +102,18 @@ Decisions made in the feed ticks group:
 - A tick's time is written as UTC to the millisecond, the form the browser
   parses; the BFF passed the text its decoder gave.
 
+Decisions made in the simulation and conversion group:
+
+- Five of the six bodies read as the service's own request, so the codec checks
+  their shape and the route checks the bounds the BFF checked. The simple-view
+  conversion reads a body of its own, because the BFF defaulted the side of
+  the conversion the screen leaves out.
+- A preview the service refuses answers 400 with its words, as the BFF did.
+- An IR conversion's parameters arrive as a name-to-value object and go to the
+  service as two aligned lists; its answer is the object again. The members of
+  that object come back in name order, which a JSON object does not promise
+  anyway.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -164,6 +176,6 @@ row below records a group; the task closes when all five have merged.
 |-------+----+--------+-------|
 | Feed and folder operations, and the synthetic families | #4621 | 7 and 5 families | Merged |
 | Feed ticks and the raster | #4622 | 2 | Merged |
-| Simulation and conversion | | 6 | Open |
+| Simulation and conversion | | 6 | Raised |
 | Calibration | | 6 | Open |
 | Market regime | | 4 | Open |

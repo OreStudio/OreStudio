@@ -23,12 +23,37 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
+#include "ores.trading.api/domain/bond_issue_leg.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amortization.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_amount.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_rate.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule.hpp"
+#include "ores.trading.api/domain/bond_issue_leg_schedule_date.hpp"
 #include "ores.trading.core/export.hpp"
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace ores::trading::service {
+
+/**
+ * @brief The rows a bond security owns, as the issue-keyed tables hold them.
+ *
+ * A bond's own legs belong to the security rather than to the trade, so they
+ * and everything they state key on the issue.
+ */
+struct issue_leg_rows final {
+    std::vector<domain::bond_issue_leg> legs;
+    std::vector<domain::bond_issue_leg_amount> amounts;
+    std::vector<domain::bond_issue_leg_rate> rates;
+    std::vector<domain::bond_issue_leg_amortization> amortizations;
+    std::vector<domain::bond_issue_leg_schedule> schedules;
+    std::vector<domain::bond_issue_leg_schedule_date> schedule_dates;
+};
+
+/// The security's legs as the export writes them, in the order the issue lists them.
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_data>
+bond_legs_of(const issue_leg_rows& rows);
 
 /**
  * @brief Rebuilds bond instrument containers from the rows that hold them.

@@ -14,9 +14,28 @@
         <LegData>
           <Payer>false</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
             <Notional>1</Notional>
           </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-07-02</StartDate>
+              <EndDate>2027-07-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
         <SubType>Fixed</SubType>
       </BondData>
@@ -45,9 +64,28 @@
         <LegData>
           <Payer>false</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>ACT/ACT</DayCounter>
           <Notionals>
             <Notional>1</Notional>
           </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-07-02</StartDate>
+              <EndDate>2027-07-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
         </LegData>
         <SubType>Fixed</SubType>
       </BondData>

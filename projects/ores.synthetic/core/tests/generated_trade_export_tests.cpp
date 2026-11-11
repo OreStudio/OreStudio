@@ -31,6 +31,7 @@
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
@@ -193,6 +194,11 @@ const std::map<std::string, recorded_type>& generated() {
                         bond.issue = *slot.bond_issue;
                     bond.call_dates = slot.bond_issue_call_dates;
                     bond.conversion_targets = slot.bond_issue_conversion_targets;
+                    bond.bond_legs = ores::trading::service::bond_legs_of(
+                        {.legs = slot.bond_issue_legs,
+                         .amounts = slot.bond_issue_leg_amounts,
+                         .rates = slot.bond_issue_leg_rates,
+                         .schedules = slot.bond_issue_leg_schedules});
                 }
                 state_keys(request.instruments, slot.trade_id, slot.trade_type_code);
                 auto& trades = by_type[slot.trade_type_code];

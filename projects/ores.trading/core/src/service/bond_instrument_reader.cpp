@@ -92,23 +92,6 @@ struct instrument_rows final {
 };
 
 /**
- * @brief The rows a bond security owns, as the issue-keyed tables hold them.
- *
- * A bond's own legs belong to the security rather than to the trade, so
- * they and everything they state key on the issue. The option block, the
- * strike and the forward are the trade's product and stay in
- * instrument_rows.
- */
-struct issue_leg_rows final {
-    std::vector<domain::bond_issue_leg> legs;
-    std::vector<domain::bond_issue_leg_amount> amounts;
-    std::vector<domain::bond_issue_leg_rate> rates;
-    std::vector<domain::bond_issue_leg_amortization> amortizations;
-    std::vector<domain::bond_issue_leg_schedule> schedules;
-    std::vector<domain::bond_issue_leg_schedule_date> schedule_dates;
-};
-
-/**
  * @brief The leg role a leg or one of its children belongs to.
  *
  * The trade-keyed family states the role on every row, because one table
@@ -519,8 +502,7 @@ void apply_leg_family(domain::bond_instrument_data& data,
                       const issue_leg_rows& issue_rows) {
     // The security's legs come first, in the order the issue's leg list
     // holds them; they are shared by every instrument of the ISIN.
-    for (const auto& row : issue_rows.legs)
-        data.bond_legs.push_back(build_leg(issue_rows, row));
+    data.bond_legs = bond_legs_of(issue_rows);
 
     for (const auto& row : rows.legs) {
         if (row.leg_role == "trs_funding")
@@ -718,6 +700,13 @@ void apply_option_residue(domain::bond_instrument_data& data) {
     data.option_knocks_out = data.option->knocks_out;
 }
 
+}
+
+std::vector<domain::bond_leg_data> bond_legs_of(const issue_leg_rows& rows) {
+    std::vector<domain::bond_leg_data> legs;
+    for (const auto& row : rows.legs)
+        legs.push_back(build_leg(rows, row));
+    return legs;
 }
 
 bond_instrument_reader::bond_instrument_reader(context ctx)

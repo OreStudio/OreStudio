@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-bond-trades-through-builders
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Every bond trade type the generator books is built by its trade builder, and the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -43,9 +43,21 @@ Every bond trade type the generator books is built by its trade builder, and the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The export test joined a bond's issue but none of its other rows, while the
+  export reader joins them all. So the recorded bonds were not what a real
+  export writes: Bond, CallableBond and ConvertibleBond lacked their coupon
+  leg, BondOption its strike, and BondFuture, BondTRS and ForwardBond were
+  refused. The reader's assembly becomes a pure function over the rows,
+  =bond_legs_of= for the issue's legs and one for the trade's rows, which the
+  reader and the test both call.
+- The test scope states a reference curve, as a tenant's generation config
+  does; the Products example names =EUR-EURIBOR-6M=.
+- One builder per booked bond type. A bond issue builder states the security
+  and its coupon leg; each trade builder states the rows its product needs:
+  the option block and strike of an option, the cash leg of a repo, the
+  funding leg of a TRS, the swap leg of an Ascot, the identifier of a position.
+- The =construct_*= functions, their terms and the plan's =bond_terms= are
+  deleted.
 
 * Measurements
 

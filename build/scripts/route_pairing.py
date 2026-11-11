@@ -155,6 +155,12 @@ PAIRS = {
     ("POST", "/api/synthetic/feed-selection/stop"): ("POST", "/api/synthetic/feed-selection/stop"),
     ("GET", "/api/synthetic/feeds/:id/ticks"): ("GET", "/api/synthetic/feeds/{id}/ticks"),
     ("GET", "/api/synthetic/feed-raster"): ("GET", "/api/synthetic/feed-raster"),
+    ("POST", "/api/synthetic/simulate/fx"): ("POST", "/api/synthetic/simulate/fx"),
+    ("POST", "/api/synthetic/simulate/ir"): ("POST", "/api/synthetic/simulate/ir"),
+    ("POST", "/api/synthetic/convert/fx"): ("POST", "/api/synthetic/convert/fx"),
+    ("POST", "/api/synthetic/convert/fx-simple"): ("POST", "/api/synthetic/convert/fx-simple"),
+    ("POST", "/api/synthetic/convert/ir"): ("POST", "/api/synthetic/convert/ir"),
+    ("POST", "/api/synthetic/preview/ir-shape"): ("POST", "/api/synthetic/preview/ir-shape"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

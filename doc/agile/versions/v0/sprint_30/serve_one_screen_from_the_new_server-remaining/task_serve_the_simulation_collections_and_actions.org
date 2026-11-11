@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-simulation-collections-and-actions
-#+pr: 4622
+#+pr: 4623
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -102,6 +102,18 @@ Decisions made in the feed ticks group:
 - A tick's time is written as UTC to the millisecond, the form the browser
   parses; the BFF passed the text its decoder gave.
 
+Decisions made in the simulation and conversion group:
+
+- Five of the six bodies read as the service's own request, so the codec checks
+  their shape and the route checks the bounds the BFF checked. The simple-view
+  conversion reads a body of its own, because the BFF defaulted the side of
+  the conversion the screen leaves out.
+- A preview the service refuses answers 400 with its words, as the BFF did.
+- An IR conversion's parameters arrive as a name-to-value object and go to the
+  service as two aligned lists; its answer is the object again. The members of
+  that object come back in name order, which a JSON object does not promise
+  anyway.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -133,6 +145,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4623][#4623]] | [http] Serve the synthetic screens' previews |
 | [[https://github.com/OreStudio/OreStudio/pull/4622][#4622]] | [http] Serve the feed ticks and the raster |
 | [[https://github.com/OreStudio/OreStudio/pull/4621][#4621]] | [http] Serve the feed screen's operations |
 
@@ -154,6 +167,9 @@ via its "Verifies task" field.
 | 12 | PR #4622: ticks reads could grow the subscriptions without end. | =feed_tick_buffers.cpp= | Accepted | At most a thousand sources are heard; a new one past that answers no ticks. A test proves the bound and that a dropped source frees a place. |
 | 13 | PR #4622: the raster's arrival time is the feed's stamp. | =feed_tick_buffers.hpp= | Accepted | As the BFF read it; =arrival_times= now says it reads the observation time. |
 | 14 | PR #4622: minor points. | =feed_tick_buffers.cpp=, =feed_tick_routes.cpp= | Partly accepted | The ticks route says its first read answers none, and a test sends ticks from another thread while reads drop and watch sources. =watch= still subscribes under the lock, so two reads of one source cannot both subscribe. =from_chars= for a double is used in the synthetic service and the ORE core already. |
+| 15 | PR #4623: the IR conversion caps no parameter count and does not trim a name. | =process_preview_routes.cpp= | Accepted | At most 100 parameters, each named by a trimmed code of 1 to 100 characters, as the other IR previews; two tests prove it. |
+| 16 | PR #4623: the FX engine list could fall out of step with the service. | =process_preview_routes.cpp= | Accepted | The comment says the service publishes none, so the list is stated as the BFF stated it. |
+| 17 | PR #4623: no price or number check on the FX paths, NaN, every refusal a 400, the IR value padding, the frequency not trimmed. | =process_preview_routes.cpp= | Declined | Each is the BFF's behaviour. JSON carries no NaN or infinity and the reader refuses them; a transport failure throws and answers 502, so only the service's own refusal is a 400. |
 
 * Result
 
@@ -164,6 +180,6 @@ row below records a group; the task closes when all five have merged.
 |-------+----+--------+-------|
 | Feed and folder operations, and the synthetic families | #4621 | 7 and 5 families | Merged |
 | Feed ticks and the raster | #4622 | 2 | Merged |
-| Simulation and conversion | | 6 | Open |
+| Simulation and conversion | #4623 | 6 | Merged |
 | Calibration | | 6 | Open |
 | Market regime | | 4 | Open |

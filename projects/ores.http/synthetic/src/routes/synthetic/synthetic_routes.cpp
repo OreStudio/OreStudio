@@ -34,6 +34,7 @@
 #include "ores.http/routes/synthetic/ir_curve_template_entry_web_routes.hpp"
 #include "ores.http/routes/synthetic/market_data_generation_config_web_routes.hpp"
 #include "ores.http/routes/synthetic/market_data_provider_web_routes.hpp"
+#include "ores.http/routes/synthetic/process_preview_routes.hpp"
 #include "ores.http/routes/synthetic/variance_calibration_input_point_web_routes.hpp"
 #include "ores.http/routes/synthetic/variance_calibration_input_web_routes.hpp"
 #include "ores.http/routes/synthetic/variance_calibration_web_routes.hpp"
@@ -110,6 +111,7 @@ void synthetic_routes::register_routes(
     feed_key_routes::register_routes(router, registry, session);
     feed_operation_routes::register_routes(router, registry, session);
     feed_tick_routes::register_routes(router, registry, session);
+    process_preview_routes::register_routes(router, registry, session);
 
     // The screens read which resources they may name, and whether this session
     // may write each, from one catalogue.

@@ -776,6 +776,12 @@ RULES = (
          CPP, RESOURCE, "simulation",
          "One feed's newest ticks, and when each feed's ticks arrived in a window, read from"
          " the buffers the gateway fills by listening to the feeds a screen names."),
+    Rule("the synthetic screens' preview",
+         ("regex", r"^POST /api/synthetic/(simulate/(fx|ir)|convert/(fx|fx-simple|ir)|preview/ir-shape)$"),
+         CPP, RESOURCE, "simulation",
+         "A preview the synthetic screens draw from the values on the screen and store nothing"
+         " of: sample paths, the conversions between engines and the simple view, and the rate"
+         " at each ladder row."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

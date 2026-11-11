@@ -22,8 +22,11 @@
 
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_contact_information.hpp"
+#include "ores.iam.api/domain/login_info.hpp"
+#include "ores.iam.api/domain/session.hpp"
 #include <optional>
 #include <string>
+#include <vector>
 
 /**
  * @brief An account as the access screens read it.
@@ -56,6 +59,26 @@ namespace ores::http::routes::iam::account_view {
  */
 [[nodiscard]] std::string
 json_of(const std::optional<ores::iam::domain::account_contact_information>& contact);
+
+/**
+ * @brief One account's sign-in state, as a JSON object in camelCase.
+ */
+[[nodiscard]] std::string json_of(const ores::iam::domain::login_info& info);
+
+/**
+ * @brief One sign-in state, or null when there is none.
+ */
+[[nodiscard]] std::string json_of(const std::optional<ores::iam::domain::login_info>& info);
+
+/**
+ * @brief One session, as a JSON object in camelCase.
+ */
+[[nodiscard]] std::string json_of(const ores::iam::domain::session& session);
+
+/**
+ * @brief Sessions, as a JSON array.
+ */
+[[nodiscard]] std::string json_of(const std::vector<ores::iam::domain::session>& sessions);
 
 }
 

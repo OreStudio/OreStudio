@@ -50,7 +50,7 @@ hour, day, week or all reaching back from now, and a page of 1 to 500. A
 session id that is not one is refused before the forward, where the BFF passed
 it to the service to refuse.
 
-The others move to [[id:ED0F19DB-E589-4895-B297-9BDB0E335867][Serve the login records, sessions and password routes]]
+The others move to [[id:ED0F19DB-E589-4895-B297-9BDB0E335867][Serve the login records and the sessions]]
 and [[id:D4275B6D-BF22-4A77-9F00-018D776966CB][Serve the browser's cookie session routes]].
 
 * Measurements

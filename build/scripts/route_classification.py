@@ -938,7 +938,7 @@ RULES = (
          "The tenant's sessions, one page or the open ones, and the write that ends one of"
          " them for an administrator."),
     Rule("an auth screen's route",
-         ("regex", r"^(GET /api/(auth-events|session-statistics)|POST /api/sessions/\{sessionId\}/end)$"),
+         ("regex", r"^(GET /api/(auth-events|session-statistics|login-info|sessions|sessions/active|login-info/\{accountId\})|POST /api/sessions/\{sessionId\}/end)$"),
          CPP, RESOURCE, "auth",
          "An audit screen's read or an administrator's end of a session, at the address and"
          " in the shape the BFF answered, forwarded to IAM as the caller."),

@@ -22,7 +22,9 @@
 #   incremental  `head` in the same tree, with no compiler cache, so only the
 #                units the merged PR really invalidates are compiled
 #   warm         `head` in a fresh tree with the cold build's sccache, which is
-#                what a continuous run sees after a merge
+#                what a continuous run sees after a merge. It reuses the cold
+#                build's path, because sccache keys carry the build directory
+#                and Continuous always builds in the same one.
 #
 # The order keeps the phases apart: the incremental build bypasses sccache, so
 # the warm build finds only the cold build's objects. Nothing is restored from
@@ -164,7 +166,7 @@ jobs:
           cmake --preset "${PRESET}" ${unity}${link}
 
       - name: Cold build of the base commit
-        timeout-minutes: 300
+        timeout-minutes: 240
         run: |
           tree="build/output/${PRESET}"
           sccache --zero-stats
@@ -180,7 +182,7 @@ jobs:
           df -h .
 
       - name: Incremental build of the head commit
-        timeout-minutes: 120
+        timeout-minutes: 30
         run: |
           tree="build/output/${PRESET}"
           git checkout --quiet "${HEAD_SHA}"
@@ -193,15 +195,15 @@ jobs:
           wall=$(( $(date +%s) - start ))
           python3 "$RUNNER_TEMP/ninja_log_summary.py" phase \
             --log "${tree}/.ninja_log" --skip "${skip}" --wall "${wall}" \
-            --name incremental --out "${RESULT}"
+            --name incremental --out "${RESULT}" --meta batch=${{ matrix.batch }}
           rm -rf "${tree}"
           df -h .
 
       - name: Warm build of the head commit in a fresh tree
-        timeout-minutes: 300
+        timeout-minutes: 80
         run: |
-          tree="build/output/warm"
-          cmake --preset "${PRESET}" -B "${tree}" ${CONFIGURE_ARGS}
+          tree="build/output/${PRESET}"
+          cmake --preset "${PRESET}" ${CONFIGURE_ARGS}
           sccache --zero-stats
           start=$(date +%s)
           cmake --build "${tree}" --parallel "$(nproc)"
@@ -210,10 +212,15 @@ jobs:
           echo "${stats}"
           hits=$(echo "${stats}" | awk '/^Cache hits  /{print $NF; exit}')
           misses=$(echo "${stats}" | awk '/^Cache misses  /{print $NF; exit}')
+          cache=()
+          if [ -n "${hits}" ] && [ -n "${misses}" ]; then
+            cache=(--hits "${hits}" --misses "${misses}")
+          else
+            echo "::warning::could not read the sccache hit and miss counts"
+          fi
           python3 "$RUNNER_TEMP/ninja_log_summary.py" phase \
-            --log "${tree}/.ninja_log" --skip 0 --wall "${wall}" \
-            --hits "${hits}" --misses "${misses}" \
-            --name warm --out "${RESULT}"
+            --log "${tree}/.ninja_log" --skip 0 --wall "${wall}" "${cache[@]}" \
+            --name warm --out "${RESULT}" --meta batch=${{ matrix.batch }}
 
       - name: Upload the result
         if: always()

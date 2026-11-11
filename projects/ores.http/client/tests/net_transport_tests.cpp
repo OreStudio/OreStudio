@@ -354,6 +354,10 @@ TEST_CASE("a_secret_in_the_query_is_masked_and_the_rest_kept", "[net][transport]
           "https://api.example.org/series?Token=***&series_id=DEXUSEU");
     CHECK(redacted("https://api.example.org/series?from=2026-10-01") ==
           "https://api.example.org/series?from=2026-10-01");
+    CHECK(redacted("https://api.example.org/ws?user=a%40example.org&pass=p-1&function=GetSeries") ==
+          "https://api.example.org/ws?user=***&pass=***&function=GetSeries");
+    CHECK(redacted("https://api.example.org/ws?Password=p&subscription-key=k") ==
+          "https://api.example.org/ws?Password=***&subscription-key=***");
 }
 
 TEST_CASE("a_failure_names_the_address_with_its_secret_masked", "[net][transport]") {

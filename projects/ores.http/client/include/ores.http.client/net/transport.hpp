@@ -112,7 +112,8 @@ private:
 /**
  * @brief @p url with what may hold a secret masked, so it can be logged or stored: the user
  * and password of the address, and the value of every query parameter whose name holds
- * "key", "token", "secret" or "password", in any case. A key put in the path or the
+ * "key", "token", "secret", "pass" or "user", in any case. A user name is masked as well, since
+ * it is often a person's address. A key put in the path or the
  * fragment is not found: an adapter passes a key as a query parameter.
  */
 [[nodiscard]] ORES_HTTP_CLIENT_EXPORT std::string redacted(std::string_view url);

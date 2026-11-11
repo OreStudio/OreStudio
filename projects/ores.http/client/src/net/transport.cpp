@@ -57,7 +57,7 @@ bool names_a_secret(std::string_view name) {
     std::ranges::transform(
         lower, lower.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
     return std::ranges::any_of(
-        std::array<std::string_view, 4>{"key", "token", "secret", "password"},
+        std::array<std::string_view, 5>{"key", "token", "secret", "pass", "user"},
         [&](std::string_view word) { return lower.contains(word); });
 }
 

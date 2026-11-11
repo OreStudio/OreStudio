@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -129,6 +130,11 @@ private:
  * The buckets live in shards, one lock each, so sessions on different threads
  * rarely wait for each other. A shard that reaches its share of the key bound
  * sweeps itself, and drops the bucket closest to full when that is not enough.
+ * That bucket is the least throttled one: a throttled caller's bucket is full
+ * furthest in the future, so it is the last to go, and a flood of new callers
+ * cannot reset it. Finding it scans the shard under its lock, which happens only
+ * when the shard holds its whole share and none of it is full; the bound is
+ * what keeps that scan short.
  *
  * Every method may be called from any thread.
  */
@@ -211,7 +217,8 @@ public:
     [[nodiscard]] bool may_warn();
 
 private:
-    std::atomic<std::int64_t> last_warned_{0};
+    /// Seconds on the steady clock; far in the past, so the first refusal warns.
+    std::atomic<std::int64_t> last_warned_{std::numeric_limits<std::int32_t>::min()};
 };
 
 /**

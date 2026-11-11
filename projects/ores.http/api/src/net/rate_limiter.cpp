@@ -19,6 +19,7 @@
  */
 #include "ores.http.api/net/rate_limiter.hpp"
 #include <algorithm>
+#include <cassert>
 #include <stdexcept>
 #include <utility>
 
@@ -55,12 +56,12 @@ rate_policies rate_policies::from(const http_server_options& o) {
                              rate_key::client,
                              "policy reads")})
         r.named_.emplace(p.name, std::move(p));
-    for (const auto* p : {&r.open_, &r.authenticated_})
+    std::vector<const rate_policy*> every{&r.open_, &r.authenticated_};
+    for (const auto& [name, p] : r.named_)
+        every.push_back(&p);
+    for (const auto* p : every)
         if (p->limit == 0)
             throw std::invalid_argument("The " + p->name + " rate policy allows no requests.");
-    for (const auto& [name, p] : r.named_)
-        if (p.limit == 0)
-            throw std::invalid_argument("The " + name + " rate policy allows no requests.");
     return r;
 }
 
@@ -69,6 +70,8 @@ const rate_policy& rate_policies::for_route(const std::optional<domain::route>& 
         return open_;
     if (!route->rate_policy.empty()) {
         const auto found = named_.find(route->rate_policy);
+        // The server refuses to start on a name no policy holds.
+        assert(found != named_.end());
         if (found != named_.end())
             return found->second;
     }

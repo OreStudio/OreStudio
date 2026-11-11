@@ -169,3 +169,18 @@ TEST_CASE("a_refusal_states_the_wait_and_the_policy", "[rate_limiter]") {
     CHECK(answer.headers.at("RateLimit-Policy") == "\"credential\";q=10;w=60");
     CHECK(answer.headers.at("RateLimit") == "\"credential\";r=0;t=60");
 }
+
+TEST_CASE("a_flood_of_new_callers_cannot_reset_a_throttled_one", "[rate_limiter]") {
+    manual_clock clock;
+    rate_limiter limiter(128, clock.reader());
+    const auto policy = per_minute("p", 2);
+    CHECK(limiter.take(policy, "throttled").allowed);
+    CHECK(limiter.take(policy, "throttled").allowed);
+    CHECK_FALSE(limiter.take(policy, "throttled").allowed);
+    // Every shard fills and evicts; the throttled bucket is the furthest from
+    // full, so it is never the one dropped.
+    for (int i = 0; i < 5000; ++i)
+        CHECK(limiter.take(policy, "flood" + std::to_string(i)).allowed);
+    CHECK(limiter.tracked() <= 128);
+    CHECK_FALSE(limiter.take(policy, "throttled").allowed);
+}

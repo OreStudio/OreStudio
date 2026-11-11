@@ -178,6 +178,11 @@ via its "Verifies task" field.
 | 4 | Local review: the change stream counts its opening under the account default, not the streams an account holds open. | =change_routes.cpp= | Deferred | Holding streams open is bounded by =max_connections= today; a per-account cap on open streams belongs with the switch-over's load test. |
 | 5 | Local review: the new server options are not covered by a parser test. | =parser.cpp= | Declined | The server has no parser tests; the options are read the way every other option is, and the start-up log prints them. |
 | 6 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 7 | PR review: only the first =X-Forwarded-For= line was read, which the client writes, so a client could choose its key. | =http_session.cpp= | Accepted | Every line is joined in order before the right-most untrusted hop is read; a server test sends two lines through a trusted proxy. |
+| 8 | PR review: eviction at the key cap scans the shard and could reset a throttled caller. | =rate_limiter.hpp= | Accepted in part | The bucket dropped is the closest to full, the least throttled; a throttled one is the last to go, and a test floods 5000 callers past the bound and proves the throttled caller stays refused. The scan runs only when a shard holds its whole share with none full; the header states the trade-off. |
+| 9 | PR review: a bad token is verified before it is counted. | =http_session.cpp= | Declined | One RS256 verification per bad token, bounded by =max_connections=; the count then caps the answers. |
+| 10 | PR review: a refusal in the first ten seconds after boot was not warned; two zero-limit loops; no assertion on an unknown name; a 404 without headers. | =rate_limiter.*=, =http_session.cpp= | Accepted | The throttle starts far in the past; one loop; =for_route= asserts; the 404 states the policy. |
+| 11 | PR review: no parser test; no cap on the streams one account holds open. | =parser.cpp=, =change_routes.cpp= | Declined | As rows 4 and 5 record. |
 
 * Result
 

@@ -56,6 +56,21 @@ void carry_session_token(domain::http_request& req, const std::string& token) {
         req.headers["authorization"] = "Bearer " + token;
 }
 
+/**
+ * Every X-Forwarded-For line, in order, as one list. A proxy may append a line of
+ * its own rather than extend the first, and the first line is the client's to
+ * write, so reading it alone would let a client choose whom it counts as.
+ */
+std::string forwarded_for_of(const boost::beast::http::fields& fields) {
+    std::string out;
+    for (auto [it, end] = fields.equal_range("X-Forwarded-For"); it != end; ++it) {
+        if (!out.empty())
+            out += ',';
+        out.append(it->value());
+    }
+    return out;
+}
+
 /// Methods that change something, and so need proof of intent.
 bool changes_something(domain::http_method method) {
     switch (method) {
@@ -203,7 +218,7 @@ asio::awaitable<void> http_session::run() {
              */
             std::optional<rate_note> note;
             if (limits_ != nullptr) {
-                client_ = client_of(peer_, parser.get()["X-Forwarded-For"], limits_->trusted);
+                client_ = client_of(peer_, forwarded_for_of(parser.get()), limits_->trusted);
                 const auto& policy = limits_->policies.for_route(route);
                 if (policy.key == rate_key::client) {
                     const auto decision = limits_->limiter.take(policy, client_);
@@ -490,6 +505,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         BOOST_LOG_SEV(lg(), debug)
             << "No route matched for: " << static_cast<int>(domain_req.method) << " " << path;
         auto not_found = domain::http_response::not_found("Endpoint not found");
+        if (note)
+            state_rate_limit(not_found, *note->policy, note->decision);
         co_await write_response(not_found, version, keep_alive, true);
         co_return;
     }

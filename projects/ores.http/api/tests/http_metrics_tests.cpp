@@ -492,6 +492,51 @@ TEST_CASE("an_open_route_refuses_a_client_past_its_budget", "[rate_limit][http_m
               R"(ores_http_refused_rate_limited_total{policy="open"} 2)") != std::string::npos);
 }
 
+TEST_CASE("a_trusted_proxy_s_appended_line_names_the_client", "[rate_limit][http_metrics]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that every X-Forwarded-For line is read, in order";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+    options.open_requests_per_minute = 1;
+    options.trusted_proxies = "127.0.0.1";
+
+    metrics_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    router->add_route(router->get("/open")
+                          .summary("An open read")
+                          .auth_optional()
+                          .handler([](const http_request&) -> asio::awaitable<http_response> {
+                              co_return http_response::json(R"({"ok":true})");
+                          })
+                          .build());
+
+    const auto send = [&](std::vector<std::string> lines) {
+        asio::io_context io;
+        beast::tcp_stream stream(io);
+        stream.expires_after(std::chrono::seconds(5));
+        stream.connect(
+            asio::ip::tcp::endpoint(asio::ip::make_address("127.0.0.1"), fixture.port()));
+        http::request<http::string_body> req{http::verb::get, "/open", 11};
+        req.set(http::field::host, "127.0.0.1");
+        for (const auto& line : lines)
+            req.insert("X-Forwarded-For", line);
+        req.prepare_payload();
+        http::write(stream, req);
+        beast::flat_buffer buffer;
+        http::response<http::string_body> res;
+        http::read(stream, buffer, res);
+        return res.result_int();
+    };
+
+    // The client wrote the first line; the proxy appended the second, which names it.
+    CHECK(send({"198.51.100.7", "203.0.113.5"}) == 200);
+    CHECK(send({"203.0.113.5"}) == 429);
+    CHECK(send({"198.51.100.7"}) == 200);
+}
+
 TEST_CASE("an_authenticated_route_counts_the_account", "[rate_limit][http_metrics]") {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing that a signed-in caller spends its own budget";

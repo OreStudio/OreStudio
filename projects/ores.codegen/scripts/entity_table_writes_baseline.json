@@ -803,6 +803,18 @@
       "name": "",
       "file": "projects/ores.ore/scripts/quantlib_calendars/generate_calendar_exceptions.cpp",
       "reason": "a build-time generator that prints the SQL loading the QuantLib calendar holidays into the system tenant; it never runs against a database"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_refdata_publish_fx_vol_surface_blueprints_from_dq_fn",
+      "file": "projects/ores.sql/create/refdata/refdata_publish_from_dq_create.sql",
+      "reason": "publishes the FX volatility surface blueprints the DQ dataset stages into the tenant, like every other publish_from_dq function"
+    },
+    {
+      "kind": "sql_function",
+      "name": "ores_marketdata_publish_surface_series_fn",
+      "file": "projects/ores.sql/create/marketdata/marketdata_surface_series_create.sql",
+      "reason": "writes the live market series a published surface blueprint names, as ores_marketdata_publish_curve_series_fn does for a curve"
     }
   ]
 }

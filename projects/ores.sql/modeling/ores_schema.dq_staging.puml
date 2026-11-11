@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 171
+Tables: 175
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2053,6 +2053,61 @@ package "dq_staging" #F3E5F5 {
     A typed sub-configuration owned by a market_data_generation_config. Describes how to synthesise the tick stream for a single FX spot rate: which ORE market key it produces, the starting price, the tick cadence, and the price process. The price process is a Gaussian Mixture Model whose components are held separately as gmm_component rows. Scoped to a tenant and a party. - Artefact Table
     end note
 
+    entity ores_dq_fx_vol_surface_blueprints_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * output_series_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+        * name : text
+        * base_currency_code : text
+        * quote_currency_code : text
+        * fx_option_convention_id : text <<FK>>
+        * smile_model : text
+        * expiry_interpolation : text
+        * output_expiries : text
+        * output_strikes : text
+    }
+
+    note right of ores_dq_fx_vol_surface_blueprints_artefact_tbl
+    Records *how* one FX volatility surface is built, as a named, inspectable recipe, the surface's counterpart of the IR curve bootstrap config. Its pillars, in fx_vol_surface_pillar, name the quotes the calibration reads; the blueprint states what is done with them: the smile model fitted at each expiry, how the fitted expiries are joined, the grid of expiries and strikes the surface is written on, and the series it is written to. See [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]. output_series_id is a soft, cross-component reference into ores.marketdata's market_series: the fx_vol_surface series the calibration alone writes. As for the IR config, it is chosen and not minted, and it is the sole natural key, so exactly one active blueprint, tenant-wide, writes any given surface series. fx_option_convention_id names the pair's quoting convention in fx_option_convention, a soft reference: its ATM type, delta type, butterfly style and switch tenor decide what each pillar's quote means. smile_model and expiry_interpolation are small, fixed vocabularies intrinsic to the record, held by check constraints, as the IR config's curve_family_role is. The output grid is two lists, the expiries as tenor codes and the strikes in the oresmd strike grammar (ATM, DEL/Spot/Put/25, an absolute level), each separated by commas: the grid is a property of the recipe, read whole by the calibration and never addressed one point at a time, so it has no table of its own. - Artefact Table
+    end note
+
+    entity ores_dq_fx_vol_surface_pillar_sources_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * pillar_id : uuid <<FK>>
+        * market_series_id : uuid <<FK>>
+        * contributor_code : text
+        * weight : double
+    }
+
+    note right of ores_dq_fx_vol_surface_pillar_sources_artefact_tbl
+    One contributor's quote of a pillar: the market series it is read from, and the weight the contributor carries in the calibration. A pillar reads one series per contributor, so a broker's quotes and the derived source's quotes of the same point are two sources of one pillar, and a missing observation from one of them is not a refusal by itself. See [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][A pillar names the market series it reads]]. market_series_id is a soft reference to an fx_option quote series in ores.marketdata, named by the caller from the series the party holds. contributor_code names the provider whose series it is, as the series' own provider_code does, so a reader sees the contributor without a cross-component read. - Artefact Table
+    end note
+
+    entity ores_dq_fx_vol_surface_pillars_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * party_id : uuid <<FK>>
+        * blueprint_id : uuid <<FK>>
+        * expiry_code : text
+        * strike_label : text
+    }
+
+    note right of ores_dq_fx_vol_surface_pillars_artefact_tbl
+    One quoted point a surface's calibration reads: an expiry and a strike label, ATM, a risk reversal or butterfly at a delta, or a call or put at a delta, such as 25RR or 10P. Unlike a curve's pillars, a surface's pillars have no order the construction depends on, so a pillar is keyed by its point rather than by a sequence. Its quotes come from its sources in fx_vol_surface_pillar_source, one per contributor, each with the weight it carries in the calibration. expiry_code is a soft tenor reference, as the IR pillar's tenor codes are: the expiry is resolved to a date through the tenor machinery at the application layer. - Artefact Table
+    end note
+
     entity ores_dq_fx_volatility_configs_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -2077,6 +2132,27 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_fx_volatility_configs_artefact_tbl
     The settings of one FXVolatility entry of a curveconfig.xml, one row per curve_definition in the FXVolatilities section: the surface's dimension, the deltas and expiries it is quoted on, and the curves and spot it is built with. Its Report is a row of curve_report_configuration. The smile is not here. ORE makes every smile element optional, so a flat row cannot say that a smile surface has a smile and an ATM one does not; that condition is the presence of a fx_volatility_smile row. dimension stays, because it also decides how deltas is read. The schema also allows a ParametricSmileConfiguration, which no corpus document writes; the mapper refuses an entry that has one rather than lose it. - Artefact Table
+    end note
+
+    entity ores_dq_fx_volatility_smiles_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * id : uuid
+        * version : integer
+        * fx_volatility_config_id : uuid <<FK>>
+        * party_id : uuid <<FK>>
+          smile_type : text
+          smile_interpolation : text
+          smile_delta : text
+          smile_extrapolation : text
+          time_interpolation : text
+          time_weighting : text
+          butterfly_error_tolerance : double
+    }
+
+    note right of ores_dq_fx_volatility_smiles_artefact_tbl
+    ORE's fxVolatility is one xs:all with a mandatory Dimension and every smile element optional, so the schema says only that the smile fields may be absent. It cannot say that they are meaningless in one dimension: an ATM surface has no smile, and a smile surface has one. That is the deficiency this part corrects, because a part row exists only where the surface has a smile. The part holds SmileType, SmileInterpolation, SmileDelta, SmileExtrapolation, TimeInterpolation, TimeWeighting and ButterflyErrorTolerance. Dimension stays on the entry, because it does not only decide whether a smile exists: it also decides how the entry's Deltas are read. - Artefact Table
     end note
 
     entity ores_dq_gmm_components_artefact_tbl  #F7E5FF {

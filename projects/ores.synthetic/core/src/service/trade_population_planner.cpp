@@ -2096,6 +2096,20 @@ ores::marketdata::datum::market_reference equity_address_of(const std::string& c
     return std::move(*reference);
 }
 
+/// The first index the tenant's swap conventions name with a tenor in @p currency.
+std::optional<ores::marketdata::datum::market_reference>
+funding_index_in(const domain::trade_generation_scope& scope, const std::string& currency) {
+    for (const auto& swap : scope.conventions.swaps) {
+        if (!swap.oresmd_uri)
+            continue;
+        auto index = ores::marketdata::datum::market_reference::parse(*swap.oresmd_uri);
+        if (index && index->index() != nullptr && index->index()->get("tenor") != nullptr &&
+            index->index()->subject() == currency)
+            return std::move(*index);
+    }
+    return std::nullopt;
+}
+
 ores::trading::domain::instrument_batch
 equity_batch_of(std::expected<ores::trading::domain::equity_instrument_data,
                               ores::trading::builders::build_error> built,
@@ -2209,27 +2223,21 @@ build_equity_trade(const domain::trade_generation_scope& scope,
                 scope.equity_underlyings[(slot + i) % scope.equity_underlyings.size()];
             const auto candidate_currency =
                 candidate.currency.empty() ? std::string("USD") : candidate.currency;
-            for (const auto& swap : scope.conventions.swaps) {
-                if (!swap.oresmd_uri)
-                    continue;
-                auto index = ores::marketdata::datum::market_reference::parse(*swap.oresmd_uri);
-                if (!index || index->index() == nullptr ||
-                    index->index()->get("tenor") == nullptr ||
-                    index->index()->subject() != candidate_currency)
-                    continue;
-                return built(tb::equity_swap_builder(
-                                 conventions,
-                                 {.underlying = equity_address_of(candidate.code),
-                                  .quantity = std::max(1.0, std::round(notional / level)),
-                                  .funding = {.notional = money(notional),
-                                              .currency = candidate_currency,
-                                              .start = start,
-                                              .maturity = end,
-                                              .fixed_rate = money(0.0),
-                                              .index = std::move(*index),
-                                              .fixed_side = tb::side::pay}})
-                                 .build());
-            }
+            auto index = funding_index_in(scope, candidate_currency);
+            if (!index)
+                continue;
+            return built(
+                tb::equity_swap_builder(conventions,
+                                        {.underlying = equity_address_of(candidate.code),
+                                         .quantity = std::max(1.0, std::round(notional / level)),
+                                         .funding = {.notional = money(notional),
+                                                     .currency = candidate_currency,
+                                                     .start = start,
+                                                     .maturity = end,
+                                                     .fixed_rate = money(0.0),
+                                                     .index = std::move(*index),
+                                                     .fixed_side = tb::side::pay}})
+                    .build());
         }
         throw trade_population_error("No equity underlying of the tenant is in a currency its "
                                      "swap conventions name an index in, so no equity swap can "
@@ -2239,18 +2247,39 @@ build_equity_trade(const domain::trade_generation_scope& scope,
         if (scope.equity_underlyings.size() < 2)
             throw trade_population_error("A worst-of basket names two distinct equities, and the "
                                          "tenant holds fewer than two equity underlyings.");
+        /*
+         * The basket is in its first member's currency and funds in it, so it
+         * starts at the first underlying whose currency the tenant's swap
+         * conventions name an index in.
+         */
+        std::optional<ores::marketdata::datum::market_reference> funding;
+        std::string basket_currency;
+        std::uint32_t first = slot;
+        for (std::uint32_t i = 0; i < scope.equity_underlyings.size() && !funding; ++i) {
+            const auto& candidate = equity_for(scope, slot + i);
+            basket_currency = candidate.currency.empty() ? std::string("USD") : candidate.currency;
+            funding = funding_index_in(scope, basket_currency);
+            first = slot + i;
+        }
+        if (!funding)
+            throw trade_population_error("No equity underlying of the tenant is in a currency its "
+                                         "swap conventions name an index in, so no worst-of "
+                                         "basket swap can state its funding.");
         std::vector<tb::equity_basket_member> basket;
         for (std::uint32_t member = 0; member < 2; ++member)
             basket.push_back(
-                {.underlying = equity_address_of(equity_for(scope, slot + member).code),
+                {.underlying = equity_address_of(equity_for(scope, first + member).code),
                  .initial_price = money(level * (1.0 + 0.1 * member))});
+        // The basket observes quarterly, and its last period ends at maturity.
         std::vector<year_month_day> observations;
-        for (int period = 0; period < 4; ++period)
-            observations.push_back(add_months(start, period));
+        for (int months = 3; add_months(start, months) < end; months += 3)
+            observations.push_back(add_months(start, months));
+        observations.push_back(end);
         return built(
             tb::equity_worst_of_basket_swap_builder({.basket = std::move(basket),
                                                      .observation_dates = std::move(observations),
-                                                     .currency = currency,
+                                                     .funding_index = std::move(*funding),
+                                                     .currency = basket_currency,
                                                      .notional = money(notional),
                                                      .start = start,
                                                      .maturity = end,

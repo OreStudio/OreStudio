@@ -26,11 +26,11 @@ Every equity trade type the generator books is built by its trade builder, and t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:47DEDD3C-082E-46A9-BD01-67DFAB9CFFA5][Make the generated trades value correctly in ORE]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -98,6 +98,40 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Barrier levels not validated | equity_builders.hpp | Accept | Levels must be positive and a double barrier's lower level below its upper. |
+| 2 | Digital checks an unused quantity | equity_builders.cpp | Accept | The digital records its quantity. |
+| 3 | Worst-of basket can hold one equity twice | equity_builders.cpp | Accept | The builder refuses a repeated equity; the planner refuses fewer than two underlyings. |
+| 4 | Zero quantity aborts the population | trade_population_planner.cpp | Accept | A drawn quantity is at least one. |
+| 5 | Missing currency checks | equity_builders.cpp | Accept | Every builder checks its currency. |
+| 6 | Header includes | equity_builders.hpp | Accept | The header includes what it uses. |
+| 7 | Swap schedule copy selects on leg only | equity_builders.cpp | Accept | The swap copies only the floating leg's own schedule. |
+| 8 | Basket names need a tracked home | equity_builders.cpp | Accept | Constituents store the catalogue code, which the store check accepts, until the soft foreign key task reads addresses. |
 
 * Result
+
+Every equity type the generator books is built by its builder in
+=equity_builders.hpp=. The planner draws values and calls the builders. The
+old constructors and the plan's equity terms are deleted.
+
+ORE now reads and builds every booked equity type. Each one fails only on a
+missing equity curve, spot or volatility, which the market data task supplies.
+The trade errors this task fixed:
+
+- The accumulator and TaRF state their payoff type, strike and range bounds.
+- The Asian option states its averaging schedule.
+- The cliquet states its equity as an Underlying, because ORE looks for Name
+  on the trade, not on the cliquet data.
+- The digital option states its style.
+- The equity swap has a floating funding leg on an index the tenant's swap
+  conventions name, in the equity's currency.
+- The touch option states its equity index and calendar.
+- The worst-of basket states its members as Equity and funds on an index. Its
+  period and pay schedules are the start date and each period end, so ORE
+  reads one level per accrual period.
+
+The equity lines left the round-trip and missing-path known lists. The ORE
+errors list now holds only market data lines for equity.
+
+A basket constituent stores the catalogue code, not the address, because the
+store's constituent check compares codes. The soft foreign key task changes
+that check to read addresses.

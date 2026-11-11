@@ -48,6 +48,13 @@ md::market_reference spx() {
     return *reference;
 }
 
+md::market_reference libor_3m() {
+    auto parsed =
+        md::market_reference::parse("oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
+    REQUIRE(parsed);
+    return *parsed;
+}
+
 equity_option_terms spx_call() {
     return {.underlying = spx(),
             .currency = std::string("USD"),
@@ -169,6 +176,7 @@ TEST_CASE("a_worst_of_basket_states_its_members_as_equities", equity_tags) {
             {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
                                                          {*ndx, equity_amount("18000")}},
              .observation_dates = std::vector<year_month_day>{2026y / 4 / 5},
+             .funding_index = libor_3m(),
              .currency = std::string("USD"),
              .notional = equity_amount("1000000"),
              .start = 2026y / 1 / 5,
@@ -182,6 +190,55 @@ TEST_CASE("a_worst_of_basket_states_its_members_as_equities", equity_tags) {
     // The store resolves a member by its catalogue code.
     CHECK(basket->basket_constituents[0].underlying_name == ".SPX");
     CHECK(basket->periods.size() == 1);
+}
+
+TEST_CASE("a_worst_of_basket_schedule_holds_one_more_date_than_its_periods", equity_tags) {
+    auto other = md::market_index::make(md::index_family::equity, ".NDX", {});
+    REQUIRE(other);
+    auto ndx = md::market_reference::of(std::move(*other));
+    REQUIRE(ndx);
+    const auto basket =
+        equity_worst_of_basket_swap_builder(
+            {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
+                                                         {*ndx, equity_amount("18000")}},
+             .observation_dates = std::vector<year_month_day>{2026y / 7 / 5, 2027y / 1 / 5},
+             .funding_index = libor_3m(),
+             .currency = std::string("USD"),
+             .notional = equity_amount("1000000"),
+             .start = 2026y / 1 / 5,
+             .maturity = 2027y / 1 / 5,
+             .position = option_position::long_option})
+            .build();
+    REQUIRE(basket.has_value());
+    CHECK(basket->periods.size() == 2);
+    for (const auto* role : {"floating_period_schedule", "floating_pay_schedule"}) {
+        std::vector<year_month_day> dates;
+        for (const auto& date : basket->schedule_dates)
+            if (date.schedule_role == role)
+                dates.push_back(date.schedule_date);
+        CHECK(dates == std::vector<year_month_day>{2026y / 1 / 5, 2026y / 7 / 5, 2027y / 1 / 5});
+    }
+}
+
+TEST_CASE("a_worst_of_basket_observing_after_maturity_fails", equity_tags) {
+    auto other = md::market_index::make(md::index_family::equity, ".NDX", {});
+    REQUIRE(other);
+    auto ndx = md::market_reference::of(std::move(*other));
+    REQUIRE(ndx);
+    const auto basket =
+        equity_worst_of_basket_swap_builder(
+            {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
+                                                         {*ndx, equity_amount("18000")}},
+             .observation_dates = std::vector<year_month_day>{2027y / 4 / 5},
+             .funding_index = libor_3m(),
+             .currency = std::string("USD"),
+             .notional = equity_amount("1000000"),
+             .start = 2026y / 1 / 5,
+             .maturity = 2027y / 1 / 5,
+             .position = option_position::long_option})
+            .build();
+    REQUIRE_FALSE(basket.has_value());
+    CHECK(basket.error().term == "observation_dates");
 }
 
 TEST_CASE("an_equity_swap_pays_the_equity_against_a_floating_leg", equity_tags) {
@@ -250,6 +307,7 @@ TEST_CASE("a_basket_holding_one_equity_twice_fails_and_names_the_term", equity_t
             {.basket = std::vector<equity_basket_member>{{spx(), equity_amount("5000")},
                                                          {spx(), equity_amount("5000")}},
              .observation_dates = std::vector<year_month_day>{2026y / 4 / 5},
+             .funding_index = libor_3m(),
              .currency = std::string("USD"),
              .notional = equity_amount("1000000"),
              .start = 2026y / 1 / 5,

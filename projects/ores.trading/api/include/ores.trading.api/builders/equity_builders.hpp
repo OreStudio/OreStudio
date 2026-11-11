@@ -290,7 +290,10 @@ struct equity_basket_member final {
  */
 struct equity_worst_of_basket_swap_terms final {
     required<std::vector<equity_basket_member>> basket;
+    /// The end of each accrual period, ascending, after the start and no later than maturity.
     required<std::vector<std::chrono::year_month_day>> observation_dates;
+    /// The index the funding leg floats on, in the basket's currency.
+    required<marketdata::datum::market_reference> funding_index;
     required<std::string> currency;
     required<utility::decimal::decimal> notional;
     required<std::chrono::year_month_day> start;

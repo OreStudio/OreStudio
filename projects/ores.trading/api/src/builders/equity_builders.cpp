@@ -273,8 +273,9 @@ equity_result equity_touch_option_builder::build() const {
     row.expiry_date = terms_.expiry.get();
     row.long_short = long_short_of(terms_.position.get());
     row.payout_amount = terms_.payout.get();
-    // ORE watches a touch against the equity's index.
+    // ORE watches a touch against the equity's index, on the TARGET calendar.
     row.barrier_fixing_index = terms_.underlying.get().uri();
+    row.barrier_calendar = "TARGET";
     domain::equity_instrument_data out;
     out.instrument = std::move(row);
     out.options.push_back(
@@ -392,8 +393,15 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
         return std::unexpected(build_error{"notional", "must be positive"});
     if (auto refusal = refusals::period(terms_.start.get(), terms_.maturity.get()))
         return std::unexpected(std::move(*refusal));
-    if (terms_.observation_dates.get().empty())
+    const auto& observations = terms_.observation_dates.get();
+    if (observations.empty())
         return std::unexpected(build_error{"observation_dates", "must state at least one date"});
+    for (std::size_t i = 0; i < observations.size(); ++i) {
+        const auto previous = i == 0 ? terms_.start.get() : observations[i - 1];
+        if (observations[i] <= previous || observations[i] > terms_.maturity.get())
+            return std::unexpected(build_error{
+                "observation_dates", "must ascend after the start and end no later than maturity"});
+    }
 
     domain::equity_swap_instrument row{};
     row.identity.trade_type_code = std::string(trade_type);
@@ -404,6 +412,10 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
     row.maturity_date = terms_.maturity.get();
     row.long_short = long_short_of(terms_.position.get());
     row.payment_frequency_code = "Quarterly";
+    row.fixed_rate = decimal{};
+    row.floating_index = terms_.funding_index.get().uri();
+    row.floating_spread = decimal{};
+    row.floating_day_count_fraction = "A360";
     domain::equity_instrument_data out;
     out.instrument = std::move(row);
     int number = 0;
@@ -423,8 +435,36 @@ equity_result equity_worst_of_basket_swap_builder::build() const {
         constituent.initial_price = member.initial_price;
         out.basket_constituents.push_back(std::move(constituent));
     }
+    /*
+     * ORE accrues between consecutive schedule dates and reads one level per
+     * accrual period, so both schedules are the start then each period's end.
+     */
+    for (const auto* role : {"floating_period_schedule", "floating_pay_schedule"}) {
+        domain::instrument_schedule schedule{};
+        schedule.owner_role = "option";
+        schedule.owner_number = 1;
+        schedule.schedule_role = role;
+        schedule.sequence_number = 1;
+        schedule.schedule_kind = "dates";
+        schedule.calendar = "TARGET";
+        schedule.convention = "MF";
+        out.schedules.push_back(std::move(schedule));
+        int date_number = 0;
+        std::vector<ymd> dates{terms_.start.get()};
+        dates.insert(dates.end(), observations.begin(), observations.end());
+        for (const auto& when : dates) {
+            domain::instrument_schedule_date date{};
+            date.owner_role = "option";
+            date.owner_number = 1;
+            date.schedule_role = role;
+            date.schedule_sequence_number = 1;
+            date.sequence_number = ++date_number;
+            date.schedule_date = when;
+            out.schedule_dates.push_back(std::move(date));
+        }
+    }
     number = 0;
-    for (const auto& when : terms_.observation_dates.get()) {
+    for (const auto& when : observations) {
         domain::equity_swap_period period{};
         period.sequence_number = ++number;
         period.period_date = when;

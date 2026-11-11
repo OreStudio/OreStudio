@@ -452,6 +452,14 @@ std::size_t header_rows_of(const domain::trade_population_slot& slot) {
 TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_population]") {
     const auto plan = plan_of(equity_scope());
 
+    // A name is an equity address, or a basket member's catalogue code; both name one code.
+    const auto code_of = [](const std::string& name) {
+        const auto query = name.find('?');
+        if (!name.starts_with("oresmd://") || query == std::string::npos)
+            return name;
+        const auto slash = name.rfind('/', query);
+        return name.substr(slash + 1, query - slash - 1);
+    };
     std::set<std::string> named;
     for (const auto& slot : plan.slots) {
         /*
@@ -468,21 +476,15 @@ TEST_CASE("an_equity_slot_names_an_underlying_the_catalogue_holds", "[trade_popu
             REQUIRE(slot.trade_type_code == "EquityWorstOfBasketSwap");
             REQUIRE(slot.instruments.equity_basket_constituents.size() == 2u);
             for (const auto& member : slot.instruments.equity_basket_constituents)
-                named.insert(member.underlying_name);
+                named.insert(code_of(member.underlying_name));
         } else {
-            named.insert(underlying);
+            named.insert(code_of(underlying));
         }
     }
 
     // Every underlying the scope states is drawn, and no other is invented.
     REQUIRE(named.size() == 4u);
-    // A name is an equity address, or a basket member's catalogue code.
-    const auto drawn = [&](const std::string& code) {
-        return std::ranges::any_of(named, [&](const std::string& name) {
-            return name == code || name.find("/" + code + "?") != std::string::npos;
-        });
-    };
-    REQUIRE((drawn(".SPX") && drawn("MSFT.O")));
+    REQUIRE((named.contains(".SPX") && named.contains("MSFT.O")));
 }
 
 TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods", "[trade_population]") {
@@ -497,9 +499,18 @@ TEST_CASE("a_worst_of_basket_states_its_constituents_and_its_periods", "[trade_p
             continue;
         found = true;
         REQUIRE(slot.instruments.equity_swap_instruments.size() == 1u);
-        // Two names over four dates, which is the shape the corpus states.
         REQUIRE(slot.instruments.equity_basket_constituents.size() == 2u);
-        REQUIRE(slot.instruments.equity_swap_periods.size() == 4u);
+        // The periods run to maturity, and each schedule holds the start and every period end.
+        const auto& periods = slot.instruments.equity_swap_periods;
+        REQUIRE_FALSE(periods.empty());
+        REQUIRE(periods.back().period_date ==
+                slot.instruments.equity_swap_instruments.front().maturity_date);
+        for (const auto* role : {"floating_period_schedule", "floating_pay_schedule"}) {
+            const auto dates =
+                std::ranges::count_if(slot.instruments.instrument_schedule_dates,
+                                      [&](const auto& date) { return date.schedule_role == role; });
+            REQUIRE(static_cast<std::size_t>(dates) == periods.size() + 1);
+        }
         for (const auto& member : slot.instruments.equity_basket_constituents) {
             REQUIRE_FALSE(member.underlying_name.empty());
             REQUIRE_FALSE(member.underlying_kind.empty());

@@ -4,16 +4,16 @@
     <TradeType>EquityWorstOfBasketSwap</TradeType>
     <EquityWorstOfBasketSwapData>
       <LongShort>Long</LongShort>
-      <Currency>GBP</Currency>
+      <Currency>USD</Currency>
       <Quantity>8284783.79</Quantity>
       <Underlyings>
         <Underlying>
-          <Type>share</Type>
-          <Name>GB0005405286</Name>
+          <Type>Equity</Type>
+          <Name>.SPX</Name>
         </Underlying>
         <Underlying>
-          <Type>index</Type>
-          <Name>.SPX</Name>
+          <Type>Equity</Type>
+          <Name>MSFT.O</Name>
         </Underlying>
       </Underlyings>
       <InitialPrices>
@@ -21,20 +21,68 @@
         <InitialPrice>660.81</InitialPrice>
       </InitialPrices>
       <FloatingPeriodSchedule>
-        <Rules>
-          <StartDate></StartDate>
-          <Tenor>6M</Tenor>
+        <Dates>
+          <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
-        </Rules>
+          <Dates>
+            <Date>2025-10-02</Date>
+            <Date>2026-01-02</Date>
+            <Date>2026-04-02</Date>
+            <Date>2026-07-02</Date>
+            <Date>2026-10-02</Date>
+            <Date>2027-01-02</Date>
+            <Date>2027-04-02</Date>
+            <Date>2027-07-02</Date>
+            <Date>2027-10-02</Date>
+            <Date>2028-01-02</Date>
+            <Date>2028-04-02</Date>
+            <Date>2028-07-02</Date>
+            <Date>2028-10-02</Date>
+            <Date>2029-01-02</Date>
+            <Date>2029-04-02</Date>
+            <Date>2029-07-02</Date>
+            <Date>2029-10-02</Date>
+          </Dates>
+        </Dates>
       </FloatingPeriodSchedule>
       <FloatingPayDates>
-        <Rules>
-          <StartDate></StartDate>
-          <Tenor>6M</Tenor>
+        <Dates>
+          <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
-        </Rules>
+          <Dates>
+            <Date>2025-10-02</Date>
+            <Date>2026-01-02</Date>
+            <Date>2026-04-02</Date>
+            <Date>2026-07-02</Date>
+            <Date>2026-10-02</Date>
+            <Date>2027-01-02</Date>
+            <Date>2027-04-02</Date>
+            <Date>2027-07-02</Date>
+            <Date>2027-10-02</Date>
+            <Date>2028-01-02</Date>
+            <Date>2028-04-02</Date>
+            <Date>2028-07-02</Date>
+            <Date>2028-10-02</Date>
+            <Date>2029-01-02</Date>
+            <Date>2029-04-02</Date>
+            <Date>2029-07-02</Date>
+            <Date>2029-10-02</Date>
+          </Dates>
+        </Dates>
       </FloatingPayDates>
       <KnockOutLevels>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
@@ -45,26 +93,39 @@
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
       </FixedTriggerLevels>
       <FixedRate>0</FixedRate>
-      <FloatingIndex>PLACEHOLDER</FloatingIndex>
-      <FloatingDayCountFraction>Actual/360</FloatingDayCountFraction>
+      <FloatingIndex>USD-LIBOR-3M</FloatingIndex>
+      <FloatingSpread>0</FloatingSpread>
+      <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>
   </Trade>
   <Trade id="1af62728-03a0-560c-904c-56e56a5e265e">
     <TradeType>EquityWorstOfBasketSwap</TradeType>
     <EquityWorstOfBasketSwapData>
       <LongShort>Long</LongShort>
-      <Currency>GBP</Currency>
+      <Currency>USD</Currency>
       <Quantity>5666887.39</Quantity>
       <Underlyings>
         <Underlying>
-          <Type>share</Type>
-          <Name>GB0005405286</Name>
+          <Type>Equity</Type>
+          <Name>.SPX</Name>
         </Underlying>
         <Underlying>
-          <Type>index</Type>
-          <Name>.SPX</Name>
+          <Type>Equity</Type>
+          <Name>MSFT.O</Name>
         </Underlying>
       </Underlyings>
       <InitialPrices>
@@ -72,20 +133,80 @@
         <InitialPrice>2750.96</InitialPrice>
       </InitialPrices>
       <FloatingPeriodSchedule>
-        <Rules>
-          <StartDate></StartDate>
-          <Tenor>6M</Tenor>
+        <Dates>
+          <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
-        </Rules>
+          <Dates>
+            <Date>2025-12-02</Date>
+            <Date>2026-03-02</Date>
+            <Date>2026-06-02</Date>
+            <Date>2026-09-02</Date>
+            <Date>2026-12-02</Date>
+            <Date>2027-03-02</Date>
+            <Date>2027-06-02</Date>
+            <Date>2027-09-02</Date>
+            <Date>2027-12-02</Date>
+            <Date>2028-03-02</Date>
+            <Date>2028-06-02</Date>
+            <Date>2028-09-02</Date>
+            <Date>2028-12-02</Date>
+            <Date>2029-03-02</Date>
+            <Date>2029-06-02</Date>
+            <Date>2029-09-02</Date>
+            <Date>2029-12-02</Date>
+            <Date>2030-03-02</Date>
+            <Date>2030-06-02</Date>
+            <Date>2030-09-02</Date>
+            <Date>2030-12-02</Date>
+          </Dates>
+        </Dates>
       </FloatingPeriodSchedule>
       <FloatingPayDates>
-        <Rules>
-          <StartDate></StartDate>
-          <Tenor>6M</Tenor>
+        <Dates>
+          <Calendar>TARGET</Calendar>
           <Convention>MF</Convention>
-        </Rules>
+          <Dates>
+            <Date>2025-12-02</Date>
+            <Date>2026-03-02</Date>
+            <Date>2026-06-02</Date>
+            <Date>2026-09-02</Date>
+            <Date>2026-12-02</Date>
+            <Date>2027-03-02</Date>
+            <Date>2027-06-02</Date>
+            <Date>2027-09-02</Date>
+            <Date>2027-12-02</Date>
+            <Date>2028-03-02</Date>
+            <Date>2028-06-02</Date>
+            <Date>2028-09-02</Date>
+            <Date>2028-12-02</Date>
+            <Date>2029-03-02</Date>
+            <Date>2029-06-02</Date>
+            <Date>2029-09-02</Date>
+            <Date>2029-12-02</Date>
+            <Date>2030-03-02</Date>
+            <Date>2030-06-02</Date>
+            <Date>2030-09-02</Date>
+            <Date>2030-12-02</Date>
+          </Dates>
+        </Dates>
       </FloatingPayDates>
       <KnockOutLevels>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
+        <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
         <KnockOutLevel>1</KnockOutLevel>
@@ -96,10 +217,27 @@
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
         <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
+        <FixedTriggerLevel>0.75</FixedTriggerLevel>
       </FixedTriggerLevels>
       <FixedRate>0</FixedRate>
-      <FloatingIndex>PLACEHOLDER</FloatingIndex>
-      <FloatingDayCountFraction>Actual/360</FloatingDayCountFraction>
+      <FloatingIndex>USD-LIBOR-3M</FloatingIndex>
+      <FloatingSpread>0</FloatingSpread>
+      <FloatingDayCountFraction>A360</FloatingDayCountFraction>
     </EquityWorstOfBasketSwapData>
   </Trade>
 </Portfolio>

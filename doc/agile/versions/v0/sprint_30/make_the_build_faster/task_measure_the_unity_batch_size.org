@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: EEC2B388-FD61-44D5-9C5F-C725C1260027
+:END:
+#+title: Task: Measure the unity batch size
+#+description: Compare unity batch sizes 16, 8, 4 and off on GitHub runners, for a cold build and an incremental PR build.
+#+type: task
+#+level: s1
+#+filetags: :ci:build:make_the_build_faster:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Choose the unity batch size of each heavy target from measurements, not guesses. A workflow_dispatch job builds with batch sizes 16, 8, 4 and off, cold and then incremental over a recent merged PR, and records compile time, cache hit rate and the slowest unit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- A workflow_dispatch job runs the batch-size matrix on GitHub-hosted runners.
+- A table gives cold build time, incremental build time, cache hit rate and slowest unit for each batch size.
+- The heavy targets (ores.synthetic.core.tests, ores.iam.core, ores.marketdata.api, ores.trading.api, ores.refdata.api) set the batch size the table supports.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Continuous Linux build-and-test step before unity (2026-10-18 to 10-24) | debug 260-282 min, release 193-254 min | =gh run view <id> --json jobs= on the "Run CTest workflow" step | runs before 7f2c4f037a |
+| Same step after unity (2026-11-02 to 11-07) | debug 61-138 min, release 22-177 min | =gh run view <id> --json jobs= on the "Run CTest workflow" step | runs after 7f2c4f037a |
+| sccache hit rate, run 42954775219 | debug 347/914, release 347/940 | =gh run view 42954775219 --log=, sccache stats | cd8ef5b356 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -10,7 +10,7 @@
 #+subcomponent: api
 #+entity_singular: fx_vol_surface_operation
 #+namespace: ores::marketdata::messaging
-#+brief: The calibration and publish of a party's FX volatility surfaces.
+#+brief: The calibration, publish and read of a party's FX volatility surfaces.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-11-11
 #+updated: 2026-11-11
@@ -481,3 +481,155 @@ refusal is a reply with =success= false and a message that names what failed.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+** fx_vol_surface_point
+
+#+begin_src cpp :name comment
+/**
+ * @brief One point of a published surface: its expiry, its strike and its volatility.
+ */
+#+end_src
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** strike
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** volatility
+:PROPERTIES:
+:cpp_type: double
+:default: 0.0
+:END:
+
+** get_published_fx_vol_surface_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_published_fx_vol_surface
+:response: get_published_fx_vol_surface_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the published surface of a blueprint of the caller's party: the newest published set at or before the as-of, exactly as it was published. Naming an expiry reads that expiry across the strikes; naming a strike reads that strike across the expiries. A candidate is never read.
+ */
+#+end_src
+
+*** blueprint_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** expiry
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The expiry to slice at, such as 3M, or empty for every expiry.
+ */
+#+end_src
+
+*** strike
+:PROPERTIES:
+:cpp_type: std::string
+:default: ""
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The strike to slice at, such as ATM or DEL/Spot/Put/25, or empty for every strike.
+ */
+#+end_src
+
+** get_published_fx_vol_surface_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The published surface, or the slice of it asked for, and the publish it answers from.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** blueprint_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** publish_request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::chrono::system_clock::time_point
+:END:
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** superseded_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** expiries
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The expiries the answer holds, shortest first.
+ */
+#+end_src
+
+*** strikes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The strikes the answer holds, in the blueprint's order.
+ */
+#+end_src
+
+*** points
+:PROPERTIES:
+:cpp_type: std::vector<fx_vol_surface_point>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The points, expiry by expiry, each expiry's strikes in order.
+ */
+#+end_src

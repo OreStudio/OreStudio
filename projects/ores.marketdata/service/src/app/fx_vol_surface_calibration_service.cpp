@@ -27,6 +27,7 @@
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/observation_lineage.hpp"
 #include "ores.marketdata.core/repository/fx_vol_surface_calibration_repository.hpp"
+#include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
@@ -183,6 +184,13 @@ fx_vol_surface_calibration_service::calibrate(context ctx, const mm::calibrate_f
             throw std::invalid_argument("Name the as-of instant the calibration reads the market at.");
 
         const auto recipe = read_recipe(ctx, req.blueprint_id, party);
+        // A published surface never changes: its grid is what the publish authorised.
+        for (const auto& published :
+             repository::fx_vol_surface_publish_repository{}.read_published_for_blueprint(ctx, recipe.blueprint.id))
+            if (published.as_of == as_of)
+                throw std::invalid_argument("The surface of " + recipe.blueprint.name + " as of this instant is "
+                                            "published, and a published surface never changes. Calibrate at a "
+                                            "new as-of.");
         const auto checked = check_recipe(recipe);
         if (!checked)
             throw std::invalid_argument("The recipe of " + recipe.blueprint.name + " is refused: " +

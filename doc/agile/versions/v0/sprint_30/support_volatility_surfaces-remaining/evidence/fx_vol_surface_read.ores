@@ -1,0 +1,18 @@
+# A trader of ACCOUS reads the party's published EURUSD_SSVI surface. LATE is after
+# the live surface, so the read answers from it. BETWEEN falls between the first and
+# the second published surfaces, so the read answers from the first, superseded one.
+# EARLY is before any publish, and the read says so. The slices read the 3M expiry
+# across the strikes and the ATM strike across the expiries. A calibration at the
+# as-of of a published surface is refused. Run with BLUEPRINT, LATE, BETWEEN,
+# EARLY and PUBLISHED set.
+connect $ORES_NATS_URL
+
+login henry.jones@acme_corporation Secure-Password-123
+fx_vol_surface_operation get-published-fx-vol-surface ${BLUEPRINT} ${LATE}
+fx_vol_surface_operation get-published-fx-vol-surface ${BLUEPRINT} ${BETWEEN} --strike ATM
+fx_vol_surface_operation get-published-fx-vol-surface ${BLUEPRINT} ${LATE} --expiry 3M
+fx_vol_surface_operation get-published-fx-vol-surface ${BLUEPRINT} ${LATE} --strike ATM
+fx_vol_surface_operation get-published-fx-vol-surface ${BLUEPRINT} ${LATE} --expiry 5Y
+fx_vol_surface_operation get-published-fx-vol-surface ${BLUEPRINT} ${EARLY}
+fx_vol_surface_operation calibrate-fx-vol-surface ${BLUEPRINT} ${PUBLISHED}
+logout

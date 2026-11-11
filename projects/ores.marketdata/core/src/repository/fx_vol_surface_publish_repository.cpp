@@ -507,4 +507,25 @@ fx_vol_surface_publish_repository::read_live_for_series(context ctx,
     return rows;
 }
 
+std::vector<domain::fx_vol_surface_publish>
+fx_vol_surface_publish_repository::read_published_for_blueprint(
+    context ctx, const boost::uuids::uuid& blueprint_id) {
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    const auto bid = boost::uuids::to_string(blueprint_id);
+    const auto query = query_builder::read<std::vector<fx_vol_surface_publish_entity>> |
+                       query_builder::where("tenant_id"_c == tid && "blueprint_id"_c == bid &&
+                                            "valid_to"_c == max);
+    auto rows = query_builder::execute_read_query<fx_vol_surface_publish_entity,
+                                                  domain::fx_vol_surface_publish>(
+        ctx,
+        query,
+        [](const auto& entities) { return fx_vol_surface_publish_mapper::map(entities); },
+        lg(),
+        "Reading the published surfaces of a blueprint.");
+    std::erase_if(rows, [](const auto& r) { return !r.published_at.has_value(); });
+    std::ranges::sort(rows, [](const auto& a, const auto& b) { return a.as_of > b.as_of; });
+    return rows;
+}
+
 }

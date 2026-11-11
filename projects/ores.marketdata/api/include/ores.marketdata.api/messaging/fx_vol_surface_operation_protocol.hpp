@@ -235,6 +235,77 @@ struct get_fx_vol_surface_publish_subject_response {
 };
 
 /**
+ * @brief One point of a published surface: its expiry, its strike and its volatility.
+ */
+struct fx_vol_surface_point {
+    std::string expiry;
+    std::string strike;
+    double volatility = 0.0;
+
+    friend bool operator==(const fx_vol_surface_point&, const fx_vol_surface_point&) = default;
+};
+
+/**
+ * @brief Reads the published surface of a blueprint of the caller's party: the newest published set
+ * at or before the as-of, exactly as it was published. Naming an expiry reads that expiry across
+ * the strikes; naming a strike reads that strike across the expiries. A candidate is never read.
+ */
+struct get_published_fx_vol_surface_request {
+    using response_type = struct get_published_fx_vol_surface_response;
+    static constexpr std::string_view nats_subject =
+        "marketdata.v1.ops.get_published_fx_vol_surface";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string blueprint_id;
+    std::chrono::system_clock::time_point as_of;
+    /**
+     * @brief The expiry to slice at, such as 3M, or empty for every expiry.
+     */
+    std::string expiry = "";
+    /**
+     * @brief The strike to slice at, such as ATM or DEL/Spot/Put/25, or empty for every strike.
+     */
+    std::string strike = "";
+
+    friend bool operator==(const get_published_fx_vol_surface_request&,
+                           const get_published_fx_vol_surface_request&) = default;
+};
+
+/**
+ * @brief The published surface, or the slice of it asked for, and the publish it answers from.
+ */
+struct get_published_fx_vol_surface_response {
+    bool success = false;
+    std::string message;
+    std::string blueprint_name;
+    std::string publish_request_id;
+    std::chrono::system_clock::time_point as_of;
+    std::optional<std::chrono::system_clock::time_point> published_at;
+    std::string published_by;
+    std::optional<std::chrono::system_clock::time_point> superseded_at;
+    /**
+     * @brief The expiries the answer holds, shortest first.
+     */
+    std::vector<std::string> expiries;
+    /**
+     * @brief The strikes the answer holds, in the blueprint's order.
+     */
+    std::vector<std::string> strikes;
+    /**
+     * @brief The points, expiry by expiry, each expiry's strikes in order.
+     */
+    std::vector<fx_vol_surface_point> points;
+
+    friend bool operator==(const get_published_fx_vol_surface_response&,
+                           const get_published_fx_vol_surface_response&) = default;
+};
+
+/**
  * @brief The members of fx_vol_pillar_fit, named as the wire names them and in the order
  * the type declares them.
  *
@@ -461,6 +532,70 @@ wire_fields(std::type_identity<get_fx_vol_surface_publish_subject_response>) {
     };
 }
 
+/**
+ * @brief The members of fx_vol_surface_point, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fx_vol_surface_point>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"expiry", &fx_vol_surface_point::expiry},
+        ::ores::utility::codec::field{"strike", &fx_vol_surface_point::strike},
+        ::ores::utility::codec::field{"volatility", &fx_vol_surface_point::volatility},
+    };
+}
+
+/**
+ * @brief The members of get_published_fx_vol_surface_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_published_fx_vol_surface_request>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"blueprint_id",
+                                      &get_published_fx_vol_surface_request::blueprint_id},
+        ::ores::utility::codec::field{"as_of", &get_published_fx_vol_surface_request::as_of},
+        ::ores::utility::codec::field{"expiry", &get_published_fx_vol_surface_request::expiry},
+        ::ores::utility::codec::field{"strike", &get_published_fx_vol_surface_request::strike},
+    };
+}
+
+/**
+ * @brief The members of get_published_fx_vol_surface_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<get_published_fx_vol_surface_response>) {
+    return std::tuple{
+        ::ores::utility::codec::field{"success", &get_published_fx_vol_surface_response::success},
+        ::ores::utility::codec::field{"message", &get_published_fx_vol_surface_response::message},
+        ::ores::utility::codec::field{"blueprint_name",
+                                      &get_published_fx_vol_surface_response::blueprint_name},
+        ::ores::utility::codec::field{"publish_request_id",
+                                      &get_published_fx_vol_surface_response::publish_request_id},
+        ::ores::utility::codec::field{"as_of", &get_published_fx_vol_surface_response::as_of},
+        ::ores::utility::codec::field{"published_at",
+                                      &get_published_fx_vol_surface_response::published_at},
+        ::ores::utility::codec::field{"published_by",
+                                      &get_published_fx_vol_surface_response::published_by},
+        ::ores::utility::codec::field{"superseded_at",
+                                      &get_published_fx_vol_surface_response::superseded_at},
+        ::ores::utility::codec::field{"expiries", &get_published_fx_vol_surface_response::expiries},
+        ::ores::utility::codec::field{"strikes", &get_published_fx_vol_surface_response::strikes},
+        ::ores::utility::codec::field{"points", &get_published_fx_vol_surface_response::points},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -586,6 +721,44 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string write_msgpack(
         const ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response& v);
     static ores::marketdata::messaging::get_fx_vol_surface_publish_subject_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::fx_vol_surface_point> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::fx_vol_surface_point& v);
+    static ores::marketdata::messaging::fx_vol_surface_point read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::fx_vol_surface_point& v);
+    static ores::marketdata::messaging::fx_vol_surface_point
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_published_fx_vol_surface_request& v);
+    static ores::marketdata::messaging::get_published_fx_vol_surface_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_published_fx_vol_surface_request& v);
+    static ores::marketdata::messaging::get_published_fx_vol_surface_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_published_fx_vol_surface_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_published_fx_vol_surface_response& v);
+    static ores::marketdata::messaging::get_published_fx_vol_surface_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_published_fx_vol_surface_response& v);
+    static ores::marketdata::messaging::get_published_fx_vol_surface_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

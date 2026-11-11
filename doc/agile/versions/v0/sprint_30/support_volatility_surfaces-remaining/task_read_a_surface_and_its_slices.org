@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :support_volatility_surfaces-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/read-a-surface-and-its-slices
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-03
 #+updated: 2026-11-08
-#+environment: prime_origin
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Screens and reports can read a published surface. The reads return the published
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-03                               |
 
 * Acceptance
@@ -43,9 +43,7 @@ Screens and reports can read a published surface. The reads return the published
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One operation, =get_published_fx_vol_surface=, reads a blueprint's published surface at an as-of: the newest published set at or before it, superseded ones included, named by its publish request. An optional expiry or strike cuts the slice. A pure =surface_grid_of= orders the expiries by length and the strikes in the blueprint's order, and refuses a slice the surface does not hold. The grid is the output series' observations at the publish's as-of, so a calibration at the as-of of a published surface is now refused: a published surface never changes. A new repository query, =read_published_for_blueprint=, reads the publishes of one blueprint.
 
 * Measurements
 
@@ -89,3 +87,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done on 2026-11-11. On the Acme tenant with ACCOUS's EURUSD_SSVI published as of 01:58 and superseded as of 01:59, a trader of ACCOUS read the surface at 02:30 and got the 01:59 set, named by its request: seven expiries, 1W to 1Y, by five strikes in the blueprint's order. A read at 01:58:30 answered from the superseded 01:58 set and said so. The 3M expiry read across the strikes and the ATM strike across the expiries. A 5Y slice was refused by name, a read at 01:00 said no surface was published, and a calibration at the published 01:59 was refused. A trader of ACCOUK, reading the same blueprint, was told it is not visible to their party. The scripts are =evidence/fx_vol_surface_read.ores= and =evidence/fx_vol_surface_read_other_party.ores=.
+
+Tests: grid 3 cases.

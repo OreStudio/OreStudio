@@ -75,7 +75,8 @@ public:
                           server_counters* counters = nullptr,
                           std::shared_ptr<domain::session_store> sessions = nullptr,
                           domain::cookie_settings cookie = {},
-                          std::shared_ptr<rate_limiting> limits = nullptr);
+                          std::shared_ptr<rate_limiting> limits = nullptr,
+                          domain::token_renewer renewer = {});
 
     /**
      * @brief Starts processing the session.
@@ -173,6 +174,14 @@ private:
     refuse_too_large(unsigned version, std::string_view subject, std::uint64_t size);
 
     /**
+     * @brief Renew the token of the session this request rides in, when three
+     * quarters of its life have passed. Says false when IAM refused, which ends
+     * the session; a renewal that cannot be made now keeps the current token.
+     */
+    boost::asio::awaitable<bool> renew_if_due(const std::string& identifier,
+                                              domain::session_record& record);
+
+    /**
      * @brief Count a failed credential against the open policy by client, and
      * answer 429 rather than 401 once that budget is spent, so guessing tokens
      * is limited like any open request. Says whether it answered.
@@ -222,6 +231,7 @@ private:
     std::shared_ptr<domain::session_store> sessions_;
     domain::cookie_settings cookie_;
     std::shared_ptr<rate_limiting> limits_;
+    domain::token_renewer renewer_;
     boost::asio::ip::address peer_;
     /// The client the current request counts as, set as its headers are read.
     std::string client_;

@@ -158,6 +158,21 @@ bool session_store::update(const std::string& identifier,
     return true;
 }
 
+bool session_store::begin_renewal(const std::string& identifier) {
+    const std::lock_guard lock(mutex_);
+    auto found = entries_.find(key_of(identifier));
+    if (found == entries_.end() || found->second.renewing)
+        return false;
+    found->second.renewing = true;
+    return true;
+}
+
+void session_store::end_renewal(const std::string& identifier) {
+    const std::lock_guard lock(mutex_);
+    if (auto found = entries_.find(key_of(identifier)); found != entries_.end())
+        found->second.renewing = false;
+}
+
 std::size_t session_store::size() const {
     const std::lock_guard lock(mutex_);
     return entries_.size();

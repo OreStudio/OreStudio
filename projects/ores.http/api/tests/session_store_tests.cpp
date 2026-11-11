@@ -209,3 +209,16 @@ TEST_CASE("a_session_is_changed_in_place_and_kept_alive", "[session_store]") {
     clock.advance(2h);
     CHECK_FALSE(store.update(identifier, [](session_record&) {}));
 }
+
+TEST_CASE("one_request_at_a_time_renews_a_session", "[session_store]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that a renewal is claimed by one caller";
+
+    session_store store(1h);
+    const auto identifier = store.open(a_record());
+    CHECK(store.begin_renewal(identifier));
+    CHECK_FALSE(store.begin_renewal(identifier));
+    store.end_renewal(identifier);
+    CHECK(store.begin_renewal(identifier));
+    CHECK_FALSE(store.begin_renewal("no-such-session"));
+}

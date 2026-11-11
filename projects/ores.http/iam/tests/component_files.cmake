@@ -46,6 +46,7 @@ set(files
     "role_write_routes_tests.cpp"
     "seed_profile_routes_tests.cpp"
     "session_operations_routes_tests.cpp"
+    "session_renewal_tests.cpp"
     "session_routes_tests.cpp"
     "session_statistics_operations_routes_tests.cpp"
     "sign_in_routes_tests.cpp"

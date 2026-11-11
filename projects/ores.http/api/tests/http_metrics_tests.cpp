@@ -28,6 +28,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <atomic>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <optional>
@@ -355,6 +356,80 @@ TEST_CASE("an_open_read_sees_a_live_session_and_an_open_write_does_not",
     const auto write = metrics_send_with(fixture.port(), http::verb::post, "/open", cookie);
     REQUIRE(write.has_value());
     CHECK(write->body() == R"({"subject":"","carried":false})");
+}
+
+TEST_CASE("a_session_near_its_expiry_is_renewed_once", "[session_cookie][http_metrics]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that the gateway renews a browser session's token";
+
+    using outcome = token_renewal::outcome;
+    for (const auto result : {outcome::renewed, outcome::unavailable, outcome::refused}) {
+        INFO(static_cast<int>(result));
+        http_server_options options;
+        options.address = "127.0.0.1";
+        options.port = 0;
+        options.worker_threads = 2;
+
+        metrics_fixture fixture(options);
+        auto router = fixture.server().get_router();
+        router->add_route(
+            router->get("/token")
+                .summary("Echoes the token a route forwards")
+                .auth_required()
+                .handler([](const http_request& req) -> asio::awaitable<http_response> {
+                    co_return http_response::json(R"({"token":")" +
+                                                  req.get_bearer_token().value_or("") + R"("})");
+                })
+                .build());
+
+        cookie_settings settings;
+        settings.name = "ores_web_session_test";
+        fixture.server().set_cookie_settings(settings);
+        std::atomic<int> calls{0};
+        const auto now = std::chrono::system_clock::now();
+        fixture.server().set_token_renewer([&, result](const std::string& token) {
+            ++calls;
+            token_renewal out;
+            out.result = result;
+            if (result == outcome::renewed && token == "the-token") {
+                out.token = "the-next-token";
+                ores::security::jwt::jwt_claims fresh;
+                fresh.subject = "the-account";
+                fresh.issued_at = now;
+                fresh.expires_at = now + std::chrono::minutes(30);
+                out.claims = fresh;
+            }
+            return out;
+        });
+
+        session_record record;
+        record.token = "the-token";
+        record.claims.subject = "the-account";
+        // Twenty-five minutes into a thirty-minute token: past three quarters.
+        record.claims.issued_at = now - std::chrono::minutes(25);
+        record.claims.expires_at = now + std::chrono::minutes(5);
+        const auto cookie = settings.name + "=" + fixture.server().sessions()->open(record);
+
+        const auto first = metrics_send_with(fixture.port(), http::verb::get, "/token", cookie);
+        const auto second = metrics_send_with(fixture.port(), http::verb::get, "/token", cookie);
+        REQUIRE(first.has_value());
+        REQUIRE(second.has_value());
+        if (result == outcome::renewed) {
+            CHECK(first->body() == R"({"token":"the-next-token"})");
+            // The renewed token is fresh, so the next request does not renew it again.
+            CHECK(second->body() == R"({"token":"the-next-token"})");
+            CHECK(calls == 1);
+        } else if (result == outcome::unavailable) {
+            // The current token is still valid, so the request goes on with it.
+            CHECK(first->body() == R"({"token":"the-token"})");
+            CHECK(calls == 2);
+        } else {
+            CHECK(first->result_int() == 401);
+            CHECK(first->at(http::field::set_cookie).find("Max-Age=0") != std::string::npos);
+            CHECK(second->result_int() == 401);
+            CHECK(calls == 1);
+        }
+    }
 }
 
 TEST_CASE("a_session_the_server_does_not_know_is_refused_and_the_cookie_cleared",

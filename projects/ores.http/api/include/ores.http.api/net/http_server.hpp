@@ -65,6 +65,14 @@ public:
     }
 
     /// How this deployment names and protects the cookie a session rides in.
+    /**
+     * @brief Renews a browser session's token before it expires. The session
+     * path knows no service, so the application gives it this.
+     */
+    void set_token_renewer(domain::token_renewer renewer) {
+        renewer_ = std::move(renewer);
+    }
+
     void set_cookie_settings(domain::cookie_settings settings) {
         cookie_ = std::move(settings);
     }
@@ -185,6 +193,7 @@ private:
     // buckets every session counts against. Null when the options turn limiting off.
     std::shared_ptr<rate_limiting> limits_;
     std::unique_ptr<boost::asio::steady_timer> sweep_timer_;
+    domain::token_renewer renewer_;
 };
 
 }

@@ -109,6 +109,13 @@ via its "Verifies task" field.
 | 4 | =unity-collisions= read =decltype= as a name, from the intent parameter of the batch bodies. | =record_routes.hpp= | Accepted | Every request states the same =change_intent=, so the parameter modelled nothing and is gone. |
 | 5 | Every unit keeps its own forwarding helper. | templates | Deferred | [[id:942D892C-FB59-46D7-BFF6-04DDECC67C3B][Share the gateway's forwarding step]] takes it. |
 | 6 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 7 | PR #4567 review: =record_routes.hpp= uses =std::move= without =<utility>=. | =record_routes.hpp= | Accepted | Included. |
+| 8 | PR #4567 review: a double blank line and an overlong docstring line. | =record_routes.cpp=, =org_loader.py= | Accepted | Fixed. |
+| 9 | PR #4567 review: the body is written again through yyjson, and a default literal that fails to parse is skipped in silence. | =record_routes.hpp= | Partly accepted | The 64-bit limit is stated where the function is declared. The skip is unreachable, because the plan validates each literal when it builds the model. |
+| 10 | PR #4567 review: a default of the wrong JSON type for its column passes. | =org_loader.py= | Accepted | The plan refuses it when the model is built, and a test pins it. |
+| 11 | PR #4567 review: confirm the service enforces the system-tenant rule. | — | Tracked | It does not, and the BFF's check was the only barrier too. [[id:9CC70D14-AA6A-4092-AF6D-0C4F68E09C93][Refuse a tenant's write to a shared catalogue in the service]] takes it. |
+| 12 | PR #4567 review: no test that a shared catalogue is read only outside the system tenant. | =web_records_tests.org= | Accepted | The generated tests of a shared catalogue check =writable: false= for a request with no system tenant. |
+| 13 | PR #4567 review: check the rebased results before merge. | — | No change | Posted on the PR: 4/4 suites pass with no warnings. |
 
 * Result
 

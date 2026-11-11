@@ -36,6 +36,7 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 /**
@@ -130,7 +131,8 @@ ORES_HTTP_API_EXPORT void require_ok(const ores::utility::domain::result& result
  * A write is the body's =write= object, or the =write= of each item of its
  * =changes= array. A member the write states is kept, even when it is null.
  * A body that is not JSON comes back as it was, so the read that follows
- * refuses it.
+ * refuses it. The body is written again through the JSON library, so a number
+ * keeps only what 64 bits hold; no write member is wider.
  */
 ORES_HTTP_API_EXPORT std::string with_write_defaults(std::string_view body,
                                                      std::initializer_list<write_default> defaults);

@@ -88,7 +88,6 @@ void require_ok(const ores::utility::domain::result& result) {
     }
 }
 
-
 namespace {
 
 /// Adds each default the write object leaves out, parsed from its JSON literal.

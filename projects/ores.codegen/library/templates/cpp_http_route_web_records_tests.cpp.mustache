@@ -92,6 +92,10 @@ TEST_CASE("{{unit}}_routes_names_the_resource_in_its_catalogue_entry", "[routes]
     CHECK(entry.find("\"key\":\"{{key}}\"") != std::string::npos);
     CHECK(entry.find("\"entityType\":\"{{entity_type}}\"") != std::string::npos);
     CHECK(entry.find("\"writePermission\":\"{{write_permission}}\"") != std::string::npos);
+{{#system_owned}}
+    // The request carries no system tenant, so a shared catalogue is read only.
+    CHECK(entry.find("\"writable\":false") != std::string::npos);
+{{/system_owned}}
 }
 
 TEST_CASE("{{unit}}_routes_refuses_a_page_it_cannot_read", "[routes][web]") {

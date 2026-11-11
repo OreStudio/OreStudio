@@ -5778,6 +5778,11 @@ def entity_http_route_plan(entity: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+_JSON_NUMBER_TYPES = frozenset({
+    "int", "double", "float", "std::int32_t", "std::int64_t", "std::uint32_t",
+    "std::uint64_t", "std::int16_t", "std::uint16_t", "long", "unsigned int"})
+
+
 def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
     """The record routes a screen reads one resource through, or None.
 
@@ -5793,8 +5798,8 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
     catalogue shows with ``#+web_read_only_because:``.
 
     A screen area may read resources another component owns, so
-    ``#+web_area:`` names the area the routes answer under. The unit stays in
-    its own component's HTTP part, beside the protocol it speaks. ``#+web_writes: many`` gives the write and the removal
+    ``#+web_area:`` names the area the routes answer under. The unit stays
+    in its own component's HTTP part, beside the protocol it speaks. ``#+web_writes: many`` gives the write and the removal
     the batch bodies the synthetic screens send. ``#+web_parent_filter:``
     names the filter member a parent's rows are read by, where the entity has
     no list-by request. ``#+web_system_owned: true`` marks a catalogue every
@@ -5904,9 +5909,18 @@ def entity_web_records_plan(entity: dict[str, Any]) -> dict[str, Any] | None:
         if cpp_type == "std::string":
             return json.dumps(text)
         try:
-            json.loads(text)
+            value = json.loads(text)
         except ValueError:
             return None
+        # A default of the wrong JSON type would make every write that omits
+        # the member fail to decode, so the model is refused when it is built.
+        expected = (bool if cpp_type == "bool"
+                    else (int, float) if cpp_type in _JSON_NUMBER_TYPES else None)
+        if expected is not None and (not isinstance(value, expected)
+                                     or (expected is not bool and isinstance(value, bool))):
+            raise ValueError(
+                f"{singular}: the default of {_column_name(column)} is {text}, "
+                f"which is not a {cpp_type}")
         return text
 
     write_defaults = []

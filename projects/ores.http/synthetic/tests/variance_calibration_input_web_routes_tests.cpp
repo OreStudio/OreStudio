@@ -113,6 +113,8 @@ TEST_CASE("variance_calibration_input_web_routes_names_the_resource_in_its_catal
           std::string::npos);
     CHECK(entry.find("\"writePermission\":\"synthetic::variance_calibration_inputs:write\"") !=
           std::string::npos);
+    // The request carries no system tenant, so a shared catalogue is read only.
+    CHECK(entry.find("\"writable\":false") != std::string::npos);
 }
 
 TEST_CASE("variance_calibration_input_web_routes_refuses_a_page_it_cannot_read", "[routes][web]") {

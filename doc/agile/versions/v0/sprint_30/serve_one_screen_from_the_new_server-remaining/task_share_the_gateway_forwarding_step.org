@@ -43,9 +43,34 @@ Move the NATS half of the forwarding step into ores.nats as a typed call that re
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The forwarding step has two halves, and each goes to the layer that owns it.
+
+The NATS half goes in =ores.nats=. A typed call sends a canonical request on
+its subject, waits the default timeout and decodes the reply. It answers the
+decoded response or one refusal from a closed set:
+
+| Refusal | What the service or the transport said |
+|---------+----------------------------------------|
+| =forbidden= | the reply's =X-Error= header is =forbidden= |
+| =bad_request= | the header is =bad_request= |
+| =unauthenticated= | the header is =unauthorized=, =token_expired= or =max_session_exceeded= |
+| =session_expired= | the client could not renew the session |
+| =unanswered= | the transport failed, or the header names a code the call does not know |
+| =undecodable= | the reply is not the response type |
+
+The header's meaning is a pure function of its text, so it is tested without
+a server.
+
+The HTTP half goes in a new =ores.http.nats= part, which links
+=ores.http.api= and =ores.nats=. One =forward= function delegates the
+caller's token, makes the typed call and maps each refusal to an HTTP status
+and code through one table. =ores.http.api= keeps no dependency on NATS, so
+an HTTP client of the API does not pull NATS in.
+
+The record units, the typed route units and the feed key routes call
+=forward=, and their own copies go in the same change. The typed units then
+answer a refusal with the ={code, message}= body the browser reads, which the
+switch-over needs.
 
 * Measurements
 

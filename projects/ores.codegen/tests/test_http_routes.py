@@ -669,3 +669,15 @@ class TestTheWebRecordRoutes:
         pattern = "projects/ores.http/{component}/src/routes/{component}/{web_entity}_routes.cpp"
         assert (resolve_output_path(pattern, {"domain_entity": entity}, "domain_entity")
                 == "projects/ores.http/demo/src/routes/demo/widget_web_routes.cpp")
+
+    def test_a_default_of_the_wrong_type_is_refused_when_the_model_is_built(self):
+        import pytest
+        entity = _web()
+        entity["columns"] = [{"name": "enabled", "cpp_type": "bool", "default_value": "0"}]
+        with pytest.raises(ValueError, match="not a bool"):
+            entity_web_records_plan(entity)
+
+    def test_a_shared_catalogue_tests_that_it_is_read_only_outside_the_system_tenant(self):
+        text = _rendered_web(_web(web_system_owned=True),
+                             "cpp_http_route_web_records_tests.cpp.mustache")
+        assert 'entry.find("\\"writable\\":false")' in text

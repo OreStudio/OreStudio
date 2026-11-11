@@ -113,6 +113,8 @@ TEST_CASE("yield_curve_process_type_web_routes_names_the_resource_in_its_catalog
           std::string::npos);
     CHECK(entry.find("\"writePermission\":\"synthetic::yield_curve_process_types:write\"") !=
           std::string::npos);
+    // The request carries no system tenant, so a shared catalogue is read only.
+    CHECK(entry.find("\"writable\":false") != std::string::npos);
 }
 
 TEST_CASE("yield_curve_process_type_web_routes_refuses_a_page_it_cannot_read", "[routes][web]") {

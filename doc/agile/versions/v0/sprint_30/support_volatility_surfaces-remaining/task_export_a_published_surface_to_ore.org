@@ -110,5 +110,11 @@ via its "Verifies task" field.
 | 12 | #4596: the surface series lookup names the provider | =marketdata_surface_series_create.sql= | No change | The lookup is the table's unique key (tenant, party, URI, provider). A claim keeps provider =ore=: the live claimed series is =FX_VOL_SURFACE_CALIBRATION= under =ore=. |
 | 13 | #4596: the generator reads the licence from a populate file | =generate_sql.py= | No change | The file's header is the project licence, which every SQL file carries verbatim. |
 | 14 | #4596: no test of the reuse path | =refdata_fx_vol_surface_blueprints_publish_test.sql= | Fixed | Two tests: a series the feed wrote first is named, and a missing one is created once. 15/15. |
+| 15 | #4600: the convention id is rebuilt in two generators | =generate_configuration_data.py= | Fixed | Both read =fx_option_convention_id= from the blueprint generator. Output byte-identical. |
+| 16 | #4600: the deltas copy the blueprint grid | =generate_configuration_data.py= | Fixed | One =GRID_STRIKES= list builds the blueprint's strikes and the ORE deltas. Output byte-identical. |
+| 17 | #4600: two modules named generate_sql | =generate_configuration_data.py= | Fixed | The blueprint generator loads by path under its own module name, without touching =sys.path=. |
+| 18 | #4600: are the smile rows' party_id set | =fx_volatility_smiles.json= | No change | =row()= stamps the placeholder party on every staged row, and the publish writes the target party. |
+| 19 | #4600: is the smile artefact table generated | =dq_fx_volatility_smiles_artefact_create.sql= | No change | It comes from the model flag alone, through =--address ores.sql.schema=. |
+| 20 | #4600: the pricing engine outputs are stale on main | =pricing_model_product_parameters.json= | Captured | =acme_pricing_engine_outputs_are_stale=. |
 
 * Result

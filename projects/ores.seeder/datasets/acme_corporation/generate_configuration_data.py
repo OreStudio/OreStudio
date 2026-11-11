@@ -19,15 +19,26 @@ regeneration reproduces them.
 Usage:
     python3 generate_configuration_data.py
 """
+import importlib.util
 import json
 import os
-import sys
 import uuid
 
 import generate_party_data as parties
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "fx_vol_surfaces"))
-import generate_sql as surfaces  # noqa: E402
+
+def load_surfaces():
+    """The FX volatility surface blueprint generator, loaded by its path under its own
+    name, because its file name is the same as this directory's generate_sql.py."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "fx_vol_surfaces",
+                        "generate_sql.py")
+    spec = importlib.util.spec_from_file_location("fx_vol_surfaces_generate_sql", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+surfaces = load_surfaces()
 
 NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -602,15 +613,10 @@ def inflation_curve_configuration():
     return definitions, configs
 
 
-# The deltas an FX volatility curve reads, one per strike of the surface grid the system
-# publishes: the 10 and 25 delta puts, ATM, and the 25 and 10 delta calls.
-FX_VOLATILITY_DELTAS = "10P,25P,ATM,25C,10C"
-
-
 def fx_volatility_configuration():
     """An FX volatility curve of dimension Smile and smile type Delta for each pair the
     entity calibrates a surface for. It reads the published grid as ORE quotes: the
-    surface's expiries by FX_VOLATILITY_DELTAS, under the pair's FX option convention,
+    surface's expiries by its grid's deltas, under the pair's FX option convention,
     with the pair's spot and the two overnight curves of the entity. The calendar and the
     day counter are left to ORE, which takes the pair's joint calendar and A365."""
     definitions, configs, smiles = [], [], []
@@ -628,8 +634,8 @@ def fx_volatility_configuration():
             config_id = new_uuid(f"fx_volatility_configuration:{company}:{curve_id}:config")
             configs.append(row(
                 company, id=config_id, curve_definition_id=definition_id,
-                dimension="Smile", deltas=FX_VOLATILITY_DELTAS,
-                conventions=f"{base}-{quote}-FXOPTION",
+                dimension="Smile", deltas=surfaces.ore_deltas(),
+                conventions=surfaces.fx_option_convention_id(base, quote),
                 expiries=",".join(surfaces.EXPIRIES),
                 fx_spot_id=f"FX/{base}/{quote}",
                 fx_foreign_curve_id=f"Yield/{base}/{base}1D",

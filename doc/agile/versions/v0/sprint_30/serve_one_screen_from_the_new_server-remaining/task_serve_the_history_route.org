@@ -8,12 +8,12 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-history-route
-#+pr:
+#+pr: 4574
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve GET /api/history from the C++ server for every entity type ores.web reads 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -41,9 +41,17 @@ Serve GET /api/history from the C++ server for every entity type ores.web reads 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The history request states no subject of its own: the component that owns
+an entity type answers on its own history subject, which
+=history_subject_for= derives from the type. The forwarding step gains
+=forward_on=, which takes the subject, and =forward= sends on the request's own
+subject through it, so one implementation serves both.
+
+The route lives in =ores.http.core=, beside the other cross-cutting routes. It
+serves the 86 entity types the BFF served, held in one sorted table checked at
+compile time: the classification lists, the versioned reference data records,
+the synthetic resources and the records each history tab reads by name. An
+unknown type is a 404 and a missing key a 400, as in the BFF.
 
 * Measurements
 
@@ -76,12 +84,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4574][#4574]] | [http] Serve the history read from C++ |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the shared =forward= reads the request's own subject, and a history request has none. | =forwarding.hpp= | Accepted | =forward_on= takes the subject; =forward= calls it, so there is one implementation. |
+| 2 | Local review: =ores.http.core='s build file is generated. | =component_overview.org= | Accepted | The two new libraries are declared in the model's =extra_dependencies= and the file regenerated, not edited. |
+| 3 | Local build: =is_sorted= over =const char*= compared pointers, so the table's order was not checked at compile time. | =history_routes.cpp= | Accepted | The table holds =std::string_view=, so the order of the text is checked. |
+| 4 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 5 | PR #4574 review: confirm the client sends =entityType= and =entityId=. | =client.ts= | No change | It builds =new URLSearchParams({ entityType, entityId })=. |
+| 6 | PR #4574 review: a failed history reply is a 502; check what the BFF did. | =history_routes.cpp= | Accepted | The BFF mapped =OperationFailedError= to 409 =invalid-request= with the service's message. The route now does the same. |
+| 7 | PR #4574 review: prove every served type reaches a subject. | =history_routes_tests.cpp= | Accepted | A test checks each of the 86 types against the history subject of a known owner. The test target declares =ores.history.api= in the model. |
+| 8 | PR #4574 review: confirm =forward= through =forward_on= sends as before. | =forwarding.hpp= | No change | =request_and_decode= with =authenticated= set and =authenticated_request_and_decode= both call =authenticated_request= on the request's subject; =refuse_undecodable= takes a =string_view=. |
+| 9 | PR #4574 review: test =forward_on= with a fake client, and the newest-first order. | — | Declined | No fake client exists to inject a reply; the forward step is covered up to the transport. |
 
 * Result
+
+The C++ server answers =GET /api/history= for the 86 entity types the BFF
+served, newest version first, in the BFF's shape, through the shared forwarding
+step on the subject the entity type names. All nine =ores.http= suites pass,
+with three new history cases.

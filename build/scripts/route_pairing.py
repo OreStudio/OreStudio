@@ -79,5 +79,6 @@ PAIRS = {
     ("GET", "/api/synthetic"): ("GET", "/api/synthetic"),
     ("GET", "/api/classifications"): ("GET", "/api/classifications"),
     ("GET", "/api/labels"): ("GET", "/api/labels"),
+    ("GET", "/api/history"): ("GET", "/api/history"),
     ("GET", "/api/counterparties"): ("GET", f"{REFDATA}/counterparties"),
 }

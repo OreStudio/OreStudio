@@ -240,6 +240,11 @@ RULES = (
          CPP, NOT_API, NO_AREA,
          "The label catalogue the BFF answered, kept so the screens draw their codes when"
          " the BFF goes."),
+    Rule("the history read route",
+         ("exact", "GET /api/history"),
+         CPP, NOT_API, NO_AREA,
+         "The one history read every history tab calls, kept so the tabs work when the BFF"
+         " goes; the owning component answers on the subject the entity type names."),
     Rule("the generic history read",
          ("exact", "GET /api/history"),
          BFF, NOT_API, NO_AREA,

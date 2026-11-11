@@ -1,0 +1,122 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.http.api/net/record_routes.hpp"
+#include "test_suite.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <cstdint>
+#include <optional>
+#include <string>
+
+namespace rr = ores::http::net::record_routes;
+using ores::http::domain::http_status;
+using ores::utility::domain::outcome;
+using ores::utility::domain::result;
+
+namespace {
+
+/// The refusal a call states, or nothing when it states none.
+template <typename F>
+std::optional<rr::refusal> record_routes_refusal_of(F&& call) {
+    try {
+        call();
+    } catch (const rr::refusal& r) {
+        return r;
+    }
+    return std::nullopt;
+}
+
+}
+
+TEST_CASE("record_routes_maps_each_refused_outcome_to_its_status", "[record_routes]") {
+    const auto status_of = [](outcome o, std::string message = "words") {
+        return record_routes_refusal_of([&] { rr::require_ok(result{o, "", message, {}}); });
+    };
+    CHECK_FALSE(status_of(outcome::ok).has_value());
+    CHECK(status_of(outcome::conflict)->status == http_status::conflict);
+    CHECK(status_of(outcome::invalid)->status == http_status::bad_request);
+    CHECK(status_of(outcome::denied)->status == http_status::forbidden);
+    CHECK(status_of(outcome::missing)->status == http_status::not_found);
+    CHECK(status_of(outcome::unavailable)->status == http_status::bad_gateway);
+    CHECK(status_of(outcome::failed)->code == "upstream-unavailable");
+}
+
+TEST_CASE("record_routes_says_what_a_conflict_means_when_the_service_does_not", "[record_routes]") {
+    const auto refused =
+        record_routes_refusal_of([] { rr::require_ok(result{outcome::conflict, "", "", {}}); });
+    REQUIRE(refused.has_value());
+    CHECK(refused->code == "conflict");
+    CHECK(refused->message.find("Reload") != std::string::npos);
+}
+
+TEST_CASE("record_routes_trims_every_blank_before_it_measures", "[record_routes]") {
+    CHECK(rr::trimmed(" \t\r\nabc\r\n ") == "abc");
+    CHECK(rr::trimmed(" \n ").empty());
+    CHECK(rr::has_reason("  why  "));
+    CHECK_FALSE(rr::has_reason(" \r\n "));
+    CHECK(rr::has_reason(std::string(200, 'a') + "   "));
+    CHECK_FALSE(rr::has_reason(std::string(201, 'a')));
+}
+
+TEST_CASE("record_routes_refuses_a_code_that_names_nothing_or_too_much", "[record_routes]") {
+    CHECK(rr::code("  USD ", "bad") == "USD");
+    const auto empty = record_routes_refusal_of([] { rr::code("   ", "A code is needed."); });
+    REQUIRE(empty.has_value());
+    CHECK(empty->status == http_status::bad_request);
+    CHECK(empty->message == "A code is needed.");
+    CHECK(record_routes_refusal_of([] { rr::code(std::string(101, 'a'), "long"); }).has_value());
+}
+
+TEST_CASE("record_routes_reads_a_parameter_as_its_type_or_refuses_it_by_name", "[record_routes]") {
+    CHECK(rr::read<std::uint32_t>("42", "limit") == 42u);
+    CHECK(rr::read<bool>("true", "flag"));
+    const auto refused = record_routes_refusal_of([] { rr::read<std::uint32_t>("ten", "limit"); });
+    REQUIRE(refused.has_value());
+    CHECK(refused->message == "Invalid value for limit: ten");
+    CHECK(record_routes_refusal_of([] { rr::read<bool>("yes", "flag"); }).has_value());
+}
+
+TEST_CASE("record_routes_answers_a_refusal_with_the_code_and_message_body", "[record_routes]") {
+    const auto response =
+        rr::answer(rr::refusal{http_status::forbidden, "forbidden", "Read only here."});
+    CHECK(response.status == http_status::forbidden);
+    CHECK(response.body == R"({"code":"forbidden","message":"Read only here."})");
+    CHECK(rr::no_content().status == http_status::no_content);
+    CHECK(rr::no_content().body.empty());
+}
+
+TEST_CASE("record_routes_refuses_with_the_status_code_and_message_it_is_given", "[record_routes]") {
+    const auto refused = record_routes_refusal_of(
+        [] { rr::refuse(http_status::forbidden, "forbidden", "Read only here."); });
+    REQUIRE(refused.has_value());
+    CHECK(refused->status == http_status::forbidden);
+    CHECK(refused->code == "forbidden");
+    CHECK(refused->message == "Read only here.");
+
+    const auto invalid = record_routes_refusal_of([] { rr::invalid("Bad page."); });
+    REQUIRE(invalid.has_value());
+    CHECK(invalid->status == http_status::bad_request);
+    CHECK(invalid->code == "invalid-request");
+    CHECK(invalid->message == "Bad page.");
+}
+
+TEST_CASE("record_routes_reads_text_verbatim_and_false_as_false", "[record_routes]") {
+    CHECK(rr::read<std::string>(" as given ", "name") == " as given ");
+    CHECK_FALSE(rr::read<bool>("false", "flag"));
+}

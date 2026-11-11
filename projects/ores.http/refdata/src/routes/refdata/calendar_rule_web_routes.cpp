@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.http/routes/refdata/calendar_rule_web_routes.hpp"
+#include "ores.http.api/net/record_routes.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
@@ -38,11 +39,9 @@
 #include <cstdint>
 #include <exception>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -54,6 +53,7 @@ using ores::http::domain::http_response;
 using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
 namespace messaging = ores::refdata::messaging;
+namespace rr = ores::http::net::record_routes;
 
 namespace {
 
@@ -63,75 +63,8 @@ auto& calendar_rule_web_lg() {
     return instance;
 }
 
-/// The sentence the browser sees when the route cannot answer; the detail goes to the log.
-constexpr std::string_view calendar_rule_web_unanswered =
-    "The service could not answer this request.";
-
 /// How many rows a whole read asks for at a time.
 constexpr std::uint32_t calendar_rule_web_page_size = 1000;
-
-/// A refusal a route states, with the status and the code the browser reads.
-struct calendar_rule_web_refusal final {
-    http_status status;
-    std::string code;
-    std::string message;
-};
-
-[[noreturn]] void
-calendar_rule_web_refuse(http_status status, std::string code, std::string message) {
-    throw calendar_rule_web_refusal{status, std::move(code), std::move(message)};
-}
-
-[[noreturn]] void calendar_rule_web_invalid(std::string message) {
-    calendar_rule_web_refuse(http_status::bad_request, "invalid-request", std::move(message));
-}
-
-http_response calendar_rule_web_answer(const calendar_rule_web_refusal& refusal) {
-    return http_response::api_error(refusal.status, refusal.code, refusal.message);
-}
-
-http_response calendar_rule_web_no_content() {
-    http_response response;
-    response.status = http_status::no_content;
-    return response;
-}
-
-/// One parameter read as the member's own type, refused by name when malformed.
-template <typename T>
-T calendar_rule_web_read(const std::string& raw, const std::string& name) {
-    try {
-        if constexpr (std::is_same_v<T, std::string>) {
-            return raw;
-        } else if constexpr (std::is_same_v<T, bool>) {
-            if (raw == "true")
-                return true;
-            if (raw == "false")
-                return false;
-            throw std::invalid_argument(raw);
-        } else {
-            return boost::lexical_cast<T>(raw);
-        }
-    } catch (const std::exception&) {
-        calendar_rule_web_invalid("Invalid value for " + name + ": " + raw);
-    }
-}
-
-/// The text without its leading and trailing blanks.
-std::string calendar_rule_web_trimmed(const std::string& raw) {
-    constexpr std::string_view blanks = " \t\r\n";
-    const auto first = raw.find_first_not_of(blanks);
-    if (first == std::string::npos)
-        return {};
-    return raw.substr(first, raw.find_last_not_of(blanks) - first + 1);
-}
-
-/// A code named in the address: 1 to 100 characters once trimmed.
-std::string calendar_rule_web_code(const std::string& raw, const std::string& sentence) {
-    const auto trimmed = calendar_rule_web_trimmed(raw);
-    if (trimmed.empty() || trimmed.size() > 100)
-        calendar_rule_web_invalid(sentence);
-    return trimmed;
-}
 
 /**
  * @brief Forward one canonical request with the caller's token, and decode the reply.
@@ -151,56 +84,26 @@ calendar_rule_web_call(const http_request& req, nats_client& session, const Requ
         if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
             it != reply.headers.end()) {
             if (it->second == "forbidden")
-                calendar_rule_web_refuse(http_status::forbidden, "forbidden", it->second);
+                rr::refuse(http_status::forbidden, "forbidden", it->second);
             if (it->second == "bad_request")
-                calendar_rule_web_invalid(it->second);
+                rr::invalid(it->second);
             if (it->second == "unauthorized" || it->second == "token_expired" ||
                 it->second == "max_session_exceeded")
-                calendar_rule_web_refuse(
-                    http_status::unauthorized, "not-authenticated", it->second);
+                rr::refuse(http_status::unauthorized, "not-authenticated", it->second);
             BOOST_LOG_SEV(calendar_rule_web_lg(), warn) << "Unknown service error: " << it->second;
-            calendar_rule_web_refuse(http_status::bad_gateway,
-                                     "upstream-unavailable",
-                                     std::string(calendar_rule_web_unanswered));
+            rr::refuse(
+                http_status::bad_gateway, "upstream-unavailable", std::string(rr::unanswered));
         }
         auto decoded =
             ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
         if (!decoded) {
             BOOST_LOG_SEV(calendar_rule_web_lg(), error)
                 << "Failed to decode response: " << decoded.error().what();
-            calendar_rule_web_refuse(
-                http_status::bad_gateway, "internal", std::string(calendar_rule_web_unanswered));
+            rr::refuse(http_status::bad_gateway, "internal", std::string(rr::unanswered));
         }
         return std::move(*decoded);
     } catch (const ores::nats::service::session_expired_error& e) {
-        calendar_rule_web_refuse(http_status::unauthorized, "session-expired", e.what());
-    }
-}
-
-/// The status a refused outcome names. A conflict the service states no words for says what it
-/// means.
-void calendar_rule_web_require_ok(const ores::utility::domain::result& result) {
-    using ores::utility::domain::outcome;
-    switch (result.outcome) {
-        case outcome::ok:
-            return;
-        case outcome::conflict:
-            calendar_rule_web_refuse(
-                http_status::conflict,
-                "conflict",
-                result.message.empty() ?
-                    "This record changed since it was read, or it already exists. "
-                    "Reload and try again." :
-                    result.message);
-        case outcome::invalid:
-            calendar_rule_web_invalid(result.message);
-        case outcome::denied:
-            calendar_rule_web_refuse(http_status::forbidden, "forbidden", result.message);
-        case outcome::missing:
-            calendar_rule_web_refuse(http_status::not_found, "not-found", result.message);
-        default:
-            calendar_rule_web_refuse(
-                http_status::bad_gateway, "upstream-unavailable", result.message);
+        rr::refuse(http_status::unauthorized, "session-expired", e.what());
     }
 }
 
@@ -292,12 +195,6 @@ std::optional<T> calendar_rule_web_body(std::string_view text) {
     return std::move(*value);
 }
 
-/// A reason is 1 to 200 characters once trimmed.
-bool calendar_rule_web_has_reason(const std::string& reason) {
-    const auto trimmed = calendar_rule_web_trimmed(reason);
-    return !trimmed.empty() && trimmed.size() <= 200;
-}
-
 }
 
 std::string_view calendar_rule_web_routes::catalogue_entry() {
@@ -315,7 +212,7 @@ boost::asio::awaitable<http_response> calendar_rule_web_routes::handle_list(cons
             for (std::uint32_t offset = 0;;) {
                 const auto reply = calendar_rule_web_call(
                     req, session, calendar_rule_web_page(offset, calendar_rule_web_page_size));
-                calendar_rule_web_require_ok(reply.result);
+                rr::require_ok(reply.result);
                 const auto& got = reply.calendar_rules;
                 rows.insert(rows.end(), got.begin(), got.end());
                 offset += static_cast<std::uint32_t>(got.size());
@@ -334,10 +231,10 @@ boost::asio::awaitable<http_response> calendar_rule_web_routes::handle_list(cons
             offset = raw_offset.empty() ? 0 : boost::lexical_cast<std::uint32_t>(raw_offset);
             limit = boost::lexical_cast<std::uint32_t>(req.get_query_param("limit"));
         } catch (const std::exception&) {
-            calendar_rule_web_invalid(page_sentence);
+            rr::invalid(page_sentence);
         }
         if (limit < 1 || limit > 1000)
-            calendar_rule_web_invalid(page_sentence);
+            rr::invalid(page_sentence);
 
         auto msg = calendar_rule_web_page(offset, limit);
         const auto sort = req.get_query_param("sort");
@@ -345,17 +242,17 @@ boost::asio::awaitable<http_response> calendar_rule_web_routes::handle_list(cons
             constexpr std::string_view sortable[] = {""};
             if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
                 std::end(sortable) - 1)
-                calendar_rule_web_invalid("calendar-rules cannot be ordered by " + sort + ".");
+                rr::invalid("calendar-rules cannot be ordered by " + sort + ".");
             msg.order.field = sort;
         }
         const auto descending = req.get_query_param("descending");
         if (!descending.empty() && descending != "true" && descending != "false")
-            calendar_rule_web_invalid(page_sentence);
+            rr::invalid(page_sentence);
         msg.order.descending = descending == "true";
 
         const auto search = req.get_query_param("search");
         if (!search.empty())
-            calendar_rule_web_invalid("calendar-rules cannot be searched.");
+            rr::invalid("calendar-rules cannot be searched.");
 
         for (const auto& [name, value] : req.query_params) {
             if (!name.starts_with("f."))
@@ -364,69 +261,69 @@ boost::asio::awaitable<http_response> calendar_rule_web_routes::handle_list(cons
             constexpr std::string_view filters[] = {"calendar_code", ""};
             if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
                 std::end(filters) - 1)
-                calendar_rule_web_invalid("calendar-rules cannot be filtered by " + member + ".");
+                rr::invalid("calendar-rules cannot be filtered by " + member + ".");
         }
         if (const auto raw = req.get_query_param("f.calendar_code"); !raw.empty()) {
             if (!msg.filter)
                 msg.filter = messaging::calendar_rules_filter{};
-            msg.filter->calendar_code = calendar_rule_web_read<std::string>(raw, "f.calendar_code");
+            msg.filter->calendar_code = rr::read<std::string>(raw, "f.calendar_code");
         }
 
         const auto reply = calendar_rule_web_call(req, session, msg);
-        calendar_rule_web_require_ok(reply.result);
+        rr::require_ok(reply.result);
         co_return http_response::json("{\"rows\":" + calendar_rule_web_rows(reply.calendar_rules) +
                                       ",\"total\":" + std::to_string(reply.total) + "}");
-    } catch (const calendar_rule_web_refusal& refusal) {
-        co_return calendar_rule_web_answer(refusal);
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(calendar_rule_web_unanswered));
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
 }
 
 boost::asio::awaitable<http_response> calendar_rule_web_routes::handle_key(const http_request& req,
                                                                            nats_client& session) {
     try {
-        const auto key = calendar_rule_web_code(
-            req.get_path_param("key"), "A record is named by a code of 1 to 100 characters.");
+        const auto key = rr::code(req.get_path_param("key"),
+                                  "A record is named by a code of 1 to 100 characters.");
         auto msg = calendar_rule_web_page(0, 1);
         msg.filter = messaging::calendar_rules_filter{};
         msg.filter->id_one_of =
-            std::vector<boost::uuids::uuid>{calendar_rule_web_read<boost::uuids::uuid>(key, "key")};
+            std::vector<boost::uuids::uuid>{rr::read<boost::uuids::uuid>(key, "key")};
         const auto reply = calendar_rule_web_call(req, session, msg);
-        calendar_rule_web_require_ok(reply.result);
+        rr::require_ok(reply.result);
         if (reply.calendar_rules.empty())
-            calendar_rule_web_refuse(http_status::not_found,
-                                     "not-found",
-                                     "There is no calendar-rules record " + key + ".");
+            rr::refuse(http_status::not_found,
+                       "not-found",
+                       "There is no calendar-rules record " + key + ".");
         co_return http_response::json(
             "{\"row\":" + calendar_rule_web_row(reply.calendar_rules.front()) + "}");
-    } catch (const calendar_rule_web_refusal& refusal) {
-        co_return calendar_rule_web_answer(refusal);
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(calendar_rule_web_unanswered));
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
 }
 
 boost::asio::awaitable<http_response> calendar_rule_web_routes::handle_by(const http_request& req,
                                                                           nats_client& session) {
     try {
-        const auto parent = calendar_rule_web_code(
-            req.get_path_param("parent"), "A parent is named by a code of 1 to 100 characters.");
+        const auto parent = rr::code(req.get_path_param("parent"),
+                                     "A parent is named by a code of 1 to 100 characters.");
         std::vector<ores::refdata::domain::calendar_rule> rows;
         for (std::uint32_t offset = 0;;) {
             messaging::list_by_calendar_code_calendar_rules_request msg;
-            msg.calendar_code = calendar_rule_web_read<std::string>(parent, "parent");
+            msg.calendar_code = rr::read<std::string>(parent, "parent");
             msg.scope = ores::utility::domain::scope::direct;
             msg.offset = offset;
             msg.limit = calendar_rule_web_page_size;
             msg.order.field = "";
             msg.order.descending = false;
             const auto reply = calendar_rule_web_call(req, session, msg);
-            calendar_rule_web_require_ok(reply.result);
+            rr::require_ok(reply.result);
             const auto& got = reply.calendar_rules;
             rows.insert(rows.end(), got.begin(), got.end());
             offset += static_cast<std::uint32_t>(got.size());
@@ -435,12 +332,12 @@ boost::asio::awaitable<http_response> calendar_rule_web_routes::handle_by(const 
                 break;
         }
         co_return http_response::json("{\"rows\":" + calendar_rule_web_rows(rows) + "}");
-    } catch (const calendar_rule_web_refusal& refusal) {
-        co_return calendar_rule_web_answer(refusal);
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(calendar_rule_web_unanswered));
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
 }
 
@@ -448,10 +345,8 @@ boost::asio::awaitable<http_response> calendar_rule_web_routes::handle_put(const
                                                                            nats_client& session) {
     try {
         const auto body = calendar_rule_web_body<calendar_rule_web_write_body>(req.body);
-        if (!body || !calendar_rule_web_has_reason(body->reasonCode) ||
-            body->commentary.size() > 2000)
-            calendar_rule_web_invalid(
-                "A write needs the row, the version it was read at, and a reason.");
+        if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
+            rr::invalid("A write needs the row, the version it was read at, and a reason.");
         messaging::put_calendar_rule_request msg;
         msg.change.write = body->write;
         msg.change.precondition.kind =
@@ -461,14 +356,14 @@ boost::asio::awaitable<http_response> calendar_rule_web_routes::handle_put(const
         msg.intent.reason_code = body->reasonCode;
         msg.intent.commentary = body->commentary;
         const auto reply = calendar_rule_web_call(req, session, msg);
-        calendar_rule_web_require_ok(reply.result);
-        co_return calendar_rule_web_no_content();
-    } catch (const calendar_rule_web_refusal& refusal) {
-        co_return calendar_rule_web_answer(refusal);
+        rr::require_ok(reply.result);
+        co_return rr::no_content();
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(calendar_rule_web_unanswered));
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
 }
 
@@ -476,9 +371,8 @@ boost::asio::awaitable<http_response>
 calendar_rule_web_routes::handle_delete(const http_request& req, nats_client& session) {
     try {
         const auto body = calendar_rule_web_body<calendar_rule_web_removal_body>(req.body);
-        if (!body || !calendar_rule_web_has_reason(body->reasonCode) ||
-            body->commentary.size() > 2000)
-            calendar_rule_web_invalid("A removal names the row by id, and a reason.");
+        if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
+            rr::invalid("A removal names the row by id, and a reason.");
         messaging::delete_calendar_rule_request msg;
         msg.removal.key = body->key;
         msg.removal.precondition.kind =
@@ -488,14 +382,14 @@ calendar_rule_web_routes::handle_delete(const http_request& req, nats_client& se
         msg.intent.reason_code = body->reasonCode;
         msg.intent.commentary = body->commentary;
         const auto reply = calendar_rule_web_call(req, session, msg);
-        calendar_rule_web_require_ok(reply.result);
-        co_return calendar_rule_web_no_content();
-    } catch (const calendar_rule_web_refusal& refusal) {
-        co_return calendar_rule_web_answer(refusal);
+        rr::require_ok(reply.result);
+        co_return rr::no_content();
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(calendar_rule_web_unanswered));
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
 }
 

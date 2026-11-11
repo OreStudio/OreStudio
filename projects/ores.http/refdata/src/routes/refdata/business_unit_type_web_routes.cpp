@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.http/routes/refdata/business_unit_type_web_routes.hpp"
+#include "ores.http.api/net/record_routes.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
@@ -38,11 +39,9 @@
 #include <cstdint>
 #include <exception>
 #include <optional>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -54,6 +53,7 @@ using ores::http::domain::http_response;
 using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
 namespace messaging = ores::refdata::messaging;
+namespace rr = ores::http::net::record_routes;
 
 namespace {
 
@@ -63,75 +63,8 @@ auto& business_unit_type_web_lg() {
     return instance;
 }
 
-/// The sentence the browser sees when the route cannot answer; the detail goes to the log.
-constexpr std::string_view business_unit_type_web_unanswered =
-    "The service could not answer this request.";
-
 /// How many rows a whole read asks for at a time.
 constexpr std::uint32_t business_unit_type_web_page_size = 1000;
-
-/// A refusal a route states, with the status and the code the browser reads.
-struct business_unit_type_web_refusal final {
-    http_status status;
-    std::string code;
-    std::string message;
-};
-
-[[noreturn]] void
-business_unit_type_web_refuse(http_status status, std::string code, std::string message) {
-    throw business_unit_type_web_refusal{status, std::move(code), std::move(message)};
-}
-
-[[noreturn]] void business_unit_type_web_invalid(std::string message) {
-    business_unit_type_web_refuse(http_status::bad_request, "invalid-request", std::move(message));
-}
-
-http_response business_unit_type_web_answer(const business_unit_type_web_refusal& refusal) {
-    return http_response::api_error(refusal.status, refusal.code, refusal.message);
-}
-
-http_response business_unit_type_web_no_content() {
-    http_response response;
-    response.status = http_status::no_content;
-    return response;
-}
-
-/// One parameter read as the member's own type, refused by name when malformed.
-template <typename T>
-T business_unit_type_web_read(const std::string& raw, const std::string& name) {
-    try {
-        if constexpr (std::is_same_v<T, std::string>) {
-            return raw;
-        } else if constexpr (std::is_same_v<T, bool>) {
-            if (raw == "true")
-                return true;
-            if (raw == "false")
-                return false;
-            throw std::invalid_argument(raw);
-        } else {
-            return boost::lexical_cast<T>(raw);
-        }
-    } catch (const std::exception&) {
-        business_unit_type_web_invalid("Invalid value for " + name + ": " + raw);
-    }
-}
-
-/// The text without its leading and trailing blanks.
-std::string business_unit_type_web_trimmed(const std::string& raw) {
-    constexpr std::string_view blanks = " \t\r\n";
-    const auto first = raw.find_first_not_of(blanks);
-    if (first == std::string::npos)
-        return {};
-    return raw.substr(first, raw.find_last_not_of(blanks) - first + 1);
-}
-
-/// A code named in the address: 1 to 100 characters once trimmed.
-std::string business_unit_type_web_code(const std::string& raw, const std::string& sentence) {
-    const auto trimmed = business_unit_type_web_trimmed(raw);
-    if (trimmed.empty() || trimmed.size() > 100)
-        business_unit_type_web_invalid(sentence);
-    return trimmed;
-}
 
 /**
  * @brief Forward one canonical request with the caller's token, and decode the reply.
@@ -151,58 +84,27 @@ business_unit_type_web_call(const http_request& req, nats_client& session, const
         if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
             it != reply.headers.end()) {
             if (it->second == "forbidden")
-                business_unit_type_web_refuse(http_status::forbidden, "forbidden", it->second);
+                rr::refuse(http_status::forbidden, "forbidden", it->second);
             if (it->second == "bad_request")
-                business_unit_type_web_invalid(it->second);
+                rr::invalid(it->second);
             if (it->second == "unauthorized" || it->second == "token_expired" ||
                 it->second == "max_session_exceeded")
-                business_unit_type_web_refuse(
-                    http_status::unauthorized, "not-authenticated", it->second);
+                rr::refuse(http_status::unauthorized, "not-authenticated", it->second);
             BOOST_LOG_SEV(business_unit_type_web_lg(), warn)
                 << "Unknown service error: " << it->second;
-            business_unit_type_web_refuse(http_status::bad_gateway,
-                                          "upstream-unavailable",
-                                          std::string(business_unit_type_web_unanswered));
+            rr::refuse(
+                http_status::bad_gateway, "upstream-unavailable", std::string(rr::unanswered));
         }
         auto decoded =
             ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
         if (!decoded) {
             BOOST_LOG_SEV(business_unit_type_web_lg(), error)
                 << "Failed to decode response: " << decoded.error().what();
-            business_unit_type_web_refuse(http_status::bad_gateway,
-                                          "internal",
-                                          std::string(business_unit_type_web_unanswered));
+            rr::refuse(http_status::bad_gateway, "internal", std::string(rr::unanswered));
         }
         return std::move(*decoded);
     } catch (const ores::nats::service::session_expired_error& e) {
-        business_unit_type_web_refuse(http_status::unauthorized, "session-expired", e.what());
-    }
-}
-
-/// The status a refused outcome names. A conflict the service states no words for says what it
-/// means.
-void business_unit_type_web_require_ok(const ores::utility::domain::result& result) {
-    using ores::utility::domain::outcome;
-    switch (result.outcome) {
-        case outcome::ok:
-            return;
-        case outcome::conflict:
-            business_unit_type_web_refuse(
-                http_status::conflict,
-                "conflict",
-                result.message.empty() ?
-                    "This record changed since it was read, or it already exists. "
-                    "Reload and try again." :
-                    result.message);
-        case outcome::invalid:
-            business_unit_type_web_invalid(result.message);
-        case outcome::denied:
-            business_unit_type_web_refuse(http_status::forbidden, "forbidden", result.message);
-        case outcome::missing:
-            business_unit_type_web_refuse(http_status::not_found, "not-found", result.message);
-        default:
-            business_unit_type_web_refuse(
-                http_status::bad_gateway, "upstream-unavailable", result.message);
+        rr::refuse(http_status::unauthorized, "session-expired", e.what());
     }
 }
 
@@ -295,12 +197,6 @@ std::optional<T> business_unit_type_web_body(std::string_view text) {
     return std::move(*value);
 }
 
-/// A reason is 1 to 200 characters once trimmed.
-bool business_unit_type_web_has_reason(const std::string& reason) {
-    const auto trimmed = business_unit_type_web_trimmed(reason);
-    return !trimmed.empty() && trimmed.size() <= 200;
-}
-
 }
 
 std::string_view business_unit_type_web_routes::catalogue_entry() {
@@ -320,7 +216,7 @@ business_unit_type_web_routes::handle_list(const http_request& req, nats_client&
                     req,
                     session,
                     business_unit_type_web_page(offset, business_unit_type_web_page_size));
-                business_unit_type_web_require_ok(reply.result);
+                rr::require_ok(reply.result);
                 const auto& got = reply.types;
                 rows.insert(rows.end(), got.begin(), got.end());
                 offset += static_cast<std::uint32_t>(got.size());
@@ -339,10 +235,10 @@ business_unit_type_web_routes::handle_list(const http_request& req, nats_client&
             offset = raw_offset.empty() ? 0 : boost::lexical_cast<std::uint32_t>(raw_offset);
             limit = boost::lexical_cast<std::uint32_t>(req.get_query_param("limit"));
         } catch (const std::exception&) {
-            business_unit_type_web_invalid(page_sentence);
+            rr::invalid(page_sentence);
         }
         if (limit < 1 || limit > 1000)
-            business_unit_type_web_invalid(page_sentence);
+            rr::invalid(page_sentence);
 
         auto msg = business_unit_type_web_page(offset, limit);
         const auto sort = req.get_query_param("sort");
@@ -350,18 +246,17 @@ business_unit_type_web_routes::handle_list(const http_request& req, nats_client&
             constexpr std::string_view sortable[] = {""};
             if (std::find(std::begin(sortable), std::end(sortable) - 1, sort) ==
                 std::end(sortable) - 1)
-                business_unit_type_web_invalid("business-unit-types cannot be ordered by " + sort +
-                                               ".");
+                rr::invalid("business-unit-types cannot be ordered by " + sort + ".");
             msg.order.field = sort;
         }
         const auto descending = req.get_query_param("descending");
         if (!descending.empty() && descending != "true" && descending != "false")
-            business_unit_type_web_invalid(page_sentence);
+            rr::invalid(page_sentence);
         msg.order.descending = descending == "true";
 
         const auto search = req.get_query_param("search");
         if (!search.empty())
-            business_unit_type_web_invalid("business-unit-types cannot be searched.");
+            rr::invalid("business-unit-types cannot be searched.");
 
         for (const auto& [name, value] : req.query_params) {
             if (!name.starts_with("f."))
@@ -370,59 +265,55 @@ business_unit_type_web_routes::handle_list(const http_request& req, nats_client&
             constexpr std::string_view filters[] = {""};
             if (std::find(std::begin(filters), std::end(filters) - 1, member) ==
                 std::end(filters) - 1)
-                business_unit_type_web_invalid("business-unit-types cannot be filtered by " +
-                                               member + ".");
+                rr::invalid("business-unit-types cannot be filtered by " + member + ".");
         }
 
         const auto reply = business_unit_type_web_call(req, session, msg);
-        business_unit_type_web_require_ok(reply.result);
+        rr::require_ok(reply.result);
         co_return http_response::json("{\"rows\":" + business_unit_type_web_rows(reply.types) +
                                       ",\"total\":" + std::to_string(reply.total) + "}");
-    } catch (const business_unit_type_web_refusal& refusal) {
-        co_return business_unit_type_web_answer(refusal);
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(business_unit_type_web_unanswered));
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
 }
 
 boost::asio::awaitable<http_response>
 business_unit_type_web_routes::handle_key(const http_request& req, nats_client& session) {
     try {
-        const auto key = business_unit_type_web_code(
-            req.get_path_param("key"), "A record is named by a code of 1 to 100 characters.");
+        const auto key = rr::code(req.get_path_param("key"),
+                                  "A record is named by a code of 1 to 100 characters.");
         auto msg = business_unit_type_web_page(0, 1);
         msg.filter = messaging::business_unit_types_filter{};
-        msg.filter->id_one_of = std::vector<boost::uuids::uuid>{
-            business_unit_type_web_read<boost::uuids::uuid>(key, "key")};
+        msg.filter->id_one_of =
+            std::vector<boost::uuids::uuid>{rr::read<boost::uuids::uuid>(key, "key")};
         const auto reply = business_unit_type_web_call(req, session, msg);
-        business_unit_type_web_require_ok(reply.result);
+        rr::require_ok(reply.result);
         if (reply.types.empty())
-            business_unit_type_web_refuse(http_status::not_found,
-                                          "not-found",
-                                          "There is no business-unit-types record " + key + ".");
+            rr::refuse(http_status::not_found,
+                       "not-found",
+                       "There is no business-unit-types record " + key + ".");
         co_return http_response::json(
             "{\"row\":" + business_unit_type_web_row(reply.types.front()) + "}");
-    } catch (const business_unit_type_web_refusal& refusal) {
-        co_return business_unit_type_web_answer(refusal);
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(business_unit_type_web_unanswered));
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
 }
 
 boost::asio::awaitable<http_response>
 business_unit_type_web_routes::handle_put(const http_request& req, nats_client& session) {
     try {
-        business_unit_type_web_refuse(
-            http_status::forbidden, "forbidden", "business-unit-types is read only here.");
+        rr::refuse(http_status::forbidden, "forbidden", "business-unit-types is read only here.");
         const auto body = business_unit_type_web_body<business_unit_type_web_write_body>(req.body);
-        if (!body || !business_unit_type_web_has_reason(body->reasonCode) ||
-            body->commentary.size() > 2000)
-            business_unit_type_web_invalid(
-                "A write needs the row, the version it was read at, and a reason.");
+        if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
+            rr::invalid("A write needs the row, the version it was read at, and a reason.");
         messaging::put_business_unit_type_request msg;
         msg.change.write = body->write;
         msg.change.precondition.kind =
@@ -432,27 +323,25 @@ business_unit_type_web_routes::handle_put(const http_request& req, nats_client& 
         msg.intent.reason_code = body->reasonCode;
         msg.intent.commentary = body->commentary;
         const auto reply = business_unit_type_web_call(req, session, msg);
-        business_unit_type_web_require_ok(reply.result);
-        co_return business_unit_type_web_no_content();
-    } catch (const business_unit_type_web_refusal& refusal) {
-        co_return business_unit_type_web_answer(refusal);
+        rr::require_ok(reply.result);
+        co_return rr::no_content();
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(business_unit_type_web_unanswered));
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
 }
 
 boost::asio::awaitable<http_response>
 business_unit_type_web_routes::handle_delete(const http_request& req, nats_client& session) {
     try {
-        business_unit_type_web_refuse(
-            http_status::forbidden, "forbidden", "business-unit-types is read only here.");
+        rr::refuse(http_status::forbidden, "forbidden", "business-unit-types is read only here.");
         const auto body =
             business_unit_type_web_body<business_unit_type_web_removal_body>(req.body);
-        if (!body || !business_unit_type_web_has_reason(body->reasonCode) ||
-            body->commentary.size() > 2000)
-            business_unit_type_web_invalid("A removal names the row by id, and a reason.");
+        if (!body || !rr::has_reason(body->reasonCode) || body->commentary.size() > 2000)
+            rr::invalid("A removal names the row by id, and a reason.");
         messaging::delete_business_unit_type_request msg;
         msg.removal.key = body->key;
         msg.removal.precondition.kind =
@@ -462,14 +351,14 @@ business_unit_type_web_routes::handle_delete(const http_request& req, nats_clien
         msg.intent.reason_code = body->reasonCode;
         msg.intent.commentary = body->commentary;
         const auto reply = business_unit_type_web_call(req, session, msg);
-        business_unit_type_web_require_ok(reply.result);
-        co_return business_unit_type_web_no_content();
-    } catch (const business_unit_type_web_refusal& refusal) {
-        co_return business_unit_type_web_answer(refusal);
+        rr::require_ok(reply.result);
+        co_return rr::no_content();
+    } catch (const rr::refusal& refusal) {
+        co_return rr::answer(refusal);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << e.what();
         co_return http_response::api_error(
-            http_status::bad_gateway, "internal", std::string(business_unit_type_web_unanswered));
+            http_status::bad_gateway, "internal", std::string(rr::unanswered));
     }
 }
 

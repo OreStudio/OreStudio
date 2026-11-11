@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: D4460ECD-7832-4F2B-AD71-4688684D2F26
+:END:
+#+title: Task: Rate limit the HTTP API
+#+description: The C++ server has no rate limiting. The BFF limited sign-in, sign-up and the registration policy read for each client address; those routes now take unlimited traffic. Every route must declare a rate policy, enforced in one place in the server, before ores.web switches over.
+#+type: task
+#+level: s1
+#+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
+#+owner: marco
+#+branch: feature/rate-limit-the-http-api
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every route of the C++ server runs under a declared rate policy, enforced before its handler runs, so no caller can drive a service with unbounded traffic.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- Every route runs under a rate policy: the default for its authentication position, or one it declares on its builder. A test over the registered routes proves none runs without one.
+- The sign-in, sign-up and registration policy routes keep at least the BFF's limits: sign-in and sign-up share a budget of 10 a minute for each client, configurable, and the policy read allows 120 a minute.
+- A refused request answers 429 with the code too-many-requests, a Retry-After header and the RateLimit headers, and never reaches its handler or a service.
+- The client address is the socket's peer unless the request comes through a configured trusted proxy, and the limiter's memory is bounded.
+- Tests prove the refusal, the headers, the reset, the bound on memory, and the trusted-proxy rule; the local gate is green.
+
+* Plan
+
+Raised on 2026-11-11 while serving the registration policy read, the first
+route the BFF rate limited. The BFF limits three routes for each client
+address with a sliding log: sign-in at 10 a minute
+(=ORES_WEB_LOGIN_ATTEMPTS_PER_MINUTE=), sign-up sharing that budget, and the
+registration policy read at 120 a minute. Its answer is 429 with the code
+=too-many-requests=. The C++ server limits nothing; only =max_connections= and
+the body size bound a caller.
+
+The design below is the starting point. Work it again when the task starts.
+
+** The model
+
+- A =rate_policy= is a value: a name, a capacity (the burst), a refill rate,
+  and the key it counts by: the client address, the account, or both. Routes
+  that name the same policy share its buckets, which is how sign-in and sign-up
+  share one budget.
+- The policies live in one registry, built from the server options, so a
+  deployment can change a rate without a build. The registry holds a default
+  for an open route, counted by client address, and one for an authenticated
+  route, counted by account. A route that needs other limits declares its
+  policy on its builder, =.rate_limit(policy)=, as it declares
+  =.max_body_size()= today. Generated routes need no change.
+- The bucket is a token bucket (the GCRA form): one timestamp for each key, O(1)
+  to check, it allows a burst, and it gives the exact wait for =Retry-After=.
+  The BFF's sliding log keeps one entry for each attempt.
+
+** Where it runs
+
+- In =http_session=, once the route matches: a policy counted by client runs
+  before the body is read, so a refused request costs a header parse; a policy
+  counted by account runs once the credential is proved. Both run before the
+  worker pool takes the request, so a refusal never reaches a handler or a
+  service.
+- A refusal answers 429 with the =too-many-requests= code and the BFF's words,
+  =Retry-After= in seconds, and the =RateLimit-Policy= and =RateLimit= headers
+  of the IETF HTTP API rate limit headers draft. Allowed answers carry the
+  =RateLimit= header too, so a client can slow down before it is refused.
+- The change stream counts the opening of a stream and the streams an account
+  holds open, rather than the frames it sends.
+
+** The client address
+
+- The client is the socket's peer address. A forwarded address
+  (=Forwarded= or =X-Forwarded-For=) counts only when the peer is a configured
+  trusted proxy, and then the right-most address that is not a trusted proxy
+  is the client. An IPv6 client counts by its /64.
+
+** The memory
+
+- The buckets live in a sharded map, one mutex for each shard, shared by every
+  session. A bucket that has refilled to its capacity carries no information,
+  so a sweep on an =asio::steady_timer= drops it, and each shard has a cap that
+  evicts its oldest bucket when the sweep cannot get below it.
+
+** What it reports
+
+- A counter in =server_counters= for each refusal, by policy, beside the
+  existing metrics, and a log line that is itself throttled so a flood does not
+  flood the journal.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -82,6 +82,7 @@ project, which is the fractal naming rule in
 - =ores.dq.api= -- the badges the tenancy catalogues are painted with, and the legal entities a tenant starts from.
 - =ores.refdata.api= -- the parties a provisioned party is added beside.
 - =ores.workflow.api= -- the provisioning runs the tenant roster joins each tenant with.
+- =ores.variability.api= -- the wizards' settings and the end of first-run setup.
 - =ores.http.refdata= -- the party page, read inside a tenant from system administration.
 - =ores.utility= -- the codecs and the wire support types.
 - =ores.logging= -- logger factory.
@@ -107,6 +108,8 @@ target_link_libraries(${lib_target_name}
         ores.refdata.api.lib
         # The tenant roster joins each tenant with the run that set it up.
         ores.workflow.api.lib
+        # The setup screens read the wizards' settings and record the first run's end.
+        ores.variability.api.lib
     PRIVATE
         ores.http.nats.lib
         # A tenant's parties, read inside it, are the refdata part's party page.

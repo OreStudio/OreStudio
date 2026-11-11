@@ -245,10 +245,6 @@ setup_for(const std::map<std::string, tenant_roster_routes::tenant_setup>& setup
     return found == setups.end() ? std::nullopt : std::optional(found->second);
 }
 
-std::string flag_json(bool value) {
-    return value ? "true" : "false";
-}
-
 }
 
 tenant tenant_roster_routes::known_tenant(const http_request& req,
@@ -294,7 +290,7 @@ std::string tenant_roster_routes::page_json(const std::vector<tenant>& tenants,
     for (std::size_t i = 0; i < tenants.size(); ++i)
         out += (i == 0 ? "" : ",") + summary_json(tenants[i], setup_for(setups, tenants[i]));
     return out + "],\"totalCount\":" + std::to_string(total) +
-           ",\"setupUnavailable\":" + flag_json(setup_unavailable) +
+           ",\"setupUnavailable\":" + json::write(setup_unavailable) +
            ",\"hiddenTestCount\":" + std::to_string(hidden_test_count) + "}";
 }
 
@@ -308,7 +304,7 @@ std::string tenant_roster_routes::detail_json(const tenant& t,
            ",\"changeReasonCode\":" + json::write(t.change_reason_code) +
            ",\"changeCommentary\":" + json::write(t.change_commentary) +
            ",\"recordedAt\":" + json::write(t.recorded_at) +
-           "},\"setupUnavailable\":" + flag_json(setup_unavailable) + "}";
+           "},\"setupUnavailable\":" + json::write(setup_unavailable) + "}";
 }
 
 std::string tenant_roster_routes::overview_json(const overview& o) {
@@ -336,7 +332,7 @@ std::string tenant_roster_routes::overview_json(const overview& o) {
         out += ",\"error\":" + json::write(a.error);
         out += ",\"at\":" + json::write(a.at) + "}";
     }
-    return out + "],\"activityUnavailable\":" + flag_json(o.activity_unavailable) + "}";
+    return out + "],\"activityUnavailable\":" + json::write(o.activity_unavailable) + "}";
 }
 
 void tenant_roster_routes::register_routes(

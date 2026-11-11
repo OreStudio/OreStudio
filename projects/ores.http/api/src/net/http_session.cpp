@@ -49,6 +49,13 @@ std::string lowercase(std::string text) {
     return text;
 }
 
+/// Give the request the token its session keeps: a route forwards the caller's
+/// token, and a browser holds only an identifier.
+void carry_session_token(domain::http_request& req, const std::string& token) {
+    if (!token.empty())
+        req.headers["authorization"] = "Bearer " + token;
+}
+
 /// Methods that change something, and so need proof of intent.
 bool changes_something(domain::http_method method) {
     switch (method) {
@@ -481,10 +488,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 if (auto record = sessions_->touch(*identifier); record.has_value()) {
                     claims = std::move(record->claims);
                     session_proof = true;
-                    // A route forwards the caller's token; a browser holds only an
-                    // identifier, so the request carries the session's token.
-                    if (!record->token.empty())
-                        domain_req.headers["authorization"] = "Bearer " + record->token;
+                    carry_session_token(domain_req, record->token);
                 } else {
                     /*
                      * The browser holds a session this server no longer has, so the
@@ -545,6 +549,22 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 auto forbidden = domain::http_response::forbidden("Insufficient permissions");
                 co_await write_response(forbidden, version, keep_alive, true);
                 co_return;
+            }
+        }
+    } else if (sessions_ != nullptr && !changes_something(domain_req.method) &&
+               !domain_req.get_bearer_token().has_value()) {
+        /*
+         * An open read answers a visitor and a signed-in browser alike, but some
+         * say more to the second, so a live session is read and never required.
+         * Only a read: an open write has no proof of intent, so it must not act
+         * as the browser's session.
+         */
+        if (const auto identifier =
+                domain::session_cookie::read(domain_req.get_header("cookie"), cookie_);
+            identifier.has_value()) {
+            if (auto record = sessions_->touch(*identifier); record.has_value()) {
+                domain_req.authenticated_user = std::move(record->claims);
+                carry_session_token(domain_req, record->token);
             }
         }
     }

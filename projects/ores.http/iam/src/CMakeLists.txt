@@ -46,6 +46,8 @@ target_link_libraries(${lib_target_name}
         ores.refdata.api.lib
         # The tenant roster joins each tenant with the run that set it up.
         ores.workflow.api.lib
+        # The setup screens read the wizards' settings and record the first run's end.
+        ores.variability.api.lib
     PRIVATE
         ores.http.nats.lib
         # A tenant's parties, read inside it, are the refdata part's party page.

@@ -738,6 +738,12 @@ RULES = (
          "The deployment's tenants as system administration reads them, each joined with the"
          " run that set it up, at the address and in the shape the BFF answered, refused"
          " without the deployment read."),
+    Rule("a setup screen's route",
+         ("regex", r"^(GET /api/(bootstrap|tenant-setup|registration-policy)|POST /api/bootstrap/(administrator|complete))$"),
+         CPP, RESOURCE, "tenancy",
+         "The deployment's setup state, the first administrator, the end of first-run setup,"
+         " a tenant's own setup run and the registration policy, at the address and in the"
+         " shape the BFF answered."),
     Rule("a read inside a tenant",
          ("regex", r"^GET /api/tenants/\{code\}/(parties|people|accounts/\{username\}/sign-ins|images/\{id\})$"),
          CPP, RESOURCE, "tenancy",

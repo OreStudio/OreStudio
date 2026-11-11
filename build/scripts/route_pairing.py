@@ -97,7 +97,11 @@ PAIRS = {
     ("GET", "/api/seed-profiles"): ("GET", "/api/seed-profiles"),
     ("POST", "/api/provision-tenant"): ("POST", "/api/provision-tenant"),
     ("POST", "/api/provision-party"): ("POST", "/api/provision-party"),
-    ("POST", "/api/bootstrap/administrator"): ("POST", f"{IAM_OPS}/create_initial_admin"),
+    ("GET", "/api/bootstrap"): ("GET", "/api/bootstrap"),
+    ("POST", "/api/bootstrap/administrator"): ("POST", "/api/bootstrap/administrator"),
+    ("POST", "/api/bootstrap/complete"): ("POST", "/api/bootstrap/complete"),
+    ("GET", "/api/tenant-setup"): ("GET", "/api/tenant-setup"),
+    ("GET", "/api/registration-policy"): ("GET", "/api/registration-policy"),
     ("GET", "/api/parties"): ("GET", "/api/parties"),
     ("GET", "/api/me/parties"): ("GET", "/api/me/parties"),
 

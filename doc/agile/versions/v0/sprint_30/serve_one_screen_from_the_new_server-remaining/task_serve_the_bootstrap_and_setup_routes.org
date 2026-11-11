@@ -8,12 +8,12 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-bootstrap-and-setup-routes
-#+pr:
+#+pr: 4603
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve the bootstrap and setup routes at the BFF's own addresses and shapes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -48,9 +48,27 @@ read states whether the browser holds a session, so it may wait for
 [[id:D4275B6D-BF22-4A77-9F00-018D776966CB][Serve the browser's session routes, sign-up and password]].
 The BFF rate limits the policy read, which the C++ server cannot do yet.
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- An open route did not read the browser's session at all. The session path
+  in =http_session= now reads a live session on an open read, never requires
+  one, and gives the request its claims and token. It does so only on a read
+  that carries no bearer token of its own: an open write has no proof of
+  intent, so it must not act as the browser's session.
+- =bootstrap_screen_routes= is a new unit in the IAM part, registered by the
+  application beside the session routes because the status says whether the
+  browser sent the session cookie, and so needs the deployment's cookie.
+- =GET /api/bootstrap= reads the status with no session, and the two wizard
+  settings through the browser's session when it has one; a read that fails
+  answers false, as the BFF did. =POST /api/bootstrap/administrator= refuses
+  unless the deployment is still in bootstrap mode, because the create grants
+  SuperAdmin and does not check the flag. =POST /api/bootstrap/complete= and
+  =GET /api/tenant-setup= need a session. =GET /api/registration-policy= takes
+  the tenant from the host the request arrived at, without its port, as the
+  BFF read it.
+- The BFF rate limited the policy read at 120 a minute for each address. The
+  C++ server has no limiter yet, so the policy read goes unlimited until
+  [[id:D4460ECD-7832-4F2B-AD71-4688684D2F26][Rate limit the HTTP API]] lands.
+- The IAM part takes =ores.variability.api= for the settings and the end of
+  first-run setup.
 
 * Measurements
 
@@ -83,12 +101,31 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4603][#4603]] | [http] Serve the bootstrap and setup routes from C++ |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: the policy read has no rate limit, where the BFF had one. | =bootstrap_screen_routes.cpp= | Deferred | The C++ server has no limiter yet. [[id:D4460ECD-7832-4F2B-AD71-4688684D2F26][Rate limit the HTTP API]] tracks it for every route, and the switch to the C++ server waits for it. |
+| 2 | Local review: an open write would act as the browser's session. | =http_session.cpp= | Accepted | Only an open read takes the session; a test proves an open write does not. |
+| 3 | Local review: the cookie must not replace a caller's own bearer token. | =http_session.cpp= | Accepted | An open read with a bearer token keeps it. |
+| 4 | =route-auth=: a route passed through a helper is unnamed to the gate. | =bootstrap_screen_routes.cpp= | Accepted | Each route is registered where it is built. |
+| 5 | =unity-collisions=: =flag_of= in two IAM units. | =bootstrap_screen_routes.cpp= | Accepted | One wrote a JSON boolean and the other read a query flag. The JSON codec writes booleans, so the writer is gone here and in the roster. |
+| 6 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 7 | =component-drift=: the refdata TypeScript protocol lacked the FX volatility surface blueprint publish message, from main's =9d1da586e9=. | =publish_operation_protocol.ts= | Accepted | Regenerated at =ores.ts.protocol=; the drift check for refdata is clean and the protocol package type-checks. |
+| 8 | PR review: two creates can race past the bootstrap check and both make a SuperAdmin. | =bootstrap_screen_routes.cpp= | Deferred | The race is in IAM: the handler checks the flag apart from the SQL function, which does not check it. [[id:F32A6381-CCDA-4948-9538-3F8B22C2FFC5][Make the first administrator create safe]] fixes it there; the BFF has the same race. |
+| 9 | PR review: a failed create answers IAM's error text to an anonymous caller. | =bootstrap_screen_routes.cpp= | Deferred | The handler answers the exception's own text, and the BFF passed it on too. [[id:F32A6381-CCDA-4948-9538-3F8B22C2FFC5][Make the first administrator create safe]] fixes it at the source. |
+| 10 | PR review: the host is not lowercased, and an unterminated IPv6 host is untested. | =bootstrap_screen_routes.cpp= | Accepted in part | Fastify does not lowercase the host either, so the read keeps the BFF's behaviour. A test pins the unterminated IPv6 host. Probing hostnames is limited by [[id:D4460ECD-7832-4F2B-AD71-4688684D2F26][Rate limit the HTTP API]]. |
+| 11 | PR review: a failed settings read leaves no trace. | =bootstrap_screen_routes.cpp= | Accepted | It is logged at debug. The logger and the settings reader are class members, the component's convention. |
+| 12 | PR review: the setup run answer is a hard-to-read ternary; does a failed run read map to 5xx? | =bootstrap_screen_routes.cpp= | Accepted | An =if= before the return. A failed read throws a =std::runtime_error=, which =guarded= answers as unanswered, a 502. |
 
 * Result
+
+The C++ server answers the bootstrap status, the first administrator, the end
+of first-run setup, a tenant's own setup run and the registration policy at the
+BFF's addresses and in its shapes, and the inventory pairs each. An open read
+now sees the browser's live session. Tests compare each shape exactly, prove
+which routes are open, the administrator refusal before any forward, the host
+reading, and the session read on open routes. The policy read has no rate limit
+yet.

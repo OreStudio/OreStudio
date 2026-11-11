@@ -304,6 +304,59 @@ TEST_CASE("a_session_request_forwards_the_token_the_session_keeps",
     REQUIRE(answered->body() == R"({"carried":true})");
 }
 
+TEST_CASE("an_open_read_sees_a_live_session_and_an_open_write_does_not",
+          "[session_cookie][http_metrics]") {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing that an open route reads a session and never needs one";
+
+    http_server_options options;
+    options.address = "127.0.0.1";
+    options.port = 0;
+    options.worker_threads = 2;
+
+    metrics_fixture fixture(options);
+    auto router = fixture.server().get_router();
+    const auto who = [](const http_request& req) -> asio::awaitable<http_response> {
+        const auto carried = req.get_bearer_token() == std::optional<std::string>("the-token");
+        co_return http_response::json(
+            R"({"subject":")" +
+            (req.authenticated_user ? req.authenticated_user->subject : std::string()) +
+            R"(","carried":)" + (carried ? "true" : "false") + "}");
+    };
+    router->add_route(
+        router->get("/open").summary("An open read").auth_optional().handler(who).build());
+    router->add_route(
+        router->post("/open").summary("An open write").auth_optional().handler(who).build());
+
+    cookie_settings settings;
+    settings.name = "ores_web_session_test";
+    fixture.server().set_cookie_settings(settings);
+
+    session_record record;
+    record.token = "the-token";
+    record.claims.subject = "the-account";
+    const auto cookie = settings.name + "=" + fixture.server().sessions()->open(record);
+
+    const auto read = metrics_send_with(fixture.port(), http::verb::get, "/open", cookie);
+    REQUIRE(read.has_value());
+    REQUIRE(read->result_int() == 200);
+    CHECK(read->body() == R"({"subject":"the-account","carried":true})");
+
+    const auto visitor = metrics_send_with(fixture.port(), http::verb::get, "/open", "");
+    REQUIRE(visitor.has_value());
+    CHECK(visitor->body() == R"({"subject":"","carried":false})");
+
+    const auto stale = metrics_send_with(
+        fixture.port(), http::verb::get, "/open", settings.name + "=no-such-session");
+    REQUIRE(stale.has_value());
+    REQUIRE(stale->result_int() == 200);
+    CHECK(stale->body() == R"({"subject":"","carried":false})");
+
+    const auto write = metrics_send_with(fixture.port(), http::verb::post, "/open", cookie);
+    REQUIRE(write.has_value());
+    CHECK(write->body() == R"({"subject":"","carried":false})");
+}
+
 TEST_CASE("a_session_the_server_does_not_know_is_refused_and_the_cookie_cleared",
           "[session_cookie][http_metrics]") {
     auto lg(make_logger(test_suite));

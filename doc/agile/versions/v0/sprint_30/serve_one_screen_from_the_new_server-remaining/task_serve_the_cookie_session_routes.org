@@ -66,6 +66,9 @@ task and name that file in the Command column.
 
 * Notes
 
+The BFF rate limits sign-in and sign-up. The C++ server has no limiter yet;
+[[id:D4460ECD-7832-4F2B-AD71-4688684D2F26][Rate limit the HTTP API]] supplies it, and these routes take its credential policy.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

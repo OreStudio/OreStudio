@@ -35,6 +35,7 @@
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
+#include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
 #include "ores.http/routes/iam/iam_routes.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.http/routes/synthetic/synthetic_routes.hpp"
@@ -220,6 +221,10 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     http::routes::iam::auth_session_routes auth_sessions(
         service_nats, server.sessions(), [&server] { return server.verifier(); }, session_cookie);
     auth_sessions.register_routes(router, registry);
+
+    // The setup screens say whether the browser sent the cookie, so they share it.
+    http::routes::iam::bootstrap_screen_routes bootstrap_screens(service_nats, session_cookie);
+    bootstrap_screens.register_routes(router, registry);
 
     routes::storage_routes storage(cfg.storage_dir, auth_service, cfg.server.max_body_size);
     storage.register_routes(router, registry);

@@ -151,8 +151,7 @@ TEST_CASE("the resolution algorithm codes the database holds parse", "[quant_cod
     CHECK_THROWS_AS(parse_resolution_algorithm_code("ROLL_QUARTER"), std::invalid_argument);
 }
 
-TEST_CASE("every observance shift code the database holds parses, and no other",
-          "[quant_codes]") {
+TEST_CASE("every observance shift code the database holds parses, and no other", "[quant_codes]") {
     // The codes ores_refdata_calendar_rules_tbl.shift carries. The last two
     // differ only on a Saturday, and the persisted spelling is owned here so
     // the materialiser does not restate it.
@@ -167,16 +166,14 @@ TEST_CASE("every observance shift code the database holds parses, and no other",
     CHECK_THROWS_AS(parse_observance_shift_code(""), std::invalid_argument);
 }
 
-TEST_CASE("parse_day_count_convention_code accepts every implemented convention",
-          "[quant_codes]") {
+TEST_CASE("parse_day_count_convention_code accepts every implemented convention", "[quant_codes]") {
     CHECK(parse_day_count_convention_code("A360") == day_count_convention_code::A360);
     CHECK(parse_day_count_convention_code("A365") == day_count_convention_code::A365);
     CHECK(parse_day_count_convention_code("A365F") == day_count_convention_code::A365F);
     CHECK(parse_day_count_convention_code("30/360") == day_count_convention_code::THIRTY_360);
 }
 
-TEST_CASE("parse_day_count_convention_code rejects an unsupported convention",
-          "[quant_codes]") {
+TEST_CASE("parse_day_count_convention_code rejects an unsupported convention", "[quant_codes]") {
     CHECK_THROWS_AS(parse_day_count_convention_code("ActAct(ISDA)"), std::invalid_argument);
     CHECK_THROWS_AS(parse_day_count_convention_code("ActAct(ISMA)"), std::invalid_argument);
     CHECK_THROWS_AS(parse_day_count_convention_code("ActAct(AFB)"), std::invalid_argument);
@@ -188,8 +185,7 @@ TEST_CASE("parse_day_count_convention_code rejects an unsupported convention",
     CHECK_THROWS_AS(parse_day_count_convention_code("a360"), std::invalid_argument);
 }
 
-TEST_CASE("parse_bootstrap_curve_role_code accepts every valid curve_role.code",
-          "[quant_codes]") {
+TEST_CASE("parse_bootstrap_curve_role_code accepts every valid curve_role.code", "[quant_codes]") {
     CHECK(parse_bootstrap_curve_role_code("DEPOSIT") == DEPOSIT);
     CHECK(parse_bootstrap_curve_role_code("FRA") == FRA);
     CHECK(parse_bootstrap_curve_role_code("SWAP") == SWAP);

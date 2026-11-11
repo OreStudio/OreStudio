@@ -60,7 +60,9 @@ TEST_CASE("every resolution status spells itself for a refusal message", "[date_
 TEST_CASE("periods order as QuantLib orders them", "[date_convention]") {
     using ores::analytics::quant::domain::compare_periods;
     using ores::analytics::quant::domain::date_period;
-    const auto p = [](period_unit u, int n) { return date_period{u, n}; };
+    const auto p = [](period_unit u, int n) {
+        return date_period{u, n};
+    };
 
     CHECK(compare_periods(p(period_unit::month, 12), p(period_unit::year, 1)) == 0);
     CHECK(compare_periods(p(period_unit::year, 1), p(period_unit::month, 18)) < 0);
@@ -70,6 +72,7 @@ TEST_CASE("periods order as QuantLib orders them", "[date_convention]") {
     CHECK(compare_periods(p(period_unit::year, 2), p(period_unit::week, 1)) > 0);
     CHECK(compare_periods(p(period_unit::month, 1), p(period_unit::week, 4)) ==
           std::partial_ordering::unordered);
-    CHECK(compare_periods(date_period{}, p(period_unit::day, 1)) == std::partial_ordering::unordered);
+    CHECK(compare_periods(date_period{}, p(period_unit::day, 1)) ==
+          std::partial_ordering::unordered);
     CHECK(compare_periods(date_period{}, date_period{}) == 0);
 }

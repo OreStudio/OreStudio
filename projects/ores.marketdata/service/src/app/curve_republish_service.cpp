@@ -18,7 +18,6 @@
  *
  */
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
-#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
@@ -34,6 +33,7 @@
 #include "ores.marketdata.core/service/series_shape_writer.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_pillar_repository.hpp"
 #include <boost/uuid/uuid_generators.hpp>

@@ -115,4 +115,3 @@ TEST_CASE("year_fraction rejects an invalid start or end date", "[day_count_calc
         day_count_calculator::year_fraction(valid, invalid, day_count_convention_code::A360),
         std::invalid_argument);
 }
-

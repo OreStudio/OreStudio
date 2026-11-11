@@ -81,7 +81,8 @@ ores::ore::market::market_datum to_datum(const domain::market_observation& o,
  * ORE reads a surface from quotes and from the volatility configuration that names their deltas,
  * so the delta type of the point's strike belongs to that configuration and not to the quote.
  */
-std::expected<datum::market_datum, std::string> fx_option_quote_of(const datum::market_datum& point) {
+std::expected<datum::market_datum, std::string>
+fx_option_quote_of(const datum::market_datum& point) {
     const auto* unit = point.get<datum::field::unit_ccy>();
     const auto* ccy = point.get<datum::field::ccy>();
     const auto* expiry = point.get<datum::field::expiry>();
@@ -93,15 +94,16 @@ std::expected<datum::market_datum, std::string> fx_option_quote_of(const datum::
         label = "ATM";
     } else if (const auto* delta = std::get_if<datum::delta_strike>(&strike->which())) {
         if (delta->option_type != "Call" && delta->option_type != "Put")
-            return std::unexpected("the strike " + strike->text() + " names neither a call nor a put");
+            return std::unexpected("the strike " + strike->text() +
+                                   " names neither a call nor a put");
         label = delta->delta.text() + (delta->option_type == "Call" ? "C" : "P");
     } else {
         return std::unexpected("the strike " + strike->text() + " is neither ATM nor a delta");
     }
     return datum::oresmd_uri_codec::read("oresmd://fx/" + datum::text_of(datum::value(*unit)) +
                                          "?type=quote&instrument=fx_option&quote=rate_lnvol&ccy=" +
-                                         datum::text_of(datum::value(*ccy)) + "&expiry=" + expiry->text() +
-                                         "&strike_label=" + label);
+                                         datum::text_of(datum::value(*ccy)) +
+                                         "&expiry=" + expiry->text() + "&strike_label=" + label);
 }
 
 /// The part of a key up to its fourth slash, which for an FX option quote is its pair, such as
@@ -227,10 +229,10 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
                                            << " has no blueprint, so it has no published set";
                 continue;
             }
-            const auto published = surface_repo.read_published_for_blueprint(ctx_, s.derivation_config_id);
-            const auto set = std::ranges::find_if(published, [&](const auto& p) {
-                return !date || p.as_of <= close;
-            });
+            const auto published =
+                surface_repo.read_published_for_blueprint(ctx_, s.derivation_config_id);
+            const auto set = std::ranges::find_if(
+                published, [&](const auto& p) { return !date || p.as_of <= close; });
             if (set == published.end()) {
                 BOOST_LOG_SEV(lg(), debug) << "market data export: surface series " << s.id
                                            << " has no published set at or before the close";
@@ -241,18 +243,23 @@ ore_export_result ore_export_service::write_all(const std::optional<std::string>
                     continue;
                 const auto point = datum::oresmd_uri_codec::read(o.oresmd_uri);
                 if (!point)
-                    throw std::runtime_error("market data export: surface point " + boost::uuids::to_string(o.id) +
+                    throw std::runtime_error("market data export: surface point " +
+                                             boost::uuids::to_string(o.id) +
                                              " does not read: " + point.error());
                 const auto quote = fx_option_quote_of(*point);
                 if (!quote)
-                    throw std::runtime_error("market data export: surface point " + boost::uuids::to_string(o.id) +
+                    throw std::runtime_error("market data export: surface point " +
+                                             boost::uuids::to_string(o.id) +
                                              " has no ORE quote: " + quote.error());
                 const auto key = datum::ore_key_codec::write(*quote);
                 if (!key)
-                    throw std::runtime_error("market data export: surface point " + boost::uuids::to_string(o.id) +
+                    throw std::runtime_error("market data export: surface point " +
+                                             boost::uuids::to_string(o.id) +
                                              " has no ORE key: " + key.error());
                 ores::ore::market::market_datum d;
-                d.date = date ? *date : std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(set->as_of)};
+                d.date = date ? *date :
+                                std::chrono::year_month_day{
+                                    std::chrono::floor<std::chrono::days>(set->as_of)};
                 d.value = o.value;
                 d.key = *key;
                 surface_pairs.insert(pair_prefix_of(d.key));

@@ -18,10 +18,10 @@
  *
  */
 #include "ores.refdata.core/service/tenor_resolution_service.hpp"
-#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.analytics.quant/domain/business_day_calendar_set.hpp"
 #include "ores.analytics.quant/domain/tenor_resolution.hpp"
 #include "ores.analytics.quant/service/tenor_resolution_engine.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/calendar_event_repository.hpp"
 #include "ores.refdata.core/repository/tenor_convention_repository.hpp"

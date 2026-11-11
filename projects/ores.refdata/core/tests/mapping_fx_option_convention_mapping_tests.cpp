@@ -32,7 +32,8 @@ qd::date_period tenor(std::string_view text) {
 
 }
 
-TEST_CASE("an expiry at the switch tenor takes the long-term convention", "[fx_option_convention_mapping]") {
+TEST_CASE("an expiry at the switch tenor takes the long-term convention",
+          "[fx_option_convention_mapping]") {
     const auto c = ores::testing::eur_usd_fx_option_convention("PaSpot", "PaFwd");
     const auto short_term = to_quote_convention(c, tenor("1Y"));
     const auto at_switch = to_quote_convention(c, tenor("24M"));

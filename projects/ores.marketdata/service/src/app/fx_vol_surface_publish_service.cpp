@@ -342,18 +342,21 @@ fx_vol_surface_publish_service::read(context ctx,
     return out;
 }
 
-msg::get_published_fx_vol_surface_response
-fx_vol_surface_publish_service::read_published(context ctx, const msg::get_published_fx_vol_surface_request& req) {
+msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_published(
+    context ctx, const msg::get_published_fx_vol_surface_request& req) {
     msg::get_published_fx_vol_surface_response out;
     try {
         const auto party = ores::service::messaging::session_party(ctx, "A surface");
         const auto blueprint = blueprint_of(ctx, req.blueprint_id);
         if (blueprint.party_id != party)
-            throw std::invalid_argument("The surface " + blueprint.name + " belongs to another party.");
+            throw std::invalid_argument("The surface " + blueprint.name +
+                                        " belongs to another party.");
         out.blueprint_name = blueprint.name;
         const auto sets =
-            repository::fx_vol_surface_publish_repository{}.read_published_for_blueprint(ctx, blueprint.id);
-        const auto found = std::ranges::find_if(sets, [&](const auto& s) { return s.as_of <= req.as_of; });
+            repository::fx_vol_surface_publish_repository{}.read_published_for_blueprint(
+                ctx, blueprint.id);
+        const auto found =
+            std::ranges::find_if(sets, [&](const auto& s) { return s.as_of <= req.as_of; });
         if (found == sets.end()) {
             out.message = "No surface of " + blueprint.name + " is published at or before " +
                           datetime::to_iso8601_utc(req.as_of) + ".";
@@ -377,10 +380,13 @@ fx_vol_surface_publish_service::read_published(context ctx, const msg::get_publi
             if (expiry && strike)
                 points.push_back({expiry->text(), strike->text(), *value});
         }
-        auto grid = surface_grid_of(std::move(points), split_blueprint_list(blueprint.output_strikes),
-                                    req.expiry, req.strike);
+        auto grid = surface_grid_of(std::move(points),
+                                    split_blueprint_list(blueprint.output_strikes),
+                                    req.expiry,
+                                    req.strike);
         if (!grid)
-            throw std::invalid_argument("The published surface of " + blueprint.name + ": " + grid.error() + ".");
+            throw std::invalid_argument("The published surface of " + blueprint.name + ": " +
+                                        grid.error() + ".");
         out.success = true;
         out.publish_request_id = boost::uuids::to_string(found->request_id);
         out.as_of = found->as_of;
@@ -390,7 +396,9 @@ fx_vol_surface_publish_service::read_published(context ctx, const msg::get_publi
         out.expiries = std::move(grid->expiries);
         out.strikes = std::move(grid->strikes);
         for (auto& p : grid->points)
-            out.points.push_back({.expiry = std::move(p.expiry), .strike = std::move(p.strike), .volatility = p.volatility});
+            out.points.push_back({.expiry = std::move(p.expiry),
+                                  .strike = std::move(p.strike),
+                                  .volatility = p.volatility});
     } catch (const std::exception& e) {
         out.success = false;
         out.message = e.what();

@@ -78,7 +78,8 @@ to_quote_convention(const domain::fx_option_convention& convention, qd::date_per
     if (convention.switch_tenor) {
         const auto switch_at = parse_tenor_text(*convention.switch_tenor);
         if (!switch_at)
-            return std::unexpected("the switch tenor of " + convention.id + ": " + switch_at.error());
+            return std::unexpected("the switch tenor of " + convention.id + ": " +
+                                   switch_at.error());
         if (switch_at->multiplier > 0) {
             const auto order = qd::compare_periods(expiry, *switch_at);
             if (order == std::partial_ordering::unordered)

@@ -309,8 +309,9 @@ inline void require_party(const ores::database::context& ctx) {
 inline boost::uuids::uuid session_party(const ores::database::context& ctx, std::string_view what) {
     const auto party = ctx.party_id();
     if (!party || party->is_nil())
-        throw std::invalid_argument(std::string(what) +
-                                    " belongs to a party, and the session names none. Sign in to a party.");
+        throw std::invalid_argument(
+            std::string(what) +
+            " belongs to a party, and the session names none. Sign in to a party.");
     return *party;
 }
 

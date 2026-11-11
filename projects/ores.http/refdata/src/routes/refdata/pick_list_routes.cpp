@@ -100,7 +100,7 @@ constexpr std::uint32_t pick_list_page = 1000;
 template <typename Request, typename Rows>
 std::string all_rows_json(const http_request& req,
                           nats_client& session,
-                          Rows Request::response_type::* rows,
+                          Rows Request::response_type::*rows,
                           Request msg) {
     std::string out = "[";
     std::uint64_t held = 0;

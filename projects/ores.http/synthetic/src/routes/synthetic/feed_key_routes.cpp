@@ -59,7 +59,7 @@ auto feed_key_one(const http_request& req,
                   nats_client& session,
                   const boost::uuids::uuid& id,
                   const std::string& resource,
-                  Rows Request::response_type::* rows) {
+                  Rows Request::response_type::*rows) {
     Request msg;
     msg.offset = 0;
     msg.limit = 1;
@@ -84,7 +84,7 @@ template <typename Request, typename Filter, typename Rows>
 boost::asio::awaitable<http_response> feed_key_read(const http_request& req,
                                                     nats_client& session,
                                                     std::string resource,
-                                                    Rows Request::response_type::* rows) {
+                                                    Rows Request::response_type::*rows) {
     try {
         const auto id = rr::read<boost::uuids::uuid>(
             rr::code(req.get_path_param("key"), "A row is named by a code of 1 to 100 characters."),

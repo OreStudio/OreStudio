@@ -256,8 +256,9 @@ void announce_surface_publish(const ores::database::context& ctx,
                               std::optional<std::chrono::system_clock::time_point> previous_as_of) {
     repository::market_series_repository repo;
     const auto series = repo.read_latest(ctx, boost::uuids::to_string(published.output_series_id));
-    const auto surface = series.empty() ? "series " + boost::uuids::to_string(published.output_series_id) :
-                                          series.front().oresmd_uri;
+    const auto surface = series.empty() ?
+                             "series " + boost::uuids::to_string(published.output_series_id) :
+                             series.front().oresmd_uri;
     raise_notice(ctx,
                  surface_published_kind_code,
                  published.party_id,

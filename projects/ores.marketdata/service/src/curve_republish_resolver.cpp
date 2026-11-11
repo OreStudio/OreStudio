@@ -18,8 +18,8 @@
  *
  */
 #include "curve_republish_resolver.hpp"
-#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.api/domain/tenor_resolution.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include <algorithm>
 #include <stdexcept>
 

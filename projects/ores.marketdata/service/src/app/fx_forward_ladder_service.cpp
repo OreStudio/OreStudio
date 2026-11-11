@@ -18,13 +18,13 @@
  *
  */
 #include "ores.marketdata.service/app/fx_forward_ladder_service.hpp"
-#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "../curve_pillar_reader.hpp"
 #include "../fx_forward_ladder_plan.hpp"
 #include "ores.analytics.quant/service/fx_forward_calculator.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"

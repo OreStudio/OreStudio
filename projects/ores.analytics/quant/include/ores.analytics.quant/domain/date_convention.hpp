@@ -100,8 +100,8 @@ struct date_period final {
  * it: 1M is after 3W and before 5W, while 1M against 4W is unordered. An empty period is unordered
  * against anything but another empty period.
  */
-[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::partial_ordering compare_periods(date_period a,
-                                                                              date_period b) noexcept;
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::partial_ordering
+compare_periods(date_period a, date_period b) noexcept;
 
 } // namespace ores::analytics::quant::domain
 

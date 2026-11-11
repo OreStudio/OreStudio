@@ -457,4 +457,3 @@ TEST_CASE("interpolate_discount_factor rejects the recognised-but-unimplemented 
                         points, 2026y / April / 1d, interpolation_method_code::CUBIC_SPLINE),
                     std::invalid_argument);
 }
-

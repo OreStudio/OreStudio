@@ -16,9 +16,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.testing/fx_vol_surface_fixture.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
 #include "ores.synthetic.api/feeds/derived_fx_vol_feed.hpp"
+#include "ores.testing/fx_vol_surface_fixture.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <charconv>
@@ -371,9 +371,7 @@ TEST_CASE("a_missing_day_is_derived_from_the_returns_up_to_it_and_no_later", der
     const auto k = static_cast<std::size_t>(249 + 10);
     REQUIRE(on.day == returns->dates[k]);
     const std::vector<qm::fx_expiry> month{
-        {.label = "1M",
-         .years = 1.0 / 12.0,
-         .convention = *convention_at(convention, "1M")}};
+        {.label = "1M", .years = 1.0 / 12.0, .convention = *convention_at(convention, "1M")}};
     const auto direct =
         qm::derive_fx_quotes(std::span<const double>(returns->returns.data(), k + 1), month, {});
     REQUIRE(direct);
@@ -395,8 +393,12 @@ TEST_CASE("a_day_whose_history_covers_no_long_expiry_quotes_only_the_short_ones"
     const auto fixings = derived_fixings(300, 17);
     const auto returns = pair_log_returns(fixings.at(ecb_fixing_item("USD")), std::nullopt);
     REQUIRE(returns);
-    const auto history = derive_missing_days(
-        {.base = "EUR", .quote = "USD"}, *returns, ores::testing::eur_usd_fx_option_convention(), {}, {}, 30);
+    const auto history = derive_missing_days({.base = "EUR", .quote = "USD"},
+                                             *returns,
+                                             ores::testing::eur_usd_fx_option_convention(),
+                                             {},
+                                             {},
+                                             30);
     REQUIRE(history);
     const auto* days = &history->days;
     REQUIRE_FALSE(days->empty());

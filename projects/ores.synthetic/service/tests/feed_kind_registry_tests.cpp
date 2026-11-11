@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.testing/uuid_of.hpp"
 #include "../src/client_message.hpp"
 #include "../src/feed_config_handler.hpp"
 #include "../src/feed_kind_registry.hpp"
@@ -42,6 +41,7 @@
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "ores.testing/uuid_of.hpp"
 #include "test_helpers.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>

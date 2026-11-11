@@ -56,6 +56,21 @@ void carry_session_token(domain::http_request& req, const std::string& token) {
         req.headers["authorization"] = "Bearer " + token;
 }
 
+/**
+ * Every X-Forwarded-For line, in order, as one list. A proxy may append a line of
+ * its own rather than extend the first, and the first line is the client's to
+ * write, so reading it alone would let a client choose whom it counts as.
+ */
+std::string forwarded_for_of(const boost::beast::http::fields& fields) {
+    std::string out;
+    for (auto [it, end] = fields.equal_range("X-Forwarded-For"); it != end; ++it) {
+        if (!out.empty())
+            out += ',';
+        out.append(it->value());
+    }
+    return out;
+}
+
 /// Methods that change something, and so need proof of intent.
 bool changes_something(domain::http_method method) {
     switch (method) {
@@ -127,7 +142,8 @@ http_session::http_session(asio::ip::tcp::socket socket,
                            session_bytes_callback bytes_callback,
                            server_counters* counters,
                            std::shared_ptr<domain::session_store> sessions,
-                           domain::cookie_settings cookie)
+                           domain::cookie_settings cookie,
+                           std::shared_ptr<rate_limiting> limits)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , verifier_(std::move(verifier))
@@ -136,10 +152,12 @@ http_session::http_session(asio::ip::tcp::socket socket,
     , bytes_callback_(std::move(bytes_callback))
     , counters_(counters)
     , sessions_(std::move(sessions))
-    , cookie_(std::move(cookie)) {
+    , cookie_(std::move(cookie))
+    , limits_(std::move(limits)) {
 
     auto endpoint = stream_.socket().remote_endpoint();
-    remote_address_ = endpoint.address().to_string();
+    peer_ = endpoint.address();
+    remote_address_ = peer_.to_string();
     BOOST_LOG_SEV(lg(), debug) << "HTTP session created for: " << remote_address_ << ":"
                                << endpoint.port();
 }
@@ -192,6 +210,26 @@ asio::awaitable<void> http_session::run() {
             auto route = router_->match(
                 convert_method(parser.get().method()), route_path(subject), path_params);
             const auto limit = body_limit_for(route);
+
+            /*
+             * A policy that counts the client runs before the body is read, so a
+             * refused request costs a header parse. One that counts the account
+             * runs once the credential is proved.
+             */
+            std::optional<rate_note> note;
+            if (limits_ != nullptr) {
+                client_ = client_of(peer_, forwarded_for_of(parser.get()), limits_->trusted);
+                const auto& policy = limits_->policies.for_route(route);
+                if (policy.key == rate_key::client) {
+                    const auto decision = limits_->limiter.take(policy, client_);
+                    if (!decision.allowed) {
+                        co_await refuse_rate_limited(
+                            version, subject, policy, decision, client_, false);
+                        break;
+                    }
+                    note = rate_note{&policy, decision};
+                }
+            }
 
             const auto declared = parser.content_length().value_or(0);
             if (declared > limit) {
@@ -278,7 +316,8 @@ asio::awaitable<void> http_session::run() {
                 counters_->requests.fetch_add(1, std::memory_order_relaxed);
                 counters_->request_bytes.fetch_add(byte_count, std::memory_order_relaxed);
             }
-            co_await handle_request(std::move(domain_req), std::move(route), keep_alive);
+            co_await handle_request(
+                std::move(domain_req), std::move(route), keep_alive, std::move(note));
             if (sink != nullptr && !sink->published())
                 BOOST_LOG_SEV(lg(), warn)
                     << "The handler for " << subject << " answered without publishing its body";
@@ -313,6 +352,37 @@ asio::awaitable<void> http_session::refuse(unsigned version,
     BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << ": " << note;
     auto response = domain::http_response::error(status, std::string(reason));
     co_await write_response(response, version, false, true);
+}
+
+asio::awaitable<void> http_session::refuse_rate_limited(unsigned version,
+                                                        std::string_view subject,
+                                                        const rate_policy& policy,
+                                                        const rate_decision& decision,
+                                                        std::string_view caller,
+                                                        bool keep_alive) {
+    if (counters_ != nullptr)
+        counters_->record_rate_limited(policy.name);
+    if (limits_->may_warn())
+        BOOST_LOG_SEV(lg(), warn) << "Refusing " << subject << " for " << caller
+                                  << " under the rate policy " << policy.name
+                                  << "; further refusals are logged at debug for ten seconds";
+    else
+        BOOST_LOG_SEV(lg(), debug) << "Refusing " << subject << " for " << caller
+                                   << " under the rate policy " << policy.name;
+    co_await write_response(rate_limited(policy, decision), version, keep_alive, true);
+}
+
+asio::awaitable<bool> http_session::refused_failed_credential(unsigned version,
+                                                              std::string_view subject,
+                                                              bool keep_alive) {
+    if (limits_ == nullptr)
+        co_return false;
+    const auto& policy = limits_->policies.for_route(std::nullopt);
+    const auto decision = limits_->limiter.take(policy, client_);
+    if (decision.allowed)
+        co_return false;
+    co_await refuse_rate_limited(version, subject, policy, decision, client_, keep_alive);
+    co_return true;
 }
 
 asio::awaitable<void>
@@ -404,7 +474,8 @@ std::uint64_t http_session::body_limit_for(const std::optional<domain::route>& r
 
 asio::awaitable<void> http_session::handle_request(domain::http_request domain_req,
                                                    std::optional<domain::route> route,
-                                                   bool keep_alive) {
+                                                   bool keep_alive,
+                                                   std::optional<rate_note> note) {
 
     const auto path = route_path(domain_req.target);
     const auto version =
@@ -434,6 +505,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         BOOST_LOG_SEV(lg(), debug)
             << "No route matched for: " << static_cast<int>(domain_req.method) << " " << path;
         auto not_found = domain::http_response::not_found("Endpoint not found");
+        if (note)
+            state_rate_limit(not_found, *note->policy, note->decision);
         co_await write_response(not_found, version, keep_alive, true);
         co_return;
     }
@@ -475,6 +548,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 BOOST_LOG_SEV(lg(), warn)
                     << "Invalid token for " << matched->pattern << " from " << remote_address_
                     << ": " << ores::security::jwt::to_string(claims_result.error());
+                if (co_await refused_failed_credential(version, matched->pattern, keep_alive))
+                    co_return;
                 auto unauthorized = domain::http_response::unauthorized(
                     ores::security::jwt::to_string(claims_result.error()));
                 co_await write_response(unauthorized, version, keep_alive, true);
@@ -503,6 +578,8 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
         if (!claims.has_value()) {
             BOOST_LOG_SEV(lg(), warn)
                 << "No usable credential for " << matched->pattern << " from " << remote_address_;
+            if (co_await refused_failed_credential(version, matched->pattern, keep_alive))
+                co_return;
             auto unauthorized = domain::http_response::unauthorized(
                 "A bearer token or a session cookie is required");
             if (clear_the_cookie)
@@ -549,6 +626,20 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 auto forbidden = domain::http_response::forbidden("Insufficient permissions");
                 co_await write_response(forbidden, version, keep_alive, true);
                 co_return;
+            }
+        }
+
+        if (limits_ != nullptr) {
+            const auto& policy = limits_->policies.for_route(matched);
+            if (policy.key == rate_key::account) {
+                const auto& account = domain_req.authenticated_user->subject;
+                const auto decision = limits_->limiter.take(policy, account);
+                if (!decision.allowed) {
+                    co_await refuse_rate_limited(
+                        version, matched->pattern, policy, decision, account, keep_alive);
+                    co_return;
+                }
+                note = rate_note{&policy, decision};
             }
         }
     } else if (sessions_ != nullptr && !changes_something(domain_req.method) &&
@@ -606,6 +697,9 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
 
     // Add server header
     response.set_header("Server", options_.server_identifier);
+
+    if (note)
+        state_rate_limit(response, *note->policy, note->decision);
 
     co_await write_response(
         response, version, keep_alive, domain_req.method != domain::http_method::head);

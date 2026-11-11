@@ -88,6 +88,7 @@ void signup_routes::register_routes(
             .description("Forwards to the iam.v1.ops.signup operation.")
             .tags({"iam"})
             .auth_optional()
+            .rate_limit("credential")
             .body<messaging::signup_request>()
             .response<messaging::signup_response>()
             .handler([&session](const http_request& req) { return handle_signup(req, session); });

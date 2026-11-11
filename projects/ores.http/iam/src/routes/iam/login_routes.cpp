@@ -97,6 +97,7 @@ void login_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             .description("Forwards to the iam.v1.ops.login operation.")
             .tags({"iam"})
             .auth_optional()
+            .rate_limit("credential")
             .body<messaging::login_request>()
             .response<messaging::login_response>()
             .handler([&session](const http_request& req) { return handle_login(req, session); });

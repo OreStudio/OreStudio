@@ -78,6 +78,9 @@ void {{entity_singular}}_routes::register_routes(
 {{^requires_session}}
                                     .auth_optional()
 {{/requires_session}}
+{{#rate_policy}}
+                                    .rate_limit("{{rate_policy}}")
+{{/rate_policy}}
                                     .body<messaging::{{request}}>()
                                     .response<messaging::{{response_type}}>()
                                     .handler([&session](const http_request& req) {

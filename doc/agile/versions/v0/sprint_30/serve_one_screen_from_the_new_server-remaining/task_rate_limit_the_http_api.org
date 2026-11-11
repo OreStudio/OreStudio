@@ -8,12 +8,12 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/rate-limit-the-http-api
-#+pr:
+#+pr: 4611
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every route of the C++ server runs under a declared rate policy, enforced before
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance
@@ -97,6 +97,38 @@ The design below is the starting point. Work it again when the task starts.
   so a sweep on an =asio::steady_timer= drops it, and each shard has a cap that
   evicts its oldest bucket when the sweep cannot get below it.
 
+** What was built
+
+- =rate_limiter= in =ores.http.api/net=: the =rate_policy= value, the
+  =rate_policies= registry built from the server options, and a sharded GCRA
+  limiter, sixteen shards each behind its own mutex. A shard at its share of
+  =rate_limit_max_keys= sweeps itself and drops the bucket closest to full. The
+  server sweeps every thirty seconds on an =asio::steady_timer= and refuses to
+  start when a route names a policy that does not exist.
+- =client_address= in =ores.http.api/net=: =trusted_proxies= parses
+  =trusted_proxies= from the options, and =client_of= reads the right-most
+  =X-Forwarded-For= hop that is not a trusted proxy, an IPv6 client by its /64.
+  The =Forwarded= header is not read; the proxies the deployment runs send
+  =X-Forwarded-For=.
+- =http_session=: a policy counted by client runs once the route matches,
+  before the body is read; one counted by account runs once the credential is
+  proved, before the worker pool. A failed credential counts against the open
+  policy by client, so guessing tokens turns 401 into 429. Allowed answers
+  carry =RateLimit-Policy= and =RateLimit=; a refusal is 429 with
+  =too-many-requests=, =Retry-After= and both headers. Refusals are counted in
+  =ores_http_refused_rate_limited_total= by policy, and logged as a warning at
+  most once in ten seconds.
+- The policies: =open=, 300 a minute by client; =authenticated=, 1200 a minute
+  by account; =credential=, 10 a minute by client, shared by sign-in, sign-up
+  and the first administrator create; =registration-policy=, 120 a minute by
+  client. Each rate is a server option.
+- The generated operation routes take a policy from the message model: a public
+  message states =:rate_policy:=, the loader refuses one on a message that needs
+  a session, and the template emits =.rate_limit()=. The login, sign-up and
+  first administrator messages name =credential=.
+- The BFF answered a throttled sign-in with 401 and these words; the C++ server
+  answers 429, the same status as every other refusal.
+
 ** What it reports
 
 - A counter in =server_counters= for each refusal, by policy, beside the
@@ -134,12 +166,34 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4611][#4611]] | [http] Rate limit every route of the HTTP API |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: a failed credential on an authenticated route was unlimited, because no account exists to count. | =http_session.cpp= | Accepted | It counts against the open policy by client, and a test proves the 401 turns to 429. |
+| 2 | Local review: a route could name a policy nobody defined. | =http_server.cpp= | Accepted | The server refuses to start, naming each route and policy; a test proves the lookup. |
+| 3 | Local review: generated operation routes could not name a policy. | =org_loader.py=, operation route template | Accepted | =:rate_policy:= on a public message; the loader refuses it on a message that needs a session. The template's org source carries the change, so a re-tangle keeps it. |
+| 4 | Local review: the change stream counts its opening under the account default, not the streams an account holds open. | =change_routes.cpp= | Deferred | Holding streams open is bounded by =max_connections= today; a per-account cap on open streams belongs with the switch-over's load test. |
+| 5 | Local review: the new server options are not covered by a parser test. | =parser.cpp= | Declined | The server has no parser tests; the options are read the way every other option is, and the start-up log prints them. |
+| 6 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 7 | PR review: only the first =X-Forwarded-For= line was read, which the client writes, so a client could choose its key. | =http_session.cpp= | Accepted | Every line is joined in order before the right-most untrusted hop is read; a server test sends two lines through a trusted proxy. |
+| 8 | PR review: eviction at the key cap scans the shard and could reset a throttled caller. | =rate_limiter.hpp= | Accepted in part | The bucket dropped is the closest to full, the least throttled; a throttled one is the last to go, and a test floods 5000 callers past the bound and proves the throttled caller stays refused. The scan runs only when a shard holds its whole share with none full; the header states the trade-off. |
+| 9 | PR review: a bad token is verified before it is counted. | =http_session.cpp= | Declined | One RS256 verification per bad token, bounded by =max_connections=; the count then caps the answers. |
+| 10 | PR review: a refusal in the first ten seconds after boot was not warned; two zero-limit loops; no assertion on an unknown name; a 404 without headers. | =rate_limiter.*=, =http_session.cpp= | Accepted | The throttle starts far in the past; one loop; =for_route= asserts; the 404 states the policy. |
+| 11 | PR review: no parser test; no cap on the streams one account holds open. | =parser.cpp=, =change_routes.cpp= | Declined | As rows 4 and 5 record. |
 
 * Result
+
+Every route of the C++ server runs under a rate policy: the default for its
+authentication position, or the one it names. Sign-in, sign-up and the first
+administrator create share a budget of 10 a minute for each client, and the
+registration policy read allows 120, at least the BFF's limits. A refused
+request answers 429 with =too-many-requests=, =Retry-After= and the RateLimit
+headers before any handler or service sees it. The client address honours only
+configured trusted proxies, and the limiter's memory is bounded and swept.
+Tests prove the refusal, the headers, the refill, the shared budgets, the bound
+and sweep, the trusted-proxy rule, the account count and the failed-credential
+count. On the running server, 400 parallel reads of =/health= gave 58 answers
+and 342 refusals, each with its headers, and the metrics counted them.

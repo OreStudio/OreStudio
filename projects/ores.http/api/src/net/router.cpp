@@ -136,6 +136,11 @@ route_builder& route_builder::max_body(std::uint64_t bytes) {
     return *this;
 }
 
+route_builder& route_builder::rate_limit(std::string_view policy) {
+    rate_policy_ = std::string(policy);
+    return *this;
+}
+
 route_builder& route_builder::sink(
     std::function<std::unique_ptr<domain::body_sink>(const domain::http_request&)> factory) {
     sink_ = std::move(factory);
@@ -196,6 +201,7 @@ domain::route route_builder::build() const {
     r.query_params = query_params_;
     r.sink = sink_;
     r.max_body_size = max_body_size_;
+    r.rate_policy = rate_policy_;
     r.body_schema = body_schema_;
     r.success_response_schema = success_response_schema_;
     return r;

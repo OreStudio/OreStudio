@@ -214,3 +214,65 @@ Allowed origins for CORS (empty = all).
 
 Server identifier for responses.
 
+
+** rate_limit_enabled
+:PROPERTIES:
+:cpp_type: bool
+:default_value: true
+:END:
+
+Whether every route runs under a rate policy. Only a test turns it off.
+
+** open_requests_per_minute
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default_value: 300
+:END:
+
+The requests one client address may make in a minute to a route that needs no
+session, and the burst it may spend at once.
+
+** authenticated_requests_per_minute
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default_value: 1200
+:END:
+
+The requests one account may make in a minute to a route that needs a session.
+A screen asks for many reads as it opens, so the burst is generous.
+
+** credential_attempts_per_minute
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default_value: 10
+:END:
+
+The sign-in and sign-up attempts one client address may make in a minute, one
+budget shared by both, as the BFF counted them.
+
+** registration_policy_reads_per_minute
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default_value: 120
+:END:
+
+The registration policy reads one client address may make in a minute.
+
+** rate_limit_max_keys
+:PROPERTIES:
+:cpp_type: std::size_t
+:default_value: 65536
+:END:
+
+The most clients and accounts the limiter tracks at once. Past it, the bucket
+closest to full is dropped, which forgets the least.
+
+** trusted_proxies
+:PROPERTIES:
+:cpp_type: std::string
+:default_value: ""
+:END:
+
+The proxies whose forwarded address names the client, as a comma separated
+list of networks such as =127.0.0.1/32,10.0.0.0/8=. Empty trusts none, so the
+client is always the socket's peer.

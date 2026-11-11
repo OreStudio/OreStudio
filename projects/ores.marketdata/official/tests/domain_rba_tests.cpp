@@ -91,15 +91,12 @@ TEST_CASE("an_empty_rba_cell_is_skipped_and_not_read_from_another_column", "[dom
 TEST_CASE("a_malformed_rba_answer_is_an_error_and_not_a_fixing", "[domain][rba]") {
     CHECK_FALSE(parse_rba_table("<html>Access denied</html>", "FIRMMCRID", aonia_key).has_value());
     CHECK_FALSE(parse_rba_table(f1_csv, "FIRMMNONE", "f1.FIRMMNONE").has_value());
-    CHECK_FALSE(
-        parse_rba_table("Series ID,FIRMMCRID\n2026-11-06,4.85\n", "FIRMMCRID", aonia_key)
-            .has_value());
-    CHECK_FALSE(
-        parse_rba_table("Series ID,FIRMMCRID\n31-Nov-2026,4.85\n", "FIRMMCRID", aonia_key)
-            .has_value());
-    CHECK_FALSE(
-        parse_rba_table("Series ID,FIRMMCRID\n06-Nov-2026,n/a\n", "FIRMMCRID", aonia_key)
-            .has_value());
+    CHECK_FALSE(parse_rba_table("Series ID,FIRMMCRID\n2026-11-06,4.85\n", "FIRMMCRID", aonia_key)
+                    .has_value());
+    CHECK_FALSE(parse_rba_table("Series ID,FIRMMCRID\n31-Nov-2026,4.85\n", "FIRMMCRID", aonia_key)
+                    .has_value());
+    CHECK_FALSE(parse_rba_table("Series ID,FIRMMCRID\n06-Nov-2026,n/a\n", "FIRMMCRID", aonia_key)
+                    .has_value());
 }
 
 TEST_CASE("the_rba_fetcher_reads_the_window_of_its_series", "[domain][rba]") {

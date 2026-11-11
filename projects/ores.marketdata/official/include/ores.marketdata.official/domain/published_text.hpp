@@ -49,8 +49,7 @@ namespace ores::marketdata::official::domain {
     date_of_month_name(std::string_view text, char separator);
 
 /// The English short name of @p month, such as =Oct=.
-[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::string_view
-month_name(std::chrono::month month);
+[[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT std::string_view month_name(std::chrono::month month);
 
 /**
  * @brief The decimal of a percent published as @p text, such as =0.0397= for =3.97=.

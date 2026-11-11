@@ -57,8 +57,8 @@ std::expected<std::chrono::year_month_day, std::string> date_of(std::string_view
     return date;
 }
 
-std::expected<std::chrono::year_month_day, std::string>
-date_of_month_name(std::string_view text, char separator) {
+std::expected<std::chrono::year_month_day, std::string> date_of_month_name(std::string_view text,
+                                                                           char separator) {
     const auto refused = [&] {
         return std::unexpected(std::format(
             "'{}' is not a date of the form 29{}Oct{}2026", text, separator, separator));

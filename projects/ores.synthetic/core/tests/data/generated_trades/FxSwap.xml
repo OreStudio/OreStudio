@@ -3,29 +3,29 @@
   <Trade id="60df601a-7488-5d36-99b7-ea62af9db083">
     <TradeType>FxSwap</TradeType>
     <FxSwapData>
-      <NearDate>2030-12-02</NearDate>
+      <NearDate>2025-12-02</NearDate>
       <NearBoughtCurrency>EUR</NearBoughtCurrency>
-      <NearBoughtAmount>3466537.28</NearBoughtAmount>
+      <NearBoughtAmount>3070177.38</NearBoughtAmount>
       <NearSoldCurrency>USD</NearSoldCurrency>
-      <NearSoldAmount>3070177.38</NearSoldAmount>
-      <FarDate></FarDate>
-      <FarBoughtAmount>0</FarBoughtAmount>
-      <FarSoldAmount>0</FarSoldAmount>
-      <Settlement>Cash</Settlement>
+      <NearSoldAmount>3466537.28</NearSoldAmount>
+      <FarDate>2030-12-02</FarDate>
+      <FarBoughtAmount>3466537.28</FarBoughtAmount>
+      <FarSoldAmount>3070177.38</FarSoldAmount>
+      <Settlement>Physical</Settlement>
     </FxSwapData>
   </Trade>
   <Trade id="63c35dde-b955-55b1-9998-d8fcc5419534">
     <TradeType>FxSwap</TradeType>
     <FxSwapData>
-      <NearDate>2030-08-02</NearDate>
+      <NearDate>2025-08-02</NearDate>
       <NearBoughtCurrency>EUR</NearBoughtCurrency>
-      <NearBoughtAmount>9380066.44</NearBoughtAmount>
+      <NearBoughtAmount>6592217.61</NearBoughtAmount>
       <NearSoldCurrency>USD</NearSoldCurrency>
-      <NearSoldAmount>6592217.61</NearSoldAmount>
-      <FarDate></FarDate>
-      <FarBoughtAmount>0</FarBoughtAmount>
-      <FarSoldAmount>0</FarSoldAmount>
-      <Settlement>Cash</Settlement>
+      <NearSoldAmount>9380066.44</NearSoldAmount>
+      <FarDate>2030-08-02</FarDate>
+      <FarBoughtAmount>9380066.44</FarBoughtAmount>
+      <FarSoldAmount>6592217.61</FarSoldAmount>
+      <Settlement>Physical</Settlement>
     </FxSwapData>
   </Trade>
 </Portfolio>

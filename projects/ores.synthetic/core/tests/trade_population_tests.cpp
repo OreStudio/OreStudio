@@ -822,7 +822,7 @@ TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_populati
             const auto& row = batch.fx_barrier_option_instruments.front();
             CHECK_FALSE(row.bought_currency.empty());
             CHECK_FALSE(row.barrier_type.empty());
-            CHECK(row.lower_barrier.has_value());
+            CHECK((row.lower_barrier.has_value() || row.upper_barrier.has_value()));
         } else if (digital(type)) {
             REQUIRE(batch.fx_digital_option_instruments.size() == 1u);
             const auto& row = batch.fx_digital_option_instruments.front();
@@ -833,8 +833,13 @@ TEST_CASE("an_fx_population_states_the_row_its_type_routes_to", "[trade_populati
             // written on an index, not on a named underlying.
             REQUIRE(batch.fx_asian_forward_instruments.size() == 1u);
             const auto& row = batch.fx_asian_forward_instruments.front();
-            CHECK_FALSE(row.fx_index.empty());
-            CHECK(row.reference_notional.has_value());
+            CHECK(row.fx_index.starts_with("oresmd://fx/"));
+            // A TaRF states its fixing amount; only an average forward states
+            // a reference notional.
+            if (type == "FxAverageForward")
+                CHECK(row.reference_notional.has_value());
+            else
+                CHECK(row.fixing_amount.has_value());
         } else if (type == "FxVarianceSwap") {
             REQUIRE(batch.fx_variance_swap_instruments.size() == 1u);
             const auto& row = batch.fx_variance_swap_instruments.front();
@@ -957,7 +962,8 @@ TEST_CASE("an_fx_population_prefers_the_pairs_that_name_the_book_currency", "[tr
         } else if (!batch.fx_digital_option_instruments.empty()) {
             CHECK(batch.fx_digital_option_instruments.front().foreign_currency == "EUR");
         } else if (!batch.fx_asian_forward_instruments.empty()) {
-            CHECK(batch.fx_asian_forward_instruments.front().reference_currency == "EUR");
+            CHECK(batch.fx_asian_forward_instruments.front().fx_index.starts_with(
+                "oresmd://fx/EUR?"));
         }
     }
 }

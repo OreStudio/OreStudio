@@ -6,9 +6,12 @@
       <StartDate>2025-12-02</StartDate>
       <EndDate>2026-12-02</EndDate>
       <Currency>USD</Currency>
-      <Name>EUR/USD</Name>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
       <LongShort>Short</LongShort>
-      <Strike>1.2022</Strike>
+      <Strike>0.1</Strike>
       <Notional>5709785.78</Notional>
       <Calendar>TARGET</Calendar>
       <MomentType>Variance</MomentType>
@@ -20,9 +23,12 @@
       <StartDate>2025-08-02</StartDate>
       <EndDate>2031-08-02</EndDate>
       <Currency>USD</Currency>
-      <Name>EUR/USD</Name>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
       <LongShort>Short</LongShort>
-      <Strike>0.8863</Strike>
+      <Strike>0.1</Strike>
       <Notional>3658095.79</Notional>
       <Calendar>TARGET</Calendar>
       <MomentType>Variance</MomentType>

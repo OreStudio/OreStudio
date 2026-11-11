@@ -21,6 +21,7 @@
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/xml/value_differ.hpp"
 #include "ores.ore.core/xml/value_fingerprint.hpp"
 #include "ores.platform/environment/environment.hpp"
@@ -29,6 +30,7 @@
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/nil_generator.hpp>
@@ -37,6 +39,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <filesystem>
+#include <format>
 #include <map>
 #include <set>
 #include <sstream>
@@ -471,15 +474,20 @@ const std::set<std::string>& known_passthroughs() {
  * that its recorded trades leave out, one a line. Asserted exactly; a fix
  * removes its line.
  */
-std::set<std::string> known_missing_paths() {
-    const auto path = ores::testing::project_root::resolve(
-        "projects/ores.synthetic/core/tests/data/generated_trades_known_missing_paths.txt");
+/// The lines of a known list in the test data, less comments.
+std::set<std::string> known_lines(const std::string& name) {
+    const auto path =
+        ores::testing::project_root::resolve("projects/ores.synthetic/core/tests/data/" + name);
     std::set<std::string> known;
     std::istringstream lines(file::read_content(path));
     for (std::string line; std::getline(lines, line);)
-        if (!line.empty())
+        if (!line.empty() && !line.starts_with("#"))
             known.insert(line);
     return known;
+}
+
+std::set<std::string> known_missing_paths() {
+    return known_lines("generated_trades_known_missing_paths.txt");
 }
 
 }
@@ -572,4 +580,66 @@ TEST_CASE("a recorded trade states every path the ORE examples of its type state
     }
     INFO("Recorded types ORE has no example of:" << listed(no_example));
     check_known(found, known_missing_paths());
+}
+
+/*
+ * A generated trade holds oresmd addresses, and the projection writes each as
+ * ORE names it. The importer reads those names back into addresses through the
+ * same mappers, so a recorded trade read and written again states the same
+ * values. A name one side spells by hand, outside the mappers, breaks this.
+ *
+ * The families not yet built through builders still differ, each in its own
+ * projection; their differences are known by type and path, and a family's
+ * builder task removes its lines.
+ */
+TEST_CASE("every recorded trade reads back and writes the same values",
+          "[synthetic][ore][generated]") {
+    namespace xml = ores::ore::xml;
+    std::size_t trades = 0;
+    std::set<std::string> differences;
+    for (const auto& entry : fs::directory_iterator(recorded_directory())) {
+        if (entry.path().extension() != ".xml")
+            continue;
+        const auto items = xml::importer::import_portfolio_with_context(entry.path());
+        std::vector<ores::trading::messaging::trade_export_item> exports;
+        ores::trading::domain::instrument_batch batch;
+        for (const auto& item : items) {
+            const auto id = boost::uuids::string_generator()(
+                std::format("00000000-0000-0000-0000-{:012}", ++trades));
+            auto instrument = item.instrument;
+            ores::trading::domain::stamp_ids(instrument, id);
+            ores::trading::messaging::trade_export_item exported;
+            exported.anchor = item.anchor;
+            exported.anchor.id = id;
+            exported.ore_id = item.ore_id;
+            exported.envelope = item.envelope;
+            exports.push_back(std::move(exported));
+            ores::trading::domain::append_instrument(batch, instrument);
+        }
+        const auto recorded = document::read(file::read_content(entry.path()));
+        const auto written = document::read(xml::exporter::export_portfolio(exports, batch));
+        REQUIRE(recorded.has_value());
+        REQUIRE(written.has_value());
+        const auto before = xml::value_fingerprints_of(*recorded, "Trade", "id");
+        const auto after = xml::value_fingerprints_of(*written, "Trade", "id");
+        REQUIRE(before.size() == after.size());
+        for (std::size_t i = 0; i < before.size(); ++i)
+            for (const auto& difference : xml::diff_values(before[i].values, after[i].values)) {
+                // The type and the path, without the values or the positions.
+                const auto described = xml::describe(difference);
+                std::string shape;
+                bool in_index = false;
+                for (const char c : described.substr(0, described.find(": '"))) {
+                    if (c == '[')
+                        in_index = true;
+                    else if (c == ']')
+                        in_index = false;
+                    else if (!in_index)
+                        shape += c;
+                }
+                differences.insert(entry.path().stem().string() + " " + shape);
+            }
+    }
+    CHECK(trades > 100);
+    check_known(differences, known_lines("generated_trades_known_roundtrip_differences.txt"));
 }

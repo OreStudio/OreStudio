@@ -31,6 +31,20 @@ enum class option_position { long_option, short_option };
     return position == option_position::long_option ? "Long" : "Short";
 }
 
+/// Whether the trade settles in cash or by delivery.
+enum class settlement { cash, physical };
+
+[[nodiscard]] inline std::string settlement_of(settlement settles) {
+    return settles == settlement::cash ? "Cash" : "Physical";
+}
+
+/// Which way an option pays: on a rise or on a fall.
+enum class option_kind { call, put };
+
+[[nodiscard]] inline std::string option_type_of(option_kind kind) {
+    return kind == option_kind::call ? "Call" : "Put";
+}
+
 }
 
 #endif

@@ -19,15 +19,16 @@
  */
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
+#include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
 #include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
 #include "ores.trading.api/domain/equity_instruments.hpp"
-#include "ores.trading.api/domain/fx_instruments.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include <boost/uuid/name_generator_sha1.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -1437,8 +1438,52 @@ const domain::currency_pair_reference& pair_for(const domain::trade_generation_s
     return scope.currency_pairs[slot % scope.currency_pairs.size()];
 }
 
-std::string pair_name(const domain::currency_pair_reference& pair) {
-    return pair.base + "/" + pair.quote;
+/*
+ * The fixing source ORE's examples state for every pair. The source belongs to
+ * the tenant's market data configuration, which the market data task gives a
+ * home; until then every generated trade observes this one.
+ */
+constexpr std::string_view fx_fixing_source = "TR20H";
+
+/// The FX index of a pair, built as an oresmd index: the projection writes it as ORE names it.
+ores::marketdata::datum::market_reference fx_index_of(const domain::currency_pair_reference& pair) {
+    namespace md = ores::marketdata::datum;
+    auto index =
+        md::market_index::make(md::index_family::fx,
+                               pair.base,
+                               {{"source", std::string(fx_fixing_source)}, {"ccy", pair.quote}});
+    if (!index)
+        throw trade_population_error("The pair " + pair.base + pair.quote +
+                                     " has no FX index: " + index.error());
+    auto reference = md::market_reference::of(std::move(*index));
+    if (!reference)
+        throw trade_population_error("The pair " + pair.base + pair.quote +
+                                     " has no FX index: " + reference.error());
+    return std::move(*reference);
+}
+
+ores::trading::domain::instrument_batch
+fx_batch_of(std::expected<ores::trading::domain::fx_instrument_data,
+                          ores::trading::builders::build_error> built,
+            const std::string& trade_type_code) {
+    if (!built)
+        throw trade_population_error("The " + trade_type_code + " builder refuses the drawn " +
+                                     built.error().term + ": " + built.error().message);
+    const auto describe = [](auto& rows) {
+        for (auto& row : rows)
+            row.description = "Generated FX trade.";
+    };
+    describe(built->forwards);
+    describe(built->vanilla_options);
+    describe(built->barrier_options);
+    describe(built->digital_options);
+    describe(built->asian_forwards);
+    describe(built->accumulators);
+    describe(built->variance_swaps);
+    ores::trading::domain::instrument_batch batch;
+    ores::trading::domain::append_instrument(batch,
+                                             ores::trading::domain::trade_instrument{*built});
+    return batch;
 }
 
 }
@@ -1456,155 +1501,149 @@ std::size_t fx_trade_planner::code_count() const {
  * each product's constructor lives here, beside the drawing, and not in the
  * writer: the plan carries the rows and the writer persists them.
  */
-ores::trading::domain::instrument_batch construct_fx_batch(const domain::fx_terms& drawn,
-                                                           const std::string& trade_type_code) {
-    namespace tdom = ores::trading::domain;
-    ores::trading::domain::instrument_batch batch;
+namespace {
+
+/*
+ * The FX family builds each trade through its builder. The drawn rate is the
+ * pair's level the trade is struck at; barriers sit a tenth either side of it,
+ * and a touch or a single barrier is the one above it.
+ */
+ores::trading::domain::instrument_batch build_fx_trade(const domain::trade_generation_scope& scope,
+                                                       const domain::trade_population_slot& entry,
+                                                       const domain::currency_pair_reference& pair,
+                                                       year_month_day start,
+                                                       year_month_day end,
+                                                       double rate) {
+    namespace tb = ores::trading::builders;
+    using ores::utility::decimal::decimal;
     const auto money = [](double value) {
-        return tdom::decimal::from_double(value).value();
+        return decimal::from_double(std::round(value * 100.0) / 100.0).value();
     };
-    const auto maybe_money = [&money](std::optional<double> value) -> std::optional<tdom::decimal> {
-        if (!value.has_value())
-            return std::nullopt;
-        return money(*value);
+    const auto level = [](double value) {
+        return decimal::from_double(std::round(value * 10000.0) / 10000.0).value();
     };
-    const auto& type = trade_type_code;
 
-    tdom::fx_legs_terms legs;
-    legs.bought_currency = drawn.bought_currency;
-    legs.bought_amount = money(drawn.bought_amount);
-    legs.sold_currency = drawn.sold_currency;
-    legs.sold_amount = money(drawn.sold_amount);
+    const auto slot = entry.slot;
+    const auto name = slot_name(scope, slot);
+    const auto& type = entry.trade_type_code;
+    const auto index = fx_index_of(pair);
+    const auto notional = entry.notional;
+    const auto position =
+        draw(name, 4) < 0.5 ? tb::option_position::long_option : tb::option_position::short_option;
+    const auto kind = draw(name, 3) < 0.5 ? tb::option_kind::call : tb::option_kind::put;
+    const tb::fx_exchange exchange{.bought_currency = pair.base,
+                                   .bought_amount = money(notional),
+                                   .sold_currency = pair.quote,
+                                   .sold_amount = money(notional * rate)};
+    const tb::fx_option_terms option{
+        .exchange = exchange, .kind = kind, .expiry = end, .position = position};
+    const auto lower = level(rate * 0.9);
+    const auto upper = level(rate * 1.1);
+    const auto single = std::vector<tb::fx_barrier>{{"UpAndOut", {upper}}};
+    const auto both = std::vector<tb::fx_barrier>{{"KnockOut", {lower, upper}}};
+    const auto built = [&](auto result) {
+        return fx_batch_of(std::move(result), type);
+    };
+    const auto barrier = [&]<tb::fx_barrier_product Product>(std::vector<tb::fx_barrier> barriers) {
+        return built(tb::fx_barrier_option_builder<Product>(
+                         {.option = option, .barriers = std::move(barriers), .fx_index = index})
+                         .build());
+    };
+    const auto digital = [&]<tb::fx_digital_product Product>(std::optional<decimal> strike,
+                                                             std::vector<tb::fx_barrier> barriers) {
+        return built(tb::fx_digital_option_builder<Product>({.foreign_currency = pair.base,
+                                                             .domestic_currency = pair.quote,
+                                                             .payoff_amount = money(notional),
+                                                             .kind = kind,
+                                                             .expiry = end,
+                                                             .position = position,
+                                                             .strike = strike,
+                                                             .barriers = std::move(barriers),
+                                                             .fx_index = index})
+                         .build());
+    };
 
-    /*
-     * One routed table per shape. An FX row is the whole instrument, so there
-     * is no fact row beside it and nothing to forget: the fields the table
-     * states are the fields the row carries.
-     */
-    /*
-     * One routed table per shape. An FX row is the whole instrument, so
-     * there is no fact row beside it and nothing to forget: the fields the
-     * table states are the fields the row carries.
-     */
-    if (type == "FxForward" || type == "FxSwap") {
-        tdom::fx_forward_terms terms{legs, drawn.value_date, drawn.settlement};
-        auto row = type == "FxForward" ? tdom::construct_fx_forward(terms) :
-                                         tdom::construct_fx_swap(terms);
-        row.description = "Generated FX trade.";
-        batch.fx_forward_instruments.push_back(row);
-    } else if (type == "FxOption") {
-        tdom::fx_vanilla_option_terms terms{
-            legs, drawn.option_type, drawn.expiry_date, drawn.exercise_style, drawn.settlement};
-        auto row = tdom::construct_fx_option(terms);
-        row.description = "Generated FX trade.";
-        batch.fx_vanilla_option_instruments.push_back(row);
-    } else if (type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
-               type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
-               type == "FxKIKOBarrierOption") {
-        tdom::fx_barrier_option_terms terms{legs,
-                                            drawn.option_type,
-                                            drawn.expiry_date,
-                                            drawn.settlement,
-                                            drawn.barrier_type,
-                                            maybe_money(drawn.lower_barrier),
-                                            maybe_money(drawn.upper_barrier),
-                                            drawn.underlying_code};
-        auto row = [&] {
-            if (type == "FxBarrierOption")
-                return tdom::construct_fx_barrier_option(terms);
-            if (type == "FxDoubleBarrierOption")
-                return tdom::construct_fx_double_barrier_option(terms);
-            if (type == "FxEuropeanBarrierOption")
-                return tdom::construct_fx_european_barrier_option(terms);
-            if (type == "FxGenericBarrierOption")
-                return tdom::construct_fx_generic_barrier_option(terms);
-            return tdom::construct_fx_kiko_barrier_option(terms);
-        }();
-        row.description = "Generated FX trade.";
-        batch.fx_barrier_option_instruments.push_back(row);
-    } else if (type == "FxDigitalOption" || type == "FxTouchOption" ||
-               type == "FxDoubleTouchOption" || type == "FxDigitalBarrierOption") {
-        tdom::fx_digital_option_terms terms{drawn.foreign_currency,
-                                            drawn.domestic_currency,
-                                            drawn.payoff_currency,
-                                            money(drawn.payoff_amount.value_or(0.0)),
-                                            drawn.option_type,
-                                            drawn.expiry_date,
-                                            drawn.long_short,
-                                            maybe_money(drawn.strike),
-                                            drawn.barrier_type,
-                                            maybe_money(drawn.lower_barrier),
-                                            maybe_money(drawn.upper_barrier)};
-        auto row = [&] {
-            if (type == "FxDigitalOption")
-                return tdom::construct_fx_digital_option(terms);
-            if (type == "FxTouchOption")
-                return tdom::construct_fx_touch_option(terms);
-            if (type == "FxDoubleTouchOption")
-                return tdom::construct_fx_double_touch_option(terms);
-            return tdom::construct_fx_digital_barrier_option(terms);
-        }();
-        row.description = "Generated FX trade.";
-        batch.fx_digital_option_instruments.push_back(row);
-    } else if (type == "FxAverageForward") {
-        tdom::fx_asian_forward_terms terms{drawn.fx_index,
-                                           drawn.reference_currency,
-                                           maybe_money(drawn.reference_notional),
-                                           drawn.settlement_currency,
-                                           maybe_money(drawn.settlement_notional),
-                                           drawn.payment_date,
-                                           drawn.long_short,
-                                           drawn.currency,
-                                           maybe_money(drawn.fixing_amount),
-                                           maybe_money(drawn.strike)};
-        auto row = tdom::construct_fx_average_forward(terms);
-        row.description = "Generated FX trade.";
-        batch.fx_asian_forward_instruments.push_back(row);
-    } else if (type == "FxTaRF") {
-        tdom::fx_tarf_terms terms{drawn.fx_index,
-                                  drawn.reference_currency,
-                                  maybe_money(drawn.reference_notional),
-                                  drawn.settlement_currency,
-                                  maybe_money(drawn.settlement_notional),
-                                  drawn.payment_date,
-                                  drawn.long_short,
-                                  drawn.currency,
-                                  maybe_money(drawn.fixing_amount),
-                                  maybe_money(drawn.strike),
-                                  money(drawn.target_amount.value_or(0.0))};
-        auto row = tdom::construct_fx_target_redemption_forward(terms);
-        row.description = "Generated FX trade.";
-        batch.fx_asian_forward_instruments.push_back(row);
-    } else if (type == "FxVarianceSwap") {
-        tdom::fx_variance_swap_terms terms{drawn.start_date,
-                                           drawn.end_date,
-                                           drawn.currency,
-                                           drawn.underlying_code,
-                                           drawn.long_short,
-                                           drawn.strike.value_or(0.0),
-                                           money(drawn.reference_notional),
-                                           drawn.moment_type};
-        auto row = tdom::construct_fx_variance_swap(terms);
-        row.description = "Generated FX trade.";
-        batch.fx_variance_swap_instruments.push_back(row);
-    } else if (type == "FxAccumulator") {
-        tdom::fx_accumulator_terms terms{drawn.currency,
-                                         money(drawn.fixing_amount),
-                                         drawn.underlying_code,
-                                         drawn.long_short,
-                                         drawn.start_date,
-                                         money(drawn.strike.value_or(0.0)),
-                                         maybe_money(drawn.knock_out_barrier)};
-        auto built = tdom::construct_fx_accumulator(terms);
-        built.row.description = "Generated FX trade.";
-        batch.fx_accumulator_instruments.push_back(built.row);
-        for (const auto& bound : built.range_bounds)
-            batch.range_bounds.push_back(bound);
-    } else {
-        throw trade_population_error("The FX trade type " + type +
-                                     " states no product this planner knows.");
-    }
-    return batch;
+    if (type == "FxForward")
+        return built(tb::fx_forward_builder(
+                         {.exchange = exchange, .value_date = end, .settles = tb::settlement::cash})
+                         .build());
+    if (type == "FxSwap")
+        return built(tb::fx_swap_builder({.near = exchange,
+                                          .near_date = start,
+                                          .far_date = end,
+                                          .far_bought_amount = money(notional * rate),
+                                          .far_sold_amount = money(notional)})
+                         .build());
+    if (type == "FxOption")
+        return built(tb::fx_option_builder(option).build());
+    if (type == "FxBarrierOption")
+        return barrier.template operator()<tb::fx_barrier_product::barrier>(single);
+    if (type == "FxDoubleBarrierOption")
+        return barrier.template operator()<tb::fx_barrier_product::double_barrier>(both);
+    if (type == "FxEuropeanBarrierOption")
+        return barrier.template operator()<tb::fx_barrier_product::european_barrier>(single);
+    if (type == "FxKIKOBarrierOption")
+        return barrier.template operator()<tb::fx_barrier_product::kiko>(
+            {{"DownAndIn", {lower}}, {"UpAndOut", {upper}}});
+    if (type == "FxGenericBarrierOption")
+        return built(tb::fx_generic_barrier_option_builder({.option = option,
+                                                            .barrier = single.front(),
+                                                            .fx_index = index,
+                                                            .monitoring_start = start})
+                         .build());
+    if (type == "FxDigitalOption")
+        return digital.template operator()<tb::fx_digital_product::digital>(level(rate), {});
+    if (type == "FxTouchOption")
+        return digital.template operator()<tb::fx_digital_product::touch>(std::nullopt,
+                                                                          {{"UpAndIn", {upper}}});
+    if (type == "FxDoubleTouchOption")
+        return digital.template operator()<tb::fx_digital_product::double_touch>(
+            std::nullopt, {{"KnockIn", {lower, upper}}});
+    if (type == "FxDigitalBarrierOption")
+        return digital.template operator()<tb::fx_digital_product::digital_barrier>(level(rate),
+                                                                                    single);
+    if (type == "FxAverageForward")
+        return built(tb::fx_average_forward_builder({.fx_index = index,
+                                                     .reference_currency = pair.base,
+                                                     .reference_notional = money(notional),
+                                                     .settlement_currency = pair.quote,
+                                                     .settlement_notional = money(notional * rate),
+                                                     .start = start,
+                                                     .payment_date = end})
+                         .build());
+    if (type == "FxTaRF")
+        return built(tb::fx_tarf_builder({.fx_index = index,
+                                          .currency = pair.quote,
+                                          .fixing_amount = money(notional),
+                                          .strike = level(rate),
+                                          .target_amount = money(notional * 0.1),
+                                          .start = start,
+                                          .end = end,
+                                          .position = position})
+                         .build());
+    if (type == "FxVarianceSwap")
+        return built(tb::fx_variance_swap_builder({.fx_index = index,
+                                                   .currency = pair.quote,
+                                                   .start = start,
+                                                   .end = end,
+                                                   .strike = 0.1,
+                                                   .notional = money(notional),
+                                                   .position = position})
+                         .build());
+    if (type == "FxAccumulator")
+        return built(tb::fx_accumulator_builder({.fx_index = index,
+                                                 .currency = pair.quote,
+                                                 .fixing_amount = money(notional),
+                                                 .strike = level(rate),
+                                                 .knock_out = upper,
+                                                 .start = start,
+                                                 .end = end,
+                                                 .position = position})
+                         .build());
+    throw trade_population_error("The FX trade type " + type +
+                                 " states no builder this planner knows.");
+}
+
 }
 
 domain::trade_population_plan
@@ -1640,96 +1679,10 @@ fx_trade_planner::plan(const domain::trade_generation_scope& scope) const {
             price_from(name, 1, scope.min_notional, scope.max_notional - scope.min_notional);
         const auto rate = std::round((0.5 + draw(name, 2)) * 10000.0) / 10000.0;
 
-        domain::fx_terms terms;
-        terms.settlement = "Cash";
-        terms.value_date = end;
-        terms.expiry_date = end;
-        terms.start_date = start;
-        terms.end_date = end;
-        /*
-         * An fx config may state a tenor band whose short end is less than a
-         * year, and a variance swap is the one product that requires its end to
-         * be after its start. A zero-length observation window is not the
-         * product, so a short draw states the shortest window that is one.
-         */
-        if (type == "FxVarianceSwap" && !(terms.end_date > terms.start_date))
-            terms.end_date = add_months(terms.start_date, 1);
-
-        /*
-         * The three idioms. A bought-and-sold trade states the two currencies
-         * and their amounts; a digital states a payoff struck against a
-         * foreign and a domestic; an index trade states the index and the
-         * reference notional it is written on.
-         */
-        if (type == "FxForward" || type == "FxSwap" || type == "FxOption" ||
-            type.starts_with("FxBarrier") || type == "FxDoubleBarrierOption" ||
-            type == "FxEuropeanBarrierOption" || type == "FxGenericBarrierOption" ||
-            type == "FxKIKOBarrierOption") {
-            terms.bought_currency = pair.base;
-            terms.sold_currency = pair.quote;
-            terms.sold_amount = notional;
-            terms.bought_amount = std::round(notional * rate * 100.0) / 100.0;
-        } else if (type == "FxDigitalOption" || type == "FxTouchOption" ||
-                   type == "FxDoubleTouchOption" || type == "FxDigitalBarrierOption") {
-            terms.foreign_currency = pair.base;
-            terms.domestic_currency = pair.quote;
-            terms.payoff_currency = pair.quote;
-            terms.payoff_amount = notional;
-            terms.strike = rate;
-        } else {
-            terms.fx_index = pair_name(pair);
-            terms.reference_currency = pair.base;
-            terms.reference_notional = notional;
-            terms.settlement_currency = pair.quote;
-            terms.settlement_notional = std::round(notional * rate * 100.0) / 100.0;
-            terms.currency = pair.quote;
-            terms.fixing_amount = notional;
-            terms.strike = rate;
-            terms.payment_date = end;
-        }
-
-        if (type.ends_with("Option") || type.starts_with("FxBarrier") ||
-            type.starts_with("FxKIKO") || type.starts_with("FxTouch") ||
-            type.starts_with("FxDouble") || type.starts_with("FxEuropean") ||
-            type.starts_with("FxGeneric") || type.starts_with("FxDigital")) {
-            terms.option_type = (draw(name, 3) < 0.5) ? "Call" : "Put";
-            terms.exercise_style = "European";
-            terms.long_short = (draw(name, 4) < 0.5) ? "Long" : "Short";
-        }
-
-        if (type.find("Barrier") != std::string::npos || type.starts_with("FxKIKO") ||
-            type.starts_with("FxTouch") || type.starts_with("FxDouble")) {
-            terms.barrier_type = type.starts_with("FxKIKO") ? "KnockIn" : "KnockOut";
-            terms.lower_barrier = std::round(rate * 0.9 * 10000.0) / 10000.0;
-            terms.upper_barrier = std::round(rate * 1.1 * 10000.0) / 10000.0;
-            terms.underlying_code = pair_name(pair);
-        }
-
-        if (type == "FxVarianceSwap") {
-            terms.moment_type = "Variance";
-            terms.long_short = (draw(name, 5) < 0.5) ? "Long" : "Short";
-            terms.underlying_code = pair_name(pair);
-        }
-
-        if (type == "FxAccumulator") {
-            terms.knock_out_barrier = std::round(rate * 1.1 * 10000.0) / 10000.0;
-            terms.underlying_code = pair_name(pair);
-            terms.long_short = "Long";
-        }
-
-        if (type == "FxTaRF" || type == "FxAverageForward") {
-            terms.target_amount = std::round(notional * 2.0 * 100.0) / 100.0;
-            terms.long_short = "Long";
-        }
-
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(type);
         entry.notional = notional;
-        /*
-         * The fx family states its rows here, where it draws them, and the plan
-         * carries no bag for it.
-         */
-        entry.instruments = construct_fx_batch(terms, entry.trade_type_code);
+        entry.instruments = build_fx_trade(scope, entry, pair, start, end, rate);
         plan.slots.push_back(std::move(entry));
     }
 

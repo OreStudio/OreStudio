@@ -113,8 +113,6 @@ private:
     cap_floor_terms terms_;
 };
 
-enum class settlement { cash, physical };
-
 /// A European option to enter a swap that starts on or after the expiry.
 struct swaption_terms final {
     vanilla_swap_terms swap;

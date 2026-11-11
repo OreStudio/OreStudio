@@ -3693,14 +3693,11 @@ TEST_CASE("every_converted_index_column_of_ores_product_portfolio_holds_an_addre
         if (row.declared_type == "Index")
             hold("scripted_parameter.index", row.value);
 
-    // The sample writes this FX index without its FX- prefix, so an address could not spell it.
-    const std::vector<std::string> kept_as_written = {"TR20H-EUR-USD"};
+    // A TaRF names its pair as an underlying, without the FX- prefix, and the
+    // underlying mapper reads that into an address too.
     for (const auto& [column, result] : columns) {
         INFO(column);
-        if (column == "fx_asian_forward.fx_index")
-            CHECK(result.second == kept_as_written);
-        else
-            CHECK(result.second.empty());
+        CHECK(result.second.empty());
     }
     for (const auto* column : {"swap_leg.fx_index",
                                "swap_leg.fx_reset_fx_index",

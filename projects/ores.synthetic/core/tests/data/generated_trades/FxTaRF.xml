@@ -5,26 +5,41 @@
     <FxTaRFData>
       <Currency>USD</Currency>
       <FixingAmount>8284783.79</FixingAmount>
+      <TargetAmount>828478.38</TargetAmount>
       <Strike>0.6184</Strike>
       <Underlying>
         <Type>FX</Type>
-        <Name>EUR/USD</Name>
+        <Name>TR20H-EUR-USD</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate></StartDate>
-          <Tenor>1Y</Tenor>
-          <Convention>MF</Convention>
+          <StartDate>2025-10-02</StartDate>
+          <EndDate>2029-10-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ScheduleData>
       <OptionData>
         <LongShort>Long</LongShort>
+        <PayoffType>TargetExact</PayoffType>
       </OptionData>
+      <RangeBounds>
+        <RangeBound>
+          <RangeTo>0.6184</RangeTo>
+          <Leverage>2</Leverage>
+        </RangeBound>
+        <RangeBound>
+          <RangeFrom>0.6184</RangeFrom>
+          <Leverage>1</Leverage>
+        </RangeBound>
+      </RangeBounds>
       <Barriers>
         <BarrierData>
           <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>16569567.58</Level>
+            <Level>828478.38</Level>
           </Levels>
         </BarrierData>
       </Barriers>
@@ -35,26 +50,41 @@
     <FxTaRFData>
       <Currency>USD</Currency>
       <FixingAmount>5666887.39</FixingAmount>
+      <TargetAmount>566688.74</TargetAmount>
       <Strike>0.9992</Strike>
       <Underlying>
         <Type>FX</Type>
-        <Name>EUR/USD</Name>
+        <Name>TR20H-EUR-USD</Name>
       </Underlying>
       <ScheduleData>
         <Rules>
-          <StartDate></StartDate>
-          <Tenor>1Y</Tenor>
-          <Convention>MF</Convention>
+          <StartDate>2025-12-02</StartDate>
+          <EndDate>2030-12-02</EndDate>
+          <Tenor>1M</Tenor>
+          <Calendar>TARGET</Calendar>
+          <Convention>F</Convention>
+          <Rule>Forward</Rule>
         </Rules>
       </ScheduleData>
       <OptionData>
         <LongShort>Long</LongShort>
+        <PayoffType>TargetExact</PayoffType>
       </OptionData>
+      <RangeBounds>
+        <RangeBound>
+          <RangeTo>0.9992</RangeTo>
+          <Leverage>2</Leverage>
+        </RangeBound>
+        <RangeBound>
+          <RangeFrom>0.9992</RangeFrom>
+          <Leverage>1</Leverage>
+        </RangeBound>
+      </RangeBounds>
       <Barriers>
         <BarrierData>
           <Type>CumulatedProfitCap</Type>
           <Levels>
-            <Level>11333774.78</Level>
+            <Level>566688.74</Level>
           </Levels>
         </BarrierData>
       </Barriers>

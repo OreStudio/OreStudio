@@ -62,17 +62,19 @@ std::expected<std::vector<std::string>, std::string> rba_fetcher::universe(std::
     const auto dot = key.rfind('.');
     const auto table = dot == std::string_view::npos ? std::string_view{} : key.substr(0, dot);
     const auto series = dot == std::string_view::npos ? std::string_view{} : key.substr(dot + 1);
-    const auto is_table = !table.empty() && table.front() >= 'a' && table.front() <= 'z' &&
-                          std::ranges::all_of(table, [](char c) {
-                              return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.';
-                          });
+    const auto is_table =
+        !table.empty() && table.front() >= 'a' && table.front() <= 'z' &&
+        std::ranges::all_of(table, [](char c) {
+            return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '-';
+        });
     const auto is_series = !series.empty() && std::ranges::all_of(series, [](char c) {
         return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
     });
     if (!is_table || !is_series)
-        return std::unexpected("'" + std::string(key) +
-                               "' is not a series key: it needs a table code of small letters, "
-                               "digits and dots, a dot, and a series of capitals and digits");
+        return std::unexpected(
+            "'" + std::string(key) +
+            "' is not a series key: it needs a table code of small letters, "
+            "digits, dots and hyphens, a dot, and a series of capitals and digits");
     return std::vector<std::string>{std::string(key)};
 }
 

@@ -99,6 +99,13 @@ TEST_CASE("a_malformed_rba_answer_is_an_error_and_not_a_fixing", "[domain][rba]"
                     .has_value());
 }
 
+TEST_CASE("a_row_after_the_header_without_a_date_is_an_error_and_not_a_skipped_row",
+          "[domain][rba]") {
+    CHECK_FALSE(parse_rba_table(f1_csv + ",,,4.85\r\n", "FIRMMCRID", aonia_key).has_value());
+    CHECK_FALSE(parse_rba_table(f1_csv + "Note: rates are end of day\r\n", "FIRMMCRID", aonia_key)
+                    .has_value());
+}
+
 TEST_CASE("the_rba_fetcher_reads_the_window_of_its_series", "[domain][rba]") {
     rba_transport transport;
     transport.answers.push_back({200, "application/octet-stream", f1_csv});
@@ -121,6 +128,7 @@ TEST_CASE("an_rba_key_names_a_table_and_a_series", "[domain][rba]") {
     rba_fetcher fetcher(transport, "https://www.rba.gov.au");
 
     CHECK(fetcher.universe("f2.1.FCMYGBAG2").has_value());
+    CHECK(fetcher.universe("f1-hist.FIRMMCRID").has_value());
     CHECK_FALSE(fetcher.universe("FIRMMCRID").has_value());
     CHECK_FALSE(fetcher.universe("F1.FIRMMCRID").has_value());
     CHECK_FALSE(fetcher.universe("f1.firmmcrid").has_value());

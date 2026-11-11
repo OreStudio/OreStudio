@@ -37,8 +37,9 @@ namespace ores::marketdata::official::domain {
  * The table is a CSV file. Rows of notes come first, and the row whose first cell is
  * =Series ID= names the series of each column. The rows after it each start with a date, such
  * as =04-Jan-2011=, and hold the values in percent. A row can stop before the last columns, so a
- * missing cell and an empty cell are both skipped. A table with no =Series ID= row, or without
- * the series, is an error.
+ * missing cell and an empty cell are both skipped. A table with no =Series ID= row, without
+ * the series, or with a row after it that does not start with a date, is an error: a changed
+ * layout stores no fixing.
  */
 [[nodiscard]] ORES_MARKETDATA_OFFICIAL_EXPORT
     std::expected<std::vector<published_fixing>, std::string>
@@ -67,8 +68,8 @@ public:
         return "value";
     }
 
-    /// The key @p key, when it is a table code of small letters, digits and dots, a dot, and a
-    /// series of capitals and digits.
+    /// The key @p key, when it is a table code of small letters, digits, dots and hyphens, such as
+    /// =f1= or =f1-hist=, a dot, and a series of capitals and digits.
     [[nodiscard]] std::expected<std::vector<std::string>, std::string>
     universe(std::string_view key) override;
 

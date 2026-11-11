@@ -215,7 +215,7 @@ std::string family_write(const http_request& req, nats_client& session, const st
     const auto intent = body ? rr::intent_of(body->intent) : std::nullopt;
     if (!body || !intent || !rr::is_uuid(body->write.id))
         rr::invalid("A convention write names the row by its identifier, the version it was "
-                    "read at, and a reason.");
+                    "read at or null for a new row, and a reason.");
     Put msg;
     msg.change.write = body->write;
     msg.change.precondition.kind = body->version ?
@@ -224,9 +224,9 @@ std::string family_write(const http_request& req, nats_client& session, const st
     msg.change.precondition.version = body->version;
     msg.intent = *intent;
     const auto reply = ores::http::forwarding::forward(req, session, msg);
-    const auto& written = reply.*Written;
+    const auto& row = reply.*Written;
     return "{\"result\":" + json::write(reply.result) +
-           ",\"convention\":" + (written ? json::write(*written) : std::string("null")) + "}";
+           ",\"convention\":" + (row ? json::write(*row) : std::string("null")) + "}";
 }
 
 /// A plain family that the screen lists and does not write.
@@ -517,6 +517,12 @@ std::string convention_screen_routes::zip_parts(std::string_view central, std::s
     yyjson_obj_foreach(parts, i, n, name, rows) {
         if (!yyjson_is_arr(rows))
             continue;
+        /*
+         * A part array holds one row for each central row it is part of, and
+         * none for a form the row does not hold, so the first row is the
+         * part's. A term two parts both name takes the later part's value.
+         * The BFF zipped the same way.
+         */
         yyjson_val* part = nullptr;
         std::size_t r = 0, rn = 0;
         yyjson_val* candidate = nullptr;
@@ -573,12 +579,12 @@ void convention_screen_routes::register_routes(
                                  messaging::list_convention_kinds_request{},
                                  &messaging::list_convention_kinds_response::kinds))
                             asset_class_of[kind.code] = kind.asset_class;
-                    } catch (const std::exception& e) {
-                        BOOST_LOG_SEV(lg(), ores::logging::warn)
-                            << "The convention kinds could not be read: " << e.what();
                     } catch (const rr::refusal& r) {
                         BOOST_LOG_SEV(lg(), ores::logging::warn)
                             << "The convention kinds could not be read: " << r.message;
+                    } catch (const std::exception& e) {
+                        BOOST_LOG_SEV(lg(), ores::logging::warn)
+                            << "The convention kinds could not be read: " << e.what();
                     }
 
                     std::string out = "{\"families\":[";
@@ -624,6 +630,9 @@ void convention_screen_routes::register_routes(
 
     add(router->put("/api/conventions/{family}")
             .summary("Write one convention of a family whose terms the screen draws")
+            .description("Answers 200 with the service's result whatever its outcome, so read "
+                         "result.outcome rather than the status. A family whose terms the screen "
+                         "does not draw yet is refused with 400.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<messaging::put_deposit_convention_request>([&] {
                     const auto& family = family_of(req);

@@ -140,6 +140,14 @@ via its "Verifies task" field.
 | 12 | Local review: the counterparty and conventions units each held the screens' intent and a paged whole read. | =record_routes.hpp=, =forwarding.hpp= | Accepted | One =rr::stated_intent= with =rr::intent_of=, and one =forwarding::forward_all=; the counterparty copies are deleted. |
 | 13 | Local review: both test files defined =answer_at=, and both units defined =wire_fields= in the same namespace, so the unity check failed. | Refdata tests and units | Accepted | One =route_answer.hpp= helper in the suite; each unit keeps its bodies in a namespace named for it. |
 | 14 | Local review: a hand table of families can drift from the registry. | =convention_screen_routes.cpp= | Accepted | A test compares the table with the registry; generating the table is left until a second consumer needs it. |
+| 15 | PR #4618: the families read makes about 28 sequential round trips. | =convention_screen_routes.cpp= | Declined | The BFF read each count in turn, one row each; a failed count is null, not a failed page. Concurrent counts can come with the screen's own change. |
+| 16 | PR #4618: the refusal catch looked unreachable. | =convention_screen_routes.cpp= | Accepted | A refusal is not a standard exception, so both handlers run; the refusal handler is now first, as in =count_of=. |
+| 17 | PR #4618: the zip keeps only the first row of each part. | =convention_screen_routes.cpp= | Accepted | A comment states why: a part array holds the one row of its central row, as the BFF zipped. |
+| 18 | PR #4618: a read-only family's write answers 400. | =convention_screen_routes.cpp= | Declined | The BFF answered 400, and ores.web reads it so. |
+| 19 | PR #4618: a missing version means a new row. | =convention_screen_routes.cpp= | Accepted | The refusal says the version is null for a new row. |
+| 20 | PR #4618: a write answers 200 whatever its outcome. | =convention_screen_routes.cpp= | Accepted | The route's OpenAPI description says to read =result.outcome=. |
+| 21 | PR #4618: minor points. | =convention_screen_routes.cpp= | Partly accepted | The local =written= is renamed =row=. The 26-row lookup stays; the plain families' shared flag is tested against the registry. |
+| 22 | PR #4618: run the write and a composite page against a live service. | All | Declined | The dev database is in bootstrap mode with no accounts; the switch task tests ores.web end to end. |
 
 * Result
 

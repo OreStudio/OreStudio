@@ -817,6 +817,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/builder_registry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/cadence.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/credit_builders.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/fx_builder_rows.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/fx_builders.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/option_position.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/builders/rate_builders.hpp"

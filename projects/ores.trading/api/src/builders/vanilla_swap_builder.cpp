@@ -58,7 +58,7 @@ std::string tenor_of(const std::string& index_name) {
 
 domain::instrument_schedule
 schedule_of(int leg_number, const vanilla_swap_terms& terms, const leg_conventions& leg) {
-    domain::instrument_schedule row;
+    domain::instrument_schedule row{};
     row.owner_role = "swap";
     row.owner_number = leg_number;
     row.schedule_role = "schedule";
@@ -143,7 +143,7 @@ std::expected<domain::swap_instrument_data, build_error> vanilla_swap_builder::b
         fixed_adjustment_.value_or(swap->fixed_convention.value_or(floating.adjustment))};
 
     const bool fixed_pays = terms_.fixed_side.get() == side::pay;
-    domain::swap_instrument_data out;
+    domain::swap_instrument_data out{};
     out.header.start_date = terms_.start.get();
     out.header.maturity_date = terms_.maturity.get();
     out.facts = domain::vanilla_swap_instrument{};

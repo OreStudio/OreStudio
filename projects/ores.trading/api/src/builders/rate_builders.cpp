@@ -74,7 +74,7 @@ domain::instrument_option option_of(option_position position,
                                     std::string style,
                                     std::string settles,
                                     std::optional<std::string> method = {}) {
-    domain::instrument_option option;
+    domain::instrument_option option{};
     option.long_short = long_short_of(position);
     option.style = std::move(style);
     option.settlement = std::move(settles);
@@ -84,7 +84,7 @@ domain::instrument_option option_of(option_position position,
 
 void add_exercise_dates(domain::swap_instrument_data& out,
                         const std::vector<std::chrono::year_month_day>& dates) {
-    domain::instrument_schedule exercise;
+    domain::instrument_schedule exercise{};
     exercise.owner_role = "option";
     exercise.owner_number = 1;
     exercise.schedule_role = "exercise_dates";
@@ -93,7 +93,7 @@ void add_exercise_dates(domain::swap_instrument_data& out,
     out.schedules.push_back(std::move(exercise));
     int number = 0;
     for (const auto& when : dates) {
-        domain::instrument_schedule_date date;
+        domain::instrument_schedule_date date{};
         date.owner_role = "option";
         date.owner_number = 1;
         date.schedule_role = "exercise_dates";
@@ -137,7 +137,7 @@ swap_result cross_currency_swap_builder::build() const {
         return std::unexpected(within("foreign", foreign.error()));
 
     // The fixed leg is the domestic swap's and the floating leg the foreign one's.
-    domain::swap_instrument_data out;
+    domain::swap_instrument_data out{};
     out.header = domestic->header;
     out.facts = domain::vanilla_swap_instrument{};
     take_leg(out, *domestic, 1, 1);
@@ -167,7 +167,7 @@ swap_result forward_rate_agreement_builder::build() const {
     auto out = swap_of(conventions_, period);
     if (!out)
         return out;
-    domain::fra_instrument fact;
+    domain::fra_instrument fact{};
     fact.currency = period.currency.get();
     fact.rate_index = period.index.get().uri();
     fact.long_short = long_short_of(terms_.position.get());
@@ -187,15 +187,15 @@ swap_result cap_floor_builder::build() const {
         return std::unexpected(swap.error());
 
     // A cap or a floor pays on the floating leg alone.
-    domain::swap_instrument_data out;
+    domain::swap_instrument_data out{};
     out.header = swap->header;
-    domain::cap_floor_instrument fact;
+    domain::cap_floor_instrument fact{};
     fact.long_short = long_short_of(terms_.position.get());
     out.facts = std::move(fact);
     take_leg(out, *swap, 2, 1);
     out.legs.front().payer = false;
 
-    domain::instrument_strike strike;
+    domain::instrument_strike strike{};
     strike.strike_role = terms_.kind.get() == cap_floor_kind::cap ? "cap" : "floor";
     strike.sequence_number = 1;
     strike.bare_value = terms_.swap.fixed_rate.get();
@@ -216,7 +216,7 @@ swap_result swaption_builder::build() const {
         return out;
 
     const bool cash = terms_.settles.get() == settlement::cash;
-    domain::swaption_instrument fact;
+    domain::swaption_instrument fact{};
     fact.expiry_date = terms_.expiry.get();
     fact.exercise_type = "European";
     fact.settlement_type = cash ? "Cash" : "Physical";
@@ -257,7 +257,7 @@ swap_result callable_swap_builder::build() const {
             call = call.year() / call.month() / std::chrono::last;
         if (call >= terms_.swap.maturity.get())
             break;
-        domain::callable_swap_call_date row;
+        domain::callable_swap_call_date row{};
         row.sequence_number = ++number;
         row.call_date = call;
         out->call_dates.push_back(std::move(row));
@@ -283,7 +283,7 @@ swap_result knock_out_swap_builder::build() const {
     if (!out)
         return out;
 
-    domain::knock_out_swap_instrument fact;
+    domain::knock_out_swap_instrument fact{};
     fact.barrier_type = type;
     fact.barrier_level = terms_.barrier_level.get();
     fact.barrier_start_date = barrier_start;
@@ -299,7 +299,7 @@ swap_result flexi_swap_builder::build() const {
     auto out = swap_of(conventions_, terms_.swap);
     if (!out)
         return out;
-    domain::flexi_swap_instrument fact;
+    domain::flexi_swap_instrument fact{};
     fact.option_long_short = long_short_of(terms_.position.get());
     out->facts = std::move(fact);
     return out;
@@ -318,17 +318,17 @@ swap_result balance_guaranteed_swap_builder::build() const {
     if (!out)
         return out;
 
-    domain::balance_guaranteed_swap_instrument fact;
+    domain::balance_guaranteed_swap_instrument fact{};
     fact.reference_security = security;
     out->facts = std::move(fact);
 
     // One tranche, the whole security, amortising on the fixed leg's schedule.
-    domain::balance_guaranteed_swap_tranche tranche;
+    domain::balance_guaranteed_swap_tranche tranche{};
     tranche.sequence_number = 1;
     tranche.security_id = security;
     tranche.seniority = 1;
     out->tranches.push_back(std::move(tranche));
-    domain::balance_guaranteed_swap_tranche_notional notional;
+    domain::balance_guaranteed_swap_tranche_notional notional{};
     notional.tranche_number = 1;
     notional.sequence_number = 1;
     notional.notional = terms_.swap.notional.get();
@@ -370,7 +370,7 @@ swap_result inflation_swap_builder::build() const {
         return row;
     };
     const auto schedule_of = [&](int number, std::string kind) {
-        domain::instrument_schedule row;
+        domain::instrument_schedule row{};
         row.owner_role = "swap";
         row.owner_number = number;
         row.schedule_role = "schedule";
@@ -381,10 +381,10 @@ swap_result inflation_swap_builder::build() const {
         return row;
     };
 
-    domain::swap_instrument_data out;
+    domain::swap_instrument_data out{};
     out.header.start_date = start;
     out.header.maturity_date = maturity;
-    domain::inflation_swap_instrument fact;
+    domain::inflation_swap_instrument fact{};
     fact.inflation_index_code = terms_.index.get().uri();
     fact.base_cpi = terms_.base_cpi.get();
     fact.lag_convention = convention->observation_lag;
@@ -416,7 +416,7 @@ swap_result inflation_swap_builder::build() const {
     out.leg_amounts.push_back(rows::leg_amount(2, terms_.notional.get()));
     out.leg_rates.push_back(rows::leg_rate(2, "fixed", decimal{}));
     out.schedules.push_back(schedule_of(2, "dates"));
-    domain::instrument_schedule_date payment;
+    domain::instrument_schedule_date payment{};
     payment.owner_role = "swap";
     payment.owner_number = 2;
     payment.schedule_role = "schedule";

@@ -84,7 +84,7 @@ void fx_instrument_projection_stamp_audit(Row& row) {
 
 template <typename Row>
 auto fx_instrument_projection_make_row(std::string_view trade_type_code) -> Row {
-    Row r;
+    Row r{};
     r.identity.trade_type_code = std::string(trade_type_code);
     fx_instrument_projection_stamp_audit(r);
     return r;

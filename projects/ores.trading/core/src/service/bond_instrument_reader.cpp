@@ -67,6 +67,10 @@ std::optional<std::string> iso_optional(const std::optional<std::chrono::year_mo
     return ores::platform::time::datetime::to_iso8601_date(*d);
 }
 
+// The role the security's rows are read under: the issue-keyed tables
+// already say whose rows they are, and the container still names the role.
+constexpr std::string_view bond_leg_role = "bond";
+
 /**
  * @brief The leg role a leg or one of its children belongs to.
  *
@@ -75,10 +79,6 @@ std::optional<std::string> iso_optional(const std::optional<std::chrono::year_mo
  * rows these are, so a row there carries no role and the answer is the
  * bond.
  */
-// The role the security's rows are read under: the issue-keyed tables
-// already say whose rows they are, and the container still names the role.
-constexpr std::string_view bond_leg_role = "bond";
-
 std::string_view leg_role_of(const domain::bond_leg& row) {
     return row.leg_role;
 }

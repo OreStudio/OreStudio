@@ -46,7 +46,7 @@ using trading::domain::scripted_parameter_value;
  */
 auto scripted_instrument_projection_make_base(std::string_view trade_type_code)
     -> scripted_instrument {
-    scripted_instrument r;
+    scripted_instrument r{};
     r.identity.trade_type_code = std::string(trade_type_code);
     r.audit.modified_by = "ores";
     r.audit.performed_by = "ores";

@@ -211,3 +211,12 @@ TEST_CASE("the_registry_names_every_bond_builder", bond_tags) {
                              "Ascot"})
         CHECK(types.contains(type));
 }
+
+TEST_CASE("a_callable_bond_with_calls_out_of_order_fails_and_names_the_term", bond_tags) {
+    const auto callable =
+        callable_bond_builder({.holding = holding(),
+                               .calls = std::vector<year_month_day>{2029y / 1 / 2, 2028y / 1 / 2}})
+            .build();
+    REQUIRE_FALSE(callable.has_value());
+    CHECK(callable.error().term == "calls");
+}

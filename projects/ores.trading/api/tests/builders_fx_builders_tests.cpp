@@ -70,7 +70,7 @@ TEST_CASE("an_fx_index_is_written_by_ore_as_its_source_and_pair", fx_tags) {
 }
 
 TEST_CASE("an_fx_swap_reverses_on_its_far_date", fx_tags) {
-    const auto swap = fx_swap_builder({.near = fx_call().exchange,
+    const auto swap = fx_swap_builder({.near_leg = fx_call().exchange,
                                        .near_date = 2026y / 1 / 5,
                                        .far_date = 2027y / 1 / 5,
                                        .far_bought_amount = fx_amount("1110000"),

@@ -84,3 +84,23 @@ TEST_CASE("tenancy_catalogue_routes_answer_the_legal_entities_in_the_screen_shap
                             "\"partyCount\":3"})
         CHECK(text.find(key) != std::string::npos);
 }
+
+TEST_CASE("tenancy_catalogue_routes_answer_exactly_for_empty_and_escaped_rows", "[tenancy]") {
+    CHECK(tenancy_catalogue_routes::statuses_json({}, {}) == R"({"statuses":[]})");
+    CHECK(tenancy_catalogue_routes::types_json({}, {}) == R"({"types":[]})");
+    CHECK(tenancy_catalogue_routes::entities_json({}) == R"({"entities":[]})");
+    ores::iam::domain::tenant_status quoted;
+    quoted.status = "s";
+    quoted.name = "A \"quoted\" name";
+    quoted.description = "line\nbreak";
+    CHECK(
+        tenancy_catalogue_routes::statuses_json({quoted}, {}) ==
+        R"({"statuses":[{"code":"s","name":"A \"quoted\" name","description":"line\nbreak","badge":null}]})");
+}
+
+TEST_CASE("tenancy_catalogue_routes_read_the_search_limit_as_the_bff_passed_it", "[tenancy]") {
+    CHECK(tenancy_catalogue_routes::lei_limit("") == 20);
+    CHECK(tenancy_catalogue_routes::lei_limit("5") == 5);
+    CHECK(tenancy_catalogue_routes::lei_limit("0") == 20);
+    CHECK(tenancy_catalogue_routes::lei_limit("x") == 20);
+}

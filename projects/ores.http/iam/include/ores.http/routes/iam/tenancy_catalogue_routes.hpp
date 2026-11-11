@@ -65,6 +65,12 @@ public:
                const std::vector<ores::dq::domain::badge_definition>& badges);
 
     /**
+     * @brief How many legal entities a search asks for: the query's count when
+     * it is a positive whole number, else 20, as the BFF passed it on.
+     */
+    [[nodiscard]] static int lei_limit(const std::string& text);
+
+    /**
      * @brief The legal entities a search found, as the screen reads them.
      */
     [[nodiscard]] static std::string

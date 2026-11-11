@@ -64,7 +64,8 @@ std::string coded_row(const std::string& code,
            ",\"badge\":" + badge_json(row.badge_code, badges) + "}";
 }
 
-/// The badge catalogue, read as the BFF read it.
+/// The badge catalogue, read as the BFF read it: one page of 200, which holds
+/// every badge the platform defines.
 std::vector<ores::dq::domain::badge_definition> badges_of(const http_request& req,
                                                           nats_client& session) {
     ores::dq::messaging::list_badge_definitions_request list;
@@ -105,6 +106,13 @@ std::string tenancy_catalogue_routes::entities_json(
         out += ",\"partyCount\":" + std::to_string(e.party_count) + "}";
     }
     return out + "]}";
+}
+
+int tenancy_catalogue_routes::lei_limit(const std::string& text) {
+    int value = 0;
+    const auto [end, failed] = std::from_chars(text.data(), text.data() + text.size(), value);
+    const auto read = !text.empty() && failed == std::errc{} && end == text.data() + text.size();
+    return read && value > 0 ? value : 20;
 }
 
 void tenancy_catalogue_routes::register_routes(
@@ -151,14 +159,7 @@ void tenancy_catalogue_routes::register_routes(
             ores::dq::messaging::search_lei_entities_request search;
             search.search = req.get_query_param("search");
             search.country_filter = req.get_query_param("country");
-            const auto limit = req.get_query_param("limit");
-            int value = 0;
-            const auto [end, failed] =
-                std::from_chars(limit.data(), limit.data() + limit.size(), value);
-            search.limit = !limit.empty() && failed == std::errc{} &&
-                                   end == limit.data() + limit.size() && value > 0 ?
-                               value :
-                               20;
+            search.limit = lei_limit(req.get_query_param("limit"));
             return guarded<ores::dq::messaging::search_lei_entities_request>([&] {
                 const auto reply = ores::http::forwarding::forward(req, session, search);
                 if (!reply.success)

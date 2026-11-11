@@ -87,7 +87,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
+| 2 | PR review: confirm how a failed badge read maps. | =tenancy_catalogue_routes.cpp= | Declined | =guarded= answers a refusal with its status and any other failure as unanswered, logged with the subject. The BFF also failed the whole list when the badge read failed. |
+| 3 | PR review: the LEI =limit= has no upper bound. | =tenancy_catalogue_routes.cpp= | Accepted in part | The BFF passed the number on uncapped, so the route keeps that. The read is now =lei_limit=, which takes a positive whole number or falls back to 20, and a test proves it. |
+| 4 | PR review: the badge map is built per request. | =tenancy_catalogue_routes.cpp= | Declined | The BFF read the badges per request, and a cache would serve stale badges after a change. |
+| 5 | PR review: the 200 badge page needs a reason. | =tenancy_catalogue_routes.cpp= | Accepted | A comment says the BFF read one page of 200, which holds every badge the platform defines. |
+| 6 | PR review: add empty-list, escaping and exact-JSON tests. | =tenancy_catalogue_routes_tests.cpp= | Accepted | A test compares exact JSON for empty lists and for a row with quotes and a line break. |
 
 * Result
 

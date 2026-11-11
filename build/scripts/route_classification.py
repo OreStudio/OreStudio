@@ -789,6 +789,13 @@ RULES = (
          "The calibration screen's action at the address and in the shape the BFF answered: a"
          " class's calibration run and stored, a variance calibration reviewed, a class's policy"
          " stated or removed, and one feed's candidate pinned or cleared."),
+    Rule("the market regime screen's route",
+         ("regex", r"^((GET|POST) /api/synthetic/market-regime|PUT /api/synthetic/market-regime/settings"
+                   r"|GET /api/synthetic/market-history)$"),
+         CPP, RESOURCE, "simulation",
+         "The market-wide arrival factor at the address and in the shape the BFF answered: the"
+         " regime in force, the switch that forces it, the settings that move it, and the tick"
+         " counts of the last stretch of the run."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

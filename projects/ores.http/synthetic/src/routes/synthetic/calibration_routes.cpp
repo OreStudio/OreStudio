@@ -31,10 +31,8 @@
 #include <boost/uuid/string_generator.hpp>
 #include <algorithm>
 #include <cstdint>
-#include <initializer_list>
 #include <limits>
 #include <map>
-#include <memory>
 #include <optional>
 #include <regex>
 #include <set>
@@ -44,7 +42,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-#include <yyjson.h>
 
 namespace ores::http::routes::synthetic {
 
@@ -162,24 +159,6 @@ void require_system(const http_request& req) {
                    "forbidden",
                    "A calibration policy belongs to the installation, so only the system "
                    "tenant changes it.");
-}
-
-/// A body that names a member its shape does not have is refused, as the BFF's strict reads did.
-void refuse_other_members(const std::string& body,
-                          std::initializer_list<std::string_view> names,
-                          const std::string& sentence) {
-    const std::unique_ptr<yyjson_doc, decltype(&yyjson_doc_free)> doc(
-        yyjson_read(body.data(), body.size(), 0), &yyjson_doc_free);
-    auto* root = doc ? yyjson_doc_get_root(doc.get()) : nullptr;
-    // A body that is not an object is left to the read that follows, which refuses it.
-    if (!yyjson_is_obj(root))
-        return;
-    auto members = yyjson_obj_iter_with(root);
-    while (auto* key = yyjson_obj_iter_next(&members)) {
-        const std::string_view name(yyjson_get_str(key), yyjson_get_len(key));
-        if (std::ranges::find(names, name) == names.end())
-            rr::invalid(sentence);
-    }
 }
 
 /// The body read as its shape, or a refusal naming what it must state.
@@ -384,7 +363,7 @@ void calibration_routes::register_routes(
                         "A calibration run may name one feed, as configId.";
                     std::optional<std::string> config_id;
                     if (!rr::trimmed(req.body).empty()) {
-                        refuse_other_members(req.body, {"configId"}, sentence);
+                        rr::refuse_unknown_members(req.body, {"configId"}, sentence);
                         config_id =
                             calibration_body_of<calibration::run_body>(req, sentence).configId;
                         if (config_id && !rr::is_uuid(*config_id))
@@ -422,7 +401,7 @@ void calibration_routes::register_routes(
                     const std::string sentence =
                         "A review states a decision of approve or reject and a reason of 1 to "
                         "2000 characters.";
-                    refuse_other_members(req.body, {"decision", "reason"}, sentence);
+                    rr::refuse_unknown_members(req.body, {"decision", "reason"}, sentence);
                     const auto body = calibration_body_of<calibration::review_body>(req, sentence);
                     const auto reason = rr::trimmed(body.reason);
                     if ((body.decision != "approve" && body.decision != "reject") ||

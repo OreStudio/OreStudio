@@ -8,7 +8,7 @@
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/serve-the-simulation-collections-and-actions
-#+pr: 4625
+#+pr: 4628
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
@@ -26,11 +26,11 @@ Port the 25 BFF routes of the simulation area to the C++ server. Include the rem
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -132,6 +132,18 @@ Decisions made in the calibration group:
 - The run and the review refuse a body member they do not name, as the BFF's
   strict schemas did. The policy and the pin ignore one, as the BFF's did.
 
+Decisions made in the market regime group:
+
+- The four routes are one unit, =market_regime_routes=, because the regime
+  screen calls them. The market trace stays with the composed views task.
+- A read or a switch the service does not answer is a 502 with its words, and
+  settings it refuses are a 400 with its words, as the BFF answered them.
+- A sample's and a slot's time is written by the JSON codec, the form the
+  service's own wire gives, which the BFF passed on.
+- The strict reads of a query and of a body moved into =record_routes= as
+  =refuse_unknown_params= and =refuse_unknown_members=, and the calibration and
+  feed tick routes call them instead of their own copies.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -163,6 +175,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/4628][#4628]] | [http] Serve the market regime screen |
 | [[https://github.com/OreStudio/OreStudio/pull/4625][#4625]] | [http] Serve the calibration screen's actions |
 | [[https://github.com/OreStudio/OreStudio/pull/4623][#4623]] | [http] Serve the synthetic screens' previews |
 | [[https://github.com/OreStudio/OreStudio/pull/4622][#4622]] | [http] Serve the feed ticks and the raster |
@@ -193,16 +206,27 @@ via its "Verifies task" field.
 | 19 | PR #4625: an unrelated 58 MB ORE package was committed. | =external/ore/packages/= | Declined | The intraday ORE package belongs in the tree beside the other packages; the owner kept it. |
 | 20 | PR #4625: the member check returns quietly for a body that is not an object. | =calibration_routes.cpp= | Accepted | A comment says the read that follows refuses it. |
 | 21 | PR #4625: the policy and pin writes are not atomic; no test covers an unchanged order. | =calibration_routes.cpp= | Declined | Each write converges and a concurrent one fails its precondition, as the BFF's did. An unchanged-order test needs a forward the suite cannot fake yet. |
+| 22 | PR #4628: a read by the tenth caps the seconds at 600 without saying so. | =market_regime_routes.cpp= | Accepted | The route's description says the seconds are capped at the resolution's span, as the BFF capped them. |
+| 23 | PR #4628: settings refused for a fault answer 400; =from_chars= refuses a leading plus; the non-object body contract. | =market_regime_routes.cpp=, =record_routes.hpp= | Declined | The 400 is the BFF's, with the service's words. A signed number is refused rather than read. The header already says a non-object body is left to the read. |
+| 24 | PR #4628: no test checks the answer's member names. | =market_regime_routes.cpp= | Declined | The names were checked against the BFF's answer; a test needs a forward the suite cannot fake yet, as for #4625. |
 
 * Result
 
-The task is delivered in five pull requests, one per group of the plan. Each
-row below records a group; the task closes when all five have merged.
+The 25 simulation resource routes are served by ores.http at the BFF's
+addresses and in its answer shapes, and the five generic =/api/synthetic/:resource=
+routes are paired as families. The route inventory pairs every one of them.
+The three composed views stay with the composed views task. The task was
+delivered in five pull requests, one per group of the plan; it is closed on the
+last of them.
+
+Component audit: the task touched ores.http (the synthetic and api parts). The
+parts kept their shape: route units in the synthetic part, shared refusals in
+=record_routes=. =validate_docs.sh= passes for all 40 components.
 
 | Group | PR | Routes | State |
 |-------+----+--------+-------|
 | Feed and folder operations, and the synthetic families | #4621 | 7 and 5 families | Merged |
 | Feed ticks and the raster | #4622 | 2 | Merged |
 | Simulation and conversion | #4623 | 6 | Merged |
-| Calibration | | 6 | In review |
-| Market regime | | 4 | Open |
+| Calibration | #4625 | 6 | Merged |
+| Market regime | | 4 | In review |

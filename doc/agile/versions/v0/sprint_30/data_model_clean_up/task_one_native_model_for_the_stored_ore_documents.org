@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: E4380005-BE99-42F3-AB06-C7A6212FDE25
+:END:
+#+title: Task: One native model for the stored ORE documents
+#+description: Replace every stored image of an ORE document (the curve configuration, today's market and their kin) with one data-oriented native model, and project ORE XML from it at the export boundary, in one go.
+#+type: task
+#+level: s1
+#+filetags: :refdata:analytics:data_model:dod:data_model_clean_up:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-11
+#+updated: 2026-11-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One native model for everything the system now stores as an image of an ORE document, done in one go and not one section at a time. Each curve, surface and binding is stated once, in the system's own terms: rows with keys to tenors, conventions, currencies, calendars, curves and market series by oresmd identity, every list as child rows. A party's market configuration references what it reads by key and restates nothing. =ores.ore= projects ORE XML (=curveconfig.xml=, =todaysmarket.xml= and the rest) from these rows at the export boundary, and nothing stores the ORE spelling.
+
+The first job is the inventory: every entity model that is an image of an ORE document (or of any other external document), so the remodel is planned whole.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Inventory the stored document images.  |
+| Last touched | 2026-11-11                               |
+
+* Acceptance
+
+- An inventory of every stored document image: each entity model, the document element it mirrors, and its list and reference-string columns. It starts from the 49 tables of the curve configuration publish and the today's market tables, and covers every other ORE configuration document the studio stores.
+- One model of one thing. An IR curve is one model, not =yield_curve_config= with its segments and quote text beside =ir_curve_bootstrap_config= with its pillars. An FX volatility surface is one model, not =fx_volatility_config= with its smile, the =curve_volatility_*= family and the blueprint.
+- No column holds a list. Expiries, tenors, deltas, strikes and pillars are child rows, and a tenor or an expiry is a validated key into =tenor=. The blueprint's =output_expiries= and =output_strikes= go too.
+- No column holds an ORE reference string (=Yield/USD/USD1D=, =FX/USD/JPY=, =IR_SWAP/RATE/...=). A curve, a spot and a quote are named by key or by oresmd identity, and the projection spells them for ORE.
+- A party's FX volatility configuration names its surface (the blueprint and its published series) by key and repeats no expiry, delta, convention, spot or curve. The settings only ORE reads are a part of their own, one row per surface, or defaults of the projection.
+- The ORE export writes every section a run reads from the native model, and an ORE run reads it: the Acme curves bootstrap, and an FX option prices from a published surface.
+- The image tables are retired with their callers moved. The curation of PRs #4596 and #4600 moves to the native model, through DQ, with its methodology.
+- Coordinated with the IR curve work in progress (clever_dijkstra), which owns the party funding curves.
+- The model passes the Regime 2 checklist as the first task of this story tightens it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Critical analysis, 2026-11-11
+
+The trigger was a published row of ACCOUS's FX volatility configuration, written by PR #4600:
+
+: 'Smile', '10P,25P,ATM,25C,10C', 'USD-JPY-FXOPTION', '1W,1M,2M,3M,6M,9M,1Y',
+: 'FX/USD/JPY', 'Yield/USD/USD1D', 'Yield/JPY/JPY1D', null, null, null, null, null
+
+*** The cause: refdata stores ORE's document as its model
+
+=fx_volatility_config= says of itself that it is "the settings of one =FXVolatility= entry of a =curveconfig.xml=". So does the rest of its family: the curve configuration document publishes 49 tables, each a relational image of an ORE XSD element, mapped one to one by =ores.ore='s =curve_configuration_projection.cpp=. Each column keeps ORE's spelling and ORE's encoding.
+
+The data-oriented design doc rules this out. It names an ORE XML input as a document-shaped payload: it "enters at the boundary of the stack, where a mapping layer converts them to and from the core data-model representation ... The document tree is transient; the entity representation ... is the review target", and it asks that the paragraph be revisited "if an entity model ever persists document trees". The curve configuration family is that case. It persists the document tree.
+
+*** What follows from it
+
+1. *Two models, or three, of one thing.*
+   - IR curves: =yield_curve_config= with =curve_segments= and =curve_quotes= (ORE quote text, such as =IR_SWAP/RATE/USD/0D/1D/1M=), and =ir_curve_bootstrap_config= with =ir_curve_bootstrap_pillars= (a tenor code and a market series id). The calibration and the provisioning use the second; ORE runs use the first.
+   - FX volatility: =fx_volatility_config= with =fx_volatility_smile=, the per-kind =curve_volatility_*= family (a second ORE image, split by kind in sprint 29), and =fx_vol_surface_blueprint= with its pillars (the native recipe).
+2. *The configuration repeats the blueprint.* The ACCOUS USD/JPY row restates the expiries and deltas of =USDJPY_SSVI=. Nothing joins them. PR #4600 added a test to keep the two in step; a test that compares two copies is the symptom of a missing key.
+3. *Lists in one column.* =deltas=, =expiries= and, in the per-kind family, =put_deltas=, =call_deltas= and =expiries= are comma-joined text. 18 of the curve configuration models describe a comma-separated column. This fails the "table-shaped children" check: a tenor cannot be validated, ordered, joined or resolved, and a reader must parse.
+4. *ORE references, not system identity.* =Yield/USD/USD1D= names a curve by ORE spec text. The curve is a row of the same document, and its market identity is an oresmd series. =FX/USD/JPY= names a pair that refdata holds as a currency pair. The quote keys of =curve_quotes= are ORE keys, while the rest of the system names market data by oresmd URI.
+5. *Tenors are text, even on the native side.* =fx_vol_surface_pillar.expiry_code= and =ir_curve_bootstrap_pillar.end_tenor_code= are soft references with no validation, though =tenor= is a catalogue with a resolution per convention (=tenor_convention_resolution=). An FX option expiry resolves under the FX option convention, so the key matters for dates.
+6. *The blueprint has the same flaw.* =output_expiries= and =output_strikes= are comma-joined text, and PR #4596 curated them that way.
+7. *Settings only ORE reads are mixed with the surface's identity.* Smile interpolation, extrapolation, time interpolation and butterfly tolerance tell ORE how to read a grid. They are not the surface. Either they are a part of their own, keyed by the surface (one component per row), or they are the projection's defaults.
+
+*** The direction
+
+- *One native model.* A curve is =ir_curve_bootstrap_config= and its pillars. A surface is the blueprint, its pillars, and its output grid as rows: an expiry row is a foreign key to =tenor=, and a strike row is a side and a delta, whose delta type the pair's FX option convention states.
+- *The party's market configuration references, it does not restate.* Today's market binds a run to the published curves and surfaces of the party, by key. The settings only ORE reads sit in a part keyed by the surface.
+- *ORE XML at the boundary only.* =ores.ore= projects the native rows to =curveconfig.xml= and =todaysmarket.xml= at export, and spells every ORE reference there. An import maps ORE XML into the native model, or refuses what the model cannot hold.
+- *Migrate, then delete.* Move each reader of the image tables to the native model, one section at a time, and delete the image tables in the same wave.
+
+*** What it changes in this story
+
+- The rows PR #4600 published are the image this task retires. Their values (deltas, expiries, conventions, curves, ORE settings) are the input to the native model's curation.
+- The surface export task's last part, the ORE check, should read a =curveconfig.xml= projected from the native model. If it runs before this task, it tests the image, which this task then replaces.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

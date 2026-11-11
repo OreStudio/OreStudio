@@ -874,7 +874,9 @@ const calibrationSchema = z.object({
         allow_inverse: z.boolean(),
         fallback_code: z.string(),
         provider_order: z.array(z.string()),
-        version: z.int().nullable(),
+        // The C++ server leaves out the version of a class with no policy row, as its codec
+        // leaves out an empty optional; the BFF sent null. Both read as null.
+        version: z.int().nullable().default(null),
     }),
     policyWritable: z.boolean(),
     feeds: z.array(calibratedFeedSchema),

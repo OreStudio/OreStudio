@@ -171,6 +171,9 @@ PAIRS = {
     ("POST", "/api/synthetic/market-regime"): ("POST", "/api/synthetic/market-regime"),
     ("PUT", "/api/synthetic/market-regime/settings"): ("PUT", "/api/synthetic/market-regime/settings"),
     ("GET", "/api/synthetic/market-history"): ("GET", "/api/synthetic/market-history"),
+    ("GET", "/api/synthetic/feed-folders"): ("GET", "/api/synthetic/feed-folders"),
+    ("GET", "/api/synthetic/market-trace"): ("GET", "/api/synthetic/market-trace"),
+    ("GET", "/api/synthetic/calibration/:assetClass"): ("GET", "/api/synthetic/calibration/{assetClass}"),
 }
 
 # A BFF route that takes the resource as a parameter is answered in ores.http by

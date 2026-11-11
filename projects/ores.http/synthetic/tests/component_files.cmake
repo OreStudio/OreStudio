@@ -34,6 +34,7 @@ set(files
     "market_data_provider_web_routes_tests.cpp"
     "market_regime_routes_tests.cpp"
     "process_preview_routes_tests.cpp"
+    "synthetic_view_tests.cpp"
     "variance_calibration_input_point_web_routes_tests.cpp"
     "variance_calibration_input_web_routes_tests.cpp"
     "variance_calibration_web_routes_tests.cpp"

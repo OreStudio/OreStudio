@@ -20,6 +20,7 @@
 #include "ores.http/routes/synthetic/feed_operation_routes.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
@@ -30,6 +31,7 @@
 #include <algorithm>
 #include <cctype>
 #include <charconv>
+#include <chrono>
 #include <optional>
 #include <set>
 #include <stdexcept>
@@ -282,6 +284,35 @@ void feed_operation_routes::register_routes(
                                                ",\"stopped\":" + std::to_string(reply.stopped) +
                                                ",\"byKind\":" + json::write(reply.stopped_by_kind) +
                                                "}");
+                });
+            }));
+
+    add(router->get("/api/synthetic/feed-folders")
+            .summary("The synthetic folder tree")
+            .description("A composed view owned by the synthetic service: the children of one "
+                         "folder, or the roots, with the feeds under each at any depth and how "
+                         "many of each kind, so no screen reads the feeds. One folder call; the "
+                         "service counts. The answer carries an ETag and stays fresh for 60 "
+                         "seconds.")
+            .response<feed_folder_tree>()
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<synthetic_messaging::list_feed_folders_request>([&] {
+                    rr::refuse_unknown_params(req, {"parent"});
+                    synthetic_messaging::list_feed_folders_request msg;
+                    msg.parent_id = rr::trimmed(req.get_query_param("parent"));
+                    if (rr::characters_of(msg.parent_id) > 100)
+                        rr::invalid("A folder tree read names a parent of up to 100 characters.");
+                    auto reply = forwarding::forward(req, session, msg);
+                    if (!reply.success)
+                        rr::refuse(http_status::bad_gateway,
+                                   "upstream-unavailable",
+                                   reply.message.empty() ?
+                                       "The synthetic service refused the folder tree read." :
+                                       reply.message);
+                    return ores::http::net::view_answer(
+                        req,
+                        json::write(feed_folder_tree{std::move(reply.folders)}),
+                        {std::chrono::seconds(60)});
                 });
             }));
 

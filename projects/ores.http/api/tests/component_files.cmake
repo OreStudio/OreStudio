@@ -39,5 +39,6 @@ set(files
     "session_bytes_accumulator_tests.cpp"
     "session_cookie_tests.cpp"
     "session_store_tests.cpp"
+    "view_answer_tests.cpp"
     "worker_pool_tests.cpp"
 )

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-synthetic-views
+#+pr: 4629
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Serve these composed views from ores.synthetic: the calibration of an asset clas
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -42,9 +42,42 @@ Serve these composed views from ores.synthetic: the calibration of an asset clas
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+These are the first composed views ores.http serves, so this task also sets
+how a view meets the design's four obligations (design section 11.1).
+
+| View | Address | Computation | Cache policy |
+|------+---------+-------------+--------------|
+| The calibration of an asset class | =GET /api/synthetic/calibration/{assetClass}= | one resolution call, and a read of the policies for the row's version when the class has one | none: =no-store=, a resolution reads the newest fixings |
+| The market trace | =GET /api/synthetic/market-trace= | one trace call | =ETag=, fresh for 10 s |
+| The synthetic folder tree | =GET /api/synthetic/feed-folders= | one folder call; the service counts | =ETag=, fresh for 60 s |
+
+Decisions:
+
+- *Name and owner.* Each view keeps the BFF's address, as the earlier ports
+  did, and its rule in the inventory keeps the view's name, so its obligations
+  are stated once. Each lives in the route unit of the screen that calls it, in
+  =ores.http.synthetic=: the calibration view beside the calibration actions,
+  the trace beside the market regime, the folder tree beside the feed screen.
+- *Schema.* Each view is a model type with =wire_fields=, published through the
+  route's =response<T>()= and written by the JSON codec, so the schema and the
+  bytes come from one model. A pure function builds each view from the
+  service's reply, so a test checks the member names the screen reads.
+- *Cache policy.* =ores.http.api= gains =view_answer=: a view with a freshness
+  rule carries a strong =ETag= over its bytes and =Cache-Control: private,
+  max-age=N=, and a request whose =If-None-Match= names the tag answers 304
+  with no body. A view with no freshness rule is =no-store=. The gateway keeps
+  no copy: the caller's cache holds the view, because each caller's session
+  decides what it holds.
+- The codec leaves out an empty optional, so the calibration view states no
+  =version= for a class with no policy row, where the BFF stated null. The
+  published schema already marks it optional, so the screen's schema reads a
+  missing version as null; a web test proves both answers read the same. A
+  codec type that always writes null would change every component's codec,
+  which one member does not earn.
+- The synthetic part links =ores.synthetic.api= publicly, because the views'
+  model types in its headers hold that component's messages.
+- The views refuse what the BFF refused: an unknown query parameter on the
+  trace and the folder tree, an asset class or a feed that is not well formed.
 
 * Measurements
 
@@ -77,12 +110,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4629][#4629]] | [http] Serve the synthetic composed views |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4629: a cached view should vary by the credential; the tag is not a guard; an empty upstream message. | =view_answer.cpp=, =view_answer.hpp=, =calibration_routes.cpp=, =feed_operation_routes.cpp= | Accepted | Cached views carry =Vary: Authorization, Cookie=, tested; the header says the tag is not a security measure; the folder tree and calibration reads state a message of their own when the service gives none. |
+| 2 | PR #4629: 64-bit numbers in JSON, a failed policy-row read, no 304 test through a route. | =market_regime_routes.cpp=, =calibration_routes.cpp= | Declined | The BFF sent the same numbers. A failed policy read refuses, because a whole read refuses any page that is not ok; a missing row is null, as in the BFF. A 304 through a route needs a forward the suite cannot fake yet; =view_answer= proves it. |
 
 * Result
+
+The three synthetic composed views are served by ores.http at the BFF's
+addresses, each a published model with its computation and cache policy stated
+on the route. =view_answer= gives every later view its =ETag= and freshness
+rule. Tests prove the tag, the 304 and the =no-store= answer, the coverage
+counts, the member names each screen reads, and each view's refusals.
+
+Component audit: the task touched ores.http (the api and synthetic parts). The
+views live in the synthetic part's route units and the cache answer in the api
+part's =net=; =validate_docs.sh= is run before the pull request.
+

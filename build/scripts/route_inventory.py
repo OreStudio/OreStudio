@@ -360,7 +360,10 @@ def composed_views(found):
         if decision is None or decision.kind != COMPOSED:
             continue
         entry = views.setdefault(decision.name, {"routes": [], "decision": decision})
-        entry["routes"].append(f"{route['method'].upper()} {route['path']}")
+        address = f"{route['method'].upper()} {route['path']}"
+        # A view both servers answer at one address is listed once.
+        if address not in entry["routes"]:
+            entry["routes"].append(address)
     if not views:
         return []
 

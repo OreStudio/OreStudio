@@ -31,6 +31,7 @@ enum class http_status : std::uint16_t {
     ok = 200,
     created = 201,
     no_content = 204,
+    not_modified = 304,
     bad_request = 400,
     unauthorized = 401,
     forbidden = 403,

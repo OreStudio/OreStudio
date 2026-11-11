@@ -20,6 +20,7 @@
 #include "ores.http/routes/synthetic/calibration_routes.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/record_routes.hpp"
+#include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.synthetic.api/messaging/calibration_policy_protocol.hpp"
 #include "ores.synthetic.api/messaging/calibration_provider_order_protocol.hpp"
@@ -339,6 +340,44 @@ const std::map<std::string, std::pair<http_status, std::string>, std::less<>> re
 
 }
 
+asset_class_calibration
+calibration_routes::calibration_of(std::string asset_class,
+                                   synthetic_messaging::calibrate_response resolved,
+                                   std::optional<int> policy_version,
+                                   bool policy_writable) {
+    asset_class_calibration out;
+    out.assetClass = std::move(asset_class);
+    const auto& p = resolved.policy;
+    out.policy = {p.from_policy_row,
+                  p.window_days,
+                  p.variance_window_days,
+                  p.variance_approval_mode,
+                  p.variance_min_returns,
+                  p.variance_require_starts_agree,
+                  p.variance_min_persistence,
+                  p.variance_max_persistence,
+                  p.variance_min_reaction,
+                  p.allow_inverse,
+                  p.fallback_code,
+                  p.provider_order,
+                  policy_version};
+    out.policyWritable = policy_writable;
+    out.feeds = std::move(resolved.feeds);
+    auto& c = out.coverage;
+    c.total = static_cast<int>(out.feeds.size());
+    for (const auto& feed : out.feeds) {
+        if (feed.start.from_fixing)
+            ++c.fromFixing;
+        else if (!feed.refused)
+            ++c.keptFixed;
+        if (feed.refused)
+            ++c.refused;
+        if (feed.explicit_items || feed.window_days_override)
+            ++c.overridden;
+    }
+    return out;
+}
+
 void calibration_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -349,6 +388,48 @@ void calibration_routes::register_routes(
         router->add_route(built);
         registry->register_route(built);
     };
+
+    add(router->get("/api/synthetic/calibration/{assetClass}")
+            .summary("The calibration of an asset class")
+            .description("A composed view owned by the synthetic service: the policy the class "
+                         "calibrates under, every feed of it resolved as a start would, with its "
+                         "candidates and their reasons, and the coverage counts. Nothing starts. "
+                         "One resolution call, and a read of the policies for the row's version "
+                         "when the class has one. Not cached, because a resolution reads the "
+                         "newest fixings each time. The query may name one feed as configId.")
+            .response<asset_class_calibration>()
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<synthetic_messaging::calibrate_request>([&] {
+                    const auto asset_class = asset_class_of(req);
+                    const auto config_id = req.get_query_param("configId");
+                    if (!config_id.empty() && !rr::is_uuid(config_id))
+                        rr::invalid("A calibration read may name one feed, as configId.");
+
+                    synthetic_messaging::calibrate_request msg;
+                    msg.asset_class_code = asset_class;
+                    msg.config_id = config_id;
+                    msg.apply = false;
+                    auto reply = forwarding::forward(req, session, msg);
+                    if (!reply.success)
+                        rr::refuse(http_status::bad_gateway,
+                                   "upstream-unavailable",
+                                   reply.message.empty() ?
+                                       "The synthetic service refused the calibration read." :
+                                       reply.message);
+                    std::optional<int> version;
+                    if (reply.policy.from_policy_row)
+                        if (const auto row = policy_row_of(req, session, asset_class))
+                            version = row->version;
+                    const auto& user = req.authenticated_user;
+                    const bool writable =
+                        user && user->tenant_id && *user->tenant_id == rr::system_tenant_id;
+                    return ores::http::net::view_answer(
+                        req,
+                        json::write(
+                            calibration_of(asset_class, std::move(reply), version, writable)),
+                        {});
+                });
+            }));
 
     add(router->post("/api/synthetic/calibration/{assetClass}/run")
             .summary("Calibrate an asset class's feeds and store what moved")

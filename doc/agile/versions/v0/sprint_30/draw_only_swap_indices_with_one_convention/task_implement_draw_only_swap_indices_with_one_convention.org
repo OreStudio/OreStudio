@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: F803A3DD-3D53-4BDF-8E92-81AFB914D7E1
 :END:
-#+title: Task: Treat alias swap conventions as one
-#+description: Initial task for: Draw only swap indices with one convention
+#+title: Task: Publish one curated convention set
+#+description: Replace ore.conventions and the two system-tenant seeds of index conventions with one curated refdata.conventions DQ dataset, fix the builders provisioning stopped on, and provision to completion.
 #+type: task
 #+level: s1
 #+filetags: :draw_only_swap_indices_with_one_convention:sprint_30:v0:
@@ -16,18 +16,19 @@
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Draw only swap indices with one convention]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Every tenant holds every convention its trades and curves name, from one
+curated DQ dataset, and a fresh environment provisions to completion.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                              |
-| Parent story | [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Draw only swap indices with one convention]] |
+| Parent story | [[id:B5D1A94A-00A8-4BF0-9FBF-221BE1E72F4C][Publish one curated convention set and provision to completion]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,7 +36,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- refdata.conventions is a system DQ dataset with its own methodology, built
+  from a committed table that names the source of each row.
+- ore.conventions, refdata_builtin_index_conventions_populate.sql and
+  refdata_overnight_index_conventions_populate.sql are gone, and nothing
+  writes an index convention straight into the system tenant.
+- The dataset is in the bundles of the system party and of every party, and
+  each dataset that names a convention depends on it.
+- The gate checks the generated script, ORE's coverage and the generator.
+- A fresh environment provisions the system and Acme to completion.
 
 * Plan
 
@@ -43,6 +52,29 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+
+One task, one PR. Its activities:
+
+1. Decommission the hacks of the first attempt: a script that copied the
+   system tenant's index conventions into ore.conventions at populate time,
+   and a planner filter that hid an index with no definition.
+2. Bootstrap the curated table from the three sources once: the ORE examples
+   (ore.conventions), the ORE engine (the mined built-in index conventions)
+   and the overnight index conventions OreStudio seeded by hand. The
+   methodology records each overlap and its decision.
+3. Move the generator to =projects/ores.seeder/datasets/conventions/=, read the
+   table, register the methodology with the dataset, and rename the dataset
+   refdata.conventions everywhere it is named.
+4. Add =propose.py=, which compares the table with what ORE holds, for an ORE
+   upgrade and for the gate.
+5. Declare the dependencies that were missing: the FX volatility blueprints
+   and Acme's market documents on the conventions.
+6. Fix what provisioning stopped on: an index whose aliases state the same
+   terms is one index; a schedule tenor such as 12M or 28D reads; the planner
+   draws a swap convention by id, so an index whose conventions state other
+   legs builds by the one it drew.
+7. Prove it: unit and pgTAP tests, the gate checks, and a fresh environment
+   provisioned to completion.
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

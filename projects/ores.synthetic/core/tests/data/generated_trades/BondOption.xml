@@ -4,8 +4,12 @@
     <TradeType>BondOption</TradeType>
     <BondOptionData>
       <OptionData>
-        <LongShort></LongShort>
-        <OptionType>Call</OptionType>
+        <LongShort>Short</LongShort>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2027-01-02</ExerciseDate>
+        </ExerciseDates>
       </OptionData>
       <Strike>98.52</Strike>
       <Redemption>100</Redemption>
@@ -54,8 +58,12 @@
     <TradeType>BondOption</TradeType>
     <BondOptionData>
       <OptionData>
-        <LongShort></LongShort>
-        <OptionType>Put</OptionType>
+        <LongShort>Short</LongShort>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2027-01-02</ExerciseDate>
+        </ExerciseDates>
       </OptionData>
       <Strike>100.16</Strike>
       <Redemption>100</Redemption>

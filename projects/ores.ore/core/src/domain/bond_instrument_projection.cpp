@@ -1370,12 +1370,13 @@ void write_call_dates(const std::vector<bond_issue_call_date>& dates, record_wri
 
     // The schema requires the call block's styles, prices, price types and
     // include-accrual lists beside its schedule, and no row holds any of them.
-    // The emitter refuses a required list with no entry, so one default entry
-    // stands in for each list and the document binds again.
-    call.child("Styles").append("Style").set_own_text("");
-    call.child("Prices").append("Price").set_own_text("0");
-    call.child("PriceTypes").append("PriceType").set_own_text("");
-    call.child("IncludeAccruals").append("IncludeAccrual").set_own_text("false");
+    // The emitter refuses a required list with no entry, so one entry stands in
+    // for each: a call on dated days is Bermudan, at par, on the clean price,
+    // paying the accrued coupon, as the Products example's reference data does.
+    call.child("Styles").append("Style").set_own_text("Bermudan");
+    call.child("Prices").append("Price").set_own_text("1");
+    call.child("PriceTypes").append("PriceType").set_own_text("Clean");
+    call.child("IncludeAccruals").append("IncludeAccrual").set_own_text("true");
 }
 
 void write_bond_terms(record_writer bd,

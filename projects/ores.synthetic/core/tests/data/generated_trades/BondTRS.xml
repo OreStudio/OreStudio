@@ -48,8 +48,24 @@
       </TotalReturnData>
       <FundingData>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>2962620.02</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2027-01-02</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
           <FixedLegData>
             <Rates>
               <Rate>0.0293</Rate>
@@ -107,8 +123,24 @@
       </TotalReturnData>
       <FundingData>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>8284783.79</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2027-01-02</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
           <FixedLegData>
             <Rates>
               <Rate>0.0289</Rate>

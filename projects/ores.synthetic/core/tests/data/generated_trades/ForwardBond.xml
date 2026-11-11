@@ -48,7 +48,7 @@
         <LockRate>0.0232</LockRate>
         <SettlementDirty>false</SettlementDirty>
       </SettlementData>
-      <LongInForward>Long</LongInForward>
+      <LongInForward>true</LongInForward>
     </ForwardBondData>
   </Trade>
   <Trade id="4819aa7f-b852-5f4f-953a-a26945368558">
@@ -99,7 +99,7 @@
         <LockRate>0.0346</LockRate>
         <SettlementDirty>false</SettlementDirty>
       </SettlementData>
-      <LongInForward>Long</LongInForward>
+      <LongInForward>true</LongInForward>
     </ForwardBondData>
   </Trade>
 </Portfolio>

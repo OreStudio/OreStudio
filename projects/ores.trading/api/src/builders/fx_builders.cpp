@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.api/builders/fx_builders.hpp"
+#include "refusals.hpp"
 #include <algorithm>
 #include <utility>
 
@@ -174,12 +175,6 @@ void set_barrier_columns(Row& row, const std::vector<fx_barrier>& barriers) {
     }
     row.lower_barrier = levels.front();
     row.upper_barrier = levels.back();
-}
-
-std::optional<build_error> period_refusal(ymd start, ymd end) {
-    if (end <= start)
-        return build_error{"end", "must be after the start"};
-    return std::nullopt;
 }
 
 }
@@ -366,7 +361,7 @@ fx_average_forward_builder::fx_average_forward_builder(fx_average_forward_terms 
     : terms_(std::move(terms)) {}
 
 fx_result fx_average_forward_builder::build() const {
-    if (auto refusal = period_refusal(terms_.start.get(), terms_.payment_date.get()))
+    if (auto refusal = refusals::period(terms_.start.get(), terms_.payment_date.get()))
         return std::unexpected(std::move(*refusal));
     if (terms_.reference_notional.get() <= decimal{} ||
         terms_.settlement_notional.get() <= decimal{})
@@ -392,7 +387,7 @@ fx_tarf_builder::fx_tarf_builder(fx_tarf_terms terms)
     : terms_(std::move(terms)) {}
 
 fx_result fx_tarf_builder::build() const {
-    if (auto refusal = period_refusal(terms_.start.get(), terms_.end.get()))
+    if (auto refusal = refusals::period(terms_.start.get(), terms_.end.get()))
         return std::unexpected(std::move(*refusal));
     if (terms_.strike.get() <= decimal{} || terms_.fixing_amount.get() <= decimal{} ||
         terms_.target_amount.get() <= decimal{})
@@ -421,7 +416,7 @@ fx_variance_swap_builder::fx_variance_swap_builder(fx_variance_swap_terms terms)
     : terms_(std::move(terms)) {}
 
 fx_result fx_variance_swap_builder::build() const {
-    if (auto refusal = period_refusal(terms_.start.get(), terms_.end.get()))
+    if (auto refusal = refusals::period(terms_.start.get(), terms_.end.get()))
         return std::unexpected(std::move(*refusal));
     if (!(terms_.strike.get() > 0.0))
         return std::unexpected(build_error{"strike", "must be positive"});
@@ -447,7 +442,7 @@ fx_accumulator_builder::fx_accumulator_builder(fx_accumulator_terms terms)
     : terms_(std::move(terms)) {}
 
 fx_result fx_accumulator_builder::build() const {
-    if (auto refusal = period_refusal(terms_.start.get(), terms_.end.get()))
+    if (auto refusal = refusals::period(terms_.start.get(), terms_.end.get()))
         return std::unexpected(std::move(*refusal));
     if (terms_.strike.get() <= decimal{} || terms_.fixing_amount.get() <= decimal{})
         return std::unexpected(

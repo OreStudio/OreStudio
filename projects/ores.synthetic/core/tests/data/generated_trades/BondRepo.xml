@@ -42,8 +42,24 @@
       </BondData>
       <RepoData>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>5790664.33</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2027-01-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
           <FixedLegData>
             <Rates>
               <Rate>0.0451</Rate>
@@ -95,8 +111,24 @@
       </BondData>
       <RepoData>
         <LegData>
-          <Payer>false</Payer>
+          <Payer>true</Payer>
           <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>6103286.3</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2027-01-02</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
           <FixedLegData>
             <Rates>
               <Rate>0.0313</Rate>

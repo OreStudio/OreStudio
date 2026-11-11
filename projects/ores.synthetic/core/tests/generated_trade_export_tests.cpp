@@ -202,9 +202,13 @@ const std::map<std::string, recorded_type>& generated() {
                     const auto& batch = request.instruments;
                     const auto first = [](const auto& rows) {
                         using row = std::decay_t<decltype(rows.front())>;
-                        return rows.empty() ? std::optional<row>{} : std::optional<row>{rows.front()};
+                        return rows.empty() ? std::optional<row>{} :
+                                              std::optional<row>{rows.front()};
                     };
                     ores::trading::service::bond_trade_rows trade;
+                    trade.legs = batch.bond_legs;
+                    trade.amounts = batch.bond_leg_amounts;
+                    trade.rates = batch.bond_leg_rates;
                     trade.schedules = batch.instrument_schedules;
                     trade.schedule_dates = batch.instrument_schedule_dates;
                     trade.option = first(batch.instrument_options);

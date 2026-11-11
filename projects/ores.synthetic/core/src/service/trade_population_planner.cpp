@@ -22,10 +22,10 @@
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
 #include "ores.marketdata.api/projection/ore_projection.hpp"
+#include "ores.trading.api/builders/bond_builders.hpp"
 #include "ores.trading.api/builders/credit_builders.hpp"
 #include "ores.trading.api/builders/fx_builders.hpp"
 #include "ores.trading.api/builders/rate_builders.hpp"
-#include "ores.trading.api/domain/bond_instruments.hpp"
 #include "ores.trading.api/domain/bond_product_batch.hpp"
 #include "ores.trading.api/domain/commodity_instruments.hpp"
 #include "ores.trading.api/domain/equity_instruments.hpp"
@@ -336,105 +336,28 @@ std::string_view bond_trade_planner::asset_class_code() const {
 }
 
 
+namespace {
+
 /*
- * The bond family states its security before it states its instrument: a trade
- * is written against an issue, and the issue with its rows is the security's
- * own description. The construction lives here, beside the drawing, so the plan
- * carries the issue and not a bag of fields.
+ * The indices a rate trade draws: those the tenant's swap conventions name
+ * with a tenor, so a builder can read each leg's terms and a forward rate
+ * agreement or a cap resets on an Ibor index. The domestic ones are in the
+ * scope's currency, the foreign ones in any other.
  */
-void state_bond_security(const domain::bond_terms& terms,
-                         const std::string& currency,
-                         domain::trade_population_slot& entry,
-                         const ores::trading::domain::bond_product& product) {
-    namespace tdom = ores::trading::domain;
-    const auto money = [](double value) {
-        return tdom::decimal::from_double(value).value();
-    };
-
-    tdom::bond_issue issue;
-    issue.issue_id = terms.issue_id;
-    issue.security_id = terms.security_id;
-    issue.issuer = boost::uuids::to_string(terms.issuer_id);
-    issue.face_value = money(security_face_value);
-    issue.issue_date = terms.issue_date;
-    issue.settlement_days = 2;
-    issue.calendar = terms.calendar;
-    issue.sub_type = "Fixed";
-    issue.price_type = "Clean";
-    /*
-     * The curve the bond is discounted on. The engine resolves the name the
-     * trade states through the market's own forwarding, so a bond that states
-     * none is refused with a curve it could not find rather than priced.
-     */
-    if (!terms.reference_curve_id.empty())
-        issue.reference_curve_id = terms.reference_curve_id;
-    entry.bond_issue = std::move(issue);
-
-    tdom::bond_issue_leg leg;
-    leg.issue_id = terms.issue_id;
-    leg.leg_number = 1;
-    leg.payer = false;
-    leg.leg_type = "Fixed";
-    leg.currency = currency;
-    leg.payment_convention = "F";
-    leg.day_counter = "ACT/ACT";
-    entry.bond_issue_legs.push_back(std::move(leg));
-
-    tdom::bond_issue_leg_amount notional;
-    notional.issue_id = terms.issue_id;
-    notional.leg_number = 1;
-    notional.amount_role = "notional";
-    notional.sequence_number = 1;
-    notional.value = money(security_face_value);
-    entry.bond_issue_leg_amounts.push_back(std::move(notional));
-
-    /*
-     * The coupon: a fixed leg states a rate and no index, and the reader takes
-     * the rate itself from the amount list under the "rate" role. Without both,
-     * the leg the engine rebuilds has no FixedLegData and refuses to price.
-     */
-    tdom::bond_issue_leg_rate rate;
-    rate.issue_id = terms.issue_id;
-    rate.leg_number = 1;
-    rate.rate_kind = "fixed";
-    entry.bond_issue_leg_rates.push_back(std::move(rate));
-
-    tdom::bond_issue_leg_amount coupon;
-    coupon.issue_id = terms.issue_id;
-    coupon.leg_number = 1;
-    coupon.amount_role = "rate";
-    coupon.sequence_number = 2;
-    coupon.value = money(coupon_rate);
-    entry.bond_issue_leg_amounts.push_back(std::move(coupon));
-
-    /*
-     * The schedule is a rule and not a date list, so the terms stay relative to
-     * the anchor: the tenor and the convention are what the document states,
-     * and the dates follow from them.
-     */
-    tdom::bond_issue_leg_schedule schedule;
-    schedule.issue_id = terms.issue_id;
-    schedule.leg_number = 1;
-    schedule.schedule_role = "schedule";
-    schedule.sequence_number = 1;
-    schedule.schedule_kind = "rules";
-    schedule.start_date = terms.issue_date;
-    schedule.end_date = terms.maturity_date;
-    schedule.tenor = "1Y";
-    schedule.calendar = terms.calendar;
-    schedule.convention = "F";
-    schedule.term_convention = "F";
-    schedule.rule = "Forward";
-    entry.bond_issue_leg_schedules.push_back(std::move(schedule));
-
-    /*
-     * A callable security's calls and a convertible's targets belong to the
-     * issue, so they join it here rather than travelling with the trade.
-     */
-    for (const auto& call : product.call_dates)
-        entry.bond_issue_call_dates.push_back(call);
-    for (const auto& target : product.conversion_targets)
-        entry.bond_issue_conversion_targets.push_back(target);
+std::vector<ores::marketdata::datum::market_reference>
+swap_indices_of(const domain::trade_generation_scope& scope, bool domestic) {
+    namespace md = ores::marketdata::datum;
+    std::vector<md::market_reference> out;
+    for (const auto& swap : scope.conventions.swaps) {
+        if (!swap.oresmd_uri)
+            continue;
+        auto index = md::market_reference::parse(*swap.oresmd_uri);
+        if (!index || index->index() == nullptr || index->index()->get("tenor") == nullptr)
+            continue;
+        if ((index->index()->subject() == scope.currency_code) == domestic)
+            out.push_back(std::move(*index));
+    }
+    return out;
 }
 
 /*
@@ -455,159 +378,143 @@ constexpr std::string_view bond_types[] = {"Bond",
                                            "Ascot"};
 constexpr std::size_t bond_type_count = sizeof(bond_types) / sizeof(bond_types[0]);
 
-std::size_t bond_trade_planner::code_count() const {
-    return bond_type_count;
-}
-
 constexpr std::string_view bond_futures[] = {"FGBL", "FGBM", "ZN", "ZB"};
 
+ores::trading::domain::bond_product bond_product_of(
+    std::expected<ores::trading::domain::bond_product, ores::trading::builders::build_error> built,
+    const std::string& trade_type_code) {
+    if (!built)
+        throw trade_population_error("The " + trade_type_code + " builder refuses the drawn " +
+                                     built.error().term + ": " + built.error().message);
+    return std::move(*built);
+}
+
 /*
- * The product a bond trade states, constructed through the constructor its code
- * names. What a code cannot state it does not fill: an option states a strike, a
- * repo states its rate, a convertible states what it may convert into.
+ * The bond family builds each trade through its builder, on the security the
+ * slot holds. The security is the slot's to state, because it is written
+ * before the trade.
  */
-ores::trading::domain::bond_product
-construct_bond_product(const domain::bond_terms& terms,
-                       const std::string& type,
-                       const std::string& name,
-                       std::uint32_t slot,
-                       const domain::trade_generation_scope& scope,
-                       double notional) {
-    namespace tdom = ores::trading::domain;
+ores::trading::domain::bond_product build_bond_trade(const domain::trade_generation_scope& scope,
+                                                     const domain::trade_population_slot& entry,
+                                                     const std::string& security_id,
+                                                     const boost::uuids::uuid& issue_id,
+                                                     year_month_day maturity) {
+    namespace tb = ores::trading::builders;
+    namespace md = ores::marketdata::datum;
+    using ores::utility::decimal::decimal;
     const auto money = [](double value) {
-        return tdom::decimal::from_double(value).value();
+        return decimal::from_double(value).value();
     };
 
-    tdom::bond_common_terms common;
-    common.issue_id = terms.issue_id;
-    common.notional = money(notional);
-
-    const auto option_type = draw(name, 5) < 0.5 ? std::string("Call") : std::string("Put");
-    const auto strike = money(std::round((95.0 + 10.0 * draw(name, 6)) * 100.0) / 100.0);
-
-    if (type == "Bond") {
-        tdom::bond_terms bond;
-        bond.issue_id = common.issue_id;
-        bond.notional = common.notional;
-        tdom::bond_product product;
-        product.row = tdom::construct_bond(bond);
-        return product;
-    }
-
-    if (type == "BondPosition")
-        return tdom::construct_bond_position(common);
-
-    if (type == "BondOption") {
-        tdom::bond_option_terms option;
-        option.common = common;
-        option.option_type = option_type;
-        option.strike = strike;
-        option.redemption = "100";
-        option.price_type = "Clean";
-        option.knocks_out = "false";
-        return tdom::construct_bond_option(option);
-    }
-
-    if (type == "ForwardBond") {
-        tdom::bond_forward_terms forward;
-        forward.common = common;
-        forward.long_in_forward = slot % 2 == 0 ? "Long" : "Short";
-        forward.forward_maturity_date = format_date(terms.maturity_date);
-        forward.forward_settlement_date = format_date(add_months(terms.maturity_date, -1));
-        forward.settlement = "Cash";
-        forward.lock_rate = money(std::round((0.02 + 0.03 * draw(name, 7)) * 10000.0) / 10000.0);
-        forward.settlement_dirty = "false";
-        return tdom::construct_forward_bond(forward);
-    }
-
-    const auto future_terms = [&] {
-        tdom::bond_future_terms future;
-        future.common = common;
-        future.contract_name = std::string(bond_futures[slot % 4]);
-        future.contract_notional = money(100000.0);
-        future.long_short = slot % 2 == 0 ? "Long" : "Short";
-        return future;
+    const auto slot = entry.slot;
+    const auto& type = entry.trade_type_code;
+    const auto name = slot_name(scope, slot);
+    const tb::bond_holding holding{
+        .issue_id = issue_id, .notional = money(entry.notional), .currency = entry.currency};
+    const auto kind = draw(name, 5) < 0.5 ? tb::option_kind::call : tb::option_kind::put;
+    const auto position =
+        slot % 2 == 0 ? tb::option_position::long_option : tb::option_position::short_option;
+    const auto rate = [&](double low, double span, std::uint32_t stream) {
+        return money(std::round((low + span * draw(name, stream)) * 10000.0) / 10000.0);
     };
-
-    if (type == "BondFuture")
-        return tdom::construct_bond_future(future_terms());
-
-    if (type == "BondFutureOption") {
-        tdom::bond_future_option_terms option_terms;
-        option_terms.future = future_terms();
-        option_terms.option_type = option_type;
-        option_terms.strike = strike;
-        option_terms.redemption = "100";
-        option_terms.price_type = "Clean";
-        return tdom::construct_bond_future_option(option_terms);
-    }
-
-    if (type == "BondRepo") {
-        tdom::bond_repo_terms repo;
-        repo.common = common;
-        // The store states a repo as fixed or floating, which is how its
-        // rate or its index is read; a repo that says neither is refused.
-        repo.repo_type = slot % 2 == 0 ? "Fixed" : "Floating";
-        repo.repo_rate = money(std::round((0.03 + 0.02 * draw(name, 8)) * 10000.0) / 10000.0);
-        return tdom::construct_bond_repo(repo);
-    }
-
-    if (type == "BondTRS") {
-        tdom::bond_trs_terms trs;
-        trs.common = common;
-        trs.return_type = "Price";
-        trs.funding_leg_type = "Fixed";
-        // The book receives the bond's return and pays the funding leg.
-        trs.payer = "false";
-        trs.funding_rate = money(std::round((0.02 + 0.01 * draw(name, 9)) * 10000.0) / 10000.0);
-        trs.price_type = "Clean";
-        trs.initial_price = money(100.0);
-        return tdom::construct_bond_trs(trs);
-    }
-
-    if (type == "CallableBond") {
-        /*
-         * The issuer may call the bond on the two dates before it matures, which
-         * is the shape a callable states and the reason its calls belong to the
-         * security rather than to the trade.
-         */
-        tdom::callable_bond_terms callable;
-        callable.common = common;
-        callable.calls.push_back({.call_date = add_years(terms.maturity_date, -2)});
-        callable.calls.push_back({.call_date = add_years(terms.maturity_date, -1)});
-        return tdom::construct_callable_bond(callable);
-    }
-
-    if (type == "ConvertibleBond") {
+    const auto built = [&](auto result) {
+        return bond_product_of(std::move(result), type);
+    };
+    const auto convertible = [&]() {
         if (scope.equity_underlyings.empty())
             throw trade_population_error(
                 "A convertible bond states the share it may convert into, and the tenant holds no "
                 "equity underlying. Publish the equity catalogue first.");
-        /*
-         * The target belongs to the security and not to the trade: two trades of
-         * one convertible convert into the same share at the same ratio, and the
-         * store compares the targets it holds when a second write reaches the
-         * issue. So both draws come from the security's own name rather than
-         * from the slot, which would let two trades of one security disagree.
-         */
-        const auto target_draw = draw(terms.security_id, 10);
-        const auto position = static_cast<std::size_t>(
-            target_draw * static_cast<double>(scope.equity_underlyings.size()));
-        tdom::convertible_bond_terms convertible;
-        convertible.common = common;
-        convertible.targets.push_back(
-            {.underlying_id =
-                 scope.equity_underlyings[std::min(position, scope.equity_underlyings.size() - 1)]
-                     .code,
-             .conversion_ratio =
-                 std::round((5.0 + 10.0 * draw(terms.security_id, 11)) * 100.0) / 100.0});
-        return tdom::construct_convertible_bond(convertible);
-    }
+        const auto position_drawn = static_cast<std::size_t>(
+            draw(security_id, 10) * static_cast<double>(scope.equity_underlyings.size()));
+        return tb::convertible_bond_terms{
+            .holding = holding,
+            .share = scope
+                         .equity_underlyings[std::min(position_drawn,
+                                                      scope.equity_underlyings.size() - 1)]
+                         .code,
+            .conversion_ratio = std::round((5.0 + 10.0 * draw(security_id, 11)) * 100.0) / 100.0};
+    };
 
-    tdom::ascot_terms ascot_terms_;
-    ascot_terms_.common = common;
-    ascot_terms_.option_type = option_type;
-    return tdom::construct_ascot(ascot_terms_);
+    if (type == "Bond")
+        return built(tb::bond_builder(holding).build());
+    if (type == "BondPosition") {
+        auto security = md::market_index::make(md::index_family::bond, security_id, {});
+        if (!security)
+            throw trade_population_error("The security " + security_id +
+                                         " has no address: " + security.error());
+        auto reference = md::market_reference::of(std::move(*security));
+        if (!reference)
+            throw trade_population_error("The security " + security_id +
+                                         " has no address: " + reference.error());
+        return built(
+            tb::bond_position_builder({.holding = holding, .security = std::move(*reference)})
+                .build());
+    }
+    if (type == "BondOption")
+        return built(
+            tb::bond_option_builder(
+                {.holding = holding,
+                 .kind = kind,
+                 .strike = money(std::round((95.0 + 10.0 * draw(name, 6)) * 100.0) / 100.0),
+                 .expiry = add_years(scope.as_of_date, 1),
+                 .position = position})
+                .build());
+    if (type == "ForwardBond")
+        return built(tb::forward_bond_builder({.holding = holding,
+                                               .long_in_forward = slot % 2 == 0,
+                                               .forward_maturity = maturity,
+                                               .settlement = add_months(maturity, -1),
+                                               .lock_rate = rate(0.02, 0.03, 7)})
+                         .build());
+    if (type == "BondFuture")
+        return built(tb::bond_future_builder({.holding = holding,
+                                              .contract = std::string(bond_futures[slot % 4]),
+                                              .contract_notional = money(100000.0),
+                                              .position = position})
+                         .build());
+    if (type == "BondRepo")
+        return built(tb::bond_repo_builder({.holding = holding,
+                                            .repo_rate = rate(0.03, 0.02, 8),
+                                            .start = scope.as_of_date,
+                                            .end = add_years(scope.as_of_date, 1)})
+                         .build());
+    if (type == "BondTRS")
+        return built(tb::bond_trs_builder({.holding = holding,
+                                           .funding_rate = rate(0.02, 0.01, 9),
+                                           .start = scope.as_of_date,
+                                           .end = add_years(scope.as_of_date, 1)})
+                         .build());
+    if (type == "CallableBond")
+        return built(tb::callable_bond_builder(
+                         {.holding = holding,
+                          .calls = std::vector<year_month_day>{add_years(maturity, -2),
+                                                               add_years(maturity, -1)}})
+                         .build());
+    if (type == "ConvertibleBond")
+        return built(tb::convertible_bond_builder(convertible()).build());
+    if (type == "Ascot") {
+        const auto indices = swap_indices_of(scope, true);
+        if (indices.empty())
+            throw trade_population_error("No swap convention of the tenant names an index in " +
+                                         scope.currency_code +
+                                         ", so no Ascot can state its swap leg.");
+        return built(tb::ascot_builder({.convertible = convertible(),
+                                        .kind = kind,
+                                        .funding_index = indices[slot % indices.size()],
+                                        .recall_spread = money(0.02),
+                                        .start = scope.as_of_date,
+                                        .end = maturity})
+                         .build());
+    }
+    throw trade_population_error("The bond trade type " + type +
+                                 " states no builder this planner knows.");
+}
+
+}
+
+std::size_t bond_trade_planner::code_count() const {
+    return bond_type_count;
 }
 
 domain::trade_population_plan
@@ -630,35 +537,42 @@ bond_trade_planner::plan(const domain::trade_generation_scope& scope) const {
         const auto drawn =
             min_years + static_cast<std::uint32_t>(draw(name, 0) * static_cast<double>(span));
 
-        domain::bond_terms terms;
-        terms.tenor_years = std::clamp(drawn, min_years, max_years);
-        terms.issuer_id = issuer_id_for(scope, terms.tenor_years);
-        terms.security_id =
-            security_id_for(scope, terms.tenor_years, *types[slot % types.size()], terms.issuer_id);
-        terms.issue_id = issue_id_for_security(terms.security_id);
-        terms.reference_curve_id = scope.reference_curve_id;
-
-        /*
-         * The anchor is the config's as-of and never the clock, so a
-         * re-provision at the same anchor states the same dates and a later
-         * anchor moves them deliberately. The security's dates come from the
-         * anchor and its original term alone, so every trade of it states the
-         * same ones; the trade date is the only date that belongs to the trade.
-         */
-        terms.issue_date = add_months(scope.as_of_date, -security_age_months);
-        terms.maturity_date = add_years(terms.issue_date, static_cast<int>(terms.tenor_years));
+        const auto tenor_years = std::clamp(drawn, min_years, max_years);
+        const auto issuer_id = issuer_id_for(scope, tenor_years);
+        const auto security_id =
+            security_id_for(scope, tenor_years, *types[slot % types.size()], issuer_id);
+        const auto issue_id = issue_id_for_security(security_id);
+        const auto issue_date = add_months(scope.as_of_date, -security_age_months);
+        const auto maturity = add_years(issue_date, static_cast<int>(tenor_years));
 
         auto entry = common_slot(scope, slot);
         entry.trade_type_code = std::string(*types[slot % types.size()]);
         entry.notional = notional_from(scope, draw(name, 1));
-        /*
-         * The bond family states its row and its product's own facts: the code
-         * decides which constructor runs, and what a code cannot state it does
-         * not fill.
-         */
-        auto product =
-            construct_bond_product(terms, entry.trade_type_code, name, slot, scope, entry.notional);
-        state_bond_security(terms, entry.currency, entry, product);
+
+        namespace tdom = ores::trading::domain;
+        auto security = ores::trading::builders::bond_issue_builder(
+                            {.issue_id = issue_id,
+                             .security_id = security_id,
+                             .issuer = boost::uuids::to_string(issuer_id),
+                             .currency = entry.currency,
+                             .face_value = tdom::decimal::from_double(security_face_value).value(),
+                             .coupon_rate = tdom::decimal::from_double(coupon_rate).value(),
+                             .issue_date = issue_date,
+                             .maturity = maturity,
+                             .calendar = std::string("TARGET"),
+                             .reference_curve = scope.reference_curve_id})
+                            .build();
+        if (!security)
+            throw trade_population_error("The bond issue builder refuses the drawn " +
+                                         security.error().term + ": " + security.error().message);
+        auto product = build_bond_trade(scope, entry, security_id, issue_id, maturity);
+        entry.bond_issue = std::move(security->issue);
+        entry.bond_issue_legs = std::move(security->legs);
+        entry.bond_issue_leg_amounts = std::move(security->amounts);
+        entry.bond_issue_leg_rates = std::move(security->rates);
+        entry.bond_issue_leg_schedules = std::move(security->schedules);
+        entry.bond_issue_call_dates = product.call_dates;
+        entry.bond_issue_conversion_targets = product.conversion_targets;
         append(entry.instruments, std::move(product));
 
         plan.slots.push_back(std::move(entry));
@@ -1178,28 +1092,6 @@ constexpr std::size_t rate_type_count = sizeof(rate_types) / sizeof(rate_types[0
 }
 
 namespace {
-
-/*
- * The indices a rate trade draws: those the tenant's swap conventions name
- * with a tenor, so a builder can read each leg's terms and a forward rate
- * agreement or a cap resets on an Ibor index. The domestic ones are in the
- * scope's currency, the foreign ones in any other.
- */
-std::vector<ores::marketdata::datum::market_reference>
-swap_indices_of(const domain::trade_generation_scope& scope, bool domestic) {
-    namespace md = ores::marketdata::datum;
-    std::vector<md::market_reference> out;
-    for (const auto& swap : scope.conventions.swaps) {
-        if (!swap.oresmd_uri)
-            continue;
-        auto index = md::market_reference::parse(*swap.oresmd_uri);
-        if (!index || index->index() == nullptr || index->index()->get("tenor") == nullptr)
-            continue;
-        if ((index->index()->subject() == scope.currency_code) == domestic)
-            out.push_back(std::move(*index));
-    }
-    return out;
-}
 
 ores::trading::domain::instrument_batch
 swap_batch_of(std::expected<ores::trading::domain::swap_instrument_data,

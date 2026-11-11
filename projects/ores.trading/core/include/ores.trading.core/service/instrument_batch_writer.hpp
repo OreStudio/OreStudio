@@ -44,6 +44,10 @@
 #include "ores.trading.core/repository/bond_issue_leg_schedule_date_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
+#include "ores.trading.core/repository/bond_leg_amortization_repository.hpp"
+#include "ores.trading.core/repository/bond_leg_amount_repository.hpp"
+#include "ores.trading.core/repository/bond_leg_rate_repository.hpp"
+#include "ores.trading.core/repository/bond_leg_repository.hpp"
 #include "ores.trading.core/repository/bond_option_repository.hpp"
 #include "ores.trading.core/repository/bond_repo_repository.hpp"
 #include "ores.trading.core/repository/bond_trs_repository.hpp"
@@ -274,6 +278,12 @@ void write_instrument_batch(ores::database::context ctx,
     write_rows<repository::ascot_repository>(ctx, batch.ascots, keys, stamp, claim);
     write_rows<repository::bond_forward_repository>(ctx, batch.bond_forwards, keys, stamp, claim);
     write_rows<repository::bond_future_repository>(ctx, batch.bond_futures, keys, stamp, claim);
+    write_rows<repository::bond_leg_repository>(ctx, batch.bond_legs, keys, stamp, claim);
+    write_rows<repository::bond_leg_amortization_repository>(
+        ctx, batch.bond_leg_amortizations, keys, stamp, claim);
+    write_rows<repository::bond_leg_amount_repository>(
+        ctx, batch.bond_leg_amounts, keys, stamp, claim);
+    write_rows<repository::bond_leg_rate_repository>(ctx, batch.bond_leg_rates, keys, stamp, claim);
     write_rows<repository::bond_option_repository>(ctx, batch.bond_options, keys, stamp, claim);
     write_rows<repository::bond_repo_repository>(ctx, batch.bond_repos, keys, stamp, claim);
     write_rows<repository::bond_trs_repository>(ctx, batch.bond_trs, keys, stamp, claim);
@@ -491,6 +501,14 @@ misrouted_arrays(const domain::instrument_batch& batch, std::string_view trade_t
         names.emplace_back("bond_forwards");
     if (!batch.bond_futures.empty())
         names.emplace_back("bond_futures");
+    if (!batch.bond_legs.empty())
+        names.emplace_back("bond_legs");
+    if (!batch.bond_leg_amortizations.empty())
+        names.emplace_back("bond_leg_amortizations");
+    if (!batch.bond_leg_amounts.empty())
+        names.emplace_back("bond_leg_amounts");
+    if (!batch.bond_leg_rates.empty())
+        names.emplace_back("bond_leg_rates");
     if (!batch.bond_options.empty())
         names.emplace_back("bond_options");
     if (!batch.bond_repos.empty())

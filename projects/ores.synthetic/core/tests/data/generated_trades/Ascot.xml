@@ -41,6 +41,15 @@
           </LegData>
           <SubType>Fixed</SubType>
         </BondData>
+        <ConversionData>
+          <ConversionRatios>
+            <ConversionRatio>6.13</ConversionRatio>
+          </ConversionRatios>
+          <Underlying>
+            <Type>Equity</Type>
+            <Name>MSFT.O</Name>
+          </Underlying>
+        </ConversionData>
       </ConvertibleBondData>
       <OptionData>
         <LongShort></LongShort>
@@ -49,7 +58,29 @@
       <ReferenceSwapData>
         <LegData>
           <Payer>false</Payer>
-          <LegType>Fixed</LegType>
+          <LegType>Floating</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>3614264.98</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2031-07-02</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FloatingLegData>
+            <Index>EUR-EURIBOR-6M</Index>
+            <Spreads>
+              <Spread>0.02</Spread>
+            </Spreads>
+          </FloatingLegData>
         </LegData>
       </ReferenceSwapData>
     </AscotData>
@@ -95,6 +126,15 @@
           </LegData>
           <SubType>Fixed</SubType>
         </BondData>
+        <ConversionData>
+          <ConversionRatios>
+            <ConversionRatio>12.1</ConversionRatio>
+          </ConversionRatios>
+          <Underlying>
+            <Type>Equity</Type>
+            <Name>.SPX</Name>
+          </Underlying>
+        </ConversionData>
       </ConvertibleBondData>
       <OptionData>
         <LongShort></LongShort>
@@ -103,7 +143,29 @@
       <ReferenceSwapData>
         <LegData>
           <Payer>false</Payer>
-          <LegType>Fixed</LegType>
+          <LegType>Floating</LegType>
+          <Currency>EUR</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>4191327.35</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2026-01-02</StartDate>
+              <EndDate>2026-07-02</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FloatingLegData>
+            <Index>EUR-EURIBOR-6M</Index>
+            <Spreads>
+              <Spread>0.02</Spread>
+            </Spreads>
+          </FloatingLegData>
         </LegData>
       </ReferenceSwapData>
     </AscotData>

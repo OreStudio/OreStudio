@@ -1,14 +1,6 @@
-Ascot
 Autocallable_01
-Bond
-BondFuture
 BondFutureOption
-BondOption
-BondPosition
-BondRepo
-BondTRS
 CBO
-CallableBond
 CashPosition
 CommodityAccumulator
 CommodityAsianOption
@@ -36,7 +28,6 @@ CommodityWindowBarrierOption
 CommodityWorstOfBasketSwap
 CompositeTrade
 ContractForDifference
-ConvertibleBond
 CreditDefaultSwapOption
 DoubleDigitalOption
 EquityAccumulator
@@ -69,7 +60,6 @@ EquityVarianceSwap
 EquityWindowBarrierOption
 EquityWorstOfBasketSwap
 EuropeanOptionBarrier
-ForwardBond
 ForwardVolatilityAgreement
 FxAsianOption
 FxBasketOption

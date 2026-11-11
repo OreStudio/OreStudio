@@ -49,7 +49,11 @@
 #include "ores.trading.api/domain/bond_issue_leg_rate_codec.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_codec.hpp"
 #include "ores.trading.api/domain/bond_issue_leg_schedule_date_codec.hpp"
+#include "ores.trading.api/domain/bond_leg_amortization_codec.hpp"
+#include "ores.trading.api/domain/bond_leg_amount_codec.hpp"
+#include "ores.trading.api/domain/bond_leg_codec.hpp"
 #include "ores.trading.api/domain/bond_leg_data.hpp"
+#include "ores.trading.api/domain/bond_leg_rate_codec.hpp"
 #include "ores.trading.api/domain/bond_leg_rate_data.hpp"
 #include "ores.trading.api/domain/bond_option_codec.hpp"
 #include "ores.trading.api/domain/bond_option_data.hpp"
@@ -290,6 +294,22 @@ struct instrument_batch {
      * @brief The bond_future rows, keyed by trade id.
      */
     std::vector<ores::trading::domain::bond_future> bond_futures;
+    /**
+     * @brief The bond_leg rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::bond_leg> bond_legs;
+    /**
+     * @brief The bond_leg_amortization rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::bond_leg_amortization> bond_leg_amortizations;
+    /**
+     * @brief The bond_leg_amount rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::bond_leg_amount> bond_leg_amounts;
+    /**
+     * @brief The bond_leg_rate rows, keyed by trade id.
+     */
+    std::vector<ores::trading::domain::bond_leg_rate> bond_leg_rates;
     /**
      * @brief The bond_option rows, keyed by trade id.
      */
@@ -751,6 +771,34 @@ inline void append(instrument_batch& batch, bond_future v) {
 }
 
 /**
+ * @brief Adds one bond_leg to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_leg v) {
+    batch.bond_legs.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_leg_amortization to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_leg_amortization v) {
+    batch.bond_leg_amortizations.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_leg_amount to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_leg_amount v) {
+    batch.bond_leg_amounts.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one bond_leg_rate to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, bond_leg_rate v) {
+    batch.bond_leg_rates.push_back(std::move(v));
+}
+
+/**
  * @brief Adds one bond_option to the array that holds its type.
  */
 inline void append(instrument_batch& batch, bond_option v) {
@@ -1168,6 +1216,11 @@ template <typename T>
         ::ores::utility::codec::field{"ascots", &instrument_batch::ascots},
         ::ores::utility::codec::field{"bond_forwards", &instrument_batch::bond_forwards},
         ::ores::utility::codec::field{"bond_futures", &instrument_batch::bond_futures},
+        ::ores::utility::codec::field{"bond_legs", &instrument_batch::bond_legs},
+        ::ores::utility::codec::field{"bond_leg_amortizations",
+                                      &instrument_batch::bond_leg_amortizations},
+        ::ores::utility::codec::field{"bond_leg_amounts", &instrument_batch::bond_leg_amounts},
+        ::ores::utility::codec::field{"bond_leg_rates", &instrument_batch::bond_leg_rates},
         ::ores::utility::codec::field{"bond_options", &instrument_batch::bond_options},
         ::ores::utility::codec::field{"bond_repos", &instrument_batch::bond_repos},
         ::ores::utility::codec::field{"bond_trs", &instrument_batch::bond_trs},

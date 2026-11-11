@@ -227,7 +227,9 @@ void market_regime_routes::register_routes(
             .summary("Read the tick counts of the last stretch of the run, by asset class")
             .description("The last hour by the second, or the last ten minutes by the tenth, "
                          "with the pace and the active share of each slot. Counts rather than "
-                         "ticks, so the read costs the same at any tick rate.")
+                         "ticks, so the read costs the same at any tick rate. The seconds "
+                         "asked for are capped at the resolution's span, so a read by the "
+                         "tenth answers at most 600.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::get_market_history_request>([&] {
                     const auto reply = forwarding::forward(req, session, history_of(req));

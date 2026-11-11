@@ -206,6 +206,9 @@ via its "Verifies task" field.
 | 19 | PR #4625: an unrelated 58 MB ORE package was committed. | =external/ore/packages/= | Declined | The intraday ORE package belongs in the tree beside the other packages; the owner kept it. |
 | 20 | PR #4625: the member check returns quietly for a body that is not an object. | =calibration_routes.cpp= | Accepted | A comment says the read that follows refuses it. |
 | 21 | PR #4625: the policy and pin writes are not atomic; no test covers an unchanged order. | =calibration_routes.cpp= | Declined | Each write converges and a concurrent one fails its precondition, as the BFF's did. An unchanged-order test needs a forward the suite cannot fake yet. |
+| 22 | PR #4628: a read by the tenth caps the seconds at 600 without saying so. | =market_regime_routes.cpp= | Accepted | The route's description says the seconds are capped at the resolution's span, as the BFF capped them. |
+| 23 | PR #4628: settings refused for a fault answer 400; =from_chars= refuses a leading plus; the non-object body contract. | =market_regime_routes.cpp=, =record_routes.hpp= | Declined | The 400 is the BFF's, with the service's words. A signed number is refused rather than read. The header already says a non-object body is left to the read. |
+| 24 | PR #4628: no test checks the answer's member names. | =market_regime_routes.cpp= | Declined | The names were checked against the BFF's answer; a test needs a forward the suite cannot fake yet, as for #4625. |
 
 * Result
 

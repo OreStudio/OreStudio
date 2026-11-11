@@ -23,11 +23,8 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.http/routes/iam/tenant_status_routes.hpp"
+#include "ores.http.nats/forwarding.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
-#include "ores.nats/domain/headers.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
-#include "ores.nats/service/session_expired_error.hpp"
-#include "ores.nats/service/timeouts.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -49,6 +46,7 @@ namespace ores::http::routes::iam {
 using namespace logging;
 using ores::http::domain::http_request;
 using ores::http::domain::http_response;
+using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
 namespace messaging = ores::iam::messaging;
 
@@ -92,60 +90,6 @@ T tenant_status_read_param(const std::string& raw, const std::string& name) {
     }
 }
 
-/**
- * @brief The HTTP response a service error names.
- *
- * The service answers a refused caller with a status in its reply header
- * rather than a body, so the gateway reads that status and maps it. An error
- * it does not know is the caller's to see as unauthorised, which is what the
- * service means by any code it does not spell out here.
- */
-http_response tenant_status_error_response(const std::string& error) {
-    if (error == "forbidden") {
-        return http_response::forbidden(error);
-    }
-    if (error == "bad_request") {
-        return http_response::bad_request(error);
-    }
-    return http_response::unauthorized(error);
-}
-
-/**
- * @brief Forward one canonical request and map the reply to a response.
- *
- * The caller's own bearer token is taken from the HTTP request and delegated
- * on the NATS call, so the service validates that caller and its own
- * permission check governs. The gateway authorises nobody and decides
- * nothing; it states the subject the request already carries.
- */
-template <typename Request>
-boost::asio::awaitable<http_response>
-tenant_status_forward(const http_request& req, nats_client& session, const Request& msg) {
-    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
-    try {
-        const auto reply =
-            delegated.authenticated_request(msg.nats_subject,
-                                            ores::nats::default_wire_codec().encode(msg),
-                                            ores::nats::service::default_request_timeout);
-        if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
-            it != reply.headers.end()) {
-            co_return tenant_status_error_response(it->second);
-        }
-        const auto decoded =
-            ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
-        if (!decoded) {
-            co_return http_response::internal_error(std::string("Failed to decode response: ") +
-                                                    decoded.error().what());
-        }
-        co_return http_response::json(
-            ores::utility::codec::wire_traits<typename Request::response_type>::write_json(
-                *decoded));
-    } catch (const ores::nats::service::session_expired_error& e) {
-        co_return http_response::unauthorized(e.what());
-    } catch (const std::exception& e) {
-        co_return http_response::internal_error(e.what());
-    }
-}
 
 /**
  * @brief Apply the page and the order a caller stated.
@@ -226,9 +170,9 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_list(const ht
             msg.filter->status_one_of =
                 tenant_status_read_list<std::string>(raw, "f.status_one_of");
         }
-        co_return co_await tenant_status_forward(req, session, msg);
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -239,9 +183,9 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_get(const htt
         request_type msg;
         msg.key.status =
             tenant_status_read_param<std::string>(req.get_path_param("status"), "status");
-        co_return co_await tenant_status_forward(req, session, msg);
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -251,11 +195,12 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_get_many(cons
     try {
         const auto parsed = tenant_status_read_body<request_type>(req.body);
         if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "Invalid request body");
         }
-        co_return co_await tenant_status_forward(req, session, *parsed);
+        co_return ores::http::forwarding::respond(req, session, *parsed);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -265,13 +210,14 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_add(const htt
     try {
         auto parsed = tenant_status_read_body<request_type>(req.body);
         if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "Invalid request body");
         }
         // The route states whether the row may exist; the body states the rest.
         parsed->change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
-        co_return co_await tenant_status_forward(req, session, *parsed);
+        co_return ores::http::forwarding::respond(req, session, *parsed);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -281,7 +227,8 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_set(const htt
     try {
         auto parsed = tenant_status_read_body<request_type>(req.body);
         if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "Invalid request body");
         }
         // The route states whether the row may exist; the body states the rest.
         parsed->change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -291,9 +238,9 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_set(const htt
             parsed->change.precondition.version =
                 tenant_status_read_param<std::uint32_t>(raw, "version");
         }
-        co_return co_await tenant_status_forward(req, session, *parsed);
+        co_return ores::http::forwarding::respond(req, session, *parsed);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -303,11 +250,12 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_put_many(cons
     try {
         const auto parsed = tenant_status_read_body<request_type>(req.body);
         if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "Invalid request body");
         }
-        co_return co_await tenant_status_forward(req, session, *parsed);
+        co_return ores::http::forwarding::respond(req, session, *parsed);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -322,10 +270,12 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_delete(const 
         msg.intent.reason_code = req.get_query_param("reason");
         msg.intent.commentary = req.get_query_param("commentary");
         if (msg.intent.reason_code.empty()) {
-            co_return http_response::bad_request("reason is required");
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "reason is required");
         }
         if (msg.intent.commentary.empty()) {
-            co_return http_response::bad_request("commentary is required");
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "commentary is required");
         }
         if (const auto raw = req.get_query_param("version"); !raw.empty()) {
             msg.removal.precondition.kind =
@@ -333,9 +283,9 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_delete(const 
             msg.removal.precondition.version =
                 tenant_status_read_param<std::uint32_t>(raw, "version");
         }
-        co_return co_await tenant_status_forward(req, session, msg);
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -345,11 +295,12 @@ tenant_status_routes::handle_delete_many(const http_request& req, nats_client& s
     try {
         const auto parsed = tenant_status_read_body<request_type>(req.body);
         if (!parsed) {
-            co_return http_response::bad_request("Invalid request body");
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "Invalid request body");
         }
-        co_return co_await tenant_status_forward(req, session, *parsed);
+        co_return ores::http::forwarding::respond(req, session, *parsed);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -361,9 +312,9 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_versions(cons
         msg.key.status =
             tenant_status_read_param<std::string>(req.get_path_param("status"), "status");
         tenant_status_apply_page(msg, req);
-        co_return co_await tenant_status_forward(req, session, msg);
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 
@@ -376,9 +327,9 @@ boost::asio::awaitable<http_response> tenant_status_routes::handle_version(const
             tenant_status_read_param<std::string>(req.get_path_param("status"), "status");
         msg.key.version =
             tenant_status_read_param<std::uint32_t>(req.get_path_param("version"), "version");
-        co_return co_await tenant_status_forward(req, session, msg);
+        co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
-        co_return http_response::bad_request(e.what());
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
     }
 }
 

@@ -27,6 +27,9 @@ from codegen.org_loader import (  # noqa: E402
 )
 
 CODEGEN_BASE = REPO_ROOT / "projects" / "ores.codegen"
+FORWARDING = (Path(__file__).resolve().parents[3]
+              / "projects/ores.http/nats/include/ores.http.nats/forwarding.hpp")
+
 TEMPLATES = CODEGEN_BASE / "library" / "templates"
 IAM_MODELING = REPO_ROOT / "projects" / "ores.iam" / "modeling"
 ACCOUNT_MESSAGES = IAM_MODELING / "ores.iam.account_messages.org"
@@ -166,8 +169,12 @@ class TestTheSecurityRule:
         model = _model([_command("logout_request", "demo.v1.auth.logout")])
         text = _rendered("cpp_http_route_operation_implementation.cpp.mustache",
                          model)
-        assert "get_bearer_token()" in text
-        assert "with_delegation(" in text
+        # The unit hands the caller's own request to the gateway's one
+        # forwarding step and sends nothing on NATS itself.
+        assert "ores::http::forwarding::respond(req, session," in text
+        assert "authenticated_request" not in text
+        shared = FORWARDING.read_text()
+        assert "with_delegation(req.get_bearer_token()" in shared
 
 
 class TestTheExposureRule:

@@ -22,6 +22,9 @@ from codegen.generate import resolve_targets  # noqa: E402
 from codegen.org_loader import entity_http_route_plan, entity_web_records_plan  # noqa: E402
 
 CODEGEN_BASE = REPO_ROOT / "projects" / "ores.codegen"
+FORWARDING = (Path(__file__).resolve().parents[3]
+              / "projects/ores.http/nats/include/ores.http.nats/forwarding.hpp")
+
 TEMPLATES = CODEGEN_BASE / "library" / "templates"
 ASSETS_MODELING = REPO_ROOT / "projects" / "ores.assets" / "modeling"
 IMAGE_MODEL = ASSETS_MODELING / "ores.assets.image.org"
@@ -309,8 +312,12 @@ class TestTheSecurityRule:
         # The service validates the caller, so the gateway takes the caller's
         # token from the HTTP request and delegates it on the NATS call.
         text = _rendered_impl(_entity())
-        assert "get_bearer_token()" in text
-        assert "with_delegation(" in text
+        # The unit hands the caller's own request to the gateway's one
+        # forwarding step and sends nothing on NATS itself.
+        assert "ores::http::forwarding::respond(req, session," in text
+        assert "authenticated_request" not in text
+        shared = FORWARDING.read_text()
+        assert "with_delegation(req.get_bearer_token()" in shared
 
 
 class TestTheFacetResolves:

@@ -24,10 +24,7 @@
  */
 #include "ores.http/routes/synthetic/variance_calibration_input_point_web_routes.hpp"
 #include "ores.http.api/net/record_routes.hpp"
-#include "ores.nats/domain/headers.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
-#include "ores.nats/service/session_expired_error.hpp"
-#include "ores.nats/service/timeouts.hpp"
+#include "ores.http.nats/forwarding.hpp"
 #include "ores.synthetic.api/domain/variance_calibration_input_point_codec.hpp"
 #include "ores.synthetic.api/messaging/variance_calibration_input_point_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
@@ -57,58 +54,8 @@ namespace rr = ores::http::net::record_routes;
 
 namespace {
 
-/// The unit's logger, for the detail a refusal does not show the browser.
-auto& variance_calibration_input_point_web_lg() {
-    static auto instance =
-        make_logger("ores.http.routes.synthetic.variance_calibration_input_point_web_routes");
-    return instance;
-}
-
 /// How many rows a whole read asks for at a time.
 constexpr std::uint32_t variance_calibration_input_point_web_page_size = 1000;
-
-/**
- * @brief Forward one canonical request with the caller's token, and decode the reply.
- *
- * A refusal the service states in its reply header becomes the status it
- * names. An expired session is the caller's to renew.
- */
-template <typename Request>
-typename Request::response_type variance_calibration_input_point_web_call(const http_request& req,
-                                                                          nats_client& session,
-                                                                          const Request& msg) {
-    auto delegated = session.with_delegation(req.get_bearer_token().value_or(std::string{}));
-    try {
-        const auto reply =
-            delegated.authenticated_request(msg.nats_subject,
-                                            ores::nats::default_wire_codec().encode(msg),
-                                            ores::nats::service::default_request_timeout);
-        if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
-            it != reply.headers.end()) {
-            if (it->second == "forbidden")
-                rr::refuse(http_status::forbidden, "forbidden", it->second);
-            if (it->second == "bad_request")
-                rr::invalid(it->second);
-            if (it->second == "unauthorized" || it->second == "token_expired" ||
-                it->second == "max_session_exceeded")
-                rr::refuse(http_status::unauthorized, "not-authenticated", it->second);
-            BOOST_LOG_SEV(variance_calibration_input_point_web_lg(), warn)
-                << "Unknown service error: " << it->second;
-            rr::refuse(
-                http_status::bad_gateway, "upstream-unavailable", std::string(rr::unanswered));
-        }
-        auto decoded =
-            ores::nats::default_wire_codec().decode<typename Request::response_type>(reply.data);
-        if (!decoded) {
-            BOOST_LOG_SEV(variance_calibration_input_point_web_lg(), error)
-                << "Failed to decode response: " << decoded.error().what();
-            rr::refuse(http_status::bad_gateway, "internal", std::string(rr::unanswered));
-        }
-        return std::move(*decoded);
-    } catch (const ores::nats::service::session_expired_error& e) {
-        rr::refuse(http_status::unauthorized, "session-expired", e.what());
-    }
-}
 
 /// One row as the service sends it, with the version the screens read on every row.
 std::string variance_calibration_input_point_web_row(
@@ -192,7 +139,7 @@ variance_calibration_input_point_web_routes::handle_list(const http_request& req
             // advances by the rows that arrived and ends on an empty page, or on
             // a short one once it holds the total.
             for (std::uint32_t offset = 0;;) {
-                const auto reply = variance_calibration_input_point_web_call(
+                const auto reply = ores::http::forwarding::forward(
                     req,
                     session,
                     variance_calibration_input_point_web_page(
@@ -256,7 +203,7 @@ variance_calibration_input_point_web_routes::handle_list(const http_request& req
             msg.filter->input_id = rr::read<boost::uuids::uuid>(raw, "f.input_id");
         }
 
-        const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+        const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         co_return http_response::json(
             "{\"rows\":" +
@@ -281,7 +228,7 @@ variance_calibration_input_point_web_routes::handle_key(const http_request& req,
         msg.filter = messaging::variance_calibration_input_points_filter{};
         msg.filter->id_one_of =
             std::vector<boost::uuids::uuid>{rr::read<boost::uuids::uuid>(key, "key")};
-        const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+        const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         if (reply.variance_calibration_input_points.empty())
             rr::refuse(http_status::not_found,
@@ -312,7 +259,7 @@ variance_calibration_input_point_web_routes::handle_by(const http_request& req,
                 offset, variance_calibration_input_point_web_page_size);
             msg.filter = messaging::variance_calibration_input_points_filter{};
             msg.filter->input_id = rr::read<boost::uuids::uuid>(parent, "parent");
-            const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+            const auto reply = ores::http::forwarding::forward(req, session, msg);
             rr::require_ok(reply.result);
             const auto& got = reply.variance_calibration_input_points;
             rows.insert(rows.end(), got.begin(), got.end());
@@ -358,7 +305,7 @@ variance_calibration_input_point_web_routes::handle_put(const http_request& req,
         if (std::adjacent_find(keys.begin(), keys.end()) != keys.end())
             rr::invalid("A save names each row once.");
         msg.intent = body->intent;
-        const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+        const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         co_return http_response::json(
             "{\"rows\":" +
@@ -402,7 +349,7 @@ variance_calibration_input_point_web_routes::handle_delete(const http_request& r
             msg.removal.precondition.version = removal.version;
             msg.intent.reason_code = body->intent.reason_code;
             msg.intent.commentary = body->intent.commentary;
-            const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+            const auto reply = ores::http::forwarding::forward(req, session, msg);
             rr::require_ok(reply.result);
             co_return rr::no_content();
         }
@@ -418,7 +365,7 @@ variance_calibration_input_point_web_routes::handle_delete(const http_request& r
             item.precondition.kind = ores::utility::domain::precondition_kind::any;
         }
         msg.intent = body->intent;
-        const auto reply = variance_calibration_input_point_web_call(req, session, msg);
+        const auto reply = ores::http::forwarding::forward(req, session, msg);
         rr::require_ok(reply.result);
         co_return rr::no_content();
     } catch (const rr::refusal& refusal) {

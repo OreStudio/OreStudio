@@ -19,9 +19,9 @@
  */
 #include "ores.http/routes/iam/sign_in_routes.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/iam/access_read_routes.hpp"
-#include "ores.http/routes/iam/access_screen_answers.hpp"
 #include "ores.http/routes/iam/account_view.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
@@ -46,8 +46,8 @@ using ores::http::domain::http_response;
 using ores::http::domain::http_status;
 using ores::nats::service::nats_client;
 namespace messaging = ores::iam::messaging;
-using access_screen_answers::guarded;
-using access_screen_answers::refused;
+using ores::http::forwarding::guarded;
+using ores::http::net::record_routes::refused;
 
 namespace {
 

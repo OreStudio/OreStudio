@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "image_routes_tests.cpp"
+    "image_screen_routes_tests.cpp"
     "image_tag_routes_tests.cpp"
     "main.cpp"
     "tag_routes_tests.cpp"

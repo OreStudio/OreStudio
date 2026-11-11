@@ -27,6 +27,7 @@
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/lexical_cast.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <exception>
 #include <initializer_list>
@@ -105,6 +106,18 @@ ORES_HTTP_API_EXPORT domain::http_response no_content();
  * @brief The text without its leading and trailing spaces, tabs and line ends.
  */
 ORES_HTTP_API_EXPORT std::string trimmed(const std::string& raw);
+
+/**
+ * @brief How many characters a text holds, as the BFF counted them: a byte of
+ * UTF-8 that continues a character is not counted.
+ */
+ORES_HTTP_API_EXPORT std::size_t characters_of(std::string_view text);
+
+/**
+ * @brief The response a refusal with this status, code and message states.
+ */
+ORES_HTTP_API_EXPORT domain::http_response
+refused(domain::http_status status, std::string code, std::string message);
 
 /**
  * @brief A code named in the address: 1 to 100 characters once trimmed.

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.http.api/net/record_routes.hpp"
+#include <algorithm>
 #include <cstdlib>
 #include <utility>
 #include <yyjson.h>
@@ -43,6 +44,15 @@ http_response no_content() {
     http_response response;
     response.status = http_status::no_content;
     return response;
+}
+
+std::size_t characters_of(std::string_view text) {
+    return static_cast<std::size_t>(
+        std::ranges::count_if(text, [](unsigned char c) { return (c & 0xC0) != 0x80; }));
+}
+
+domain::http_response refused(domain::http_status status, std::string code, std::string message) {
+    return answer(refusal{status, std::move(code), std::move(message)});
 }
 
 std::string trimmed(const std::string& raw) {

@@ -727,6 +727,11 @@ RULES = (
          CPP, RESOURCE, "access",
          "An access screen's read or write at the address and in the shape the BFF answered,"
          " forwarded to IAM as the caller, kept so the screens work when the BFF goes."),
+    Rule("an image screen's route",
+         ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
+         CPP, RESOURCE, "assets",
+         "An image screen's read or upload at the address and in the shape the BFF answered,"
+         " forwarded to the assets service as the caller."),
     Rule("the account collection",
          ("exact", "GET /api/accounts"),
          BFF, RESOURCE, "access",

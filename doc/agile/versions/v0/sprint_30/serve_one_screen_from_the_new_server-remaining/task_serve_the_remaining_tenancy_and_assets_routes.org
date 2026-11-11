@@ -1,19 +1,19 @@
 :PROPERTIES:
 :ID: 4B5F4906-DB80-417E-92F2-44E7247077E4
 :END:
-#+title: Task: Serve the remaining tenancy and assets routes
+#+title: Task: Serve the image screens' routes
 #+description: The tenancy and assets areas have generated collections, but provisioning, the setup run and the image operations have no visible equivalent.
 #+type: task
 #+level: s1
 #+filetags: :serve_one_screen_from_the_new_server-remaining:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-remaining-tenancy-and-assets-routes
+#+pr: 4590
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
 #+updated: 2026-11-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Port the 23 BFF routes of the tenancy and assets area to the C++ server. Include
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-09                               |
 
 * Acceptance
@@ -41,9 +41,22 @@ Port the 23 BFF routes of the tenancy and assets area to the C++ server. Include
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Twenty-six tenancy and assets routes ores.web calls lack a C++ route at their
+own address. This task serves the four of the image screens in
+=ores.http.assets=, =image_screen_routes=: a page of the tenant's images, one
+image's bytes, the upload policy and an upload, the upload within the BFF's 4
+MiB body. The image map is a composed view and has its own task.
+
+An image is answered by one helper in =ores.http.api=, =image_answer=, which
+the account picture now uses too: the BFF's private five-minute cache, nosniff
+and sandbox headers, and a stored type served only when it names an image.
+
+The refusal, the guarded forward and the character count the access units
+kept in =access_screen_answers= are needed by a second part, so they move to
+the shared layers: =refused= and =characters_of= to =record_routes=, =guarded=
+to =forwarding=. Every access unit is migrated and the header is deleted.
+
+The 21 tenancy routes move to [[id:8B40FAA3-24D5-4F54-9779-FF45B0BDC8F1][Serve the tenancy routes]].
 
 * Measurements
 
@@ -76,12 +89,21 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4590][#4590]] | [http] Serve the image screens' routes and share the route helpers |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #4590 review: an empty stored type is served as SVG. | =image_answer.cpp= | No change | SVG is the store's own default type, and the sandbox policy holds. |
+| 2 | PR #4590 review: a stored type with a line break would reach the header. | =image_answer.cpp= | Accepted | A type is served only when it is image/ and a subtype's characters; a test pins a CR LF and an empty subtype. |
+| 3 | PR #4590 review: the upload answers 200 with its outcome inside. | =image_screen_routes.cpp= | Accepted, as a comment | As the BFF did; the comment says so. |
+| 4 | PR #4590 review: the id regex and the byte copy. | =image_screen_routes.cpp= | Declined | The regex compiles once, and the bytes are =uint8_t=, so they cannot move into a string. |
 
 * Result
+
+The C++ server answers the four image routes at the addresses ores.web calls,
+each paired in the inventory. The image answer and the route helpers are shared
+across the parts that need them, with no copy left. The tests prove the page
+and upload limits, the refusals before forwarding, and the image answer's
+headers and types.

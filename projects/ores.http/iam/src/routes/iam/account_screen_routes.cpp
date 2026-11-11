@@ -20,9 +20,9 @@
 #include "ores.http/routes/iam/account_screen_routes.hpp"
 #include "ores.assets.api/messaging/image_protocol.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/image_answer.hpp"
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
-#include "ores.http/routes/iam/access_screen_answers.hpp"
 #include "ores.http/routes/iam/access_screen_shapes.hpp"
 #include "ores.http/routes/iam/account_view.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
@@ -50,9 +50,9 @@ namespace json = ores::utility::codec::json;
 namespace messaging = ores::iam::messaging;
 namespace assets = ores::assets::messaging;
 namespace rr = ores::http::net::record_routes;
-using access_screen_answers::characters_of;
-using access_screen_answers::guarded;
-using access_screen_answers::refused;
+using ores::http::net::record_routes::characters_of;
+using ores::http::forwarding::guarded;
+using ores::http::net::record_routes::refused;
 
 namespace {
 
@@ -152,18 +152,8 @@ std::string account_screen_routes::tree_json(const messaging::get_reporting_tree
 }
 
 http_response account_screen_routes::picture_of(const ores::assets::domain::image& image) {
-    http_response resp;
-    resp.status = http_status::ok;
-    // A stored media type is served only when it names an image, so a stored
-    // type that names a document is never read as one.
-    resp.content_type = image.mime_type.empty()               ? "image/svg+xml" :
-                        image.mime_type.starts_with("image/") ? image.mime_type :
-                                                                "application/octet-stream";
-    resp.body.assign(image.data.begin(), image.data.end());
-    resp.headers["Cache-Control"] = "private, max-age=300";
-    resp.headers["X-Content-Type-Options"] = "nosniff";
-    resp.headers["Content-Security-Policy"] = "default-src 'none'; sandbox";
-    return resp;
+    return ores::http::net::image_answer(image.mime_type,
+                                         std::string(image.data.begin(), image.data.end()));
 }
 
 std::string account_screen_routes::page_json(const messaging::list_accounts_response& reply) {

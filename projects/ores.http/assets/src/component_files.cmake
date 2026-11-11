@@ -22,6 +22,7 @@
 set(files
     "routes/assets/assets_routes.cpp"
     "routes/assets/image_routes.cpp"
+    "routes/assets/image_screen_routes.cpp"
     "routes/assets/image_tag_routes.cpp"
     "routes/assets/tag_routes.cpp"
 )
@@ -31,6 +32,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.assets.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/assets/assets_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/assets/image_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/assets/image_screen_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/assets/image_tag_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/assets/tag_routes.hpp"
 )

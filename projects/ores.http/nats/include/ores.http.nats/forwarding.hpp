@@ -31,6 +31,7 @@
 #include "ores.nats/service/timeouts.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
 #include <exception>
+#include <functional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -61,17 +62,20 @@ refusal_for(std::string_view code);
 /**
  * @brief Refuse with the HTTP refusal a service's refusal code names.
  */
-[[noreturn]] ORES_HTTP_NATS_EXPORT void refuse_refused(const ores::nats::service::request_refused_error& e);
+[[noreturn]] ORES_HTTP_NATS_EXPORT void
+refuse_refused(const ores::nats::service::request_refused_error& e);
 
 /**
  * @brief Refuse a reply that does not decode as the response it answers.
  */
-[[noreturn]] ORES_HTTP_NATS_EXPORT void refuse_undecodable(std::string_view subject, const std::string& detail);
+[[noreturn]] ORES_HTTP_NATS_EXPORT void refuse_undecodable(std::string_view subject,
+                                                           const std::string& detail);
 
 /**
  * @brief Refuse a session the service could not renew.
  */
-[[noreturn]] ORES_HTTP_NATS_EXPORT void refuse_lapsed(const ores::nats::service::session_expired_error& e);
+[[noreturn]] ORES_HTTP_NATS_EXPORT void
+refuse_lapsed(const ores::nats::service::session_expired_error& e);
 
 /**
  * @brief Send one canonical request as the caller on a subject named at run time.
@@ -118,6 +122,25 @@ typename Request::response_type forward(const ores::http::domain::http_request& 
  */
 [[nodiscard]] ORES_HTTP_NATS_EXPORT ores::http::domain::http_response
 unanswered(std::string_view subject, const std::exception& e);
+
+/**
+ * @brief Run a route's forwards, answering a refusal with its own status and any
+ * other failure as the service not answering.
+ *
+ * A route that shapes its own answer, or makes several forwards, states its work
+ * as @p work; the request type names the subject the log records a failure on.
+ */
+template <typename Request>
+ores::http::domain::http_response
+guarded(const std::function<ores::http::domain::http_response()>& work) {
+    try {
+        return work();
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        return ores::http::net::record_routes::answer(r);
+    } catch (const std::exception& e) {
+        return unanswered(Request::nats_subject, e);
+    }
+}
 
 /**
  * @brief Forward one canonical request and answer the reply as JSON.

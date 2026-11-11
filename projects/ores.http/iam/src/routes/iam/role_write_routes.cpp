@@ -23,7 +23,6 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.http/routes/iam/access_read_routes.hpp"
-#include "ores.http/routes/iam/access_screen_answers.hpp"
 #include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.api/messaging/permission_protocol.hpp"
@@ -49,9 +48,9 @@ using ores::nats::service::nats_client;
 namespace json = ores::utility::codec::json;
 namespace messaging = ores::iam::messaging;
 namespace rr = ores::http::net::record_routes;
-using access_screen_answers::characters_of;
-using access_screen_answers::guarded;
-using access_screen_answers::refused;
+using ores::http::net::record_routes::characters_of;
+using ores::http::forwarding::guarded;
+using ores::http::net::record_routes::refused;
 
 namespace {
 

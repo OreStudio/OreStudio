@@ -408,11 +408,10 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
         std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())};
     // A publish that fails, such as on a lost connection, ends this refresh: the pair it
     // was sending is sent again on the next, since its day is recorded only once sent.
+    // The latest quotes go out before the history is kept: a party's series of a derived
+    // quote exists only once a quote reaches it, and a fresh history takes many minutes
+    // to write, during which provisioning waits for those series.
     try {
-        const auto kept = feed_.persist(today);
-        if (kept > 0)
-            BOOST_LOG_SEV(lg(), info)
-                << "Kept " << kept << " day(s) of derived quotes of '" << source_name_ << "'";
         const auto sent = feed_.refresh(today, [&](const mm::adapter_tick& tick) {
             nats_.publish(subjects::adapter_ingress_subject(source_name_, tick.external_id),
                           ores::nats::default_wire_codec().encode(tick));
@@ -422,6 +421,12 @@ void derived_fx_vol_adapter::serve(clock::time_point now) {
         if (sent > 0)
             BOOST_LOG_SEV(lg(), info)
                 << "Sent " << sent << " derived quote(s) of '" << source_name_ << "'";
+        const auto kept = feed_.persist(today);
+        for (const auto& failure : feed_.failures())
+            BOOST_LOG_SEV(lg(), warn) << "The derived history left out " << failure;
+        if (kept > 0)
+            BOOST_LOG_SEV(lg(), info)
+                << "Kept " << kept << " day(s) of derived quotes of '" << source_name_ << "'";
         next_refresh_ = now + timing_.refresh_interval;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to refresh '" << source_name_ << "': " << e.what();

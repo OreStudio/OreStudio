@@ -17,6 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "build/scripts"))
 
 import route_inventory  # noqa: E402
+import pytest  # noqa: E402
 
 BFF_ROUTE = ("GET", "/api/roles")
 CPP_ROUTE = ("GET", "/api/v1/access/roles")
@@ -25,6 +26,13 @@ FOUND = [
     {"server": "bff", "method": "post", "path": BFF_ROUTE[1]},
     {"server": "ores.http", "method": "get", "path": CPP_ROUTE[1]},
 ]
+
+
+@pytest.fixture(autouse=True)
+def no_pairs(monkeypatch):
+    """Each test states the pairs and families it reads; the tree's own name real routes."""
+    monkeypatch.setattr(route_inventory, "PAIRS", {})
+    monkeypatch.setattr(route_inventory, "FAMILIES", {})
 
 
 def _repeated_keys(source):
@@ -86,3 +94,92 @@ def test_coverage_counts_pairs_and_prints_a_gap_as_none(monkeypatch):
     assert "| access | 2 | 1 | 1 |" in lines
     assert "| total | 2 | 1 | 1 |" in lines
     assert "| POST =/api/roles= | none |" in lines
+
+
+REGISTRY = """export const RECORDS: readonly RecordResource[] = [
+    {
+        key: 'currencies',
+        keyFields: ['iso_code'],
+        writable: true,
+        subjects: {
+            list: 'a',
+        },
+    },
+    {
+        key: 'currency-countries',
+        keyFields: ['currency_iso_code', 'country_alpha2_code'],
+        writable: false,
+        listBy: {
+            subject: 'b',
+        },
+    },
+];
+"""
+
+FAMILY_FOUND = [
+    {"server": "bff", "method": "get", "path": "/api/refdata/:resource"},
+    {"server": "bff", "method": "get", "path": "/api/refdata/:resource/key/:key"},
+    {"server": "ores.http", "method": "get", "path": "/api/refdata/currencies"},
+    {"server": "ores.http", "method": "get", "path": "/api/refdata/currency-countries"},
+    {"server": "ores.http", "method": "get", "path": "/api/refdata/currencies/key/{key}"},
+]
+
+
+@pytest.fixture
+def registry(tmp_path, monkeypatch):
+    (tmp_path / "records.ts").write_text(REGISTRY, encoding="utf-8")
+    monkeypatch.setattr(route_inventory, "ROOT", tmp_path)
+    return "records.ts:RECORDS"
+
+
+def test_a_registry_states_what_each_resource_answers(registry):
+    resources = route_inventory.registry_resources(registry)
+    assert [r["key"] for r in resources] == ["currencies", "currency-countries"]
+    assert [r["one_key"] for r in resources] == [True, False]
+    assert [r["list_by"] for r in resources] == [False, True]
+    assert [r["writable"] for r in resources] == [True, False]
+
+
+def test_a_family_answered_by_every_resource_is_accepted(registry, monkeypatch):
+    monkeypatch.setattr(route_inventory, "FAMILIES", {
+        ("GET", "/api/refdata/:resource"):
+            (registry, "GET", "/api/refdata/{resource}", "every"),
+        ("GET", "/api/refdata/:resource/key/:key"):
+            (registry, "GET", "/api/refdata/{resource}/key/{key}", "one_key"),
+    })
+    assert route_inventory.bad_pairs(FAMILY_FOUND) == []
+
+
+def test_a_resource_missing_its_family_route_is_named(registry, monkeypatch):
+    monkeypatch.setattr(route_inventory, "FAMILIES", {
+        ("GET", "/api/refdata/:resource"):
+            (registry, "GET", "/api/refdata/{resource}", "every"),
+    })
+    found = [route for route in FAMILY_FOUND if route["path"] != "/api/refdata/currency-countries"]
+    problems = route_inventory.bad_pairs(found)
+    assert problems == [
+        "GET /api/refdata/:resource: ores.http does not answer GET /api/refdata/currency-countries"]
+
+
+def test_a_family_whose_registry_is_empty_is_named(tmp_path, monkeypatch):
+    (tmp_path / "records.ts").write_text("export const RECORDS = [\n];\n", encoding="utf-8")
+    monkeypatch.setattr(route_inventory, "ROOT", tmp_path)
+    monkeypatch.setattr(route_inventory, "FAMILIES", {
+        ("GET", "/api/refdata/:resource"):
+            ("records.ts:RECORDS", "GET", "/api/refdata/{resource}", "every"),
+    })
+    problems = route_inventory.bad_pairs(FAMILY_FOUND)
+    assert problems == ["GET /api/refdata/:resource: records.ts:RECORDS declares no resource"]
+
+
+def test_coverage_counts_a_family_as_paired(registry, monkeypatch):
+    monkeypatch.setattr(route_inventory, "FAMILIES", {
+        ("GET", "/api/refdata/:resource"):
+            (registry, "GET", "/api/refdata/{resource}", "every"),
+    })
+    monkeypatch.setattr(route_inventory, "decide",
+                        lambda route: SimpleNamespace(area="reference-data"))
+    lines = route_inventory.coverage(FAMILY_FOUND)
+    assert "| GET =/api/refdata/:resource= | GET /api/refdata/{resource}, one per resource (2) |" in lines
+    assert "| reference-data | 2 | 1 | 1 |" in lines
+

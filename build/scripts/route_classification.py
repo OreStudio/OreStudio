@@ -748,6 +748,21 @@ RULES = (
          "The tenors screen's operation at the address and in the shape the BFF answered: the"
          " resolution of a drafted rule and of the stored rules, one convention's membership"
          " rows, and the writes of a tenor, a convention and a membership row."),
+    Rule("the calendar screen's business days route",
+         ("regex", r"^(GET /api/refdata/calendars/\{code\}/days|POST /api/refdata/calendars/\{code\}/rebuild)$"),
+         CPP, RESOURCE, "reference-data",
+         "One calendar's built days in one year, and the build of its days to the end of a"
+         " year, at the address and in the shape the BFF answered."),
+    Rule("the currencies' ORE document route",
+         ("regex", r"^(GET /api/refdata/currencies/ore-document|POST /api/refdata/currencies/ore-import(/preview)?)$"),
+         CPP, RESOURCE, "reference-data",
+         "The currencies' ORE import and export: the document the ORE service writes, what a"
+         " file would change, and the import, each answered with the service's own words."),
+    Rule("the change reasons a screen offers",
+         ("exact", "GET /api/change-reasons"),
+         CPP, RESOURCE, "reference-data",
+         "The reasons a screen offers for a write, read from the data quality service in the"
+         " shape the BFF answered."),
     Rule("an image screen's route",
          ("regex", r"^(GET /api/(images|images/\{id\}|image-upload-policy)|POST /api/images)$"),
          CPP, RESOURCE, "assets",

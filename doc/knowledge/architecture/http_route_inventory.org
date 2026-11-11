@@ -75,7 +75,7 @@ an API publishes no area, so it is counted under =(none)=.
 | market-data | adapters, connectivity, curves, fixing-series, public-rates, series, subscriptions | 31 | composed view 6, resource 25 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
-| reference-data | conventions, counterparties, curve-configuration, records, refdata, server, tenors | 294 | composed view 1, resource 293 |
+| reference-data | conventions, core, counterparties, curve-configuration, records, refdata, server, tenors | 300 | composed view 1, resource 299 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 44 | composed view 12, resource 32 |
 | simulation | calibration, market-regime, synthetic | 38 | composed view 3, resource 35 |
 | tenancy | iam, refdata, server | 83 | composed view 2, resource 81 |
@@ -153,14 +153,14 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | market-data | 31 | 0 | 31 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
-| reference-data | 30 | 18 | 12 |
+| reference-data | 30 | 24 | 6 |
 | reporting | 44 | 0 | 44 |
 | simulation | 28 | 0 | 28 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 0 | 24 |
 | workflow | 18 | 0 | 18 |
-| (none) | 35 | 12 | 23 |
-| total | 324 | 107 | 217 |
+| (none) | 35 | 17 | 18 |
+| total | 324 | 118 | 206 |
 
 * The pairing
 
@@ -208,7 +208,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/bootstrap= | GET /api/bootstrap |
 | POST =/api/bootstrap/administrator= | POST /api/bootstrap/administrator |
 | POST =/api/bootstrap/complete= | POST /api/bootstrap/complete |
-| GET =/api/change-reasons= | none |
+| GET =/api/change-reasons= | GET /api/change-reasons |
 | GET =/api/classifications= | GET /api/classifications |
 | GET =/api/classifications/:list= | none |
 | PUT =/api/classifications/:list/order= | none |
@@ -328,16 +328,16 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | POST =/api/qa/scenarios/:id/steps/:step/images= | none |
 | GET =/api/queue/authorisations= | none |
 | GET =/api/refdata= | GET /api/refdata |
-| DELETE =/api/refdata/:resource= | none |
-| GET =/api/refdata/:resource= | none |
-| PUT =/api/refdata/:resource= | none |
-| GET =/api/refdata/:resource/by/:parent= | none |
-| GET =/api/refdata/:resource/key/:key= | none |
-| GET =/api/refdata/calendars/:code/days= | none |
-| POST =/api/refdata/calendars/:code/rebuild= | none |
-| GET =/api/refdata/currencies/ore-document= | none |
-| POST =/api/refdata/currencies/ore-import= | none |
-| POST =/api/refdata/currencies/ore-import/preview= | none |
+| DELETE =/api/refdata/:resource= | DELETE /api/refdata/{resource}, one per resource (21) |
+| GET =/api/refdata/:resource= | GET /api/refdata/{resource}, one per resource (26) |
+| PUT =/api/refdata/:resource= | PUT /api/refdata/{resource}, one per resource (21) |
+| GET =/api/refdata/:resource/by/:parent= | GET /api/refdata/{resource}/by/{parent}, one per resource (13) |
+| GET =/api/refdata/:resource/key/:key= | GET /api/refdata/{resource}/key/{key}, one per resource (19) |
+| GET =/api/refdata/calendars/:code/days= | GET /api/refdata/calendars/{code}/days |
+| POST =/api/refdata/calendars/:code/rebuild= | POST /api/refdata/calendars/{code}/rebuild |
+| GET =/api/refdata/currencies/ore-document= | GET /api/refdata/currencies/ore-document |
+| POST =/api/refdata/currencies/ore-import= | POST /api/refdata/currencies/ore-import |
+| POST =/api/refdata/currencies/ore-import/preview= | POST /api/refdata/currencies/ore-import/preview |
 | GET =/api/refdata/curve-configurations= | none |
 | GET =/api/refdata/curve-configurations/:id= | none |
 | PUT =/api/refdata/curve-configurations/:id= | none |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1189 routes: 324 answered by the BFF and 865 by ores.http.
+1195 routes: 324 answered by the BFF and 871 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -561,6 +561,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | post | =/api/bootstrap/complete= | bff | projects/ores.web/packages/bff/src/server.ts:788 | Records that the first-run journey finished, one settings write for the tenant the session works in. |
 | resource | tenancy | post | =/api/bootstrap/complete= | ores.http | projects/ores.http/iam/src/routes/iam/bootstrap_screen_routes.cpp:203 | The deployment's setup state, the first administrator, the end of first-run setup, a tenant's own setup run and the registration policy, at the address and in the shape the BFF answered. |
 | resource | reference-data | get | =/api/change-reasons= | bff | projects/ores.web/packages/bff/src/server.ts:2744 | The reasons a write may carry, a deployment-specific code list the server holds rather than the client. |
+| resource | reference-data | get | =/api/change-reasons= | ores.http | projects/ores.http/core/src/routes/change_reason_routes.cpp:66 | The reasons a screen offers for a write, read from the data quality service in the shape the BFF answered. |
 | not an API | (none) | get | =/api/classifications= | bff | projects/ores.web/packages/bff/src/classifications.ts:216 | The lists a screen offers, each with the columns to draw and a row count read per list in twenty eight sequential calls, which describes a table rather than a resource. |
 | not an API | (none) | get | =/api/classifications= | ores.http | projects/ores.http/refdata/src/routes/refdata/classification_routes.cpp:347 | The catalogue the BFF answered, built from each list unit's own entry with its count, so the classification screen works when the BFF goes. |
 | not an API | (none) | get | =/api/classifications/:list= | bff | projects/ores.web/packages/bff/src/classifications.ts:244 | One code list is named by a string in the URL and reached through that one router, and each row arrives with a labelCode, the words a screen draws it with, and a displayOrder, the position the screen shows it in. |
@@ -889,7 +890,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | qa | post | =/api/qa/scenarios/:id/steps/:step/images= | bff | projects/ores.web/packages/bff/src/qa.ts:193 | An image a tester attaches to one step of a scenario, written into the scenario's own store and read back with it. |
 | composed view | operations | get | =/api/queue/authorisations= | bff | projects/ores.web/packages/bff/src/inbox.ts:648 | The authorisation requests this person may decide with the deal each one names as it looks now, the open requests and the answered tail in one answer. |
 | not an API | (none) | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:499 | A catalogue of the resources a screen may read, each with its key fields, sortable fields, search flag, version flag and the write and delete permission names, which is a table description rather than a resource. |
-| not an API | (none) | get | =/api/refdata= | ores.http | projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp:212 | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
+| not an API | (none) | get | =/api/refdata= | ores.http | projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp:216 | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
 | not an API | (none) | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:679 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:525 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | put | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:649 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
@@ -929,6 +930,8 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | get | =/api/refdata/calendars/:code/days= | bff | projects/ores.web/packages/bff/src/records.ts:579 | The materialised days of one calendar in one year, one page of a derived collection. |
 | resource | reference-data | post | =/api/refdata/calendars/:code/rebuild= | bff | projects/ores.web/packages/bff/src/records.ts:638 | Builds the materialised days of one calendar to the end of a year, a write to one calendar's derived rows. |
 | not an API | (none) | get | =/api/refdata/calendars/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_web_routes.cpp:302 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
+| resource | reference-data | get | =/api/refdata/calendars/{code}/days= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp:102 | One calendar's built days in one year, and the build of its days to the end of a year, at the address and in the shape the BFF answered. |
+| resource | reference-data | post | =/api/refdata/calendars/{code}/rebuild= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp:152 | One calendar's built days in one year, and the build of its days to the end of a year, at the address and in the shape the BFF answered. |
 | not an API | (none) | delete | =/api/refdata/counterparties= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_web_routes.cpp:322 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/counterparties= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_web_routes.cpp:289 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/counterparties= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_web_routes.cpp:311 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
@@ -942,8 +945,11 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | not an API | (none) | put | =/api/refdata/currencies= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_web_routes.cpp:316 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/currencies/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_web_routes.cpp:305 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | resource | reference-data | get | =/api/refdata/currencies/ore-document= | bff | projects/ores.web/packages/bff/src/records.ts:597 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| resource | reference-data | get | =/api/refdata/currencies/ore-document= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_ore_document_routes.cpp:97 | The currencies' ORE import and export: the document the ORE service writes, what a file would change, and the import, each answered with the service's own words. |
 | resource | reference-data | post | =/api/refdata/currencies/ore-import= | bff | projects/ores.web/packages/bff/src/records.ts:619 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| resource | reference-data | post | =/api/refdata/currencies/ore-import= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_ore_document_routes.cpp:117 | The currencies' ORE import and export: the document the ORE service writes, what a file would change, and the import, each answered with the service's own words. |
 | resource | reference-data | post | =/api/refdata/currencies/ore-import/preview= | bff | projects/ores.web/packages/bff/src/records.ts:606 | The standard import and export pair, the document the ORE service writes, the change a file would make and the write, exchanged whole rather than row by row. |
+| resource | reference-data | post | =/api/refdata/currencies/ore-import/preview= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_ore_document_routes.cpp:104 | The currencies' ORE import and export: the document the ORE service writes, what a file would change, and the import, each answered with the service's own words. |
 | not an API | (none) | delete | =/api/refdata/currency-calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_calendar_web_routes.cpp:340 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/currency-calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_calendar_web_routes.cpp:307 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/currency-calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/currency_calendar_web_routes.cpp:329 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
@@ -1246,23 +1252,23 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | get | =/api/tenants/{code}/people= | ores.http | projects/ores.http/iam/src/routes/iam/tenant_inside_routes.cpp:169 | One tenant's data read from system administration, inside the tenant for the read alone, at the address and in the shape the BFF answered. |
 | composed view | reference-data | get | =/api/tenors/catalogue= | bff | projects/ores.web/packages/bff/src/tenors.ts:198 | The tenors with their conventions and their schedules in one answer, three collection reads, because a tenor is meaningless without the rules that resolve it. |
 | resource | reference-data | put | =/api/tenors/conventions= | bff | projects/ores.web/packages/bff/src/tenors.ts:323 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
-| resource | reference-data | put | =/api/tenors/conventions= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:179 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | put | =/api/tenors/conventions= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:185 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | resource | reference-data | get | =/api/tenors/conventions/:code/resolutions= | bff | projects/ores.web/packages/bff/src/tenors.ts:296 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | resource | reference-data | delete | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:361 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | resource | reference-data | put | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:337 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
-| resource | reference-data | get | =/api/tenors/conventions/{code}/resolutions= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:149 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
-| resource | reference-data | delete | =/api/tenors/conventions/{code}/resolutions/{tenor}= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:214 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
-| resource | reference-data | put | =/api/tenors/conventions/{code}/resolutions/{tenor}= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:193 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | get | =/api/tenors/conventions/{code}/resolutions= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:155 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | delete | =/api/tenors/conventions/{code}/resolutions/{tenor}= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:220 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | put | =/api/tenors/conventions/{code}/resolutions/{tenor}= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:199 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | not an API | (none) | get | =/api/tenors/pick-lists= | bff | projects/ores.web/packages/bff/src/tenors.ts:222 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
 | not an API | (none) | get | =/api/tenors/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:389 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
 | resource | reference-data | post | =/api/tenors/preview-resolution= | bff | projects/ores.web/packages/bff/src/tenors.ts:234 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
-| resource | reference-data | post | =/api/tenors/preview-resolution= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:113 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | post | =/api/tenors/preview-resolution= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:118 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | resource | reference-data | post | =/api/tenors/resolve= | bff | projects/ores.web/packages/bff/src/tenors.ts:252 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
-| resource | reference-data | post | =/api/tenors/resolve= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:124 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | post | =/api/tenors/resolve= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:129 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | resource | reference-data | post | =/api/tenors/resolve-convention= | bff | projects/ores.web/packages/bff/src/tenors.ts:269 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
-| resource | reference-data | post | =/api/tenors/resolve-convention= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:137 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | post | =/api/tenors/resolve-convention= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:143 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | resource | reference-data | put | =/api/tenors/tenors= | bff | projects/ores.web/packages/bff/src/tenors.ts:309 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
-| resource | reference-data | put | =/api/tenors/tenors= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:167 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | put | =/api/tenors/tenors= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:173 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | composed view | workflow | get | =/api/timeline= | bff | projects/ores.web/packages/bff/src/timeline.ts:61 | One person's, party's or request's story as one stream, each source gated by the permission its owner puts on it and a source that refuses becoming a gap in the answer. |
 | resource | trading | get | =/api/trade-link-types= | bff | projects/ores.web/packages/bff/src/booking.ts:278 | The link types a person can record between trades, a lookup the server holds. |
 | resource | trading | get | =/api/trades= | bff | projects/ores.web/packages/bff/src/trades.ts:196 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
@@ -1379,7 +1385,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | access | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:205 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
 | resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:279 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
 | resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:204 | Replaces the permissions one role grants with exactly the set sent. |
-| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:162 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:163 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
 | resource | reference-data | get | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:340 | A generated reference data collection, answering under its published area rather than under the component's name: the list, one row by key or by one of its lookups, its versions, and the bulk get. |
 | resource | reference-data | post | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:386 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | reference-data | put | =/api/v1/reference-data/business_centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/business_centre_routes.cpp:399 | A generated write of a reference data collection: create, replace, remove, or one of the bulk put and delete calls. |

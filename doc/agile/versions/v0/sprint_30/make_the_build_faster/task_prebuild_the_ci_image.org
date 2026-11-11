@@ -28,9 +28,9 @@ CI setup before the build takes at most 2 min instead of 7 to 10 min, because th
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] |
-| Now          | Measured the setup steps; plan written. |
+| Now          | Phase 1 and the image Dockerfile in review. |
 | Waiting on   | Nothing.                               |
-| Next         | Phase 1: remove the setup the build does not need. |
+| Next         | Measure phase 1 on main; publish the image to GHCR and run the build in it. |
 | Last touched | 2026-11-11                               |
 
 * Acceptance

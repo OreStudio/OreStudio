@@ -43,9 +43,13 @@ Pricing reads the surface. A report binds to a published surface as it binds to 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two parts.
+
+*Part 1, merged in #4577.* The market data export writes a surface only as published: the newest published set at or before the close, each grid point an FX option volatility quote whose strike is a delta label (=DEL/Spot/Put/25= is =25P=, =ATM= stays =ATM=). A candidate is left out. A pair with a published surface takes its option quotes from the surface alone, because the pair's raw quotes share its keys. This also fixed a break: the calibration's points have no ORE key, so before it the export failed for any party with a calibration.
+
+*Part 2.* The matching configuration and the ORE check.
+- Each party's curve configuration document gains, for each blueprint with a published surface, an FX volatility curve of dimension Smile and smile type Delta: the blueprint's expiries, its deltas as =10P,25P,ATM,25C,10C=, the pair's ATM and delta types from its FX option convention, and the pair's FX spot and funding curves. The party's today's market names it under the pair.
+- A scripted check runs the ORE binary of the ORE build (=App/ore=) on the exported quotes and that configuration with an EUR/USD FX option at a test strike, inverts the NPV to a volatility, and compares it with the SSVI surface at that strike within a stated tolerance. It sits beside =projects/ores.ore/scripts/quantlib_fx_dates=.
 
 * Measurements
 

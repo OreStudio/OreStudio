@@ -15,8 +15,9 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # Installs clang and the LLVM tools of one major version from apt.llvm.org on
-# Ubuntu. The Ubuntu archive has an older point release of the same major, and
-# the CI compiler must not change version without a commit that says so.
+# Ubuntu. The Ubuntu archive has an older point release of the same major.
+# apt.llvm.org gives the newest point release of the major, so a change of the
+# major needs a commit but a new point release does not.
 #
 # The continuous build and the CI image both run this script, so the two get the
 # same compiler.
@@ -41,7 +42,7 @@ ${sudo_cmd} apt-get install "${apt_opts[@]}" ca-certificates curl gnupg lsb-rele
 
 codename="$(lsb_release -cs)"
 keyring=/usr/share/keyrings/llvm-archive-keyring.gpg
-curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key \
+curl -fsSL --retry 3 https://apt.llvm.org/llvm-snapshot.gpg.key \
     | ${sudo_cmd} gpg --batch --yes --dearmor -o "${keyring}"
 echo "deb [signed-by=${keyring}] https://apt.llvm.org/${codename}/ llvm-toolchain-${codename}-${major} main" \
     | ${sudo_cmd} tee "/etc/apt/sources.list.d/llvm-${major}.list" > /dev/null

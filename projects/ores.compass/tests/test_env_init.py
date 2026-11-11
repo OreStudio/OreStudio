@@ -142,3 +142,28 @@ class TestWebEnvironmentBinding:
         ])
         assert env_init._resolve_web_env_id(
             tmp_path, 20205, "ores.dev.swift_curie", "swift_curie") is None
+
+
+class TestSourceCredentials:
+    def test_public_source_keys_users_and_passwords_are_kept(self):
+        section = env_init._source_credentials({
+            "ORES_MARKETDATA_BANXICO_API_KEY": "k1",
+            "ORES_MARKETDATA_BCCH_USER": "someone@example.com",
+            "ORES_MARKETDATA_BCCH_PASSWORD": "p1",
+        })
+        assert "ORES_MARKETDATA_BANXICO_API_KEY=k1\n" in section
+        assert "ORES_MARKETDATA_BCCH_USER=someone@example.com\n" in section
+        assert "ORES_MARKETDATA_BCCH_PASSWORD=p1\n" in section
+
+    def test_the_variables_configure_generates_are_not_copied(self):
+        section = env_init._source_credentials({
+            "ORES_MARKETDATA_SERVICE_DB_PASSWORD": "generated",
+            "ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD": "generated",
+            "PGPASSWORD": "generated",
+            "ORES_MARKETDATA_BANXICO_URL": "https://example.com",
+        })
+        assert section == ""
+
+    def test_an_empty_key_is_not_kept(self):
+        assert env_init._source_credentials(
+            {"ORES_MARKETDATA_CNB_API_KEY": ""}) == ""

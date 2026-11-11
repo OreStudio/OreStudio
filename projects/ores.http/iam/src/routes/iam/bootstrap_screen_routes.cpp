@@ -53,10 +53,11 @@ constexpr std::string_view tenant_setup_workflow_type = "tenant_setup_workflow";
 constexpr std::string_view onboarding_system_setting = "onboarding.system";
 constexpr std::string_view onboarding_tenant_setting = "onboarding.tenant";
 
-/// Whether a wizard recorded that it finished, read through the browser's
-/// session. A browser with no session, or a read the server refuses, answers
-/// false: a deployment that cannot prove the wizard finished stays where it is.
-bool wizard_finished(const http_request& req, nats_client& session, std::string_view setting) {
+}
+
+bool bootstrap_screen_routes::wizard_finished(const http_request& req,
+                                              nats_client& session,
+                                              std::string_view setting) {
     if (!req.authenticated_user)
         return false;
     try {
@@ -66,13 +67,13 @@ bool wizard_finished(const http_request& req, nats_client& session, std::string_
             variability::get_system_setting_request{
                 variability::system_setting_key{std::string(setting)}});
         return reply.system_setting && reply.system_setting->value == "true";
-    } catch (const rr::refusal&) {
+    } catch (const rr::refusal& r) {
+        BOOST_LOG_SEV(lg(), debug) << "The setting " << setting << " was not read: " << r.message;
         return false;
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), debug) << "The setting " << setting << " was not read: " << e.what();
         return false;
     }
-}
-
 }
 
 bootstrap_screen_routes::bootstrap_screen_routes(nats_client& session,
@@ -227,11 +228,10 @@ void bootstrap_screen_routes::register_routes(
                     if (!reply.success)
                         throw std::runtime_error(
                             reply.message.empty() ? "The setup run was not read." : reply.message);
-                    return http_response::json(
-                        setup_run_json(reply.instances.empty() ?
-                                           std::nullopt :
-                                           std::optional<workflow::workflow_instance_summary>(
-                                               reply.instances.front())));
+                    std::optional<workflow::workflow_instance_summary> run;
+                    if (!reply.instances.empty())
+                        run = reply.instances.front();
+                    return http_response::json(setup_run_json(run));
                 });
             })
             .build();

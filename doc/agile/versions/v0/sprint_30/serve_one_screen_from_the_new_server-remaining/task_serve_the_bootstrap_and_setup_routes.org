@@ -114,6 +114,11 @@ via its "Verifies task" field.
 | 5 | =unity-collisions=: =flag_of= in two IAM units. | =bootstrap_screen_routes.cpp= | Accepted | One wrote a JSON boolean and the other read a query flag. The JSON codec writes booleans, so the writer is gone here and in the roster. |
 | 6 | Local review: misspell check. | All changed files | Clean | =misspell-fixer= exit 0. |
 | 7 | =component-drift=: the refdata TypeScript protocol lacked the FX volatility surface blueprint publish message, from main's =9d1da586e9=. | =publish_operation_protocol.ts= | Accepted | Regenerated at =ores.ts.protocol=; the drift check for refdata is clean and the protocol package type-checks. |
+| 8 | PR review: two creates can race past the bootstrap check and both make a SuperAdmin. | =bootstrap_screen_routes.cpp= | Deferred | The race is in IAM: the handler checks the flag apart from the SQL function, which does not check it. [[id:F32A6381-CCDA-4948-9538-3F8B22C2FFC5][Make the first administrator create safe]] fixes it there; the BFF has the same race. |
+| 9 | PR review: a failed create answers IAM's error text to an anonymous caller. | =bootstrap_screen_routes.cpp= | Deferred | The handler answers the exception's own text, and the BFF passed it on too. [[id:F32A6381-CCDA-4948-9538-3F8B22C2FFC5][Make the first administrator create safe]] fixes it at the source. |
+| 10 | PR review: the host is not lowercased, and an unterminated IPv6 host is untested. | =bootstrap_screen_routes.cpp= | Accepted in part | Fastify does not lowercase the host either, so the read keeps the BFF's behaviour. A test pins the unterminated IPv6 host. Probing hostnames is limited by [[id:D4460ECD-7832-4F2B-AD71-4688684D2F26][Rate limit the HTTP API]]. |
+| 11 | PR review: a failed settings read leaves no trace. | =bootstrap_screen_routes.cpp= | Accepted | It is logged at debug. The logger and the settings reader are class members, the component's convention. |
+| 12 | PR review: the setup run answer is a hard-to-read ternary; does a failed run read map to 5xx? | =bootstrap_screen_routes.cpp= | Accepted | An =if= before the return. A failed read throws a =std::runtime_error=, which =guarded= answers as unanswered, a 502. |
 
 * Result
 

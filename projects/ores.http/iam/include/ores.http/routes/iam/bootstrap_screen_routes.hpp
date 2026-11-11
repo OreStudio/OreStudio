@@ -25,11 +25,13 @@
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/registration_policy_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::http::routes::iam {
 
@@ -83,6 +85,24 @@ public:
                          std::shared_ptr<ores::http::openapi::endpoint_registry> registry);
 
 private:
+    inline static std::string_view logger_name = "ores.http.routes.iam.bootstrap_screen_routes";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+    /**
+     * @brief Whether a wizard recorded that it finished, read through the
+     * browser's session. A browser with no session, or a read the server
+     * refuses, answers false: a deployment that cannot prove the wizard
+     * finished stays where it is. A failed read is logged.
+     */
+    static bool wizard_finished(const ores::http::domain::http_request& req,
+                                ores::nats::service::nats_client& session,
+                                std::string_view setting);
+
     ores::nats::service::nats_client& session_;
     ores::http::domain::cookie_settings cookie_;
 };

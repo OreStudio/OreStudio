@@ -77,6 +77,7 @@ TEST_CASE("bootstrap_screen_routes_read_the_host_as_the_bff_did", "[bootstrap_sc
     CHECK(bootstrap_screen_routes::hostname_of("acme.io") == "acme.io");
     CHECK(bootstrap_screen_routes::hostname_of("[::1]:443") == "[::1]");
     CHECK(bootstrap_screen_routes::hostname_of("").empty());
+    CHECK(bootstrap_screen_routes::hostname_of("[::1").empty());
 }
 
 TEST_CASE("bootstrap_screen_routes_answer_in_the_screens_shapes", "[bootstrap_screen]") {

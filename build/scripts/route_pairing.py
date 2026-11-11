@@ -130,4 +130,12 @@ PAIRS = {
     ("GET", "/api/conventions/families"): ("GET", "/api/conventions/families"),
     ("GET", "/api/conventions/:family"): ("GET", "/api/conventions/{family}"),
     ("PUT", "/api/conventions/:family"): ("PUT", "/api/conventions/{family}"),
+    ("POST", "/api/tenors/preview-resolution"): ("POST", "/api/tenors/preview-resolution"),
+    ("POST", "/api/tenors/resolve"): ("POST", "/api/tenors/resolve"),
+    ("POST", "/api/tenors/resolve-convention"): ("POST", "/api/tenors/resolve-convention"),
+    ("GET", "/api/tenors/conventions/:code/resolutions"): ("GET", "/api/tenors/conventions/{code}/resolutions"),
+    ("PUT", "/api/tenors/tenors"): ("PUT", "/api/tenors/tenors"),
+    ("PUT", "/api/tenors/conventions"): ("PUT", "/api/tenors/conventions"),
+    ("PUT", "/api/tenors/conventions/:code/resolutions/:tenor"): ("PUT", "/api/tenors/conventions/{code}/resolutions/{tenor}"),
+    ("DELETE", "/api/tenors/conventions/:code/resolutions/:tenor"): ("DELETE", "/api/tenors/conventions/{code}/resolutions/{tenor}"),
 }

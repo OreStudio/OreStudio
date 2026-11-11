@@ -107,6 +107,7 @@ set(files
     "routes/refdata/tenor_anchor_classification_routes.cpp"
     "routes/refdata/tenor_kind_classification_routes.cpp"
     "routes/refdata/tenor_resolution_algorithm_classification_routes.cpp"
+    "routes/refdata/tenor_screen_routes.cpp"
     "routes/refdata/tenor_unit_classification_routes.cpp"
     "routes/refdata/tenor_web_routes.cpp"
 )
@@ -201,6 +202,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_anchor_classification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_kind_classification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_resolution_algorithm_classification_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_screen_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_unit_classification_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/refdata/tenor_web_routes.hpp"
 )

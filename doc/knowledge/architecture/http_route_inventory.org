@@ -75,7 +75,7 @@ an API publishes no area, so it is counted under =(none)=.
 | market-data | adapters, connectivity, curves, fixing-series, public-rates, series, subscriptions | 31 | composed view 6, resource 25 |
 | operations | core, inbox, operations, server | 7 | composed view 2, resource 3, transport capability 2 |
 | qa | qa | 6 | resource 6 |
-| reference-data | conventions, counterparties, curve-configuration, records, refdata, server, tenors | 286 | composed view 1, resource 285 |
+| reference-data | conventions, counterparties, curve-configuration, records, refdata, server, tenors | 294 | composed view 1, resource 293 |
 | reporting | cuts, engine-settings, grid-report-results, grid-report-runs, pricing-engines, report-run-files, reporting | 44 | composed view 12, resource 32 |
 | simulation | calibration, market-regime, synthetic | 38 | composed view 3, resource 35 |
 | tenancy | iam, refdata, server | 83 | composed view 2, resource 81 |
@@ -153,14 +153,14 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | market-data | 31 | 0 | 31 |
 | operations | 5 | 1 | 4 |
 | qa | 6 | 0 | 6 |
-| reference-data | 30 | 10 | 20 |
+| reference-data | 30 | 18 | 12 |
 | reporting | 44 | 0 | 44 |
 | simulation | 28 | 0 | 28 |
 | tenancy | 21 | 21 | 0 |
 | trading | 24 | 0 | 24 |
 | workflow | 18 | 0 | 18 |
 | (none) | 35 | 12 | 23 |
-| total | 324 | 99 | 225 |
+| total | 324 | 107 | 217 |
 
 * The pairing
 
@@ -470,15 +470,15 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | GET =/api/tenants/:code/parties= | GET /api/tenants/{code}/parties |
 | GET =/api/tenants/:code/people= | GET /api/tenants/{code}/people |
 | GET =/api/tenors/catalogue= | none |
-| PUT =/api/tenors/conventions= | none |
-| GET =/api/tenors/conventions/:code/resolutions= | none |
-| DELETE =/api/tenors/conventions/:code/resolutions/:tenor= | none |
-| PUT =/api/tenors/conventions/:code/resolutions/:tenor= | none |
+| PUT =/api/tenors/conventions= | PUT /api/tenors/conventions |
+| GET =/api/tenors/conventions/:code/resolutions= | GET /api/tenors/conventions/{code}/resolutions |
+| DELETE =/api/tenors/conventions/:code/resolutions/:tenor= | DELETE /api/tenors/conventions/{code}/resolutions/{tenor} |
+| PUT =/api/tenors/conventions/:code/resolutions/:tenor= | PUT /api/tenors/conventions/{code}/resolutions/{tenor} |
 | GET =/api/tenors/pick-lists= | GET /api/tenors/pick-lists |
-| POST =/api/tenors/preview-resolution= | none |
-| POST =/api/tenors/resolve= | none |
-| POST =/api/tenors/resolve-convention= | none |
-| PUT =/api/tenors/tenors= | none |
+| POST =/api/tenors/preview-resolution= | POST /api/tenors/preview-resolution |
+| POST =/api/tenors/resolve= | POST /api/tenors/resolve |
+| POST =/api/tenors/resolve-convention= | POST /api/tenors/resolve-convention |
+| PUT =/api/tenors/tenors= | PUT /api/tenors/tenors |
 | GET =/api/timeline= | none |
 | GET =/api/trade-link-types= | none |
 | GET =/api/trades= | none |
@@ -493,7 +493,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 
 * The inventory
 
-1181 routes: 324 answered by the BFF and 857 by ores.http.
+1189 routes: 324 answered by the BFF and 865 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -744,26 +744,26 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | reference-data | get | =/api/conventions/:family/documents/:id= | bff | projects/ores.web/packages/bff/src/conventions.ts:661 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
 | resource | reference-data | put | =/api/conventions/:family/documents/:id/terms= | bff | projects/ores.web/packages/bff/src/conventions.ts:799 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
 | resource | reference-data | get | =/api/conventions/families= | bff | projects/ores.web/packages/bff/src/conventions.ts:593 | The convention families with their parts: the families, one family's rows, one document's terms, and the write of a family the journey draws. |
-| resource | reference-data | get | =/api/conventions/families= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:559 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
+| resource | reference-data | get | =/api/conventions/families= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:535 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
 | not an API | (none) | get | =/api/conventions/pick-lists= | bff | projects/ores.web/packages/bff/src/conventions.ts:702 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
 | not an API | (none) | get | =/api/conventions/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:383 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
-| resource | reference-data | get | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:604 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
-| resource | reference-data | put | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:620 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
+| resource | reference-data | get | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:581 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
+| resource | reference-data | put | =/api/conventions/{family}= | ores.http | projects/ores.http/refdata/src/routes/refdata/convention_screen_routes.cpp:598 | The conventions screen's read or write at the address and in the shape the BFF answered: each family with its count, one family's page, and the write of a family whose terms the screen draws. |
 | resource | reference-data | get | =/api/counterparties= | bff | projects/ores.web/packages/bff/src/counterparties.ts:201 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | get | =/api/counterparties/:id= | bff | projects/ores.web/packages/bff/src/counterparties.ts:230 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/:id/business-centres= | bff | projects/ores.web/packages/bff/src/counterparties.ts:358 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | get | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:327 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/:id/visibility= | bff | projects/ores.web/packages/bff/src/counterparties.ts:340 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | get | =/api/counterparties/children= | bff | projects/ores.web/packages/bff/src/counterparties.ts:252 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | get | =/api/counterparties/children= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:249 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | get | =/api/counterparties/children= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:254 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | resource | reference-data | put | =/api/counterparties/composite= | bff | projects/ores.web/packages/bff/src/counterparties.ts:316 | The counterparty collection: a page, one record with its identifiers, the children of a parent, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | put | =/api/counterparties/composite= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:292 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | put | =/api/counterparties/composite= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:300 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | not an API | (none) | get | =/api/counterparties/pick-lists= | bff | projects/ores.web/packages/bff/src/counterparties.ts:288 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
 | not an API | (none) | get | =/api/counterparties/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:386 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
-| resource | reference-data | get | =/api/counterparties/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:217 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | put | =/api/counterparties/{id}/business-centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:359 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | get | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:320 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
-| resource | reference-data | put | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:339 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | get | =/api/counterparties/{id}= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:222 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | put | =/api/counterparties/{id}/business-centres= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:369 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | get | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:329 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
+| resource | reference-data | put | =/api/counterparties/{id}/visibility= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_screen_routes.cpp:348 | The counterparty onboarding screen's read or write at the address and in the shape the BFF answered: one record with its identifiers, the children of a page, the composite write, and the visibility and business centre writes. |
 | resource | market-data | post | =/api/curves/compute= | bff | projects/ores.web/packages/bff/src/curves.ts:312 | Computes a curve's points from a bootstrap configuration and stores nothing, a derived read of the curve the configuration describes. |
 | resource | market-data | post | =/api/curves/evolution= | bff | projects/ores.web/packages/bff/src/curves.ts:378 | The values of one curve series, read by id or by list, sliced, evolved and snapshotted, with the manual points a person adds or clears. |
 | resource | market-data | post | =/api/curves/fx-forward-ladder= | bff | projects/ores.web/packages/bff/src/curves.ts:410 | One currency pair's forward ladder at one as-of, one service read that stores nothing and names the missing input when it refuses. |
@@ -889,7 +889,7 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | qa | post | =/api/qa/scenarios/:id/steps/:step/images= | bff | projects/ores.web/packages/bff/src/qa.ts:193 | An image a tester attaches to one step of a scenario, written into the scenario's own store and read back with it. |
 | composed view | operations | get | =/api/queue/authorisations= | bff | projects/ores.web/packages/bff/src/inbox.ts:648 | The authorisation requests this person may decide with the deal each one names as it looks now, the open requests and the answered tail in one answer. |
 | not an API | (none) | get | =/api/refdata= | bff | projects/ores.web/packages/bff/src/records.ts:499 | A catalogue of the resources a screen may read, each with its key fields, sortable fields, search flag, version flag and the write and delete permission names, which is a table description rather than a resource. |
-| not an API | (none) | get | =/api/refdata= | ores.http | projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp:210 | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
+| not an API | (none) | get | =/api/refdata= | ores.http | projects/ores.http/refdata/src/routes/refdata/refdata_routes.cpp:212 | The catalogue the BFF answered, built from each record unit's own entry, so the screens keep reading the resources they may name when the BFF goes. |
 | not an API | (none) | delete | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:679 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | get | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:525 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
 | not an API | (none) | put | =/api/refdata/:resource= | bff | projects/ores.web/packages/bff/src/records.ts:649 | The resource is a string in the URL, so the payload's shape changes with it and no client can be generated from it; the generated collection per resource already carries the same rows under a named entity. |
@@ -1246,15 +1246,23 @@ prove it; the port tasks prove each route against the answer the BFF gives.
 | resource | tenancy | get | =/api/tenants/{code}/people= | ores.http | projects/ores.http/iam/src/routes/iam/tenant_inside_routes.cpp:169 | One tenant's data read from system administration, inside the tenant for the read alone, at the address and in the shape the BFF answered. |
 | composed view | reference-data | get | =/api/tenors/catalogue= | bff | projects/ores.web/packages/bff/src/tenors.ts:198 | The tenors with their conventions and their schedules in one answer, three collection reads, because a tenor is meaningless without the rules that resolve it. |
 | resource | reference-data | put | =/api/tenors/conventions= | bff | projects/ores.web/packages/bff/src/tenors.ts:323 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | put | =/api/tenors/conventions= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:179 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | resource | reference-data | get | =/api/tenors/conventions/:code/resolutions= | bff | projects/ores.web/packages/bff/src/tenors.ts:296 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | resource | reference-data | delete | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:361 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
 | resource | reference-data | put | =/api/tenors/conventions/:code/resolutions/:tenor= | bff | projects/ores.web/packages/bff/src/tenors.ts:337 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | get | =/api/tenors/conventions/{code}/resolutions= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:149 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | delete | =/api/tenors/conventions/{code}/resolutions/{tenor}= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:214 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
+| resource | reference-data | put | =/api/tenors/conventions/{code}/resolutions/{tenor}= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:193 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | not an API | (none) | get | =/api/tenors/pick-lists= | bff | projects/ores.web/packages/bff/src/tenors.ts:222 | The option lists one form's controls need, keyed by the control's own name and joined by nothing; each list is a collection a client reads at its own resource. |
 | not an API | (none) | get | =/api/tenors/pick-lists= | ores.http | projects/ores.http/refdata/src/routes/refdata/pick_list_routes.cpp:389 | The option lists the BFF answered for each reference data form, keyed by the control's name, kept so the forms work when the BFF goes. |
 | resource | reference-data | post | =/api/tenors/preview-resolution= | bff | projects/ores.web/packages/bff/src/tenors.ts:234 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | post | =/api/tenors/preview-resolution= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:113 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | resource | reference-data | post | =/api/tenors/resolve= | bff | projects/ores.web/packages/bff/src/tenors.ts:252 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | post | =/api/tenors/resolve= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:124 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | resource | reference-data | post | =/api/tenors/resolve-convention= | bff | projects/ores.web/packages/bff/src/tenors.ts:269 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | post | =/api/tenors/resolve-convention= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:137 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | resource | reference-data | put | =/api/tenors/tenors= | bff | projects/ores.web/packages/bff/src/tenors.ts:309 | A tenor's conventions and the resolution rows hanging off them: one convention's set, the write of a tenor, a convention or a resolution row, and the resolution of a drafted rule. |
+| resource | reference-data | put | =/api/tenors/tenors= | ores.http | projects/ores.http/refdata/src/routes/refdata/tenor_screen_routes.cpp:167 | The tenors screen's operation at the address and in the shape the BFF answered: the resolution of a drafted rule and of the stored rules, one convention's membership rows, and the writes of a tenor, a convention and a membership row. |
 | composed view | workflow | get | =/api/timeline= | bff | projects/ores.web/packages/bff/src/timeline.ts:61 | One person's, party's or request's story as one stream, each source gated by the permission its owner puts on it and a source that refuses becoming a gap in the answer. |
 | resource | trading | get | =/api/trade-link-types= | bff | projects/ores.web/packages/bff/src/booking.ts:278 | The link types a person can record between trades, a lookup the server holds. |
 | resource | trading | get | =/api/trades= | bff | projects/ores.web/packages/bff/src/trades.ts:196 | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |

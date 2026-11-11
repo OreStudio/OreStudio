@@ -64,8 +64,6 @@
 #include <optional>
 #include <ranges>
 #include <set>
-#include <tuple>
-#include <type_traits>
 #include <yyjson.h>
 
 namespace ores::http::routes::refdata {
@@ -77,7 +75,6 @@ using ores::nats::service::nats_client;
 namespace json = ores::utility::codec::json;
 namespace messaging = ores::refdata::messaging;
 namespace rr = ores::http::net::record_routes;
-namespace utility_domain = ores::utility::domain;
 
 namespace {
 
@@ -182,51 +179,21 @@ listed composite_page(const http_request& req,
     return out;
 }
 
-/// The bodies the screen sends, beside the wire_fields each is read with.
-namespace convention_screen {
-
-/// What a family write states: why, the version the row was read at, and the row.
-template <typename Write>
-struct family_write_body final {
-    rr::stated_intent intent;
-    std::optional<std::uint32_t> version;
-    Write write;
-};
-
-template <typename Write>
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<family_write_body<Write>>) {
-    using ores::utility::codec::field;
-    return std::tuple{field{"intent", &family_write_body<Write>::intent},
-                      field{"version", &family_write_body<Write>::version},
-                      field{"write", &family_write_body<Write>::write}};
-}
-
-}
-
 /**
- * A family's write. A row read at no version is new, and one read at a
- * version is written only while it still holds it. The service's result is
- * answered whatever its outcome, so the screen shows the field it refused.
+ * A family's write. The service's result is answered whatever its outcome, so
+ * the screen shows the field it refused.
  */
 template <typename Put, auto Written>
 std::string family_write(const http_request& req, nats_client& session, const std::string& text) {
     using write_type = decltype(Put{}.change.write);
-    const auto body = rr::read_body<convention_screen::family_write_body<write_type>>(text);
+    const auto body = rr::read_body<rr::versioned_write<write_type>>(text);
     const auto intent = body ? rr::intent_of(body->intent) : std::nullopt;
     if (!body || !intent || !rr::is_uuid(body->write.id))
         rr::invalid("A convention write names the row by its identifier, the version it was "
                     "read at or null for a new row, and a reason.");
-    Put msg;
-    msg.change.write = body->write;
-    msg.change.precondition.kind = body->version ?
-                                       utility_domain::precondition_kind::must_match_version :
-                                       utility_domain::precondition_kind::must_not_exist;
-    msg.change.precondition.version = body->version;
-    msg.intent = *intent;
-    const auto reply = ores::http::forwarding::forward(req, session, msg);
-    const auto& row = reply.*Written;
-    return "{\"result\":" + json::write(reply.result) +
-           ",\"convention\":" + (row ? json::write(*row) : std::string("null")) + "}";
+    const auto reply = ores::http::forwarding::put_at_version<Put>(
+        req, session, body->write, body->version, *intent);
+    return rr::result_with(reply.result, "convention", reply.*Written);
 }
 
 /// A plain family that the screen lists and does not write.

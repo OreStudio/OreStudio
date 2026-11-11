@@ -33,6 +33,7 @@
 #include <cstdint>
 #include <exception>
 #include <functional>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -118,6 +119,26 @@ typename Request::response_type forward(const ores::http::domain::http_request& 
                                         ores::nats::service::nats_client& session,
                                         const Request& msg) {
     return forward_on(req, session, Request::nats_subject, msg);
+}
+
+/**
+ * @brief Send a one-row write as the caller. A row read at no version is new,
+ * and one read at a version is written only while it still holds it.
+ */
+template <typename Put>
+typename Put::response_type put_at_version(const ores::http::domain::http_request& req,
+                                           ores::nats::service::nats_client& session,
+                                           decltype(Put{}.change.write) write,
+                                           std::optional<std::uint32_t> version,
+                                           ores::utility::domain::change_intent intent) {
+    using ores::utility::domain::precondition_kind;
+    Put msg;
+    msg.change.write = std::move(write);
+    msg.change.precondition.kind =
+        version ? precondition_kind::must_match_version : precondition_kind::must_not_exist;
+    msg.change.precondition.version = version;
+    msg.intent = std::move(intent);
+    return forward(req, session, msg);
 }
 
 /**

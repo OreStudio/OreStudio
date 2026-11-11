@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :ci:build:make_the_build_faster:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/measure-the-unity-batch-size
+#+pr: 4610
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -26,7 +26,7 @@ Choose the unity batch size of each heavy target from measurements, not guesses.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F3AB6302-3325-4BDF-8106-70E0168C40F9][Make the build faster]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,20 @@ Choose the unity batch size of each heavy target from measurements, not guesses.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two pull requests. The first adds the measurement; the second applies its result.
+
+1. Make the batch size a cache variable, =ORES_UNITY_BUILD_BATCH_SIZE=, default 16, so a build can set it without editing =CMakeLists.txt=. The default keeps every existing build unchanged.
+2. Add =build/scripts/ninja_log_summary.py=. It reads one build phase from a =.ninja_log= (the entries after a recorded line count) and writes the wall time, compiled units, total compile time, slowest units, time per target and the sccache hit rate. Its =table= mode compares the runs.
+3. Add =unity-batch-measurement.yml=, a manual workflow with a matrix of batch sizes 16, 8, 4 and off. It takes a merge commit on main. Each entry builds three times:
+   - *cold:* the merge commit's first parent, fresh tree, empty sccache;
+   - *incremental:* the merge commit in the same tree, with the compiler cache bypassed, so only the units the PR invalidates are compiled;
+   - *warm:* the merge commit in a fresh tree with the cold build's sccache, which is what a continuous run sees.
+
+   The incremental build bypasses sccache so that the warm build finds only the cold build's objects. The workflow restores and saves no shared cache, so it does not change what Continuous reads.
+4. After the first PR merges, run the workflow on a later merge commit for debug, then for release if debug does not settle the choice. Record the table under =* Measurements=.
+5. Second PR: set =UNITY_BUILD_BATCH_SIZE= on the heavy targets as the table supports.
+
+Limits: one PR is one sample of an incremental change. If =vcpkg.json= changes between the two commits, the incremental build includes a vcpkg install. Pick a merge commit that does not change it.
 
 * Measurements
 
@@ -78,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4610][#4610]] | [build] Add a workflow that measures the unity batch size |
 
 * Review
 

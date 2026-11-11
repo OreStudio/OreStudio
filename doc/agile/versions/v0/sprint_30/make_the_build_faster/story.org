@@ -21,7 +21,7 @@ Builds get fast enough that integration moves more often and an advisory PR buil
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -39,7 +39,7 @@ Builds get fast enough that integration moves more often and an advisory PR buil
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EEC2B388-FD61-44D5-9C5F-C725C1260027][Measure the unity batch size]] | BACKLOG | | | Compare unity batch sizes 16, 8, 4 and off on GitHub runners, for a cold build and an incremental PR build. |
+| [[id:EEC2B388-FD61-44D5-9C5F-C725C1260027][Measure the unity batch size]] | STARTED | 2026-11-11 | | Compare unity batch sizes 16, 8, 4 and off on GitHub runners, for a cold build and an incremental PR build. |
 | [[id:60C38C16-8BF0-4687-A0BC-D6F0617BE6BC][Split the slowest compile units]] | BACKLOG | | | Find why the slowest compile units take 7 to 24 min and fix the cause. |
 | [[id:1E08BE17-D216-4CE6-8EE3-BE761DB9D551][Prebuild the CI image]] | BACKLOG | | | Build a CI container image with clang, packages, PostgreSQL and vcpkg dependencies installed. |
 | [[id:2148728E-C651-4C29-BA72-52E7AEB5E21D][Measure incremental PR builds]] | BACKLOG | | | Replay the last 20 merged PRs on GitHub runners to measure incremental build and affected-test times. |

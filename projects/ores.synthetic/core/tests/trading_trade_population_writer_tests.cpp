@@ -96,19 +96,19 @@ TEST_CASE("a_wire_round_trip_keeps_a_variance_swaps_dates", "[writer]") {
         std::chrono::year{2026}, std::chrono::month{10}, std::chrono::day{31}};
     const auto end = std::chrono::year_month_day{
         std::chrono::year{2027}, std::chrono::month{10}, std::chrono::day{31}};
-    ores::trading::domain::fx_variance_swap_instrument row;
-    row.identity.trade_type_code = "FxVarianceSwap";
-    row.start_date = start;
-    row.end_date = end;
-    row.currency = "USD";
-    row.underlying_code = "AAPL";
-    row.long_short = "Long";
-    row.strike = 16.0;
-    row.notional = ores::utility::decimal::decimal::from_double(1000.0).value();
-    row.moment_type = "Variance";
+    ores::trading::domain::fx_variance_swap_instrument swap;
+    swap.identity.trade_type_code = "FxVarianceSwap";
+    swap.start_date = start;
+    swap.end_date = end;
+    swap.currency = "USD";
+    swap.underlying_code = "AAPL";
+    swap.long_short = "Long";
+    swap.strike = 16.0;
+    swap.notional = ores::utility::decimal::decimal::from_double(1000.0).value();
+    swap.moment_type = "Variance";
 
     ores::trading::messaging::book_trade_request request;
-    request.instruments.fx_variance_swap_instruments.push_back(row);
+    request.instruments.fx_variance_swap_instruments.push_back(swap);
 
     const auto& codec = ores::nats::default_wire_codec();
     const auto bytes = codec.encode(request);

@@ -157,7 +157,7 @@ row below records a group that has merged; the task closes when all five have.
 | Group | PR | Routes | State |
 |-------+----+--------+-------|
 | Counterparties | #4616 | 6 | Merged |
-| Conventions: families, page and write | | 3 | Open |
+| Conventions: families, page and write | #4618 | 3 | Merged |
 | Conventions: document and terms | | 2 | Waits for the reporting part |
 | Curve configurations | | 3 | Open |
 | Tenors | | 9 | Open |

@@ -6,6 +6,7 @@
       <BondData>
         <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
         <SecurityId>POPCVF3EEHX34</SecurityId>
+        <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>
@@ -56,6 +57,7 @@
       <BondData>
         <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
         <SecurityId>POPCVF3EEHX34</SecurityId>
+        <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
         <SettlementDays>2</SettlementDays>
         <Calendar>TARGET</Calendar>
         <IssueDate>2025-07-02</IssueDate>

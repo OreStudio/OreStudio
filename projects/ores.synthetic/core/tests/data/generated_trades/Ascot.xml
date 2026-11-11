@@ -7,6 +7,7 @@
         <BondData>
           <IssuerId>44444444-4444-4444-4444-444444444444</IssuerId>
           <SecurityId>POPXMIZYWCP90</SecurityId>
+          <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
           <SettlementDays>2</SettlementDays>
           <Calendar>TARGET</Calendar>
           <IssueDate>2025-07-02</IssueDate>
@@ -43,6 +44,7 @@
       </ConvertibleBondData>
       <OptionData>
         <LongShort></LongShort>
+        <OptionType>Call</OptionType>
       </OptionData>
       <ReferenceSwapData>
         <LegData>
@@ -59,6 +61,7 @@
         <BondData>
           <IssuerId>55555555-5555-5555-5555-555555555555</IssuerId>
           <SecurityId>POPQ97VJQHMZ2</SecurityId>
+          <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
           <SettlementDays>2</SettlementDays>
           <Calendar>TARGET</Calendar>
           <IssueDate>2025-07-02</IssueDate>
@@ -95,6 +98,7 @@
       </ConvertibleBondData>
       <OptionData>
         <LongShort></LongShort>
+        <OptionType>Call</OptionType>
       </OptionData>
       <ReferenceSwapData>
         <LegData>

@@ -8,7 +8,7 @@
 #+filetags: :prove_generated_trades_value_against_the_ore_samples-remaining:sprint_30:v0:
 #+owner: marco
 #+branch: feature/project-the-remaining-commodity-products
-#+pr:
+#+pr: 4626
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-11
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/4626][#4626]] | [ore,trading,synthetic] Project and build the native commodity products |
 
 * Review
 

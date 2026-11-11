@@ -17,13 +17,17 @@
 # Builds the Linux CI image with the versions in versions.env, then checks
 # that each tool in the image reports the version the file states.
 #
-# The tag names the main versions and a hash of every input of the image, so
-# a change to any of them gives a new tag:
+# The tag names the main versions and a hash of the files the image is built
+# from, so a change to any of them gives a new tag:
 #
 #   ubuntu24.04-clang19-gcc14-<hash>
 #
 # Usage:
 #   build/docker/ci/build.sh [--image NAME] [--engine docker|podman] [--print-ref]
+#
+# The tag identifies the inputs, not the content. The base image and the apt
+# packages can move between two builds of the same tag, so a published tag is
+# never built again.
 #
 # NAME defaults to ores-ci. --print-ref prints the image reference and builds
 # nothing, so a caller can ask whether that tag is already published. The
@@ -81,6 +85,9 @@ fi
     node --version | grep -xF 'v${NODE_VERSION}'
     postgres --version | grep -F ' ${PG_MAJOR}.'
     test -f /usr/share/postgresql/${PG_MAJOR}/extension/timescaledb.control
+    g++-${GCC_MAJOR} --version | head -n 1
+    git --version
+    python3 --version
     printf '#include <print>\nint main() { std::println(\"C++23 ok\"); }\n' > /tmp/t.cpp
     clang++ -std=c++23 -v /tmp/t.cpp -o /tmp/t 2>&1 | grep -F 'Selected GCC installation' | grep -F '/${GCC_MAJOR}'
     /tmp/t

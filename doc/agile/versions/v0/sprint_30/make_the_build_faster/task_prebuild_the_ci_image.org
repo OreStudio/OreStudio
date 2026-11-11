@@ -135,6 +135,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Disk headroom after the cleanup step goes | continuous-linux.yml | Decline | 106 GB is total disk use, so 39 GB stays free. The df -h steps before and after CTest stay and show the peak. |
+| 2 | The old action set CC and CXX | continuous-linux.yml | Accept | The step sets CC and CXX to the apt.llvm.org clang, so the vcpkg C ports do not go to gcc. |
+| 3 | First run after merge has a cold sccache | — | Decline | Expected. The Notes say so. |
+| 4 | Required check names change | — | Decline | main has no required status checks. |
+| 5 | Comment says the version is fixed, apt gives the newest point release | install_llvm.sh | Accept | The comment now says a new point release needs no commit. |
+| 6 | No retry on the key download | install_llvm.sh | Accept | curl --retry 3. |
+| 7 | Tag does not cover the base image or apt packages | build.sh | Accept | The comment says the tag identifies inputs, not content, and a published tag is not built again. |
+| 8 | Default PostgreSQL cluster in the image | Dockerfile | Defer | Phase 2 decides how the build job starts the database. |
+| 9 | Image runs as root | Dockerfile | Defer | Phase 2, with item 8. |
+| 10 | head -n 1 under pipefail | build.sh | Decline | The output is a few lines, so head reads all of it. |
+| 11 | No check for gcc, git, python3 | build.sh | Accept | build.sh prints their versions. |
+| 12 | No checksums on the CMake, Ninja, Node downloads | Dockerfile | Defer | A checksum per version makes a version change two edits. Decide in phase 2. |
 
 * Result

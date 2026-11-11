@@ -36,6 +36,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <regex>
 #include <unordered_set>
 #include <utility>
 
@@ -151,6 +152,23 @@ http_response save_permissions(const http_request& req,
     return http_response::json("{\"codes\":" + json::write(reply.permission_codes) + "}");
 }
 
+/// The tenant's roles, each with what it grants; a service role's permissions
+/// are not read, as no screen shows them.
+std::vector<role_write_routes::role_summary> read_roles(const http_request& req,
+                                                        nats_client& session) {
+    messaging::list_roles_request list;
+    list.limit = catalogue_page;
+    const auto reply = ores::http::forwarding::forward(req, session, list);
+    rr::require_ok(reply.result);
+    std::vector<role_write_routes::role_summary> roles;
+    for (const auto& role : reply.roles)
+        roles.push_back({role,
+                         is_service_role(role) ?
+                             std::vector<std::string>{} :
+                             permissions_of(req, session, boost::uuids::to_string(role.id))});
+    return roles;
+}
+
 }
 
 std::optional<give_role_body> role_write_routes::read_give_role(const std::string& body) {
@@ -229,6 +247,37 @@ role_write_routes::permissions_json(std::vector<ores::iam::domain::permission> p
     return out + "]}";
 }
 
+// The code is one the route has read as area::resource:action, so its area is
+// what precedes the first double colon.
+bool role_write_routes::grants(const role_summary& role, const std::string& code) {
+    const auto area = code.substr(0, code.find("::")) + "::*";
+    return std::ranges::any_of(role.permission_codes, [&](const std::string& held) {
+        return held == "*" || held == area || held == code;
+    });
+}
+
+std::vector<role_write_routes::role_summary>
+role_write_routes::ways_to_hold(const std::string& code,
+                                const std::vector<role_summary>& roles,
+                                const std::unordered_set<std::string>& held) {
+    std::vector<role_summary> out;
+    for (const auto& r : roles)
+        if (r.role.is_requestable && !is_service_role(r.role) &&
+            !held.contains(boost::uuids::to_string(r.role.id)) && grants(r, code))
+            out.push_back(r);
+    return out;
+}
+
+std::string role_write_routes::ways_json(const std::vector<role_summary>& roles) {
+    std::string out = "{\"roles\":[";
+    for (std::size_t i = 0; i < roles.size(); ++i)
+        out += (i == 0 ? "" : ",") + std::string("{\"id\":") +
+               json::write(boost::uuids::to_string(roles[i].role.id)) +
+               ",\"name\":" + json::write(roles[i].role.name) +
+               ",\"description\":" + json::write(roles[i].role.description) + "}";
+    return out + "]}";
+}
+
 void role_write_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -300,18 +349,7 @@ void role_write_routes::register_routes(
         "Read the tenant's roles with the permissions each grants",
         [&session](const http_request& req) {
             return guarded<messaging::list_roles_request>([&] {
-                messaging::list_roles_request list;
-                list.limit = catalogue_page;
-                const auto reply = ores::http::forwarding::forward(req, session, list);
-                rr::require_ok(reply.result);
-                std::vector<role_summary> roles;
-                for (const auto& role : reply.roles) {
-                    const auto service = is_service_role(role);
-                    roles.push_back(
-                        {role,
-                         service ? std::vector<std::string>{} :
-                                   permissions_of(req, session, boost::uuids::to_string(role.id))});
-                }
+                const auto roles = read_roles(req, session);
                 return http_response::json(roles_json(roles));
             });
         });
@@ -406,6 +444,31 @@ void role_write_routes::register_routes(
                                         apply_changes(permissions_of(req, session, id), *changes),
                                         changes->note);
             });
+        });
+
+    add(router->get("/api/me/ways-to-hold"),
+        "Read the roles the caller could ask for that would give a permission",
+        [&session](const http_request& req) {
+            static const std::regex code_form("^[a-z][a-z0-9_]*::[a-z][a-z0-9_]*:[a-z][a-z0-9_]*$");
+            const auto code = req.get_query_param("permission");
+            if (!std::regex_match(code, code_form))
+                return refused(http_status::bad_request,
+                               "invalid-request",
+                               "The permission asked about is not one.");
+            // No way being known is an answer the screen states, so a failure
+            // to read the roles answers with none, as the BFF did.
+            try {
+                const auto mine = ores::http::forwarding::forward(
+                    req, session, messaging::get_my_roles_request{});
+                rr::require_ok(mine.result);
+                std::unordered_set<std::string> held;
+                for (const auto& r : mine.roles)
+                    held.insert(boost::uuids::to_string(r.role.id));
+                return http_response::json(
+                    ways_json(ways_to_hold(code, read_roles(req, session), held)));
+            } catch (...) {
+                return http_response::json(R"({"roles":[]})");
+            }
         });
 }
 

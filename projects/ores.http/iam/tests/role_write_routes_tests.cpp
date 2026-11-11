@@ -27,12 +27,15 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <map>
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 using ores::http::domain::http_method;
@@ -173,4 +176,42 @@ TEST_CASE("role_write_routes_forward_an_accepted_request", "[role_write]") {
         role_call(
             session, http_method::delete_, "/api/roles/{name}", role_request({{"name", "Trader"}}))
             .status == http_status::bad_gateway);
+}
+
+TEST_CASE("role_write_routes_offer_the_roles_that_would_give_a_permission", "[role_write]") {
+    const auto role = [](std::string name, bool requestable, std::vector<std::string> codes) {
+        role_write_routes::role_summary r;
+        r.role.name = std::move(name);
+        r.role.is_requestable = requestable;
+        r.role.id = boost::uuids::random_generator()();
+        r.permission_codes = std::move(codes);
+        return r;
+    };
+    const auto exact = role("Trader", true, {"trading::trades:read"});
+    const auto area = role("Desk", true, {"trading::*"});
+    const auto everything = role("Admin", true, {"*"});
+    const auto closed = role("Closed", false, {"trading::trades:read"});
+    const auto service = role("TradingService", true, {"*"});
+    const auto other = role("Ops", true, {"iam::roles:read"});
+    const auto held = role("Held", true, {"trading::trades:read"});
+    const std::unordered_set<std::string> mine{boost::uuids::to_string(held.role.id)};
+    const auto ways = role_write_routes::ways_to_hold(
+        "trading::trades:read", {exact, area, everything, closed, service, other, held}, mine);
+    std::vector<std::string> names;
+    for (const auto& w : ways)
+        names.push_back(w.role.name);
+    CHECK(names == std::vector<std::string>{"Trader", "Desk", "Admin"});
+    CHECK(role_write_routes::ways_json({exact}).find("\"name\":\"Trader\"") != std::string::npos);
+}
+
+TEST_CASE("role_write_routes_refuse_a_permission_that_is_not_one", "[role_write]") {
+    nats_client session;
+    http_request req;
+    req.query_params["permission"] = "not a code";
+    const auto refused = role_call(session, http_method::get, "/api/me/ways-to-hold", req);
+    CHECK(refused.status == http_status::bad_request);
+    req.query_params["permission"] = "trading::trades:read";
+    const auto none = role_call(session, http_method::get, "/api/me/ways-to-hold", req);
+    CHECK(none.status == http_status::ok);
+    CHECK(none.body == R"({"roles":[]})");
 }

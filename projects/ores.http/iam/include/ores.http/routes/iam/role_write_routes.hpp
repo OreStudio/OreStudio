@@ -29,6 +29,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace ores::http::routes::iam {
@@ -96,6 +97,26 @@ public:
      */
     [[nodiscard]] static std::vector<std::string>
     apply_changes(std::vector<std::string> held, const permission_changes_body& changes);
+
+    /**
+     * @brief Whether a role grants a permission, by its code, its area's
+     * wildcard or everything.
+     */
+    [[nodiscard]] static bool grants(const role_summary& role, const std::string& code);
+
+    /**
+     * @brief The roles a person could ask for that would give a permission:
+     * requestable, not a service's, not already held, and granting it.
+     */
+    [[nodiscard]] static std::vector<role_summary>
+    ways_to_hold(const std::string& code,
+                 const std::vector<role_summary>& roles,
+                 const std::unordered_set<std::string>& held);
+
+    /**
+     * @brief The ways to hold a permission, as the screen reads them.
+     */
+    [[nodiscard]] static std::string ways_json(const std::vector<role_summary>& roles);
 
     /**
      * @brief The tenant's roles as the screen reads them.

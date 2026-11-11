@@ -266,6 +266,26 @@ struct contact_body final {
                       field{"version", &contact_body::version}};
 }
 
+
+/**
+ * @brief Who one account reports to, or nothing to clear it, with the version
+ * the screen read and why.
+ */
+struct reporting_line_body final {
+    std::string reportsToAccountId;
+    std::optional<std::string> expectedVersion;
+    std::optional<std::string> reasonCode;
+    std::optional<std::string> commentary;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<reporting_line_body>) {
+    using ores::utility::codec::field;
+    return std::tuple{field{"reportsToAccountId", &reporting_line_body::reportsToAccountId},
+                      field{"expectedVersion", &reporting_line_body::expectedVersion},
+                      field{"reasonCode", &reporting_line_body::reasonCode},
+                      field{"commentary", &reporting_line_body::commentary}};
+}
+
 }
 
 #endif

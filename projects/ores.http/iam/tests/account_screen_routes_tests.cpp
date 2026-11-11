@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.assets.api/domain/image.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/router.hpp"
@@ -143,4 +144,70 @@ TEST_CASE("account_view_answers_the_account_the_screens_read", "[account_screen]
     const auto listed = account_screen_routes::page_json(page);
     CHECK(listed.starts_with("{\"accounts\":[{"));
     CHECK(listed.ends_with("],\"totalCount\":7}"));
+}
+
+TEST_CASE("account_screen_routes_answer_the_reporting_tree_in_the_screen_shape",
+          "[account_screen]") {
+    ores::iam::messaging::get_reporting_tree_response tree;
+    ores::iam::messaging::reporting_tree_node root;
+    root.account_id = "a";
+    root.username = "alice";
+    root.party_ids = {"p"};
+    tree.nodes.push_back(root);
+    ores::iam::messaging::reporting_tree_party party;
+    party.party_id = "p";
+    party.short_code = "HQ";
+    tree.parties.push_back(party);
+    tree.unrooted = 1;
+    const auto text = account_screen_routes::tree_json(tree);
+    for (const auto* key : {"\"unrooted\":1",
+                            "\"accountId\":\"a\"",
+                            "\"accountType\":\"user\"",
+                            "\"imageId\":null",
+                            "\"reportsToAccountId\":null",
+                            "\"reportsOutsideScope\":false",
+                            "\"partyIds\":[\"p\"]",
+                            "\"shortCode\":\"HQ\"",
+                            "\"parentPartyId\":null"})
+        CHECK(text.find(key) != std::string::npos);
+}
+
+TEST_CASE("account_screen_routes_serve_a_picture_as_the_bff_did", "[account_screen]") {
+    ores::assets::domain::image image;
+    image.mime_type = "";
+    image.data = {'<', 's', 'v', 'g', '/', '>'};
+    const auto picture = account_screen_routes::picture_of(image);
+    CHECK(picture.content_type == "image/svg+xml");
+    CHECK(picture.body == "<svg/>");
+    CHECK(picture.headers.at("Cache-Control") == "private, max-age=300");
+    CHECK(picture.headers.at("X-Content-Type-Options") == "nosniff");
+    CHECK(picture.headers.at("Content-Security-Policy") == "default-src 'none'; sandbox");
+    image.mime_type = "image/png";
+    CHECK(account_screen_routes::picture_of(image).content_type == "image/png");
+    image.mime_type = "text/html";
+    CHECK(account_screen_routes::picture_of(image).content_type == "application/octet-stream");
+}
+
+TEST_CASE("account_screen_routes_refuse_a_reporting_line_with_no_target", "[account_screen]") {
+    nats_client session;
+    auto router = std::make_shared<ores::http::net::router>();
+    account_screen_routes::register_routes(
+        router, std::make_shared<ores::http::openapi::endpoint_registry>(), session);
+    const auto& routes = router->routes();
+    const auto found = std::ranges::find_if(routes, [](const auto& r) {
+        return r.pattern == "/api/accounts/{accountId}/reporting-line";
+    });
+    REQUIRE(found != routes.end());
+    std::optional<http_response> answer;
+    boost::asio::io_context io;
+    boost::asio::co_spawn(
+        io,
+        [&]() -> boost::asio::awaitable<void> {
+            answer = co_await found->handler(screen_request({}, {{"accountId", "x"}}, "{}"));
+        },
+        boost::asio::detached);
+    io.run();
+    REQUIRE(answer);
+    CHECK(answer->status == http_status::bad_request);
+    CHECK(answer->body.find("A reportsToAccountId is required.") != std::string::npos);
 }

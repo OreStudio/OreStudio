@@ -38,6 +38,8 @@ target_link_libraries(${lib_target_name}
         ores.http.api.lib
         ores.nats.lib
         ores.logging.lib
+        # The account screens answer an account's picture, an assets image.
+        ores.assets.api.lib
     PRIVATE
         ores.http.nats.lib
         ores.iam.api.lib

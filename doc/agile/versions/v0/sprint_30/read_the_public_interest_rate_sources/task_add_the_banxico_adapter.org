@@ -104,7 +104,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Say the check scans the working tree, not the history | build/scripts/check_no_committed_credentials.py | Accepted | The docstring says so, and that a key in history needs a rewrite and a new key |
+| 2 | A URL-encoded copy of a key is missed | build/scripts/check_no_committed_credentials.py | Declined | The registered keys are hex and alphanumeric, and the password holds only a hyphen, so the encoded form is the literal one |
+| 3 | The value shows in ps as a git argument | build/scripts/check_no_committed_credentials.py | Accepted | The value goes to git grep on stdin with -f - |
+| 4 | Pin that the id is checked before the token | projects/ores.marketdata/official/tests/domain_banxico_tests.cpp | Accepted | The no-token test also reads a bad id and checks its error |
+| 5 | with_key could find the separator itself | projects/ores.marketdata/official/src/domain/riksbank.cpp | Declined | It has two callers, each with a fixed address, and a test checks both addresses |
+| 6 | Split the series id check into a helper | projects/ores.marketdata/official/src/domain/banxico.cpp | Declined | It has one caller, and the error states the rule the conditions check |
 
 * Result
 

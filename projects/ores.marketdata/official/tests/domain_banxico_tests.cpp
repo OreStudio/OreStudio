@@ -159,6 +159,9 @@ TEST_CASE("a_banxico_fetcher_without_a_token_reads_nothing_and_names_the_variabl
 
     REQUIRE_FALSE(universe.has_value());
     CHECK(universe.error().find("ORES_MARKETDATA_BANXICO_API_KEY") != std::string::npos);
+    const auto bad_id = fetcher.universe("SF331451/x");
+    REQUIRE_FALSE(bad_id.has_value());
+    CHECK(bad_id.error().find("is not a series id") != std::string::npos);
     CHECK(transport.asked.empty());
 }
 

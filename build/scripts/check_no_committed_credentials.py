@@ -9,7 +9,11 @@ for each of them. A checkout without .env, or with no such variable, passes. A
 user name is not a secret, and it is often the owner's address, which the
 licence headers hold, so it is not searched.
 
-The report names the variable and the file, never the value.
+It searches the files as they are now, not the history: a key that an earlier
+commit holds needs a rewrite of history and a new key, which no check can give.
+
+The report names the variable and the file, never the value. The value goes to
+git on its standard input, so no process listing shows it.
 """
 import re
 import subprocess
@@ -38,8 +42,8 @@ def credentials(env_text: str) -> dict[str, str]:
 def files_holding(root: Path, value: str) -> list[str]:
     """The files git would commit that hold the value."""
     run = subprocess.run(
-        ["git", "grep", "--untracked", "-l", "-F", "-z", "-e", value],
-        cwd=root, capture_output=True)
+        ["git", "grep", "--untracked", "-l", "-F", "-z", "-f", "-"],
+        cwd=root, input=value.encode() + b"\n", capture_output=True)
     if run.returncode not in (0, 1):
         raise RuntimeError(run.stderr.decode(errors="replace"))
     return [p for p in run.stdout.decode(errors="replace").split("\0") if p]
